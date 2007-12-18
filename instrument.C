@@ -1,0 +1,226 @@
+
+/*******************************************************************************/
+/* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/*                                                                             */
+/* This program is free software; you can redistribute it and/or modify it     */
+/* under the terms of the GNU General Public License as published by the       */
+/* Free Software Foundation; either version 2 of the License, or (at your      */
+/* option) any later version.                                                  */
+/*                                                                             */
+/* This program is distributed in the hope that it will be useful, but WITHOUT */
+/* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       */
+/* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for   */
+/* more details.                                                               */
+/*                                                                             */
+/* You should have received a copy of the GNU General Public License along     */
+/* with This program; see the file COPYING.  If not,write to the Free Software */
+/* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+/*******************************************************************************/
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+#include "instrument.H"
+#include "common.h"
+#include "const.h"
+#include "config.h"
+
+#include <fnmatch.h>
+#include <dirent.h>
+
+
+list <Instrument *> Instrument::instruments;
+
+Instrument::Instrument ( const char *name )
+{
+
+    for ( int i = 0; i < 128; i++ )
+    {
+        _map[i].name = NULL;
+        _map[i].velocity = 100;
+    }
+
+    if ( name )
+    {
+        _name = strdup( name );
+
+        read( name );
+    }
+    else
+    {
+        _name = strdup( "not an instrument" );
+        _height = 0;
+    }
+
+    Instrument::instruments.push_front( this );
+}
+
+Instrument *
+Instrument::open ( const char *name )
+{
+    list <Instrument *>::iterator i = Instrument::instruments.begin();
+
+    if ( name )
+    {
+        for ( ; i != Instrument::instruments.end(); i++ )
+            if ( 0 == strcmp( (*i)->_name, name ) )
+                return *i;
+    }
+
+    return new Instrument ( name );
+}
+
+void
+Instrument::note ( int from, int to )
+{
+//    _map[ from ].note = to;
+    WARNING( "what should this do now?" );
+}
+
+void
+Instrument::note_name ( int n, char *s )
+{
+    if ( _map[ n ].name )
+        free( _map[ n ].name );
+
+    _map[ n ].name = s;
+}
+
+void
+Instrument::velocity ( int n, int v )
+{
+    _map[ n ].velocity = v;
+}
+
+/* Should only be passed NOTE ON/OFF events! */
+void
+Instrument::translate ( midievent *e ) const
+{
+//    int n = e->note();
+
+//    e->note( _map[ n ].note );
+    e->note_velocity( e->note_velocity() * _map[ e->note() ].velocity / 100 );
+}
+
+const char *
+Instrument::note_name ( int n ) const
+{
+    return _map[ n ].name;
+}
+
+int
+Instrument::height ( void ) const
+{
+    return _height;
+}
+
+int
+Instrument::velocity ( int n ) const
+{
+    return _map[ n ].velocity;
+}
+
+int
+Instrument::read ( const char *s )
+{
+    FILE *fp;
+
+    char pat[512];
+
+    sprintf( pat, "%s%s.inst", SYSTEM_PATH INSTRUMENT_DIR, s );
+
+    if ( ! ( fp = fopen( pat, "r" ) ) )
+        return false;
+
+    struct i_map m;
+    char namebuf[256];
+    int note, velocity;
+
+    int n = 0;
+    while ( 0 < fscanf( fp, "\"%[^\"]\", %d, %d\n", (char*)&namebuf, &note, &velocity ) ) n++;
+
+    rewind( fp );
+
+    MESSAGE( "reading %d lines from instrument file \"%s\"", n, s );
+
+    int i;
+    for ( i = 0; i < n; i++ )
+    {
+        fscanf( fp, "\"%[^\"]\", %d, %d\n", (char *)&namebuf, &note, &velocity );
+
+        m.name = strdup( namebuf );
+
+        if ( velocity > 100 )
+        {
+            WARNING( "invalid volume percentage in instrument definition");
+            m.velocity = 100;
+        }
+        else
+            m.velocity = velocity;
+
+        DEBUG( "name: \"%s\", note: %d, velocity: %d%%", m.name, note, m.velocity );
+
+//        _map[ (64 + (n / 2)) - i ] = m;
+
+        _map[ note ] = m;
+    }
+
+    _height = n;
+
+    fclose( fp );
+
+    return true;
+}
+
+static int
+instrument_filter ( const struct dirent *d )
+{
+    char suffix[] = "*.inst";
+
+    return 0 == fnmatch( suffix, d->d_name, 0 );
+}
+
+/* Returns a list of available instruments */
+char **
+Instrument::listing ( void )
+{
+    char **sa;
+
+    struct dirent **names;
+    int n;
+
+    if ( 0 > ( n = scandir( SYSTEM_PATH INSTRUMENT_DIR, &names, instrument_filter, alphasort ) ) )
+    {
+        WARNING( "couldn't open instrument directory" );
+        return NULL;
+    }
+    else
+    {
+        sa = (char **)malloc( sizeof( char * ) * (n + 1) );
+        sa[n] = NULL;
+
+        while (n--)
+        {
+            char *c = rindex( names[n]->d_name, '.' );
+
+            if ( c )
+                *c = '\0';
+
+            MESSAGE( "found instrument: %s", names[n]->d_name );
+
+            sa[n] = strdup( names[n]->d_name );
+
+            free( names[n] );
+        }
+        free( names );
+
+        return sa;
+    }
+}
+
+const char *
+Instrument::name ( void ) const
+{
+    return _name;
+}

@@ -49,12 +49,9 @@ Transport::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack
 
     pos->beats_per_minute = transport._master_beats_per_minute;
 
-
-    // FIXME: there's some problem with relocation when we're the master...
-
     if ( new_pos || ! _done )
     {
-        double wallclock = pos->frame / (pos->frame_rate * 60);
+        double wallclock = (double)pos->frame / (pos->frame_rate * 60);
 
         unsigned long abs_tick = wallclock * pos->beats_per_minute * pos->ticks_per_beat;
         unsigned long abs_beat = abs_tick / pos->ticks_per_beat;

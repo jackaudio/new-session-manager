@@ -53,7 +53,8 @@ pattern::pattern ( void )
 
     d->length = x_to_ts( _bpb * _ppqn * _bars );
 
-    mapping.open( Mapping::INSTRUMENT, "Default" );
+//    mapping.open( Mapping::INSTRUMENT, "Default" );
+    mapping.open( Mapping::SCALE, "Major" );
 
     _add();
 

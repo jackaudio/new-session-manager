@@ -124,7 +124,7 @@ public:
 
     void handle_event_change ( void );
     void set ( int x, int y );
-    bool grid ( Grid *g );
+    void grid ( Grid *g );
     void changed_mapping ( void );
     Grid * grid ( void );
     void resize ( void );

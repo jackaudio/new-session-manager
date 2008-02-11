@@ -89,24 +89,13 @@ Canvas::handle_event_change ( void )
 }
 
 /** change grid to /g/, returns TRUE if new grid size differs from old */
-bool
+void
 Canvas::grid ( Grid *g )
 {
-    bool r = false;
-
-    if ( m.grid )
-    {
-    }
-
     m.grid = g;
 
     if ( ! g )
-        return false;
-
-    if ( m.vp )
-        if ( m.vp->w != g->viewport.w ||
-             m.vp->h != g->viewport.h )
-            r = true;
+        return;
 
     m.vp = &g->viewport;
 
@@ -114,11 +103,11 @@ Canvas::grid ( Grid *g )
     DEBUG( "viewport: %s", s );
     free( s );
 
-    m.mapping_drawn = m.ruler_drawn = false;
+    m.ruler_drawn = false;
 
     resize_grid();
 
-    _update_row_mapping();
+    changed_mapping();
 
     m.shape = m.grid->draw_shape();
 
@@ -129,8 +118,6 @@ Canvas::grid ( Grid *g )
 
     signal_draw();
     signal_settings_change();
-
-    return r;
 }
 
 /** keep row compaction tables up-to-date */

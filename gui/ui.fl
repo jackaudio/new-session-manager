@@ -636,17 +636,17 @@ if ( 0 == strncmp( picked, "Scale", strlen( "Scale" ) ) )
 	pattern_c->changed_mapping();
 
 	pattern_key_combo->activate();
-}}
+}} open selected
                 xywh {609 734 30 24} labeltype NO_LABEL
                 code0 {update_mapping_menu();}
               } {
-                Submenu mapping_instrument_menu {
-                  label Instrument open
-                  xywh {10 10 74 25}
-                } {}
                 Submenu mapping_scale_menu {
                   label Scale open
                   xywh {25 25 74 25}
+                } {}
+                Submenu mapping_instrument_menu {
+                  label Instrument open
+                  xywh {10 10 74 25}
                 } {}
               }
               Fl_Choice pattern_key_combo {
@@ -1058,8 +1058,7 @@ if ( g->notes() )
 else
 	pattern_notes_buffer->text( strdup( "" ) );} {}
   }
-  Function {update_phrase_widgets()} {open
-  } {
+  Function {update_phrase_widgets()} {} {
     code {phrase *g = (phrase *)phrase_c->grid();
 
 if ( ! g )
@@ -1075,8 +1074,7 @@ if ( g->notes() )
 else
 	phrase_notes_buffer->text( strdup( "" ) );} {}
   }
-  Function {update_sequence_widgets()} {open
-  } {
+  Function {update_sequence_widgets()} {} {
     code {if ( playlist->notes() )
 	sequence_notes_buffer->text( playlist->notes() );
 else
@@ -1121,17 +1119,22 @@ o->value( val );
 
 free( s );} {}
   }
-  Function {update_mapping_menu()} {} {
+  Function {update_mapping_menu()} {open
+  } {
     code {char **sa = Instrument::listing();
 
-for ( int i = 0; sa[i]; i++ )
+if ( sa )
 {
-	char pat[512];
-	snprintf( pat, 512, "Instrument/%s", sa[i] );
-	mapping_menu->add( pat, 0, 0, 0, 0 );
-	free( sa[i] );
+
+	for ( int i = 0; sa[i]; i++ )
+	{
+		char pat[512];
+		snprintf( pat, 512, "Instrument/%s", sa[i] );
+		mapping_menu->add( pat, 0, 0, 0, 0 );
+		free( sa[i] );
+	}
+	free( sa );
 }
-free( sa );
 
 sa = Scale::listing();
 for ( int i = 0; sa[i]; i++ )
@@ -1151,7 +1154,7 @@ free( sa );} {}
 if ( phrase_c->grid() )
 	ui->update_phrase_widgets();} {}
   }
-  Function {find_numeric_menu_item( const Fl_Menu_Item *menu, int n )} {open return_type {static int}
+  Function {find_numeric_menu_item( const Fl_Menu_Item *menu, int n )} {return_type {static int}
   } {
     code {for ( unsigned int i = 0; menu[i].text; i++ )
 {
@@ -1161,7 +1164,7 @@ if ( phrase_c->grid() )
 
 return 0;} {}
   }
-  Function {save_dialog( const char *name )} {open return_type void
+  Function {save_dialog( const char *name )} {return_type void
   } {
     code {if ( ! name )
 {
@@ -1183,7 +1186,7 @@ return 0;} {}
 if ( ! save_song( name ) )
 	fl_alert( "Could not save song" );} {}
   }
-  Function {show_help_dialog( const char *file )} {open return_type void
+  Function {show_help_dialog( const char *file )} {return_type void
   } {
     code {char pat[256];
 
@@ -1198,10 +1201,9 @@ help->load( pat );
 help->show();
 
 // FIXME: need to delete it somehow.
-//  help->show(1, argv);} {selected
-    }
+//  help->show(1, argv);} {}
   }
-  Function {maybe_save_song()} {open return_type bool
+  Function {maybe_save_song()} {return_type bool
   } {
     code {if ( song.dirty )
 {
@@ -1222,7 +1224,7 @@ help->show();
 
 return true;} {}
   }
-  Function {switch_to_pattern( int n )} {open return_type void
+  Function {switch_to_pattern( int n )} {return_type void
   } {
     code {pattern *p = pattern::pattern_by_number( n );
 

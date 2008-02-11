@@ -68,6 +68,7 @@ public:
     const char * note_name ( int n ) const;
     int velocity ( int n ) const;
     int key ( void ) const;
+    bool editable ( void ) const;
 
     const char * type ( void ) const;
 

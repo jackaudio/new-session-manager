@@ -47,11 +47,7 @@ async_exec ( const char *cmd )
 int
 canvas_input_callback ( O_Canvas *widget, Canvas *c, int m )
 {
-
-    static int lmb_down;
-
     //  MESSAGE( "Hello, my name is %s", widget->parent()->label() );
-
 
     int ow, oh;
 
@@ -239,11 +235,27 @@ canvas_input_callback ( O_Canvas *widget, Canvas *c, int m )
             switch ( Fl::event_button() )
             {
                 case 1:
-                    lmb_down = true;
-                    if ( IS_PATTERN && Fl::event_state() & FL_CTRL )
-                        c->randomize_row( y );
+                    int note;
+                    if ( ( note = c->is_row_name( x, y ) ) >= 0 )
+                    {
+                        DEBUG( "click on row %d", note );
+                        Instrument *i = ((pattern *)c->grid())->mapping.instrument();
+
+                        if ( i )
+                        {
+                            ui->edit_instrument_row( i, note );
+
+                            c->changed_mapping();
+                        }
+                    }
                     else
-                        c->set( x, y );
+                    {
+
+                        if ( IS_PATTERN && Fl::event_state() & FL_CTRL )
+                            c->randomize_row( y );
+                        else
+                            c->set( x, y );
+                    }
                     break;
                 case 3:
                     c->unset( x, y );

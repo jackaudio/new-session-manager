@@ -539,7 +539,7 @@ Canvas::redraw ( void )
 
 /** convert pixel coords into grid coords. returns true if valid */
 bool
-Canvas::grid_pos ( int *x, int *y )
+Canvas::grid_pos ( int *x, int *y ) const
 {
     *y = (*y - m.margin_top - m.origin_y) / m.div_h;
     *x = (*x - m.margin_left - m.origin_x) / m.div_w;
@@ -565,6 +565,20 @@ Canvas::grid_pos ( int *x, int *y )
 
 /* These methods translate viewport pixel coords to absolute grid
    coords and pass on to the grid. */
+
+/** if coords correspond to a row name entry, return the (absolute) note number, otherwise return -1 */
+int
+Canvas::is_row_name ( int x, int y )
+{
+    if ( x - m.origin_x >= m.margin_left )
+        return -1;
+
+    x = m.margin_left;
+
+    grid_pos( &x, &y );
+
+    return m.grid->y_to_note( y );
+}
 
 void
 Canvas::set ( int x, int y )

@@ -103,6 +103,7 @@ main_window = make_main_window();
 seq_window = make_seq_window();
 
 make_randomization_dialog();
+make_instrument_edit_dialog();
 
 Fl::add_handler( shortcut_handler );
 
@@ -136,7 +137,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {790 38 869 801} type Single box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
+      xywh {773 244 869 801} type Single box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
     } {
       Fl_Menu_Bar {} {open
         xywh {0 0 869 30} color 37
@@ -383,7 +384,7 @@ if ( o->value() == pattern_tab )
       } {
         Fl_Group sequence_tab {
           label Sequence open
-          xywh {0 98 868 674} color 37 resizable
+          xywh {0 98 868 674} color 37 hide resizable
           code0 {update_sequence_widgets();}
         } {
           Fl_Group {} {open
@@ -501,7 +502,7 @@ if ( playlist->length() )
             }
             Fl_Slider sequence_progress {
               label Sequence
-              callback {transport.locate( (tick_t)((double)playlist->length() * o->value()) );} selected
+              callback {transport.locate( (tick_t)((double)playlist->length() * o->value()) );}
               xywh {10 698 233 24} type Horizontal labelsize 12 align 1
             }
           }
@@ -556,7 +557,7 @@ o->maximum( phrase::phrases() );}
         }
         Fl_Group pattern_tab {
           label Pattern open
-          xywh {0 98 868 674} color 37 hide
+          xywh {0 98 868 674} color 37
           code0 {update_pattern_widgets();}
         } {
           Fl_Box pattern_canvas_widget {
@@ -1013,11 +1014,10 @@ You should have received a copy of the GNU General Public License along with thi
       }
     }
   }
-  Function {make_randomization_dialog()} {open
-  } {
+  Function {make_randomization_dialog()} {} {
     Fl_Window randomization_dialog {
       label {Randomization Settings} open
-      xywh {841 360 342 98} type Double
+      xywh {740 128 342 98} type Double
       code0 {// feel->value( )}
       code1 {probability->value( song.random.probability );} non_modal visible
     } {
@@ -1050,7 +1050,38 @@ You should have received a copy of the GNU General Public License along with thi
       }
     }
   }
-  Function {update_pattern_widgets()} {} {
+  Function {make_instrument_edit_dialog()} {open
+  } {
+    Fl_Window instrument_edit_dialog {
+      label {Instrument Edit} open
+      xywh {669 299 338 191} type Double modal visible
+    } {
+      Fl_Box {} {
+        label {Instrument Row}
+        xywh {8 15 321 28} box ROUNDED_BOX color 94 labelsize 22 labelcolor 39
+      }
+      Fl_Input instrument_name_field {
+        label Name
+        callback {instrument_edit_dialog->hide();} selected
+        xywh {10 70 321 25} selection_color 48 align 1 when 8 textcolor 32
+      }
+      Fl_Value_Slider instrument_volume_slider {
+        label {Volume %}
+        xywh {10 112 321 27} type Horizontal align 1 maximum 100 step 1 textsize 14
+      }
+      Fl_Value_Output instrument_note_field {
+        label {Note:}
+        xywh {52 158 43 24}
+      }
+      Fl_Return_Button {} {
+        label Done
+        callback {instrument_edit_dialog->hide();}
+        xywh {255 157 76 25}
+      }
+    }
+  }
+  Function {update_pattern_widgets()} {open
+  } {
     code {if ( ! pattern_settings_group )
 	return;
 	
@@ -1267,6 +1298,20 @@ if ( p )
 	
 //	update_pattern_widgets();
 }} {}
+  }
+  Function {edit_instrument_row( Instrument *i, int n )} {open return_type void
+  } {
+    code {instrument_note_field->value( n );
+instrument_name_field->value( i->note_name( n ) );
+instrument_volume_slider->value( i->velocity( n ) );
+
+instrument_edit_dialog->show();
+
+while( instrument_edit_dialog->shown() )
+	Fl::wait();
+	
+i->note_name( n, strdup( instrument_name_field->value() ) );
+i->velocity( n, instrument_volume_slider->value() );} {}
   }
 } 
 
@@ -1549,7 +1594,7 @@ return r;} {}
   }
 } 
 
-widget_class Triggers {open
+widget_class Triggers {
   xywh {121 31 1278 1003} type Double hide resizable
   code0 {populate();}
   code1 {\#include <Fl/Fl_Dial.H>}

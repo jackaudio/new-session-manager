@@ -95,8 +95,8 @@ class Canvas : public trackable
         uint p1, p2;                                             /* cursors */
     } m;
 
-    int rtn ( int r );
-    int ntr ( int n );
+    int rtn ( int r ) const;
+    int ntr ( int n ) const;
 
     void _update_row_mapping ( void );
     cell_t ** _alloc_array ( void );
@@ -139,7 +139,8 @@ public:
     int draw_playhead ( void );
     void draw ( void );
     void redraw ( void );
-    bool grid_pos ( int *x, int *y );
+    bool grid_pos ( int *x, int *y ) const;
+    int is_row_name ( int x, int y );
     void unset ( int x, int y );
     void adj_color ( int x, int y, int n );
     void adj_length ( int x, int y, int n );
@@ -163,13 +164,13 @@ public:
 };
 
 inline int
-Canvas::rtn ( int r )
+Canvas::rtn ( int r ) const
 {
     return m.row_compact ? m.rtn[ r ] : r;
 }
 
 inline int
-Canvas::ntr ( int n )
+Canvas::ntr ( int n ) const
 {
     return m.row_compact ? m.ntr[ n ] : n;
 }

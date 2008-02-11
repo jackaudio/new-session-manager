@@ -157,3 +157,10 @@ Mapping::type ( void ) const
 {
     return IS_INSTRUMENT ? "Instrument" : "Scale";
 }
+
+
+bool
+Mapping::editable ( void ) const
+{
+    return IS_INSTRUMENT ? true : false;
+}

@@ -26,9 +26,25 @@
 #include "const.h"
 #include "config.h"
 
+#include "non.H"
+
 #include <fnmatch.h>
 #include <dirent.h>
 
+/******
+   Instrument definition file format is thus:
+
+   "Name", n, v
+
+   Where /n/ is a note number from 0 to 127 and /v/ is a percentage of
+   volume.
+
+   When a system installed instrument definition is modified, the
+   modified version is saved in the user's $HOME. Therefore, when
+   loading instruments, user defined instruments always hide system
+   defined instruments of the same name.
+
+ */
 
 list <Instrument *> Instrument::instruments;
 
@@ -72,13 +88,6 @@ Instrument::open ( const char *name )
 }
 
 void
-Instrument::note ( int from, int to )
-{
-//    _map[ from ].note = to;
-    WARNING( "what should this do now?" );
-}
-
-void
 Instrument::note_name ( int n, char *s )
 {
     if ( _map[ n ].name )
@@ -97,9 +106,6 @@ Instrument::velocity ( int n, int v )
 void
 Instrument::translate ( midievent *e ) const
 {
-//    int n = e->note();
-
-//    e->note( _map[ n ].note );
     e->note_velocity( e->note_velocity() * _map[ e->note() ].velocity / 100 );
 }
 
@@ -121,7 +127,7 @@ Instrument::velocity ( int n ) const
     return _map[ n ].velocity;
 }
 
-int
+bool
 Instrument::read ( const char *s )
 {
     FILE *fp;
@@ -161,12 +167,39 @@ Instrument::read ( const char *s )
 
         DEBUG( "name: \"%s\", note: %d, velocity: %d%%", m.name, note, m.velocity );
 
-//        _map[ (64 + (n / 2)) - i ] = m;
-
         _map[ note ] = m;
     }
 
     _height = n;
+
+    fclose( fp );
+
+    return true;
+}
+
+bool
+Instrument::write ( const char *s ) const
+{
+    FILE *fp;
+
+    char pat[512];
+
+    sprintf( pat, "%s/%s%s.inst", config.user_config_dir, INSTRUMENT_DIR, s );
+
+    if ( ! ( fp = fopen( pat, "w" ) ) )
+        return false;
+
+    int n = 0;
+    for ( int i = 0; i < 127; ++i )
+    {
+        if ( _map[ i ].name )
+        {
+            fprintf( fp, "\"%s\", %d, %d\n", _map[ i ].name, i, _map[ i ].velocity );
+            ++n;
+        }
+    }
+
+    DEBUG( "wrote %d lines to instrument file \"%s\"", n, pat );
 
     fclose( fp );
 

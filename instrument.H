@@ -40,7 +40,8 @@ class Instrument
     struct i_map _map[128];                                     /* note / velocity mappings */
 
     Instrument ( const char *name );
-    int read ( const char *s );
+    bool read ( const char *s );
+    bool write ( const char *s ) const;
 
 public:
 

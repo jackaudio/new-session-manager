@@ -18,6 +18,9 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "non.H"
 // #include "gui/input.H"
 #include "gui/ui.H"
@@ -26,6 +29,8 @@
 
 #include "pattern.H"
 #include "phrase.H"
+
+
 
 Canvas *pattern_c, *phrase_c, *trigger_c;
 
@@ -133,6 +138,16 @@ main ( int argc, char **argv )
     song.play_mode = PATTERN;
     song.random.feel = 8;
     song.random.probability = 0.33;
+
+    asprintf( &config.user_config_dir, "%s/%s", getenv( "HOME" ), USER_CONFIG_DIR );
+
+
+    mkdir( config.user_config_dir, 0777 );
+    {
+        char pat[512];
+        snprintf( pat, 512, "%s/%s", config.user_config_dir, INSTRUMENT_DIR );
+        mkdir( pat, 0777 );
+    }
 
     printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
 

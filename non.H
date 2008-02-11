@@ -73,6 +73,8 @@ struct global_settings {
     bool visual_metronome;                                      /* show visual metronome */
     bool follow_playhead;
 
+    char *user_config_dir;
+
 };
 extern global_settings config;
 

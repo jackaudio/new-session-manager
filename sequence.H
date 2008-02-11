@@ -47,6 +47,9 @@ class sequence : public trackable {
     char * _name;
     char * _notes;
 
+    mutable volatile int _playing;
+    mutable volatile tick_t _index;
+
     void lock ( void );
     void unlock ( void );
 
@@ -65,11 +68,14 @@ public:
     void insert ( unsigned int n, int pn );
     void remove ( int n );
     void move ( int n, int dir );
-    int length ( void ) const;
+    int phrases ( void ) const;
     char * dump ( void );
     bool load ( const char *name );
     void save ( const char *name ) const;
     void play ( tick_t start, tick_t end ) const;
+    int playing ( void ) const;
+    tick_t index ( void ) const;
+    tick_t length ( void ) const;
 
     char * name ( void ) const;
     void name ( const char *s );

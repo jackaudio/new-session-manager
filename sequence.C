@@ -112,8 +112,9 @@ sequence::remove ( int n )
     unlock();
 }
 
+/** return the number of phrases in this sequence */
 int
-sequence::length ( void ) const
+sequence::phrases ( void ) const
 {
     return _rd->num;
 }
@@ -204,6 +205,10 @@ sequence::play ( tick_t start, tick_t end ) const
             if ( pend > start )
             {
                 // FIXME: don't really need to trigger more than once!
+                _playing = p->number();
+
+                _index = start;
+
                 p->trigger( pstart, pend );
                 p->play( start, end );
                 break;
@@ -214,6 +219,39 @@ sequence::play ( tick_t start, tick_t end ) const
         else
             WARNING( "programming error: no such phrase." );
     }
+}
+
+/** return the number of the currently playing phrase, or 0 if none. */
+int
+sequence::playing ( void ) const
+{
+    return _playing;
+}
+
+/** return the location of the playhead for this sequence */
+tick_t
+sequence::index ( void ) const
+{
+    return _index;
+}
+
+/** return the total length of the sequence in ticks */
+tick_t
+sequence::length ( void ) const
+{
+    tick_t l = 0;
+
+    for ( int i = 0; i < _rd->num; i++ )
+    {
+        phrase *p = phrase::phrase_by_number( _rd->phrases[ i ] );
+
+        if ( ! p )
+            break;
+
+        l += p->length();
+    }
+
+    return l;
 }
 
 /** return to a blank slate */

@@ -21,6 +21,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+
 #include "transport.H"
 #include "common.h"
 #include "const.h"
@@ -46,6 +48,9 @@ Transport::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack
     pos->beat_type = transport._master_beat_type;
 
     pos->beats_per_minute = transport._master_beats_per_minute;
+
+
+    // FIXME: there's some problem with relocation when we're the master...
 
     if ( new_pos || ! _done )
     {
@@ -168,8 +173,11 @@ Transport::toggle ( void )
 void
 Transport::locate ( tick_t ticks )
 {
-    MESSAGE( "Relocating transport" );
-    jack_transport_locate( client, ticks );
+    jack_nframes_t frame = trunc( ticks * transport.frames_per_tick );
+
+    MESSAGE( "Relocating transport to %lu, %lu", ticks, frame );
+
+    jack_transport_locate( client, frame );
 }
 
 void

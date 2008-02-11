@@ -55,6 +55,8 @@ handle_midi_input();
 
 lash.process();
 
+ui->progress_group->do_callback();
+
 ui->vmetro_widget->update();	
 
 if ( transport.rolling )
@@ -134,7 +136,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {635 48 869 801} type Single box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
+      xywh {790 38 869 801} type Single box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
     } {
       Fl_Menu_Bar {} {open
         xywh {0 0 869 30} color 37
@@ -381,11 +383,11 @@ if ( o->value() == pattern_tab )
       } {
         Fl_Group sequence_tab {
           label Sequence open
-          xywh {0 98 868 674} color 37 hide resizable
+          xywh {0 98 868 674} color 37 resizable
           code0 {update_sequence_widgets();}
         } {
           Fl_Group {} {open
-            xywh {10 125 233 502}
+            xywh {10 125 233 502} labelsize 12
           } {
             Fl_Browser playlist_browser {
               label Playlist
@@ -449,7 +451,7 @@ else
           Fl_Input sequence_name_field {
             label {name:}
             callback {playlist->name( o->value() );}
-            xywh {9 635 151 26} color 36 align 20 when 1 textcolor 32
+            xywh {91 740 158 26} color 36 align 20 when 1 textcolor 32
           }
           Fl_Light_Button detach_button {
             label Detach
@@ -466,12 +468,12 @@ else
 	tabs->insert( (Fl_Widget&)*sequence_tab, 0 );
 	sequence_tab->resize( pattern_tab->x(), pattern_tab->y(), pattern_tab->w(), pattern_tab->h() );
 }}
-            xywh {165 639 78 26}
+            xywh {7 740 78 26}
           }
           Fl_Text_Editor sequence_notes_edit {
             label {Notes:}
             callback {playlist->notes( o->buffer()->text() );}
-            xywh {16 686 844 78} selection_color 48 labelsize 12 align 5 textcolor 94
+            xywh {254 691 606 73} selection_color 48 labelsize 12 align 5 textcolor 94
             code0 {o->buffer( sequence_notes_buffer = new Fl_Text_Buffer );}
           }
           Fl_Box triggers_widget {
@@ -479,6 +481,29 @@ else
             xywh {253 125 607 549} box UP_BOX color 72 align 1 resizable
             code0 {o->box( FL_NO_BOX );}
             class Triggers
+          }
+          Fl_Group progress_group {
+            callback {if ( ! o->visible_r() )
+	return;
+
+phrase *p = phrase::phrase_by_number( playlist->playing() );
+
+if ( p )
+	phrase_progress->value( p->index() / (double)p->length() );
+	
+if ( playlist->length() )
+	sequence_progress->value( playlist->index() / (double)playlist->length() );} open
+            xywh {10 656 233 66}
+          } {
+            Fl_Slider phrase_progress {
+              label Phrase
+              xywh {10 656 233 24} type Horizontal labelsize 12 align 1
+            }
+            Fl_Slider sequence_progress {
+              label Sequence
+              callback {transport.locate( (tick_t)((double)playlist->length() * o->value()) );} selected
+              xywh {10 698 233 24} type Horizontal labelsize 12 align 1
+            }
           }
         }
         Fl_Group phrase_tab {
@@ -531,7 +556,7 @@ o->maximum( phrase::phrases() );}
         }
         Fl_Group pattern_tab {
           label Pattern open
-          xywh {0 98 868 674} color 37
+          xywh {0 98 868 674} color 37 hide
           code0 {update_pattern_widgets();}
         } {
           Fl_Box pattern_canvas_widget {
@@ -636,7 +661,7 @@ if ( 0 == strncmp( picked, "Scale", strlen( "Scale" ) ) )
 	pattern_c->changed_mapping();
 
 	pattern_key_combo->activate();
-}} open selected
+}} open
                 xywh {609 734 30 24} labeltype NO_LABEL
                 code0 {update_mapping_menu();}
               } {
@@ -1074,7 +1099,8 @@ if ( g->notes() )
 else
 	phrase_notes_buffer->text( strdup( "" ) );} {}
   }
-  Function {update_sequence_widgets()} {} {
+  Function {update_sequence_widgets()} {open
+  } {
     code {if ( playlist->notes() )
 	sequence_notes_buffer->text( playlist->notes() );
 else

@@ -36,6 +36,7 @@ class Instrument
 
     char *_name;
     int _height;
+    mutable bool _dirty;
 
     struct i_map _map[128];                                     /* note / velocity mappings */
 
@@ -59,5 +60,7 @@ public:
     int height ( void ) const;
     const char * name ( void ) const;
     int velocity ( int n ) const;
+
+    void save ( void ) const;
 
 };

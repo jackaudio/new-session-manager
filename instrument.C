@@ -101,12 +101,16 @@ Instrument::note_name ( int n, char *s )
         free( _map[ n ].name );
 
     _map[ n ].name = s;
+
+    _dirty = true;
 }
 
 void
 Instrument::velocity ( int n, int v )
 {
     _map[ n ].velocity = v;
+
+    _dirty = true;
 }
 
 /* Should only be passed NOTE ON/OFF events! */
@@ -217,6 +221,15 @@ Instrument::write ( const char *s ) const
     fclose( fp );
 
     return true;
+}
+
+void
+Instrument::save ( void ) const
+{
+    if ( _dirty )
+        write( _name );
+
+    _dirty = false;
 }
 
 static int

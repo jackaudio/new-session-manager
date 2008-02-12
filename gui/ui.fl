@@ -137,7 +137,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {773 244 869 801} type Single box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
+      xywh {699 154 869 801} type Single box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
     } {
       Fl_Menu_Bar {} {open
         xywh {0 0 869 30} color 37
@@ -1017,7 +1017,7 @@ You should have received a copy of the GNU General Public License along with thi
   Function {make_randomization_dialog()} {} {
     Fl_Window randomization_dialog {
       label {Randomization Settings} open
-      xywh {740 128 342 98} type Double
+      xywh {656 39 342 98} type Double
       code0 {// feel->value( )}
       code1 {probability->value( song.random.probability );} non_modal visible
     } {
@@ -1054,7 +1054,7 @@ You should have received a copy of the GNU General Public License along with thi
   } {
     Fl_Window instrument_edit_dialog {
       label {Instrument Edit} open
-      xywh {669 299 338 191} type Double modal visible
+      xywh {1006 27 338 191} type Double modal visible
     } {
       Fl_Box {} {
         label {Instrument Row}
@@ -1062,7 +1062,7 @@ You should have received a copy of the GNU General Public License along with thi
       }
       Fl_Input instrument_name_field {
         label Name
-        callback {instrument_edit_dialog->hide();} selected
+        callback {instrument_edit_dialog->hide();}
         xywh {10 70 321 25} selection_color 48 align 1 when 8 textcolor 32
       }
       Fl_Value_Slider instrument_volume_slider {
@@ -1311,7 +1311,11 @@ while( instrument_edit_dialog->shown() )
 	Fl::wait();
 	
 i->note_name( n, strdup( instrument_name_field->value() ) );
-i->velocity( n, instrument_volume_slider->value() );} {}
+i->velocity( n, instrument_volume_slider->value() );
+
+
+i->save();} {selected
+    }
   }
 } 
 

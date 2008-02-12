@@ -5,7 +5,6 @@
 
 ; General
 
-* show playback progress on playlist.
 * per phrase tempo setting? Perhaps a percentage of global tempo?
 * add channel field to event list widget (but channel bits in pattern
    event lists are currently meaningless.)

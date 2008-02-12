@@ -150,7 +150,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {694 168 869 801} type Single box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
+      xywh {694 168 869 801} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
@@ -563,7 +563,7 @@ o->maximum( phrase::phrases() );}
             code0 {\#include "draw.H"}
             code1 {o->set_canvas( pattern_c );}
             code2 {\#include "input.H"}
-            code3 {o->box( FL_NO_BOX );}
+            code3 {// o->box( FL_NO_BOX );}
             class O_Canvas
           }
           Fl_Group {} {open
@@ -955,7 +955,7 @@ else
           }
         }
       }
-      Fl_Output status {selected
+      Fl_Output status {
         xywh {0 776 869 25} box UP_BOX color 32 labeltype NO_LABEL textcolor 55
       }
     }
@@ -1278,169 +1278,7 @@ ie.run();} {}
   }
 } 
 
-decl {\#include <Fl/Fl_Single_Window.H>} {public
-} 
-
-class O_Canvas {: {public Fl_Widget}
-} {
-  decl {Canvas *_c;} {}
-  decl {bool _border_drawn;} {}
-  decl {uint _flags;} {}
-  Function {O_Canvas( int X, int Y, int W, int H, const char*L=0) : Fl_Widget(X,Y,W,H,L)} {open
-  } {
-    code {_c = NULL;
-_border_drawn = false;
-_flags = 0;} {}
-  }
-  Function {handle( int m )} {open return_type int
-  } {
-    code {// Accept focus if offered.
-if ( m == FL_FOCUS || m == FL_UNFOCUS )
-{
-	_border_drawn = false;
-	draw_playhead();
-	return 1;
-}
-
-// Hack in click-to-focus
-if ( m == FL_PUSH )
-	if ( Fl::event_inside( this ) )
-		take_focus();
-
-
-// Ignore events unless we have the focus.
-if ( this != Fl::focus() )
-	return 0;
-
-// MESSAGE( "got event %i for canvas %p", m, _c );
-
-int p = 0;
-
-if ( _c )
-	{
-		p = canvas_input_callback( this, _c, m );
-	}
-
-return p;} {}
-  }
-  Function {resize( int x, int y, int w, int h )} {open
-  } {
-    code {if ( _c )
-{
-	DEBUG( "Resizing canvas." );
-	_c->resize( x + 1, y + 1, w - 1, h - 1 );
-}
-
-Fl_Widget::resize( x, y, w, h );
-
-// Fl_Window::resize( x, y, w, h );} {}
-  }
-  Function {draw()} {open return_type void
-  } {
-    code {draw_border();
-
-if ( ! takesevents() )
-	return;
-
-if ( _c )
-{
-
-	damage( _flags );
-	_flags = 0;
-	
-	/*
-	if ( damage() & FL_DAMAGE_ALL ) printf( " damage_all" );
-	if ( damage() & FL_DAMAGE_SCROLL ) printf( " damage_scroll" );
-	if ( damage() & FL_DAMAGE_USER1 ) printf( " damage_user1" );
-	if ( damage() & FL_DAMAGE_USER2 ) printf( " damage_user2" );
-	if ( damage() & FL_DAMAGE_EXPOSE ) printf(  " damage_expose" );
-	printf("\\n");
-	*/
-
-
-	if ( damage() & (FL_DAMAGE_ALL | FL_DAMAGE_USER2) )
-	{
-		_c->redraw();
-	}
-	
-	
-	if ( damage() & (FL_DAMAGE_ALL | FL_DAMAGE_SCROLL) )
-	{
-		// optimized draw
-		_c->draw();
-	}
-	else
-	if ( damage() & (FL_DAMAGE_ALL | FL_DAMAGE_USER1) )
-	{
-		// playhead
-		_c->draw_playhead();
-	}
-	else
-	if ( damage() & FL_DAMAGE_ALL )
-	{
-		_border_drawn = false;
-		draw_border();
-		_c->redraw();
-	}
-}
-else
-{
-	WARNING( "No canvas set for widget." );
-}} {}
-  }
-  Function {set_canvas( Canvas *c )} {open
-  } {
-    code {_c = c;
-
-_c->resize( x(), y(), w(), h() );
-
-_c->signal_draw.connect( sigc::mem_fun( this, &O_Canvas::draw_notes ) );
-_c->signal_resize.connect( sigc::mem_fun( this, &O_Canvas::clear ) );
-
-_c->signal_settings_change.connect( sigc::ptr_fun( &UI::update_canvas_widgets ) );} {}
-  }
-  Function {click_to_focus()} {open return_type bool
-  } {
-    code {return true;} {}
-  }
-  Function {clear( void )} {open return_type void
-  } {
-    code {parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
-damage( FL_DAMAGE_USER2 );
-
-_flags |= FL_DAMAGE_USER2;} {}
-  }
-  Function {draw_notes( void )} {open return_type void
-  } {
-    code {damage( FL_DAMAGE_SCROLL );
-
-// this might be called from within draw(), in which case the above does nothing.
-
-_flags |= FL_DAMAGE_SCROLL;} {}
-  }
-  Function {draw_playhead( void )} {open return_type void
-  } {
-    code {damage( FL_DAMAGE_USER1 );} {}
-  }
-  Function {draw_border()} {open return_type void
-  } {
-    code {if ( _border_drawn )
-	return;
-
-if ( this != Fl::focus() )
-	fl_color( FL_RED );
-else
-	fl_color( FL_BLACK );
-	
-fl_line_style( FL_DASH );
-fl_rect( x(), y(), w(), h() );
-fl_line_style( FL_SOLID );
-
-_border_drawn = true;} {}
-  }
-} 
-
-Function {shortcut_handler( int e )} {open return_type int
+Function {shortcut_handler( int e )} {return_type int
 } {
   code {if ( e != FL_SHORTCUT )
 	return 0;
@@ -1489,7 +1327,185 @@ int processed = 0;
 return processed;} {}
 } 
 
-class Trigger {open : {public Fl_Dial}
+decl {\#include <FL/Fl_Single_Window.H>} {public
+} 
+
+class O_Canvas {open : {public Fl_Single_Window}
+} {
+  decl {Canvas *_c;} {}
+  decl {bool _border_drawn;} {}
+  decl {uint _flags;} {}
+  Function {O_Canvas( int X, int Y, int W, int H, const char*L=0) : Fl_Single_Window(X,Y,W,H,L)} {open
+  } {
+    code {_c = NULL;
+_border_drawn = false;
+_flags = 0;
+
+end();} {}
+  }
+  Function {handle( int m )} {open return_type int
+  } {
+    code {// Accept focus if offered.
+if ( m == FL_FOCUS || m == FL_UNFOCUS )
+{
+	_border_drawn = false;
+	draw_playhead();
+	return 1;
+}
+
+// Hack in click-to-focus
+if ( m == FL_PUSH )
+	if ( Fl::event_inside( this ) )
+		take_focus();
+
+
+if ( Fl_Window::handle( m ) )
+	return 1;
+
+// Ignore events unless we have the focus.
+if ( this != Fl::focus() )
+	return 0;
+
+// MESSAGE( "got event %i for canvas %p", m, _c );
+
+int p = 0;
+
+if ( _c )
+	{
+		p = canvas_input_callback( this, _c, m );
+	}
+
+return p;} {}
+  }
+  Function {resize( int x, int y, int w, int h )} {open
+  } {
+    code {Fl_Window::resize( x, y, w, h );
+
+if ( _c )
+{
+	DEBUG( "Resizing canvas." );
+	_c->resize( 0 + 1, 0 + 1, w - 1, h - 1 );
+}
+
+
+// Fl_Window::resize( x, y, w, h );} {}
+  }
+  Function {draw()} {open return_type void
+  } {
+    code {draw_border();
+
+//if ( ! takesevents() )
+//	return;
+
+if ( _c )
+{
+
+	damage( _flags );
+	_flags = 0;
+	
+	/*
+	if ( damage() & FL_DAMAGE_ALL ) printf( " damage_all" );
+	if ( damage() & FL_DAMAGE_SCROLL ) printf( " damage_scroll" );
+	if ( damage() & FL_DAMAGE_USER1 ) printf( " damage_user1" );
+	if ( damage() & FL_DAMAGE_USER2 ) printf( " damage_user2" );
+	if ( damage() & FL_DAMAGE_EXPOSE ) printf(  " damage_expose" );
+	printf("\\n");
+	*/
+
+	if ( damage() & FL_DAMAGE_EXPOSE )
+	{
+		draw_box( FL_FLAT_BOX, 0, 0, w(), h(), canvas_background_color );
+		_c->redraw();
+		return;
+	}
+	
+	if ( damage() & (FL_DAMAGE_ALL | FL_DAMAGE_USER2) )
+	{
+		draw_box( FL_FLAT_BOX, 0, 0, w(), h(), canvas_background_color );
+		_c->redraw();
+	}
+	
+	
+	if ( damage() & (FL_DAMAGE_ALL | FL_DAMAGE_SCROLL) )
+	{
+		// optimized draw
+		_c->draw();
+	}
+	else
+	if ( damage() & (FL_DAMAGE_ALL | FL_DAMAGE_USER1) )
+	{
+		// playhead
+		_c->draw_playhead();
+	}
+	else
+	if ( damage() & FL_DAMAGE_ALL )
+	{
+		draw_box( FL_FLAT_BOX, 0, 0, w(), h(), canvas_background_color );
+		_border_drawn = false;
+		draw_border();
+		_c->redraw();
+		
+	}
+}
+else
+{
+	WARNING( "No canvas set for widget." );
+}} {selected
+    }
+  }
+  Function {set_canvas( Canvas *c )} {open
+  } {
+    code {_c = c;
+
+_c->resize( x(), y(), w(), h() );
+
+_c->signal_draw.connect( sigc::mem_fun( this, &O_Canvas::draw_notes ) );
+_c->signal_resize.connect( sigc::mem_fun( this, &O_Canvas::clear ) );
+
+_c->signal_settings_change.connect( sigc::ptr_fun( &UI::update_canvas_widgets ) );} {}
+  }
+  Function {click_to_focus()} {open return_type bool
+  } {
+    code {return true;} {}
+  }
+  Function {clear( void )} {open return_type void
+  } {
+    code {// parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
+damage( FL_DAMAGE_USER2 );
+
+_flags |= FL_DAMAGE_USER2;} {}
+  }
+  Function {draw_notes( void )} {open return_type void
+  } {
+    code {damage( FL_DAMAGE_SCROLL );
+
+// this might be called from within draw(), in which case the above does nothing.
+
+_flags |= FL_DAMAGE_SCROLL;} {}
+  }
+  Function {draw_playhead( void )} {open return_type void
+  } {
+    code {damage( FL_DAMAGE_USER1 );} {}
+  }
+  Function {draw_border()} {open return_type void
+  } {
+    code {if ( _border_drawn )
+	return;
+
+if ( this != Fl::focus() )
+	fl_color( FL_RED );
+else
+	fl_color( FL_BLACK );
+	
+fl_line_style( FL_DASH );
+fl_rect( 0, 0, w(), h() );
+fl_line_style( FL_SOLID );
+
+_border_drawn = true;} {}
+  }
+} 
+
+class Trigger {: {public Fl_Dial}
 } {
   Function {Trigger( int X, int Y, int W, int H, const char *L = 0 ) : Fl_Dial( X, Y, W, H, L )} {open
   } {}
@@ -1558,8 +1574,7 @@ return r;} {}
   }
 } 
 
-class Instrument_Editor {open
-} {
+class Instrument_Editor {} {
   Function {Instrument_Editor()} {open return_type void
   } {
     code {make_window();} {}

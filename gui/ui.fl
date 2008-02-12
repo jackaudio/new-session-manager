@@ -86,7 +86,7 @@ if ( transport.rolling )
 }} {}
 } 
 
-class UI {open selected
+class UI {open
 } {
   decl {Fl_Text_Buffer *sequence_notes_buffer;} {}
   decl {Fl_Text_Buffer *pattern_notes_buffer;} {}
@@ -140,7 +140,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {699 154 869 801} type Single box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
+      xywh {694 168 869 801} type Single box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
     } {
       Fl_Menu_Bar {} {open
         xywh {0 0 869 30} color 37
@@ -298,20 +298,13 @@ if ( tabs->value() == pattern_tab )
             xywh {0 0 40 25} shortcut 0x40071 color 37
           }
         }
-        Submenu {} {
+        Submenu edit_menu {
           label {&Edit} open
           xywh {0 0 74 25} color 37
         } {
           MenuItem {} {
-            label {&Mapping}
-            xywh {5 5 40 25} color 37
-          }
-          MenuItem {} {
             label {&Events}
-            callback {if ( tabs->value() != pattern_tab )
-	return;
-
-event_editor( pattern_c->grid() );}
+            callback {event_editor( pattern_c->grid() );} selected
             xywh {0 0 40 25}
           }
           MenuItem {} {
@@ -373,15 +366,15 @@ about_popup->show();}
         }
       }
       Fl_Tabs tabs {
-        callback {// give this tab's canvas the focus
-//if ( o->value() == sequence_tab )
-//	sequence_canvas_widget->take_focus();
-//else
-if ( o->value() == phrase_tab )
-	phrase_canvas_widget->take_focus();
+        callback {((Fl_Group*)o->value())->child( 0 )->take_focus();
+
+
+if ( o->value() != pattern_tab )
+	edit_menu->deactivate();
 else
-if ( o->value() == pattern_tab )
-	pattern_canvas_widget->take_focus();} open
+	edit_menu->activate();
+	
+DEBUG( "tabs callback:" );} open
         xywh {0 76 868 701} color 37 labeltype SHADOW_LABEL labelsize 19 when 1
         code0 {canvas_background_color = fl_rgb_color( 18, 18, 18 );}
       } {
@@ -1285,7 +1278,7 @@ ie.run();} {}
 decl {\#include <Fl/Fl_Single_Window.H>} {public
 } 
 
-class O_Canvas {open : {public Fl_Widget}
+class O_Canvas {: {public Fl_Widget}
 } {
   decl {Canvas *_c;} {}
   decl {bool _border_drawn;} {}
@@ -1464,18 +1457,19 @@ int processed = 0;
 	if KEY( FL_ALT + 's' )
 	{
 		ui->tabs->value( ui->sequence_tab );
+		ui->tabs->do_callback();
 	}
 	else
 	if KEY( FL_ALT + 'a' )
 	{
 		ui->tabs->value( ui->phrase_tab );
-		((Fl_Group*)ui->tabs->value())->child( 0 )->take_focus();
+		ui->tabs->do_callback();
 	}
 	else
 	if KEY( FL_ALT + 'p' )
 	{
 		ui->tabs->value( ui->pattern_tab );
-		((Fl_Group*)ui->tabs->value())->child( 0 )->take_focus();
+		ui->tabs->do_callback();
 	}
 	else
 	if KEY( FL_ALT + 'c' )

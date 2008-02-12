@@ -1335,7 +1335,7 @@ class O_Canvas {open : {public Fl_Double_Window}
   decl {Canvas *_c;} {}
   decl {bool _border_drawn;} {}
   decl {uint _flags;} {}
-  Function {O_Canvas( int X, int Y, int W, int H, const char*L=0) : Fl_Double_Window(X,Y,W,H,L)} {open selected
+  Function {O_Canvas( int X, int Y, int W, int H, const char*L=0) : Fl_Double_Window(X,Y,W,H,L)} {open
   } {
     code {_c = NULL;
 _border_drawn = false;
@@ -1379,7 +1379,7 @@ return p;} {}
   }
   Function {resize( int x, int y, int w, int h )} {open
   } {
-    code {Fl_Window::resize( x, y, w, h );
+    code {Fl_Double_Window::resize( x, y, w, h );
 
 if ( _c )
 {
@@ -1388,7 +1388,8 @@ if ( _c )
 }
 
 
-// Fl_Window::resize( x, y, w, h );} {}
+// Fl_Window::resize( x, y, w, h );} {selected
+    }
   }
   Function {draw()} {open return_type void
   } {

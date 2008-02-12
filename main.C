@@ -72,7 +72,7 @@ void
 init_song ( void )
 {
     song.filename = NULL;
-    song.dirty = false;
+    song.dirty( false );
 
     pattern_c->grid( NULL );
     phrase_c->grid( NULL );
@@ -124,7 +124,7 @@ save_song ( const char *name )
     playlist->save( name );
 
     song.filename = strdup( name );
-    song.dirty = false;
+    song.dirty( false );
 
     return true;
 }

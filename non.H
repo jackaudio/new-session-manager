@@ -85,7 +85,30 @@ struct song_settings
     enum play_mode_e play_mode;
 
     char *filename;
-    bool dirty;
+
+    signal <void> signal_dirty;                                 /* emitted when first dirtied */
+    signal <void> signal_clean;                                 /* emitted when first cleaned */
+
+    bool _dirty;
+
+    bool dirty ( void )
+        {
+            return _dirty;
+        }
+
+    void
+    dirty( bool b )
+        {
+            if ( _dirty != b )
+            {
+                _dirty = b;
+
+                if ( b )
+                    signal_dirty();
+                else
+                    signal_clean();
+            }
+        }
 
     struct {
         int feel;

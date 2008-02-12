@@ -72,6 +72,17 @@ if ( transport.rolling != oldstate )
 {
 	ui->play_button->label( transport.rolling ? "@square" : "@>" );
 	oldstate = transport.rolling;
+	
+	if ( transport.rolling )
+	{
+		ui->menu_new->deactivate();
+		ui->menu_open->deactivate();
+	}
+	else
+	{
+		ui->menu_new->activate();
+		ui->menu_open->activate();
+	}
 }
 
 // JUST A TEST
@@ -137,30 +148,20 @@ delete main_window;} {}
 if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	return;
 	 
-
 if ( maybe_save_song() )
 	quit();} open
       xywh {694 168 869 801} type Single box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
     } {
-      Fl_Menu_Bar {} {open
+      Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
       } {
         Submenu {} {
           label {&File} open
           xywh {0 0 100 20} color 37
         } {
-          MenuItem {} {
+          MenuItem menu_new {
             label {&New}
-            callback {if ( transport.rolling )
-{
-	fl_alert( "Can't make new file while the transport is running." );
-	return;
-}
-
-
-// FIXME: check for dirtiness and ask to save.
-
-if ( maybe_save_song() )
+            callback {if ( maybe_save_song() )
 {
 	init_song();
 
@@ -171,15 +172,9 @@ if ( maybe_save_song() )
 }}
             xywh {0 0 40 25}
           }
-          MenuItem {} {
+          MenuItem menu_open {
             label {&Open}
-            callback {if ( transport.rolling )
-{
-	fl_alert( "Can't open file while transport is rolling." );
-	return;
-}
-
-char *name = fl_file_chooser( "Open File", "Non Files (*.non)", NULL, 0 );
+            callback {char *name = fl_file_chooser( "Open File", "Non Files (*.non)", NULL, 0 );
 
 if ( name )
 {
@@ -195,10 +190,12 @@ if ( name )
 }}
             xywh {0 0 40 25} shortcut 0x4006f color 37
           }
-          MenuItem {} {
+          MenuItem menu_save {
             label {&Save}
-            callback {save_dialog( song.filename );}
-            xywh {0 0 40 25} shortcut 0x40073 color 37
+            callback {save_dialog( song.filename );} selected
+            xywh {0 0 40 25} shortcut 0x40073 color 37 deactivate
+            code0 {song.signal_dirty.connect( sigc::mem_fun( o, &Fl_Menu_Item::activate ) );}
+            code1 {song.signal_clean.connect( sigc::mem_fun( o, &Fl_Menu_Item::deactivate ) );}
           }
           MenuItem {} {
             label {Save &As}
@@ -304,7 +301,7 @@ if ( tabs->value() == pattern_tab )
         } {
           MenuItem {} {
             label {&Events}
-            callback {event_editor( pattern_c->grid() );} selected
+            callback {event_editor( pattern_c->grid() );}
             xywh {0 0 40 25}
           }
           MenuItem {} {
@@ -368,13 +365,12 @@ about_popup->show();}
       Fl_Tabs tabs {
         callback {((Fl_Group*)o->value())->child( 0 )->take_focus();
 
-
 if ( o->value() != pattern_tab )
 	edit_menu->deactivate();
 else
 	edit_menu->activate();
-	
-DEBUG( "tabs callback:" );} open
+
+menu_bar->redraw();} open
         xywh {0 76 868 701} color 37 labeltype SHADOW_LABEL labelsize 19 when 1
         code0 {canvas_background_color = fl_rgb_color( 18, 18, 18 );}
       } {
@@ -1228,7 +1224,7 @@ help->show();
   }
   Function {maybe_save_song()} {return_type bool
   } {
-    code {if ( song.dirty )
+    code {if ( song.dirty() )
 {
 	int c = fl_choice( "Song has been modified since last save. What shall I do?", "Cancel", "Save", "Discard" );
 

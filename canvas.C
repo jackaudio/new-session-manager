@@ -84,7 +84,8 @@ void
 Canvas::handle_event_change ( void )
 {
     /* mark the song as dirty and pass the signal on */
-    song.dirty = true;
+    song.dirty( true );
+
     signal_draw();
 }
 

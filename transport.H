@@ -21,13 +21,15 @@
 
 #include <sigc++/sigc++.h>
 
+using namespace sigc;
+
 #include "event.H" // just for tick_t
 
 #include <jack/transport.h>
 
 typedef double playhead_t;
 
-class Transport : public sigc::trackable {
+class Transport : public trackable {
 
     double _master_beats_per_minute;
     unsigned _master_beats_per_bar;
@@ -35,9 +37,9 @@ class Transport : public sigc::trackable {
 
 public:
 
-    sigc::signal <int, double> signal_tempo_change;
-    sigc::signal <int, double> signal_bpb_change;
-    sigc::signal <int, double> signal_beat_change;
+    signal <int, double> signal_tempo_change;
+    signal <int, double> signal_bpb_change;
+    signal <int, double> signal_beat_change;
 
     bool master;                                                /* are we driving the transport? */
     bool rolling;

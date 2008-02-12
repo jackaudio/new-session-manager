@@ -169,6 +169,9 @@ if ( maybe_save_song() )
 	update_pattern_widgets();
 	update_sequence_widgets();
 	update_phrase_widgets();
+	
+	
+	gui_status( "New song." );
 }}
             xywh {0 0 40 25}
           }
@@ -180,6 +183,8 @@ if ( name )
 {
 	if ( ! load_song( name ) )
 		fl_alert( "Could not load song!" );
+	else
+		gui_status( "Song opened." );
 	
 	update_sequence_widgets();
 	update_pattern_widgets();
@@ -192,7 +197,7 @@ if ( name )
           }
           MenuItem menu_save {
             label {&Save}
-            callback {save_dialog( song.filename );} selected
+            callback {save_dialog( song.filename );}
             xywh {0 0 40 25} shortcut 0x40073 color 37 deactivate
             code0 {song.signal_dirty.connect( sigc::mem_fun( o, &Fl_Menu_Item::activate ) );}
             code1 {song.signal_clean.connect( sigc::mem_fun( o, &Fl_Menu_Item::deactivate ) );}
@@ -950,8 +955,8 @@ else
           }
         }
       }
-      Fl_Output status {
-        xywh {3 776 861 21} box NO_BOX color 32 labeltype NO_LABEL textcolor 55
+      Fl_Output status {selected
+        xywh {0 776 869 25} box UP_BOX color 32 labeltype NO_LABEL textcolor 55
       }
     }
   }
@@ -1183,7 +1188,7 @@ if ( phrase_c->grid() )
 
 return 0;} {}
   }
-  Function {save_dialog( const char *name )} {return_type void
+  Function {save_dialog( const char *name )} {open return_type void
   } {
     code {if ( ! name )
 {
@@ -1203,7 +1208,9 @@ return 0;} {}
 }
 
 if ( ! save_song( name ) )
-	fl_alert( "Could not save song" );} {}
+	fl_alert( "Could not save song" );
+else
+	gui_status( "Saved." );} {}
   }
   Function {show_help_dialog( const char *file )} {return_type void
   } {
@@ -1222,7 +1229,7 @@ help->show();
 // FIXME: need to delete it somehow.
 //  help->show(1, argv);} {}
   }
-  Function {maybe_save_song()} {return_type bool
+  Function {maybe_save_song()} {open return_type bool
   } {
     code {if ( song.dirty() )
 {

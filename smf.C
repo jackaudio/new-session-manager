@@ -947,7 +947,6 @@ smf::track_listing ( void )
     int i;
 
     long where = ftell( _fp );
-    MESSAGE( "@ %lu", where );
 
     for ( i = 0; next_track(); ++i )
     {

@@ -10,9 +10,9 @@ DOCUMENT_PATH=$(PREFIX)/share/doc/non-sequencer/
 USE_LASH=1
 
 # Debugging
-# CFLAGS:=-O0 -ggdb -fno-omit-frame-pointer -Wall
+CFLAGS:=-O0 -ggdb -fno-omit-frame-pointer -Wall
 # Production
-CFLAGS:=-O3 -fomit-frame-pointer -DNDEBUG
+# CFLAGS:=-O3 -fomit-frame-pointer -DNDEBUG
 
 CFLAGS+=-DINSTALL_PREFIX=\"$(PREFIX)\" \
 	-DSYSTEM_PATH=\"$(SYSTEM_PATH)\" \

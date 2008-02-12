@@ -25,9 +25,6 @@
 
 #include "smf.H"
 
-#define RD ( _locked ? ASSERTION( "invalid read" ) : _rd )
-#define WR ( ! locked ? ASSERTION( "invalid write" ) : _wr )
-
 Grid::Grid ( void )
 {
     _name = NULL;
@@ -98,26 +95,6 @@ Grid::Grid ( const Grid &rhs )
     viewport = rhs.viewport;
 }
 
-#if 0
-const data *
-Grid::rd ( void )
-{
-    if ( _locked )
-        ASSERTION( "invalid read" );
-
-    return _rd;
-}
-
-data *
-Grid::wr ( void )
-{
-    if ( ! _locked )
-        ASSERTION( "invalid write" );
-
-    return _rw;
-}
-#endif
-
 void
 Grid::lock ( void )
 {
@@ -135,9 +112,6 @@ Grid::unlock ( void )
         if ( _history.size() > MAX_UNDO + 1 )
         {
             data *d = _history.front();
-
-            if ( d == _rw || d == _rd )
-                ASSERTION( "something bad has happend." );
 
             delete d;
 
@@ -662,8 +636,7 @@ Grid::draw ( Canvas *c, int bx, int by, int bw, int bh )
 
 
         tick_t ts = e->timestamp();
-        if ( ! e->link() )
-            ASSERTION( "wtf. note is not linked!" );
+        ASSERT( e->link(), "found a non-linked note" );
 
         tick_t tse = e->link()->timestamp();
 

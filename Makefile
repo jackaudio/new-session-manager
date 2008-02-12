@@ -10,16 +10,16 @@ DOCUMENT_PATH=$(PREFIX)/share/doc/non-sequencer/
 USE_LASH=1
 
 # Debugging
-CFLAGS:=-O0 -ggdb -fno-omit-frame-pointer -Wall
+# CFLAGS:=-O0 -ggdb -fno-omit-frame-pointer -Wall
 # Production
-# CFLAGS:=-O3 -fomit-frame-pointer -DNDEBUG
+CFLAGS:=-O3 -fomit-frame-pointer -DNDEBUG
 
 CFLAGS+=-DINSTALL_PREFIX=\"$(PREFIX)\" \
 	-DSYSTEM_PATH=\"$(SYSTEM_PATH)\" \
 	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\"
 
 CXXFLAGS:=$(CFLAGS) -fno-exceptions -fno-rtti `fltk-config --cxxflags` `pkg-config jack --atleast-version 0.105 || echo -DJACK_MIDI_PROTO_API` `pkg-config jack --cflags` `pkg-config --cflags sigc++-2.0`
-LIBS=`pkg-config --libs jack` `fltk-config --use-images --ldflags` `pkg-config --libs sigc++-2.0` 
+LIBS=`pkg-config --libs jack` `fltk-config --use-images --ldflags` `pkg-config --libs sigc++-2.0`
 
 ifeq ($(USE_LASH),1)
 	LIBS+=-llash
@@ -53,7 +53,7 @@ SRCS= \
 
 OBJS=$(SRCS:.C=.o)
 
-.PHONEY: all clean install 
+.PHONEY: all clean install
 
 all: non makedepend
 

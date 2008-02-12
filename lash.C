@@ -40,6 +40,8 @@ Lash::Lash ( )
 bool
 Lash::init ( int *argc, char ***argv )
 {
+    MESSAGE( "Initializing LASH" );
+
     if ( ! ( _client = lash_init( lash_extract_args( argc, argv ), APP_NAME,
                                   LASH_Config_File, LASH_PROTOCOL( 2, 0 ) ) ) )
         return false;

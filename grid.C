@@ -634,8 +634,8 @@ Grid::draw ( Canvas *c, int bx, int by, int bw, int bh )
         if ( ! e->is_note_on() )
             continue;
 
-
         tick_t ts = e->timestamp();
+
         ASSERT( e->link(), "found a non-linked note" );
 
         tick_t tse = e->link()->timestamp();

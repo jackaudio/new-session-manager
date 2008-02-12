@@ -100,7 +100,7 @@ warnf ( warning_t level,
 
 #ifndef NDEBUG
 #define DEBUG( fmt, args... ) warnf( W_MESSAGE, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args )
-#define ASSERT( pred, fmt, args... ) ( do { if ( ! (pred) )  warnf( W_ASSERTION, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmd, ## args );  abort(); } while ( 0 ) )
+#define ASSERT( pred, fmt, args... ) do { if ( ! (pred) ) { warnf( W_ASSERTION, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args ); abort(); } } while ( 0 )
 #else
 #define DEBUG( fmt, args... )
 #define ASSERT( pred, fmt, args... )

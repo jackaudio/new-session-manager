@@ -140,14 +140,7 @@ main ( int argc, char **argv )
     song.random.probability = 0.33;
 
     asprintf( &config.user_config_dir, "%s/%s", getenv( "HOME" ), USER_CONFIG_DIR );
-
-
     mkdir( config.user_config_dir, 0777 );
-    {
-        char pat[512];
-        snprintf( pat, 512, "%s/%s", config.user_config_dir, INSTRUMENT_DIR );
-        mkdir( pat, 0777 );
-    }
 
     printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
 

@@ -31,6 +31,13 @@
 #include <fnmatch.h>
 #include <dirent.h>
 
+
+#include <list>
+#include <string>
+
+using std::list;
+using std::string;
+
 /******
    Instrument definition file format is thus:
 
@@ -134,10 +141,16 @@ Instrument::read ( const char *s )
 
     char pat[512];
 
-    sprintf( pat, "%s%s.inst", SYSTEM_PATH INSTRUMENT_DIR, s );
+    sprintf( pat, "%s%s.inst", config.user_config_dir, s );
 
     if ( ! ( fp = fopen( pat, "r" ) ) )
-        return false;
+    {
+
+        sprintf( pat, "%s%s.inst", SYSTEM_PATH INSTRUMENT_DIR, s );
+
+        if ( ! ( fp = fopen( pat, "r" ) ) )
+            return false;
+    }
 
     struct i_map m;
     char namebuf[256];
@@ -184,7 +197,7 @@ Instrument::write ( const char *s ) const
 
     char pat[512];
 
-    sprintf( pat, "%s/%s%s.inst", config.user_config_dir, INSTRUMENT_DIR, s );
+    sprintf( pat, "%s/%s.inst", config.user_config_dir, s );
 
     if ( ! ( fp = fopen( pat, "w" ) ) )
         return false;
@@ -214,25 +227,22 @@ instrument_filter ( const struct dirent *d )
     return 0 == fnmatch( suffix, d->d_name, 0 );
 }
 
-/* Returns a list of available instruments */
-char **
-Instrument::listing ( void )
+static
+list <string> *
+get_listing( const char *dir )
 {
-    char **sa;
+    list <string> *sl = new list <string>;
 
     struct dirent **names;
     int n;
 
-    if ( 0 > ( n = scandir( SYSTEM_PATH INSTRUMENT_DIR, &names, instrument_filter, alphasort ) ) )
+    if ( 0 > ( n = scandir( dir, &names, instrument_filter, alphasort ) ) )
     {
         WARNING( "couldn't open instrument directory" );
         return NULL;
     }
     else
     {
-        sa = (char **)malloc( sizeof( char * ) * (n + 1) );
-        sa[n] = NULL;
-
         while (n--)
         {
             char *c = rindex( names[n]->d_name, '.' );
@@ -242,14 +252,43 @@ Instrument::listing ( void )
 
             MESSAGE( "found instrument: %s", names[n]->d_name );
 
-            sa[n] = strdup( names[n]->d_name );
+            string s( names[n]->d_name );
+
+            sl->push_back( s );
 
             free( names[n] );
         }
         free( names );
 
-        return sa;
+        return sl;
     }
+}
+
+/* Returns a list of available instruments */
+char **
+Instrument::listing ( void )
+{
+    list <string> *sys = get_listing( SYSTEM_PATH INSTRUMENT_DIR );
+    list <string> *usr = get_listing( config.user_config_dir );
+
+    usr->merge( *sys );
+    usr->unique();
+
+    usr->sort();
+
+    delete sys;
+
+    char **sa = (char**)malloc( usr->size() * sizeof( char * ) + 1 );
+
+    int i = 0;
+    for ( list <string>::iterator s = usr->begin(); s != usr->end(); s++, i++ )
+        sa[i] = strdup( s->c_str() );
+
+    sa[i] = NULL;
+
+    delete usr;
+
+    return sa;
 }
 
 const char *

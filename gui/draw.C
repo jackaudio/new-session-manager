@@ -217,6 +217,14 @@ gui_draw_shape ( int x, int y, int w, int h, int bw, int shape, int state, int f
 }
 
 extern UI *ui;
+
+static
+void
+clear_status ( void *arg )
+{
+    ui->status->value( "" );
+}
+
 /** inform the user of something via a status bar */
 void
 gui_status ( const char *fmt, ... )
@@ -233,4 +241,6 @@ gui_status ( const char *fmt, ... )
 	}
 
     ui->status->value( pat );
+
+    Fl::add_timeout( 5.0f, clear_status );
 }

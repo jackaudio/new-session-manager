@@ -1330,12 +1330,12 @@ return processed;} {}
 decl {\#include <FL/Fl_Single_Window.H>} {public
 } 
 
-class O_Canvas {open : {public Fl_Single_Window}
+class O_Canvas {open : {public Fl_Double_Window}
 } {
   decl {Canvas *_c;} {}
   decl {bool _border_drawn;} {}
   decl {uint _flags;} {}
-  Function {O_Canvas( int X, int Y, int W, int H, const char*L=0) : Fl_Single_Window(X,Y,W,H,L)} {open
+  Function {O_Canvas( int X, int Y, int W, int H, const char*L=0) : Fl_Double_Window(X,Y,W,H,L)} {open selected
   } {
     code {_c = NULL;
 _border_drawn = false;
@@ -1450,8 +1450,7 @@ if ( _c )
 else
 {
 	WARNING( "No canvas set for widget." );
-}} {selected
-    }
+}} {}
   }
   Function {set_canvas( Canvas *c )} {open
   } {

@@ -42,6 +42,8 @@ decl {class O_Canvas;} {}
 decl {class Triggers;} {public
 } 
 
+decl {class Instrument_Editor;} {} 
+
 decl {Fl_Color canvas_background_color;} {public
 } 
 
@@ -84,7 +86,7 @@ if ( transport.rolling )
 }} {}
 } 
 
-class UI {open
+class UI {open selected
 } {
   decl {Fl_Text_Buffer *sequence_notes_buffer;} {}
   decl {Fl_Text_Buffer *pattern_notes_buffer;} {}
@@ -103,7 +105,8 @@ main_window = make_main_window();
 seq_window = make_seq_window();
 
 make_randomization_dialog();
-make_instrument_edit_dialog();
+
+// make_instrument_edit_dialog();
 
 Fl::add_handler( shortcut_handler );
 
@@ -1050,36 +1053,6 @@ You should have received a copy of the GNU General Public License along with thi
       }
     }
   }
-  Function {make_instrument_edit_dialog()} {open
-  } {
-    Fl_Window instrument_edit_dialog {
-      label {Instrument Edit} open
-      xywh {1006 27 338 191} type Double modal visible
-    } {
-      Fl_Box {} {
-        label {Instrument Row}
-        xywh {8 15 321 28} box ROUNDED_BOX color 94 labelsize 22 labelcolor 39
-      }
-      Fl_Input instrument_name_field {
-        label Name
-        callback {instrument_edit_dialog->hide();}
-        xywh {10 70 321 25} selection_color 48 align 1 when 8 textcolor 32
-      }
-      Fl_Value_Slider instrument_volume_slider {
-        label {Volume %}
-        xywh {10 112 321 27} type Horizontal align 1 maximum 100 step 1 textsize 14
-      }
-      Fl_Value_Output instrument_note_field {
-        label {Note:}
-        xywh {52 158 43 24}
-      }
-      Fl_Return_Button {} {
-        label Done
-        callback {instrument_edit_dialog->hide();}
-        xywh {255 157 76 25}
-      }
-    }
-  }
   Function {update_pattern_widgets()} {open
   } {
     code {if ( ! pattern_settings_group )
@@ -1301,21 +1274,11 @@ if ( p )
   }
   Function {edit_instrument_row( Instrument *i, int n )} {open return_type void
   } {
-    code {instrument_note_field->value( n );
-instrument_name_field->value( i->note_name( n ) );
-instrument_volume_slider->value( i->velocity( n ) );
+    code {Instrument_Editor ie;
 
-instrument_edit_dialog->show();
+ie.set( i, n );
 
-while( instrument_edit_dialog->shown() )
-	Fl::wait();
-	
-i->note_name( n, strdup( instrument_name_field->value() ) );
-i->velocity( n, instrument_volume_slider->value() );
-
-
-i->save();} {selected
-    }
+ie.run();} {}
   }
 } 
 
@@ -1595,6 +1558,67 @@ switch ( m )
 
 
 return r;} {}
+  }
+} 
+
+class Instrument_Editor {open
+} {
+  Function {Instrument_Editor()} {open return_type void
+  } {
+    code {make_window();} {}
+  }
+  decl {Instrument *_inst;} {}
+  decl {int _note;} {}
+  Function {make_window()} {open
+  } {
+    Fl_Window window {
+      label {Instrument Editor}
+      callback {done->do_callback();} open
+      xywh {670 458 339 191} type Double visible
+    } {
+      Fl_Box {} {
+        label {Instrument Row}
+        xywh {8 15 321 28} box ROUNDED_BOX color 94 labelsize 22 labelcolor 39
+      }
+      Fl_Input name_field {
+        label Name
+        callback {_inst->note_name( _note, strdup( o->value() ) );}
+        xywh {10 70 321 25} selection_color 48 align 1 when 1 textcolor 32
+      }
+      Fl_Value_Slider volume_slider {
+        label {Volume %}
+        callback {_inst->velocity( _note, o->value() );}
+        xywh {10 112 321 27} type Horizontal align 1 maximum 100 step 1 textsize 14
+      }
+      Fl_Value_Output note_field {
+        label {Note:}
+        xywh {52 158 43 24}
+      }
+      Fl_Return_Button done {
+        label Done
+        callback {if ( _inst )
+	_inst->save();
+	
+window->hide();}
+        xywh {255 157 76 25}
+      }
+    }
+  }
+  Function {set( Instrument *i, int n )} {open return_type void
+  } {
+    code {_inst = i;
+_note = n;
+
+volume_slider->value( i->velocity( n ) );
+name_field->value( i->note_name( n ) );
+note_field->value( n );} {}
+  }
+  Function {run()} {open return_type void
+  } {
+    code {window->show();
+
+while ( window->shown() )
+	Fl::wait();} {}
   }
 } 
 

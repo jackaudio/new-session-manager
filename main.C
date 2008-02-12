@@ -152,6 +152,8 @@ main ( int argc, char **argv )
 
     init_song();
 
+    pattern::signal_create_destroy.connect( mem_fun( phrase_c,  &Canvas::v_zoom_fit ) );
+
     if ( ! lash.init( &argc, &argv ) )
         WARNING( "error initializing LASH" );
 

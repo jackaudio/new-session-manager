@@ -152,6 +152,7 @@ public:
     void pan ( int dir, int n );
     void h_zoom ( float n );
     void v_zoom ( float n );
+    void v_zoom_fit ( void );
     void notes ( char *s );
     char * notes ( void );
     void randomize_row ( int y );

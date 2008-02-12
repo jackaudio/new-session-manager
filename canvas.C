@@ -856,6 +856,20 @@ Canvas::h_zoom ( float n )
     resize_grid();
 }
 
+void
+Canvas::v_zoom_fit ( void )
+{
+    if ( ! m.grid )
+        return;
+
+    changed_mapping();
+
+    m.vp->h = m.maxh;
+    m.vp->y = 0;
+
+    resize_grid();
+}
+
 /** adjust vertical zoom (* n) */
 void
 Canvas::v_zoom ( float n )

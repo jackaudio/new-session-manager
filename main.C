@@ -113,8 +113,6 @@ load_song ( const char *name )
 
     song.filename = strdup( name );
 
-// TODO: signal song loaded.
-
     return true;
 }
 

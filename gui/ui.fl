@@ -1141,7 +1141,12 @@ while ( ( l = strtok( NULL, "\\n" ) ) )
 
 o->value( val );
 
-free( s );} {}
+free( s );
+
+
+if ( playback_mode_menu )
+	playback_mode_menu->value( song.play_mode );} {selected
+    }
   }
   Function {update_mapping_menu()} {open
   } {
@@ -1740,8 +1745,7 @@ for ( i = 0; i < MAX_PATTERN; i++ )
 		b->value( 0 );
 	}
 		
-}} {selected
-    }
+}} {}
   }
   Function {resize( int X, int Y, int W, int H )} {open return_type void
   } {

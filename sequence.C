@@ -31,7 +31,10 @@
 sequence::sequence ( void )
 {
     _rd = new data;
-    _notes = NULL;
+    _name = _notes = NULL;
+
+    _index = 0;
+    _playing = 0;
 }
 
 

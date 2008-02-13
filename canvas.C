@@ -63,10 +63,11 @@ Canvas::_alloc_array ( void )
 
 Canvas::Canvas ( )
 {
-    m.height = m.width = m.div_w = m.div_h = m.playhead = m.margin_top = m.margin_left = m.playhead = m.w = m.h = m.p1 = m.p2 = 0;
+    m.origin_x = m.origin_y = m.height = m.width = m.div_w = m.div_h = m.playhead = m.margin_top = m.margin_left = m.playhead = m.w = m.h = m.p1 = m.p2 = 0;
 
     m.margin_top = ruler_height;
 
+    m.draw = false;
     m.ruler_drawn = false;
     m.mapping_drawn = false;
     m.grid_drawn = false;
@@ -269,7 +270,7 @@ Canvas::copy ( void )
 void
 Canvas::_reset ( void )
 {
-    cell_t empty;
+    cell_t empty = {0,0,0,0};
 
     for ( uint y = m.vp->h; y-- ; )
         for ( uint x = m.vp->w; x-- ; )

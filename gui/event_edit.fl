@@ -48,7 +48,11 @@ _grid->events( _old );
 
 delete _old;
 
-delete window;} open
+_el = _old = NULL;
+
+o->hide();
+
+Fl::delete_widget( o );} open selected
       xywh {704 82 659 803} type Double box DOWN_BOX resizable
       code0 {\#include "event_edit.H"}
       code1 {\#include "../grid.H"}
@@ -244,8 +248,7 @@ else
 {
 	scroll_bar->hide();
 	scroll_w->size( scroll_w->parent()->w(), scroll_w->parent()->h() );
-}} {selected
-    }
+}} {}
   }
   Function {scroll( int y )} {open return_type void
   } {
@@ -291,6 +294,7 @@ while( w->shown() )
 widget_class Event_Widget {user_data_type {void *} open
   xywh {969 357 594 31} type Single
   code0 {\#include "../event.H"}
+  code1 {_event = NULL;}
   class Fl_Group size_range {400 24 0 24} visible
 } {
   decl {static const Fl_Color note_color = FL_BLACK;} {}
@@ -325,6 +329,8 @@ for ( int i = 2; i < children(); i++ )
 	child( i )->hide();
 
 Fl_Valuator *d1, *d2;
+
+d1 = d2 = NULL;
 
 name->color( FL_BLACK );
 name->value( e->selected() );

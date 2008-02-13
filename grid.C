@@ -51,6 +51,7 @@ Grid::Grid ( void )
     viewport.x = 0;
     viewport.y = 0;
 
+    _playing = false;
     _start = _end = _index = 0;
 }
 

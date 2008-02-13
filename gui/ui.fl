@@ -1388,8 +1388,7 @@ if ( _c )
 }
 
 
-// Fl_Window::resize( x, y, w, h );} {selected
-    }
+// Fl_Window::resize( x, y, w, h );} {}
   }
   Function {draw()} {open return_type void
   } {
@@ -1505,6 +1504,66 @@ _border_drawn = true;} {}
   }
 } 
 
+class Instrument_Editor {} {
+  Function {Instrument_Editor()} {open return_type void
+  } {
+    code {make_window();} {}
+  }
+  decl {Instrument *_inst;} {}
+  decl {int _note;} {}
+  Function {make_window()} {open
+  } {
+    Fl_Window window {
+      label {Instrument Editor}
+      callback {done->do_callback();} open
+      xywh {670 458 339 191} type Double visible
+    } {
+      Fl_Box {} {
+        label {Instrument Row}
+        xywh {8 15 321 28} box ROUNDED_BOX color 94 labelsize 22 labelcolor 39
+      }
+      Fl_Input name_field {
+        label Name
+        callback {_inst->note_name( _note, strdup( o->value() ) );}
+        xywh {10 70 321 25} selection_color 48 align 1 when 1 textcolor 32
+      }
+      Fl_Value_Slider volume_slider {
+        label {Volume %}
+        callback {_inst->velocity( _note, o->value() );}
+        xywh {10 112 321 27} type Horizontal align 1 maximum 100 step 1 textsize 14
+      }
+      Fl_Value_Output note_field {
+        label {Note:}
+        xywh {52 158 43 24}
+      }
+      Fl_Return_Button done {
+        label Done
+        callback {if ( _inst )
+	_inst->save();
+	
+window->hide();}
+        xywh {255 157 76 25}
+      }
+    }
+  }
+  Function {set( Instrument *i, int n )} {open return_type void
+  } {
+    code {_inst = i;
+_note = n;
+
+volume_slider->value( i->velocity( n ) );
+name_field->value( i->note_name( n ) );
+note_field->value( n );} {}
+  }
+  Function {run()} {open return_type void
+  } {
+    code {window->show();
+
+while ( window->shown() )
+	Fl::wait();} {}
+  }
+} 
+
 class Trigger {: {public Fl_Dial}
 } {
   Function {Trigger( int X, int Y, int W, int H, const char *L = 0 ) : Fl_Dial( X, Y, W, H, L )} {open
@@ -1574,67 +1633,7 @@ return r;} {}
   }
 } 
 
-class Instrument_Editor {} {
-  Function {Instrument_Editor()} {open return_type void
-  } {
-    code {make_window();} {}
-  }
-  decl {Instrument *_inst;} {}
-  decl {int _note;} {}
-  Function {make_window()} {open
-  } {
-    Fl_Window window {
-      label {Instrument Editor}
-      callback {done->do_callback();} open
-      xywh {670 458 339 191} type Double visible
-    } {
-      Fl_Box {} {
-        label {Instrument Row}
-        xywh {8 15 321 28} box ROUNDED_BOX color 94 labelsize 22 labelcolor 39
-      }
-      Fl_Input name_field {
-        label Name
-        callback {_inst->note_name( _note, strdup( o->value() ) );}
-        xywh {10 70 321 25} selection_color 48 align 1 when 1 textcolor 32
-      }
-      Fl_Value_Slider volume_slider {
-        label {Volume %}
-        callback {_inst->velocity( _note, o->value() );}
-        xywh {10 112 321 27} type Horizontal align 1 maximum 100 step 1 textsize 14
-      }
-      Fl_Value_Output note_field {
-        label {Note:}
-        xywh {52 158 43 24}
-      }
-      Fl_Return_Button done {
-        label Done
-        callback {if ( _inst )
-	_inst->save();
-	
-window->hide();}
-        xywh {255 157 76 25}
-      }
-    }
-  }
-  Function {set( Instrument *i, int n )} {open return_type void
-  } {
-    code {_inst = i;
-_note = n;
-
-volume_slider->value( i->velocity( n ) );
-name_field->value( i->note_name( n ) );
-note_field->value( n );} {}
-  }
-  Function {run()} {open return_type void
-  } {
-    code {window->show();
-
-while ( window->shown() )
-	Fl::wait();} {}
-  }
-} 
-
-widget_class Triggers {
+widget_class Triggers {open
   xywh {121 31 1278 1003} type Double hide resizable
   code0 {populate();}
   code1 {\#include <Fl/Fl_Dial.H>}
@@ -1717,7 +1716,7 @@ for ( i = 0; i < MAX_PATTERN; i++ )
 	{
 		b->color( fl_lighter( FL_GRAY ) );
 		
-		Fl_Color c;
+		Fl_Color c = FL_BLUE;
 		
 		switch ( p->mode() )
 		{
@@ -1741,7 +1740,8 @@ for ( i = 0; i < MAX_PATTERN; i++ )
 		b->value( 0 );
 	}
 		
-}} {}
+}} {selected
+    }
   }
   Function {resize( int X, int Y, int W, int H )} {open return_type void
   } {

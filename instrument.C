@@ -291,7 +291,7 @@ Instrument::listing ( void )
 
     delete sys;
 
-    char **sa = (char**)malloc( usr->size() * sizeof( char * ) + 1 );
+    char **sa = (char**)malloc( (usr->size() + 1) * sizeof( char * ) );
 
     int i = 0;
     for ( list <string>::iterator s = usr->begin(); s != usr->end(); s++, i++ )

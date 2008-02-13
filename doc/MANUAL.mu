@@ -58,17 +58,17 @@
 < non-pattern-editor.png
 
   Upon invocation, Non enters the pattern editor and loads Pattern
-  1. The pattern editor presents a grid interface--the heart a step
+  1. The pattern editor presents a grid interface--the heart of a step
   sequencer. You can toggle a note on the grid by entering its
   coordinates with the keyboard or clicking an intersection with the
   mouse. The length of patterns is unlimited and no special action is
-  required lengthen them (simply adding notes beyond the "end" is
+  required to lengthen them (simply adding notes beyond the "end" is
   enough.) Non can present grids in one of two modes, expanded and
   compacted.  In the compacted view, only named rows are displayed;
   this means that only the notes the current instrument or scale will
   consume vertical space--resulting in far more efficient use of
-  screen real-estate. Any notes are made invisible by the compacted
-  view will be silenced.
+  screen real-estate. Any notes that are made invisible by the
+  compacted view will be silenced.
 
   You may add, remove, transpose, move, and edit notes, as well as
   trigger/mute patterns, while the transport is running.
@@ -88,8 +88,8 @@
   Percussion, or other sample-based patterns can be assigned an
   /instrument/ mapping, which again limits the display to only those
   notes for which names and volumes have been provided. The instrument
-  definition format is simple ASCII file containing one name, note and
-  volume percentage per line.
+  definition format is a simple ASCII file containing one name, note
+  and volume percentage per line.
 
   Individual patterns may be soloed or muted right from the pattern
   editor.
@@ -101,8 +101,8 @@
 
   The type (duration) of note to be inserted can be adjusted in the
   pattern editor (control+mouse-wheel). The velocity of individual
-  notes may be adjusted (mouse-wheel), and is the current value is
-  reflected in the color of the note. Ranages may also be /inserted/
+  notes may be adjusted (mouse-wheel), and the current value is
+  reflected in the color of the note. Ranges may also be /inserted/
   and /deleted/, a commonly required operation during composition, but
   one that is, sadly, missing from many sequencers.
 
@@ -118,7 +118,7 @@
 	= results in a jumble of notes that require much manual cleaning up.
 = Overwrite (each pass [with input] replaces the previous contents of the pattern)
 	= This is like merge mode, except that the pattern is cleared before
-	= the recorded events are input. If note notes have been played during
+	= the recorded events are input. If no notes have been played during
 	= a loop, the pattern remains unchanged. This is a great way to just get
 	= a part down without having to remove your hands from the instrument.
 = Layer (each pass [with input] goes into a new pattern)

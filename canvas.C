@@ -173,7 +173,10 @@ Canvas::changed_mapping ( void )
     m.grid->draw_row_names( this );
 
     if ( m.margin_left != old_margin )
+    {
         signal_resize();
+        signal_draw();
+    }
     else
         signal_draw();
 }

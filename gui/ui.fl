@@ -150,7 +150,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {694 168 869 801} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
+      xywh {623 109 869 801} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
@@ -967,9 +967,9 @@ else
       callback {sequence_tab->activate();
 o->hide();
 detach_button->value( 0 );} open
-      xywh {681 189 876 675} type Double resizable visible
+      xywh {681 189 876 675} type Double hide resizable
     } {
-      Fl_Group seq_detached_group {open selected
+      Fl_Group seq_detached_group {open
         xywh {0 0 876 675} resizable
       } {}
     }
@@ -1455,7 +1455,8 @@ if ( _c )
 else
 {
 	WARNING( "No canvas set for widget." );
-}} {}
+}} {selected
+    }
   }
   Function {set_canvas( Canvas *c )} {open
   } {

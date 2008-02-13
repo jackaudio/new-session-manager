@@ -4,9 +4,10 @@
 # This file is licencesd under version 2 of the GPL.
 
 # config
-PREFIX=/usr/local/
-SYSTEM_PATH=$(PREFIX)/share/non-sequencer/
-DOCUMENT_PATH=$(PREFIX)/share/doc/non-sequencer/
+prefix=/usr/local/
+
+SYSTEM_PATH=$(prefix)/share/non-sequencer/
+DOCUMENT_PATH=$(prefix)/share/doc/non-sequencer/
 USE_LASH=1
 
 VERSION=1.9.0
@@ -17,7 +18,7 @@ CFLAGS:=-O0 -ggdb -fno-omit-frame-pointer -Wall
 # CFLAGS:=-O3 -fomit-frame-pointer -DNDEBUG
 
 CFLAGS+=-DVERSION=\"$(VERSION)\" \
-	-DINSTALL_PREFIX=\"$(PREFIX)\" \
+	-DINSTALL_PREFIX=\"$(prefix)\" \
 	-DSYSTEM_PATH=\"$(SYSTEM_PATH)\" \
 	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\"
 
@@ -56,7 +57,7 @@ SRCS= \
 
 OBJS=$(SRCS:.C=.o)
 
-.PHONEY: all clean install
+.PHONEY: all clean install dist
 
 all: non makedepend
 
@@ -84,13 +85,16 @@ non: $(OBJS)
 
 install:
 	@ echo -n "Installing..."
-	@ install non $(PREFIX)/bin
+	@ install non $(prefix)/bin
 	@ mkdir -p "$(SYSTEM_PATH)"
 	@ cp -r instruments "$(SYSTEM_PATH)"
 	@ mkdir -p "$(DOCUMENT_PATH)"
 	@ cp doc/*.{html,png} "$(DOCUMENT_PATH)"
 	@ echo done
 #	make -C doc install
+
+dist:
+	git archive --prefix=non-sequencer-$(VERSION)/ v$(VERSION) | bzip2 > non-sequencer-$(VERSION).tar.bz2
 
 TAGS: $(SRCS)
 	etags $(SRCS)

@@ -74,6 +74,8 @@ valgrind:
 %.C : %.fl
 	@ cd gui && fluid -c ../$<
 
+$(OBJS): Makefile
+
 non: $(OBJS)
 	@ echo -n "Linking..."
 	@ rm -f $@

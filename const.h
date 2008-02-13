@@ -34,12 +34,8 @@ const char APP_TITLE[]  = "The Non-Sequencer";
 const char COPYRIGHT[]  = "Copyright (c) 2007-2008 Jonathan Moore Liles";
 
 #define PACKAGE "non"
-#define VERSION "1.9.0"
 
 /* directories */
-
-// #define SYSTEM_PATH INSTALL_PREFIX "share/non-sequencer/"
-// #define DOCUMENT_PATH INSTALL_PREFIX "share/doc/non-sequencer/"
 
 #define USER_CONFIG_DIR ".non/"
 #define INSTRUMENT_DIR "instruments/"

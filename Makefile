@@ -9,12 +9,15 @@ SYSTEM_PATH=$(PREFIX)/share/non-sequencer/
 DOCUMENT_PATH=$(PREFIX)/share/doc/non-sequencer/
 USE_LASH=1
 
+VERSION=1.9.0
+
 # Debugging
 CFLAGS:=-O0 -ggdb -fno-omit-frame-pointer -Wall
 # Production
 # CFLAGS:=-O3 -fomit-frame-pointer -DNDEBUG
 
-CFLAGS+=-DINSTALL_PREFIX=\"$(PREFIX)\" \
+CFLAGS+=-DVERSION=\"$(VERSION)\" \
+	-DINSTALL_PREFIX=\"$(PREFIX)\" \
 	-DSYSTEM_PATH=\"$(SYSTEM_PATH)\" \
 	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\"
 

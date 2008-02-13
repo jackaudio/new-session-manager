@@ -61,6 +61,9 @@ clean:
 	rm -f non makedepend $(OBJS)
 	@ echo Done
 
+valgrind:
+	valgrind ./non
+
 .C.o:
 	@ echo -n "Compiling: "; tput bold; tput setaf 3; echo $<; tput sgr0; true
 	@ $(CXX) $(CXXFLAGS) -c $< -o $@

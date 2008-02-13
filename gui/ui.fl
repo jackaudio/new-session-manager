@@ -960,16 +960,17 @@ else
       }
     }
   }
-  Function {make_seq_window()} {} {
+  Function {make_seq_window()} {open
+  } {
     Fl_Window seq_window {
+      label {Non Sequencer - Sequence}
       callback {sequence_tab->activate();
 o->hide();
-
-detach_button->value( 0 );}
-      xywh {189 27 1278 1003} type Single hide resizable
+detach_button->value( 0 );} open
+      xywh {681 189 876 675} type Double resizable visible
     } {
-      Fl_Group seq_detached_group {open
-        xywh {0 0 1277 1003} resizable
+      Fl_Group seq_detached_group {open selected
+        xywh {0 0 876 675} resizable
       } {}
     }
   }
@@ -1145,8 +1146,7 @@ free( s );
 
 
 if ( playback_mode_menu )
-	playback_mode_menu->value( song.play_mode );} {selected
-    }
+	playback_mode_menu->value( song.play_mode );} {}
   }
   Function {update_mapping_menu()} {open
   } {

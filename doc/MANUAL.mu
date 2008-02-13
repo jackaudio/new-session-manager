@@ -145,6 +145,8 @@
 
 :: The Phrase Editor
 
+< non-phrase-editor.png
+
   Phrases are to patterns as patterns are to notes. Switching to the
   Phrase Editor brings up Phrase 1, where each row corresponds to an
   existing /pattern/. The grid of the Phrase Editor is fixed at one

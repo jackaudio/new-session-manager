@@ -28,7 +28,7 @@
 
   Development of the Non Sequencer can be followed with Git:
 
-> git clone git://git.tuxfamily.net/gitroot/non/sequencer.git
+> git clone git://git.tuxfamily.org/gitroot/non/sequencer.git
 
 #  or
 #

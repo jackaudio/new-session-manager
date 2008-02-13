@@ -64,7 +64,7 @@ public:
     void key ( int n );
 
     /* inspection */
-    void translate ( midievent *e ) const;
+    bool translate ( midievent *e ) const;
     const char * note_name ( int n ) const;
     int velocity ( int n ) const;
     int key ( void ) const;

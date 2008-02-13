@@ -454,12 +454,13 @@ try_again:
 
             if ( me.is_note_on() )
             {
-                mapping.translate( &me );
-                midi_output_event( _port, &me, 1 + e->note_duration() );
+                if ( mapping.translate( &me ) )
+                    midi_output_event( _port, &me, 1 + e->note_duration() );
             }
             else
                 if ( me.is_note_off() )
-                    midi_output_event( _port, &me, 0 );
+                    if ( mapping.translate( &me ) )
+                        midi_output_event( _port, &me, 0 );
                 else
                     /* any other event type */
                     midi_output_event( _port, &me );

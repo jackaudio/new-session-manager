@@ -101,7 +101,7 @@ Mapping::key ( void ) const
     return _type == INSTRUMENT ? -1 : _key;
 }
 
-void
+bool
 Mapping::translate ( midievent *e ) const
 {
     switch ( _type )
@@ -111,6 +111,8 @@ Mapping::translate ( midievent *e ) const
         case SCALE:
             return _scale->translate( _key, e );
     }
+
+    return false;
 }
 
 int

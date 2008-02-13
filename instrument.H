@@ -55,7 +55,7 @@ public:
     void note_name ( int n, char *s );
 
     /* inspection */
-    void translate ( midievent *e ) const;
+    bool translate ( midievent *e ) const;
     const char * note_name ( int n ) const;
     int height ( void ) const;
     const char * name ( void ) const;

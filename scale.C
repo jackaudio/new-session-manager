@@ -176,11 +176,13 @@ Scale::_degree ( int k, int n ) const
 }
 
 /* translate NOTE event. Behavior is undefined for other event types */
-void
+bool
 Scale::translate ( int k, midievent *e ) const
 {
-    /* does nothing now... */
-    /* TODO: invalidate events that are note on/offs for notes outside the scale. */
+    if ( ! note_name( k, e->note() ) )
+        return false;
+    else
+        return true;
 }
 
 const char *

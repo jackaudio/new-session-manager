@@ -41,7 +41,7 @@ public:
     static const char * chromatic_name ( int n );
     static int octave ( int n );
 
-    void translate ( int k, midievent *e ) const;
+    bool translate ( int k, midievent *e ) const;
     int note ( int k, int n ) const;
     const char * note_name ( int k, int n ) const;
     const char * name ( void ) const;

@@ -113,11 +113,17 @@ Instrument::velocity ( int n, int v )
     _dirty = true;
 }
 
-/* Should only be passed NOTE ON/OFF events! */
-void
+/** Translate event, should only be passed NOTE ON/OFF events, returns
+ true if note is valid for this mapping */
+bool
 Instrument::translate ( midievent *e ) const
 {
+    if ( ! note_name( e->note() ) )
+        return false;
+
     e->note_velocity( e->note_velocity() * _map[ e->note() ].velocity / 100 );
+
+    return true;
 }
 
 const char *

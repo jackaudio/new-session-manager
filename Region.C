@@ -1,0 +1,95 @@
+
+/*******************************************************************************/
+/* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/*                                                                             */
+/* This program is free software; you can redistribute it and/or modify it     */
+/* under the terms of the GNU General Public License as published by the       */
+/* Free Software Foundation; either version 2 of the License, or (at your      */
+/* option) any later version.                                                  */
+/*                                                                             */
+/* This program is distributed in the hope that it will be useful, but WITHOUT */
+/* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       */
+/* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for   */
+/* more details.                                                               */
+/*                                                                             */
+/* You should have received a copy of the GNU General Public License along     */
+/* with This program; see the file COPYING.  If not,write to the Free Software */
+/* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+/*******************************************************************************/
+
+#include "Region.H"
+
+#include <FL/fl_draw.H>
+#include <FL/Fl.H>
+#include <FL/Fl_Group.H>
+
+Region::Region ( int X, int Y, int W, int H, const char *L=0 ) : Waveform( X, Y, W, H, L )
+{
+    align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_BOTTOM );
+    labeltype( FL_SHADOW_LABEL );
+    labelcolor( FL_WHITE );
+    box( FL_PLASTIC_UP_BOX );
+}
+
+int
+Region::handle ( int m )
+{
+
+    if ( Fl_Widget::handle( m ) )
+        return 1;
+
+    switch ( m )
+    {
+        case FL_PUSH:
+        {
+            int X = Fl::event_x();
+            int Y = Fl::event_y();
+
+            if ( Fl::event_state() & FL_CTRL )
+            {
+                switch ( Fl::event_button() )
+                {
+                    case 1:
+                    {
+                        /* trim */
+                        int d = X - x();
+                        _start += d;
+                        resize( x() + d, y(), w() - d, h() );
+                        redraw();
+                        parent()->redraw();
+                        break;
+                    }
+                    case 3:
+                    {
+                        int d = (x() + w()) - X;
+                        _end -= d;
+                        resize( x(), y(), w() - d, h() );
+                        redraw();
+                        parent()->redraw();
+                        break;
+                    }
+                    default:
+                        return 0;
+                }
+                return 1;
+            }
+            return 0;
+            break;
+        }
+        default:
+            return 0;
+            break;
+    }
+}
+
+
+
+void
+Region::draw ( void )
+{
+    draw_box();
+
+    Waveform::draw();
+
+    draw_label();
+}

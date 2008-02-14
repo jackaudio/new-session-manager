@@ -17,34 +17,16 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
 
-#include <FL/Fl_Widget.H>
-#include <FL/fl_draw.H>
+#include "Waveform.H"
 
-typedef unsigned long tick_t;
-
-class Waveform : public Fl_Widget
+class Region : public Waveform
 {
-protected:
-    float *_peaks;
-
-    tick_t _start;
-    tick_t _end;
-
-    float _scale;                                               /* vertical scaling */
-    float _zoom;                                                /* horizontal zoom */
 
 public:
 
-    Waveform ( int X, int Y, int W, int H, const char *L );
+    Region ( int X, int Y, int W, int H, const char *L );
 
     int handle ( int m );
     void draw ( void );
-    void draw ( int X, int Y, int W, int H );
-
-    void start ( tick_t s ) { _start = s; }
-    void end ( tick_t e ) { _end = e; }
-    void peaks ( float *p ) { _peaks = p; }
-
 };

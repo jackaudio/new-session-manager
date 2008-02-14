@@ -93,10 +93,19 @@ Waveform::handle ( int m )
     return 0;
 }
 
+
+int measure = 50;
+
 void
 Waveform::draw ( void )
 {
-    draw_box( FL_PLASTIC_UP_BOX, x(), y(), w(), h(), color() );
+//    draw_box( FL_PLASTIC_UP_BOX, x(), y(), w(), h(), color() );
+
+/*     fl_color( fl_lighter( color() ) ); */
+
+/*     for ( int nx = x(); nx < x() + w(); ++nx ) */
+/*         if ( ! (nx % measure) ) */
+/*             fl_line( nx, y(), nx, y() + h() ); */
 
     int X, Y, W, H;
 
@@ -118,17 +127,18 @@ Waveform::draw ( int X, int Y, int W, int H )
 
     float _scale = 1;
 
-    int start = (X - x()) * 2;
+    int start = (_start + (X - x())) * 2;
 
     j = 0;
     for ( int x = X; x < X + W; ++x )
     {
-        float lo = _peaks[ start + _start + j++ ] * _scale;
-        float hi = _peaks[ start + _start + j++ ] * _scale;
+        float lo = _peaks[ start + j++ ] * _scale;
+        float hi = _peaks[ start + j++ ] * _scale;
 
         int mid = Y + (H / 2);
 
         fl_line( x, mid + (H * lo), x, mid + (H * hi) );
+
     }
 
     fl_color( fl_darker( fl_darker( selection_color() ) ) );
@@ -138,7 +148,7 @@ Waveform::draw ( int X, int Y, int W, int H )
     j = 0;
     for ( int x = X; x < X + W; ++x )
     {
-        float v = _peaks[ start + _start + j ] * _scale;
+        float v = _peaks[ start + j ] * _scale;
         j += 2;
         fl_vertex( x, Y + (H / 2) + ((float)H *  v ));
     }
@@ -150,7 +160,7 @@ Waveform::draw ( int X, int Y, int W, int H )
     j = 1;
     for ( int x = X; x < X + W; ++x )
     {
-        float v = _peaks[ start + _start + j ] * _scale;
+        float v = _peaks[ start + j ] * _scale;
         j += 2;
         fl_vertex( x, Y + (H / 2) + ((float)H *  v ));
     }

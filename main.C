@@ -21,8 +21,11 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Scroll.H>
+#include <FL/Fl_Pack.H>
+#include <FL/Fl_Group.H>
 
 #include "Waveform.H"
+#include "Region.H"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -49,7 +52,12 @@ main ( int argc, char **argv )
 
     Fl_Scroll *scroll = new Fl_Scroll( 0, 0, 800, 600 );
 
-    Waveform *wave = new Waveform( 0, 0, 5000, 100, "foo" );
+    Fl_Group *pack = new Fl_Group( 0, 0, 5000, 600 );
+
+//    pack->type( Fl_Pack::VERTICAL );
+    pack->box( FL_DOWN_BOX );
+
+    Region *wave = new Region( 0, 0, 5000, 100, "foo" );
 
     FILE *fp;
 
@@ -80,6 +88,9 @@ main ( int argc, char **argv )
 
     wave->selection_color( FL_GREEN );
 
+    pack->add( wave );
+
+    pack->end();
     scroll->end();
 
     main_window->end();

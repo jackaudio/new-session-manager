@@ -4,10 +4,10 @@ CXXFLAGS=-ggdb
 LIBS=`fltk-config --ldflags`
 # CXXFLAGS=`fltk-config -cxxflags`
 
-OBJS=Waveform.o main.o
+OBJS=Waveform.o Region.o main.o
 
 .C.o:
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-test: Waveform.o main.o
+test: $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@

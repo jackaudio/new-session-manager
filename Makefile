@@ -89,7 +89,7 @@ install:
 	@ mkdir -p "$(SYSTEM_PATH)"
 	@ cp -r instruments "$(SYSTEM_PATH)"
 	@ mkdir -p "$(DOCUMENT_PATH)"
-	@ cp doc/*.{html,png} "$(DOCUMENT_PATH)"
+	@ cp doc/*.html doc/*.png "$(DOCUMENT_PATH)"
 	@ echo done
 #	make -C doc install
 

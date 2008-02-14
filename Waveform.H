@@ -38,6 +38,7 @@ public:
 
     int handle ( int m );
     void draw ( void );
+    void draw ( int X, int Y, int W, int H );
 
     void start ( tick_t s ) { _start = s; }
     void end ( tick_t e ) { _end = e; }

@@ -61,9 +61,15 @@ main ( int argc, char **argv )
 
     size_t len = st.st_size;
 
+/*     float chunk_size; */
+/*     fread( &chunk_size, sizeof( chunk_size ), 1, fp ); */
+
+/*     printf( "%f\n", chunk_size ); */
+
     float *peaks = new float[ len / sizeof( float ) ];
 
     fread( peaks, len, 1, fp );
+
 
     wave->peaks( peaks );
     wave->start( 0 );

@@ -142,6 +142,55 @@ Non utilizes the Jack MIDI transport. Jack MIDI is an emerging MIDI transport fo
 <p>
 At the time of writing, Non is one of only two sequencers to use Jack MIDI natively.
 </p>
+<h3 id="n:3.1.1.">3.1.1. About Jack MIDI Connections</h3>
+<p>
+Since Jack MIDI is new and not all programs support it, many find themselves confused. This section attempts to explain Jack MIDI ports.
+</p>
+<p>
+The ALSA sequencer interface has long been the standard MIDI routing subsystem on Linux. But many (all) of the programs we use for synthesis these days use Jack for their audio IO. It makes more sense for those MIDI related programs utilizing the Jack Transport for synchronization to also use Jack ports for MIDI delivery. Therefore, ALSA MIDI is quickly becoming obsolete.
+</p>
+<p>
+Jack MIDI ports are <b>not</b> related to ALSA MIDI ports in any way. Jack MIDI ports are just like Jack audio ports, except that the data being transmitted in each buffer are raw, timestamped MIDI events instead of floating point audio samples. Jack MIDI is sample-accurate. This means that a MIDI Note On event can occur concurrently with a sound, and the two will never drift apart as often happens to some extent with ALSA.
+</p>
+<p>
+In essence, Jack MIDI is a way of expressing a direct temporal correlation between audio and MIDI data.
+</p>
+<div class=admonition>
+<table width=100%>
+<tr><td><em>Note:</em></td>
+<td>Older versions of QJackCtl and other connection managers do not
+know about Jack MIDI ports. Please make sure you're using an
+up-to-date version.
+</td></table>
+</div>
+<p>
+<p>
+For example, to connect Non to ZynAddSubFX (the CVS version supports Jack MIDI), type the following into the shell:
+</p>
+<div class="fig example"><table width=100%><tr><td><pre>
+$ jack_connect Non:midi_out-1 ZynAddSubFX:midi_in
+</pre></td></tr>
+</table></div>
+<p>
+Also, be sure that Zyn's outputs are connected to system:playback_* so that you can hear the sounds it produces.
+</p>
+<p>
+It is possible to use Jack MIDI clients and ALSA MIDI clients together via the bridge built into jackd.  For this to work you must append the <tt>-X seq</tt> option to the <tt>alsa</tt> driver section of the jackd command line. Like so:
+</p>
+<div class="fig example"><table width=100%><tr><td><pre>
+$ jackd -d alsa -X seq
+</pre></td></tr>
+</table></div>
+<p>
+The way such bridged ports are named varies between Jack versions, but they should be fairly obvious. When used in this way, many of the advantages of Jack MIDI are lost, so it is recommended that you find a Jack MIDI capable synth for best results.
+</p>
+<center><div class="fig image"><table id="Fig.3.1" border=1>
+<caption>
+<strong>Fig. 3.1.</strong> Example of Jack MIDI connections in Patchage
+</caption>
+
+<tr><td><img src="non-patchage.png" alt="fig. 3.1"></td></tr>
+</table></div></center>
 <h2 id="n:3.2.">3.2. Non Files</h2>
 <p>
 The format of <tt>.non</tt> files is a variation of SMF-2. In an SMF-2 file, each track chunk represents a pattern. Because Non groups patterns into <i>phrases</i>, this usage of SMF-2 is probably not compatible with other implementations (although, the author has never actually seen another program that could play back SMF-2 anyway.)

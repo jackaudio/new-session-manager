@@ -57,7 +57,7 @@ SRCS= \
 
 OBJS=$(SRCS:.C=.o)
 
-.PHONEY: all clean install dist
+.PHONEY: all clean install dist valgrind
 
 all: non makedepend
 
@@ -83,7 +83,7 @@ non: $(OBJS)
 	@ $(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@ || (tput bold; tput setaf 1; echo Error!; tput sgr0)
 	@ test -x $@ && echo done.
 
-install:
+install: all
 	@ echo -n "Installing..."
 	@ install non $(prefix)/bin
 	@ mkdir -p "$(SYSTEM_PATH)"

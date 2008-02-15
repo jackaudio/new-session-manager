@@ -21,6 +21,8 @@
 [[ C,           crop to range
 [[ Delete,	delete selected
 [[ Shift-Delete, clear grid
+[[ Control-Delete, delete time in range
+[[ Control-Insert, insert time
 [[ Arrow keys,  move viewport
 [[ Ctrl-Left,   move to previous note
 [[ Ctrl-Right,  move to next note

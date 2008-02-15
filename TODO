@@ -5,6 +5,10 @@
 
 ; General
 
+* allow deselection of notes in pattern editor.
+* some way to select by row as well as column. preferably better than
+   standard rubberband techniques. What I'd really like is a cross
+   hair to select x1,y1 and x2,y2 coords of a bounding box.
 * add option to create new instrument defintion.
 * per phrase tempo setting? Perhaps a percentage of global tempo?
 * add channel field to event list widget (but channel bits in pattern

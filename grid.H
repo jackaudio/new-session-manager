@@ -213,6 +213,7 @@ public:
     void move_selected ( int l );
 
     void crop ( int l, int r );
+    void crop ( int l, int r, int t, int b );
 
     void toggle_select ( int x, int y );
     void insert_time ( int x, int r );

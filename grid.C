@@ -594,6 +594,25 @@ Grid::crop ( int l, int r )
     unlock();
 }
 
+void
+Grid::crop ( int l, int r, int t, int b )
+{
+    lock();
+
+    _rw->events.push_selection();
+
+    select( l, r, t, b );
+
+    _rw->events.invert_selection();
+    _rw->events.remove_selected();
+
+    _rw->events.pop_selection();
+
+    crop( l, r );
+
+    unlock();
+}
+
 
 void
 Grid::_relink ( void )

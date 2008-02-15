@@ -798,7 +798,10 @@ Canvas::invert_selection ( void )
 void
 Canvas::crop ( void )
 {
-    m.grid->crop( m.p1, m.p2 );
+    if ( m.p3 == m.p4 )
+        m.grid->crop( m.p1, m.p2 );
+    else
+        m.grid->crop( m.p1, m.p2, rtn( m.p3 ), rtn( m.p4 ) );
 
     m.vp->x = 0;
 

@@ -338,7 +338,7 @@ Canvas::flip ( void )
             /* draw selection rect */
             if ( m.p3 != m.p4 )
                 if ( y + m.vp->y >= m.p3 && x + m.vp->x >= m.p1 &&
-                     y + m.vp->y < m.p4 && x + m.vp->x < m.p2 )
+                     y + m.vp->y <= m.p4 && x + m.vp->x < m.p2 )
                     c->flags |= F_SELECTION;
 
             if ( *c != *p )

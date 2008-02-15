@@ -63,7 +63,7 @@ Canvas::_alloc_array ( void )
 
 Canvas::Canvas ( )
 {
-    m.origin_x = m.origin_y = m.height = m.width = m.div_w = m.div_h = m.playhead = m.margin_top = m.margin_left = m.playhead = m.w = m.h = m.p1 = m.p2 = 0;
+    m.origin_x = m.origin_y = m.height = m.width = m.div_w = m.div_h = m.playhead = m.margin_top = m.margin_left = m.playhead = m.w = m.h = m.p1 = m.p2 = m.p3 = m.p4 = 0;
 
     m.margin_top = ruler_height;
 
@@ -335,6 +335,12 @@ Canvas::flip ( void )
             cell_t *c = &m.current[ x ][ y ];
             cell_t *p = &m.previous[ x ][ y ];
 
+            /* draw selection rect */
+            if ( m.p3 != m.p4 )
+                if ( y + m.vp->y >= m.p3 && x + m.vp->x >= m.p1 &&
+                     y + m.vp->y < m.p4 && x + m.vp->x < m.p2 )
+                    c->flags |= F_SELECTION;
+
             if ( *c != *p )
                 gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h, m.border_w,
                                 c->shape, c->state, c->flags, c->color );
@@ -438,7 +444,9 @@ Canvas::draw_shape ( int x, int y, int shape, int state, int color, bool selecte
     m.current[ x ][ y ].shape = shape;
     m.current[ x ][ y ].color = color;
     m.current[ x ][ y ].state = (uint)m.vp->x + x > m.grid->ts_to_x( m.grid->length() ) ? PARTIAL : state;
-    m.current[ x ][ y ].flags = selected ? F_SELECTED : 0;
+    if ( selected )
+        m.current[ x ][ y ].state = SELECTED;
+    m.current[ x ][ y ].flags = 0;
 }
 
 /** callback used by Grid::draw()  */
@@ -586,6 +594,38 @@ Canvas::is_row_name ( int x, int y )
 }
 
 void
+Canvas::start_cursor ( int x, int y )
+{
+    if ( ! grid_pos( &x, &y ) )
+        return;
+
+    m.ruler_drawn = false;
+
+    m.p1 = x;
+    m.p3 = ntr( y );
+
+    _lr();
+
+    signal_draw();
+}
+
+void
+Canvas::end_cursor ( int x, int y )
+{
+    if ( ! grid_pos( &x, &y ) )
+        return;
+
+    m.ruler_drawn = false;
+
+    m.p2 = x;
+    m.p4 = ntr( y );
+
+    _lr();
+
+    signal_draw();
+}
+
+void
 Canvas::set ( int x, int y )
 {
     if ( y - m.origin_y < m.margin_top )
@@ -595,6 +635,8 @@ Canvas::set ( int x, int y )
         {
             m.p1 = m.vp->x + ((x - m.margin_left - m.origin_x) / m.div_w);
             m.ruler_drawn = false;
+
+            m.p3 = m.p4 = 0;
         }
 
         _lr();
@@ -620,6 +662,8 @@ Canvas::unset ( int x, int y )
         {
             m.p2 = m.vp->x + ((x - m.margin_left - m.origin_x) / m.div_w);
             m.ruler_drawn = false;
+
+            m.p3 = m.p4 = 0;
         }
 
         _lr();
@@ -659,7 +703,7 @@ Canvas::select ( int x, int y )
     if ( ! grid_pos( &x, &y ) )
         return;
 
-    m.grid->select( x, y, true );
+    m.grid->toggle_select( x, y );
 }
 
 void
@@ -739,7 +783,16 @@ Canvas::_lr ( void )
 void
 Canvas::select_range ( void )
 {
-    m.grid->select( m.p1, m.p2 );
+    if ( m.p3 == m.p4 )
+        m.grid->select( m.p1, m.p2 );
+    else
+        m.grid->select( m.p1, m.p2, rtn( m.p3 ), rtn( m.p4 ) );
+}
+
+void
+Canvas::invert_selection ( void )
+{
+    m.grid->invert_selection();
 }
 
 void

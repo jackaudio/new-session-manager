@@ -291,6 +291,24 @@ event_list::select ( tick_t start, tick_t end )
     }
 }
 
+/** select note evenets from /start/ to /end/ within range /hi/ through /lo/ */
+void
+event_list::select ( tick_t start, tick_t end, int hi, int lo )
+{
+    FOR_ALL( e )
+    {
+        tick_t ts = e->timestamp();
+
+        /* don't count note offs exactly on start */
+        if ( ! e->is_note_on() )
+            continue;
+
+        if ( ts >= start && ts < end &&
+             e->note() <= hi && e->note() >= lo )
+            e->select();
+    }
+}
+
 /** select ALL events */
 void
 event_list::select_all ( void )
@@ -304,6 +322,19 @@ event_list::select_none ( void )
 {
     FOR_ALL( e )
         e->deselect();
+}
+
+void
+event_list::invert_selection ( void )
+{
+    FOR_ALL( e )
+        if ( ! e->is_note_off() )
+        {
+            if ( e->selected() )
+                e->deselect();
+            else
+                e->select();
+        }
 }
 
 /** remove all selected events */

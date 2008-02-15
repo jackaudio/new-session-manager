@@ -51,8 +51,11 @@ public:
     event * first ( void ) const;
     event * last ( void ) const;
     void select ( tick_t start, tick_t end );
+    void select ( tick_t start, tick_t end, int hi, int lo );
+
     void select_all ( void );
     void select_none ( void );
+    void invert_selection ( void );
 
     void remove_selected ( void );
     void transpose_selected ( int n );

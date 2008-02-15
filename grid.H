@@ -214,11 +214,13 @@ public:
 
     void crop ( int l, int r );
 
-    void select ( int x, int y, bool b );
+    void toggle_select ( int x, int y );
     void insert_time ( int x, int r );
     void select ( int start, int end );
+    void select ( int start, int end, int t, int b );
     void delete_time ( int start, int end );
     void select_none ( void );
+    void invert_selection ( void );
 
     void resolution ( unsigned int n );
     int resolution ( void ) const;

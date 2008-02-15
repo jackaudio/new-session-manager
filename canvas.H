@@ -66,10 +66,6 @@ class Canvas : public trackable
 
         int playhead;                                           /* where the playhead is for this canvas. only used for display. */
 
-/*         /\* these are in logical units, not pixels *\/ */
-/*         int w, h;                                               /\* viewport *\/ */
-/*         int x, y;                                               /\* pan position *\/ */
-
         enum { PATTERN, SEQUENCE } mode;
 
         Grid *grid;                                             /* grid currently connected to this canvas */
@@ -81,7 +77,7 @@ class Canvas : public trackable
 
         int rule;
 
-        bool row_compact;                                      /* use row-compaction? */
+        bool row_compact;                                       /* use row-compaction? */
 
         /* tables used for row-compaction */
         int rtn[128];                                           /* row-to-note */
@@ -92,7 +88,8 @@ class Canvas : public trackable
         Viewport *vp;
         int w, h;
 
-        uint p1, p2;                                             /* cursors */
+        uint p1, p2;                                            /* range cursors */
+        uint p3, p4;                                            /* row cursors */
     } m;
 
     int rtn ( int r ) const;
@@ -146,6 +143,7 @@ public:
     void adj_length ( int x, int y, int n );
     void select ( int x, int y );
     void select_range ( void );
+    void invert_selection ( void );
     void duplicate_range ( void );
     void crop ( void );
     void row_compact ( int n );
@@ -156,6 +154,10 @@ public:
     void notes ( char *s );
     char * notes ( void );
     void randomize_row ( int y );
+
+
+    void start_cursor ( int x, int y );
+    void end_cursor ( int x, int y );
 
     void delete_time ( void );
     void insert_time ( void );

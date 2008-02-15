@@ -20,11 +20,11 @@ enum {
     FULL,                                                       /* dot or dash head */
     PARTIAL,
     CONTINUED,                                                  /* dash tail */
+    SELECTED,
 /* virtual */
     HIT,                                                        /* playhead hit */
     LINE,                                                       /* beat line */
     PLAYHEAD,
-    SELECTED,
     MAX_STATE,
 };
 
@@ -35,10 +35,10 @@ enum {
 
 /* flags */
 enum {
-    F_PLAYHEAD = 1 << 0,                                     /* playhead is on item */
-    F_P1       = 1 << 1,
-    F_P2       = 1 << 2,
-    F_SELECTED = 1 << 3                                      /* item is selected */
+    F_PLAYHEAD  = 1 << 0,                                     /* playhead is on item */
+    F_P1        = 1 << 1,
+    F_P2        = 1 << 2,
+    F_SELECTION = 1 << 3                                      /* item is part of the selection box */
 };
 
 

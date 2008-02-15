@@ -128,6 +128,9 @@ canvas_input_callback ( O_Canvas *widget, Canvas *c, int m )
                         case 'q':
                             c->grid()->select_none();
                             break;
+                        case 'i':
+                            c->invert_selection();
+                            break;
                         case '1':
                             c->h_zoom( 2.0f );
                             break;
@@ -250,6 +253,11 @@ canvas_input_callback ( O_Canvas *widget, Canvas *c, int m )
                     }
                     else
                     {
+                        if ( Fl::event_state() & FL_SHIFT )
+                        {
+                            c->start_cursor( x, y );
+                            break;
+                        }
 
                         if ( IS_PATTERN && Fl::event_state() & FL_CTRL )
                             c->randomize_row( y );
@@ -258,6 +266,12 @@ canvas_input_callback ( O_Canvas *widget, Canvas *c, int m )
                     }
                     break;
                 case 3:
+                    if ( Fl::event_state() & FL_SHIFT )
+                    {
+                        c->end_cursor( x, y );
+                        break;
+                    }
+
                     c->unset( x, y );
                     break;
                 case 2:

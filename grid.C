@@ -457,17 +457,17 @@ Grid::adj_duration ( int x, int y, int l )
 }
 
 void
-Grid::select ( int x, int y, bool b )
+Grid::toggle_select ( int x, int y )
 {
     lock();
 
     event *e = _event( x, y, true );
 
     if ( e )
-        if ( b )
-            e->select();
-        else
+        if ( e->selected() )
             e->deselect();
+        else
+            e->select();
 
     unlock();
 }
@@ -503,6 +503,20 @@ Grid::select ( int l, int r )
     unlock();
 }
 
+/** select all (note) events in rectangle */
+void
+Grid::select ( int l, int r, int t, int b )
+{
+    tick_t start = x_to_ts( l );
+    tick_t end = x_to_ts( r );
+
+    lock();
+
+    _rw->events.select( start, end, y_to_note( t) , y_to_note( b ) );
+
+    unlock();
+}
+
 /** delete events from /x/ to /l/, compressing time. */
 void
 Grid::delete_time ( int l, int r )
@@ -523,6 +537,16 @@ Grid::select_none ( void )
     lock();
 
     _rw->events.select_none();
+
+    unlock();
+}
+
+void
+Grid::invert_selection ( void )
+{
+    lock();
+
+    _rw->events.invert_selection();
 
     unlock();
 }

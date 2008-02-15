@@ -456,15 +456,18 @@ else
             callback {if ( o->value() )
 {
 	Fl_Group *g = seq_detached_group;
+	seq_window->show();
 	g->add( sequence_tab );
 	sequence_tab->resize( g->x(), g->y(), g->w(), g->h() );
-	seq_window->show();
+	tabs->do_callback();
+	main_window->redraw();
 }
 else
 {
 	seq_window->hide();
 	tabs->insert( (Fl_Widget&)*sequence_tab, 0 );
 	sequence_tab->resize( pattern_tab->x(), pattern_tab->y(), pattern_tab->w(), pattern_tab->h() );
+	tabs->do_callback();	
 }}
             xywh {7 740 78 26}
           }
@@ -558,12 +561,11 @@ o->maximum( phrase::phrases() );}
           code0 {update_pattern_widgets();}
         } {
           Fl_Box pattern_canvas_widget {
-            label Pattern
+            label Pattern selected
             xywh {4 102 860 590} box FLAT_BOX color 37 labelsize 100 align 16 resizable
             code0 {\#include "draw.H"}
             code1 {o->set_canvas( pattern_c );}
             code2 {\#include "input.H"}
-            code3 {// o->box( FL_NO_BOX );}
             class O_Canvas
           }
           Fl_Group {} {open
@@ -1455,8 +1457,7 @@ if ( _c )
 else
 {
 	WARNING( "No canvas set for widget." );
-}} {selected
-    }
+}} {}
   }
   Function {set_canvas( Canvas *c )} {open
   } {

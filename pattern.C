@@ -459,8 +459,10 @@ try_again:
             }
             else
                 if ( me.is_note_off() )
+                {
                     if ( mapping.translate( &me ) )
                         midi_output_event( _port, &me, 0 );
+                }
                 else
                     /* any other event type */
                     midi_output_event( _port, &me );

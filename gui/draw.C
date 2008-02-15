@@ -173,7 +173,10 @@ gui_draw_shape ( int x, int y, int w, int h, int bw, int shape, int state, int f
         return;
 
     if ( flags & F_PLAYHEAD )
+    {
         state = state == FULL ? HIT : PLAYHEAD;
+        flags &= ~ F_SELECTION;
+    }
 
     if ( state == FULL && color  )
         fl_color( velocity_colors[ color ] );

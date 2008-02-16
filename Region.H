@@ -32,11 +32,14 @@ class Region : public Waveform
 
     void trim ( enum trim_e t, int X );
 
+    void init ( void );
+
 public:
 
     Region ( int X, int Y, int W, int H, const char *L=0 );
 
     Region ( const Region & rhs );
+    Region ( Clip *c );
 
     int handle ( int m );
     void draw ( void );

@@ -32,6 +32,12 @@ extern Timeline timeline;
 
 Region::Region ( int X, int Y, int W, int H, const char *L ) : Waveform( X, Y, W, H, L )
 {
+    init();
+}
+
+void
+Region::init ( void )
+{
     align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_CLIP );
     labeltype( FL_SHADOW_LABEL );
     labelcolor( FL_WHITE );
@@ -50,6 +56,11 @@ Region::Region ( const Region & rhs ) : Waveform( rhs )
     labeltype( rhs.labeltype() );
 
     _track = rhs._track;
+}
+
+Region::Region ( Clip *c ) : Waveform( c )
+{
+    init();
 }
 
 void
@@ -219,10 +230,10 @@ Region::draw ( void )
 
     draw_label();
 
-    static char pat[200];
+/*     static char pat[200]; */
 
-    sprintf( pat, "start %lu, end %lu", _start, _end );
+/*     sprintf( pat, "start %lu, end %lu", _start, _end ); */
 
-    fl_draw( pat, x(), y() + h() / 2 );
+/*     fl_draw( pat, x(), y() + h() / 2 ); */
 
 }

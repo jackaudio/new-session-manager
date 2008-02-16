@@ -4,7 +4,7 @@ CXXFLAGS=-ggdb
 LIBS=`fltk-config --ldflags`
 # CXXFLAGS=`fltk-config -cxxflags`
 
-OBJS=Waveform.o Region.o main.o
+OBJS=Waveform.o Region.o main.o Peaks.o
 
 .C.o:
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -14,3 +14,7 @@ test: $(OBJS)
 
 clean:
 	rm -f $(OBJS) test
+
+
+valgrind:
+	valgrind ./test

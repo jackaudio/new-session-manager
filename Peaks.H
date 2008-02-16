@@ -17,63 +17,41 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
+#include <stdlib.h>
 
-#include <FL/Fl_Widget.H>
-#include <FL/fl_draw.H>
+struct Peak {
+    float min;
+    float max;
+};
 
-#include "Timeline.H"
 
-typedef unsigned long tick_t;
-
-#include "Clip.H"
-
-class Waveform : public Fl_Widget
+class Peaks
 {
 
-protected:
+    struct peaks {
+        int chunksize;                                               /* should always be a power of 2 */
+        Peak data[];
+    };
 
-    Clip *_clip;                                                /* clip this waveform represents */
+    peaks *_peaks;
 
-//    float *_peaks;
-
-    tick_t _start;
-    tick_t _end;
-
-    float _scale;                                               /* vertical scaling */
-    float _zoom;                                                /* horizontal zoom */
+    size_t _len;
 
 public:
 
-    Waveform ( int X, int Y, int W, int H, const char *L=0 );
-
-    Waveform ( Clip *c ) : Fl_Widget( 0, 0, 500, 100, "" )
+    Peaks ( void )
         {
-            _clip = c;
+            _peaks = new peaks;
 
-            label( _clip->name() );
-
-            _end = _clip->length();
+            _peaks->chunksize = 0;
+//            _peaks->data = NULL;
+            _len = 0;
         }
 
-    Waveform ( const Waveform & rhs ) : Fl_Widget( rhs.x(), rhs.y(), rhs.w(), rhs.h(), rhs.label() )
-        {
-            _clip  = rhs._clip;
-            _start = rhs._start;
-            _end   = rhs._end;
+    void downsample ( int s, int e, float *mhi, float *mlo ) const;
+    void read ( int X, float *hi, float *lo ) const;
+    bool open ( const char *filename );
 
-            _scale = rhs._scale;
-        }
-
-
-    void draw ( void );
-    void draw ( int X, int Y, int W, int H );
-
-    void start ( tick_t s ) { _start = s; }
-    void end ( tick_t e ) { _end = e; }
-//    void peaks ( float *p ) { _peaks = p; }
-    void normalize ( void );
-
-    void read_peaks ( tick_t X, float *hi, float *lo );
+    Peak & operator[] ( int X ) const;
 
 };

@@ -19,61 +19,32 @@
 
 #pragma once
 
-#include <FL/Fl_Widget.H>
-#include <FL/fl_draw.H>
 
-#include "Timeline.H"
+typedef unsigned long nframes_t;
 
-typedef unsigned long tick_t;
+#include "Peaks.H"
 
-#include "Clip.H"
-
-class Waveform : public Fl_Widget
+class Clip
 {
+    char *_filename;
+    Peaks _peaks;
 
-protected:
-
-    Clip *_clip;                                                /* clip this waveform represents */
-
-//    float *_peaks;
-
-    tick_t _start;
-    tick_t _end;
-
-    float _scale;                                               /* vertical scaling */
-    float _zoom;                                                /* horizontal zoom */
+    nframes_t _length;                                              /* length of clip in samples */
 
 public:
 
-    Waveform ( int X, int Y, int W, int H, const char *L=0 );
-
-    Waveform ( Clip *c ) : Fl_Widget( 0, 0, 500, 100, "" )
+    Clip ( const char *filename )
         {
-            _clip = c;
+            _filename = NULL;
 
-            label( _clip->name() );
+            // FIXME: open file
 
-            _end = _clip->length();
+            _peaks.open( filename );
         }
 
-    Waveform ( const Waveform & rhs ) : Fl_Widget( rhs.x(), rhs.y(), rhs.w(), rhs.h(), rhs.label() )
-        {
-            _clip  = rhs._clip;
-            _start = rhs._start;
-            _end   = rhs._end;
+    Peaks const * peaks ( void ) { return &_peaks; }
 
-            _scale = rhs._scale;
-        }
+    const char *name ( void ) { return _filename; }
 
-
-    void draw ( void );
-    void draw ( int X, int Y, int W, int H );
-
-    void start ( tick_t s ) { _start = s; }
-    void end ( tick_t e ) { _end = e; }
-//    void peaks ( float *p ) { _peaks = p; }
-    void normalize ( void );
-
-    void read_peaks ( tick_t X, float *hi, float *lo );
-
+    nframes_t length ( void ) { return _length; }
 };

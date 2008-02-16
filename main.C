@@ -24,6 +24,7 @@
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Group.H>
+#include <FL/Fl_Slider.H>
 
 #include "Waveform.H"
 #include "Region.H"
@@ -48,6 +49,13 @@ init_colors ( void )
 
 Timeline timeline;
 
+void
+cb_zoom ( Fl_Widget *w, void *v )
+{
+    timeline.fpp = ((Fl_Slider*)w)->value();
+    timeline.scroll->redraw();
+}
+
 int
 main ( int argc, char **argv )
 {
@@ -56,8 +64,8 @@ main ( int argc, char **argv )
 
     Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
 
-    timeline.scroll = new Fl_Scroll( 0, 0, 800, 600 );
-    timeline.fpp = 100;
+    timeline.scroll = new Fl_Scroll( 0, 24, 800, 600 - 24 );
+    timeline.fpp = 1;
 
     Fl_Pack *tracks = new Fl_Pack( 0, 0, 5000, 5000 );
     tracks->type( Fl_Pack::VERTICAL );
@@ -72,30 +80,16 @@ main ( int argc, char **argv )
 //    pack->type( Fl_Pack::VERTICAL );
 //    pack->box( FL_DOWN_BOX );
 
-    Region *wave = new Region( 0, 0, 5000, 100, "foo" );
+    //  Region *wave = new Region( 0, 0, 5000, 100, "foo" );
 
-    FILE *fp;
+    Region *wave = new Region( new Clip( "foo.wav" ) );
 
-    fp = fopen( "peaks", "r" );
+    wave->resize( 0, 0, 500, 100 );
 
-    struct stat st;
-
-    fstat( fileno( fp ), &st );
-
-    size_t len = st.st_size;
-
-/*     float chunk_size; */
-/*     fread( &chunk_size, sizeof( chunk_size ), 1, fp ); */
-
-/*     printf( "%f\n", chunk_size ); */
-
-    float *peaks = new float[ len / sizeof( float ) ];
-
-    fread( peaks, len, 1, fp );
-
-    wave->peaks( peaks );
+    //   wave->peaks( peaks );
     wave->start( 0 );
-    wave->end( (len / sizeof( float )) / 2 );
+//    wave->end( (len / sizeof( float )) / 2 );
+    wave->end( 50 );
 
     wave->color( FL_CYAN );
     wave->selection_color( fl_darker( FL_GRAY ) );
@@ -124,6 +118,12 @@ main ( int argc, char **argv )
 
     tracks->end();
     timeline.scroll->end();
+
+    Fl_Slider *zoom_slider = new Fl_Slider( 0, 0, 800, 24 );
+    zoom_slider->type( 1 );
+    zoom_slider->callback( cb_zoom, 0 );
+    zoom_slider->range( 1, 256 );
+    zoom_slider->value( 1 );
 
     main_window->end();
     main_window->show();

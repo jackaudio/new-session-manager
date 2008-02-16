@@ -26,3 +26,5 @@ struct Timeline {
 
     float fpp;                                                  /* frames per pixel */
 };
+
+extern Timeline timeline;

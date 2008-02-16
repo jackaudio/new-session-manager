@@ -23,16 +23,21 @@
 #include <FL/Fl.H>
 
 #include "Waveform.H"
+#include "Clip.H"
 
+// extern Timeline timeline;
+// #include "Timeline.H"
 
 #include <math.h>
 
 extern Fl_Color velocity_colors[];
 
-
 Waveform::Waveform ( int X, int Y, int W, int H, const char *L ) : Fl_Widget( X, Y, W, H, L )
 {
     _scale = 1;
+    _clip = NULL;
+
+    _start = _end = 0;
 }
 
 int measure = 50;
@@ -56,6 +61,12 @@ Waveform::draw ( void )
 }
 
 void
+Waveform::read_peaks ( tick_t X, float *hi, float *lo )
+{
+    _clip->peaks()->read( X, hi, lo );
+}
+
+void
 Waveform::draw ( int X, int Y, int W, int H )
 {
     fl_push_clip( X, Y, W, H );
@@ -69,50 +80,53 @@ Waveform::draw ( int X, int Y, int W, int H )
     j = 0;
     for ( int x = X; x < X + W; ++x )
     {
-        float lo = _peaks[ start + j++ ];
-        float hi = _peaks[ start + j++ ];
+
+//        read_peaks( x, &hi, &lo );
+        Peak p = (*_clip->peaks())[  x ];
 
         int mid = Y + (H / 2);
 
         // FIXME: cache this stuff.
 //        fl_color( fl_color_average( selection_color(), fl_contrast( fl_darker( FL_BLUE ), selection_color() ),  fabs( hi - lo ) ) );
-        fl_color( fl_color_average( FL_RED, selection_color(),  fabs( hi - lo ) ) );
+        fl_color( fl_color_average( FL_RED, selection_color(),  fabs( p.max - p.min ) ) );
 
+        p.max *= _scale;
+        p.min *= _scale;
 
-        hi *= _scale;
-        lo *= _scale;
-
-        if ( lo < -1.0 || hi > 1.0 )
+        if ( p.min < -1.0 || p.max > 1.0 )
             fl_color( FL_RED );
 
-        fl_line( x, mid + (H / 2 * lo), x, mid + (H / 2 * hi) );
+        fl_line( x, mid + (H / 2 * p.min), x, mid + (H / 2 * p.max) );
 
     }
 
     fl_color( fl_darker( fl_darker( selection_color() ) ) );
 
+
     fl_line_style( FL_SOLID, 2 );
 
     fl_begin_line();
 
-    j = 0;
     for ( int x = X; x < X + W; ++x )
     {
-        float v = _peaks[ start + j ] * _scale;
-        j += 2;
-        fl_vertex( x, Y + (H / 2) + ((float)H / 2 *  v ));
+        Peak p = (*_clip->peaks())[ x ];
+
+        p.min *= _scale;
+
+        fl_vertex( x, Y + (H / 2) + ((float)H / 2 *  p.min ));
     }
 
     fl_end_line();
 
     fl_begin_line();
 
-    j = 1;
     for ( int x = X; x < X + W; ++x )
     {
-        float v = _peaks[ start + j ] * _scale;
-        j += 2;
-        fl_vertex( x, Y + (H / 2) + ((float)H / 2 *  v ));
+        Peak p = (*_clip->peaks())[ x ];
+
+        p.max *= _scale;
+
+        fl_vertex( x, Y + (H / 2) + ((float)H / 2 * p.max ));
     }
 
     fl_end_line();
@@ -126,52 +140,11 @@ Waveform::draw ( int X, int Y, int W, int H )
 
 
 void
-Waveform::downsample ( int s, int e, float *mhi, float *mlo )
-{
-    *mhi = -1.0;
-    *mlo = 1.0;
-
-    int start = s * 2;
-    int end = e * 2;
-
-    for ( int j = start; j < end; )
-    {
-        float lo = _peaks[ j++ ];
-        float hi = _peaks[ j++ ];
-
-        if ( hi > *mhi )
-            *mhi = hi;
-        if ( lo < *mlo )
-            *mlo = lo;
-    }
-}
-
-
-void
 Waveform::normalize ( void )
 {
-
-/*     float mhi = -1.0; */
-/*     float mlo = 1.0; */
-
-
     float mhi, mlo;
 
-    downsample( _start, _end, &mhi, &mlo );
-
-/*     int start = _start * 2; */
-/*     int end = _end * 2; */
-
-/*     for ( int j = start; j < end; ) */
-/*     { */
-/*         float lo = _peaks[ j++ ]; */
-/*         float hi = _peaks[ j++ ]; */
-
-/*         if ( hi > mhi ) */
-/*             mhi = hi; */
-/*         if ( lo < mlo ) */
-/*             mlo = lo; */
-/*     } */
+    _clip->peaks()->downsample( _start, _end, &mhi, &mlo );
 
     _scale = 1.0f / (float)mhi;
 
@@ -180,6 +153,5 @@ Waveform::normalize ( void )
 
     _scale = fabs( _scale );
 
-//    printf( "scale = %f, hi=%f, lo=%f\n", _scale, mhi, mlo );
     redraw();
 }

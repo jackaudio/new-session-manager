@@ -20,9 +20,8 @@
 #pragma once
 
 #include <FL/Fl_Group.H>
-
+#include <FL/Fl.H>
 #include "Region.H"
-
 
 #include <stdio.h>
 
@@ -41,13 +40,13 @@ class Track : public Fl_Group
 public:
 
     Track ( int X, int Y, int W, int H ) : Fl_Group( X, Y, W, H )
-    {
-        _next = _prev = NULL;
-        _name = NULL;
+        {
+            _next = _prev = NULL;
+            _name = NULL;
 
-        box( FL_DOWN_BOX );
-        color( fl_darker( FL_GRAY ) );
-    }
+            box( FL_DOWN_BOX );
+            color( fl_darker( FL_GRAY ) );
+        }
 
     Track *next ( void ) { return _next; }
     Track *prev ( void ) { return _prev; }
@@ -79,5 +78,34 @@ public:
 
             r->position( r->x(), y() );
             r->redraw();
+        }
+
+    int handle ( int m )
+        {
+            switch ( m )
+            {
+		case FL_DND_DRAG:
+		case FL_DND_RELEASE:
+		case FL_DND_ENTER:
+		case FL_DND_LEAVE:
+		case FL_ENTER:
+                    return 1;
+                case FL_PASTE:
+                {
+                    const char *file, *text = Fl::event_text();
+
+                    if ( ! strncmp( text, "file://", 7 ) )
+                        file = text + 7;
+                    else
+                        // error?
+                        file = text;
+
+                    printf( "pasted file \"%s\"\n", file );
+
+                    return 1;
+                }
+                default:
+                    return Fl_Group::handle( m );
+            }
         }
 };

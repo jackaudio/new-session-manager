@@ -23,6 +23,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -99,8 +100,12 @@ Peaks::open ( const char *filename )
 
     _peaks = (peaks*)mmap( NULL, _len, PROT_READ, MAP_SHARED, fd, 0 );
 
+    ::close( fd );
+
     if ( _peaks == MAP_FAILED )
         printf( "failed to create mapping! " );
 
     _len = (_len - sizeof( int )) / sizeof( Peak );
+
+    return true;
 }

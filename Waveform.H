@@ -24,8 +24,6 @@
 
 #include "Timeline.H"
 
-typedef unsigned long tick_t;
-
 #include "Clip.H"
 
 class Waveform : public Fl_Widget
@@ -35,10 +33,8 @@ protected:
 
     Clip *_clip;                                                /* clip this waveform represents */
 
-//    float *_peaks;
-
-    tick_t _start;
-    tick_t _end;
+    nframes_t _start;
+    nframes_t _end;
 
     float _scale;                                               /* vertical scaling */
     float _zoom;                                                /* horizontal zoom */
@@ -69,11 +65,11 @@ public:
     void draw ( void );
     void draw ( int X, int Y, int W, int H );
 
-    void start ( tick_t s ) { _start = s; }
-    void end ( tick_t e ) { _end = e; }
+    void start ( nframes_t s ) { _start = s; }
+    void end ( nframes_t e ) { _end = e; }
 //    void peaks ( float *p ) { _peaks = p; }
     void normalize ( void );
 
-    void read_peaks ( tick_t X, float *hi, float *lo );
+    void read_peaks ( int X, float *hi, float *lo );
 
 };

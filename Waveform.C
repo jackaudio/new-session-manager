@@ -61,7 +61,7 @@ Waveform::draw ( void )
 }
 
 void
-Waveform::read_peaks ( tick_t X, float *hi, float *lo )
+Waveform::read_peaks ( int X, float *hi, float *lo )
 {
     _clip->peaks()->read( X, hi, lo );
 }
@@ -75,7 +75,7 @@ Waveform::draw ( int X, int Y, int W, int H )
 
     int j;
 
-    int start = (_start + (X - x())) * 2;
+//    int start = (_start + (X - x())) * 2;
 
     j = 0;
     for ( int x = X; x < X + W; ++x )

@@ -21,10 +21,25 @@
 
 #include <FL/Fl_Scroll.H>
 
+#include "Clip.H"
+
 struct Timeline {
     Fl_Scroll *scroll;
 
     float fpp;                                                  /* frames per pixel */
+
+
+    int
+    ts_to_x( nframes_t ts )
+        {
+            return ts / fpp;
+        }
+
+    nframes_t
+    x_to_ts ( int x )
+        {
+            return x * fpp;
+        }
 };
 
 extern Timeline timeline;

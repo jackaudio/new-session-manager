@@ -47,6 +47,7 @@ Region::Region ( const Region & rhs ) : Waveform( rhs )
     color( rhs.color() );
     selection_color( rhs.selection_color() );
     labelcolor( rhs.labelcolor() );
+    labeltype( rhs.labeltype() );
 
     _track = rhs._track;
 }
@@ -92,12 +93,13 @@ Region::handle ( int m )
 
     static bool copied = false;
 
+    int X = Fl::event_x();
+    int Y = Fl::event_y();
+
     switch ( m )
     {
         case FL_PUSH:
         {
-            int X = Fl::event_x();
-            int Y = Fl::event_y();
 
             if ( Fl::event_state() & FL_SHIFT )
             {
@@ -117,13 +119,8 @@ Region::handle ( int m )
             }
             else
             {
-                ox = x() - Fl::event_x();
-                oy = y() - Fl::event_y();
-
-                if ( Fl::event_button() == 2 )
-                {
-//                    _track->add( new Region( *this ) );
-                }
+                ox = x() - X;
+                oy = y() - Y;
 
                 return 1;
             }
@@ -140,7 +137,7 @@ Region::handle ( int m )
             if ( Fl::event_state() & FL_SHIFT )
                 if ( trimming )
                 {
-                    trim( trimming, Fl::event_x() );
+                    trim( trimming, X );
                     return 1;
                 }
                 else
@@ -156,34 +153,33 @@ Region::handle ( int m )
                 }
             }
 
-            if ( ox + Fl::event_x() >= _track->x() )
-                position( ox + Fl::event_x(), y() );
+            if ( ox + X >= _track->x() )
+                position( ox + X, y() );
 
-            if ( Fl::event_y() > y() + h() )
+            if ( Y > y() + h() )
             {
                 if ( _track->next() )
                     _track->next()->add( this );
             }
             else
-                if ( Fl::event_y() < y() )
+                if ( Y < y() )
                 {
                     if ( _track->prev() )
                         _track->prev()->add( this );
                 }
-//            if ( Fl::event_y() - oy >= h() )
 
             parent()->redraw();
 
             fl_cursor( FL_CURSOR_MOVE );
 
-            if ( Fl::event_x() >= timeline.scroll->x() + timeline.scroll->w() ||
-                 Fl::event_x() <= timeline.scroll->x() )
+            if ( X >= timeline.scroll->x() + timeline.scroll->w() ||
+                 X <= timeline.scroll->x() )
             {
                 /* this drag needs to scroll */
 
                 long pos = timeline.scroll->xposition();
 
-                if ( Fl::event_x() <= timeline.scroll->x() )
+                if ( X <= timeline.scroll->x() )
                     pos -= 100;
                 else
                     pos += 100;

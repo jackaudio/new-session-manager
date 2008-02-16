@@ -57,6 +57,7 @@ main ( int argc, char **argv )
     Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
 
     timeline.scroll = new Fl_Scroll( 0, 0, 800, 600 );
+    timeline.fpp = 100;
 
     Fl_Pack *tracks = new Fl_Pack( 0, 0, 5000, 5000 );
     tracks->type( Fl_Pack::VERTICAL );
@@ -94,7 +95,7 @@ main ( int argc, char **argv )
 
     wave->peaks( peaks );
     wave->start( 0 );
-    wave->end( len );
+    wave->end( (len / sizeof( float )) / 2 );
 
     wave->color( FL_CYAN );
     wave->selection_color( fl_darker( FL_GRAY ) );

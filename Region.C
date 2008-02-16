@@ -67,7 +67,7 @@ Region::trim ( enum trim_e t, int X )
         case RIGHT:
         {
             int d = (x() + w()) - X;
-            _end -= d;
+            _end = _start + w() - d;
             resize( x(), y(), w() - d, h() );
             break;
         }
@@ -121,6 +121,9 @@ Region::handle ( int m )
             {
                 ox = x() - X;
                 oy = y() - Y;
+
+                if ( Fl::event_button() == 2 )
+                    normalize();
 
                 return 1;
             }
@@ -210,5 +213,16 @@ Region::draw ( void )
 
 //    fl_pop_clip();
 
+    fl_color( FL_RED );
+    fl_line( x() -  _start, y(), x() - _start, y() + h() );
+    fl_line( x() + w() - _end, y(), x() + w() - _end, y() + h() );
+
     draw_label();
+
+    static char pat[200];
+
+    sprintf( pat, "start %lu, end %lu", _start, _end );
+
+    fl_draw( pat, x(), y() + h() / 2 );
+
 }

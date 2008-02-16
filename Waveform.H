@@ -22,6 +22,8 @@
 #include <FL/Fl_Widget.H>
 #include <FL/fl_draw.H>
 
+#include "Timeline.H"
+
 typedef unsigned long tick_t;
 
 class Waveform : public Fl_Widget
@@ -43,20 +45,22 @@ public:
 
     Waveform ( const Waveform & rhs ) : Fl_Widget( rhs.x(), rhs.y(), rhs.w(), rhs.h(), rhs.label() )
         {
-//            Fl_Widget::resize( rhs.x(), rhs.y(), rhs.w(), rhs.h() );
-
             _peaks = rhs._peaks;
             _start = rhs._start;
             _end   = rhs._end;
+
+            _scale = rhs._scale;
         }
 
-    int handle ( int m );
-    void bubble_draw ( void );
+
     void draw ( void );
     void draw ( int X, int Y, int W, int H );
 
     void start ( tick_t s ) { _start = s; }
     void end ( tick_t e ) { _end = e; }
     void peaks ( float *p ) { _peaks = p; }
+    void normalize ( void );
+
+    void downsample ( int s, int e, float *mhi, float *mlo );
 
 };

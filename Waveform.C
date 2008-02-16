@@ -32,65 +32,8 @@ extern Fl_Color velocity_colors[];
 
 Waveform::Waveform ( int X, int Y, int W, int H, const char *L ) : Fl_Widget( X, Y, W, H, L )
 {
-
-
+    _scale = 1;
 }
-
-void
-Waveform::bubble_draw ( void )
-{
-    int inc = 10;
-    for ( tick_t x = 0; x < w() && x < _end; ++x )
-    {
-        float v1 = _peaks[ _start + (x * inc) ] / (float)127;
-        int lh1 = (float)(h() / 2) * fabs( v1 );
-        int ly1 = (h() / 2) - (lh1 / 2);
-
-
-        fl_color( selection_color() );
-
-        fl_color( velocity_colors[ 127 - (int)(127 * fabs( v1 )) ] );
-
-        fl_pie( x, y() + ly1, inc, lh1, 0, 360 );
-
-        fl_color( fl_darker( selection_color() ) );
-        fl_arc( x, y() + ly1, inc, lh1, 0, 360 );
-
-    }
-}
-
-int
-Waveform::handle ( int m )
-{
-
-    if ( m == FL_PUSH )
-    {
-        switch ( Fl::event_button() )
-        {
-            case 1:
-                _start += 100;
-                _end += 100;
-                redraw();
-                break;
-            case 3:
-                _start -= 100;
-                _end -= 100;
-                redraw();
-                break;
-            case 2:
-                selection_color( selection_color() + 10 );
-                redraw();
-                break;
-            default:
-                return 0;
-        }
-
-        return 1;
-    }
-
-    return 0;
-}
-
 
 int measure = 50;
 
@@ -121,34 +64,28 @@ Waveform::draw ( int X, int Y, int W, int H )
 
     int j;
 
-    float _scale = 2;
-
     int start = (_start + (X - x())) * 2;
 
     j = 0;
     for ( int x = X; x < X + W; ++x )
     {
-        float lo = _peaks[ start + j++ ] * _scale;
-        float hi = _peaks[ start + j++ ] * _scale;
-
+        float lo = _peaks[ start + j++ ];
+        float hi = _peaks[ start + j++ ];
 
         int mid = Y + (H / 2);
-
-        if ( lo < -1.0 || hi > 1.0 )
-            fl_color( FL_RED );
-        else
-            fl_color( selection_color() );
-
-//        fl_color( velocity_colors[ 127 - (int)( 127 * fabs( hi - lo ) ) ] );
 
         // FIXME: cache this stuff.
 //        fl_color( fl_color_average( selection_color(), fl_contrast( fl_darker( FL_BLUE ), selection_color() ),  fabs( hi - lo ) ) );
         fl_color( fl_color_average( FL_RED, selection_color(),  fabs( hi - lo ) ) );
 
-        if ( lo < -0.5 || hi > 0.5 )
+
+        hi *= _scale;
+        lo *= _scale;
+
+        if ( lo < -1.0 || hi > 1.0 )
             fl_color( FL_RED );
 
-        fl_line( x, mid + (H * lo), x, mid + (H * hi) );
+        fl_line( x, mid + (H / 2 * lo), x, mid + (H / 2 * hi) );
 
     }
 
@@ -163,7 +100,7 @@ Waveform::draw ( int X, int Y, int W, int H )
     {
         float v = _peaks[ start + j ] * _scale;
         j += 2;
-        fl_vertex( x, Y + (H / 2) + ((float)H *  v ));
+        fl_vertex( x, Y + (H / 2) + ((float)H / 2 *  v ));
     }
 
     fl_end_line();
@@ -175,7 +112,7 @@ Waveform::draw ( int X, int Y, int W, int H )
     {
         float v = _peaks[ start + j ] * _scale;
         j += 2;
-        fl_vertex( x, Y + (H / 2) + ((float)H *  v ));
+        fl_vertex( x, Y + (H / 2) + ((float)H / 2 *  v ));
     }
 
     fl_end_line();
@@ -185,4 +122,64 @@ Waveform::draw ( int X, int Y, int W, int H )
     fl_pop_matrix();
 
     fl_pop_clip();
+}
+
+
+void
+Waveform::downsample ( int s, int e, float *mhi, float *mlo )
+{
+    *mhi = -1.0;
+    *mlo = 1.0;
+
+    int start = s * 2;
+    int end = e * 2;
+
+    for ( int j = start; j < end; )
+    {
+        float lo = _peaks[ j++ ];
+        float hi = _peaks[ j++ ];
+
+        if ( hi > *mhi )
+            *mhi = hi;
+        if ( lo < *mlo )
+            *mlo = lo;
+    }
+}
+
+
+void
+Waveform::normalize ( void )
+{
+
+/*     float mhi = -1.0; */
+/*     float mlo = 1.0; */
+
+
+    float mhi, mlo;
+
+    downsample( _start, _end, &mhi, &mlo );
+
+/*     int start = _start * 2; */
+/*     int end = _end * 2; */
+
+/*     for ( int j = start; j < end; ) */
+/*     { */
+/*         float lo = _peaks[ j++ ]; */
+/*         float hi = _peaks[ j++ ]; */
+
+/*         if ( hi > mhi ) */
+/*             mhi = hi; */
+/*         if ( lo < mlo ) */
+/*             mlo = lo; */
+/*     } */
+
+    _scale = 1.0f / (float)mhi;
+
+    if ( _scale * mlo < -1.0 )
+        _scale = 1 / fabs( mlo );
+
+    _scale = fabs( _scale );
+
+//    printf( "scale = %f, hi=%f, lo=%f\n", _scale, mhi, mlo );
+    redraw();
 }

@@ -23,4 +23,6 @@
 
 struct Timeline {
     Fl_Scroll *scroll;
+
+    float fpp;                                                  /* frames per pixel */
 };

@@ -19,22 +19,65 @@
 
 #pragma once
 
-class Track;
+#include <FL/Fl_Group.H>
 
-#include "Waveform.H"
+#include "Region.H"
 
-class Region : public Waveform
+
+#include <stdio.h>
+
+#include <list>
+using std::list;
+
+class Track : public Fl_Group
 {
+    Track *_next;
+    Track *_prev;
 
-    Track *_track;
+    list <Region *> _regions;
+
+    char *_name;
 
 public:
 
-    Region ( int X, int Y, int W, int H, const char *L );
+    Track ( int X, int Y, int W, int H ) : Fl_Group( X, Y, W, H )
+    {
+        _next = _prev = NULL;
+        _name = NULL;
 
-    int handle ( int m );
-    void draw ( void );
+        box( FL_DOWN_BOX );
+        color( fl_darker( FL_GRAY ) );
+    }
 
-    Track * track ( void ) { return _track; }
-    void track ( Track *t ) {  _track = t; }
+    Track *next ( void ) { return _next; }
+    Track *prev ( void ) { return _prev; }
+    void prev ( Track *t ) { _prev = t; }
+    void next ( Track *t ) { _next = t; }
+
+    void remove_region ( Region *r )
+        {
+            _regions.remove( r );
+        }
+
+    void add ( Region *r )
+        {
+
+            printf( "add" );
+
+            if ( r->track() )
+            {
+                r->track()->remove_region( r );
+                r->track()->redraw();
+            }
+
+            _regions.push_back( r );
+
+            r->track( this );
+
+            Fl_Group::add( r );
+//            add( r );
+
+            r->position( r->x(), y() );
+            r->redraw();
+        }
 };

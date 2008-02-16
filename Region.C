@@ -17,18 +17,24 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include "Track.H"
 #include "Region.H"
 
 #include <FL/fl_draw.H>
 #include <FL/Fl.H>
 #include <FL/Fl_Group.H>
+#include <FL/Fl_Widget.H>
+
+#include <stdio.h>
 
 Region::Region ( int X, int Y, int W, int H, const char *L=0 ) : Waveform( X, Y, W, H, L )
 {
-    align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_BOTTOM );
+    align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_CLIP );
     labeltype( FL_SHADOW_LABEL );
     labelcolor( FL_WHITE );
     box( FL_PLASTIC_UP_BOX );
+
+    _track = NULL;
 }
 
 int
@@ -37,6 +43,9 @@ Region::handle ( int m )
 
     if ( Fl_Widget::handle( m ) )
         return 1;
+
+    static int ox, oy;
+
 
     switch ( m )
     {
@@ -73,9 +82,46 @@ Region::handle ( int m )
                 }
                 return 1;
             }
+            else
+            {
+                ox = x() - Fl::event_x();
+                oy = y() - Fl::event_y();
+
+                if ( Fl::event_button() == 2 )
+                {
+//                    _track->add( new Region( *this ) );
+                }
+
+                return 1;
+            }
             return 0;
             break;
         }
+        case FL_RELEASE:
+            fl_cursor( FL_CURSOR_DEFAULT );
+            return 1;
+        case FL_DRAG:
+
+            if ( ox + Fl::event_x() >= _track->x() )
+                position( ox + Fl::event_x(), y() );
+
+            if ( Fl::event_y() > y() + h() )
+            {
+                if ( _track->next() )
+                    _track->next()->add( this );
+            }
+            else
+                if ( Fl::event_y() < y() )
+                {
+                    if ( _track->prev() )
+                        _track->prev()->add( this );
+                }
+//            if ( Fl::event_y() - oy >= h() )
+
+            parent()->redraw();
+
+            fl_cursor( FL_CURSOR_MOVE );
+            return 1;
         default:
             return 0;
             break;

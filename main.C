@@ -35,6 +35,8 @@
 
 Fl_Color velocity_colors[128];
 
+#include "Track.H"
+
 void
 init_colors ( void )
 {
@@ -52,10 +54,16 @@ main ( int argc, char **argv )
 
     Fl_Scroll *scroll = new Fl_Scroll( 0, 0, 800, 600 );
 
-    Fl_Group *pack = new Fl_Group( 0, 0, 5000, 600 );
+    Fl_Pack *tracks = new Fl_Pack( 0, 0, 5000, 5000 );
+    tracks->type( Fl_Pack::VERTICAL );
+
+
+//    Fl_Group *pack = new Fl_Group( 0, 0, 5000, 600 );
+
+    Track *track1 = new Track( 40, 0, 5000, 100 );
 
 //    pack->type( Fl_Pack::VERTICAL );
-    pack->box( FL_DOWN_BOX );
+//    pack->box( FL_DOWN_BOX );
 
     Region *wave = new Region( 0, 0, 5000, 100, "foo" );
 
@@ -78,19 +86,34 @@ main ( int argc, char **argv )
 
     fread( peaks, len, 1, fp );
 
-
     wave->peaks( peaks );
     wave->start( 0 );
     wave->end( len );
 
     wave->color( FL_CYAN );
     wave->selection_color( fl_darker( FL_GRAY ) );
-
     wave->selection_color( FL_GREEN );
 
-    pack->add( wave );
+    track1->add( wave );
 
-    pack->end();
+    track1->end();
+
+    Track *track2 = new Track( 40, 0, 5000, 100 );
+
+    Region *wave2 = new Region( 0, 0, 350, 100, "bar" );
+
+    wave2->peaks( peaks );
+    wave2->start( 0 );
+    wave2->end( len / 2 );
+
+    track2->add( wave2 );
+
+    track2->end();
+
+    track1->next( track2 );
+    track2->prev( track1 );
+
+    tracks->end();
     scroll->end();
 
     main_window->end();

@@ -11,3 +11,6 @@ OBJS=Waveform.o Region.o main.o
 
 test: $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@
+
+clean:
+	rm -f $(OBJS) test

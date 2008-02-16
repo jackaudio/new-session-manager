@@ -143,6 +143,8 @@ Waveform::draw ( int X, int Y, int W, int H )
 
     fl_color( fl_darker( fl_darker( selection_color() ) ) );
 
+    fl_line_style( FL_SOLID, 2 );
+
     fl_begin_line();
 
     j = 0;
@@ -166,6 +168,8 @@ Waveform::draw ( int X, int Y, int W, int H )
     }
 
     fl_end_line();
+
+    fl_line_style( FL_SOLID, 0 );
 
     fl_pop_matrix();
 

@@ -36,9 +36,8 @@ Waveform::Waveform ( int X, int Y, int W, int H, const char *L ) : Fl_Widget( X,
 
 }
 
-#if 0
 void
-Waveform::buble_draw ( void )
+Waveform::bubble_draw ( void )
 {
     int inc = 10;
     for ( tick_t x = 0; x < w() && x < _end; ++x )
@@ -59,7 +58,6 @@ Waveform::buble_draw ( void )
 
     }
 }
-#endif
 
 int
 Waveform::handle ( int m )
@@ -117,15 +115,13 @@ Waveform::draw ( void )
 void
 Waveform::draw ( int X, int Y, int W, int H )
 {
-//    fl_push_clip( X, Y, W, H );
+    fl_push_clip( X, Y, W, H );
 
     fl_push_matrix();
 
-    fl_color( selection_color() );
-
     int j;
 
-    float _scale = 1;
+    float _scale = 2;
 
     int start = (_start + (X - x())) * 2;
 
@@ -135,7 +131,22 @@ Waveform::draw ( int X, int Y, int W, int H )
         float lo = _peaks[ start + j++ ] * _scale;
         float hi = _peaks[ start + j++ ] * _scale;
 
+
         int mid = Y + (H / 2);
+
+        if ( lo < -1.0 || hi > 1.0 )
+            fl_color( FL_RED );
+        else
+            fl_color( selection_color() );
+
+//        fl_color( velocity_colors[ 127 - (int)( 127 * fabs( hi - lo ) ) ] );
+
+        // FIXME: cache this stuff.
+//        fl_color( fl_color_average( selection_color(), fl_contrast( fl_darker( FL_BLUE ), selection_color() ),  fabs( hi - lo ) ) );
+        fl_color( fl_color_average( FL_RED, selection_color(),  fabs( hi - lo ) ) );
+
+        if ( lo < -0.5 || hi > 0.5 )
+            fl_color( FL_RED );
 
         fl_line( x, mid + (H * lo), x, mid + (H * hi) );
 
@@ -173,33 +184,5 @@ Waveform::draw ( int X, int Y, int W, int H )
 
     fl_pop_matrix();
 
-    //  fl_pop_clip();
+    fl_pop_clip();
 }
-
-#if 0
-void
-Waveform::draw ( void )
-{
-    fl_push_clip( x(), y(), w(), h() );
-    fl_push_matrix();
-
-    int inc = 1;
-    int j = 0;
-    for ( tick_t x = 0; x < w() && x < _end; ++x )
-    {
-        float lo = _peaks[ _start + j++ ];
-        float hi = _peaks[ _start + j++ ];
-
-        int mid = y() + (h() / 2);
-
-        int rx = this->x() + x;
-
-        fl_color( selection_color() );
-
-        fl_line( rx, mid + (h() * lo), rx, mid + (h() * hi) );
-    }
-
-    fl_pop_matrix();
-
-}
-#endif

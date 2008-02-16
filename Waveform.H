@@ -51,6 +51,7 @@ public:
         }
 
     int handle ( int m );
+    void bubble_draw ( void );
     void draw ( void );
     void draw ( int X, int Y, int W, int H );
 

@@ -20,6 +20,7 @@
 
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
+#include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Group.H>
@@ -50,13 +51,15 @@ main ( int argc, char **argv )
 
     init_colors();
 
-    Fl_Window *main_window = new Fl_Window( 0, 0, 800, 600 );
+    Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
 
     Fl_Scroll *scroll = new Fl_Scroll( 0, 0, 800, 600 );
 
     Fl_Pack *tracks = new Fl_Pack( 0, 0, 5000, 5000 );
     tracks->type( Fl_Pack::VERTICAL );
 
+    Fl::get_system_colors();
+    Fl::scheme( "plastic" );
 
 //    Fl_Group *pack = new Fl_Group( 0, 0, 5000, 600 );
 
@@ -103,8 +106,8 @@ main ( int argc, char **argv )
     Region *wave2 = new Region( 0, 0, 350, 100, "bar" );
 
     wave2->peaks( peaks );
-    wave2->start( 0 );
-    wave2->end( len / 2 );
+    wave2->start( 300 );
+    wave2->end( len );
 
     track2->add( wave2 );
 

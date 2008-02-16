@@ -37,6 +37,35 @@ Region::Region ( int X, int Y, int W, int H, const char *L=0 ) : Waveform( X, Y,
     _track = NULL;
 }
 
+void
+Region::trim ( enum trim_e t, int X )
+{
+    switch ( t )
+    {
+        case LEFT:
+        {
+            int d = X - x();
+            _start += d;
+            resize( x() + d, y(), w() - d, h() );
+            break;
+        }
+        case RIGHT:
+        {
+            int d = (x() + w()) - X;
+            _end -= d;
+            resize( x(), y(), w() - d, h() );
+            break;
+        }
+        default:
+            return;
+
+    }
+
+    redraw();
+    parent()->redraw();
+
+}
+
 int
 Region::handle ( int m )
 {
@@ -45,7 +74,7 @@ Region::handle ( int m )
         return 1;
 
     static int ox, oy;
-
+    static enum trim_e trimming;
 
     switch ( m )
     {
@@ -59,27 +88,15 @@ Region::handle ( int m )
                 switch ( Fl::event_button() )
                 {
                     case 1:
-                    {
-                        /* trim */
-                        int d = X - x();
-                        _start += d;
-                        resize( x() + d, y(), w() - d, h() );
-                        redraw();
-                        parent()->redraw();
+                        trim( trimming = LEFT, X );
                         break;
-                    }
                     case 3:
-                    {
-                        int d = (x() + w()) - X;
-                        _end -= d;
-                        resize( x(), y(), w() - d, h() );
-                        redraw();
-                        parent()->redraw();
+                        trim( trimming = RIGHT, X );
                         break;
-                    }
                     default:
                         return 0;
                 }
+                fl_cursor( FL_CURSOR_WE );
                 return 1;
             }
             else
@@ -101,6 +118,15 @@ Region::handle ( int m )
             fl_cursor( FL_CURSOR_DEFAULT );
             return 1;
         case FL_DRAG:
+
+            if ( Fl::event_state() & FL_CTRL )
+                if ( trimming )
+                {
+                    trim( trimming, Fl::event_x() );
+                    return 1;
+                }
+                else
+                    return 0;
 
             if ( ox + Fl::event_x() >= _track->x() )
                 position( ox + Fl::event_x(), y() );
@@ -135,7 +161,11 @@ Region::draw ( void )
 {
     draw_box();
 
+//    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
+
     Waveform::draw();
+
+//    fl_pop_clip();
 
     draw_label();
 }

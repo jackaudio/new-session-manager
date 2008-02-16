@@ -28,6 +28,10 @@ class Region : public Waveform
 
     Track *_track;
 
+    enum trim_e { NO, LEFT, RIGHT };
+
+    void trim ( enum trim_e t, int X );
+
 public:
 
     Region ( int X, int Y, int W, int H, const char *L );

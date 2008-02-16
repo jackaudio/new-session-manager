@@ -30,7 +30,7 @@
 
 extern Timeline timeline;
 
-Region::Region ( int X, int Y, int W, int H, const char *L=0 ) : Waveform( X, Y, W, H, L )
+Region::Region ( int X, int Y, int W, int H, const char *L ) : Waveform( X, Y, W, H, L )
 {
     align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_CLIP );
     labeltype( FL_SHADOW_LABEL );
@@ -38,6 +38,17 @@ Region::Region ( int X, int Y, int W, int H, const char *L=0 ) : Waveform( X, Y,
     box( FL_PLASTIC_UP_BOX );
 
     _track = NULL;
+}
+
+Region::Region ( const Region & rhs ) : Waveform( rhs )
+{
+    box( rhs.box() );
+    align( rhs.align() );
+    color( rhs.color() );
+    selection_color( rhs.selection_color() );
+    labelcolor( rhs.labelcolor() );
+
+    _track = rhs._track;
 }
 
 void
@@ -79,6 +90,8 @@ Region::handle ( int m )
     static int ox, oy;
     static enum trim_e trimming;
 
+    static bool copied = false;
+
     switch ( m )
     {
         case FL_PUSH:
@@ -86,7 +99,7 @@ Region::handle ( int m )
             int X = Fl::event_x();
             int Y = Fl::event_y();
 
-            if ( Fl::event_state() & FL_CTRL )
+            if ( Fl::event_state() & FL_SHIFT )
             {
                 switch ( Fl::event_button() )
                 {
@@ -119,10 +132,12 @@ Region::handle ( int m )
         }
         case FL_RELEASE:
             fl_cursor( FL_CURSOR_DEFAULT );
+            copied = false;
+            trimming = NO;
             return 1;
         case FL_DRAG:
 
-            if ( Fl::event_state() & FL_CTRL )
+            if ( Fl::event_state() & FL_SHIFT )
                 if ( trimming )
                 {
                     trim( trimming, Fl::event_x() );
@@ -130,6 +145,16 @@ Region::handle ( int m )
                 }
                 else
                     return 0;
+
+            if ( Fl::event_state() & FL_CTRL )
+            {
+                if ( ! copied )
+                {
+                    _track->add( new Region( *this ) );
+                    copied = true;
+                    return 1;
+                }
+            }
 
             if ( ox + Fl::event_x() >= _track->x() )
                 position( ox + Fl::event_x(), y() );

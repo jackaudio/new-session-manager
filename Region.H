@@ -34,7 +34,9 @@ class Region : public Waveform
 
 public:
 
-    Region ( int X, int Y, int W, int H, const char *L );
+    Region ( int X, int Y, int W, int H, const char *L=0 );
+
+    Region ( const Region & rhs );
 
     int handle ( int m );
     void draw ( void );

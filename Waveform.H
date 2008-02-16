@@ -26,7 +26,9 @@ typedef unsigned long tick_t;
 
 class Waveform : public Fl_Widget
 {
+
 protected:
+
     float *_peaks;
 
     tick_t _start;
@@ -37,7 +39,16 @@ protected:
 
 public:
 
-    Waveform ( int X, int Y, int W, int H, const char *L );
+    Waveform ( int X, int Y, int W, int H, const char *L=0 );
+
+    Waveform ( const Waveform & rhs ) : Fl_Widget( rhs.x(), rhs.y(), rhs.w(), rhs.h(), rhs.label() )
+        {
+//            Fl_Widget::resize( rhs.x(), rhs.y(), rhs.w(), rhs.h() );
+
+            _peaks = rhs._peaks;
+            _start = rhs._start;
+            _end   = rhs._end;
+        }
 
     int handle ( int m );
     void draw ( void );

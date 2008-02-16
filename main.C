@@ -106,7 +106,9 @@ main ( int argc, char **argv )
 
     Track *track2 = new Track( 40, 0, 5000, 100 );
 
-    Region *wave2 = new Region( 0, 0, 350, 100, "bar" );
+    // Region *wave2 = new Region( 0, 0, 350, 100, "bar" );
+
+    Region *wave2 = new Region( *wave );
 
     wave2->peaks( peaks );
     wave2->start( 300 );

@@ -30,7 +30,7 @@
 extern Fl_Color velocity_colors[];
 
 
-Waveform::Waveform ( int X, int Y, int W, int H, const char *L=0 ) : Fl_Widget( X, Y, W, H, L )
+Waveform::Waveform ( int X, int Y, int W, int H, const char *L ) : Fl_Widget( X, Y, W, H, L )
 {
 
 

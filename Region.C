@@ -179,13 +179,19 @@ Region::handle ( int m )
             if ( Fl::event_x() >= timeline.scroll->x() + timeline.scroll->w() ||
                  Fl::event_x() <= timeline.scroll->x() )
             {
-                int d;
-                if ( Fl::event_x() <= timeline.scroll->x() )
-                    d = -100;
-                else
-                    d = 100;
                 /* this drag needs to scroll */
-                timeline.scroll->position( timeline.scroll->xposition() + d, timeline.scroll->yposition() );
+
+                long pos = timeline.scroll->xposition();
+
+                if ( Fl::event_x() <= timeline.scroll->x() )
+                    pos -= 100;
+                else
+                    pos += 100;
+
+                if ( pos < 0 )
+                    pos = 0;
+
+                timeline.scroll->position( pos, timeline.scroll->yposition() );
             }
 
             return 1;

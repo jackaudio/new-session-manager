@@ -110,9 +110,9 @@ main ( int argc, char **argv )
 
     Region *wave2 = new Region( *wave );
 
-    wave2->peaks( peaks );
-    wave2->start( 300 );
-    wave2->end( len );
+/*     wave2->peaks( peaks ); */
+/*     wave2->start( 300 ); */
+/*     wave2->end( len ); */
 
     track2->add( wave2 );
 

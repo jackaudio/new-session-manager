@@ -37,6 +37,7 @@
 Fl_Color velocity_colors[128];
 
 #include "Track.H"
+#include "Timeline.H"
 
 void
 init_colors ( void )
@@ -44,6 +45,8 @@ init_colors ( void )
     for ( int i = 128; i--; )
         velocity_colors[i] = fl_rgb_color( 23, 255 - i * 2, 32 );
 }
+
+Timeline timeline;
 
 int
 main ( int argc, char **argv )
@@ -53,7 +56,7 @@ main ( int argc, char **argv )
 
     Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
 
-    Fl_Scroll *scroll = new Fl_Scroll( 0, 0, 800, 600 );
+    timeline.scroll = new Fl_Scroll( 0, 0, 800, 600 );
 
     Fl_Pack *tracks = new Fl_Pack( 0, 0, 5000, 5000 );
     tracks->type( Fl_Pack::VERTICAL );
@@ -117,7 +120,7 @@ main ( int argc, char **argv )
     track2->prev( track1 );
 
     tracks->end();
-    scroll->end();
+    timeline.scroll->end();
 
     main_window->end();
     main_window->show();

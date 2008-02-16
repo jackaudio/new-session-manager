@@ -19,6 +19,7 @@
 
 #include "Track.H"
 #include "Region.H"
+#include "Timeline.H"
 
 #include <FL/fl_draw.H>
 #include <FL/Fl.H>
@@ -26,6 +27,8 @@
 #include <FL/Fl_Widget.H>
 
 #include <stdio.h>
+
+extern Timeline timeline;
 
 Region::Region ( int X, int Y, int W, int H, const char *L=0 ) : Waveform( X, Y, W, H, L )
 {
@@ -147,6 +150,19 @@ Region::handle ( int m )
             parent()->redraw();
 
             fl_cursor( FL_CURSOR_MOVE );
+
+            if ( Fl::event_x() >= timeline.scroll->x() + timeline.scroll->w() ||
+                 Fl::event_x() <= timeline.scroll->x() )
+            {
+                int d;
+                if ( Fl::event_x() <= timeline.scroll->x() )
+                    d = -100;
+                else
+                    d = 100;
+                /* this drag needs to scroll */
+                timeline.scroll->position( timeline.scroll->xposition() + d, timeline.scroll->yposition() );
+            }
+
             return 1;
         default:
             return 0;

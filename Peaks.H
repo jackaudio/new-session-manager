@@ -63,6 +63,7 @@ class Peaks
     size_t _len;
 
     void read_peaks ( int s, int e, int npeaks, int chunksize ) const;
+    int clip_read_peaks ( Peak *peaks, int npeaks, int chunksize ) const;
 
 public:
 
@@ -71,9 +72,7 @@ public:
             _peaks = new peakdata;
 
             _peaks->chunksize = 0;
-//            _peaks->data = NULL;
             _len = 0;
-
             _clip = c;
         }
 

@@ -79,9 +79,8 @@ Peaks::downsample ( int s, int e, float *mhi, float *mlo ) const
 }
 
 
-static
 int
-sf_read_peaks ( SNDFILE *in, Peak *peaks, int npeaks, int chunksize )
+Peaks::clip_read_peaks ( Peak *peaks, int npeaks, int chunksize ) const
 {
     float *fbuf = new float[ chunksize ];
 
@@ -91,7 +90,7 @@ sf_read_peaks ( SNDFILE *in, Peak *peaks, int npeaks, int chunksize )
     for ( i = 0; i < npeaks; ++i )
     {
         /* read in a buffer */
-        len = sf_read_float( in, fbuf, chunksize );
+        len = _clip->read( fbuf, chunksize );
 
         Peak &p = peaks[ i ];
         p.min = 0;
@@ -126,22 +125,14 @@ Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
         peakbuf.buf = (peakdata*)realloc( peakbuf.buf, sizeof( peakdata ) + (peakbuf.size * sizeof( Peak )) );
     }
 
-    memset( peakbuf.buf->data, 0, peakbuf.size * sizeof( Peak )  );
-
-    SNDFILE *in;
-    SF_INFO si;
-
-    memset( &si, 0, sizeof( si ) );
-
-    in = sf_open( _clip->name(), SFM_READ, &si );
-
-    sf_seek( in, s, SEEK_SET );
+    _clip->open();
+    _clip->seek( s );
 
     peakbuf.offset = s;
     peakbuf.buf->chunksize = chunksize;
-    peakbuf.len = sf_read_peaks( in, peakbuf.buf->data, npeaks, chunksize );
+    peakbuf.len = clip_read_peaks( peakbuf.buf->data, npeaks, chunksize );
 
-    sf_close( in );
+    _clip->close();
 }
 
 
@@ -262,11 +253,6 @@ Peaks::make_peaks ( const char *filename, int chunksize )
     memset( &si, 0, sizeof( si ) );
 
     in = sf_open( filename, SFM_READ, &si );
-
-    if ( si.channels != 1 )
-        abort();
-    if ( si.samplerate != timeline.sample_rate )
-        abort();
 
     FILE *fp = fopen( peakname( filename ), "w" );
 

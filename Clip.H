@@ -25,16 +25,16 @@ typedef unsigned long nframes_t;
 
 class Clip
 {
-    char *_filename;
+    const char *_filename;
     Peaks _peaks;
 
     nframes_t _length;                                              /* length of clip in samples */
 
 public:
 
-    Clip ( const char *filename )
+    Clip ( const char *filename ) : _peaks( this )
         {
-            _filename = NULL;
+            _filename = filename;
 
             // FIXME: open file
 

@@ -26,6 +26,7 @@ struct Peak {
     float max;
 };
 
+class Clip;
 
 class Peaks
 {
@@ -35,19 +36,26 @@ class Peaks
         Peak data[];
     };
 
+
+    Clip *_clip;
+
     peaks *_peaks;
 
     size_t _len;
 
+    void read_peaks ( int s, int e, float *mhi, float *mlo ) const;
+
 public:
 
-    Peaks ( void )
+    Peaks ( Clip *c )
         {
             _peaks = new peaks;
 
             _peaks->chunksize = 0;
 //            _peaks->data = NULL;
             _len = 0;
+
+            _clip = c;
         }
 
     void downsample ( int s, int e, float *mhi, float *mlo ) const;

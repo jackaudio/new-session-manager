@@ -28,6 +28,7 @@ struct Timeline {
 
     float fpp;                                                  /* frames per pixel */
 
+    nframes_t sample_rate;
 
     int
     ts_to_x( nframes_t ts )

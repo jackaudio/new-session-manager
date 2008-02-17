@@ -31,6 +31,7 @@
 
 #include <sndfile.h>
 
+#include "Clip.H"
 
 void
 Peaks::downsample ( int s, int e, float *mhi, float *mlo ) const
@@ -63,6 +64,54 @@ Peaks::read ( int X, float *hi, float *lo ) const
     downsample( start, end, hi, lo );
 }
 
+void
+Peaks::read_peaks ( int s, int e, float *mhi, float *mlo ) const
+{
+    /* this could be faster, but who cares. Don't zoom in so far! */
+
+    SNDFILE *in;
+    SF_INFO si;
+
+    memset( &si, 0, sizeof( si ) );
+
+    in = sf_open( _clip->name(), SFM_READ, &si );
+
+/*     if ( si.channels != 1 ) */
+/*         abort(); */
+/*     if ( si.samplerate != timeline.sample_rate ) */
+/*         abort(); */
+
+    sf_seek( in, s, SEEK_SET );
+
+    int chunksize = e - s;
+
+    float *fbuf = new float[ chunksize ];
+
+    size_t len;
+
+    /* read in a buffer */
+    len = sf_read_float( in, fbuf, chunksize );
+
+    Peak p;
+    p.max = -1.0;
+    p.min = 1.0;
+
+    for ( int i = 0; i < len; ++i )
+    {
+        if ( fbuf[i] > p.max )
+            p.max = fbuf[i];
+        if ( fbuf[i] < p.min )
+            p.min = fbuf[i];
+    }
+
+    sf_close( in );
+
+    delete fbuf;
+
+    *mhi = p.max;
+    *mlo = p.min;
+}
+
 
 /* virtual array. Index is a Pixel value, and it returns the
  * (resampled) peaks for that pixel based on the current timeline
@@ -75,16 +124,18 @@ Peaks::operator[] ( int X ) const
 
     if ( timeline.fpp < _peaks->chunksize )
     {
-        printf( "we need to a smaller chunksize! examine the source!\n" );
+        int start = timeline.x_to_ts( X );
+        int end   = timeline.x_to_ts( X + 1 );
+
+        read_peaks( start, end, &p.max, &p.min );
     }
+    else
+    {
+        int start = timeline.x_to_ts( X ) / _peaks->chunksize;
+        int end   = timeline.x_to_ts( X + 1 ) / _peaks->chunksize;
 
-    int start = timeline.x_to_ts( X ) / _peaks->chunksize;
-    int end   = timeline.x_to_ts( X + 1 ) / _peaks->chunksize;
-
-/*     int start = X * timeline.fpp; */
-/*     int end = (X + 1) * timeline.fpp; */
-
-    downsample( start, end, &p.max, &p.min );
+        downsample( start, end, &p.max, &p.min );
+    }
 
     return p;
 }
@@ -179,6 +230,8 @@ Peaks::make_peaks ( const char *filename, int chunksize )
 
     if ( si.channels != 1 )
         abort();
+    if ( si.samplerate != timeline.sample_rate )
+        abort();
 
     FILE *fp = fopen( peakname( filename ), "w" );
 
@@ -216,7 +269,7 @@ Peaks::make_peaks ( const char *filename, int chunksize )
     while ( len == chunksize );
 
     fclose( fp );
-
     sf_close( in );
 
+    delete fbuf;
 }

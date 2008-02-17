@@ -237,9 +237,10 @@ Region::draw ( void )
 
 //    fl_pop_clip();
 
-    fl_color( FL_RED );
-    fl_line( x() -  _start, y(), x() - _start, y() + h() );
-    fl_line( x() + w() - _end, y(), x() + w() - _end, y() + h() );
+
+/*     fl_color( FL_RED ); */
+/*     fl_line( x() - timeline.ts_to_x(  _start ), y(), x() - timeline.ts_to_x( _start ), y() + h() ); */
+/*     fl_line( x() + w() - _end, y(), x() + w() - _end, y() + h() ); */
 
     draw_label();
 

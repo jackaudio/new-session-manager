@@ -67,6 +67,9 @@ main ( int argc, char **argv )
     timeline.scroll = new Fl_Scroll( 0, 24, 800, 600 - 24 );
     timeline.fpp = 256;
 
+
+    timeline.sample_rate = 44100;
+
     Fl_Pack *tracks = new Fl_Pack( 0, 0, 5000, 5000 );
     tracks->type( Fl_Pack::VERTICAL );
 

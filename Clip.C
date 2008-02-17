@@ -46,7 +46,7 @@ Clip::Clip ( const char *filename ) : _peaks( this )
 
     sf_close( in );
 
-    _peaks.open( filename );
+    _peaks.open();
 }
 
 

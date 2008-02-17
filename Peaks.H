@@ -80,10 +80,10 @@ public:
 
     void downsample ( int s, int e, float *mhi, float *mlo ) const;
     void read ( int X, float *hi, float *lo ) const;
-    bool open ( const char *filename );
+    bool open ( void );
 
-    bool current ( const char *filename );
-    bool make_peaks ( const char *filename, int chunksize );
+    bool current ( void ) const;
+    bool make_peaks ( int chunksize );
 
     Peak & operator[] ( int X ) const;
 

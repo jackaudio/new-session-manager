@@ -179,11 +179,13 @@ peakname ( const char *filename )
 }
 
 bool
-Peaks::open ( const char *filename )
+Peaks::open ( void )
 {
+    const char *filename = _clip->name();
+
     int fd;
 
-    make_peaks( filename, 256 );
+    make_peaks( 256 );
 
     if ( ( fd = ::open( peakname( filename ), O_RDONLY ) ) < 0 )
         return false;
@@ -208,24 +210,16 @@ Peaks::open ( const char *filename )
     return true;
 }
 
-
-void
-long_to_float( long *buf, int len )
-{
-    for ( int i = len; i--; )
-        *((float*)buf) = *buf / 32768;
-}
-
 /** returns false if peak file for /filename/ is out of date  */
 bool
-Peaks::current ( const char *filename )
+Peaks::current ( void ) const
 {
     int sfd, pfd;
 
-    if ( ( sfd = ::open( filename, O_RDONLY ) ) < 0 )
+    if ( ( sfd = ::open( _clip->name(), O_RDONLY ) ) < 0 )
         return true;
 
-    if ( ( pfd = ::open( peakname( filename ), O_RDONLY ) ) < 0 )
+    if ( ( pfd = ::open( peakname( _clip->name() ), O_RDONLY ) ) < 0 )
          return false;
 
     struct stat sst, pst;
@@ -242,9 +236,11 @@ Peaks::current ( const char *filename )
 
 /** build peaks file for /filename/ if necessary */
 bool
-Peaks::make_peaks ( const char *filename, int chunksize )
+Peaks::make_peaks ( int chunksize )
 {
-    if ( current( filename ) )
+    const char *filename = _clip->name();
+
+    if ( current() )
         return true;
 
     if ( ! _clip->open() )
@@ -272,4 +268,6 @@ Peaks::make_peaks ( const char *filename, int chunksize )
     _clip->close();
 
     fclose( fp );
+
+    return true;
 }

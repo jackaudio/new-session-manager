@@ -247,50 +247,29 @@ Peaks::make_peaks ( const char *filename, int chunksize )
     if ( current( filename ) )
         return true;
 
-    SNDFILE *in;
-    SF_INFO si;
-
-    memset( &si, 0, sizeof( si ) );
-
-    in = sf_open( filename, SFM_READ, &si );
+    if ( ! _clip->open() )
+        return false;
 
     FILE *fp = fopen( peakname( filename ), "w" );
 
     if ( fp == NULL )
     {
-        sf_close( in );
-        /* return fals */
+        _clip->close();
         return false;
     }
 
     /* write chunksize first */
     fwrite( &chunksize, sizeof( int ), 1, fp );
 
-    float *fbuf = new float[ chunksize ];
-
     size_t len;
     do {
-        /* read in a buffer */
-        len = sf_read_float( in, fbuf, chunksize );
-
         Peak p;
-        p.max = -1.0;
-        p.min = 1.0;
-
-        for ( int i = 0; i < len; ++i )
-        {
-            if ( fbuf[i] > p.max )
-                p.max = fbuf[i];
-            if ( fbuf[i] < p.min )
-                p.min = fbuf[i];
-        }
-
+        len = clip_read_peaks( &p, 1, chunksize );
         fwrite(  &p, sizeof( Peak ), 1, fp );
     }
-    while ( len == chunksize );
+    while ( len );
+
+    _clip->close();
 
     fclose( fp );
-    sf_close( in );
-
-    delete fbuf;
 }

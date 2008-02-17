@@ -33,11 +33,35 @@
 
 #include "Clip.H"
 
+#include "assert.h"
+
+Peaks::peakbuffer Peaks::peakbuf;
+
+
+/** Prepare a buffer of peaks from /s/ to /e/ for reading. Must be
+ * called before any calls to operator[] */
+void
+Peaks::fill_buffer ( int s, int e ) const
+{
+    if ( timeline.fpp < _peaks->chunksize )
+    {
+        /* looks like we're going to have to switch to a higher resolution peak file
+         or read directly from the source */
+        read_peaks( s, e, e - s / timeline.fpp, timeline.fpp );
+    }
+    else
+    {
+        /* we'll just downsample on the fly in this case--no need for extra copying into
+         the buffer */
+    }
+}
+
+
 void
 Peaks::downsample ( int s, int e, float *mhi, float *mlo ) const
 {
-    *mhi = -1.0;
-    *mlo = 1.0;
+    *mhi = 0;
+    *mlo = 0;
 
     if ( e > _len )
         e = _len;
@@ -55,16 +79,6 @@ Peaks::downsample ( int s, int e, float *mhi, float *mlo ) const
 }
 
 
-void
-Peaks::read ( int X, float *hi, float *lo ) const
-{
-    int start = X * timeline.fpp;
-    int end = (X + 1) * timeline.fpp;
-
-    downsample( start, end, hi, lo );
-}
-
-
 static
 int
 sf_read_peaks ( SNDFILE *in, Peak *peaks, int npeaks, int chunksize )
@@ -79,19 +93,17 @@ sf_read_peaks ( SNDFILE *in, Peak *peaks, int npeaks, int chunksize )
         /* read in a buffer */
         len = sf_read_float( in, fbuf, chunksize );
 
-        float hi = -1.0;
-        float lo = 1.0;
+        Peak &p = peaks[ i ];
+        p.min = 0;
+        p.max = 0;
 
         for ( int j = len; j--; )
         {
-            if ( fbuf[j] > hi )
-                hi = fbuf[j];
-            if ( fbuf[j] < lo )
-                lo = fbuf[j];
+            if ( fbuf[j] > p.max )
+                p.max = fbuf[j];
+            if ( fbuf[j] < p.min )
+                p.min = fbuf[j];
         }
-
-        peaks[ i ].max = hi;
-        peaks[ i ].min = lo;
 
         if ( len < chunksize )
             break;
@@ -103,57 +115,33 @@ sf_read_peaks ( SNDFILE *in, Peak *peaks, int npeaks, int chunksize )
 }
 
 void
-Peaks::read_peaks ( int s, int e, float *mhi, float *mlo ) const
+Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
 {
-    static Peak * peaks_read = NULL;
-    static nframes_t peaks_read_offset = 0;
-    const int buffer_size = BUFSIZ;
+//    printf( "reading peaks %d @ %d\n", npeaks, chunksize );
 
-    if ( ! peaks_read )
-        peaks_read = new Peak[ buffer_size ];
-    else
+    if ( peakbuf.size < npeaks )
     {
-        if ( s >= peaks_read_offset &&
-             e - peaks_read_offset < buffer_size )
-            goto done;
-
-        if ( e > peaks_read_offset + buffer_size )
-        {
-            printf( "hit buffer boundardy!\n" );
-            memmove( peaks_read, &peaks_read[ (s - peaks_read_offset) ], (buffer_size - (s - peaks_read_offset)) * sizeof( Peak ) );
-            peaks_read_offset = s;
-            goto done;
-        }
+        peakbuf.size = npeaks;
+//        printf( "reallocating peak buffer %li\n", peakbuf.size );
+        peakbuf.buf = (peakdata*)realloc( peakbuf.buf, sizeof( peakdata ) + (peakbuf.size * sizeof( Peak )) );
     }
 
-    /* this could be faster, but who cares. Don't zoom in so far! */
+    memset( peakbuf.buf->data, 0, peakbuf.size * sizeof( Peak )  );
 
-    {
-        SNDFILE *in;
-        SF_INFO si;
+    SNDFILE *in;
+    SF_INFO si;
 
-        memset( &si, 0, sizeof( si ) );
+    memset( &si, 0, sizeof( si ) );
 
-        in = sf_open( _clip->name(), SFM_READ, &si );
+    in = sf_open( _clip->name(), SFM_READ, &si );
 
-        sf_seek( in, s, SEEK_SET );
-        peaks_read_offset = s;
+    sf_seek( in, s, SEEK_SET );
 
-        int chunksize = e - s;
+    peakbuf.offset = s;
+    peakbuf.buf->chunksize = chunksize;
+    peakbuf.len = sf_read_peaks( in, peakbuf.buf->data, npeaks, chunksize );
 
-        printf( "read %d peaks\n",  sf_read_peaks( in, peaks_read, buffer_size, chunksize ) );
-
-        sf_close( in );
-    }
-
-done:
-
-    // FIXME: should downsample here?
-
-    Peak p = peaks_read[ s - peaks_read_offset ];
-
-    *mhi = p.max;
-    *mlo = p.min;
+    sf_close( in );
 }
 
 
@@ -168,10 +156,14 @@ Peaks::operator[] ( int X ) const
 
     if ( timeline.fpp < _peaks->chunksize )
     {
-        int start = timeline.x_to_ts( X );
-        int end   = timeline.x_to_ts( X + 1 );
+        assert( timeline.fpp == peakbuf.buf->chunksize );
 
-        read_peaks( start, end, &p.max, &p.min );
+        int start = timeline.x_to_ts( X ) / peakbuf.buf->chunksize;
+        int i = start - (peakbuf.offset / peakbuf.buf->chunksize);
+
+        assert( peakbuf.len > i );
+
+        p = peakbuf.buf->data[ i ];
     }
     else
     {
@@ -213,8 +205,7 @@ Peaks::open ( const char *filename )
         _len = st.st_size;
     }
 
-
-    _peaks = (peaks*)mmap( NULL, _len, PROT_READ, MAP_SHARED, fd, 0 );
+    _peaks = (peakdata*)mmap( NULL, _len, PROT_READ, MAP_SHARED, fd, 0 );
 
     ::close( fd );
 

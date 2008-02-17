@@ -61,12 +61,6 @@ Waveform::draw ( void )
 }
 
 void
-Waveform::read_peaks ( int X, float *hi, float *lo )
-{
-    _clip->peaks()->read( X, hi, lo );
-}
-
-void
 Waveform::draw ( int X, int Y, int W, int H )
 {
     fl_push_clip( X, Y, W, H );
@@ -78,6 +72,12 @@ Waveform::draw ( int X, int Y, int W, int H )
 //    int start = (_start + (X - x())) * 2;
 
     int start = timeline.ts_to_x( _start ) + (X - x() );
+
+    {
+        nframes_t start = timeline.x_to_ts( X - x() ) + _start;
+        _clip->peaks()->fill_buffer( start,
+                                     start + timeline.x_to_ts( W ) );
+    }
 
     j = start;
     for ( int x = X; x < X + W; ++x, ++j )

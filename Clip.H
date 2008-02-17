@@ -26,6 +26,7 @@ typedef unsigned long nframes_t;
 class Clip
 {
     const char *_filename;
+
     Peaks _peaks;
 
     nframes_t _length;                                              /* length of clip in samples */

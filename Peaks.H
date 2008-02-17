@@ -21,6 +21,8 @@
 
 #include <stdlib.h>
 
+typedef unsigned long nframes_t;
+
 struct Peak {
     float min;
     float max;
@@ -31,25 +33,42 @@ class Clip;
 class Peaks
 {
 
-    struct peaks {
+    struct peakdata {
+
         int chunksize;                                               /* should always be a power of 2 */
         Peak data[];
+
     };
 
+    struct peakbuffer {
+
+        size_t size;                                            /* total allocation size */
+        size_t len;                                             /* number of peaks  */
+        nframes_t offset;                                       /* starting sample */
+
+        peakdata *buf;
+
+        peakbuffer ( )
+            {
+                size = len = 0;
+            }
+    };
+
+    static peakbuffer peakbuf;
 
     Clip *_clip;
 
-    peaks *_peaks;
+    peakdata *_peaks;
 
     size_t _len;
 
-    void read_peaks ( int s, int e, float *mhi, float *mlo ) const;
+    void read_peaks ( int s, int e, int npeaks, int chunksize ) const;
 
 public:
 
     Peaks ( Clip *c )
         {
-            _peaks = new peaks;
+            _peaks = new peakdata;
 
             _peaks->chunksize = 0;
 //            _peaks->data = NULL;
@@ -57,6 +76,8 @@ public:
 
             _clip = c;
         }
+
+    void fill_buffer ( int s, int e ) const;
 
     void downsample ( int s, int e, float *mhi, float *mlo ) const;
     void read ( int X, float *hi, float *lo ) const;

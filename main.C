@@ -40,6 +40,8 @@ Fl_Color velocity_colors[128];
 #include "Track.H"
 #include "Timeline.H"
 
+#include "const.h"
+
 void
 init_colors ( void )
 {
@@ -63,6 +65,11 @@ cb_zoom ( Fl_Widget *w, void *v )
     }
 
     timeline.scroll->redraw();
+
+    if ( timeline.fpp < FRAMES_PER_PEAK )
+        w->selection_color( FL_RED );
+    else
+        w->selection_color( FL_GRAY );
 
     printf( "%f\n", timeline.fpp );
 }
@@ -136,7 +143,7 @@ main ( int argc, char **argv )
     Fl_Slider *zoom_slider = new Fl_Slider( 0, 0, 800, 24 );
     zoom_slider->type( 1 );
     zoom_slider->callback( cb_zoom, 0 );
-    zoom_slider->range( 1, 1024 );
+    zoom_slider->range( 2, 4096 );
     zoom_slider->step( 1 );
     zoom_slider->value( 256 );
 

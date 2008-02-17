@@ -19,7 +19,6 @@
 
 #pragma once
 
-
 typedef unsigned long nframes_t;
 
 #include "Peaks.H"

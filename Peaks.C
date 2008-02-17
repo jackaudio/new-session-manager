@@ -29,6 +29,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <sndfile.h>
+
+
 void
 Peaks::downsample ( int s, int e, float *mhi, float *mlo ) const
 {
@@ -86,18 +89,30 @@ Peaks::operator[] ( int X ) const
     return p;
 }
 
+static
+const char *
+peakname ( const char *filename )
+{
+    static char file[512];
+
+    snprintf( file, 512, "%s.peak", filename );
+
+    return (const char*)&file;
+}
 
 bool
 Peaks::open ( const char *filename )
 {
-    char file[512];
-
-    snprintf( file, 512, "%s.peak", filename );
-
     int fd;
-    if ( ( fd = ::open( file, O_RDONLY ) ) < 0 )
+
+try_again:
+    if ( ( fd = ::open( peakname( filename ), O_RDONLY ) ) < 0 )
     {
         /* generate peaks here */
+        if ( make_peaks( filename, 256 ) )
+            goto try_again;
+        else
+            return false;
     }
 
     {
@@ -116,4 +131,69 @@ Peaks::open ( const char *filename )
     _len = (_len - sizeof( int )) / sizeof( Peak );
 
     return true;
+}
+
+
+void
+long_to_float( long *buf, int len )
+{
+    for ( int i = len; i--; )
+        *((float*)buf) = *buf / 32768;
+}
+
+bool
+Peaks::make_peaks ( const char *filename, int chunksize )
+{
+    SNDFILE *in;
+
+//    sox_format_init();
+
+
+    SF_INFO si;
+    memset( &si, 0, sizeof( si ) );
+
+    in = sf_open( filename, SFM_READ, &si );
+
+    if ( si.channels != 1 )
+        abort();
+
+    FILE *fp = fopen( peakname( filename ), "w" );
+
+    if ( fp == NULL )
+    {
+        sf_close( in );
+        /* return fals */
+        return false;
+    }
+
+    /* write chunksize first */
+    fwrite( &chunksize, sizeof( int ), 1, fp );
+
+    float *fbuf = new float[ chunksize ];
+
+    size_t len;
+    do {
+        /* read in a buffer */
+        len = sf_read_float( in, fbuf, chunksize );
+
+        Peak p;
+        p.max = -1.0;
+        p.min = 1.0;
+
+        for ( int i = 0; i < len; ++i )
+        {
+            if ( fbuf[i] > p.max )
+                p.max = fbuf[i];
+            if ( fbuf[i] < p.min )
+                p.min = fbuf[i];
+        }
+
+        fwrite(  &p, sizeof( Peak ), 1, fp );
+    }
+    while ( len == chunksize );
+
+    fclose( fp );
+
+    sf_close( in );
+
 }

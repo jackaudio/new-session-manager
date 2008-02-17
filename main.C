@@ -65,7 +65,7 @@ main ( int argc, char **argv )
     Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
 
     timeline.scroll = new Fl_Scroll( 0, 24, 800, 600 - 24 );
-    timeline.fpp = 1;
+    timeline.fpp = 256;
 
     Fl_Pack *tracks = new Fl_Pack( 0, 0, 5000, 5000 );
     tracks->type( Fl_Pack::VERTICAL );
@@ -82,7 +82,7 @@ main ( int argc, char **argv )
 
     //  Region *wave = new Region( 0, 0, 5000, 100, "foo" );
 
-    Region *wave = new Region( new Clip( "foo.wav" ) );
+    Region *wave = new Region( new Clip( "streambass8.wav" ) );
 
     wave->resize( 0, 0, 500, 100 );
 

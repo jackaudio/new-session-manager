@@ -49,7 +49,10 @@ public:
             _scale = 1;
             label( _clip->name() );
 
+            _start = 0;
             _end = _clip->length();
+
+            size( timeline.ts_to_x( _end ), h() );
         }
 
     Waveform ( const Waveform & rhs ) : Fl_Widget( rhs.x(), rhs.y(), rhs.w(), rhs.h(), rhs.label() )

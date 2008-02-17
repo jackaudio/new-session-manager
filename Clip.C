@@ -17,37 +17,82 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
-
-typedef unsigned long nframes_t;
-typedef float sample_t;
-
-#include "Peaks.H"
+#include "Clip.H"
+#include "Timeline.H"
 
 #include <sndfile.h>
 
-class Clip
+#include <stdlib.h>
+#include <string.h>
+
+Clip::Clip ( const char *filename ) : _peaks( this )
 {
-    const char *_filename;
+    _filename = filename;
 
-    Peaks _peaks;
+    SNDFILE *in;
+    SF_INFO si;
 
-    nframes_t _length;                                              /* length of clip in samples */
+    memset( &si, 0, sizeof( si ) );
 
-    SNDFILE *_in;
+    in = sf_open( filename, SFM_READ, &si );
 
-public:
+    if ( si.channels != 1 )
+        printf( "error: incompatible format" );
 
-    Clip ( const char *filename );
+    if ( si.samplerate != timeline.sample_rate )
+        printf( "error: samplerate mismatch!\n" );
 
-    Peaks const * peaks ( void ) { return &_peaks; }
-    const char *name ( void ) { return _filename; }
-    nframes_t length ( void ) { return _length; }
+    _length = si.frames;
 
-    bool open ( void );
-    void close ( void );
-    void seek ( nframes_t offset );
-    nframes_t read ( sample_t *buf, nframes_t len );
-    nframes_t read ( sample_t *buf, nframes_t start, nframes_t end );
+    sf_close( in );
 
-};
+    _peaks.open( filename );
+}
+
+
+bool
+Clip::open ( void )
+{
+    SF_INFO si;
+
+    memset( &si, 0, sizeof( si ) );
+
+    if ( ! ( _in = sf_open( _filename, SFM_READ, &si ) ) )
+        return false;
+
+    return true;
+}
+
+void
+Clip::close ( void )
+{
+    sf_close( _in );
+}
+
+void
+Clip::seek ( nframes_t offset )
+{
+    sf_seek( _in, offset, SEEK_SET );
+}
+
+
+nframes_t
+Clip::read ( sample_t *buf, nframes_t len )
+{
+    return sf_read_float ( _in, buf, len );
+}
+
+/** read samples from /start/ to /end/ into /buf/ */
+nframes_t
+Clip::read ( sample_t *buf, nframes_t start, nframes_t end )
+{
+    open();
+
+    seek( start );
+
+    nframes_t len = read( buf, end - start );
+
+    close();
+
+    return len;
+}

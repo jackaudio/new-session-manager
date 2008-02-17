@@ -53,7 +53,18 @@ void
 cb_zoom ( Fl_Widget *w, void *v )
 {
     timeline.fpp = ((Fl_Slider*)w)->value();
+
+
+    for ( int i = timeline.tracks->children(); i-- ; )
+    {
+        Fl_Group *track = (Fl_Group*)timeline.tracks->child( i );
+        for ( int j = track->children(); j-- ; )
+            ((Region*)(track->child( j )))->resize();
+    }
+
     timeline.scroll->redraw();
+
+    printf( "%f\n", timeline.fpp );
 }
 
 int
@@ -70,8 +81,8 @@ main ( int argc, char **argv )
 
     timeline.sample_rate = 44100;
 
-    Fl_Pack *tracks = new Fl_Pack( 0, 0, 5000, 5000 );
-    tracks->type( Fl_Pack::VERTICAL );
+    timeline.tracks = new Fl_Pack( 0, 0, 5000, 5000 );
+    timeline.tracks->type( Fl_Pack::VERTICAL );
 
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
@@ -87,7 +98,7 @@ main ( int argc, char **argv )
 
     Region *wave = new Region( new Clip( "streambass8.wav" ) );
 
-    wave->resize( 0, 0, 500, 100 );
+//    wave->resize( 0, 0, 500, 100 );
 
     //   wave->peaks( peaks );
     wave->start( 0 );
@@ -119,13 +130,14 @@ main ( int argc, char **argv )
     track1->next( track2 );
     track2->prev( track1 );
 
-    tracks->end();
+    timeline.tracks->end();
     timeline.scroll->end();
 
     Fl_Slider *zoom_slider = new Fl_Slider( 0, 0, 800, 24 );
     zoom_slider->type( 1 );
     zoom_slider->callback( cb_zoom, 0 );
-    zoom_slider->range( 1, 256 * 256 );
+    zoom_slider->range( 1, 1024 );
+    zoom_slider->step( 1 );
     zoom_slider->value( 256 );
 
     main_window->end();

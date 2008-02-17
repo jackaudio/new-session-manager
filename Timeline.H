@@ -20,11 +20,13 @@
 #pragma once
 
 #include <FL/Fl_Scroll.H>
+#include <FL/Fl_Pack.H>
 
 #include "Clip.H"
 
 struct Timeline {
     Fl_Scroll *scroll;
+    Fl_Pack *tracks;
 
     float fpp;                                                  /* frames per pixel */
 

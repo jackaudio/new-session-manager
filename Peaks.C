@@ -64,49 +64,93 @@ Peaks::read ( int X, float *hi, float *lo ) const
     downsample( start, end, hi, lo );
 }
 
-void
-Peaks::read_peaks ( int s, int e, float *mhi, float *mlo ) const
+
+static
+int
+sf_read_peaks ( SNDFILE *in, Peak *peaks, int npeaks, int chunksize )
 {
-    /* this could be faster, but who cares. Don't zoom in so far! */
-
-    SNDFILE *in;
-    SF_INFO si;
-
-    memset( &si, 0, sizeof( si ) );
-
-    in = sf_open( _clip->name(), SFM_READ, &si );
-
-/*     if ( si.channels != 1 ) */
-/*         abort(); */
-/*     if ( si.samplerate != timeline.sample_rate ) */
-/*         abort(); */
-
-    sf_seek( in, s, SEEK_SET );
-
-    int chunksize = e - s;
-
     float *fbuf = new float[ chunksize ];
 
     size_t len;
 
-    /* read in a buffer */
-    len = sf_read_float( in, fbuf, chunksize );
-
-    Peak p;
-    p.max = -1.0;
-    p.min = 1.0;
-
-    for ( int i = 0; i < len; ++i )
+    int i;
+    for ( i = 0; i < npeaks; ++i )
     {
-        if ( fbuf[i] > p.max )
-            p.max = fbuf[i];
-        if ( fbuf[i] < p.min )
-            p.min = fbuf[i];
+        /* read in a buffer */
+        len = sf_read_float( in, fbuf, chunksize );
+
+        float hi = -1.0;
+        float lo = 1.0;
+
+        for ( int j = len; j--; )
+        {
+            if ( fbuf[j] > hi )
+                hi = fbuf[j];
+            if ( fbuf[j] < lo )
+                lo = fbuf[j];
+        }
+
+        peaks[ i ].max = hi;
+        peaks[ i ].min = lo;
+
+        if ( len < chunksize )
+            break;
     }
 
-    sf_close( in );
-
     delete fbuf;
+
+    return i;
+}
+
+void
+Peaks::read_peaks ( int s, int e, float *mhi, float *mlo ) const
+{
+    static Peak * peaks_read = NULL;
+    static nframes_t peaks_read_offset = 0;
+    const int buffer_size = BUFSIZ;
+
+    if ( ! peaks_read )
+        peaks_read = new Peak[ buffer_size ];
+    else
+    {
+        if ( s >= peaks_read_offset &&
+             e - peaks_read_offset < buffer_size )
+            goto done;
+
+        if ( e > peaks_read_offset + buffer_size )
+        {
+            printf( "hit buffer boundardy!\n" );
+            memmove( peaks_read, &peaks_read[ (s - peaks_read_offset) ], (buffer_size - (s - peaks_read_offset)) * sizeof( Peak ) );
+            peaks_read_offset = s;
+            goto done;
+        }
+    }
+
+    /* this could be faster, but who cares. Don't zoom in so far! */
+
+    {
+        SNDFILE *in;
+        SF_INFO si;
+
+        memset( &si, 0, sizeof( si ) );
+
+        in = sf_open( _clip->name(), SFM_READ, &si );
+
+        sf_seek( in, s, SEEK_SET );
+        peaks_read_offset = s;
+
+        int chunksize = e - s;
+
+        printf( "read %d peaks\n",  sf_read_peaks( in, peaks_read, buffer_size, chunksize ) );
+
+        sf_close( in );
+    }
+
+done:
+
+    // FIXME: should downsample here?
+
+    Peak p = peaks_read[ s - peaks_read_offset ];
 
     *mhi = p.max;
     *mlo = p.min;

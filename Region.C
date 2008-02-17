@@ -44,6 +44,7 @@ Region::init ( void )
     box( FL_PLASTIC_UP_BOX );
 
     _track = NULL;
+    _offset = 0;
 }
 
 Region::Region ( const Region & rhs ) : Waveform( rhs )
@@ -55,6 +56,7 @@ Region::Region ( const Region & rhs ) : Waveform( rhs )
     labelcolor( rhs.labelcolor() );
     labeltype( rhs.labeltype() );
 
+    _offset = rhs._offset;
     _track = rhs._track;
 }
 
@@ -82,7 +84,7 @@ Region::trim ( enum trim_e t, int X )
                 _start = timeline.x_to_ts( x() + d );
 //                _start += timeline.x_to_ts( d );
 
-            resize( x() + d, y(), w() - d, h() );
+            Fl_Widget::resize( x() + d, y(), w() - d, h() );
             break;
         }
         case RIGHT:
@@ -90,7 +92,7 @@ Region::trim ( enum trim_e t, int X )
             int d = (x() + w()) - X;
 //            _end = _start + w() - d;
             _end = timeline.x_to_ts( _start + w() - d );
-            resize( x(), y(), w() - d, h() );
+            Fl_Widget::resize( x(), y(), w() - d, h() );
             break;
         }
         default:
@@ -225,13 +227,25 @@ Region::handle ( int m )
 }
 
 
+/** must be called whenever zoom is adjusted */
+void
+Region::resize ( void )
+{
+    int X = timeline.ts_to_x( _offset );
+    int W = timeline.ts_to_x( _end - _start );
+
+    if ( W )
+        Fl_Widget::resize( X, y(), W, h() );
+}
 
 void
 Region::draw ( void )
 {
+
     draw_box();
 
 //    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
+
 
     Waveform::draw();
 

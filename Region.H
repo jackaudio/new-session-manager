@@ -45,6 +45,8 @@ public:
 
     int handle ( int m );
     void draw ( void );
+    void resize ( void );
+
 
     Track * track ( void ) { return _track; }
     void track ( Track *t ) {  _track = t; }

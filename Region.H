@@ -28,6 +28,8 @@ class Region : public Waveform
 
     Track *_track;
 
+    nframes_t _offset;
+
     enum trim_e { NO, LEFT, RIGHT };
 
     void trim ( enum trim_e t, int X );

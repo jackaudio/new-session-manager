@@ -71,14 +71,25 @@ Region::trim ( enum trim_e t, int X )
         case LEFT:
         {
             int d = X - x();
-            _start += d;
+//            _start += d;
+            if ( d < 0 &&
+                 _start < timeline.x_to_ts( x() + d ) )
+            {
+                _start = 0;
+                break;
+            }
+            else
+                _start = timeline.x_to_ts( x() + d );
+//                _start += timeline.x_to_ts( d );
+
             resize( x() + d, y(), w() - d, h() );
             break;
         }
         case RIGHT:
         {
             int d = (x() + w()) - X;
-            _end = _start + w() - d;
+//            _end = _start + w() - d;
+            _end = timeline.x_to_ts( _start + w() - d );
             resize( x(), y(), w() - d, h() );
             break;
         }
@@ -203,6 +214,8 @@ Region::handle ( int m )
 
                 timeline.scroll->position( pos, timeline.scroll->yposition() );
             }
+
+            _offset = timeline.x_to_ts( x() );
 
             return 1;
         default:

@@ -122,8 +122,8 @@ main ( int argc, char **argv )
     Fl_Slider *zoom_slider = new Fl_Slider( 0, 0, 800, 24 );
     zoom_slider->type( 1 );
     zoom_slider->callback( cb_zoom, 0 );
-    zoom_slider->range( 1, 256 );
-    zoom_slider->value( 1 );
+    zoom_slider->range( 1, 256 * 256 );
+    zoom_slider->value( 256 );
 
     main_window->end();
     main_window->show();

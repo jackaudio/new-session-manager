@@ -77,12 +77,13 @@ Waveform::draw ( int X, int Y, int W, int H )
 
 //    int start = (_start + (X - x())) * 2;
 
-    j = 0;
-    for ( int x = X; x < X + W; ++x )
-    {
+    int start = timeline.ts_to_x( _start ) + (X - x() );
 
+    j = start;
+    for ( int x = X; x < X + W; ++x, ++j )
+    {
 //        read_peaks( x, &hi, &lo );
-        Peak p = (*_clip->peaks())[  x ];
+        Peak p = (*_clip->peaks())[ j ];
 
         int mid = Y + (H / 2);
 
@@ -107,9 +108,10 @@ Waveform::draw ( int X, int Y, int W, int H )
 
     fl_begin_line();
 
-    for ( int x = X; x < X + W; ++x )
+    j = start;
+    for ( int x = X; x < X + W; ++x, ++j )
     {
-        Peak p = (*_clip->peaks())[ x ];
+        Peak p = (*_clip->peaks())[ j ];
 
         p.min *= _scale;
 
@@ -120,9 +122,10 @@ Waveform::draw ( int X, int Y, int W, int H )
 
     fl_begin_line();
 
-    for ( int x = X; x < X + W; ++x )
+    j = start;
+    for ( int x = X; x < X + W; ++x, ++j )
     {
-        Peak p = (*_clip->peaks())[ x ];
+        Peak p = (*_clip->peaks())[ j ];
 
         p.max *= _scale;
 

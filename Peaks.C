@@ -70,8 +70,16 @@ Peaks::operator[] ( int X ) const
     /* Is there a better way to return this?  */
     static Peak p;
 
-    int start = X * timeline.fpp;
-    int end = (X + 1) * timeline.fpp;
+    if ( timeline.fpp < _peaks->chunksize )
+    {
+        printf( "we need to a smaller chunksize! examine the source!\n" );
+    }
+
+    int start = timeline.x_to_ts( X ) / _peaks->chunksize;
+    int end   = timeline.x_to_ts( X + 1 ) / _peaks->chunksize;
+
+/*     int start = X * timeline.fpp; */
+/*     int end = (X + 1) * timeline.fpp; */
 
     downsample( start, end, &p.max, &p.min );
 

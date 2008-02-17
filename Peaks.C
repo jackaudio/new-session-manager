@@ -39,7 +39,7 @@ Peaks::downsample ( int s, int e, float *mhi, float *mlo ) const
     *mlo = 1.0;
 
     if ( e > _len )
-         e = _len;
+        e = _len;
 
     for ( int j = s; j < e; j++ )
     {
@@ -105,28 +105,26 @@ Peaks::open ( const char *filename )
 {
     int fd;
 
-try_again:
+    make_peaks( filename, 256 );
+
     if ( ( fd = ::open( peakname( filename ), O_RDONLY ) ) < 0 )
-    {
-        /* generate peaks here */
-        if ( make_peaks( filename, 256 ) )
-            goto try_again;
-        else
-            return false;
-    }
+        return false;
 
     {
         struct stat st;
+
         fstat( fd, &st );
+
         _len = st.st_size;
     }
+
 
     _peaks = (peaks*)mmap( NULL, _len, PROT_READ, MAP_SHARED, fd, 0 );
 
     ::close( fd );
 
     if ( _peaks == MAP_FAILED )
-        printf( "failed to create mapping! " );
+        printf( "failed to create mapping!\n" );
 
     _len = (_len - sizeof( int )) / sizeof( Peak );
 
@@ -141,15 +139,40 @@ long_to_float( long *buf, int len )
         *((float*)buf) = *buf / 32768;
 }
 
+/** returns false if peak file for /filename/ is out of date  */
+bool
+Peaks::current ( const char *filename )
+{
+    int sfd, pfd;
+
+    if ( ( sfd = ::open( filename, O_RDONLY ) ) < 0 )
+        return true;
+
+    if ( ( pfd = ::open( peakname( filename ), O_RDONLY ) ) < 0 )
+         return false;
+
+    struct stat sst, pst;
+
+    fstat( sfd, &sst );
+    fstat( pfd, &pst );
+
+    close( sfd );
+    close( pfd );
+
+    return sst.st_mtime <= pst.st_mtime;
+}
+
+
+/** build peaks file for /filename/ if necessary */
 bool
 Peaks::make_peaks ( const char *filename, int chunksize )
 {
+    if ( current( filename ) )
+        return true;
+
     SNDFILE *in;
-
-//    sox_format_init();
-
-
     SF_INFO si;
+
     memset( &si, 0, sizeof( si ) );
 
     in = sf_open( filename, SFM_READ, &si );

@@ -46,7 +46,7 @@ public:
     Waveform ( Clip *c ) : Fl_Widget( 0, 0, 500, 100, "" )
         {
             _clip = c;
-
+            _scale = 1;
             label( _clip->name() );
 
             _end = _clip->length();

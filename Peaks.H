@@ -54,6 +54,7 @@ public:
     void read ( int X, float *hi, float *lo ) const;
     bool open ( const char *filename );
 
+    bool current ( const char *filename );
     bool make_peaks ( const char *filename, int chunksize );
 
     Peak & operator[] ( int X ) const;

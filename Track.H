@@ -106,15 +106,19 @@ public:
 
                     Clip *c = Clip::from_file( file );
 
-//                    free( file );
-
                     if ( ! c )
                     {
                         free( file );
                         return 0;
                     }
 
-                    this->add( new Region( c ) );
+
+                    Region *r = new Region( c );
+
+                    r->offset( timeline.x_to_ts( Fl::event_x() ) );
+                    r->position( Fl::event_x(), r->y() );
+
+                    this->add( r );
 
                     return 1;
                 }

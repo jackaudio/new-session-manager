@@ -216,7 +216,15 @@ Region::handle ( int m )
             }
 
             if ( ox + X >= _track->x() )
-                position( ox + X, y() );
+            {
+                int nx = ox + X;
+
+//                nx = _track->snap( this, nx );
+
+                position( nx, y() );
+
+                _track->snap( this );
+            }
 
             if ( Y > y() + h() )
             {

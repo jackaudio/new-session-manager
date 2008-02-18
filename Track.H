@@ -60,9 +60,6 @@ public:
 
     void add ( Region *r )
         {
-
-            printf( "add" );
-
             if ( r->track() )
             {
                 r->track()->remove_region( r );
@@ -78,6 +75,40 @@ public:
 
             r->position( r->x(), y() );
             r->redraw();
+        }
+
+    /** snap /r/ to nearest edge */
+    void
+    snap ( Region *r )
+        {
+            const int snap_pixels = 10;
+
+            int rx1 = r->x();
+            int rx2 = r->x() + r->w();
+
+            for ( int i = children(); i-- ; )
+            {
+                const Fl_Widget *w = child( i );
+
+                if ( w == r )
+                    continue;
+
+                int wx1 = w->x();
+                int wx2 = w->x() + w->w();
+
+                if ( abs( rx1 - wx2 ) < snap_pixels )
+                {
+                    rx1 = wx2 - 1;
+                    break;
+                }
+
+                if ( abs( rx2 - wx1 ) < snap_pixels )
+                {
+                    rx1 = (wx1 - r->w()) + 1;
+                    break;
+                }
+            }
+            r->position( rx1, y() );
         }
 
     int handle ( int m )

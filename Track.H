@@ -92,15 +92,29 @@ public:
                     return 1;
                 case FL_PASTE:
                 {
-                    const char *file, *text = Fl::event_text();
+                    const char *text = Fl::event_text();
 
-                    if ( ! strncmp( text, "file://", 7 ) )
-                        file = text + 7;
-                    else
-                        // error?
-                        file = text;
+                    char *file;
+
+                    if ( ! sscanf( text, "file://%a[^\r\n]\n", &file ) )
+                    {
+                        printf( "invalid drop \"%s\"\n", text );
+                        return 0;
+                    }
 
                     printf( "pasted file \"%s\"\n", file );
+
+                    Clip *c = Clip::from_file( file );
+
+//                    free( file );
+
+                    if ( ! c )
+                    {
+                        free( file );
+                        return 0;
+                    }
+
+                    this->add( new Region( c ) );
 
                     return 1;
                 }

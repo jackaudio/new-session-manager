@@ -250,8 +250,10 @@ Region::draw ( void )
 
 
 /*     fl_color( FL_RED ); */
-/*     fl_line( x() - timeline.ts_to_x(  _start ), y(), x() - timeline.ts_to_x( _start ), y() + h() ); */
-/*     fl_line( x() + w() - _end, y(), x() + w() - _end, y() + h() ); */
+/*     int sx = x() - timeline.ts_to_x( _start ); */
+/*     fl_line( sx, y(), sx, y() + h() ); */
+/*     int ex = x() + timeline.ts_to_x( _end - _start ); */
+/*     fl_line( ex, y(), ex, y() + h() ); */
 
     draw_label();
 

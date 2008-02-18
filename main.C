@@ -103,7 +103,7 @@ main ( int argc, char **argv )
 
     //  Region *wave = new Region( 0, 0, 5000, 100, "foo" );
 
-    Region *wave = new Region( new Clip( "streambass8.wav" ) );
+    Region *wave = new Region( Clip::from_file( "streambass8.wav" ) );
 
 //    wave->resize( 0, 0, 500, 100 );
 
@@ -141,7 +141,7 @@ main ( int argc, char **argv )
     timeline.scroll->end();
 
     Fl_Slider *zoom_slider = new Fl_Slider( 0, 0, 800, 24 );
-    zoom_slider->type( 1 );
+    zoom_slider->type( FL_HOR_SLIDER );
     zoom_slider->callback( cb_zoom, 0 );
     zoom_slider->range( 2, 4096 );
     zoom_slider->step( 1 );

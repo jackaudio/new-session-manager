@@ -25,30 +25,94 @@
 #include <stdlib.h>
 #include <string.h>
 
-Clip::Clip ( const char *filename ) : _peaks( this )
-{
-    _filename = filename;
 
+Clip::Clip ( void ) : _peaks( this )
+{
+    _filename = NULL;
+    _length = 0;
+}
+
+
+/* Clip::Clip ( const char *filename ) : _peaks( this ) */
+/* { */
+/*     _filename = filename; */
+
+/*     SNDFILE *in; */
+/*     SF_INFO si; */
+
+/*     memset( &si, 0, sizeof( si ) ); */
+
+/*     if ( ! ( in = sf_open( filename, SFM_READ, &si ) ) ) */
+/*     { */
+/*         printf( "couldn't open file\n" ); */
+/*         return; */
+/*     } */
+
+/*     if ( si.channels != 1 ) */
+/*     { */
+/*         printf( "error: incompatible format\n" ); */
+/*         return; */
+/*     } */
+
+/*     if ( si.samplerate != timeline.sample_rate ) */
+/*     { */
+/*         printf( "error: samplerate mismatch!\n" ); */
+/*         return; */
+/*     } */
+
+/*     _length = si.frames; */
+
+/*     sf_close( in ); */
+
+/*     _peaks.open(); */
+/* } */
+
+
+Clip *
+Clip::from_file ( const char *filename )
+{
     SNDFILE *in;
     SF_INFO si;
 
+    Clip *c = NULL;
+
     memset( &si, 0, sizeof( si ) );
 
-    in = sf_open( filename, SFM_READ, &si );
+    if ( ! ( in = sf_open( filename, SFM_READ, &si ) ) )
+    {
+        printf( "couldn't open file\n" );
+        return NULL;
+    }
 
     if ( si.channels != 1 )
-        printf( "error: incompatible format" );
+    {
+        printf( "error: incompatible format\n" );
+        goto invalid;
+    }
 
     if ( si.samplerate != timeline.sample_rate )
+    {
         printf( "error: samplerate mismatch!\n" );
+        goto invalid;
+    }
 
-    _length = si.frames;
+    c = new Clip;
+
+    c->_filename = filename;
+    c->_length = si.frames;
 
     sf_close( in );
 
-    _peaks.open();
-}
+    c->_peaks.open();
 
+    return c;
+
+
+invalid:
+
+    sf_close( in );
+    return NULL;
+}
 
 bool
 Clip::open ( void )

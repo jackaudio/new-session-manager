@@ -65,6 +65,8 @@ class Peaks
     void read_peaks ( int s, int e, int npeaks, int chunksize ) const;
     int clip_read_peaks ( Peak *peaks, int npeaks, int chunksize ) const;
 
+    Peak & peak ( nframes_t start, nframes_t end ) const;
+
 public:
 
     Peaks ( Clip *c )
@@ -78,9 +80,10 @@ public:
 
     void fill_buffer ( int s, int e ) const;
 
-    void downsample ( int s, int e, float *mhi, float *mlo ) const;
+    void downsample ( Peak *peaks, int s, int e, float *mhi, float *mlo ) const;
     void read ( int X, float *hi, float *lo ) const;
     bool open ( void );
+    float normalization_factor( nframes_t start, nframes_t end ) const;
 
     bool current ( void ) const;
     bool make_peaks ( int chunksize );

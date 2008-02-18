@@ -38,7 +38,11 @@ class Clip
 
 public:
 
-    Clip ( const char *filename );
+    Clip ( );
+
+//    Clip ( const char *filename );
+
+    static Clip *from_file ( const char *filename );
 
     Peaks const * peaks ( void ) { return &_peaks; }
     const char *name ( void ) { return _filename; }

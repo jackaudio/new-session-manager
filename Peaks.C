@@ -35,6 +35,8 @@
 
 #include "assert.h"
 
+#include <math.h>
+
 Peaks::peakbuffer Peaks::peakbuf;
 
 
@@ -58,7 +60,7 @@ Peaks::fill_buffer ( int s, int e ) const
 
 
 void
-Peaks::downsample ( int s, int e, float *mhi, float *mlo ) const
+Peaks::downsample ( Peak *peaks, int s, int e, float *mhi, float *mlo ) const
 {
     *mhi = 0;
     *mlo = 0;
@@ -68,8 +70,8 @@ Peaks::downsample ( int s, int e, float *mhi, float *mlo ) const
 
     for ( int j = s; j < e; j++ )
     {
-        const float lo = _peaks->data[ j ].min;
-        const float hi = _peaks->data[ j ].max;
+        const float lo = peaks[ j ].min;
+        const float hi = peaks[ j ].max;
 
         if ( hi > *mhi )
             *mhi = hi;
@@ -135,12 +137,9 @@ Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
     _clip->close();
 }
 
-
-/* virtual array. Index is a Pixel value, and it returns the
- * (resampled) peaks for that pixel based on the current timeline
- * zoom. */
+/** Return the peak for the range of samples */
 Peak &
-Peaks::operator[] ( int X ) const
+Peaks::peak ( nframes_t start, nframes_t end ) const
 {
     /* Is there a better way to return this?  */
     static Peak p;
@@ -149,22 +148,34 @@ Peaks::operator[] ( int X ) const
     {
         assert( timeline.fpp == peakbuf.buf->chunksize );
 
-        int start = timeline.x_to_ts( X ) / peakbuf.buf->chunksize;
-        int i = start - (peakbuf.offset / peakbuf.buf->chunksize);
+        start = (start - peakbuf.offset) / peakbuf.buf->chunksize;
+        end = (end - peakbuf.offset) / peakbuf.buf->chunksize;
 
-        assert( peakbuf.len > i );
+        if ( end > peakbuf.len )
+            end = peakbuf.len;
 
-        p = peakbuf.buf->data[ i ];
+//        assert( peakbuf.len > start );
+
+        downsample( peakbuf.buf->data, start, end, &p.max, &p.min );
     }
     else
     {
-        int start = timeline.x_to_ts( X ) / _peaks->chunksize;
-        int end   = timeline.x_to_ts( X + 1 ) / _peaks->chunksize;
+        start /= _peaks->chunksize;
+        end /= _peaks->chunksize;
 
-        downsample( start, end, &p.max, &p.min );
+        downsample( _peaks->data, start, end, &p.max, &p.min );
     }
 
     return p;
+}
+
+/* virtual array. Index is a Pixel value, and it returns the
+ * (resampled) peaks for that pixel based on the current timeline
+ * zoom. */
+Peak &
+Peaks::operator[] ( int X ) const
+{
+    return peak( timeline.x_to_ts( X ), timeline.x_to_ts( X + 1 ) );
 }
 
 static
@@ -270,4 +281,25 @@ Peaks::make_peaks ( int chunksize )
     fclose( fp );
 
     return true;
+}
+
+
+/** return normalization factor for range of samples from /start/ to
+    /end/ (uses known peak data if possible */
+
+float
+Peaks::normalization_factor( nframes_t start, nframes_t end ) const
+{
+    float s;
+
+    fill_buffer( start, end );
+
+    Peak p = peak( start, end );
+
+    s = fabs( 1.0f / p.max );
+
+    if ( s * p.min < -1.0 )
+        s = 1 / fabs( p.max );
+
+    return s;
 }

@@ -69,6 +69,9 @@ public:
 
     void start ( nframes_t s ) { _start = s; }
     void end ( nframes_t e ) { _end = e; }
+    void scale ( float s ) { _scale = s; }
+    float scale ( void ) { return _scale; }
+
 //    void peaks ( float *p ) { _peaks = p; }
     void normalize ( void );
 

@@ -141,20 +141,12 @@ Waveform::draw ( int X, int Y, int W, int H )
     fl_pop_clip();
 }
 
-
 void
 Waveform::normalize ( void )
 {
-    float mhi, mlo;
+    printf( "normalize: start=%lu end=%lu\n", _start, _end );
 
-    _clip->peaks()->downsample( _start, _end, &mhi, &mlo );
-
-    _scale = 1.0f / (float)mhi;
-
-    if ( _scale * mlo < -1.0 )
-        _scale = 1 / fabs( mlo );
-
-    _scale = fabs( _scale );
+    _scale = _clip->peaks()->normalization_factor( _start, _end );
 
     redraw();
 }

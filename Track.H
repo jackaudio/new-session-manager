@@ -85,10 +85,11 @@ public:
             switch ( m )
             {
 		case FL_DND_DRAG:
-		case FL_DND_RELEASE:
 		case FL_DND_ENTER:
-		case FL_DND_LEAVE:
 		case FL_ENTER:
+                    return 1;
+		case FL_DND_LEAVE:
+		case FL_DND_RELEASE:
                     return 1;
                 case FL_PASTE:
                 {

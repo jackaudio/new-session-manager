@@ -75,21 +75,34 @@ Region::trim ( enum trim_e t, int X )
         {
             int d = X - x();
 
-            _start += timeline.x_to_ts( d );
+            long td = timeline.x_to_ts( d );
 
-            Fl_Widget::resize( x() + d, y(), w() - d, h() );
+            if ( td < 0 && _start < 0 - td )
+                td = 0 - _start;
 
-            _offset = timeline.x_to_ts( x() );
+            _start += td;
+
+            _offset += td;
+
+            resize();
+//            Fl_Widget::resize( x() + d, y(), w() - d, h() );
+
+//            _offset = timeline.x_to_ts( x() );
 
             break;
         }
         case RIGHT:
         {
             int d = (x() + w()) - X;
+            long td = timeline.x_to_ts( d );
 
-            _end = _start + timeline.x_to_ts( w() - d );
+            _end -= td;
 
-            Fl_Widget::resize( x(), y(), w() - d, h() );
+            resize();
+
+//            _end = _start + timeline.x_to_ts( w() - d );
+
+//            Fl_Widget::resize( x(), y(), w() - d, h() );
             break;
         }
         default:
@@ -113,6 +126,7 @@ Region::handle ( int m )
     static enum trim_e trimming;
 
     static bool copied = false;
+    static nframes_t os;
 
     int X = Fl::event_x();
     int Y = Fl::event_y();
@@ -122,7 +136,8 @@ Region::handle ( int m )
         case FL_PUSH:
         {
 
-            if ( Fl::event_state() & FL_SHIFT )
+            if ( Fl::event_state() & FL_SHIFT &&
+                 ! ( Fl::event_state() & FL_CTRL ))
             {
                 switch ( Fl::event_button() )
                 {
@@ -143,8 +158,15 @@ Region::handle ( int m )
                 ox = x() - X;
                 oy = y() - Y;
 
+                if ( Fl::event_state() && FL_CTRL )
+                {
+                    os = _start;
+//                    Fl::local_grab( this );
+                }
+
                 if ( Fl::event_button() == 2 )
                     normalize();
+
 
                 return 1;
             }
@@ -155,8 +177,24 @@ Region::handle ( int m )
             fl_cursor( FL_CURSOR_DEFAULT );
             copied = false;
             trimming = NO;
+            //          Fl::release();
             return 1;
         case FL_DRAG:
+
+            if ( Fl::event_state() & FL_SHIFT &&
+                 Fl::event_state() & FL_CTRL )
+            {
+                int d = (ox + X) - x();
+                long td = timeline.x_to_ts( d );
+
+                if ( td > 0 && os < td )
+                    _start = 0;
+                else
+                    _start = os - td;
+
+                redraw();
+                return 1;
+            }
 
             if ( Fl::event_state() & FL_SHIFT )
                 if ( trimming )

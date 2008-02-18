@@ -47,7 +47,7 @@ Peaks::fill_buffer ( int s, int e ) const
     {
         /* looks like we're going to have to switch to a higher resolution peak file
          or read directly from the source */
-        read_peaks( s, e, e - s / timeline.fpp, timeline.fpp );
+        read_peaks( s, e, (e - s) / timeline.fpp, timeline.fpp );
     }
     else
     {
@@ -82,7 +82,7 @@ Peaks::downsample ( int s, int e, float *mhi, float *mlo ) const
 int
 Peaks::clip_read_peaks ( Peak *peaks, int npeaks, int chunksize ) const
 {
-    float *fbuf = new float[ chunksize ];
+    sample_t *fbuf = new sample_t[ chunksize ];
 
     size_t len;
 
@@ -116,7 +116,7 @@ Peaks::clip_read_peaks ( Peak *peaks, int npeaks, int chunksize ) const
 void
 Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
 {
-//    printf( "reading peaks %d @ %d\n", npeaks, chunksize );
+    printf( "reading peaks %d @ %d\n", npeaks, chunksize );
 
     if ( peakbuf.size < npeaks )
     {

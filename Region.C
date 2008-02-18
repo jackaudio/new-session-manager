@@ -44,7 +44,8 @@ Region::init ( void )
     box( FL_PLASTIC_UP_BOX );
 
     _track = NULL;
-    _offset = 0;
+//    _offset = 0;
+    _offset = timeline.x_to_ts( x() );
 }
 
 Region::Region ( const Region & rhs ) : Waveform( rhs )
@@ -73,25 +74,21 @@ Region::trim ( enum trim_e t, int X )
         case LEFT:
         {
             int d = X - x();
-//            _start += d;
-            if ( d < 0 &&
-                 _start < timeline.x_to_ts( x() + d ) )
-            {
-                _start = 0;
-                break;
-            }
-            else
-                _start = timeline.x_to_ts( x() + d );
-//                _start += timeline.x_to_ts( d );
+
+            _start += timeline.x_to_ts( d );
 
             Fl_Widget::resize( x() + d, y(), w() - d, h() );
+
+            _offset = timeline.x_to_ts( x() );
+
             break;
         }
         case RIGHT:
         {
             int d = (x() + w()) - X;
-//            _end = _start + w() - d;
-            _end = timeline.x_to_ts( _start + w() - d );
+
+            _end = _start + timeline.x_to_ts( w() - d );
+
             Fl_Widget::resize( x(), y(), w() - d, h() );
             break;
         }

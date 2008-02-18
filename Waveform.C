@@ -65,7 +65,7 @@ Waveform::draw ( int X, int Y, int W, int H )
 {
     fl_push_clip( X, Y, W, H );
 
-    fl_push_matrix();
+//    fl_push_matrix();
 
     int j;
 
@@ -136,7 +136,7 @@ Waveform::draw ( int X, int Y, int W, int H )
 
     fl_line_style( FL_SOLID, 0 );
 
-    fl_pop_matrix();
+//    fl_pop_matrix();
 
     fl_pop_clip();
 }

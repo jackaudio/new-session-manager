@@ -60,7 +60,6 @@ public:
             _clip  = rhs._clip;
             _start = rhs._start;
             _end   = rhs._end;
-
             _scale = rhs._scale;
         }
 

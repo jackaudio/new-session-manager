@@ -277,7 +277,15 @@ void
 Region::resize ( void )
 {
     int X = timeline.ts_to_x( _offset );
+
+    assert( _end >= _start );
+
     int W = timeline.ts_to_x( _end - _start );
+
+    printf( "%dx%d\n", X, W );
+
+    if ( W > 5000 )
+        W = 5000;
 
     if ( W )
         Fl_Widget::resize( X, y(), W, h() );

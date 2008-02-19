@@ -88,15 +88,16 @@ main ( int argc, char **argv )
 
     timeline.sample_rate = 44100;
 
-    timeline.tracks = new Fl_Pack( 0, 0, 5000, 5000 );
+    timeline.tracks = new Fl_Pack( 0, 0, 32767, 5000 );
     timeline.tracks->type( Fl_Pack::VERTICAL );
+    timeline.tracks->spacing( 20 );
 
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
 
 //    Fl_Group *pack = new Fl_Group( 0, 0, 5000, 600 );
 
-    Track *track1 = new Track( 40, 0, 5000, 100 );
+    Track *track1 = new Track( 40, 0, 32768, 100 );
 
 //    pack->type( Fl_Pack::VERTICAL );
 //    pack->box( FL_DOWN_BOX );
@@ -107,10 +108,7 @@ main ( int argc, char **argv )
 
 //    wave->resize( 0, 0, 500, 100 );
 
-    //   wave->peaks( peaks );
-    wave->start( 0 );
-//    wave->end( (len / sizeof( float )) / 2 );
-    wave->end( 50 );
+    wave->offset( 1024 );
 
     wave->color( FL_CYAN );
     wave->selection_color( fl_darker( FL_GRAY ) );

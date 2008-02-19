@@ -71,6 +71,7 @@ public:
     nframes_t start ( void ) const { return _start; }
     void end ( nframes_t e ) { _end = e; }
     nframes_t end ( void ) const { return _end; }
+    nframes_t length ( void ) const { return _end - _start; }
     void scale ( float s ) { _scale = s; }
     float scale ( void ) const { return _scale; }
 

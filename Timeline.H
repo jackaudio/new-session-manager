@@ -23,19 +23,24 @@
 #include <FL/Fl_Pack.H>
 
 #include "Clip.H"
+#include <math.h>
+
+#include <assert.h>
 
 struct Timeline {
     Fl_Scroll *scroll;
     Fl_Pack *tracks;
 
     float fpp;                                                  /* frames per pixel */
+//    nframes_t fpp;
 
     nframes_t sample_rate;
 
     int
     ts_to_x( nframes_t ts )
         {
-            return ts / fpp;
+//            assert( ts / fpp > 0 );
+            return  ts / fpp;
         }
 
     nframes_t

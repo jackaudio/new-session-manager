@@ -101,24 +101,24 @@ public:
 
                 if ( abs( rx1 - wx2 ) < snap_pixels )
                 {
-                    r->offset( w->offset() + ( w->end() - w->start() ) + 1 );
+                    r->offset( w->offset() + w->length() + 1 );
 
-                    printf( "snap: %lu | %lu\n", w->offset() + (w->end() - w->start()), r->offset() );
+                    printf( "snap: %lu | %lu\n", w->offset() + w->length(), r->offset() );
 
                     goto done;
                 }
 
                 if ( abs( rx2 - wx1 ) < snap_pixels )
                 {
-                    r->offset( (w->offset() - ( r->end() - r->start() )) - 1 );
+                    r->offset( ( w->offset() - r->length() ) - 1 );
 
-                    printf( "snap: %lu | %lu\n", r->offset() + (r->end() - r->start()), w->offset() );
+                    printf( "snap: %lu | %lu\n", r->offset() + r->length(), w->offset() );
 
                     goto done;
                 }
             }
 
-            r->offset( timeline.x_to_ts( r->x() ));
+            r->offset( timeline.x_to_ts( r->x() ) );
 
         done:
 

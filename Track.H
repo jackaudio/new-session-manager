@@ -25,6 +25,9 @@
 
 #include <stdio.h>
 
+
+#include <assert.h>
+
 #include <list>
 using std::list;
 
@@ -88,7 +91,7 @@ public:
 
             for ( int i = children(); i-- ; )
             {
-                const Fl_Widget *w = child( i );
+                const Region *w = (Region*)child( i );
 
                 if ( w == r )
                     continue;
@@ -98,17 +101,29 @@ public:
 
                 if ( abs( rx1 - wx2 ) < snap_pixels )
                 {
-                    rx1 = wx2 - 1;
-                    break;
+                    r->offset( w->offset() + ( w->end() - w->start() ) + 1 );
+
+                    printf( "snap: %lu | %lu\n", w->offset() + (w->end() - w->start()), r->offset() );
+
+                    goto done;
                 }
 
                 if ( abs( rx2 - wx1 ) < snap_pixels )
                 {
-                    rx1 = (wx1 - r->w()) + 1;
-                    break;
+                    r->offset( (w->offset() - ( r->end() - r->start() )) - 1 );
+
+                    printf( "snap: %lu | %lu\n", r->offset() + (r->end() - r->start()), w->offset() );
+
+                    goto done;
                 }
             }
-            r->position( rx1, y() );
+
+            r->offset( timeline.x_to_ts( r->x() ));
+
+        done:
+
+            r->resize();
+//            r->position( rx1, y() );
         }
 
     int handle ( int m )

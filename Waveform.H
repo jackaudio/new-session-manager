@@ -68,9 +68,11 @@ public:
     void draw ( int X, int Y, int W, int H );
 
     void start ( nframes_t s ) { _start = s; }
+    nframes_t start ( void ) const { return _start; }
     void end ( nframes_t e ) { _end = e; }
+    nframes_t end ( void ) const { return _end; }
     void scale ( float s ) { _scale = s; }
-    float scale ( void ) { return _scale; }
+    float scale ( void ) const { return _scale; }
 
 //    void peaks ( float *p ) { _peaks = p; }
     void normalize ( void );

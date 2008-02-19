@@ -48,9 +48,9 @@ public:
     void resize ( void );
 
 
-    Track * track ( void ) { return _track; }
+    Track * track ( void ) const { return _track; }
     void track ( Track *t ) {  _track = t; }
 
-    nframes_t offset ( void ) { return _offset; }
+    nframes_t offset ( void ) const { return _offset; }
     void offset ( nframes_t o ) { _offset = o; }
 };

@@ -221,6 +221,8 @@ Region::handle ( int m )
 
 //                nx = _track->snap( this, nx );
 
+//                _offset = timeline.x_to_ts( nx );
+
                 position( nx, y() );
 
                 _track->snap( this );
@@ -260,7 +262,7 @@ Region::handle ( int m )
                 timeline.scroll->position( pos, timeline.scroll->yposition() );
             }
 
-            _offset = timeline.x_to_ts( x() );
+//            _offset = timeline.x_to_ts( x() );
 
             return 1;
         default:

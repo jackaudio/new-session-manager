@@ -32,24 +32,56 @@
  * dimensions of real FLTK widgets are limited to 16-bits, which is
  * far too little for our purposes */
 
-class Region
+
+/* Base class for virtual widget on a track */
+class TrackWidget
 {
 
-    Track *_track;                                              /* track this region belongs to */
+protected:
 
-    Clip *_clip;                                                /* clip this region represents */
+    Track *_track;                                              /* track this region belongs to */
 
     nframes_t _offset;                                          /* where on the timeline */
     nframes_t _start;                                           /* first sample from clip */
     nframes_t _end;                                             /* last sample from clip */
-
-    float _scale;                                               /* amplitude adjustment */
 
     bool _selected;
 
     Fl_Color _color;                                            /* color of waveform */
     Fl_Color _box_color;                                        /* color of background (box) */
 
+public:
+
+    Fl_Group * parent ( void ) const { return _track; }
+
+    int y ( void ) const { return _track->y(); }
+    int h ( void ) const { return _track->h(); }
+    int x ( void ) const { return _track->x() + timeline.ts_to_x( _offset - timeline.xoffset ); }
+    int w ( void ) const { return timeline.ts_to_x( _end - _start ); }
+
+    Fl_Color color ( void ) { return _color; }
+    Fl_Color box_color ( void ) { return _box_color; }
+
+    Track * track ( void ) const { return _track; }
+    void track ( Track *t ) {  _track = t; }
+
+    nframes_t offset ( void ) const { return _offset; }
+    void offset ( nframes_t o ) { _offset = o; }
+
+    void end ( nframes_t v ) { _end = v; }
+    nframes_t end ( void ) const { return _end; }
+    void start ( nframes_t v ) { _start = v; }
+    nframes_t start ( void ) const { return _start; }
+
+    nframes_t length ( void ) const { return _end - _start; }
+};
+
+class Region : public TrackWidget
+{
+
+    Clip *_clip;                                                /* clip this region represents */
+
+    float _scale;                                               /* amplitude adjustment */
 
     static Fl_Color _selection_color;
     static Fl_Color selection_color ( void ) { return _selection_color; }
@@ -64,27 +96,8 @@ public:
     Region ( const Region & rhs );
     Region ( Clip *c );
 
-    int y ( void ) const { return _track->y(); }
-    int h ( void ) const { return _track->h(); }
-    int x ( void ) const { return _track->x() + timeline.ts_to_x( _offset - timeline.xoffset ); }
-    int w ( void ) const { return timeline.ts_to_x( _end - _start ); }
-
-    Fl_Group * parent ( void ) const { return _track; }
-
-    Fl_Color color ( void ) { return _color; }
-    Fl_Color box_color ( void ) { return _box_color; }
-
     int handle ( int m );
     void draw ( int X, int Y, int W, int H );
     void resize ( void );
 
-    Track * track ( void ) const { return _track; }
-    void track ( Track *t ) {  _track = t; }
-
-    nframes_t offset ( void ) const { return _offset; }
-    void offset ( nframes_t o ) { _offset = o; }
-
-    nframes_t length ( void ) const { return _end - _start; }
-
-    void end ( nframes_t v ) { _end = v; }
 };

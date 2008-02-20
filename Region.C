@@ -189,12 +189,16 @@ Region::handle ( int m )
                 int d = (ox + X) - x();
                 long td = timeline.x_to_ts( d );
 
+                nframes_t W = _end - _start;
+
                 if ( td > 0 && os < td )
                     _start = 0;
                 else
                     _start = os - td;
 
-//                redraw();
+                _end = _start + W;
+
+                _track->redraw();
                 return 1;
             }
 

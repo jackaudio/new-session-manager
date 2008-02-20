@@ -170,6 +170,7 @@ Track::handle ( int m )
 
             this->add( r );
 
+            redraw();
             return 1;
         }
         case FL_MOVE:

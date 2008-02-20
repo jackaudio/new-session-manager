@@ -21,7 +21,7 @@
 
 #include <FL/Fl_Group.H>
 #include <FL/Fl.H>
-#include "Region.H"
+// #include "Region.H"
 
 #include <stdio.h>
 
@@ -31,6 +31,8 @@
 #include <list>
 using std::list;
 
+class Region;
+
 class Track : public Fl_Group
 {
     Track *_next;
@@ -39,6 +41,8 @@ class Track : public Fl_Group
     list <Region *> _regions;
 
     char *_name;
+
+    Region *event_region ( void );
 
 public:
 
@@ -55,6 +59,7 @@ public:
     Track *prev ( void ) { return _prev; }
     void prev ( Track *t ) { _prev = t; }
     void next ( Track *t ) { _next = t; }
+
 
     void draw ( void );
     void remove_region ( Region *r );

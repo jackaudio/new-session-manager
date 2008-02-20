@@ -122,86 +122,85 @@ Region::Region ( Clip *c )
 /* } */
 
 int
-Region::handle ( int m ) { return 0; }
+Region::handle ( int m )
+{
 
-/* { */
+    static int ox, oy;
+    static enum trim_e trimming;
 
-/* /\*     if ( Fl_Widget::handle( m ) ) *\/ */
-/* /\*         return 1; *\/ */
+    static bool copied = false;
+    static nframes_t os;
 
-/*     static int ox, oy; */
-/*     static enum trim_e trimming; */
+    int X = Fl::event_x();
+    int Y = Fl::event_y();
 
-/*     static bool copied = false; */
-/*     static nframes_t os; */
+    switch ( m )
+    {
+        case FL_PUSH:
+        {
 
-/*     int X = Fl::event_x(); */
-/*     int Y = Fl::event_y(); */
+            if ( Fl::event_state() & FL_SHIFT &&
+                 ! ( Fl::event_state() & FL_CTRL ))
+            {
+                switch ( Fl::event_button() )
+                {
 
-/*     switch ( m ) */
-/*     { */
-/*         case FL_PUSH: */
-/*         { */
-
-/*             if ( Fl::event_state() & FL_SHIFT && */
-/*                  ! ( Fl::event_state() & FL_CTRL )) */
-/*             { */
-/*                 switch ( Fl::event_button() ) */
-/*                 { */
 /*                     case 1: */
 /*                         trim( trimming = LEFT, X ); */
 /*                         break; */
 /*                     case 3: */
 /*                         trim( trimming = RIGHT, X ); */
 /*                         break; */
-/*                     default: */
-/*                         return 0; */
-/*                 } */
-/*                 fl_cursor( FL_CURSOR_WE ); */
-/*                 return 1; */
-/*             } */
-/*             else */
-/*             { */
-/*                 ox = x() - X; */
-/*                 oy = y() - Y; */
 
-/*                 if ( Fl::event_state() && FL_CTRL ) */
-/*                 { */
-/*                     os = _start; */
-/* //                    Fl::local_grab( this ); */
-/*                 } */
+                    default:
+                        return 0;
+
+                }
+                fl_cursor( FL_CURSOR_WE );
+                return 1;
+            }
+            else
+            {
+                ox = x() - X;
+                oy = y() - Y;
+
+                if ( Fl::event_state() && FL_CTRL )
+                {
+                    os = _start;
+//                    Fl::local_grab( this );
+                }
 
 /*                 if ( Fl::event_button() == 2 ) */
 /*                     normalize(); */
 
 
-/*                 return 1; */
-/*             } */
-/*             return 0; */
-/*             break; */
-/*         } */
-/*         case FL_RELEASE: */
-/*             fl_cursor( FL_CURSOR_DEFAULT ); */
-/*             copied = false; */
-/*             trimming = NO; */
-/*             //          Fl::release(); */
-/*             return 1; */
-/*         case FL_DRAG: */
+                return 1;
+            }
+            return 0;
+            break;
+        }
+        case FL_RELEASE:
+            fl_cursor( FL_CURSOR_DEFAULT );
+            copied = false;
+            trimming = NO;
+            //          Fl::release();
+            return 1;
+        case FL_DRAG:
 
-/*             if ( Fl::event_state() & FL_SHIFT && */
-/*                  Fl::event_state() & FL_CTRL ) */
-/*             { */
-/*                 int d = (ox + X) - x(); */
-/*                 long td = timeline.x_to_ts( d ); */
+            if ( Fl::event_state() & FL_SHIFT &&
+                 Fl::event_state() & FL_CTRL )
+            {
+                int d = (ox + X) - x();
+                long td = timeline.x_to_ts( d );
 
-/*                 if ( td > 0 && os < td ) */
-/*                     _start = 0; */
-/*                 else */
-/*                     _start = os - td; */
+                if ( td > 0 && os < td )
+                    _start = 0;
+                else
+                    _start = os - td;
 
-/*                 redraw(); */
-/*                 return 1; */
-/*             } */
+//                redraw();
+                return 1;
+            }
 
 /*             if ( Fl::event_state() & FL_SHIFT ) */
 /*                 if ( trimming ) */
@@ -212,44 +211,46 @@ Region::handle ( int m ) { return 0; }
 /*                 else */
 /*                     return 0; */
 
-/*             if ( Fl::event_state() & FL_CTRL ) */
-/*             { */
-/*                 if ( ! copied ) */
-/*                 { */
-/*                     _track->add( new Region( *this ) ); */
-/*                     copied = true; */
-/*                     return 1; */
-/*                 } */
-/*             } */
+            if ( Fl::event_state() & FL_CTRL )
+            {
+                if ( ! copied )
+                {
+                    _track->add( new Region( *this ) );
+                    copied = true;
+                    return 1;
+                }
+            }
 
-/*             if ( ox + X >= _track->x() ) */
-/*             { */
-/*                 int nx = ox + X; */
+            if ( ox + X >= _track->x() )
+            {
+                int nx = ox + X;
 
-/* //                nx = _track->snap( this, nx ); */
+//                nx = _track->snap( this, nx );
 
-/* //                _offset = timeline.x_to_ts( nx ); */
+//                _offset = timeline.x_to_ts( nx );
 
-/*                 position( nx, y() ); */
+//                position( nx, y() );
 
-/*                 _track->snap( this ); */
-/*             } */
+                _offset = timeline.x_to_ts( nx ) + timeline.xoffset;
 
-/*             if ( Y > y() + h() ) */
-/*             { */
-/*                 if ( _track->next() ) */
-/*                     _track->next()->add( this ); */
-/*             } */
-/*             else */
-/*                 if ( Y < y() ) */
-/*                 { */
-/*                     if ( _track->prev() ) */
-/*                         _track->prev()->add( this ); */
-/*                 } */
+//                _track->snap( this );
+            }
 
-/*             parent()->redraw(); */
+            if ( Y > y() + h() )
+            {
+                if ( _track->next() )
+                    _track->next()->add( this );
+            }
+            else
+                if ( Y < y() )
+                {
+                    if ( _track->prev() )
+                        _track->prev()->add( this );
+                }
 
-/*             fl_cursor( FL_CURSOR_MOVE ); */
+            _track->redraw();
+
+            fl_cursor( FL_CURSOR_MOVE );
 
 /*             if ( X >= timeline.scroll->x() + timeline.scroll->w() || */
 /*                  X <= timeline.scroll->x() ) */
@@ -269,14 +270,14 @@ Region::handle ( int m ) { return 0; }
 /*                 timeline.scroll->position( pos, timeline.scroll->yposition() ); */
 /*             } */
 
-/* //            _offset = timeline.x_to_ts( x() ); */
+//            _offset = timeline.x_to_ts( x() );
 
-/*             return 1; */
-/*         default: */
-/*             return 0; */
-/*             break; */
-/*     } */
-/* } */
+            return 1;
+        default:
+            return 0;
+            break;
+    }
+}
 
 
 /** must be called whenever zoom is adjusted */

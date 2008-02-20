@@ -19,11 +19,13 @@
 
 #pragma once
 
-class Track;
+// class Track;
 
 // #include "Waveform.H"
 
 #include "Clip.H"
+#include "Track.H"
+#include "Timeline.H"
 
 class Region
 {
@@ -47,6 +49,10 @@ public:
     Region ( const Region & rhs );
     Region ( Clip *c );
 
+    int y ( void ) { return _track->y(); }
+    int h ( void ) { return _track->h(); }
+    int x ( void ) { return timeline.ts_to_x( _offset ) - timeline.xoffset; }
+
     int handle ( int m );
     void draw ( int X, int Y, int W, int H );
     void resize ( void );
@@ -56,6 +62,8 @@ public:
 
     nframes_t offset ( void ) const { return _offset; }
     void offset ( nframes_t o ) { _offset = o; }
+
+    nframes_t length ( void ) const { return _end - _start; }
 
     void end ( nframes_t v ) { _end = v; }
 };

@@ -20,6 +20,8 @@
 #include "Track.H"
 #include "Timeline.H"
 
+#include "Region.H"
+
 void
 Track::draw ( void )
 {
@@ -34,6 +36,24 @@ void
 Track::remove_region ( Region *r )
 {
     _regions.remove( r );
+}
+
+
+Region *
+Track::event_region ( void )
+{
+// FIXME: doesn't handle overlap!
+
+    for ( list <Region *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
+    {
+        int X = timeline.ts_to_x( (*r)->offset() ) - timeline.xoffset;
+        int W = timeline.ts_to_x( (*r)->length() );
+
+        if ( Fl::event_x() > X && Fl::event_x() < X + W )
+            return (*r);
+    }
+
+    return NULL;
 }
 
 void
@@ -146,7 +166,16 @@ Track::handle ( int m )
 
             return 1;
         }
+        case FL_MOVE:
+            /* these aren't used, so don't bother doing lookups for them */
+            return 1;
         default:
-            return Fl_Group::handle( m );
+        {
+            Region *r = event_region();
+            if ( r )
+                return r->handle( m );
+            else
+                return Fl_Group::handle( m );
+        }
     }
 }

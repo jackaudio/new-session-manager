@@ -115,6 +115,12 @@ main ( int argc, char **argv )
     timeline.fpp = 256;
     timeline._beats_per_minute = 120;
 
+
+    timeline.beats_per_minute( 0, 120 );
+    timeline.beats_per_minute( 48000, 250 );
+    timeline.beats_per_minute( 48000 * 4, 60 );
+
+
     timeline.sample_rate = 44100;
 
     timeline.tracks = new Fl_Pack( 0, 0, 800, 5000 );

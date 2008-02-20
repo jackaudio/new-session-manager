@@ -331,7 +331,7 @@ Region::draw ( int X, int Y, int W, int H )
 
     int rx = x();
 
-    printf( "rx %d, rw %d\n", rx, rw );
+//    printf( "rx %d, rw %d\n", rx, rw );
 
     fl_push_clip( rx, Y, rw, H );
 

@@ -28,6 +28,8 @@
 
 #include <assert.h>
 
+#include <FL/fl_draw.H>
+
 struct Timeline {
     Fl_Scroll *scroll;
     Fl_Pack *tracks;
@@ -40,6 +42,9 @@ struct Timeline {
 
     nframes_t xoffset;
 
+    int _beats_per_bar;
+    float _beats_per_minute;
+
     int
     ts_to_x( nframes_t ts )
         {
@@ -51,6 +56,31 @@ struct Timeline {
     x_to_ts ( int x )
         {
             return x * fpp;
+        }
+
+
+    float
+    beats_per_minute ( void ) const
+        {
+            // TODO: this should check a tempo map.
+            return _beats_per_minute;
+        }
+
+    /* draw appropriate measure lines inside the given bounding box */
+    void
+    draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
+        {
+            fl_line_style( FL_DASH, 2 );
+            fl_color( fl_color_average( FL_BLACK, color, 0.65f ) );
+
+            int measure = ts_to_x( sample_rate * 60 / beats_per_minute() );
+
+            for ( int x = X; x < X + W; ++x )
+
+                if ( 0 == (ts_to_x( xoffset ) + x) % measure )
+                    fl_line( x, Y, x, Y + H );
+
+            fl_line_style( FL_SOLID, 0 );
         }
 };
 

@@ -36,6 +36,8 @@ using namespace std;
 
 extern Timeline timeline;
 
+Fl_Boxtype Region::_box = FL_PLASTIC_UP_BOX;
+
 void
 Region::init ( void )
 {
@@ -296,6 +298,7 @@ Region::resize ( void )
 //        Fl_Widget::resize( X, y(), W, h() );
 }
 
+int measure = 40;
 
 /* X is the timeline offset, W is the width of the track */
 void
@@ -303,6 +306,8 @@ Region::draw ( int X, int Y, int W, int H )
 {
     if ( ! ( W > 0 && H > 0 ) )
         return;
+
+
 
     if ( _offset > timeline.xoffset + timeline.x_to_ts( _track->w() ) ||
          (  _offset < timeline.xoffset &&
@@ -331,11 +336,14 @@ Region::draw ( int X, int Y, int W, int H )
     fl_push_clip( rx, Y, rw, H );
 
     /* dirty hack to keep the box from flipping to vertical at small sizes */
-    fl_draw_box( FL_PLASTIC_UP_BOX, rx - 10, Y, rw + 50, H, _box_color );
+    fl_draw_box( box(), rx - 10, Y, rw + 50, H, _box_color );
+
 
 //    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
 
     draw_waveform( rx, Y, rw, H, _clip, _start + offset, min( (_end - _start) - offset, _end), _scale, _color );
+
+    timeline.draw_measure_lines( rx, Y, rw, H, _box_color );
 
     fl_color( FL_BLACK );
     fl_line( rx, Y, rx, Y + H );
@@ -346,10 +354,10 @@ Region::draw ( int X, int Y, int W, int H )
     fl_font( FL_HELVETICA, 14 );
     fl_color( FL_BLACK );
 
-    int bx = Fl::box_dx( FL_PLASTIC_UP_BOX );
-    int by = Fl::box_dy( FL_PLASTIC_UP_BOX );
-    int bw = Fl::box_dw( FL_PLASTIC_UP_BOX );
-    int bh = Fl::box_dh( FL_PLASTIC_UP_BOX );
+    int bx = Fl::box_dx( box() );
+    int by = Fl::box_dy( box() );
+    int bw = Fl::box_dw( box() );
+    int bh = Fl::box_dh( box() );
 
     int dx = min( 32767, timeline.ts_to_x( offset ) );
 
@@ -363,8 +371,8 @@ Region::draw ( int X, int Y, int W, int H )
 //(Fl_Align)FL_ALIGN_LEFT | FL_ALIGN_BOTTOM );
 
 
-    fl_color( FL_RED );
-    fl_line( x(), y(), x(), y() + h() );
+/*     fl_color( FL_RED ); */
+/*     fl_line( x(), y(), x(), y() + h() ); */
 
 
 }

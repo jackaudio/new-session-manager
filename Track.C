@@ -29,6 +29,8 @@ Track::draw ( void )
 {
     Fl_Group::draw();
 
+    timeline.draw_measure_lines( x(), y(), w(), h(), color() );
+
     fl_push_clip( x(), y(), w(), h() );
 
     for ( list <Region *>::iterator r = _regions.begin();  r != _regions.end(); r++ )

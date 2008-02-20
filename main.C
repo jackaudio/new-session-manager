@@ -113,7 +113,7 @@ main ( int argc, char **argv )
     timeline.scroll = new Fl_Scroll( 0, 24, 800, 600 - (24 * 2) );
     timeline.scroll->type( Fl_Scroll::VERTICAL );
     timeline.fpp = 256;
-
+    timeline._beats_per_minute = 120;
 
     timeline.sample_rate = 44100;
 

@@ -87,9 +87,11 @@ class Region : public TrackWidget
 
     float _scale;                                               /* amplitude adjustment */
 
+    static Fl_Boxtype _box;
     static Fl_Color _selection_color;
     static Fl_Color selection_color ( void ) { return _selection_color; }
     static void selection_color ( Fl_Color v ) { _selection_color = v; }
+    static Fl_Boxtype box ( void ) { return _box; }
 
     enum trim_e { NO, LEFT, RIGHT };
     void trim ( enum trim_e t, int X );

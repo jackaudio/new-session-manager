@@ -22,6 +22,7 @@
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Scroll.H>
+#include <FL/Fl_Scrollbar.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Slider.H>
@@ -74,6 +75,29 @@ cb_zoom ( Fl_Widget *w, void *v )
     printf( "%f\n", timeline.fpp );
 }
 
+void
+cb_scroll ( Fl_Widget *w, void *v )
+{
+    timeline.xoffset = ((Fl_Scrollbar*)w)->value();
+    timeline.tracks->redraw();
+
+    timeline.scroll->redraw();
+/*     for ( int i = timeline.tracks->children(); i-- ; ) */
+/*     { */
+/*         Fl_Group *track = (Fl_Group*)timeline.tracks->child( i ); */
+/*         track-> */
+/*     } */
+/* /\*         for ( int j = track->children(); j-- ; ) *\/ */
+/* /\*             ((Region*)(track->child( j )))->resize(); *\/ */
+/* /\*     } *\/ */
+
+
+
+
+
+}
+
+
 int
 main ( int argc, char **argv )
 {
@@ -82,7 +106,7 @@ main ( int argc, char **argv )
 
     Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
 
-    timeline.scroll = new Fl_Scroll( 0, 24, 800, 600 - 24 );
+    timeline.scroll = new Fl_Scroll( 0, 24, 800, 600 - (24 * 2) );
     timeline.scroll->type( Fl_Scroll::VERTICAL );
     timeline.fpp = 256;
 
@@ -150,6 +174,12 @@ main ( int argc, char **argv )
     zoom_slider->range( 2, 4096 );
     zoom_slider->step( 1 );
     zoom_slider->value( 256 );
+
+    timeline.scrollbar = new Fl_Scrollbar( 0, 600 - 24, 800, 24 );
+    timeline.scrollbar->range( 0, 293847234 );
+    timeline.scrollbar->type( 1 );
+    timeline.scrollbar->step( 1 );
+    timeline.scrollbar->callback( cb_scroll, 0 );
 
     main_window->end();
     main_window->show();

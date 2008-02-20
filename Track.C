@@ -23,9 +23,10 @@
 void
 Track::draw ( void )
 {
+    Fl_Group::draw();
     for ( list <Region *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
     {
-        (*r)->draw( x(), y(), w(), h() );
+        (*r)->draw( timeline.xoffset + x(), y(), w(), h() );
     }
 }
 

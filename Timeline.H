@@ -21,6 +21,7 @@
 
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Pack.H>
+#include <FL/Fl_Scrollbar.H>
 
 #include "Clip.H"
 #include <math.h>
@@ -30,11 +31,14 @@
 struct Timeline {
     Fl_Scroll *scroll;
     Fl_Pack *tracks;
+    Fl_Scrollbar *scrollbar;
 
     float fpp;                                                  /* frames per pixel */
 //    nframes_t fpp;
 
     nframes_t sample_rate;
+
+    nframes_t xoffset;
 
     int
     ts_to_x( nframes_t ts )

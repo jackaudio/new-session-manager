@@ -54,7 +54,7 @@ Track::event_region ( void )
 
     for ( list <Region *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
     {
-        int X = timeline.ts_to_x( (*r)->offset() ) - timeline.xoffset;
+        int X = timeline.ts_to_x( (*r)->offset() - timeline.xoffset );
         int W = timeline.ts_to_x( (*r)->length() );
 
         if ( Fl::event_x() > X && Fl::event_x() < X + W )

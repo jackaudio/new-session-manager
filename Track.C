@@ -51,15 +51,10 @@ Region *
 Track::event_region ( void )
 {
 // FIXME: doesn't handle overlap!
-
+    int ets = timeline.xoffset + timeline.x_to_ts( Fl::event_x() );
     for ( list <Region *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
-    {
-        int X = timeline.ts_to_x( (*r)->offset() - timeline.xoffset );
-        int W = timeline.ts_to_x( (*r)->length() );
-
-        if ( Fl::event_x() > X && Fl::event_x() < X + W )
+        if ( ets > (*r)->offset() && ets < (*r)->offset() + (*r)->length() )
             return (*r);
-    }
 
     return NULL;
 }

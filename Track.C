@@ -125,6 +125,8 @@ Track::add ( Region *r )
 int
 Track::handle ( int m )
 {
+    static Region *current_region;
+
     switch ( m )
     {
         case FL_DND_DRAG:
@@ -172,8 +174,21 @@ Track::handle ( int m )
         default:
         {
             Region *r = event_region();
+            if ( current_region )
+                r = current_region;
+
             if ( r )
-                return r->handle( m );
+            {
+                int retval = r->handle( m );
+
+                if ( retval && m == FL_PUSH )
+                    current_region = r;
+
+                if ( retval && m == FL_RELEASE )
+                    current_region = NULL;
+
+                return retval;
+            }
             else
                 return Fl_Group::handle( m );
         }

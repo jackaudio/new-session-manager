@@ -331,7 +331,7 @@ Region::draw ( int X, int Y, int W, int H )
 
 //    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
 
-    draw_waveform( rx, Y, rw, H, _clip, _start + offset, _end - offset, _scale, _color );
+    draw_waveform( rx, Y, rw, H, _clip, _start + offset, min( (_end - _start) - offset, _end), _scale, _color );
 
     fl_color( FL_BLACK );
     fl_line( rx, Y, rx, Y + H );

@@ -27,7 +27,8 @@
 #include "Track.H"
 #include "Timeline.H"
 
-
+#include <algorithm>
+using namespace std;
 /* Regions are "virtual" FLTK widgets; this is necessary because the
  * dimensions of real FLTK widgets are limited to 16-bits, which is
  * far too little for our purposes */
@@ -56,8 +57,11 @@ public:
 
     int y ( void ) const { return _track->y(); }
     int h ( void ) const { return _track->h(); }
-    int x ( void ) const { return _track->x() + timeline.ts_to_x( _offset - timeline.xoffset ); }
+    int x ( void ) const { return _offset < timeline.xoffset ? -1 : min( 32767, _track->x() + timeline.ts_to_x( _offset - timeline.xoffset ) ); }
+//    int x ( void ) const { return (short)( _track->x() + timeline.ts_to_x( _offset - timeline.xoffset )); }
+
     int w ( void ) const { return timeline.ts_to_x( _end - _start ); }
+//    int w ( void ) const { return timeline.ts_to_x( (_end - _start) - ( timeline.xoffset - _offset) ); }
 
     Fl_Color color ( void ) { return _color; }
     Fl_Color box_color ( void ) { return _box_color; }

@@ -297,8 +297,32 @@ Region::resize ( void )
 void
 Region::draw ( int X, int Y, int W, int H )
 {
-    int rx = timeline.ts_to_x( _offset ) - X;
-    int rw = min( timeline.ts_to_x( _end - _start ), W );
+    if ( ! ( W > 0 && H > 0 ) )
+        return;
+
+    if ( _offset > timeline.xoffset + timeline.x_to_ts( _track->w() ) ||
+         (  _offset < timeline.xoffset &&
+            _offset + (_end - _start) < timeline.xoffset ) )
+        return;
+
+    int rw = timeline.ts_to_x( _end - _start );
+
+    nframes_t end = _offset + ( _end - _start );
+
+    /* calculate waveform offset due to scrolling */
+    nframes_t offset = 0;
+    if ( _offset < timeline.xoffset )
+    {
+        offset = timeline.xoffset - _offset;
+
+        rw = timeline.ts_to_x( (_end - _start) - offset );
+    }
+
+    rw = min( rw, _track->w() );
+
+    int rx = x();
+
+    printf( "rx %d, rw %d\n", rx, rw );
 
     fl_push_clip( rx, Y, rw, H );
 
@@ -307,7 +331,7 @@ Region::draw ( int X, int Y, int W, int H )
 
 //    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
 
-    draw_waveform( rx, Y, rw, H, _clip, _start, _end, _scale, _color );
+    draw_waveform( rx, Y, rw, H, _clip, _start + offset, _end - offset, _scale, _color );
 
     fl_color( FL_BLACK );
     fl_line( rx, Y, rx, Y + H );
@@ -332,4 +356,10 @@ Region::draw ( int X, int Y, int W, int H )
 //    fl_draw( _clip->name(), X, Y );
 
 //(Fl_Align)FL_ALIGN_LEFT | FL_ALIGN_BOTTOM );
+
+
+    fl_color( FL_RED );
+    fl_line( x(), y(), x(), y() + h() );
+
+
 }

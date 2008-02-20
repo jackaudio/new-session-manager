@@ -33,7 +33,8 @@ Track::draw ( void )
 
     for ( list <Region *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
     {
-        (*r)->draw( timeline.xoffset + x(), y(), w(), h() );
+//        (*r)->draw( timeline.xoffset + x(), y(), w(), h() );
+        (*r)->draw( x(), y(), w(), h() );
     }
 
     fl_pop_clip();

@@ -225,7 +225,7 @@ Region::handle ( int m )
 
                 _offset = timeline.x_to_ts( nx ) + timeline.xoffset;
 
-//                _track->snap( this );
+                _track->snap( this );
             }
 
             if ( Y > y() + h() )

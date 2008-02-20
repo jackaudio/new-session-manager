@@ -65,6 +65,7 @@ cb_zoom ( Fl_Widget *w, void *v )
 /*             ((Region*)(track->child( j )))->resize(); */
 /*     } */
 
+
     timeline.scroll->redraw();
 
     if ( timeline.fpp < FRAMES_PER_PEAK )
@@ -84,11 +85,12 @@ cb_scroll ( Fl_Widget *w, void *v )
 
     printf( "%lu\n", timeline.xoffset );
 
-/*     for ( int i = timeline.tracks->children(); i-- ; ) */
-/*     { */
-/*         Fl_Group *track = (Fl_Group*)timeline.tracks->child( i ); */
-/*         track-> */
-/*     } */
+    for ( int i = timeline.tracks->children(); i-- ; )
+    {
+        Fl_Group *track = (Fl_Group*)timeline.tracks->child( i );
+        track->damage( FL_DAMAGE_SCROLL );
+    }
+
 /* /\*         for ( int j = track->children(); j-- ; ) *\/ */
 /* /\*             ((Region*)(track->child( j )))->resize(); *\/ */
 /* /\*     } *\/ */

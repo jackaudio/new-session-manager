@@ -76,51 +76,52 @@ Track::add ( Region *r )
 //    r->redraw();
 }
 
-/** snap /r/ to nearest edge */
-/* void */
-/* Track::snap ( Region *r ) */
-/* { */
-/*     const int snap_pixels = 10; */
+/* snap /r/ to nearest edge */
+void
+Track::snap ( Region *r )
+{
+    const int snap_pixels = 10;
 
-/*     int rx1 = r->x(); */
-/*     int rx2 = r->x() + r->w(); */
+    int rx1 = r->x();
+    int rx2 = r->x() + r->w();
 
-/*     for ( int i = children(); i-- ; ) */
-/*     { */
-/*         const Region *w = (Region*)child( i ); */
+    for ( list <Region*>::iterator i = _regions.begin(); i != _regions.end(); i++ )
+    {
+        const Region *w = (*i);
 
-/*         if ( w == r ) */
-/*             continue; */
+        if ( w == r )
+            continue;
 
-/*         int wx1 = w->x(); */
-/*         int wx2 = w->x() + w->w(); */
+        int wx1 = w->x();
+        int wx2 = w->x() + w->w();
 
-/*         if ( abs( rx1 - wx2 ) < snap_pixels ) */
-/*         { */
-/*             r->offset( w->offset() + w->length() + 1 ); */
+        if ( abs( rx1 - wx2 ) < snap_pixels )
+        {
+            r->offset( w->offset() + w->length() + 1 );
 
-/*             printf( "snap: %lu | %lu\n", w->offset() + w->length(), r->offset() ); */
+            printf( "snap: %lu | %lu\n", w->offset() + w->length(), r->offset() );
 
-/*             goto done; */
-/*         } */
+            goto done;
+        }
 
-/*         if ( abs( rx2 - wx1 ) < snap_pixels ) */
-/*         { */
-/*             r->offset( ( w->offset() - r->length() ) - 1 ); */
+        if ( abs( rx2 - wx1 ) < snap_pixels )
+        {
+            r->offset( ( w->offset() - r->length() ) - 1 );
 
-/*             printf( "snap: %lu | %lu\n", r->offset() + r->length(), w->offset() ); */
+            printf( "snap: %lu | %lu\n", r->offset() + r->length(), w->offset() );
 
-/*             goto done; */
-/*         } */
-/*     } */
+            goto done;
+        }
+    }
 
-/*     r->offset( timeline.x_to_ts( r->x() ) ); */
+//    r->offset( timeline.x_to_ts( r->x() ) );
 
-/* done: */
+done:
 
-/*     r->resize(); */
-/* //            r->position( rx1, y() ); */
-/* } */
+    return;
+//    r->resize();
+//            r->position( rx1, y() );
+}
 
 int
 Track::handle ( int m )

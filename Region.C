@@ -71,55 +71,48 @@ Region::Region ( Clip *c )
 }
 
 
+void
+Region::trim ( enum trim_e t, int X )
+{
+    switch ( t )
+    {
+        case LEFT:
+        {
+            int d = X - x();
 
-/* void */
-/* Region::trim ( enum trim_e t, int X ) */
-/* { */
-/*     switch ( t ) */
-/*     { */
-/*         case LEFT: */
-/*         { */
-/*             int d = X - x(); */
+            long td = timeline.x_to_ts( d );
 
-/*             long td = timeline.x_to_ts( d ); */
+            if ( td < 0 && _start < 0 - td )
+                td = 0 - _start;
 
-/*             if ( td < 0 && _start < 0 - td ) */
-/*                 td = 0 - _start; */
+            _start += td;
 
-/*             _start += td; */
+            _offset += td;
 
-/*             _offset += td; */
+//            resize();
+            break;
+        }
+        case RIGHT:
+        {
+            int d = (x() + w()) - X;
+            long td = timeline.x_to_ts( d );
 
-/*             resize(); */
-/* //            Fl_Widget::resize( x() + d, y(), w() - d, h() ); */
+            _end -= td;
 
-/* //            _offset = timeline.x_to_ts( x() ); */
+//            resize();
 
-/*             break; */
-/*         } */
-/*         case RIGHT: */
-/*         { */
-/*             int d = (x() + w()) - X; */
-/*             long td = timeline.x_to_ts( d ); */
+            break;
+        }
+        default:
+            return;
 
-/*             _end -= td; */
+    }
 
-/*             resize(); */
+    _track->redraw();
+//    redraw();
+//    parent()->redraw();
 
-/* //            _end = _start + timeline.x_to_ts( w() - d ); */
-
-/* //            Fl_Widget::resize( x(), y(), w() - d, h() ); */
-/*             break; */
-/*         } */
-/*         default: */
-/*             return; */
-
-/*     } */
-
-/*     redraw(); */
-/*     parent()->redraw(); */
-
-/* } */
+}
 
 int
 Region::handle ( int m )
@@ -144,13 +137,12 @@ Region::handle ( int m )
             {
                 switch ( Fl::event_button() )
                 {
-
-/*                     case 1: */
-/*                         trim( trimming = LEFT, X ); */
-/*                         break; */
-/*                     case 3: */
-/*                         trim( trimming = RIGHT, X ); */
-/*                         break; */
+                    case 1:
+                        trim( trimming = LEFT, X );
+                        break;
+                    case 3:
+                        trim( trimming = RIGHT, X );
+                        break;
 
                     default:
                         return 0;
@@ -202,14 +194,14 @@ Region::handle ( int m )
                 return 1;
             }
 
-/*             if ( Fl::event_state() & FL_SHIFT ) */
-/*                 if ( trimming ) */
-/*                 { */
-/*                     trim( trimming, X ); */
-/*                     return 1; */
-/*                 } */
-/*                 else */
-/*                     return 0; */
+            if ( Fl::event_state() & FL_SHIFT )
+                if ( trimming )
+                {
+                    trim( trimming, X );
+                    return 1;
+                }
+                else
+                    return 0;
 
             if ( Fl::event_state() & FL_CTRL )
             {

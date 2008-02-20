@@ -51,7 +51,8 @@ public:
 
     int y ( void ) { return _track->y(); }
     int h ( void ) { return _track->h(); }
-    int x ( void ) { return timeline.ts_to_x( _offset ) - timeline.xoffset; }
+    int x ( void ) { return _track->x() + timeline.ts_to_x( _offset - timeline.xoffset ); }
+    int w ( void ) { return timeline.ts_to_x( _end - _start ); }
 
     int handle ( int m );
     void draw ( int X, int Y, int W, int H );

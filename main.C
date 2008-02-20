@@ -78,10 +78,12 @@ cb_zoom ( Fl_Widget *w, void *v )
 void
 cb_scroll ( Fl_Widget *w, void *v )
 {
-    timeline.xoffset = ((Fl_Scrollbar*)w)->value();
-    timeline.tracks->redraw();
-
+    timeline.xoffset = ((Fl_Slider*)w)->value();
+    //  timeline.tracks->redraw();
     timeline.scroll->redraw();
+
+    printf( "%lu\n", timeline.xoffset );
+
 /*     for ( int i = timeline.tracks->children(); i-- ; ) */
 /*     { */
 /*         Fl_Group *track = (Fl_Group*)timeline.tracks->child( i ); */
@@ -176,7 +178,7 @@ main ( int argc, char **argv )
     zoom_slider->value( 256 );
 
     timeline.scrollbar = new Fl_Scrollbar( 0, 600 - 24, 800, 24 );
-    timeline.scrollbar->range( 0, 293847234 );
+    timeline.scrollbar->range( 0, 48000 * 2 );
     timeline.scrollbar->type( 1 );
     timeline.scrollbar->step( 1 );
     timeline.scrollbar->callback( cb_scroll, 0 );

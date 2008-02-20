@@ -51,6 +51,10 @@ Region::init ( void )
     _end = 0;
     _scale = 1.0f;
     _clip = NULL;
+
+
+    _box_color = FL_CYAN;
+    _color = FL_BLUE;
 }
 
 Region::Region ( const Region & rhs )
@@ -296,14 +300,20 @@ Region::draw ( int X, int Y, int W, int H )
     int rx = timeline.ts_to_x( _offset ) - X;
     int rw = min( timeline.ts_to_x( _end - _start ), W );
 
-    fl_draw_box( FL_PLASTIC_UP_BOX, rx, Y, rw, H, FL_CYAN );
+    fl_push_clip( rx, Y, rw, H );
+
+    /* dirty hack to keep the box from flipping to vertical at small sizes */
+    fl_draw_box( FL_PLASTIC_UP_BOX, rx - 10, Y, rw + 50, H, _box_color );
 
 //    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
 
-    draw_waveform( rx, Y, rw, H, _clip, _start, _end, _scale, FL_GREEN );
+    draw_waveform( rx, Y, rw, H, _clip, _start, _end, _scale, _color );
 
-//    fl_pop_clip();
+    fl_color( FL_BLACK );
+    fl_line( rx, Y, rx, Y + H );
+    fl_line( rx + rw - 1, Y, rx + rw - 1, Y + H );
 
+    fl_pop_clip();
 
     fl_font( FL_HELVETICA, 14 );
     fl_color( FL_BLACK );

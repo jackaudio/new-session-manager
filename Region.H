@@ -27,6 +27,11 @@
 #include "Track.H"
 #include "Timeline.H"
 
+
+/* Regions are "virtual" FLTK widgets; this is necessary because the
+ * dimensions of real FLTK widgets are limited to 16-bits, which is
+ * far too little for our purposes */
+
 class Region
 {
 
@@ -39,6 +44,16 @@ class Region
     nframes_t _end;                                             /* last sample from clip */
 
     float _scale;                                               /* amplitude adjustment */
+
+    bool _selected;
+
+    Fl_Color _color;                                            /* color of waveform */
+    Fl_Color _box_color;                                        /* color of background (box) */
+
+
+    static Fl_Color _selection_color;
+    static Fl_Color selection_color ( void ) { return _selection_color; }
+    static void selection_color ( Fl_Color v ) { _selection_color = v; }
 
     enum trim_e { NO, LEFT, RIGHT };
     void trim ( enum trim_e t, int X );
@@ -53,6 +68,11 @@ public:
     int h ( void ) const { return _track->h(); }
     int x ( void ) const { return _track->x() + timeline.ts_to_x( _offset - timeline.xoffset ); }
     int w ( void ) const { return timeline.ts_to_x( _end - _start ); }
+
+    Fl_Group * parent ( void ) const { return _track; }
+
+    Fl_Color color ( void ) { return _color; }
+    Fl_Color box_color ( void ) { return _box_color; }
 
     int handle ( int m );
     void draw ( int X, int Y, int W, int H );

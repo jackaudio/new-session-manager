@@ -22,14 +22,21 @@
 
 #include "Region.H"
 
+#include <FL/fl_draw.H>
+
 void
 Track::draw ( void )
 {
     Fl_Group::draw();
+
+    fl_push_clip( x(), y(), w(), h() );
+
     for ( list <Region *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
     {
         (*r)->draw( timeline.xoffset + x(), y(), w(), h() );
     }
+
+    fl_pop_clip();
 }
 
 void

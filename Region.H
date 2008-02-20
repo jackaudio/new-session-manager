@@ -21,36 +21,41 @@
 
 class Track;
 
-#include "Waveform.H"
+// #include "Waveform.H"
 
-class Region : public Waveform
+#include "Clip.H"
+
+class Region
 {
 
-    Track *_track;
+    Track *_track;                                              /* track this region belongs to */
 
-    nframes_t _offset;
+    Clip *_clip;                                                /* clip this region represents */
+
+    nframes_t _offset;                                          /* where on the timeline */
+    nframes_t _start;                                           /* first sample from clip */
+    nframes_t _end;                                             /* last sample from clip */
+
+    float _scale;                                               /* amplitude adjustment */
 
     enum trim_e { NO, LEFT, RIGHT };
-
     void trim ( enum trim_e t, int X );
-
     void init ( void );
 
 public:
-
-    Region ( int X, int Y, int W, int H, const char *L=0 );
 
     Region ( const Region & rhs );
     Region ( Clip *c );
 
     int handle ( int m );
-    void draw ( void );
+    void draw ( int X, int Y, int W, int H );
     void resize ( void );
-
 
     Track * track ( void ) const { return _track; }
     void track ( Track *t ) {  _track = t; }
 
     nframes_t offset ( void ) const { return _offset; }
     void offset ( nframes_t o ) { _offset = o; }
+
+    void end ( nframes_t v ) { _end = v; }
 };

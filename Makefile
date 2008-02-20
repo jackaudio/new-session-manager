@@ -5,7 +5,7 @@ CXXFLAGS=-ggdb -Wall -O0
 LIBS=-lsndfile  `fltk-config --ldflags`
 # CXXFLAGS=`fltk-config -cxxflags`
 
-SRCS= Clip.C Waveform.C  Region.C  Peaks.C  main.C
+SRCS= Clip.C Waveform.C  Region.C  Peaks.C  main.C Track.C
 
 OBJS=$(SRCS:.C=.o)
 

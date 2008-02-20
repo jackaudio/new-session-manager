@@ -26,7 +26,7 @@
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Slider.H>
 
-#include "Waveform.H"
+// #include "Waveform.H"
 #include "Region.H"
 
 #include <stdio.h>
@@ -57,12 +57,12 @@ cb_zoom ( Fl_Widget *w, void *v )
     timeline.fpp = ((Fl_Slider*)w)->value();
 
 
-    for ( int i = timeline.tracks->children(); i-- ; )
-    {
-        Fl_Group *track = (Fl_Group*)timeline.tracks->child( i );
-        for ( int j = track->children(); j-- ; )
-            ((Region*)(track->child( j )))->resize();
-    }
+/*     for ( int i = timeline.tracks->children(); i-- ; ) */
+/*     { */
+/*         Fl_Group *track = (Fl_Group*)timeline.tracks->child( i ); */
+/*         for ( int j = track->children(); j-- ; ) */
+/*             ((Region*)(track->child( j )))->resize(); */
+/*     } */
 
     timeline.scroll->redraw();
 
@@ -83,12 +83,13 @@ main ( int argc, char **argv )
     Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
 
     timeline.scroll = new Fl_Scroll( 0, 24, 800, 600 - 24 );
+    timeline.scroll->type( Fl_Scroll::VERTICAL );
     timeline.fpp = 256;
 
 
     timeline.sample_rate = 44100;
 
-    timeline.tracks = new Fl_Pack( 0, 0, 32767, 5000 );
+    timeline.tracks = new Fl_Pack( 0, 0, 800, 5000 );
     timeline.tracks->type( Fl_Pack::VERTICAL );
     timeline.tracks->spacing( 20 );
 
@@ -97,7 +98,7 @@ main ( int argc, char **argv )
 
 //    Fl_Group *pack = new Fl_Group( 0, 0, 5000, 600 );
 
-    Track *track1 = new Track( 40, 0, 32768, 100 );
+    Track *track1 = new Track( 40, 0, 800, 100 );
 
 //    pack->type( Fl_Pack::VERTICAL );
 //    pack->box( FL_DOWN_BOX );
@@ -109,12 +110,17 @@ main ( int argc, char **argv )
 //    wave->resize( 0, 0, 500, 100 );
 
     wave->offset( 1024 );
+    wave->end( 3000 );
 
-    wave->color( FL_CYAN );
-    wave->selection_color( fl_darker( FL_GRAY ) );
-    wave->selection_color( FL_GREEN );
+/*     wave->color( FL_CYAN ); */
+/*     wave->selection_color( fl_darker( FL_GRAY ) ); */
+/*     wave->selection_color( FL_GREEN ); */
 
     track1->add( wave );
+
+    Region *wave3 = new Region( *wave );
+    wave3->offset( 4000 );
+    track1->add( wave3 );
 
     track1->end();
 
@@ -148,7 +154,7 @@ main ( int argc, char **argv )
     main_window->end();
     main_window->show();
 
-    wave->redraw();
+/*     wave->redraw(); */
 
     Fl::run();
 }

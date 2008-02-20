@@ -21,8 +21,10 @@
 
 #include <FL/Enumerations.H>
 #include <FL/Fl.H>
+#include <FL/fl_draw.H>
 
-#include "Waveform.H"
+#include "Timeline.H"
+// #include "Waveform.H"
 #include "Clip.H"
 
 // extern Timeline timeline;
@@ -30,66 +32,40 @@
 
 #include <math.h>
 
-extern Fl_Color velocity_colors[];
+/* void */
+/* Waveform::draw ( void ) */
+/* { */
+/*     int X, Y, W, H; */
 
-Waveform::Waveform ( int X, int Y, int W, int H, const char *L ) : Fl_Widget( X, Y, W, H, L )
-{
-    _scale = 1;
-    _clip = NULL;
+/*     fl_clip_box( x(), y(), w(), h(), X, Y, W, H ); */
 
-    _start = _end = 0;
-}
+/*     draw( X, y(), W, h() ); */
+/* } */
 
-int measure = 50;
-
+/** draw a portion of /clip/'s waveform. coordinates are the portion to draw  */
 void
-Waveform::draw ( void )
-{
-//    draw_box( FL_PLASTIC_UP_BOX, x(), y(), w(), h(), color() );
-
-/*     fl_color( fl_lighter( color() ) ); */
-
-/*     for ( int nx = x(); nx < x() + w(); ++nx ) */
-/*         if ( ! (nx % measure) ) */
-/*             fl_line( nx, y(), nx, y() + h() ); */
-
-    int X, Y, W, H;
-
-    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
-
-    draw( X, y(), W, h() );
-}
-
-void
-Waveform::draw ( int X, int Y, int W, int H )
+draw_waveform ( int X, int Y, int W, int H, Clip *_clip, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )
 {
     fl_push_clip( X, Y, W, H );
 
-//    fl_push_matrix();
-
     int j;
 
-//    int start = (_start + (X - x())) * 2;
-
-    int start = timeline.ts_to_x( _start ) + (X - x() );
+    int start = timeline.ts_to_x( _start );
 
     {
-        nframes_t start = timeline.x_to_ts( X - x() ) + _start;
-        _clip->peaks()->fill_buffer( start,
-                                     start + timeline.x_to_ts( W ) );
+        _clip->peaks()->fill_buffer( _start,
+                                     _start + timeline.x_to_ts( W ) );
     }
 
     j = start;
     for ( int x = X; x < X + W; ++x, ++j )
     {
-//        read_peaks( x, &hi, &lo );
         Peak p = (*_clip->peaks())[ j ];
 
         int mid = Y + (H / 2);
 
         // FIXME: cache this stuff.
-//        fl_color( fl_color_average( selection_color(), fl_contrast( fl_darker( FL_BLUE ), selection_color() ),  fabs( hi - lo ) ) );
-        fl_color( fl_color_average( FL_RED, selection_color(),  fabs( p.max - p.min ) ) );
+        fl_color( fl_color_average( FL_RED, color,  fabs( p.max - p.min ) ) );
 
         p.max *= _scale;
         p.min *= _scale;
@@ -101,7 +77,7 @@ Waveform::draw ( int X, int Y, int W, int H )
 
     }
 
-    fl_color( fl_darker( fl_darker( selection_color() ) ) );
+    fl_color( fl_darker( fl_darker( color ) ) );
 
 
     fl_line_style( FL_SOLID, 2 );
@@ -136,17 +112,15 @@ Waveform::draw ( int X, int Y, int W, int H )
 
     fl_line_style( FL_SOLID, 0 );
 
-//    fl_pop_matrix();
-
     fl_pop_clip();
 }
 
-void
-Waveform::normalize ( void )
-{
-    printf( "normalize: start=%lu end=%lu\n", _start, _end );
+/* void */
+/* Waveform::normalize ( void ) */
+/* { */
+/*     printf( "normalize: start=%lu end=%lu\n", _start, _end ); */
 
-    _scale = _clip->peaks()->normalization_factor( _start, _end );
+/*     _scale = _clip->peaks()->normalization_factor( _start, _end ); */
 
-    redraw();
-}
+/*     redraw(); */
+/* } */

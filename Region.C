@@ -347,11 +347,12 @@ Region::draw ( int X, int Y, int W, int H )
     int bw = Fl::box_dw( FL_PLASTIC_UP_BOX );
     int bh = Fl::box_dh( FL_PLASTIC_UP_BOX );
 
-    Fl_Align align = (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_CLIP);
-    fl_draw( _clip->name(), bx + rx + 1, Y + 1 + by, rw - bw, H - bh, align );
-    fl_color( FL_WHITE );
-    fl_draw( _clip->name(), bx + rx, Y + by , rw - bw, H - bh, align );
+    int dx = min( 32767, timeline.ts_to_x( offset ) );
 
+    Fl_Align align = (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_CLIP);
+    fl_draw( _clip->name(), (bx + rx + 1) - dx, Y + 1 + by, rw - bw, H - bh, align );
+    fl_color( FL_WHITE );
+    fl_draw( _clip->name(), (bx + rx) - dx, Y + by , rw - bw, H - bh, align );
 
 //    fl_draw( _clip->name(), X, Y );
 

@@ -43,6 +43,8 @@
 #include "Audio_Track.H"
 #include "Timeline.H"
 #include "Tempo_Track.H"
+#include "Time_Track.H"
+
 
 #include "const.h"
 
@@ -64,9 +66,11 @@ cb_scroll ( Fl_Widget *w, void *v )
 //    sb->slider_size( sb->w() / maxx );
 //    ((Fl_Scrollbar*)sb)->value( sb->value(), 60, 10, maxx );
 
-    timeline.xoffset = timeline.x_to_ts( sb->value() );
-    //  timeline.tracks->redraw();
-    timeline.scroll->redraw();
+    timeline.position( sb->value() );
+
+/*     timeline.xoffset = timeline.x_to_ts( sb->value() ); */
+/*     //  timeline.tracks->redraw(); */
+/*     timeline.scroll->redraw(); */
 
     printf( "%lu\n", timeline.xoffset );
 
@@ -75,6 +79,14 @@ cb_scroll ( Fl_Widget *w, void *v )
         Fl_Group *track = (Fl_Group*)timeline.tracks->child( i );
         track->damage( FL_DAMAGE_SCROLL );
     }
+
+    for ( int i = timeline.rulers->children(); i-- ; )
+    {
+        Fl_Group *track = (Fl_Group*)timeline.rulers->child( i );
+        track->damage( FL_DAMAGE_SCROLL );
+    }
+
+
 
 /* /\*         for ( int j = track->children(); j-- ; ) *\/ */
 /* /\*             ((Region*)(track->child( j )))->resize(); *\/ */
@@ -93,7 +105,45 @@ main ( int argc, char **argv )
 
     Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
 
-    timeline.scroll = new Fl_Scroll( 0, 0, 800, 600 - 24 );
+    Fl::get_system_colors();
+    Fl::scheme( "plastic" );
+
+    {
+        Fl_Pack *o = new Fl_Pack( 0, 0, 800, 24 * 2, "rulers" );
+        o->type( Fl_Pack::VERTICAL );
+
+        {
+            Tempo_Track *o = new Tempo_Track( 0, 0, 800, 24 );
+
+            o->color( FL_RED );
+
+//        tempo_track->label( "tempo map" );
+            o->add( new Tempo_Point( 0, 120 ) );
+            o->add( new Tempo_Point( 56000, 250 ) );
+
+            o->end();
+
+            timeline.tempo_track = o;
+        }
+
+        {
+            Time_Track *o = new Time_Track( 0, 24, 800, 24 );
+
+            o->color( fl_color_average( FL_RED, FL_WHITE, 0.50f ) );
+
+            o->add( new Time_Point( 0, 4, 4 ) );
+            o->add( new Time_Point( 345344, 6, 8 ) );
+
+            o->end();
+
+            timeline.time_track = o;
+        }
+
+        timeline.rulers = o;
+        o->end();
+    }
+
+    timeline.scroll = new Fl_Scroll( 0, 24 * 2, 800, 600 - (24 * 3) );
     timeline.scroll->type( Fl_Scroll::VERTICAL );
     timeline.fpp = 256;
     timeline._beats_per_minute = 120;
@@ -102,27 +152,14 @@ main ( int argc, char **argv )
 
     timeline.sample_rate = 44100;
 
+
     timeline.tracks = new Fl_Pack( 0, 0, 800, 5000 );
     timeline.tracks->type( Fl_Pack::VERTICAL );
     timeline.tracks->spacing( 20 );
 
-    Fl::get_system_colors();
-    Fl::scheme( "plastic" );
 
 //    Fl_Group *pack = new Fl_Group( 0, 0, 5000, 600 );
 
-    {
-        Tempo_Track *tempo_track = new Tempo_Track( 0, 0, 800, 24 );
-
-//        tempo_track->label( "tempo map" );
-        tempo_track->add( new Tempo_Point( 0, 120 ) );
-
-        tempo_track->add( new Tempo_Point( 56000, 250 ) );
-
-        tempo_track->end();
-
-        timeline.tempo_track = tempo_track;
-    }
 
     Track *track1 = new Audio_Track( 40, 0, 800, 100 );
 

@@ -19,85 +19,39 @@
 
 #pragma once
 
-#include <FL/Fl_Scroll.H>
-#include <FL/Fl_Pack.H>
-#include <FL/Fl_Scrollbar.H>
-
-#include "Clip.H"
-#include <math.h>
-
-#include <assert.h>
-
-#include <FL/fl_draw.H>
-
-class Timeline;
-extern Timeline timeline;
-
 #include "Track.H"
-// #include "Tempo_Track.H"
-
-class Tempo_Track;
-class Time_Track;
-
-// #include "Tempo_Point.H"
-// #include "Region.H"
+#include "Time_Point.H"
 
 #include <list>
 using std::list;
 
-struct Timeline {
+class Time_Track : public Track
+{
 
-    enum snap_flags_e {
-        SNAP_TO_REGION,
-        SNAP_TO_BAR,
-        SNAP_TO_BEAT
-    } snap_to;
+public:
 
-    Fl_Scroll *scroll;
-    Fl_Pack *tracks;
-    Fl_Pack *rulers;
-    Fl_Scrollbar *scrollbar;
-
-    Tempo_Track *tempo_track;
-    Time_Track *time_track;
-
-    float fpp;                                                  /* frames per pixel */
-//    nframes_t fpp;
-
-    nframes_t sample_rate;
-
-    nframes_t xoffset;
-
-    nframes_t length;
-
-    int _beats_per_bar;
-    float _beats_per_minute;
-
-    int
-    ts_to_x( nframes_t ts )
+    Time_Track ( int X, int Y, int W, int H ) : Track ( X, Y, W, H )
         {
-//            assert( ts / fpp > 0 );
-            return  ts / fpp;
+            box( FL_UP_BOX );
         }
 
-    nframes_t
-    x_to_ts ( int x )
+    time_sig
+    time ( nframes_t when )
         {
-            return x * fpp;
+            for ( list <Track_Widget *>::const_reverse_iterator i = _widgets.rbegin();
+                  i != _widgets.rend(); i++ )
+            {
+                if ( (*i)->offset() < when )
+                    return ((Time_Point*)(*i))->time();
+            }
+
+            return time_sig( 4, 4 );
         }
 
-    float beats_per_minute ( nframes_t when ) const;
-    void beats_per_minute ( nframes_t when, float bpm );
-    void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
-
-    /** set scroll position */
     void
-    position ( int X )
+    time ( nframes_t when, int bpb, int note )
         {
-            xoffset = x_to_ts( X );
-
-            rulers->damage( FL_DAMAGE_SCROLL );
-            tracks->damage( FL_DAMAGE_SCROLL );
+            add( new Time_Point( when, bpb, note ) );
         }
 
 };

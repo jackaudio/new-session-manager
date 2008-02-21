@@ -19,41 +19,61 @@
 
 #pragma once
 
-#include "Track.H"
-#include "Tempo_Point.H"
+#include "Track_Point.H"
 
-#include <list>
-using std::list;
-
-class Tempo_Track : public Track
+struct time_sig
 {
+    int beats_per_bar;
+    int note_type;
+
+    time_sig ( int bpb, int note )
+        {
+            beats_per_bar = bpb;
+            note_type = note;
+        }
+};
+
+class Time_Point : public Track_Point
+{
+    time_sig _time;
+
+    void
+    _make_label ( void )
+        {
+            if ( ! _label )
+                _label = new char[40];
+
+            snprintf( _label, 40, "%d/%d", _time.beats_per_bar, _time.note_type );
+        }
 
 public:
 
-    Tempo_Track ( int X, int Y, int W, int H ) : Track ( X, Y, W, H )
+    Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
         {
-            box( FL_UP_BOX );
+            _offset = when;
+            _make_label();
         }
 
-    float
-    beats_per_minute ( nframes_t when )
-        {
-//            sort();
+    ~Time_Point ( )
+        { if ( _label ) delete[] _label; }
 
-            for ( list <Track_Widget *>::const_reverse_iterator i = _widgets.rbegin();
-                  i != _widgets.rend(); i++ )
+/*     beats_per_bar ( void ) const { return _time.beats_per_bar; } */
+/*     note_type ( void ) const { return _note_type; } */
+
+    void time ( int bpb, int note ) { _time.beats_per_bar = bpb; _time.note_type = note; }
+    time_sig time ( void ) const { return _time; }
+
+    int
+    handle ( int m )
+        {
+            int r = Track_Widget::handle( m );
+
+            if ( m == FL_RELEASE )
             {
-                if ( (*i)->offset() < when )
-                    return ((Tempo_Point*)(*i))->tempo();
+                _track->sort();
+                timeline.tracks->redraw();
             }
-
-            return 120.0;
-        }
-
-    void
-    beats_per_minute ( nframes_t when, float bpm )
-        {
-            add( new Tempo_Point( when, bpm ) );
+            return r;
         }
 
 };

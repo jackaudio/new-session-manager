@@ -64,4 +64,7 @@ public:
     void resize ( void );
 
     void normalize ( void );
+
+    void dump ( void );
+
 };

@@ -356,3 +356,10 @@ Region::normalize ( void )
 
     _scale = _clip->peaks()->normalization_factor( _start, _end );
 }
+
+
+void
+Region::dump ( void )
+{
+    printf( "%lu { \"%s\" %lu %lu }\n", _offset, _clip->name(),  _start, _end );
+}

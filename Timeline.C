@@ -49,6 +49,11 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
     for ( int x = X; x < X + W; ++x )
     {
         measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x ) + xoffset ));
+
+        /* don't bother with lines this close together */
+        if ( measure < 4 )
+            break;
+
         if ( 0 == (ts_to_x( xoffset ) + x) % measure )
             fl_line( x, Y, x, Y + H );
 

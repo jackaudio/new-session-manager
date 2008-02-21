@@ -46,6 +46,7 @@ public:
                 case FL_DND_DRAG:
                 case FL_DND_ENTER:
                 case FL_ENTER:
+                    dump();
                     return 1;
                 case FL_DND_LEAVE:
                 case FL_DND_RELEASE:
@@ -84,5 +85,23 @@ public:
                 default:
                     return Track::handle( m );
             }
+        }
+
+
+
+    void
+    dump ( void )
+        {
+
+            printf( "1 \"%s\" {\n", /* name() */ "Track" );
+
+            sort();
+            for ( list <Track_Widget *>::const_iterator r = _widgets.begin(); r != _widgets.end(); r++ )
+            {
+                printf( "\t" );
+                ((Region*)(*r))->dump();
+            }
+
+            printf( "}\n" );
         }
 };

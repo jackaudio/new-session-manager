@@ -229,13 +229,15 @@ Region::handle ( int m )
             if ( Y > y() + h() )
             {
                 if ( _track->next() )
-                    _track->next()->add( this );
+                    if ( Y > _track->next()->y() )
+                        _track->next()->add( this );
             }
             else
                 if ( Y < y() )
                 {
                     if ( _track->prev() )
-                        _track->prev()->add( this );
+                        if ( Y < _track->prev()->y() + _track->prev()->h() )
+                            _track->prev()->add( this );
                 }
 
             _track->redraw();

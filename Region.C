@@ -92,11 +92,20 @@ Region::Region ( Clip *c )
 void
 Region::trim ( enum trim_e t, int X )
 {
+
+    redraw();
+
     switch ( t )
     {
         case LEFT:
         {
             int d = X - x();
+
+/*             if ( d < 0 ) */
+/* //                _track->damage( FL_DAMAGE_EXPOSE, x() + d, y(), 1 - d, h() ); */
+/*                 _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() ); */
+/*             else */
+/*                 _track->damage( FL_DAMAGE_EXPOSE, x(), y(), d, h() ); */
 
             long td = timeline->x_to_ts( d );
 
@@ -106,11 +115,16 @@ Region::trim ( enum trim_e t, int X )
             _start += td;
 
             _offset += td;
+
+
             break;
         }
         case RIGHT:
         {
             int d = (x() + w()) - X;
+
+/*             _track->damage( FL_DAMAGE_EXPOSE, x() + w(), y(), d, h() ); */
+
             long td = timeline->x_to_ts( d );
 
             _end -= td;
@@ -120,9 +134,6 @@ Region::trim ( enum trim_e t, int X )
             return;
 
     }
-
-    _track->redraw();
-
 }
 
 int
@@ -253,7 +264,9 @@ Region::handle ( int m )
                             _track->prev()->add( this );
                 }
 
-            _track->redraw();
+//            _track->redraw();
+
+            //                  _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
 
             ret = Track_Widget::handle( m );
             return ret | 1;

@@ -96,8 +96,13 @@ public:
 
     virtual Fl_Boxtype box ( void ) const { return FL_UP_BOX; }
 
-    /* just draw a simple box */
+    void
+    redraw ( void )
+        {
+            _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
+        }
 
+    /* just draw a simple box */
     virtual void
     draw_box ( int X, int Y, int W, int H )
         {
@@ -208,6 +213,8 @@ public:
                     return 1;
                 case FL_DRAG:
                 {
+                    redraw();
+
                     if ( ox + X >= _track->x() )
                     {
                         int nx = ox + X;
@@ -217,7 +224,7 @@ public:
                         _track->snap( this );
                     }
 
-                    _track->redraw();
+                    //                  _track->redraw();
                     fl_cursor( FL_CURSOR_MOVE );
 
 
@@ -241,9 +248,9 @@ public:
                         else
                             pos += d;
 
-                        timeline->xoffset = pos;
+                        timeline->position( timeline->ts_to_x(  pos ) );
 
-                        timeline->tracks->redraw();
+//                        timeline->tracks->redraw();
                     }
 
 

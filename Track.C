@@ -43,18 +43,22 @@ Track::sort ( void )
 void
 Track::draw ( void )
 {
+    fl_push_clip( x(), y(), w(), h() );
+
     Fl_Group::draw();
 
     timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 
-    fl_push_clip( x(), y(), w(), h() );
+    int X, Y, W, H;
+
+    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-        (*r)->draw_box( x(), y(), w(), h() );
+        (*r)->draw_box( X, Y, W, H );
 
     /* TODO: detect overlap and draw with transparency/crossfade */
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-        (*r)->draw( x(), y(), w(), h() );
+        (*r)->draw( X, Y, W, H );
 
     fl_pop_clip();
 }

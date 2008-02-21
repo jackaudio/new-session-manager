@@ -55,16 +55,20 @@ cb_scroll ( Fl_Widget *w, void *v )
 {
     Scalebar *sb = (Scalebar*)w;
 
-    timeline->fpp = sb->zoom() * 256;
-    timeline->fpp = max( min( timeline->fpp, 4096.0f ), (float)2 );
+    if ( sb->zoom_changed() )
+    {
+        timeline->fpp = sb->zoom() * 256;
+        timeline->fpp = max( min( timeline->fpp, 4096.0f ), (float)2 );
 
-    int maxx = timeline->ts_to_x( timeline->length );
-    sb->range( 0, maxx );
-//    sb->value( sb->value(), maxx
-//    sb->slider_size( sb->w() / maxx );
-//    ((Fl_Scrollbar*)sb)->value( sb->value(), 60, 10, maxx );
+        int maxx = timeline->ts_to_x( timeline->length );
+        sb->range( 0, maxx );
 
-    timeline->position( sb->value() );
+        timeline->redraw();
+    }
+    else
+    {
+        timeline->position( sb->value() );
+    }
 
 /*     timeline->xoffset = timeline->x_to_ts( sb->value() ); */
 /*     //  timeline->tracks->redraw(); */
@@ -72,17 +76,17 @@ cb_scroll ( Fl_Widget *w, void *v )
 
     printf( "%lu\n", timeline->xoffset );
 
-    for ( int i = timeline->tracks->children(); i-- ; )
-    {
-        Fl_Group *track = (Fl_Group*)timeline->tracks->child( i );
-        track->damage( FL_DAMAGE_SCROLL );
-    }
+/*     for ( int i = timeline->tracks->children(); i-- ; ) */
+/*     { */
+/*         Fl_Group *track = (Fl_Group*)timeline->tracks->child( i ); */
+/*         track->damage( FL_DAMAGE_SCROLL ); */
+/*     } */
 
-    for ( int i = timeline->rulers->children(); i-- ; )
-    {
-        Fl_Group *track = (Fl_Group*)timeline->rulers->child( i );
-        track->damage( FL_DAMAGE_SCROLL );
-    }
+/*     for ( int i = timeline->rulers->children(); i-- ; ) */
+/*     { */
+/*         Fl_Group *track = (Fl_Group*)timeline->rulers->child( i ); */
+/*         track->damage( FL_DAMAGE_SCROLL ); */
+/*     } */
 
 
 
@@ -100,7 +104,7 @@ cb_scroll ( Fl_Widget *w, void *v )
 int
 main ( int argc, char **argv )
 {
-    Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
+    Fl_Window *main_window = new Fl_Window( 0, 0, 800, 600 );
 
     Fl::get_system_colors();
     Fl::scheme( "plastic" );

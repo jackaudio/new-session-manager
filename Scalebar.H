@@ -29,15 +29,19 @@ class Scalebar : public Fl_Scrollbar
 {
     double _zoom;
 
+    bool _zoom_changed;
+
 public:
 
     Scalebar ( int X, int Y, int W, int H ) : Fl_Scrollbar ( X, Y, W, H )
         {
             _zoom = 1.0f;
+            _zoom_changed = true;
 
             step( 1 );
         }
 
+    bool zoom_changed ( void ) const { return _zoom_changed; }
     double zoom ( void ) const { return _zoom; }
     double value ( void ) const { return Fl_Slider::value(); }
 
@@ -57,7 +61,9 @@ public:
                         while ( d-- )
                             _zoom *= 2;
 
+                    _zoom_changed = true;
                     do_callback();
+                    _zoom_changed = false;
 
                     slider_size( w() / maximum() );
 

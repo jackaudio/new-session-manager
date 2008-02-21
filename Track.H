@@ -68,4 +68,6 @@ public:
     void snap ( Track_Widget *r );
     int handle ( int m );
 
+    void sort ( void );
+
 };

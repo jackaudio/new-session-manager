@@ -324,22 +324,7 @@ Region::draw ( int X, int Y, int W, int H )
     fl_font( FL_HELVETICA, 14 );
     fl_color( FL_BLACK );
 
-    int bx = Fl::box_dx( box() );
-    int by = Fl::box_dy( box() );
-    int bw = Fl::box_dw( box() );
-    int bh = Fl::box_dh( box() );
-
-    int dx = min( 32767, timeline.ts_to_x( offset ) );
-
-    Fl_Align align = (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_CLIP);
-    fl_draw( _clip->name(), (bx + rx + 1) - dx, Y + 1 + by, rw - bw, H - bh, align );
-    fl_color( FL_WHITE );
-    fl_draw( _clip->name(), (bx + rx) - dx, Y + by , rw - bw, H - bh, align );
-
-//    fl_draw( _clip->name(), X, Y );
-
-//(Fl_Align)FL_ALIGN_LEFT | FL_ALIGN_BOTTOM );
-
+    draw_label( _clip->name(), (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_CLIP | FL_ALIGN_INSIDE) );
 
 /*     fl_color( FL_RED ); */
 /*     fl_line( x(), y(), x(), y() + h() ); */

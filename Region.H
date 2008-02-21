@@ -62,7 +62,6 @@ public:
             _selected = false;
         }
 
-
     Fl_Group * parent ( void ) const { return _track; }
 
     int scroll_x ( void ) const { return timeline.ts_to_x( timeline.xoffset ); }
@@ -92,11 +91,81 @@ public:
 
     virtual nframes_t length ( void ) const { return _end - _start; }
 
+    virtual Fl_Boxtype box ( void ) const { return FL_UP_BOX; }
+
     /* just draw a simple box */
     virtual void
     draw ( int X, int Y, int W, int H )
         {
-            fl_draw_box( FL_FLAT_BOX, x(), y(), w(), y(), _box_color );
+            fl_draw_box( box(), x(), y(), w(), y(), _box_color );
+        }
+
+
+    virtual void
+    draw_label ( const char *label, Fl_Align align )
+        {
+            int X, Y;
+
+            X = x();
+            Y = y();
+
+            /* FIXME: why do we have to to this here? why doesn't Fl_Lable::draw take care of this stuff? */
+            if ( ! (align & FL_ALIGN_INSIDE) )
+            {
+                if ( align & FL_ALIGN_RIGHT )
+                {
+                    X += w();
+                    align = (Fl_Align)((align & ~FL_ALIGN_RIGHT) | FL_ALIGN_LEFT);
+                }
+                if ( align & FL_ALIGN_BOTTOM  )
+                {
+                    Y += h();
+                    align = (Fl_Align)((align & ~FL_ALIGN_BOTTOM) | FL_ALIGN_TOP);
+                }
+            }
+
+
+
+/*             fl_font( FL_HELVETICA, 14 ); */
+/*             fl_color( FL_BLACK ); */
+/*             fl_draw( label, X + 2, Y + 2, w(), h(), align ); */
+/*             fl_color( FL_WHITE ); */
+/*             fl_draw( label, X, Y, w(), h(), align ); */
+
+            /* for some reasone FL_SHADOW_LABLE doesn't always use
+             * black for the shadow color...so we can't rely on it. */
+
+            Fl_Label lab;
+
+            lab.color = FL_WHITE;
+            lab.type = FL_SHADOW_LABEL;
+            lab.value = label;
+            lab.font = FL_HELVETICA;
+            lab.size = 14;
+
+            int W = w();
+            int H = h();
+
+            if ( align & FL_ALIGN_INSIDE )
+            {
+                    X += Fl::box_dx( box() );
+                    Y += Fl::box_dy( box() );
+                    W -= Fl::box_dw( box() );
+                    H -= Fl::box_dh( box() );
+            }
+
+            if ( align & FL_ALIGN_CLIP ) fl_push_clip( X, Y, W, H );
+
+            int dx = 0;
+            int tx = timeline.ts_to_x( _offset );
+
+            if ( tx < scroll_x() )
+                dx = min( 32767, scroll_x() - tx );
+
+            lab.draw( X - dx, Y, W, H, align );
+
+            if ( align & FL_ALIGN_CLIP ) fl_pop_clip();
+
         }
 
     /* base hanlde just does basic dragging */
@@ -153,24 +222,17 @@ public:
     {
         float _tempo;
 
-        static Fl_Boxtype box ( void ) { return FL_UP_BOX; }
-
     public:
 
-        Tempo_Point ( )
-            {
-                _tempo = 120;
-                _offset = 0;
-                _start = 0;
-                _end = 300;
-            }
+/*         Tempo_Point ( ) */
+/*             { */
+/*                 _tempo = 120; */
+/*             } */
 
         Tempo_Point ( nframes_t when, float bpm )
             {
                 _tempo = bpm;
                 _offset = when;
-                _start = 0;
-                _end = 300;
             }
 
         int w ( void ) const { return 10; }
@@ -182,17 +244,14 @@ public:
                 if ( x() < 0 )
                     return;
 
-                fl_draw_box( box(), x(), Y, w(), H, _box_color );
+                Track_Widget::draw( x(), Y, w(), H );
+
 
                 char pat[40];
 
                 snprintf( pat, 40, "%.1f", _tempo );
 
-                fl_font( FL_HELVETICA, 14 );
-                fl_color( FL_BLACK );
-                fl_draw( pat, x() + w() + 1, Y + 1, w(), h(), FL_ALIGN_LEFT );
-                fl_color( FL_WHITE );
-                fl_draw( pat, x() +  w(), Y, w(), h(), FL_ALIGN_LEFT );
+                draw_label( pat, FL_ALIGN_RIGHT );
 
             }
 
@@ -209,13 +268,14 @@ public:
         static Fl_Color _selection_color;
         static Fl_Color selection_color ( void ) { return _selection_color; }
         static void selection_color ( Fl_Color v ) { _selection_color = v; }
-        static Fl_Boxtype box ( void ) { return _box; }
 
         enum trim_e { NO, LEFT, RIGHT };
         void trim ( enum trim_e t, int X );
         void init ( void );
 
     public:
+
+        Fl_Boxtype box ( void ) const { return Region::_box; }
 
         Region ( const Region & rhs );
         Region ( Clip *c );

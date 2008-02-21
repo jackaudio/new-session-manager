@@ -24,6 +24,20 @@
 
 #include <FL/fl_draw.H>
 
+
+static bool
+sort_func ( Track_Widget *lhs, Track_Widget *rhs )
+{
+    return *lhs < *rhs;
+}
+
+
+void
+Track::sort ( void )
+{
+    _regions.sort( sort_func );
+}
+
 void
 Track::draw ( void )
 {

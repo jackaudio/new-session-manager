@@ -79,7 +79,6 @@ draw_waveform ( int X, int Y, int W, int H, Clip *_clip, nframes_t _start, nfram
 
     fl_color( fl_darker( fl_darker( color ) ) );
 
-
     fl_line_style( FL_SOLID, 2 );
 
     fl_begin_line();

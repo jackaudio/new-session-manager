@@ -80,7 +80,7 @@ public:
     nframes_t length ( void ) const { return _end - _start; }
 
     virtual void
-    draw ( int X, int Y, int W, int H )
+    draw ( int OX, int X, int Y, int W, int H )
         {
             fl_draw_box( FL_FLAT_BOX, X, Y, W, H, _box_color );
         }
@@ -97,7 +97,7 @@ class Tempo : public Track_Widget
     float _tempo;
 
     void
-    draw ( int X, int Y, int W, int H )
+    draw ( int OX, int X, int Y, int W, int H )
         {
 
 
@@ -130,7 +130,7 @@ public:
     Region ( Clip *c );
 
     int handle ( int m );
-    void draw ( int X, int Y, int W, int H );
+    void draw ( int OX, int X, int Y, int W, int H );
     void resize ( void );
 
 };

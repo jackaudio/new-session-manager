@@ -300,16 +300,19 @@ Region::resize ( void )
 
 int measure = 40;
 
-/* Draw (part of) region. Start is  */
+/* Draw (part of) region. OX is pixel offset from start of timeline, X
+   Y W and H are the portion of the widget to draw (arrived at by
+   intersection of the clip and relative to OX) */
 void
-Region::draw (  int X, int Y, int W, int H )
+Region::draw ( int OX, int X, int Y, int W, int H )
 {
     if ( ! ( W > 0 && H > 0 ) )
         return;
 
-    if ( _offset > timeline.xoffset + timeline.x_to_ts( _track->w() ) ||
-         (  _offset < timeline.xoffset &&
-            _offset + (_end - _start) < timeline.xoffset ) )
+    int ox = timeline.ts_to_x( _offset );
+
+    if ( ox > OX + _track->w() ||
+         ox < OX && ox + w() < OX )
         return;
 
     int rw = timeline.ts_to_x( _end - _start );
@@ -318,9 +321,9 @@ Region::draw (  int X, int Y, int W, int H )
 
     /* calculate waveform offset due to scrolling */
     nframes_t offset = 0;
-    if ( _offset < timeline.xoffset )
+    if ( ox < OX )
     {
-        offset = timeline.xoffset - _offset;
+        offset = timeline.x_to_ts( OX - ox );
 
         rw = timeline.ts_to_x( (_end - _start) - offset );
     }

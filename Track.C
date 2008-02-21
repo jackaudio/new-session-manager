@@ -144,46 +144,6 @@ Track::handle ( int m )
 
     switch ( m )
     {
-        case FL_DND_DRAG:
-        case FL_DND_ENTER:
-        case FL_ENTER:
-            return 1;
-        case FL_DND_LEAVE:
-        case FL_DND_RELEASE:
-            return 1;
-        case FL_PASTE:
-        {
-            const char *text = Fl::event_text();
-
-            char *file;
-
-            if ( ! sscanf( text, "file://%a[^\r\n]\n", &file ) )
-            {
-                printf( "invalid drop \"%s\"\n", text );
-                return 0;
-            }
-
-            printf( "pasted file \"%s\"\n", file );
-
-            Clip *c = Clip::from_file( file );
-
-            if ( ! c )
-            {
-                free( file );
-                return 0;
-            }
-
-
-            Region *r = new Region( c );
-
-            r->offset( timeline.x_to_ts( Fl::event_x() ) );
-//            r->position( Fl::event_x(), r->y() );
-
-            this->add( r );
-
-            redraw();
-            return 1;
-        }
         case FL_MOVE:
             /* these aren't used, so don't bother doing lookups for them */
             return 1;

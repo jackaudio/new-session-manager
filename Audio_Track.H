@@ -19,55 +19,63 @@
 
 #pragma once
 
-#include <FL/Fl_Group.H>
-#include <FL/Fl.H>
-// #include "Region.H"
+#include "Track.H"
 
-#include <stdio.h>
-
-
-#include <assert.h>
-
-#include <list>
-using std::list;
-
-class Region;
-class Track_Widget;
-
-class Track : public Fl_Group
+class Audio_Track : public Track
 {
-    Track *_next;
-    Track *_prev;
-    char *_name;
-
-protected:
-
-    list <Track_Widget *> _widgets;
-    Track_Widget *event_widget ( void );
 
 public:
 
-    Track ( int X, int Y, int W, int H ) : Fl_Group( X, Y, W, H )
+    Audio_Track ( int X, int Y, int W, int H ) : Track( X, Y, W, H )
         {
-            _next = _prev = NULL;
-            _name = NULL;
-
-            box( FL_DOWN_BOX );
-            color( fl_darker( FL_GRAY ) );
         }
 
-    Track *next ( void ) const { return _next; }
-    Track *prev ( void ) const { return _prev; }
-    void prev ( Track *t ) { _prev = t; }
-    void next ( Track *t ) { _next = t; }
+    /** event handler that supports DND of audio clips */
+    int
+    handle ( int m )
+        {
+            switch ( m )
+            {
+                case FL_DND_DRAG:
+                case FL_DND_ENTER:
+                case FL_ENTER:
+                    return 1;
+                case FL_DND_LEAVE:
+                case FL_DND_RELEASE:
+                    return 1;
+                case FL_PASTE:
+                {
+                    const char *text = Fl::event_text();
 
-    void sort ( void );
+                    char *file;
 
-    void draw ( void );
-    void remove ( Track_Widget *r );
-    void add ( Track_Widget *r );
+                    if ( ! sscanf( text, "file://%a[^\r\n]\n", &file ) )
+                    {
+                        printf( "invalid drop \"%s\"\n", text );
+                        return 0;
+                    }
 
-    virtual void snap ( Track_Widget *r );
-    virtual int handle ( int m );
+                    printf( "pasted file \"%s\"\n", file );
 
+                    Clip *c = Clip::from_file( file );
+
+                    if ( ! c )
+                    {
+                        free( file );
+                        return 0;
+                    }
+
+                    Region *r = new Region( c );
+
+                    r->offset( timeline.x_to_ts( Fl::event_x() ) );
+
+                    this->add( r );
+
+                    redraw();
+                    return 1;
+                }
+                default:
+                    return Track::handle( m );
+            }
+        }
 };

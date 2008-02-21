@@ -37,6 +37,7 @@
 #include <string.h>
 
 #include "Track.H"
+#include "Audio_Track.H"
 #include "Timeline.H"
 
 #include "const.h"
@@ -133,7 +134,7 @@ main ( int argc, char **argv )
         tempo_track->end();
     }
 
-    Track *track1 = new Track( 40, 0, 800, 100 );
+    Track *track1 = new Audio_Track( 40, 0, 800, 100 );
 
 //    pack->type( Fl_Pack::VERTICAL );
 //    pack->box( FL_DOWN_BOX );
@@ -159,7 +160,7 @@ main ( int argc, char **argv )
 
     track1->end();
 
-    Track *track2 = new Track( 40, 0, 5000, 100 );
+    Track *track2 = new Audio_Track( 40, 0, 5000, 100 );
 
     // Region *wave2 = new Region( 0, 0, 350, 100, "bar" );
 

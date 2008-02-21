@@ -34,10 +34,7 @@ Track::draw ( void )
     fl_push_clip( x(), y(), w(), h() );
 
     for ( list <Track_Widget *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
-    {
-//        (*r)->draw( timeline.xoffset + x(), y(), w(), h() );
-        (*r)->draw( timeline.ts_to_x( timeline.xoffset ),  x(), y(), w(), h() );
-    }
+        (*r)->draw( x(), y(), w(), h() );
 
     fl_pop_clip();
 }

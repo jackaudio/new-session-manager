@@ -304,11 +304,12 @@ int measure = 40;
    Y W and H are the portion of the widget to draw (arrived at by
    intersection of the clip and relative to OX) */
 void
-Region::draw ( int OX, int X, int Y, int W, int H )
+Region::draw ( int X, int Y, int W, int H )
 {
     if ( ! ( W > 0 && H > 0 ) )
         return;
 
+    int OX = scroll_x();
     int ox = timeline.ts_to_x( _offset );
 
     if ( ox > OX + _track->w() ||

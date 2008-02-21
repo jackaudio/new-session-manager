@@ -55,6 +55,9 @@ public:
 
     Fl_Group * parent ( void ) const { return _track; }
 
+    int scroll_x ( void ) const { return timeline.ts_to_x( timeline.xoffset ); }
+    nframes_t scroll_ts ( void ) const { return timeline.xoffset; }
+
     int y ( void ) const { return _track->y(); }
     int h ( void ) const { return _track->h(); }
     int x ( void ) const { return _offset < timeline.xoffset ? -1 : min( 32767, _track->x() + timeline.ts_to_x( _offset - timeline.xoffset ) ); }
@@ -80,7 +83,7 @@ public:
     nframes_t length ( void ) const { return _end - _start; }
 
     virtual void
-    draw ( int OX, int X, int Y, int W, int H )
+    draw ( int X, int Y, int W, int H )
         {
             fl_draw_box( FL_FLAT_BOX, X, Y, W, H, _box_color );
         }
@@ -97,7 +100,7 @@ class Tempo : public Track_Widget
     float _tempo;
 
     void
-    draw ( int OX, int X, int Y, int W, int H )
+    draw ( int X, int Y, int W, int H )
         {
 
 
@@ -130,7 +133,7 @@ public:
     Region ( Clip *c );
 
     int handle ( int m );
-    void draw ( int OX, int X, int Y, int W, int H );
+    void draw ( int X, int Y, int W, int H );
     void resize ( void );
 
 };

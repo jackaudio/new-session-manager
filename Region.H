@@ -69,14 +69,23 @@ public:
 
     int y ( void ) const { return _track->y(); }
     int h ( void ) const { return _track->h(); }
-    int x ( void ) const { return _offset < timeline.xoffset ? -1 : min( 32767, _track->x() + timeline.ts_to_x( _offset - timeline.xoffset ) ); }
-//    int x ( void ) const { return (short)( _track->x() + timeline.ts_to_x( _offset - timeline.xoffset )); }
 
-    virtual int w ( void ) const { return timeline.ts_to_x( _end - _start ); }
-//    int w ( void ) const { return timeline.ts_to_x( (_end - _start) - ( timeline.xoffset - _offset) ); }
+    int x ( void ) const { return _offset < timeline.xoffset ? -1 : min( 32767, _track->x() + timeline.ts_to_x( _offset - timeline.xoffset ) ); }
+    virtual int w ( void ) const
+        {
+            int tx = timeline.ts_to_x( _offset );
+
+            int rw;
+            if ( tx < scroll_x() )
+                rw = abs_w() - (scroll_x() - tx);
+            else
+                rw = abs_w();
+
+            return min( rw, _track->w() );
+        }
 
     int abs_x ( void ) const { return timeline.ts_to_x( timeline.xoffset ); }
-    int abs_w ( void ) const { return timeline.ts_to_x( _end - _start ); }
+    virtual int abs_w ( void ) const { return timeline.ts_to_x( _end - _start ); }
 
 
     Fl_Color color ( void ) { return _color; }
@@ -98,10 +107,17 @@ public:
     virtual Fl_Boxtype box ( void ) const { return FL_UP_BOX; }
 
     /* just draw a simple box */
+
+    virtual void
+    draw_box ( int X, int Y, int W, int H )
+        {
+            fl_draw_box( box(), x(), y(), w(), y(), _box_color );
+        }
+
     virtual void
     draw ( int X, int Y, int W, int H )
         {
-            fl_draw_box( box(), x(), y(), w(), y(), _box_color );
+            draw_box( X, Y, W, H );
         }
 
 
@@ -231,8 +247,8 @@ protected:
 
 public:
 
-    int w ( void ) const { return 10; }
-    nframes_t length ( void ) const { return timeline.x_to_ts( w() ); }
+    int abs_w ( void ) const { return 10; }
+    nframes_t length ( void ) const { return timeline.x_to_ts( abs_w() ); }
 
     Track_Point ( )
         {
@@ -242,9 +258,6 @@ public:
     void
     draw ( int X, int Y, int W, int H )
         {
-            if ( x() < 0 )
-                return;
-
             Track_Widget::draw( x(), Y, w(), H );
 
             draw_label( _label, FL_ALIGN_RIGHT );
@@ -302,6 +315,7 @@ public:
         Region ( Clip *c );
 
         int handle ( int m );
+        void draw_box( int X, int Y, int W, int H );
         void draw ( int X, int Y, int W, int H );
         void resize ( void );
 

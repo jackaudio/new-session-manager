@@ -266,7 +266,15 @@ Region::handle ( int m )
     }
 }
 
+void
+Region::draw_box( int X, int Y, int W, int H )
+{
+    /* dirty hack to keep the box from flipping to vertical at small sizes */
 
+    fl_push_clip( x(), Y, w(), H );
+    fl_draw_box( box(), x() - 10, Y, w() + 50, H, _box_color );
+    fl_pop_clip();
+}
 
 /* Draw (part of) region. OX is pixel offset from start of timeline, X
    Y W and H are the portion of the widget to draw (arrived at by
@@ -281,7 +289,7 @@ Region::draw ( int X, int Y, int W, int H )
     int ox = timeline.ts_to_x( _offset );
 
     if ( ox > OX + _track->w() ||
-         ox < OX && ox + w() < OX )
+         ox < OX && ox + abs_w() < OX )
         return;
 
     int rw = timeline.ts_to_x( _end - _start );
@@ -306,7 +314,7 @@ Region::draw ( int X, int Y, int W, int H )
     fl_push_clip( rx, Y, rw, H );
 
     /* dirty hack to keep the box from flipping to vertical at small sizes */
-    fl_draw_box( box(), rx - 10, Y, rw + 50, H, _box_color );
+//    fl_draw_box( box(), rx - 10, Y, rw + 50, H, _box_color );
 
 
 //    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );

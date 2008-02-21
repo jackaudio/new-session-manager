@@ -40,6 +40,16 @@ Fl_Boxtype Region::_box = FL_PLASTIC_UP_BOX;
 
 Fl_Color Region::_selection_color = FL_MAGENTA;
 
+static Fl_Color fl_invert_color ( Fl_Color c )
+{
+    unsigned char r, g, b;
+
+    Fl::get_color( c, r, g, b );
+
+    return fl_rgb_color( 255 - r, 255 - g, 255 - b );
+}
+
+
 void
 Region::init ( void )
 {
@@ -263,6 +273,7 @@ Region::draw_box( int X, int Y, int W, int H )
 
     if ( _selected )
         fl_draw_box( fl_down( box() ), x() - 10, Y, w() + 50, H, _selection_color );
+//        fl_draw_box( fl_down( box() ), x() - 10, Y, w() + 50, H, fl_invert_color( _box_color ) );
     else
         fl_draw_box( box(), x() - 10, Y, w() + 50, H, _box_color );
 
@@ -310,7 +321,7 @@ Region::draw ( int X, int Y, int W, int H )
 
 //    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
 
-    draw_waveform( rx, Y, rw, H, _clip, _start + offset, min( (_end - _start) - offset, _end), _scale, _color );
+    draw_waveform( rx, Y, rw, H, _clip, _start + offset, min( (_end - _start) - offset, _end), _scale, _selected ? _color : fl_invert_color( _color )  );
 
     timeline.draw_measure_lines( rx, Y, rw, H, _box_color );
 

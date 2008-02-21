@@ -42,6 +42,7 @@
 #include "Track.H"
 #include "Audio_Track.H"
 #include "Timeline.H"
+#include "Tempo_Point.H"
 
 #include "const.h"
 

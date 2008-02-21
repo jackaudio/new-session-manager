@@ -19,49 +19,30 @@
 
 #pragma once
 
-// class Track;
-
-// #include "Waveform.H"
-
-#include "Clip.H"
-#include "Track.H"
-#include "Timeline.H"
-
-#include <algorithm>
-using namespace std;
-/* Regions are "virtual" FLTK widgets; this is necessary because the
- * dimensions of real FLTK widgets are limited to 16-bits, which is
- * far too little for our purposes */
-
 #include "Track_Widget.H"
 
-class Region : public Track_Widget
+class Track_Point : public Track_Widget
 {
 
-    Clip *_clip;                                                /* clip this region represents */
+protected:
 
-    float _scale;                                               /* amplitude adjustment */
-
-    static Fl_Boxtype _box;
-    static Fl_Color _selection_color;
-    static Fl_Color selection_color ( void ) { return _selection_color; }
-    static void selection_color ( Fl_Color v ) { _selection_color = v; }
-
-    enum trim_e { NO, LEFT, RIGHT };
-    void trim ( enum trim_e t, int X );
-    void init ( void );
+    char *_label;
 
 public:
 
-    Fl_Boxtype box ( void ) const { return Region::_box; }
+    int abs_w ( void ) const { return 10; }
+    nframes_t length ( void ) const { return timeline.x_to_ts( abs_w() ); }
 
-    Region ( const Region & rhs );
-    Region ( Clip *c );
+    Track_Point ( )
+        {
+            _label = NULL;
+        }
 
-    int handle ( int m );
-    void draw_box( int X, int Y, int W, int H );
-    void draw ( int X, int Y, int W, int H );
-    void resize ( void );
+    void
+    draw ( int X, int Y, int W, int H )
+        {
+            Track_Widget::draw( x(), Y, w(), H );
 
-    void normalize ( void );
+            draw_label( _label, FL_ALIGN_RIGHT );
+        }
 };

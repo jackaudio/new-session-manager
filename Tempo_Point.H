@@ -19,49 +19,31 @@
 
 #pragma once
 
-// class Track;
+#include "Track_Point.H"
 
-// #include "Waveform.H"
-
-#include "Clip.H"
-#include "Track.H"
-#include "Timeline.H"
-
-#include <algorithm>
-using namespace std;
-/* Regions are "virtual" FLTK widgets; this is necessary because the
- * dimensions of real FLTK widgets are limited to 16-bits, which is
- * far too little for our purposes */
-
-#include "Track_Widget.H"
-
-class Region : public Track_Widget
+class Tempo_Point : public Track_Point
 {
+    float _tempo;
 
-    Clip *_clip;                                                /* clip this region represents */
+    void
+    _make_label ( void )
+        {
+            if ( ! _label )
+                _label = new char[40];
 
-    float _scale;                                               /* amplitude adjustment */
-
-    static Fl_Boxtype _box;
-    static Fl_Color _selection_color;
-    static Fl_Color selection_color ( void ) { return _selection_color; }
-    static void selection_color ( Fl_Color v ) { _selection_color = v; }
-
-    enum trim_e { NO, LEFT, RIGHT };
-    void trim ( enum trim_e t, int X );
-    void init ( void );
-
+            snprintf( _label, 40, "%.1f", _tempo );
+        }
 public:
 
-    Fl_Boxtype box ( void ) const { return Region::_box; }
+    Tempo_Point ( nframes_t when, float bpm )
+        {
+            _tempo = bpm;
+            _offset = when;
 
-    Region ( const Region & rhs );
-    Region ( Clip *c );
+            _make_label();
+        }
 
-    int handle ( int m );
-    void draw_box( int X, int Y, int W, int H );
-    void draw ( int X, int Y, int W, int H );
-    void resize ( void );
+    ~Tempo_Point ( )
+        { if ( _label ) delete[] _label; }
 
-    void normalize ( void );
 };

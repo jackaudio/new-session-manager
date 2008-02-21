@@ -69,6 +69,8 @@ public:
     void remove ( Track_Widget *r );
     void add ( Track_Widget *r );
 
+    const list <Track_Widget *> widgets ( void ) const { return _widgets; }
+
     void queue_delete ( Track_Widget *r )
         {
             assert( ! _queued_widget );

@@ -30,6 +30,13 @@
 
 #include <FL/fl_draw.H>
 
+class Timeline;
+extern Timeline timeline;
+
+#include "Track.H"
+// #include "Tempo_Point.H"
+// #include "Region.H"
+
 #include <list>
 using std::list;
 
@@ -68,6 +75,8 @@ struct Timeline {
     Fl_Scroll *scroll;
     Fl_Pack *tracks;
     Fl_Scrollbar *scrollbar;
+
+    Track *tempo_track;
 
     float fpp;                                                  /* frames per pixel */
 //    nframes_t fpp;
@@ -119,12 +128,7 @@ struct Timeline {
     void
     beats_per_minute ( nframes_t when, float bpm )
         {
-            tempo_event t;
-
-            t.timestamp = when;
-            t.beats_per_minute = bpm;
-
-            tempo_points.push_back( t );
+//            tempo_track->add( new Tempo_Point( when, bpm ) );
         }
 
 /*     /\* return the offset of the closest measure line to /t/ *\/ */
@@ -159,5 +163,3 @@ struct Timeline {
             fl_line_style( FL_SOLID, 0 );
         }
 };
-
-extern Timeline timeline;

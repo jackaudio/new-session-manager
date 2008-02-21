@@ -33,7 +33,7 @@ Track::draw ( void )
 
     fl_push_clip( x(), y(), w(), h() );
 
-    for ( list <Region *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
+    for ( list <Track_Widget *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
     {
 //        (*r)->draw( timeline.xoffset + x(), y(), w(), h() );
         (*r)->draw( x(), y(), w(), h() );
@@ -43,18 +43,18 @@ Track::draw ( void )
 }
 
 void
-Track::remove_region ( Region *r )
+Track::remove_region ( Track_Widget *r )
 {
     _regions.remove( r );
 }
 
 
-Region *
+Track_Widget *
 Track::event_region ( void )
 {
 // FIXME: doesn't handle overlap!
     int ets = timeline.xoffset + timeline.x_to_ts( Fl::event_x() );
-    for ( list <Region *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
+    for ( list <Track_Widget *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
         if ( ets > (*r)->offset() && ets < (*r)->offset() + (*r)->length() )
             return (*r);
 
@@ -62,7 +62,7 @@ Track::event_region ( void )
 }
 
 void
-Track::add ( Region *r )
+Track::add ( Track_Widget *r )
 {
     if ( r->track() )
     {
@@ -83,16 +83,16 @@ Track::add ( Region *r )
 
 /* snap /r/ to nearest edge */
 void
-Track::snap ( Region *r )
+Track::snap ( Track_Widget *r )
 {
     const int snap_pixels = 10;
 
     int rx1 = r->x();
     int rx2 = r->x() + r->w();
 
-    for ( list <Region*>::iterator i = _regions.begin(); i != _regions.end(); i++ )
+    for ( list <Track_Widget*>::iterator i = _regions.begin(); i != _regions.end(); i++ )
     {
-        const Region *w = (*i);
+        const Track_Widget *w = (*i);
 
         if ( w == r )
             continue;
@@ -131,7 +131,7 @@ done:
 int
 Track::handle ( int m )
 {
-    static Region *current_region;
+    static Track_Widget *current_region;
 
     switch ( m )
     {
@@ -180,7 +180,7 @@ Track::handle ( int m )
             return 1;
         default:
         {
-            Region *r = event_region();
+            Track_Widget *r = event_region();
             if ( current_region )
                 r = current_region;
 

@@ -35,7 +35,7 @@ using namespace std;
 
 
 /* Base class for virtual widget on a track */
-class TrackWidget
+class Track_Widget
 {
 
 protected:
@@ -78,9 +78,36 @@ public:
     nframes_t start ( void ) const { return _start; }
 
     nframes_t length ( void ) const { return _end - _start; }
+
+    virtual void
+    draw ( int X, int Y, int W, int H )
+        {
+            fl_draw_box( FL_FLAT_BOX, X, Y, W, H, _box_color );
+        }
+
+    virtual int
+    handle ( int m ) { return 0; }
+
+
 };
 
-class Region : public TrackWidget
+
+class Tempo : public Track_Widget
+{
+    float _tempo;
+
+    void
+    draw ( int X, int Y, int W, int H )
+        {
+
+
+
+
+        }
+
+};
+
+class Region : public Track_Widget
 {
 
     Clip *_clip;                                                /* clip this region represents */

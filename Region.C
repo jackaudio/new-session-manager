@@ -300,14 +300,12 @@ Region::resize ( void )
 
 int measure = 40;
 
-/* X is the timeline offset, W is the width of the track */
+/* Draw (part of) region. Start is  */
 void
-Region::draw ( int X, int Y, int W, int H )
+Region::draw (  int X, int Y, int W, int H )
 {
     if ( ! ( W > 0 && H > 0 ) )
         return;
-
-
 
     if ( _offset > timeline.xoffset + timeline.x_to_ts( _track->w() ) ||
          (  _offset < timeline.xoffset &&

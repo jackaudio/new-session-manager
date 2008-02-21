@@ -32,17 +32,18 @@
 using std::list;
 
 class Region;
+class Track_Widget;
 
 class Track : public Fl_Group
 {
     Track *_next;
     Track *_prev;
 
-    list <Region *> _regions;
+    list <Track_Widget *> _regions;
 
     char *_name;
 
-    Region *event_region ( void );
+    Track_Widget *event_region ( void );
 
 public:
 
@@ -62,9 +63,9 @@ public:
 
 
     void draw ( void );
-    void remove_region ( Region *r );
-    void add ( Region *r );
-    void snap ( Region *r );
+    void remove_region ( Track_Widget *r );
+    void add ( Track_Widget *r );
+    void snap ( Track_Widget *r );
     int handle ( int m );
 
 };

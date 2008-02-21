@@ -133,6 +133,9 @@ Region::handle ( int m )
     int X = Fl::event_x();
     int Y = Fl::event_y();
 
+    int ret;
+
+
     switch ( m )
     {
         case FL_PUSH:
@@ -168,13 +171,13 @@ Region::handle ( int m )
 //                    Fl::local_grab( this );
                 }
 
+                ret = Track_Widget::handle( m );
+                return ret | 1;
+
 /*                 if ( Fl::event_button() == 2 ) */
 /*                     normalize(); */
 
-
-                return 1;
             }
-            return 0;
             break;
         }
         case FL_RELEASE:
@@ -223,21 +226,6 @@ Region::handle ( int m )
                 }
             }
 
-            if ( ox + X >= _track->x() )
-            {
-                int nx = ox + X;
-
-//                nx = _track->snap( this, nx );
-
-//                _offset = timeline.x_to_ts( nx );
-
-//                position( nx, y() );
-
-                _offset = timeline.x_to_ts( nx ) + timeline.xoffset;
-
-                _track->snap( this );
-            }
-
             if ( Y > y() + h() )
             {
                 if ( _track->next() )
@@ -252,7 +240,8 @@ Region::handle ( int m )
 
             _track->redraw();
 
-            fl_cursor( FL_CURSOR_MOVE );
+            ret = Track_Widget::handle( m );
+            return ret | 1;
 
 /*             if ( X >= timeline.scroll->x() + timeline.scroll->w() || */
 /*                  X <= timeline.scroll->x() ) */
@@ -274,9 +263,8 @@ Region::handle ( int m )
 
 //            _offset = timeline.x_to_ts( x() );
 
-            return 1;
         default:
-            return 0;
+            return Track_Widget::handle( m );
             break;
     }
 }

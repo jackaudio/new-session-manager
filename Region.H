@@ -140,6 +140,12 @@ public:
                     return 0;
             }
         }
+
+    bool
+    operator< ( const Track_Widget & rhs )
+        {
+            return _offset < rhs._offset;
+        }
 };
 
 
@@ -183,7 +189,9 @@ public:
                 snprintf( pat, 40, "%.1f", _tempo );
 
                 fl_font( FL_HELVETICA, 14 );
-                fl_color( FL_YELLOW );
+                fl_color( FL_BLACK );
+                fl_draw( pat, x() + w() + 1, Y + 1, w(), h(), FL_ALIGN_LEFT );
+                fl_color( FL_WHITE );
                 fl_draw( pat, x() +  w(), Y, w(), h(), FL_ALIGN_LEFT );
 
             }

@@ -224,4 +224,5 @@ public:
         void draw ( int X, int Y, int W, int H );
         void resize ( void );
 
+        void normalize ( void );
     };

@@ -94,8 +94,6 @@ Region::trim ( enum trim_e t, int X )
             _start += td;
 
             _offset += td;
-
-//            resize();
             break;
         }
         case RIGHT:
@@ -104,9 +102,6 @@ Region::trim ( enum trim_e t, int X )
             long td = timeline.x_to_ts( d );
 
             _end -= td;
-
-//            resize();
-
             break;
         }
         default:
@@ -115,8 +110,6 @@ Region::trim ( enum trim_e t, int X )
     }
 
     _track->redraw();
-//    redraw();
-//    parent()->redraw();
 
 }
 
@@ -171,11 +164,15 @@ Region::handle ( int m )
 //                    Fl::local_grab( this );
                 }
 
+
+                if ( Fl::event_button() == 2 )
+                {
+                    normalize();
+                    _track->redraw();
+                }
+
                 ret = Track_Widget::handle( m );
                 return ret | 1;
-
-/*                 if ( Fl::event_button() == 2 ) */
-/*                     normalize(); */
 
             }
             break;
@@ -270,23 +267,6 @@ Region::handle ( int m )
 }
 
 
-/** must be called whenever zoom is adjusted */
-void
-Region::resize ( void )
-{
-    int X = timeline.ts_to_x( _offset );
-
-    assert( _end >= _start );
-
-    int W = timeline.ts_to_x( _end - _start );
-
-    printf( "%dx%d\n", X, W );
-
-//    if ( W )
-//        Fl_Widget::resize( X, y(), W, h() );
-}
-
-int measure = 40;
 
 /* Draw (part of) region. OX is pixel offset from start of timeline, X
    Y W and H are the portion of the widget to draw (arrived at by
@@ -365,4 +345,13 @@ Region::draw ( int X, int Y, int W, int H )
 /*     fl_line( x(), y(), x(), y() + h() ); */
 
 
+}
+
+
+void
+Region::normalize ( void )
+{
+    printf( "normalize: start=%lu end=%lu\n", _start, _end );
+
+    _scale = _clip->peaks()->normalization_factor( _start, _end );
 }

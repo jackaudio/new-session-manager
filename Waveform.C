@@ -114,13 +114,3 @@ draw_waveform ( int X, int Y, int W, int H, Clip *_clip, nframes_t _start, nfram
 
     fl_pop_clip();
 }
-
-/* void */
-/* Waveform::normalize ( void ) */
-/* { */
-/*     printf( "normalize: start=%lu end=%lu\n", _start, _end ); */
-
-/*     _scale = _clip->peaks()->normalization_factor( _start, _end ); */
-
-/*     redraw(); */
-/* } */

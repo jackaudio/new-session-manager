@@ -260,7 +260,7 @@ Region::draw_box( int X, int Y, int W, int H )
     fl_push_clip( x(), Y, w(), H );
 
     if ( _selected )
-        fl_draw_box( FL_DOWN_BOX, x() - 10, Y, w() + 50, H, _selection_color );
+        fl_draw_box( fl_down( box() ), x() - 10, Y, w() + 50, H, _selection_color );
     else
         fl_draw_box( box(), x() - 10, Y, w() + 50, H, _box_color );
 

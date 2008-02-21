@@ -72,7 +72,7 @@ cb_zoom ( Fl_Widget *w, void *v )
 void
 cb_scroll ( Fl_Widget *w, void *v )
 {
-    timeline.xoffset = ((Fl_Slider*)w)->value();
+    timeline.xoffset = timeline.x_to_ts( ((Fl_Slider*)w)->value() );
     //  timeline.tracks->redraw();
     timeline.scroll->redraw();
 

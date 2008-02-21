@@ -76,6 +76,8 @@ struct Timeline {
 
     nframes_t xoffset;
 
+    nframes_t length;
+
     int _beats_per_bar;
     float _beats_per_minute;
 

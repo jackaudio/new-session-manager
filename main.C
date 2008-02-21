@@ -22,10 +22,13 @@
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Scroll.H>
-#include <FL/Fl_Scrollbar.H>
+// #include <FL/Fl_Scrollbar.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Slider.H>
+
+
+#include "Scalebar.H"
 
 // #include "Waveform.H"
 #include "Region.H"
@@ -45,34 +48,22 @@
 
 Timeline timeline;
 
-void
-cb_zoom ( Fl_Widget *w, void *v )
-{
-    timeline.fpp = ((Fl_Slider*)w)->value();
-
-
-/*     for ( int i = timeline.tracks->children(); i-- ; ) */
-/*     { */
-/*         Fl_Group *track = (Fl_Group*)timeline.tracks->child( i ); */
-/*         for ( int j = track->children(); j-- ; ) */
-/*             ((Region*)(track->child( j )))->resize(); */
-/*     } */
-
-
-    timeline.scroll->redraw();
-
-    if ( timeline.fpp < FRAMES_PER_PEAK )
-        w->selection_color( FL_RED );
-    else
-        w->selection_color( FL_GRAY );
-
-    printf( "%f\n", timeline.fpp );
-}
 
 void
 cb_scroll ( Fl_Widget *w, void *v )
 {
-    timeline.xoffset = timeline.x_to_ts( ((Fl_Slider*)w)->value() );
+    Scalebar *sb = (Scalebar*)w;
+
+    timeline.fpp = sb->zoom() * 256;
+    timeline.fpp = max( min( timeline.fpp, 4096.0f ), (float)2 );
+
+    int maxx = timeline.ts_to_x( timeline.length );
+    sb->range( 0, maxx );
+//    sb->value( sb->value(), maxx
+//    sb->slider_size( sb->w() / maxx );
+//    ((Fl_Scrollbar*)sb)->value( sb->value(), 60, 10, maxx );
+
+    timeline.xoffset = timeline.x_to_ts( sb->value() );
     //  timeline.tracks->redraw();
     timeline.scroll->redraw();
 
@@ -101,10 +92,11 @@ main ( int argc, char **argv )
 
     Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
 
-    timeline.scroll = new Fl_Scroll( 0, 24, 800, 600 - (24 * 2) );
+    timeline.scroll = new Fl_Scroll( 0, 0, 800, 600 - 24 );
     timeline.scroll->type( Fl_Scroll::VERTICAL );
     timeline.fpp = 256;
     timeline._beats_per_minute = 120;
+    timeline.length = 48000 * 60 * 2;
 
 
     timeline.beats_per_minute( 0, 120 );
@@ -181,17 +173,9 @@ main ( int argc, char **argv )
     timeline.tracks->end();
     timeline.scroll->end();
 
-    Fl_Slider *zoom_slider = new Fl_Slider( 0, 0, 800, 24 );
-    zoom_slider->type( FL_HOR_SLIDER );
-    zoom_slider->callback( cb_zoom, 0 );
-    zoom_slider->range( 2, 4096 );
-    zoom_slider->step( 1 );
-    zoom_slider->value( 256 );
-
-    timeline.scrollbar = new Fl_Scrollbar( 0, 600 - 24, 800, 24 );
+    timeline.scrollbar = new Scalebar( 0, 600 - 24, 800, 24 );
     timeline.scrollbar->range( 0, 48000 * 2 );
     timeline.scrollbar->type( 1 );
-    timeline.scrollbar->step( 1 );
     timeline.scrollbar->callback( cb_scroll, 0 );
 
     main_window->end();

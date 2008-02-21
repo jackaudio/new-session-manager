@@ -25,6 +25,8 @@
 #include <FL/fl_draw.H>
 
 
+Track_Widget * Track::_queued_widget = NULL;
+
 static bool
 sort_func ( Track_Widget *lhs, Track_Widget *rhs )
 {
@@ -162,6 +164,15 @@ Track::handle ( int m )
 
                 if ( retval && m == FL_RELEASE )
                     current_widget = NULL;
+
+                if ( _queued_widget )
+                {
+                    remove( _queued_widget );
+                    delete _queued_widget;
+                    _queued_widget = NULL;
+                    current_widget = NULL;
+                    redraw();
+                }
 
                 return retval;
             }

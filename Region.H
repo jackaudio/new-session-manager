@@ -204,6 +204,13 @@ public:
                     ox = x() - X;
                     oy = y() - Y;
 
+                    if ( Fl::event_state() & FL_CTRL &&
+                         Fl::event_button() == 3 )
+                    {
+                        _track->queue_delete( this );
+                        return 0;
+                    }
+
                     return 1;
                 }
                 case FL_RELEASE:

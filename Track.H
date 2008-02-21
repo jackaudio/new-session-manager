@@ -40,6 +40,8 @@ class Track : public Fl_Group
     Track *_prev;
     char *_name;
 
+    static Track_Widget * _queued_widget;
+
 protected:
 
     list <Track_Widget *> _widgets;
@@ -66,6 +68,13 @@ public:
     void draw ( void );
     void remove ( Track_Widget *r );
     void add ( Track_Widget *r );
+
+    void queue_delete ( Track_Widget *r )
+        {
+            assert( ! _queued_widget );
+
+            _queued_widget = r;
+        }
 
     virtual void snap ( Track_Widget *r );
     virtual int handle ( int m );

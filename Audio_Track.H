@@ -21,6 +21,8 @@
 
 #include "Track.H"
 
+#include <FL/Fl_Input.H>
+
 class Audio_Track : public Track
 {
 
@@ -28,6 +30,11 @@ public:
 
     Audio_Track ( int X, int Y, int W, int H ) : Track( X, Y, W, H )
         {
+
+/*             Fl_Group *o = new Fl_Group( 0, 0, 100, H ); */
+/*             new Fl_Input( 0, 0, 100, 24, "name:" ); */
+/*             o->end(); */
+
         }
 
     /** event handler that supports DND of audio clips */

@@ -75,6 +75,10 @@ public:
     virtual int w ( void ) const { return timeline.ts_to_x( _end - _start ); }
 //    int w ( void ) const { return timeline.ts_to_x( (_end - _start) - ( timeline.xoffset - _offset) ); }
 
+    int abs_x ( void ) const { return timeline.ts_to_x( timeline.xoffset ); }
+    int abs_w ( void ) const { return timeline.ts_to_x( _end - _start ); }
+
+
     Fl_Color color ( void ) { return _color; }
     Fl_Color box_color ( void ) { return _box_color; }
 
@@ -218,44 +222,61 @@ public:
 };
 
 
-    class Tempo_Point : public Track_Widget
-    {
-        float _tempo;
+class Track_Point : public Track_Widget
+{
 
-    public:
+protected:
 
-/*         Tempo_Point ( ) */
-/*             { */
-/*                 _tempo = 120; */
-/*             } */
+    char *_label;
 
-        Tempo_Point ( nframes_t when, float bpm )
-            {
-                _tempo = bpm;
-                _offset = when;
-            }
+public:
 
-        int w ( void ) const { return 10; }
-        nframes_t length ( void ) const { return timeline.x_to_ts( w() ); }
+    int w ( void ) const { return 10; }
+    nframes_t length ( void ) const { return timeline.x_to_ts( w() ); }
 
-        void
-        draw ( int X, int Y, int W, int H )
-            {
-                if ( x() < 0 )
-                    return;
+    Track_Point ( )
+        {
+            _label = NULL;
+        }
 
-                Track_Widget::draw( x(), Y, w(), H );
+    void
+    draw ( int X, int Y, int W, int H )
+        {
+            if ( x() < 0 )
+                return;
 
+            Track_Widget::draw( x(), Y, w(), H );
 
-                char pat[40];
+            draw_label( _label, FL_ALIGN_RIGHT );
+        }
+};
 
-                snprintf( pat, 40, "%.1f", _tempo );
+class Tempo_Point : public Track_Point
+{
+    float _tempo;
 
-                draw_label( pat, FL_ALIGN_RIGHT );
+    void
+    _make_label ( void )
+        {
+            if ( ! _label )
+                _label = new char[40];
 
-            }
+            snprintf( _label, 40, "%.1f", _tempo );
+        }
+public:
 
-    };
+    Tempo_Point ( nframes_t when, float bpm )
+        {
+            _tempo = bpm;
+            _offset = when;
+
+            _make_label();
+        }
+
+    ~Tempo_Point ( )
+        { if ( _label ) delete[] _label; }
+
+};
 
     class Region : public Track_Widget
     {

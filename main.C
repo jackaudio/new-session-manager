@@ -36,19 +36,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-Fl_Color velocity_colors[128];
-
 #include "Track.H"
 #include "Timeline.H"
 
 #include "const.h"
 
-void
-init_colors ( void )
-{
-    for ( int i = 128; i--; )
-        velocity_colors[i] = fl_rgb_color( 23, 255 - i * 2, 32 );
-}
 
 Timeline timeline;
 
@@ -105,8 +97,6 @@ cb_scroll ( Fl_Widget *w, void *v )
 int
 main ( int argc, char **argv )
 {
-
-    init_colors();
 
     Fl_Double_Window *main_window = new Fl_Double_Window( 0, 0, 800, 600 );
 

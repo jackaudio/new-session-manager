@@ -38,6 +38,8 @@ extern Timeline timeline;
 
 Fl_Boxtype Region::_box = FL_PLASTIC_UP_BOX;
 
+Fl_Color Region::_selection_color = FL_MAGENTA;
+
 void
 Region::init ( void )
 {
@@ -167,7 +169,8 @@ Region::handle ( int m )
 
                 if ( Fl::event_button() == 2 )
                 {
-                    normalize();
+                    //    normalize();
+                    _selected = ! _selected;
                     _track->redraw();
                 }
 
@@ -255,7 +258,12 @@ Region::draw_box( int X, int Y, int W, int H )
     /* dirty hack to keep the box from flipping to vertical at small sizes */
 
     fl_push_clip( x(), Y, w(), H );
-    fl_draw_box( box(), x() - 10, Y, w() + 50, H, _box_color );
+
+    if ( _selected )
+        fl_draw_box( FL_DOWN_BOX, x() - 10, Y, w() + 50, H, _selection_color );
+    else
+        fl_draw_box( box(), x() - 10, Y, w() + 50, H, _box_color );
+
     fl_pop_clip();
 }
 
@@ -309,6 +317,16 @@ Region::draw ( int X, int Y, int W, int H )
     fl_line( rx + rw - 1, Y, rx + rw - 1, Y + H );
 
     draw_label( _clip->name(), (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE) );
+
+
+/*     if ( _selected ) */
+/*     { */
+/*         fl_color( selection_color() ); */
+
+/*         fl_line_style( FL_SOLID, 4 ); */
+/*         fl_rect( x(), y(), w(), h() ); */
+/*         fl_line_style( FL_SOLID, 0 ); */
+/*     } */
 
     fl_pop_clip();
 

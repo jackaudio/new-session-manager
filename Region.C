@@ -240,23 +240,6 @@ Region::handle ( int m )
             ret = Track_Widget::handle( m );
             return ret | 1;
 
-/*             if ( X >= timeline.scroll->x() + timeline.scroll->w() || */
-/*                  X <= timeline.scroll->x() ) */
-/*             { */
-/*                 /\* this drag needs to scroll *\/ */
-
-/*                 long pos = timeline.scroll->xposition(); */
-
-/*                 if ( X <= timeline.scroll->x() ) */
-/*                     pos -= 100; */
-/*                 else */
-/*                     pos += 100; */
-
-/*                 if ( pos < 0 ) */
-/*                     pos = 0; */
-
-/*                 timeline.scroll->position( pos, timeline.scroll->yposition() ); */
-/*             } */
 
 //            _offset = timeline.x_to_ts( x() );
 
@@ -309,8 +292,6 @@ Region::draw ( int X, int Y, int W, int H )
 
     int rx = x();
 
-//    printf( "rx %d, rw %d\n", rx, rw );
-
     fl_push_clip( rx, Y, rw, H );
 
     /* dirty hack to keep the box from flipping to vertical at small sizes */
@@ -327,16 +308,9 @@ Region::draw ( int X, int Y, int W, int H )
     fl_line( rx, Y, rx, Y + H );
     fl_line( rx + rw - 1, Y, rx + rw - 1, Y + H );
 
+    draw_label( _clip->name(), (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE) );
+
     fl_pop_clip();
-
-    fl_font( FL_HELVETICA, 14 );
-    fl_color( FL_BLACK );
-
-    draw_label( _clip->name(), (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_CLIP | FL_ALIGN_INSIDE) );
-
-/*     fl_color( FL_RED ); */
-/*     fl_line( x(), y(), x(), y() + h() ); */
-
 
 }
 

@@ -168,10 +168,10 @@ public:
 
             if ( align & FL_ALIGN_INSIDE )
             {
-                    X += Fl::box_dx( box() );
-                    Y += Fl::box_dy( box() );
-                    W -= Fl::box_dw( box() );
-                    H -= Fl::box_dh( box() );
+                X += Fl::box_dx( box() );
+                Y += Fl::box_dy( box() );
+                W -= Fl::box_dw( box() );
+                H -= Fl::box_dh( box() );
             }
 
             if ( align & FL_ALIGN_CLIP ) fl_push_clip( X, Y, W, H );
@@ -222,6 +222,33 @@ public:
 
                     _track->redraw();
                     fl_cursor( FL_CURSOR_MOVE );
+
+
+                    if ( X >= _track->x() + _track->w() ||
+                         X <= _track->x() )
+                    {
+                        /* this drag needs to scroll */
+
+                        nframes_t pos = timeline.xoffset;
+
+                        nframes_t d = timeline.x_to_ts( 100 );
+
+                        if ( X <= _track->x() )
+                        {
+
+                            if ( pos > d )
+                                pos -= d;
+                            else
+                                pos = 0;
+                        }
+                        else
+                            pos += d;
+
+                        timeline.xoffset = pos;
+
+                        timeline.tracks->redraw();
+                    }
+
 
                     return 1;
                 }
@@ -291,33 +318,33 @@ public:
 
 };
 
-    class Region : public Track_Widget
-    {
+class Region : public Track_Widget
+{
 
-        Clip *_clip;                                                /* clip this region represents */
+    Clip *_clip;                                                /* clip this region represents */
 
-        float _scale;                                               /* amplitude adjustment */
+    float _scale;                                               /* amplitude adjustment */
 
-        static Fl_Boxtype _box;
-        static Fl_Color _selection_color;
-        static Fl_Color selection_color ( void ) { return _selection_color; }
-        static void selection_color ( Fl_Color v ) { _selection_color = v; }
+    static Fl_Boxtype _box;
+    static Fl_Color _selection_color;
+    static Fl_Color selection_color ( void ) { return _selection_color; }
+    static void selection_color ( Fl_Color v ) { _selection_color = v; }
 
-        enum trim_e { NO, LEFT, RIGHT };
-        void trim ( enum trim_e t, int X );
-        void init ( void );
+    enum trim_e { NO, LEFT, RIGHT };
+    void trim ( enum trim_e t, int X );
+    void init ( void );
 
-    public:
+public:
 
-        Fl_Boxtype box ( void ) const { return Region::_box; }
+    Fl_Boxtype box ( void ) const { return Region::_box; }
 
-        Region ( const Region & rhs );
-        Region ( Clip *c );
+    Region ( const Region & rhs );
+    Region ( Clip *c );
 
-        int handle ( int m );
-        void draw_box( int X, int Y, int W, int H );
-        void draw ( int X, int Y, int W, int H );
-        void resize ( void );
+    int handle ( int m );
+    void draw_box( int X, int Y, int W, int H );
+    void draw ( int X, int Y, int W, int H );
+    void resize ( void );
 
-        void normalize ( void );
-    };
+    void normalize ( void );
+};

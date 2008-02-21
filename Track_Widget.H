@@ -21,6 +21,9 @@
 
 #include "Track.H"
 
+#include <algorithm>
+using namespace std;
+
 /* Base class for virtual widget on a track */
 class Track_Widget
 {

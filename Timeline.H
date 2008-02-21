@@ -34,6 +34,10 @@ class Timeline;
 extern Timeline timeline;
 
 #include "Track.H"
+// #include "Tempo_Track.H"
+
+class Tempo_Track;
+
 // #include "Tempo_Point.H"
 // #include "Region.H"
 
@@ -76,7 +80,7 @@ struct Timeline {
     Fl_Pack *tracks;
     Fl_Scrollbar *scrollbar;
 
-    Track *tempo_track;
+    Tempo_Track *tempo_track;
 
     float fpp;                                                  /* frames per pixel */
 //    nframes_t fpp;
@@ -103,63 +107,8 @@ struct Timeline {
             return x * fpp;
         }
 
+    float beats_per_minute ( nframes_t when ) const;
+    void beats_per_minute ( nframes_t when, float bpm );
+    void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
 
-    float
-    beats_per_minute ( void ) const
-        {
-            // TODO: this should check a tempo map.
-            return _beats_per_minute;
-        }
-
-
-    float
-    beats_per_minute ( nframes_t when ) const
-        {
-            for ( list <tempo_event>::const_reverse_iterator i = tempo_points.rbegin();
-                  i != tempo_points.rend(); i++ )
-            {
-                if ( i->timestamp < when )
-                    return i->beats_per_minute;
-            }
-
-            return _beats_per_minute;
-        }
-
-    void
-    beats_per_minute ( nframes_t when, float bpm )
-        {
-//            tempo_track->add( new Tempo_Point( when, bpm ) );
-        }
-
-/*     /\* return the offset of the closest measure line to /t/ *\/ */
-/*     nframes_t */
-/*     snap ( nframes t ) */
-/*         { */
-
-
-
-
-
-/*         } */
-
-    /* draw appropriate measure lines inside the given bounding box */
-    void
-    draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
-        {
-            fl_line_style( FL_DASH, 2 );
-            fl_color( fl_color_average( FL_BLACK, color, 0.65f ) );
-
-//            int measure = ts_to_x( sample_rate * 60 / beats_per_minute() );
-
-            int measure;
-
-            for ( int x = X; x < X + W; ++x )
-            {
-                measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x ) + xoffset ));
-                if ( 0 == (ts_to_x( xoffset ) + x) % measure )
-                    fl_line( x, Y, x, Y + H );
-
-            }
-            fl_line_style( FL_SOLID, 0 );
-        }
 };

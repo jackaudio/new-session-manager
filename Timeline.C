@@ -17,51 +17,41 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
 
-#include "Track_Point.H"
+#include "Timeline.H"
+#include "Tempo_Track.H"
 
-class Tempo_Point : public Track_Point
+
+
+float
+Timeline::beats_per_minute ( nframes_t when ) const
 {
-    float _tempo;
+    return tempo_track->beats_per_minute( when );
+}
 
-    void
-    _make_label ( void )
-        {
-            if ( ! _label )
-                _label = new char[40];
+void
+Timeline::beats_per_minute ( nframes_t when, float bpm )
+{
+    tempo_track->add( new Tempo_Point( when, bpm ) );
+}
 
-            snprintf( _label, 40, "%.1f", _tempo );
-        }
+/* draw appropriate measure lines inside the given bounding box */
+void
+Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
+{
+    fl_line_style( FL_DASH, 2 );
+    fl_color( fl_color_average( FL_BLACK, color, 0.65f ) );
 
-public:
+//            int measure = ts_to_x( sample_rate * 60 / beats_per_minute() );
 
-    Tempo_Point ( nframes_t when, float bpm )
-        {
-            _tempo = bpm;
-            _offset = when;
+    int measure;
 
-            _make_label();
-        }
+    for ( int x = X; x < X + W; ++x )
+    {
+        measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x ) + xoffset ));
+        if ( 0 == (ts_to_x( xoffset ) + x) % measure )
+            fl_line( x, Y, x, Y + H );
 
-    ~Tempo_Point ( )
-        { if ( _label ) delete[] _label; }
-
-    float tempo ( void ) const { return _tempo; }
-    void tempo ( float v ) { _tempo = v; }
-
-
-    int
-    handle ( int m )
-        {
-            int r = Track_Widget::handle( m );
-
-            if ( m == FL_RELEASE )
-            {
-                _track->sort();
-                timeline.tracks->redraw();
-            }
-            return r;
-        }
-
-};
+    }
+    fl_line_style( FL_SOLID, 0 );
+}

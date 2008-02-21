@@ -42,7 +42,7 @@
 #include "Track.H"
 #include "Audio_Track.H"
 #include "Timeline.H"
-#include "Tempo_Point.H"
+#include "Tempo_Track.H"
 
 #include "const.h"
 
@@ -100,11 +100,6 @@ main ( int argc, char **argv )
     timeline.length = 48000 * 60 * 2;
 
 
-    timeline.beats_per_minute( 0, 120 );
-    timeline.beats_per_minute( 48000, 250 );
-    timeline.beats_per_minute( 48000 * 4, 60 );
-
-
     timeline.sample_rate = 44100;
 
     timeline.tracks = new Fl_Pack( 0, 0, 800, 5000 );
@@ -117,7 +112,7 @@ main ( int argc, char **argv )
 //    Fl_Group *pack = new Fl_Group( 0, 0, 5000, 600 );
 
     {
-        Track *tempo_track = new Track( 100, 0, 800, 24 );
+        Tempo_Track *tempo_track = new Tempo_Track( 100, 0, 800, 24 );
 
         tempo_track->label( "tempo map" );
         tempo_track->add( new Tempo_Point( 0, 120 ) );
@@ -125,6 +120,8 @@ main ( int argc, char **argv )
         tempo_track->add( new Tempo_Point( 56000, 250 ) );
 
         tempo_track->end();
+
+        timeline.tempo_track = tempo_track;
     }
 
     Track *track1 = new Audio_Track( 40, 0, 800, 100 );

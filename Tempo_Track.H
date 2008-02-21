@@ -19,49 +19,42 @@
 
 #pragma once
 
-#include "Track_Point.H"
+#include "Track.H"
+#include "Tempo_Point.H"
 
-class Tempo_Point : public Track_Point
+#include <list>
+using std::list;
+
+class Tempo_Track : public Track
 {
-    float _tempo;
-
-    void
-    _make_label ( void )
-        {
-            if ( ! _label )
-                _label = new char[40];
-
-            snprintf( _label, 40, "%.1f", _tempo );
-        }
 
 public:
 
-    Tempo_Point ( nframes_t when, float bpm )
+    Tempo_Track ( int X, int Y, int W, int H ) : Track ( X, Y, W, H )
         {
-            _tempo = bpm;
-            _offset = when;
 
-            _make_label();
+
         }
 
-    ~Tempo_Point ( )
-        { if ( _label ) delete[] _label; }
-
-    float tempo ( void ) const { return _tempo; }
-    void tempo ( float v ) { _tempo = v; }
-
-
-    int
-    handle ( int m )
+    float
+    beats_per_minute ( nframes_t when )
         {
-            int r = Track_Widget::handle( m );
+//            sort();
 
-            if ( m == FL_RELEASE )
+            for ( list <Track_Widget *>::const_reverse_iterator i = _widgets.rbegin();
+                  i != _widgets.rend(); i++ )
             {
-                _track->sort();
-                timeline.tracks->redraw();
+                if ( (*i)->offset() < when )
+                    return ((Tempo_Point*)(*i))->tempo();
             }
-            return r;
+
+            return 120.0;
+        }
+
+    void
+    beats_per_minute ( nframes_t when, float bpm )
+        {
+            add( new Tempo_Point( when, bpm ) );
         }
 
 };

@@ -179,8 +179,11 @@ Region::handle ( int m )
 
                 if ( Fl::event_button() == 2 )
                 {
-                    //    normalize();
-                    _selected = ! _selected;
+                    if ( Fl::event_state() & FL_CTRL )
+                        normalize();
+                    else
+                        _selected = ! _selected;
+
                     _track->redraw();
                 }
 

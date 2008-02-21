@@ -101,7 +101,7 @@ public:
     virtual void
     draw_box ( int X, int Y, int W, int H )
         {
-            fl_draw_box( box(), x(), y(), w(), y(), _box_color );
+            fl_draw_box( box(), x(), y(), w(), h(), _box_color );
         }
 
     virtual void

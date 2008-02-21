@@ -112,9 +112,9 @@ main ( int argc, char **argv )
 //    Fl_Group *pack = new Fl_Group( 0, 0, 5000, 600 );
 
     {
-        Tempo_Track *tempo_track = new Tempo_Track( 100, 0, 800, 24 );
+        Tempo_Track *tempo_track = new Tempo_Track( 0, 0, 800, 24 );
 
-        tempo_track->label( "tempo map" );
+//        tempo_track->label( "tempo map" );
         tempo_track->add( new Tempo_Point( 0, 120 ) );
 
         tempo_track->add( new Tempo_Point( 56000, 250 ) );

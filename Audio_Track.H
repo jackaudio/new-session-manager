@@ -20,6 +20,7 @@
 #pragma once
 
 #include "Track.H"
+#include "Region.H"
 
 #include <FL/Fl_Input.H>
 
@@ -75,7 +76,7 @@ public:
 
                     Region *r = new Region( c );
 
-                    r->offset( timeline.x_to_ts( Fl::event_x() ) );
+                    r->offset( timeline->x_to_ts( Fl::event_x() ) );
 
                     this->add( r );
 

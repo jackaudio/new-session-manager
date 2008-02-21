@@ -50,11 +50,11 @@ draw_waveform ( int X, int Y, int W, int H, Clip *_clip, nframes_t _start, nfram
 
     int j;
 
-    int start = timeline.ts_to_x( _start );
+    int start = timeline->ts_to_x( _start );
 
     {
         _clip->peaks()->fill_buffer( _start,
-                                     _start + timeline.x_to_ts( W ) );
+                                     _start + timeline->x_to_ts( W ) );
     }
 
     j = start;

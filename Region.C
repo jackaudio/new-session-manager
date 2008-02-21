@@ -34,7 +34,7 @@
 //using  std::algorithm;
 using namespace std;
 
-extern Timeline timeline;
+extern Timeline *timeline;
 
 Fl_Boxtype Region::_box = FL_PLASTIC_UP_BOX;
 
@@ -98,7 +98,7 @@ Region::trim ( enum trim_e t, int X )
         {
             int d = X - x();
 
-            long td = timeline.x_to_ts( d );
+            long td = timeline->x_to_ts( d );
 
             if ( td < 0 && _start < 0 - td )
                 td = 0 - _start;
@@ -111,7 +111,7 @@ Region::trim ( enum trim_e t, int X )
         case RIGHT:
         {
             int d = (x() + w()) - X;
-            long td = timeline.x_to_ts( d );
+            long td = timeline->x_to_ts( d );
 
             _end -= td;
             break;
@@ -205,7 +205,7 @@ Region::handle ( int m )
                  Fl::event_state() & FL_CTRL )
             {
                 int d = (ox + X) - x();
-                long td = timeline.x_to_ts( d );
+                long td = timeline->x_to_ts( d );
 
                 nframes_t W = _end - _start;
 
@@ -259,7 +259,7 @@ Region::handle ( int m )
             return ret | 1;
 
 
-//            _offset = timeline.x_to_ts( x() );
+//            _offset = timeline->x_to_ts( x() );
 
         default:
             return Track_Widget::handle( m );
@@ -293,13 +293,13 @@ Region::draw ( int X, int Y, int W, int H )
         return;
 
     int OX = scroll_x();
-    int ox = timeline.ts_to_x( _offset );
+    int ox = timeline->ts_to_x( _offset );
 
     if ( ox > OX + _track->w() ||
          ox < OX && ox + abs_w() < OX )
         return;
 
-    int rw = timeline.ts_to_x( _end - _start );
+    int rw = timeline->ts_to_x( _end - _start );
 
     nframes_t end = _offset + ( _end - _start );
 
@@ -307,9 +307,9 @@ Region::draw ( int X, int Y, int W, int H )
     nframes_t offset = 0;
     if ( ox < OX )
     {
-        offset = timeline.x_to_ts( OX - ox );
+        offset = timeline->x_to_ts( OX - ox );
 
-        rw = timeline.ts_to_x( (_end - _start) - offset );
+        rw = timeline->ts_to_x( (_end - _start) - offset );
     }
 
     rw = min( rw, _track->w() );
@@ -326,7 +326,7 @@ Region::draw ( int X, int Y, int W, int H )
 
     draw_waveform( rx, Y, rw, H, _clip, _start + offset, min( (_end - _start) - offset, _end), _scale, _selected ? _color : fl_invert_color( _color )  );
 
-    timeline.draw_measure_lines( rx, Y, rw, H, _box_color );
+    timeline->draw_measure_lines( rx, Y, rw, H, _box_color );
 
     fl_color( FL_BLACK );
     fl_line( rx, Y, rx, Y + H );

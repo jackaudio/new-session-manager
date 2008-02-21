@@ -31,7 +31,7 @@ protected:
 public:
 
     int abs_w ( void ) const { return 10; }
-    nframes_t length ( void ) const { return timeline.x_to_ts( abs_w() ); }
+    nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
 
     Track_Point ( )
         {

@@ -59,7 +59,7 @@ public:
             if ( m == FL_RELEASE )
             {
                 _track->sort();
-                timeline.tracks->redraw();
+                timeline->tracks->redraw();
             }
             return r;
         }

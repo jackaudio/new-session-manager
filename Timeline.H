@@ -22,6 +22,7 @@
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Scrollbar.H>
+#include <FL/Fl_Widget.H>
 
 #include "Clip.H"
 #include <math.h>
@@ -31,7 +32,7 @@
 #include <FL/fl_draw.H>
 
 class Timeline;
-extern Timeline timeline;
+extern Timeline *timeline;
 
 #include "Track.H"
 // #include "Tempo_Track.H"
@@ -45,7 +46,10 @@ class Time_Track;
 #include <list>
 using std::list;
 
-struct Timeline {
+struct Timeline : public Fl_Group
+{
+
+    int _old_position;
 
     enum snap_flags_e {
         SNAP_TO_REGION,
@@ -73,6 +77,8 @@ struct Timeline {
     int _beats_per_bar;
     float _beats_per_minute;
 
+    Timeline ( int X, int Y, int W, int H, const char *L=0 );
+
     int
     ts_to_x( nframes_t ts )
         {
@@ -94,10 +100,79 @@ struct Timeline {
     void
     position ( int X )
         {
+            _old_position = xoffset;
+
             xoffset = x_to_ts( X );
+
+            damage( FL_DAMAGE_SCROLL );
 
             rulers->damage( FL_DAMAGE_SCROLL );
             tracks->damage( FL_DAMAGE_SCROLL );
         }
+
+
+#define FOR_CHILDREN_OF( name, ind ) \
+    for ( int i = (name) ->children(); i-- && ( (ind) = (name) ->child( i ) ); )
+
+    static void
+    draw_clip ( void * v, int X, int Y, int W, int H )
+        {
+            Timeline *tl = (Timeline *)v;
+
+            fl_push_clip( X, Y, W, H );
+
+            tl->tracks->redraw();
+            tl->rulers->redraw();
+
+/*             FOR_CHILDREN_OF( tracks, o ) */
+/*             { */
+/*                 tracks->draw_child( *o ); */
+/*                 tracks->draw_outside_label( *o ); */
+/*             } */
+
+/*             FOR_CHILDREN_OF( rulers, o ) */
+/*             { */
+/*                 tracks->draw_child( o ); */
+/*                 tracks->draw_outside_label( o ); */
+/*             } */
+
+            fl_pop_clip();
+        }
+
+
+/*     void */
+/*     draw ( void ) */
+/*         { */
+/*             int X, Y, W, H; */
+
+/*             X = x(); */
+/*             Y = tracks->y(); */
+/*             W = w(); */
+/*             H = tracks->h(); */
+
+/*             if ( damage() & FL_DAMAGE_ALL ) */
+/*             { */
+/*                 draw_clip( this, X, Y, W, H ); */
+/*                 return; */
+/*             } */
+
+/*             if ( damage() & FL_DAMAGE_SCROLL ) */
+/*             { */
+/*                 fl_scroll( X, Y, W, H, _old_position - xoffset, Y, draw_clip, this ); */
+/*             } */
+
+/*             if ( damage() & FL_DAMAGE_CHILD ) */
+/*             { */
+/* //                Fl_Widget *o; */
+
+/* /\*                 FOR_CHILDREN_OF( tracks, o ) *\/ */
+/* /\*                     tracks->update_child( o ); *\/ */
+
+/* /\*                 FOR_CHILDREN_OF( rulers, o ) *\/ */
+/* /\*                     rulers->update_child( o ); *\/ */
+
+/* //                fl_pop_clip() */
+/*             } */
+/*         } */
 
 };

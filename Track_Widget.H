@@ -54,16 +54,16 @@ public:
 
     Fl_Group * parent ( void ) const { return _track; }
 
-    int scroll_x ( void ) const { return timeline.ts_to_x( timeline.xoffset ); }
-    nframes_t scroll_ts ( void ) const { return timeline.xoffset; }
+    int scroll_x ( void ) const { return timeline->ts_to_x( timeline->xoffset ); }
+    nframes_t scroll_ts ( void ) const { return timeline->xoffset; }
 
     int y ( void ) const { return _track->y(); }
     int h ( void ) const { return _track->h(); }
 
-    int x ( void ) const { return _offset < timeline.xoffset ? -1 : min( 32767, _track->x() + timeline.ts_to_x( _offset - timeline.xoffset ) ); }
+    int x ( void ) const { return _offset < timeline->xoffset ? -1 : min( 32767, _track->x() + timeline->ts_to_x( _offset - timeline->xoffset ) ); }
     virtual int w ( void ) const
         {
-            int tx = timeline.ts_to_x( _offset );
+            int tx = timeline->ts_to_x( _offset );
 
             int rw;
             if ( tx < scroll_x() )
@@ -74,8 +74,8 @@ public:
             return min( rw, _track->w() );
         }
 
-    int abs_x ( void ) const { return timeline.ts_to_x( timeline.xoffset ); }
-    virtual int abs_w ( void ) const { return timeline.ts_to_x( _end - _start ); }
+    int abs_x ( void ) const { return timeline->ts_to_x( timeline->xoffset ); }
+    virtual int abs_w ( void ) const { return timeline->ts_to_x( _end - _start ); }
 
 
     Fl_Color color ( void ) { return _color; }
@@ -167,7 +167,7 @@ public:
             if ( align & FL_ALIGN_CLIP ) fl_push_clip( X, Y, W, H );
 
             int dx = 0;
-            int tx = timeline.ts_to_x( _offset );
+            int tx = timeline->ts_to_x( _offset );
 
             if ( tx < scroll_x() )
                 dx = min( 32767, scroll_x() - tx );
@@ -212,7 +212,7 @@ public:
                     {
                         int nx = ox + X;
 
-                        _offset = timeline.x_to_ts( nx ) + timeline.xoffset;
+                        _offset = timeline->x_to_ts( nx ) + timeline->xoffset;
 
                         _track->snap( this );
                     }
@@ -226,9 +226,9 @@ public:
                     {
                         /* this drag needs to scroll */
 
-                        nframes_t pos = timeline.xoffset;
+                        nframes_t pos = timeline->xoffset;
 
-                        nframes_t d = timeline.x_to_ts( 100 );
+                        nframes_t d = timeline->x_to_ts( 100 );
 
                         if ( X <= _track->x() )
                         {
@@ -241,9 +241,9 @@ public:
                         else
                             pos += d;
 
-                        timeline.xoffset = pos;
+                        timeline->xoffset = pos;
 
-                        timeline.tracks->redraw();
+                        timeline->tracks->redraw();
                     }
 
 

@@ -54,7 +54,7 @@ Clip::Clip ( void ) : _peaks( this )
 /*         return; */
 /*     } */
 
-/*     if ( si.samplerate != timeline.sample_rate ) */
+/*     if ( si.samplerate != timeline->sample_rate ) */
 /*     { */
 /*         printf( "error: samplerate mismatch!\n" ); */
 /*         return; */
@@ -90,7 +90,7 @@ Clip::from_file ( const char *filename )
         goto invalid;
     }
 
-    if ( si.samplerate != timeline.sample_rate )
+    if ( si.samplerate != timeline->sample_rate )
     {
         printf( "error: samplerate mismatch!\n" );
         goto invalid;

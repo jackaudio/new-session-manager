@@ -45,7 +45,7 @@ Track::draw ( void )
 {
     Fl_Group::draw();
 
-    timeline.draw_measure_lines( x(), y(), w(), h(), color() );
+    timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 
     fl_push_clip( x(), y(), w(), h() );
 
@@ -70,7 +70,7 @@ Track_Widget *
 Track::event_widget ( void )
 {
 // FIXME: doesn't handle overlap!
-    int ets = timeline.xoffset + timeline.x_to_ts( Fl::event_x() );
+    int ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() );
     for ( list <Track_Widget *>::iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         if ( ets > (*r)->offset() && ets < (*r)->offset() + (*r)->length() )
             return (*r);
@@ -130,7 +130,7 @@ Track::snap ( Track_Widget *r )
         }
     }
 
-//    r->offset( timeline.x_to_ts( r->x() ) );
+//    r->offset( timeline->x_to_ts( r->x() ) );
 
 done:
 

@@ -20,7 +20,75 @@
 
 #include "Timeline.H"
 #include "Tempo_Track.H"
+#include "Time_Track.H"
+#include "Audio_Track.H"
 
+Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, Y, W, H, L )
+{
+    {
+        Fl_Pack *o = new Fl_Pack( 0, 0, 800, 600, "rulers" );
+        o->type( Fl_Pack::VERTICAL );
+
+        {
+            Tempo_Track *o = new Tempo_Track( 0, 0, 800, 24 );
+
+            o->color( FL_RED );
+
+            o->add( new Tempo_Point( 0, 120 ) );
+            o->add( new Tempo_Point( 56000, 250 ) );
+
+
+            tempo_track = o;
+            o->end();
+
+        }
+
+        {
+            Time_Track *o = new Time_Track( 0, 24, 800, 24 );
+
+            o->color( fl_color_average( FL_RED, FL_WHITE, 0.50f ) );
+
+            o->add( new Time_Point( 0, 4, 4 ) );
+            o->add( new Time_Point( 345344, 6, 8 ) );
+
+            time_track = o;
+            o->end();
+
+        }
+
+        rulers = o;
+        o->end();
+    }
+
+    {
+        Fl_Scroll *o = new Fl_Scroll( 0, 24 * 2, 800, 600 - (24 * 3) );
+        o->type( Fl_Scroll::VERTICAL );
+
+        sample_rate = 44100;
+        fpp = 256;
+        _beats_per_minute = 120;
+        length = sample_rate * 60 * 2;
+
+        {
+            Fl_Pack *o = new Fl_Pack( 0, 0, 800, 5000 );
+            o->type( Fl_Pack::VERTICAL );
+            o->spacing( 10 );
+
+            {
+                Track *o = new Audio_Track( 0, 0, 800, 100 );
+                o->end();
+            }
+
+            tracks = o;
+            o->end();
+        }
+
+        scroll = o;
+        o->end();
+    }
+
+    end();
+}
 
 
 float

@@ -45,11 +45,11 @@ Peaks::peakbuffer Peaks::peakbuf;
 void
 Peaks::fill_buffer ( int s, int e ) const
 {
-    if ( timeline.fpp < _peaks->chunksize )
+    if ( timeline->fpp < _peaks->chunksize )
     {
         /* looks like we're going to have to switch to a higher resolution peak file
          or read directly from the source */
-        read_peaks( s, e, (e - s) / timeline.fpp, timeline.fpp );
+        read_peaks( s, e, (e - s) / timeline->fpp, timeline->fpp );
     }
     else
     {
@@ -144,9 +144,9 @@ Peaks::peak ( nframes_t start, nframes_t end ) const
     /* Is there a better way to return this?  */
     static Peak p;
 
-    if ( timeline.fpp < _peaks->chunksize )
+    if ( timeline->fpp < _peaks->chunksize )
     {
-        assert( timeline.fpp == peakbuf.buf->chunksize );
+        assert( timeline->fpp == peakbuf.buf->chunksize );
 
         start = (start - peakbuf.offset) / peakbuf.buf->chunksize;
         end = (end - peakbuf.offset) / peakbuf.buf->chunksize;
@@ -175,7 +175,7 @@ Peaks::peak ( nframes_t start, nframes_t end ) const
 Peak &
 Peaks::operator[] ( int X ) const
 {
-    return peak( timeline.x_to_ts( X ), timeline.x_to_ts( X + 1 ) );
+    return peak( timeline->x_to_ts( X ), timeline->x_to_ts( X + 1 ) );
 }
 
 static

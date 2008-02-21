@@ -39,11 +39,11 @@ class Track : public Fl_Group
     Track *_next;
     Track *_prev;
 
-    list <Track_Widget *> _regions;
+    list <Track_Widget *> _widgets;
 
     char *_name;
 
-    Track_Widget *event_region ( void );
+    Track_Widget *event_widget ( void );
 
 public:
 
@@ -56,14 +56,14 @@ public:
             color( fl_darker( FL_GRAY ) );
         }
 
-    Track *next ( void ) { return _next; }
-    Track *prev ( void ) { return _prev; }
+    Track *next ( void ) const { return _next; }
+    Track *prev ( void ) const { return _prev; }
     void prev ( Track *t ) { _prev = t; }
     void next ( Track *t ) { _next = t; }
 
 
     void draw ( void );
-    void remove_region ( Track_Widget *r );
+    void remove ( Track_Widget *r );
     void add ( Track_Widget *r );
     void snap ( Track_Widget *r );
     int handle ( int m );

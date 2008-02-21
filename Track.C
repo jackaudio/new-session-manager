@@ -35,7 +35,7 @@ sort_func ( Track_Widget *lhs, Track_Widget *rhs )
 void
 Track::sort ( void )
 {
-    _regions.sort( sort_func );
+    _widgets.sort( sort_func );
 }
 
 void
@@ -47,29 +47,29 @@ Track::draw ( void )
 
     fl_push_clip( x(), y(), w(), h() );
 
-    for ( list <Track_Widget *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
+    for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw_box( x(), y(), w(), h() );
 
     /* TODO: detect overlap and draw with transparency/crossfade */
-    for ( list <Track_Widget *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
+    for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw( x(), y(), w(), h() );
 
     fl_pop_clip();
 }
 
 void
-Track::remove_region ( Track_Widget *r )
+Track::remove ( Track_Widget *r )
 {
-    _regions.remove( r );
+    _widgets.remove( r );
 }
 
 
 Track_Widget *
-Track::event_region ( void )
+Track::event_widget ( void )
 {
 // FIXME: doesn't handle overlap!
     int ets = timeline.xoffset + timeline.x_to_ts( Fl::event_x() );
-    for ( list <Track_Widget *>::iterator r = _regions.begin();  r != _regions.end(); r++ )
+    for ( list <Track_Widget *>::iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         if ( ets > (*r)->offset() && ets < (*r)->offset() + (*r)->length() )
             return (*r);
 
@@ -81,19 +81,13 @@ Track::add ( Track_Widget *r )
 {
     if ( r->track() )
     {
-        r->track()->remove_region( r );
+        r->track()->remove( r );
         r->track()->redraw();
     }
 
-    _regions.push_back( r );
+    _widgets.push_back( r );
 
     r->track( this );
-
-    // Fl_Group::add( r );
-//            add( r );
-
-//    r->position( r->x(), y() );
-//    r->redraw();
 }
 
 /* snap /r/ to nearest edge */
@@ -105,7 +99,7 @@ Track::snap ( Track_Widget *r )
     int rx1 = r->x();
     int rx2 = r->x() + r->w();
 
-    for ( list <Track_Widget*>::iterator i = _regions.begin(); i != _regions.end(); i++ )
+    for ( list <Track_Widget*>::iterator i = _widgets.begin(); i != _widgets.end(); i++ )
     {
         const Track_Widget *w = (*i);
 
@@ -146,7 +140,7 @@ done:
 int
 Track::handle ( int m )
 {
-    static Track_Widget *current_region;
+    static Track_Widget *current_widget;
 
     switch ( m )
     {
@@ -195,19 +189,19 @@ Track::handle ( int m )
             return 1;
         default:
         {
-            Track_Widget *r = event_region();
-            if ( current_region )
-                r = current_region;
+            Track_Widget *r = event_widget();
+            if ( current_widget )
+                r = current_widget;
 
             if ( r )
             {
                 int retval = r->handle( m );
 
                 if ( retval && m == FL_PUSH )
-                    current_region = r;
+                    current_widget = r;
 
                 if ( retval && m == FL_RELEASE )
-                    current_region = NULL;
+                    current_widget = NULL;
 
                 return retval;
             }

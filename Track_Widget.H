@@ -20,12 +20,13 @@
 #pragma once
 
 #include "Track.H"
+#include "Loggable.H"
 
 #include <algorithm>
 using namespace std;
 
 /* Base class for virtual widget on a track */
-class Track_Widget
+class Track_Widget : public Loggable
 {
 
 protected:
@@ -200,6 +201,7 @@ public:
     handle ( int m )
         {
             static int ox, oy;
+            static bool moved = false;
 
             int X = Fl::event_x();
             int Y = Fl::event_y();
@@ -214,6 +216,8 @@ public:
                     if ( Fl::event_state() & FL_CTRL &&
                          Fl::event_button() == 3 )
                     {
+                        log_destroy();
+
                         redraw();
                         _track->queue_delete( this );
                         return 0;
@@ -222,7 +226,12 @@ public:
                     return 1;
                 }
                 case FL_RELEASE:
-                    dump();
+                    if ( moved )
+                    {
+                        log_move();
+                        moved = false;
+                    }
+//                    dump();
                     fl_cursor( FL_CURSOR_DEFAULT );
                     return 1;
                 case FL_DRAG:
@@ -236,6 +245,8 @@ public:
                         _offset = timeline->x_to_ts( nx ) + timeline->xoffset;
 
                         _track->snap( this );
+
+                        moved = true;
                     }
 
                     //                  _track->redraw();

@@ -119,7 +119,7 @@ Track::snap ( Track_Widget *r )
         {
             r->offset( w->offset() + w->length() + 1 );
 
-            printf( "snap: %lu | %lu\n", w->offset() + w->length(), r->offset() );
+//            printf( "snap: %lu | %lu\n", w->offset() + w->length(), r->offset() );
 
             goto done;
         }
@@ -128,7 +128,7 @@ Track::snap ( Track_Widget *r )
         {
             r->offset( ( w->offset() - r->length() ) - 1 );
 
-            printf( "snap: %lu | %lu\n", r->offset() + r->length(), w->offset() );
+//            printf( "snap: %lu | %lu\n", r->offset() + r->length(), w->offset() );
 
             goto done;
         }

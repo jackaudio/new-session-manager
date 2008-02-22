@@ -51,6 +51,29 @@ class Region : public Track_Widget
     void trim ( enum trim_e t, int X );
     void init ( void );
 
+protected:
+
+    /* general */
+    void log_create ( void )
+        {
+            printf( "region create %p %lu \"%s\" %d %f %lu %lu\n", this, _offset, _clip->name(), _selected, _scale, _start, _end );
+        }
+
+    void log_destroy ( void )
+        {
+            printf( "region destroy %p\n", this );
+        }
+
+    void log_move ( void )
+        {
+            printf( "region move %p %lu\n", this, _offset );
+        }
+
+    void log_change ( void )
+        {
+            printf( "region change %p %d %f %lu %lu\n", this, _selected, _scale, _start, _end );
+        }
+
 public:
 
     Fl_Boxtype box ( void ) const { return Region::_box; }

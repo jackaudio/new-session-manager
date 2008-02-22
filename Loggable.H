@@ -17,51 +17,16 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
+/* Master class for journaling. */
 
-#include "Track_Widget.H"
-
-class Track_Point : public Track_Widget
+class Loggable
 {
-
-protected:
-
-    char *_label;
-
-
-    void log_create ( void )
-        {
-        }
-
-    void log_destroy ( void )
-        {
-        }
-
-    void log_move ( void )
-        {
-        }
-
-    void log_change ( void )
-        {
-        }
-
 
 public:
 
-    Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
-    int abs_w ( void ) const { return 10; }
-    nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
-
-    Track_Point ( )
-        {
-            _label = NULL;
-        }
-
-    void
-    draw ( int X, int Y, int W, int H )
-        {
-            Track_Widget::draw( x(), Y, w(), H );
-
-            draw_label( _label, align() );
-        }
+    /* log messages for journal */
+    virtual void log_create ( void ) = 0;
+    virtual void log_destroy ( void ) = 0;
+    virtual void log_move ( void ) = 0;
+    virtual void log_change ( void ) = 0;
 };

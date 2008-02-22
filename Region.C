@@ -79,6 +79,8 @@ Region::Region ( const Region & rhs )
     _start  = rhs._start;
     _end    = rhs._end;
     _scale  = rhs._scale;
+
+    log_create();
 }
 
 Region::Region ( Audio_File *c )
@@ -86,6 +88,8 @@ Region::Region ( Audio_File *c )
     init();
     _clip = c;
     _end = _clip->length();
+
+    log_create();
 }
 
 
@@ -195,6 +199,7 @@ Region::handle ( int m )
                     else
                         _selected = ! _selected;
 
+                    log_change();
                     redraw();
                 }
 
@@ -207,8 +212,11 @@ Region::handle ( int m )
         case FL_RELEASE:
             Track_Widget::handle( m );
             copied = false;
-            trimming = NO;
-            //          Fl::release();
+            if ( trimming != NO )
+            {
+                trimming = NO;
+                log_change();
+            }
             return 1;
         case FL_DRAG:
 

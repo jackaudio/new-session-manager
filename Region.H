@@ -54,6 +54,7 @@ class Region : public Track_Widget
 public:
 
     Fl_Boxtype box ( void ) const { return Region::_box; }
+    Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE); }
 
     Region ( const Region & rhs );
     Region ( Audio_File *c );

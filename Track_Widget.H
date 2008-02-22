@@ -95,11 +95,18 @@ public:
     virtual nframes_t length ( void ) const { return _end - _start; }
 
     virtual Fl_Boxtype box ( void ) const { return FL_UP_BOX; }
+    virtual Fl_Align align ( void ) const { return (Fl_Align)0; }
 
-    void
+    virtual void
     redraw ( void )
         {
-            _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
+            if ( ! (align() & FL_ALIGN_INSIDE) )
+            {
+                // FIXME: to better..
+                _track->redraw();
+            }
+            else
+                _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
         }
 
     /* just draw a simple box */
@@ -172,10 +179,9 @@ public:
             if ( align & FL_ALIGN_CLIP ) fl_push_clip( X, Y, W, H );
 
             int dx = 0;
-            int tx = timeline->ts_to_x( _offset );
 
-            if ( tx < scroll_x() )
-                dx = min( 32767, scroll_x() - tx );
+            if ( abs_x() < scroll_x() )
+                dx = min( 32767, scroll_x() - abs_x() );
 
             lab.draw( X - dx, Y, W, H, align );
 

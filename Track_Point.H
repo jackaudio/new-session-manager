@@ -30,6 +30,7 @@ protected:
 
 public:
 
+    Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
     int abs_w ( void ) const { return 10; }
     nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
 
@@ -43,6 +44,6 @@ public:
         {
             Track_Widget::draw( x(), Y, w(), H );
 
-            draw_label( _label, FL_ALIGN_RIGHT );
+            draw_label( _label, align() );
         }
 };

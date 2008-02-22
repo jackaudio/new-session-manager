@@ -161,11 +161,13 @@ struct Timeline : public Fl_Group
             H = tracks->h();
 
 
+
 /*             fl_color( FL_RED ); */
 /*             fl_rect( X, Y, X + W, Y + H ); */
 
             if ( damage() & FL_DAMAGE_ALL )
             {
+                Fl_Group::draw();
                 draw_clip( this, X, tracks->y(), W, tracks->h() );
                 draw_clip( this, X, rulers->y(), W, rulers->h() );
                 return;

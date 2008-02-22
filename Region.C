@@ -81,7 +81,7 @@ Region::Region ( const Region & rhs )
     _scale  = rhs._scale;
 }
 
-Region::Region ( Clip *c )
+Region::Region ( Audio_File *c )
 {
     init();
     _clip = c;

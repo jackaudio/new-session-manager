@@ -24,27 +24,14 @@
 #include <FL/fl_draw.H>
 
 #include "Timeline.H"
-// #include "Waveform.H"
-#include "Clip.H"
+#include "Audio_File.H"
 
-// extern Timeline timeline;
-// #include "Timeline.H"
 
 #include <math.h>
 
-/* void */
-/* Waveform::draw ( void ) */
-/* { */
-/*     int X, Y, W, H; */
-
-/*     fl_clip_box( x(), y(), w(), h(), X, Y, W, H ); */
-
-/*     draw( X, y(), W, h() ); */
-/* } */
-
 /** draw a portion of /clip/'s waveform. coordinates are the portion to draw  */
 void
-draw_waveform ( int X, int Y, int W, int H, Clip *_clip, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )
+draw_waveform ( int X, int Y, int W, int H, Audio_File *_clip, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )
 {
     fl_push_clip( X, Y, W, H );
 

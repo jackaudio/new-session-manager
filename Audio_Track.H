@@ -66,7 +66,7 @@ public:
 
                     printf( "pasted file \"%s\"\n", file );
 
-                    Clip *c = Clip::from_file( file );
+                    Audio_File *c = Audio_File::from_file( file );
 
                     if ( ! c )
                     {

@@ -5,7 +5,7 @@ CXXFLAGS=-ggdb -Wall -O0
 LIBS=-lsndfile  `fltk-config --ldflags`
 # CXXFLAGS=`fltk-config -cxxflags`
 
-SRCS= Clip.C Waveform.C  Region.C  Peaks.C  main.C Track.C Timeline.C
+SRCS= Waveform.C  Region.C  Peaks.C  main.C Track.C Timeline.C Audio_File.C Audio_File_SF.C
 
 OBJS=$(SRCS:.C=.o)
 
@@ -24,7 +24,7 @@ test: $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@
 
 clean:
-	rm -f $(OBJS) test
+	rm -f $(OBJS) test makedepend
 
 valgrind:
 	valgrind ./test

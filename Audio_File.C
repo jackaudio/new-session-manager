@@ -17,13 +17,27 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
-
-#include <FL/Fl_Widget.H>
-#include <FL/fl_draw.H>
-
-#include "Timeline.H"
-
 #include "Audio_File.H"
+#include "Audio_File_SF.H"
 
-void draw_waveform ( int X, int Y, int W, int H, Audio_File *_clip, nframes_t _start, nframes_t _end, float _scale, Fl_Color color );
+/** attmpet to open any supported filetype */
+Audio_File *
+Audio_File::from_file ( const char * filename )
+{
+
+    Audio_File *a;
+
+    if ( ( a = Audio_File_SF::from_file( filename ) ) )
+        goto done;
+
+    a->_peaks.open();
+
+// TODO: other formats
+
+    return NULL;
+
+done:
+
+    a->_peaks.open();
+    return a;
+}

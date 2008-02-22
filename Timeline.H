@@ -24,7 +24,7 @@
 #include <FL/Fl_Scrollbar.H>
 #include <FL/Fl_Widget.H>
 
-#include "Clip.H"
+#include "Audio_File.H" // just for nframes_t
 #include <math.h>
 
 #include <assert.h>

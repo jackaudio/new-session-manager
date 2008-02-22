@@ -19,39 +19,43 @@
 
 #pragma once
 
+/* Base class for all audio file library interfaces */
+#include <stdlib.h>
+
 typedef unsigned long nframes_t;
 typedef float sample_t;
 
 #include "Peaks.H"
 
-#include <sndfile.h>
-
-class Clip
+class Audio_File
 {
-    const char *_filename;
+
+protected:
 
     Peaks _peaks;
-
-    nframes_t _length;                                              /* length of clip in samples */
-
-    SNDFILE *_in;
+    const char *_filename;
+    nframes_t _length;                                              /* length of file in samples */
 
 public:
 
-    Clip ( );
+    Audio_File ( ) : _peaks( this )
+        {
+            _filename = NULL;
+            _length = 0;
+        }
 
-//    Clip ( const char *filename );
-
-    static Clip *from_file ( const char *filename );
+    static Audio_File *from_file ( const char *filename );
 
     Peaks const * peaks ( void ) { return &_peaks; }
     const char *name ( void ) { return _filename; }
     nframes_t length ( void ) { return _length; }
 
-    bool open ( void );
-    void close ( void );
-    void seek ( nframes_t offset );
-    nframes_t read ( sample_t *buf, nframes_t len );
-    nframes_t read ( sample_t *buf, nframes_t start, nframes_t end );
+//    Peaks const * peaks ( void ) { return &_peaks; }
+
+    virtual bool open ( void ) = 0;
+    virtual void close ( void ) = 0;
+    virtual void seek ( nframes_t offset ) = 0;
+    virtual nframes_t read ( sample_t *buf, nframes_t len ) = 0;
+    virtual nframes_t read ( sample_t *buf, nframes_t start, nframes_t end ) = 0;
 
 };

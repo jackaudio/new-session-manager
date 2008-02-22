@@ -17,7 +17,7 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Clip.H"
+#include "Audio_File_SF.H"
 #include "Timeline.H"
 
 #include <sndfile.h>
@@ -25,56 +25,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-Clip::Clip ( void ) : _peaks( this )
-{
-    _filename = NULL;
-    _length = 0;
-}
-
-
-/* Clip::Clip ( const char *filename ) : _peaks( this ) */
-/* { */
-/*     _filename = filename; */
-
-/*     SNDFILE *in; */
-/*     SF_INFO si; */
-
-/*     memset( &si, 0, sizeof( si ) ); */
-
-/*     if ( ! ( in = sf_open( filename, SFM_READ, &si ) ) ) */
-/*     { */
-/*         printf( "couldn't open file\n" ); */
-/*         return; */
-/*     } */
-
-/*     if ( si.channels != 1 ) */
-/*     { */
-/*         printf( "error: incompatible format\n" ); */
-/*         return; */
-/*     } */
-
-/*     if ( si.samplerate != timeline->sample_rate ) */
-/*     { */
-/*         printf( "error: samplerate mismatch!\n" ); */
-/*         return; */
-/*     } */
-
-/*     _length = si.frames; */
-
-/*     sf_close( in ); */
-
-/*     _peaks.open(); */
-/* } */
-
-
-Clip *
-Clip::from_file ( const char *filename )
+Audio_File_SF *
+Audio_File_SF::from_file ( const char *filename )
 {
     SNDFILE *in;
     SF_INFO si;
 
-    Clip *c = NULL;
+    Audio_File_SF *c = NULL;
 
     memset( &si, 0, sizeof( si ) );
 
@@ -96,17 +53,14 @@ Clip::from_file ( const char *filename )
         goto invalid;
     }
 
-    c = new Clip;
+    c = new Audio_File_SF;
 
     c->_filename = filename;
     c->_length = si.frames;
 
     sf_close( in );
 
-    c->_peaks.open();
-
     return c;
-
 
 invalid:
 
@@ -115,7 +69,7 @@ invalid:
 }
 
 bool
-Clip::open ( void )
+Audio_File_SF::open ( void )
 {
     SF_INFO si;
 
@@ -128,27 +82,26 @@ Clip::open ( void )
 }
 
 void
-Clip::close ( void )
+Audio_File_SF::close ( void )
 {
     sf_close( _in );
 }
 
 void
-Clip::seek ( nframes_t offset )
+Audio_File_SF::seek ( nframes_t offset )
 {
     sf_seek( _in, offset, SEEK_SET );
 }
 
-
 nframes_t
-Clip::read ( sample_t *buf, nframes_t len )
+Audio_File_SF::read ( sample_t *buf, nframes_t len )
 {
     return sf_read_float ( _in, buf, len );
 }
 
 /** read samples from /start/ to /end/ into /buf/ */
 nframes_t
-Clip::read ( sample_t *buf, nframes_t start, nframes_t end )
+Audio_File_SF::read ( sample_t *buf, nframes_t start, nframes_t end )
 {
     open();
 

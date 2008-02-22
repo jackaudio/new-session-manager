@@ -17,13 +17,24 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
-
-#include <FL/Fl_Widget.H>
-#include <FL/fl_draw.H>
-
-#include "Timeline.H"
-
 #include "Audio_File.H"
 
-void draw_waveform ( int X, int Y, int W, int H, Audio_File *_clip, nframes_t _start, nframes_t _end, float _scale, Fl_Color color );
+#include <sndfile.h>
+
+class Audio_File_SF : public Audio_File
+{
+//    Audio_File_SF ( const char *filename )
+
+    SNDFILE *_in;
+
+public:
+
+    static Audio_File_SF *from_file ( const char *filename );
+
+    bool open ( void );
+    void close ( void );
+    void seek ( nframes_t offset );
+    nframes_t read ( sample_t *buf, nframes_t len );
+    nframes_t read ( sample_t *buf, nframes_t start, nframes_t end );
+
+};

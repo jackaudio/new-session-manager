@@ -31,7 +31,7 @@
 
 #include <sndfile.h>
 
-#include "Clip.H"
+#include "Audio_File.H"
 
 #include "assert.h"
 

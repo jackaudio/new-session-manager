@@ -23,7 +23,7 @@
 
 // #include "Waveform.H"
 
-#include "Clip.H"
+#include "Audio_File.H"
 #include "Track.H"
 #include "Timeline.H"
 
@@ -38,7 +38,7 @@ using namespace std;
 class Region : public Track_Widget
 {
 
-    Clip *_clip;                                                /* clip this region represents */
+    Audio_File *_clip;                                                /* clip this region represents */
 
     float _scale;                                               /* amplitude adjustment */
 
@@ -56,7 +56,7 @@ public:
     Fl_Boxtype box ( void ) const { return Region::_box; }
 
     Region ( const Region & rhs );
-    Region ( Clip *c );
+    Region ( Audio_File *c );
 
     int handle ( int m );
     void draw_box( int X, int Y, int W, int H );

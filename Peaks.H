@@ -28,7 +28,7 @@ struct Peak {
     float max;
 };
 
-class Clip;
+class Audio_File;
 
 class Peaks
 {
@@ -56,7 +56,7 @@ class Peaks
 
     static peakbuffer peakbuf;
 
-    Clip *_clip;
+    Audio_File *_clip;
 
     peakdata *_peaks;
 
@@ -67,9 +67,11 @@ class Peaks
 
     Peak & peak ( nframes_t start, nframes_t end ) const;
 
+    Peaks ( );
+
 public:
 
-    Peaks ( Clip *c )
+    Peaks ( Audio_File *c )
         {
             _peaks = new peakdata;
 

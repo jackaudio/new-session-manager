@@ -31,78 +31,9 @@ public:
 
     Audio_Track ( int X, int Y, int W, int H ) : Track( X, Y, W, H )
         {
-
-/*             Fl_Group *o = new Fl_Group( 0, 0, 100, H ); */
-/*             new Fl_Input( 0, 0, 100, 24, "name:" ); */
-/*             o->end(); */
-
         }
 
-    /** event handler that supports DND of audio clips */
-    int
-    handle ( int m )
-        {
-            switch ( m )
-            {
-                case FL_DND_DRAG:
-                case FL_DND_ENTER:
-                case FL_ENTER:
-//                    dump();
-                    return 1;
-                case FL_DND_LEAVE:
-                case FL_DND_RELEASE:
-                    return 1;
-                case FL_PASTE:
-                {
-                    const char *text = Fl::event_text();
+    int handle ( int m );
+    void dump ( void );
 
-                    char *file;
-
-                    if ( ! sscanf( text, "file://%a[^\r\n]\n", &file ) )
-                    {
-                        printf( "invalid drop \"%s\"\n", text );
-                        return 0;
-                    }
-
-                    printf( "pasted file \"%s\"\n", file );
-
-                    Audio_File *c = Audio_File::from_file( file );
-
-                    if ( ! c )
-                    {
-                        free( file );
-                        return 0;
-                    }
-
-                    Region *r = new Region( c );
-
-                    r->offset( timeline->x_to_ts( Fl::event_x() ) );
-
-                    this->add( r );
-
-                    redraw();
-                    return 1;
-                }
-                default:
-                    return Track::handle( m );
-            }
-        }
-
-
-
-    void
-    dump ( void )
-        {
-
-            printf( "1 \"%s\" {\n", /* name() */ "Track" );
-
-            sort();
-            for ( list <Track_Widget *>::const_iterator r = _widgets.begin(); r != _widgets.end(); r++ )
-            {
-                printf( "\t" );
-                ((Region*)(*r))->dump();
-            }
-
-            printf( "}\n" );
-        }
 };

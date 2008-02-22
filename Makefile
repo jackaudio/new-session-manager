@@ -5,7 +5,7 @@ CXXFLAGS=-ggdb -Wall -O0
 LIBS=-lsndfile  `fltk-config --ldflags`
 # CXXFLAGS=`fltk-config -cxxflags`
 
-SRCS= Waveform.C  Region.C  Peaks.C  main.C Track.C Timeline.C Audio_File.C Audio_File_SF.C Loggable.C
+SRCS= Waveform.C  Region.C  Peaks.C  main.C Track.C Audio_Track.C Timeline.C Audio_File.C Audio_File_SF.C Loggable.C
 
 OBJS=$(SRCS:.C=.o)
 

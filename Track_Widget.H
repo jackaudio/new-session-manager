@@ -124,6 +124,12 @@ public:
 
 
     virtual void
+    dump ( void )
+        {
+            printf( "Unknown %p %lu %lu %lu\n", this, _offset, _start, _end );
+        }
+
+    virtual void
     draw_label ( const char *label, Fl_Align align )
         {
             int X, Y;
@@ -216,6 +222,7 @@ public:
                     return 1;
                 }
                 case FL_RELEASE:
+                    dump();
                     fl_cursor( FL_CURSOR_DEFAULT );
                     return 1;
                 case FL_DRAG:

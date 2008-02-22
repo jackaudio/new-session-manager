@@ -205,7 +205,7 @@ Region::handle ( int m )
             break;
         }
         case FL_RELEASE:
-            fl_cursor( FL_CURSOR_DEFAULT );
+            Track_Widget::handle( m );
             copied = false;
             trimming = NO;
             //          Fl::release();
@@ -375,5 +375,7 @@ Region::normalize ( void )
 void
 Region::dump ( void )
 {
-    printf( "%lu { \"%s\" %lu %lu }\n", _offset, _clip->name(),  _start, _end );
+//    printf( "Region %p %lu { \"%s\" %lu %lu }\n", this, _offset, _clip->name(),  _start, _end );
+    /* how about in STD?  */
+    printf( "Region\n\t%p\n\toffset\n\t\t%lu\n\tranage\n\t\t%lu\n\t\t%lu\n\tsource\n\t\t\"%s\"\n\n", this, _offset, _start, _end, _clip->name() );
 }

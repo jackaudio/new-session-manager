@@ -75,7 +75,7 @@ Track::event_widget ( void )
 {
 // FIXME: doesn't handle overlap!
     int ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() );
-    for ( list <Track_Widget *>::iterator r = _widgets.begin();  r != _widgets.end(); r++ )
+    for ( list <Track_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
         if ( ets > (*r)->offset() && ets < (*r)->offset() + (*r)->length() )
             return (*r);
 

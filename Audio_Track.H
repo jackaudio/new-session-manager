@@ -47,7 +47,7 @@ public:
                 case FL_DND_DRAG:
                 case FL_DND_ENTER:
                 case FL_ENTER:
-                    dump();
+//                    dump();
                     return 1;
                 case FL_DND_LEAVE:
                 case FL_DND_RELEASE:

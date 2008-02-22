@@ -92,7 +92,7 @@ Peaks::clip_read_peaks ( Peak *peaks, int npeaks, int chunksize ) const
     for ( i = 0; i < npeaks; ++i )
     {
         /* read in a buffer */
-        len = _clip->read( fbuf, chunksize );
+        len = _clip->read( fbuf, 0, chunksize );
 
         Peak &p = peaks[ i ];
         p.min = 0;

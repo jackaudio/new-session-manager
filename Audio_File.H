@@ -35,6 +35,7 @@ protected:
     Peaks _peaks;
     const char *_filename;
     nframes_t _length;                                              /* length of file in samples */
+    int _channels;
 
 public:
 
@@ -47,15 +48,16 @@ public:
     static Audio_File *from_file ( const char *filename );
 
     Peaks const * peaks ( void ) { return &_peaks; }
-    const char *name ( void ) { return _filename; }
-    nframes_t length ( void ) { return _length; }
+    const char *name ( void ) const { return _filename; }
+    nframes_t length ( void ) const  { return _length; }
+    int channels ( void ) const { return _channels; }
 
 //    Peaks const * peaks ( void ) { return &_peaks; }
 
     virtual bool open ( void ) = 0;
     virtual void close ( void ) = 0;
     virtual void seek ( nframes_t offset ) = 0;
-    virtual nframes_t read ( sample_t *buf, nframes_t len ) = 0;
-    virtual nframes_t read ( sample_t *buf, nframes_t start, nframes_t end ) = 0;
+    virtual nframes_t read ( sample_t *buf, int channel, nframes_t len ) = 0;
+    virtual nframes_t read ( sample_t *buf, int channel, nframes_t start, nframes_t end ) = 0;
 
 };

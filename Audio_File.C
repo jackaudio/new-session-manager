@@ -30,8 +30,6 @@ Audio_File::from_file ( const char * filename )
     if ( ( a = Audio_File_SF::from_file( filename ) ) )
         goto done;
 
-    a->_peaks.open();
-
 // TODO: other formats
 
     return NULL;

@@ -34,7 +34,7 @@ public:
     bool open ( void );
     void close ( void );
     void seek ( nframes_t offset );
-    nframes_t read ( sample_t *buf, nframes_t len );
-    nframes_t read ( sample_t *buf, nframes_t start, nframes_t end );
+    nframes_t read ( sample_t *buf, int channel, nframes_t len );
+    nframes_t read ( sample_t *buf, int channel,  nframes_t start, nframes_t end );
 
 };

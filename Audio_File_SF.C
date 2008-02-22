@@ -41,11 +41,11 @@ Audio_File_SF::from_file ( const char *filename )
         return NULL;
     }
 
-    if ( si.channels != 1 )
-    {
-        printf( "error: incompatible format\n" );
-        goto invalid;
-    }
+/*     if ( si.channels != 1 ) */
+/*     { */
+/*         printf( "error: incompatible format\n" ); */
+/*         goto invalid; */
+/*     } */
 
     if ( si.samplerate != timeline->sample_rate )
     {
@@ -57,6 +57,7 @@ Audio_File_SF::from_file ( const char *filename )
 
     c->_filename = filename;
     c->_length = si.frames;
+    c->_channels = si.channels;
 
     sf_close( in );
 
@@ -94,20 +95,32 @@ Audio_File_SF::seek ( nframes_t offset )
 }
 
 nframes_t
-Audio_File_SF::read ( sample_t *buf, nframes_t len )
+Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
 {
-    return sf_read_float ( _in, buf, len );
+    if ( _channels == 1 )
+        return sf_read_float ( _in, buf, len );
+
+    sample_t *tmp = new sample_t[ len * _channels ];
+
+    nframes_t rlen = sf_readf_float( _in, tmp, len );
+
+    for ( int i = channel; i < rlen; i += _channels )
+        *(buf++) = tmp[ i ];
+
+    delete tmp;
+
+    return rlen;
 }
 
 /** read samples from /start/ to /end/ into /buf/ */
 nframes_t
-Audio_File_SF::read ( sample_t *buf, nframes_t start, nframes_t end )
+Audio_File_SF::read ( sample_t *buf, int channel, nframes_t start, nframes_t end )
 {
     open();
 
     seek( start );
 
-    nframes_t len = read( buf, end - start );
+    nframes_t len = read( buf, channel, end - start );
 
     close();
 

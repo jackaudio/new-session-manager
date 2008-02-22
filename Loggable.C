@@ -24,23 +24,35 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+FILE *Loggable::_fp;
+
 int Loggable::_log_id = 0;
+
+bool
+Loggable::open ( const char *filename )
+{
+    if ( ! ( Loggable::_fp = fopen( filename, "a+" ) ) )
+    {
+        printf( "Could not open log file for writing!" );
+        return false;
+    }
+
+    return true;
+}
 
 void
 Loggable::log ( const char *module, const char *action, const char *fmt, ... )
 {
     va_list args;
 
-    /* FIXME: log all this stuff to someplace meaningful */
-
-    printf( "%s %s %p ", module, action, _id );
+    fprintf( _fp, "%-15s %-8s %p ", module, action, _id );
 
     if ( fmt )
     {
         va_start( args, fmt );
-        vfprintf( stdout, fmt, args );
+        vfprintf( _fp, fmt, args );
         va_end( args );
     }
 
-    printf( "\n" );
+    fprintf( _fp, "\n" );
 }

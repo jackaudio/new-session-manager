@@ -21,16 +21,20 @@
 
 #pragma once
 
+#include <stdio.h>
 
 class Loggable
 {
 
+    static FILE *_fp;
     static int _log_id;
 
 private:
     int _id;
 
 public:
+
+    static bool open ( const char *filename );
 
     Loggable ( )
         {

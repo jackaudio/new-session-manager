@@ -45,6 +45,7 @@
 #include "Tempo_Track.H"
 #include "Time_Track.H"
 
+#include "Loggable.H"
 
 #include "const.h"
 
@@ -108,6 +109,8 @@ main ( int argc, char **argv )
 
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
+
+    Loggable::open( "history" );
 
     timeline = new Timeline( 0, 0, 800, 600, "Timeline" );
 

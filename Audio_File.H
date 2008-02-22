@@ -32,22 +32,24 @@ class Audio_File
 
 protected:
 
-    Peaks _peaks;
+
     const char *_filename;
     nframes_t _length;                                              /* length of file in samples */
     int _channels;
 
+    Peaks *_peaks;
+
 public:
 
-    Audio_File ( ) : _peaks( this )
+    Audio_File ( )
         {
             _filename = NULL;
-            _length = 0;
+            _length = _channels = 0;
         }
 
     static Audio_File *from_file ( const char *filename );
 
-    Peaks const * peaks ( void ) { return &_peaks; }
+    Peaks const * peaks ( int channel ) { return &_peaks[ channel ]; }
     const char *name ( void ) const { return _filename; }
     nframes_t length ( void ) const  { return _length; }
     int channels ( void ) const { return _channels; }

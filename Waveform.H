@@ -26,4 +26,4 @@
 
 #include "Audio_File.H"
 
-void draw_waveform ( int X, int Y, int W, int H, Audio_File *_clip, nframes_t _start, nframes_t _end, float _scale, Fl_Color color );
+void draw_waveform ( int X, int Y, int W, int H, Audio_File *_clip, int channel, nframes_t _start, nframes_t _end, float _scale, Fl_Color color );

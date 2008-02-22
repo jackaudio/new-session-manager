@@ -345,7 +345,11 @@ Region::draw ( int X, int Y, int W, int H )
 
 //    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
 
-    draw_waveform( rx, Y, rw, H, _clip, _start + offset, min( (_end - _start) - offset, _end), _scale, _selected ? _color : fl_invert_color( _color )  );
+    int ch = H / _clip->channels();
+    for ( int i = _clip->channels(); i--; )
+        draw_waveform( rx, Y + (i * ch), rw, ch, _clip, i,
+                       _start + offset, min( (_end - _start) - offset, _end),
+                       _scale, _selected ? _color : fl_invert_color( _color )  );
 
     timeline->draw_measure_lines( rx, Y, rw, H, _box_color );
 
@@ -376,7 +380,8 @@ Region::normalize ( void )
 {
     printf( "normalize: start=%lu end=%lu\n", _start, _end );
 
-    _scale = _clip->peaks()->normalization_factor( _start, _end );
+    /* FIXME: punt */
+    _scale = _clip->peaks( 0 )->normalization_factor( _start, _end );
 }
 
 

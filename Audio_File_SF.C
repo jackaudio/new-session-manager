@@ -59,7 +59,8 @@ Audio_File_SF::from_file ( const char *filename )
     c->_length = si.frames;
     c->_channels = si.channels;
 
-    sf_close( in );
+    c->_in = in;
+//    sf_close( in );
 
     return c;
 
@@ -72,12 +73,13 @@ invalid:
 bool
 Audio_File_SF::open ( void )
 {
-    SF_INFO si;
 
-    memset( &si, 0, sizeof( si ) );
+/*     SF_INFO si; */
 
-    if ( ! ( _in = sf_open( _filename, SFM_READ, &si ) ) )
-        return false;
+/*     memset( &si, 0, sizeof( si ) ); */
+
+/*     if ( ! ( _in = sf_open( _filename, SFM_READ, &si ) ) ) */
+/*         return false; */
 
     return true;
 }
@@ -85,7 +87,7 @@ Audio_File_SF::open ( void )
 void
 Audio_File_SF::close ( void )
 {
-    sf_close( _in );
+//    sf_close( _in );
 }
 
 void

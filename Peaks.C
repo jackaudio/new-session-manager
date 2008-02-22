@@ -92,7 +92,7 @@ Peaks::clip_read_peaks ( Peak *peaks, int npeaks, int chunksize ) const
     for ( i = 0; i < npeaks; ++i )
     {
         /* read in a buffer */
-        len = _clip->read( fbuf, 0, chunksize );
+        len = _clip->read( fbuf, _channel, chunksize );
 
         Peak &p = peaks[ i ];
         p.min = 0;
@@ -178,13 +178,13 @@ Peaks::operator[] ( int X ) const
     return peak( timeline->x_to_ts( X ), timeline->x_to_ts( X + 1 ) );
 }
 
-static
+
 const char *
-peakname ( const char *filename )
+Peaks::peakname ( const char *filename ) const
 {
     static char file[512];
 
-    snprintf( file, 512, "%s.peak", filename );
+    snprintf( file, 512, "%s.peak-%d", filename, _channel );
 
     return (const char*)&file;
 }

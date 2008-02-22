@@ -36,6 +36,14 @@ Audio_File::from_file ( const char * filename )
 
 done:
 
-    a->_peaks.open();
+    a->_peaks = new Peaks[ a->channels() ];
+
+    for ( int i = a->channels(); i-- ; )
+    {
+        a->_peaks[i].channel( i );
+        a->_peaks[i].clip( a );
+        a->_peaks[i].open();
+    }
+
     return a;
 }

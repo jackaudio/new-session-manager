@@ -81,6 +81,7 @@ Audio_File_SF::open ( void )
 /*     if ( ! ( _in = sf_open( _filename, SFM_READ, &si ) ) ) */
 /*         return false; */
 
+    seek( 0 );
     return true;
 }
 

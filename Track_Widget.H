@@ -75,7 +75,7 @@ public:
             return min( rw, _track->w() );
         }
 
-    int abs_x ( void ) const { return timeline->ts_to_x( timeline->xoffset ); }
+    int abs_x ( void ) const { return timeline->ts_to_x( _offset ); }
     virtual int abs_w ( void ) const { return timeline->ts_to_x( _end - _start ); }
 
 
@@ -152,8 +152,6 @@ public:
                     align = (Fl_Align)((align & ~FL_ALIGN_BOTTOM) | FL_ALIGN_TOP);
                 }
             }
-
-
 
 /*             fl_font( FL_HELVETICA, 14 ); */
 /*             fl_color( FL_BLACK ); */

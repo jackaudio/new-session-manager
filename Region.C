@@ -195,7 +195,7 @@ Region::handle ( int m )
                     else
                         _selected = ! _selected;
 
-                    _track->redraw();
+                    redraw();
                 }
 
                 ret = Track_Widget::handle( m );

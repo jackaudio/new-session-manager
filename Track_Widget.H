@@ -202,6 +202,7 @@ public:
                     if ( Fl::event_state() & FL_CTRL &&
                          Fl::event_button() == 3 )
                     {
+                        redraw();
                         _track->queue_delete( this );
                         return 0;
                     }

@@ -17,36 +17,30 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-/* Master class for journaling. */
+#define _LOGGABLE_C
+#include "Loggable.H"
+#undef _LOGABLE_C
 
-#pragma once
+#include <stdio.h>
+#include <stdarg.h>
 
+int Loggable::_log_id = 0;
 
-class Loggable
+void
+Loggable::log ( const char *module, const char *action, const char *fmt, ... )
 {
+    va_list args;
 
-    static int _log_id;
+    /* FIXME: log all this stuff to someplace meaningful */
 
-private:
-    int _id;
+    printf( "%s %s %p ", module, action, _id );
 
-public:
+    if ( fmt )
+    {
+        va_start( args, fmt );
+        vfprintf( stdout, fmt, args );
+        va_end( args );
+    }
 
-    Loggable ( )
-        {
-            _id = ++_log_id;
-        }
-
-    /* log messages for journal */
-    virtual void log_create ( void ) = 0;
-    virtual void log_destroy ( void ) = 0;
-    virtual void log_move ( void ) = 0;
-    virtual void log_change ( void ) = 0;
-
-    void log ( const char *module, const char *action, const char *fmt, ... );
-
-};
-
-#ifndef _LOGGABLE_C
-#define log( act, fmt, args... ) log( __CLASS__, act, fmt, ## args )
-#endif
+    printf( "\n" );
+}

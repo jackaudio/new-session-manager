@@ -21,6 +21,8 @@
 
 #include "Track_Point.H"
 
+#define __CLASS__ "Tempo_Point"
+
 class Tempo_Point : public Track_Point
 {
     float _tempo;
@@ -36,9 +38,9 @@ class Tempo_Point : public Track_Point
 
 protected:
 
-    void log_create ( void )  { printf( "tempo-point create %p %lu %f\n", this, _offset, _tempo ); }
-    void log_destroy ( void ) { printf( "tempo-point destroy %p\n", this ); }
-    void log_move ( void )    { printf( "tempo-point move %p %lu\n", this, _offset ); }
+    void log_create ( void )  { log( "create", "%lu %f", _offset, _tempo ); }
+    void log_destroy ( void ) { log( "destroy", NULL ); }
+    void log_move ( void )    { log( "move", "%lu", _offset ); }
 
 public:
 
@@ -73,3 +75,4 @@ public:
         }
 
 };
+#undef __CLASS__

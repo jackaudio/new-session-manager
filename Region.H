@@ -35,6 +35,9 @@ using namespace std;
 
 #include "Track_Widget.H"
 
+/* got I hate C++ */
+#define __CLASS__ "Region"
+
 class Region : public Track_Widget
 {
 
@@ -56,22 +59,22 @@ protected:
     /* general */
     void log_create ( void )
         {
-            printf( "region create %p %lu \"%s\" %d %f %lu %lu\n", this, _offset, _clip->name(), _selected, _scale, _start, _end );
+            log( "create", "%lu \"%s\" %d %f %lu %lu", _offset, _clip->name(), _selected, _scale, _start, _end );
         }
 
     void log_destroy ( void )
         {
-            printf( "region destroy %p\n", this );
+            log( "destroy", NULL );
         }
 
     void log_move ( void )
         {
-            printf( "region move %p %lu\n", this, _offset );
+            log( "move", "%lu", _offset );
         }
 
     void log_change ( void )
         {
-            printf( "region change %p %d %f %lu %lu\n", this, _selected, _scale, _start, _end );
+            log( "change", "%d %f %lu %lu", _selected, _scale, _start, _end );
         }
 
 public:
@@ -92,3 +95,5 @@ public:
     void dump ( void );
 
 };
+
+#undef __CLASS__

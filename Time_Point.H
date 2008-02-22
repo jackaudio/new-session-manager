@@ -20,6 +20,7 @@
 #pragma once
 
 #include "Track_Point.H"
+#include "Loggable.H"
 
 struct time_sig
 {
@@ -32,6 +33,9 @@ struct time_sig
             note_type = note;
         }
 };
+
+
+#define __CLASS__ "Time_Point"
 
 class Time_Point : public Track_Point
 {
@@ -48,9 +52,9 @@ class Time_Point : public Track_Point
 
 protected:
 
-    void log_create ( void )  { printf( "time-point create %p %lu %d %d\n", this, _offset, _time.beats_per_bar, _time.note_type ); }
-    void log_destroy ( void ) { printf( "time-point destroy %p\n", this ); }
-    void log_move ( void )    { printf( "time-point move %p %lu\n", this, _offset ); }
+    void log_create ( void )  { log( "create", "%lu %d %d", _offset, _time.beats_per_bar, _time.note_type ); }
+    void log_destroy ( void ) { log( "destroy", NULL ); }
+    void log_move ( void )    { log( "move", "%lu", _offset ); }
 
 public:
 
@@ -85,3 +89,5 @@ public:
         }
 
 };
+
+#undef __CLASS__

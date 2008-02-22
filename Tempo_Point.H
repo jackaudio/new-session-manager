@@ -34,6 +34,12 @@ class Tempo_Point : public Track_Point
             snprintf( _label, 40, "%.1f", _tempo );
         }
 
+protected:
+
+    void log_create ( void )  { printf( "tempo-point create %p %lu %f\n", this, _offset, _tempo ); }
+    void log_destroy ( void ) { printf( "tempo-point destroy %p\n", this ); }
+    void log_move ( void )    { printf( "tempo-point move %p %lu\n", this, _offset ); }
+
 public:
 
     Tempo_Point ( nframes_t when, float bpm )
@@ -42,6 +48,8 @@ public:
             _offset = when;
 
             _make_label();
+
+            log_create();
         }
 
     ~Tempo_Point ( )

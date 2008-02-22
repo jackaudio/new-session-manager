@@ -46,12 +46,20 @@ class Time_Point : public Track_Point
             snprintf( _label, 40, "%d/%d", _time.beats_per_bar, _time.note_type );
         }
 
+protected:
+
+    void log_create ( void )  { printf( "time-point create %p %lu %d %d\n", this, _offset, _time.beats_per_bar, _time.note_type ); }
+    void log_destroy ( void ) { printf( "time-point destroy %p\n", this ); }
+    void log_move ( void )    { printf( "time-point move %p %lu\n", this, _offset ); }
+
 public:
 
     Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
         {
             _offset = when;
             _make_label();
+
+            log_create();
         }
 
     ~Time_Point ( )

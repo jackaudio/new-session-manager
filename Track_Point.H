@@ -28,23 +28,9 @@ protected:
 
     char *_label;
 
-
-    void log_create ( void )
-        {
-        }
-
-    void log_destroy ( void )
-        {
-        }
-
-    void log_move ( void )
-        {
-        }
-
     void log_change ( void )
         {
         }
-
 
 public:
 

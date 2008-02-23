@@ -175,7 +175,7 @@ Track::handle ( int m )
                     delete _queued_widget;
                     _queued_widget = NULL;
                     current_widget = NULL;
-                    redraw();
+//                    redraw();
                 }
 
                 return retval;

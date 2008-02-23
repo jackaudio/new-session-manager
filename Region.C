@@ -103,35 +103,33 @@ Region::trim ( enum trim_e t, int X )
     {
         case LEFT:
         {
-            int d = X - x();
-
 /*             if ( d < 0 ) */
 /* //                _track->damage( FL_DAMAGE_EXPOSE, x() + d, y(), 1 - d, h() ); */
 /*                 _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() ); */
 /*             else */
 /*                 _track->damage( FL_DAMAGE_EXPOSE, x(), y(), d, h() ); */
 
+            int d = X - ( abs_x() - scroll_x() );
+
             long td = timeline->x_to_ts( d );
 
-            if ( td < 0 && _start < 0 - td )
+             if ( td < 0 && _start < 0 - td )
                 td = 0 - _start;
 
             _start += td;
-
             _offset += td;
-
-
             break;
         }
         case RIGHT:
         {
-            int d = (x() + w()) - X;
+            int d = (( abs_x() - scroll_x() ) + abs_w() ) - X;
 
 /*             _track->damage( FL_DAMAGE_EXPOSE, x() + w(), y(), d, h() ); */
 
             long td = timeline->x_to_ts( d );
 
             _end -= td;
+
             break;
         }
         default:

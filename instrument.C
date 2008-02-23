@@ -39,19 +39,19 @@ using std::list;
 using std::string;
 
 /******
-   Instrument definition file format is thus:
+       Instrument definition file format is thus:
 
-   "Name", n, v
+       "Name", n, v
 
-   Where /n/ is a note number from 0 to 127 and /v/ is a percentage of
-   volume.
+       Where /n/ is a note number from 0 to 127 and /v/ is a percentage of
+       volume.
 
-   When a system installed instrument definition is modified, the
-   modified version is saved in the user's $HOME. Therefore, when
-   loading instruments, user defined instruments always hide system
-   defined instruments of the same name.
+       When a system installed instrument definition is modified, the
+       modified version is saved in the user's $HOME. Therefore, when
+       loading instruments, user defined instruments always hide system
+       defined instruments of the same name.
 
- */
+*/
 
 list <Instrument *> Instrument::instruments;
 
@@ -114,7 +114,7 @@ Instrument::velocity ( int n, int v )
 }
 
 /** Translate event, should only be passed NOTE ON/OFF events, returns
- true if note is valid for this mapping */
+    true if note is valid for this mapping */
 bool
 Instrument::translate ( midievent *e ) const
 {
@@ -290,12 +290,21 @@ Instrument::listing ( void )
     list <string> *sys = get_listing( SYSTEM_PATH INSTRUMENT_DIR );
     list <string> *usr = get_listing( config.user_config_dir );
 
-    usr->merge( *sys );
+    if ( ! ( usr || sys ) )
+        return NULL;
+
+    if ( sys && usr )
+        usr->merge( *sys );
+    else
+        if ( sys && ! usr )
+            usr = sys;
+
     usr->unique();
 
     usr->sort();
 
-    delete sys;
+    if ( sys )
+        delete sys;
 
     char **sa = (char**)malloc( (usr->size() + 1) * sizeof( char * ) );
 

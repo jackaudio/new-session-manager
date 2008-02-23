@@ -25,6 +25,9 @@
 
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, Y, W, H, L )
 {
+
+    xoffset = 0;
+
     {
         Fl_Pack *o = new Fl_Pack( 0, 0, 800, 600, "rulers" );
         o->type( Fl_Pack::VERTICAL );
@@ -62,7 +65,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
 
     {
         Fl_Scroll *o = new Fl_Scroll( 0, 24 * 2, 800, 600 - (24 * 3) );
-        o->type( Fl_Scroll::VERTICAL );
+        o->type( Fl_Scroll::VERTICAL_ALWAYS );
 
         sample_rate = 44100;
         fpp = 256;
@@ -74,8 +77,15 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
             o->type( Fl_Pack::VERTICAL );
             o->spacing( 10 );
 
+            Track *l = NULL;
+            for ( int i = 6; i--;  )
             {
+
                 Track *o = new Audio_Track( 0, 0, 800, 100 );
+                o->prev( l );
+                if ( l )
+                    l->next( o );
+                l = o;
                 o->end();
             }
 
@@ -86,6 +96,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
         scroll = o;
         o->end();
     }
+
+    redraw();
 
     end();
 }

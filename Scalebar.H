@@ -41,13 +41,14 @@ public:
             _zoom = 1.0f;
             _zoom_min = 0;
             _zoom_max = 256;
-            _zoom_changed = true;
+            _zoom_changed = false;
 
             step( 1 );
         }
 
     bool zoom_changed ( void ) const { return _zoom_changed; }
     double zoom ( void ) const { return _zoom; }
+    void zoom ( double v ) { _zoom = v; }
     double value ( void ) const { return Fl_Slider::value(); }
     void zoom_range ( double zmin, double zmax ) { _zoom_min = zmin; _zoom_max = zmax; }
 
@@ -58,6 +59,9 @@ public:
             {
                 case FL_MOUSEWHEEL:
                 {
+                    if ( ! Fl::event_ctrl() )
+                        return 0;
+
                     int d = Fl::event_dy();
 
                     double z = _zoom;

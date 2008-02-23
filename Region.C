@@ -294,10 +294,10 @@ Region::draw_box( int X, int Y, int W, int H )
     fl_push_clip( x(), Y, w(), H );
 
     if ( _selected )
-        fl_draw_box( fl_down( box() ), x() - 10, Y, w() + 50, H, _selection_color );
+        fl_draw_box( fl_down( box() ), x() - 10, y(), w() + 50, h(), _selection_color );
 //        fl_draw_box( fl_down( box() ), x() - 10, Y, w() + 50, H, fl_invert_color( _box_color ) );
     else
-        fl_draw_box( box(), x() - 10, Y, w() + 50, H, _box_color );
+        fl_draw_box( box(), x() - 10, y(), w() + 50, h(), _box_color );
 
     fl_pop_clip();
 }
@@ -343,9 +343,9 @@ Region::draw ( int X, int Y, int W, int H )
 
 //    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
 
-    int ch = H / _clip->channels();
+    int ch = h() / _clip->channels();
     for ( int i = _clip->channels(); i--; )
-        draw_waveform( rx, Y + (i * ch), rw, ch, _clip, i,
+        draw_waveform( rx, y() + (i * ch), rw, ch, _clip, i,
                        _start + offset, min( (_end - _start) - offset, _end),
                        _scale, _selected ? _color : fl_invert_color( _color )  );
 

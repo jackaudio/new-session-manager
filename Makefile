@@ -1,6 +1,5 @@
 
-CXXFLAGS=-ggdb -Wall -O0
-
+CXXFLAGS=-ggdb -Wall -O0 
 #LIBS=-L/usr/lib/sox -I/usr/include/sox -lsox -lsfx
 LIBS=-lsndfile  `fltk-config --ldflags`
 # CXXFLAGS=`fltk-config -cxxflags`

@@ -66,6 +66,7 @@ cb_scroll ( Fl_Widget *w, void *v )
         int maxx = timeline->ts_to_x( timeline->length );
         sb->range( 0, maxx );
 
+//        timeline->redraw();
         timeline->redraw();
     }
     else
@@ -124,6 +125,7 @@ main ( int argc, char **argv )
     timeline->scrollbar = new Scalebar( 0, 600 - 24, 800, 24 );
     timeline->scrollbar->range( 0, 48000 * 2 );
     timeline->scrollbar->zoom_range( 2, 8192 );
+    timeline->scrollbar->zoom( 256 );
     timeline->scrollbar->type( 1 );
     timeline->scrollbar->callback( cb_scroll, 0 );
 

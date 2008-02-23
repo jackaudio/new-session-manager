@@ -31,11 +31,16 @@ class Scalebar : public Fl_Scrollbar
 
     bool _zoom_changed;
 
+    double _zoom_min;
+    double _zoom_max;
+
 public:
 
     Scalebar ( int X, int Y, int W, int H ) : Fl_Scrollbar ( X, Y, W, H )
         {
             _zoom = 1.0f;
+            _zoom_min = 0;
+            _zoom_max = 256;
             _zoom_changed = true;
 
             step( 1 );
@@ -44,6 +49,7 @@ public:
     bool zoom_changed ( void ) const { return _zoom_changed; }
     double zoom ( void ) const { return _zoom; }
     double value ( void ) const { return Fl_Slider::value(); }
+    void zoom_range ( double zmin, double zmax ) { _zoom_min = zmin; _zoom_max = zmax; }
 
     int
     handle ( int m )
@@ -54,6 +60,8 @@ public:
                 {
                     int d = Fl::event_dy();
 
+                    double z = _zoom;
+
                     if ( d < 0 )
                         while ( d++ )
                             _zoom /= 2;
@@ -61,11 +69,20 @@ public:
                         while ( d-- )
                             _zoom *= 2;
 
-                    _zoom_changed = true;
-                    do_callback();
-                    _zoom_changed = false;
+                    if ( _zoom > _zoom_max )
+                        _zoom = _zoom_max;
+                    else
+                        if ( _zoom < _zoom_min )
+                            _zoom = _zoom_min;
 
-                    slider_size( w() / maximum() );
+                    if ( z != _zoom )
+                    {
+                        _zoom_changed = true;
+                        do_callback();
+                        _zoom_changed = false;
+
+                        slider_size( w() / maximum() );
+                    }
 
                     return 1;
                 }

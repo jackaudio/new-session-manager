@@ -24,6 +24,8 @@
 #include <FL/Fl_Scrollbar.H>
 #include <FL/Fl_Widget.H>
 
+#include "Scalebar.H"
+
 #include "Audio_File.H" // just for nframes_t
 #include <math.h>
 
@@ -60,7 +62,7 @@ struct Timeline : public Fl_Group
     Fl_Scroll *scroll;
     Fl_Pack *tracks;
     Fl_Pack *rulers;
-    Fl_Scrollbar *scrollbar;
+    Scalebar *scrollbar;
 
     Tempo_Track *tempo_track;
     Time_Track *time_track;

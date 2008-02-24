@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <assert.h>
 
 #include <vector>
 using std::vector;
@@ -34,6 +34,7 @@ class Loggable
 
     static FILE *_fp;
     static int _log_id;
+    static int _level;
 
     static vector <Loggable *> _loggables;
 
@@ -43,10 +44,36 @@ private:
     char **_old_state;
     char **_new_state;
 
+
+    static
+    void indent ( void )
+        {
+            int n = Loggable::_level;
+
+            while ( n-- )
+                printf( "\t" );
+        }
+
 public:
 
     static bool open ( const char *filename );
 
+    static
+    void
+    block_start ( void )
+        {
+            indent();
+            printf( "{\n" );
+            ++Loggable::_level;
+        }
+    static
+    void
+    block_end ( void )
+        {
+            assert( --Loggable::_level >= 0 );
+            indent();
+            printf( "}\n" );
+        }
 
     static
     Loggable *

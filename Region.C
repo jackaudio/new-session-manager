@@ -184,12 +184,19 @@ Region::handle ( int m )
                         /* split */
                         if ( ! copied )
                         {
+                            Loggable::block_start();
+
                             Region *copy = new Region( *this );
 
                             trim( RIGHT, X );
                             copy->trim( LEFT, X );
 
                             _track->add( copy );
+
+                            log_end();
+
+                            Loggable::block_end();
+                            return 1;
                         }
                     }
                     default:

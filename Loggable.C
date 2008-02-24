@@ -27,6 +27,7 @@
 FILE *Loggable::_fp;
 
 int Loggable::_log_id = 0;
+int Loggable::_level = 0;
 
 vector <Loggable *> Loggable::_loggables;
 
@@ -92,11 +93,11 @@ log_print(  char **o, char **n )
 /** compare elements of dumps s1 and s2, removing those elements
     of dst which are not changed from src */
 static
-void
+bool
 log_diff (  char **sa1, char **sa2 )
 {
     if ( ! sa1 )
-        return;
+        return true;
 
     int w = 0;
     for ( int i = 0; sa1[ i ]; ++i )
@@ -117,6 +118,8 @@ log_diff (  char **sa1, char **sa2 )
 
     sa1[ w ] = NULL;
     sa2[ w ] = NULL;
+
+    return w == 0 ? false : true;
 }
 
 
@@ -126,8 +129,12 @@ log_diff (  char **sa1, char **sa2 )
 void
 Loggable::log_start ( void )
 {
-    if ( ! _old_state )
-        _old_state = log_dump();
+//    if ( _old_state )
+    //      log_end();
+    if ( _old_state )
+        return;
+
+    _old_state = log_dump();
 }
 
 void
@@ -137,11 +144,13 @@ Loggable::log_end ( void )
 
     // if ( _old_state )
 
-    log_diff( _old_state, _new_state );
+    if ( log_diff( _old_state, _new_state ) )
+    {
+        indent();
+        printf( "%s 0x%X set ", class_name(), _id );
 
-    printf( "%s 0x%X set ", class_name(), _id );
-
-    log_print( _old_state, _new_state );
+        log_print( _old_state, _new_state );
+    }
 
     free_sa( _old_state );
     if ( _new_state )
@@ -153,6 +162,7 @@ Loggable::log_end ( void )
 void
 Loggable::log_create ( void )
 {
+    indent();
     printf( "%s 0x%X new ", class_name(), _id );
 
     char **sa = log_dump();
@@ -165,6 +175,7 @@ Loggable::log_create ( void )
 void
 Loggable::log_destroy ( void )
 {
+    indent();
     printf( "%s 0x%X destroy ", class_name(), _id );
 
     char **sa = log_dump();

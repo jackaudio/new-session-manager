@@ -29,6 +29,7 @@
 #include <vector>
 using std::vector;
 
+class Logger;
 class Loggable
 {
 
@@ -44,6 +45,7 @@ private:
     char **_old_state;
     char **_new_state;
 
+    int _nest;
 
     static
     void indent ( void )
@@ -89,6 +91,7 @@ public:
         {
             _id = ++_log_id;
             _old_state = NULL;
+            _nest = 0;
 
             _loggables.push_back( this );
         }
@@ -115,7 +118,43 @@ public:
 
     int id ( void ) { return _id; }
 
+    friend class Logger;
 };
+
+
+class Logger
+{
+
+    Loggable *_this;
+    Logger ( ) {}
+
+public:
+
+    Logger ( Loggable *l ) : _this( l )
+        {
+            _this->log_start();
+
+        }
+
+    ~Logger ( )
+        {
+            _this->log_end();
+        }
+
+    void hold ( void )
+        {
+            printf( "hold\n" );
+            _this->_nest++;
+        }
+
+    void release ( void )
+        {
+            printf( "release\n" );
+            _this->_nest--;
+            assert( _this->_nest );
+        }
+};
+
 
 /* #ifndef _LOGGABLE_C */
 /* #define log( act, fmt, args... ) log( __CLASS__, act, fmt, ## args ) */

@@ -54,9 +54,18 @@ protected:
 
     const char *class_name ( void ) { return "Time_Point"; }
 
-/*     void log_create ( void )  { log( "create", "%lu %d %d", _offset, _time.beats_per_bar, _time.note_type ); } */
-/*     void log_destroy ( void ) { log( "destroy", NULL ); } */
-/*     void log_move ( void )    { log( "move", "%lu", _offset ); } */
+    char ** log_dump ( void )
+        {
+            char **sa = (char**)malloc( sizeof( char* ) * 4 );
+
+            sa[3] = NULL;
+
+            asprintf( &sa[0], ":x %lu", _offset );
+            asprintf( &sa[1], ":beats_per_bar %d", _time.beats_per_bar );
+            asprintf( &sa[2], ":beat_type %d", _time.note_type );
+
+            return sa;
+        }
 
 public:
 

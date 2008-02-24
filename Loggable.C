@@ -129,17 +129,22 @@ log_diff (  char **sa1, char **sa2 )
 void
 Loggable::log_start ( void )
 {
-//    if ( _old_state )
-    //      log_end();
-    if ( _old_state )
-        return;
+    if ( ! _old_state )
+        _old_state = log_dump();
 
-    _old_state = log_dump();
+    ++_nest;
+
 }
 
 void
 Loggable::log_end ( void )
 {
+
+    if ( --_nest > 0 )
+        return;
+
+//    assert( _old_state );
+
     char **_new_state = log_dump();
 
     // if ( _old_state )
@@ -152,11 +157,21 @@ Loggable::log_end ( void )
         log_print( _old_state, _new_state );
     }
 
-    free_sa( _old_state );
     if ( _new_state )
         free_sa( _new_state );
 
+    if ( _old_state )
+        free_sa( _old_state );
+
     _old_state = NULL;
+
+/*     if ( _old_state ) */
+/*     { */
+/*         free_sa( _old_state ); */
+/*         _old_state = NULL; */
+/*     } */
+
+//    _old_state = NULL;
 }
 
 void

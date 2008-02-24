@@ -199,10 +199,12 @@ public:
     handle ( int m )
         {
             static int ox, oy;
-            static bool moved = false;
+            static bool dragging = false;
 
             int X = Fl::event_x();
             int Y = Fl::event_y();
+
+            Logger _log( this );
 
             switch ( m )
             {
@@ -230,16 +232,19 @@ public:
                     return 1;
                 }
                 case FL_RELEASE:
-                    if ( moved )
-                    {
-//                        log_move();
-                        moved = false;
-                    }
-//                    dump();
+                    if ( dragging )
+                        _log.release();
+                    dragging = false;
                     fl_cursor( FL_CURSOR_DEFAULT );
                     return 1;
                 case FL_DRAG:
                 {
+                    if ( ! dragging )
+                    {
+                        dragging = true;
+                        _log.hold();
+                    }
+
                     redraw();
 
                     if ( ox + X >= _track->x() )
@@ -249,8 +254,6 @@ public:
                         _offset = timeline->x_to_ts( nx ) + timeline->xoffset;
 
                         _track->snap( this );
-
-                        moved = true;
                     }
 
                     //                  _track->redraw();

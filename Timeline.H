@@ -179,7 +179,7 @@ struct Timeline : public Fl_Group
 
             if ( damage() & FL_DAMAGE_SCROLL )
             {
-                printf( "doing scroll\n" );
+//                printf( "doing scroll\n" );
                 int dx = ts_to_x( _old_position ) - ts_to_x( xoffset );
 
                 fl_scroll( X, tracks->y(), W, tracks->h(), dx, 0, draw_clip, this );

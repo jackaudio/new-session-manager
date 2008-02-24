@@ -40,9 +40,17 @@ protected:
 
     const char *class_name ( void ) { return "Tempo_Point"; }
 
-/*     void log_create ( void )  { log( "create", "%lu %f", _offset, _tempo ); } */
-/*     void log_destroy ( void ) { log( "destroy", NULL ); } */
-/*     void log_move ( void )    { log( "move", "%lu", _offset ); } */
+    char ** log_dump ( void )
+        {
+            char **sa = (char**)malloc( sizeof( char* ) * 3 );
+
+            sa[2] = NULL;
+
+            asprintf( &sa[0], ":x %lu", _offset );
+            asprintf( &sa[1], ":tempo %f", _tempo );
+
+            return sa;
+        }
 
 public:
 

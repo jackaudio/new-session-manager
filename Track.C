@@ -88,7 +88,7 @@ Track::event_widget ( void )
 void
 Track::add ( Track_Widget *r )
 {
-    log_start();
+    Logger _log( this );
 
     if ( r->track() )
     {
@@ -99,8 +99,6 @@ Track::add ( Track_Widget *r )
     _widgets.push_back( r );
 
     r->track( this );
-
-    log_end();
 }
 
 /* snap /r/ to nearest edge */

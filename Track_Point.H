@@ -32,14 +32,6 @@ protected:
         {
         }
 
-    char ** log_dump ( void )
-        {
-            return NULL;
-        }
-    void log_change ( void )
-        {
-        }
-
 public:
 
     Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }

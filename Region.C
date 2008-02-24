@@ -144,6 +144,7 @@ Region::trim ( enum trim_e t, int X )
 int
 Region::handle ( int m )
 {
+    static bool dragging = false;
 
     static int ox, oy;
     static enum trim_e trimming;
@@ -156,7 +157,8 @@ Region::handle ( int m )
 
     int ret;
 
-    log_start();
+    Logger _log( this );
+//log_start();
 
     switch ( m )
     {
@@ -170,9 +172,11 @@ Region::handle ( int m )
                 {
                     case 1:
                         trim( trimming = LEFT, X );
+//                        _log.hold();
                         break;
                     case 3:
                         trim( trimming = RIGHT, X );
+//                       _log.hold();
                         break;
                     case 2:
                     {
@@ -240,9 +244,18 @@ Region::handle ( int m )
             {
                 trimming = NO;
             }
-            printf( "releasing\n");
+            if ( dragging )
+                _log.release();
+
+            dragging = false;
             goto changed;
         case FL_DRAG:
+
+            if ( ! dragging )
+            {
+                _log.hold();
+                dragging = true;
+            }
 
             if ( Fl::event_state() & FL_SHIFT &&
                  Fl::event_state() & FL_CTRL )
@@ -307,7 +320,7 @@ Region::handle ( int m )
 
 changed:
 
-    log_end();
+//    log_end();
     return 1;
 
 }

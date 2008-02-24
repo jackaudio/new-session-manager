@@ -27,6 +27,10 @@
 
 Track_Widget * Track::_queued_widget = NULL;
 
+
+
+
+
 static bool
 sort_func ( Track_Widget *lhs, Track_Widget *rhs )
 {
@@ -84,6 +88,8 @@ Track::event_widget ( void )
 void
 Track::add ( Track_Widget *r )
 {
+    log_start();
+
     if ( r->track() )
     {
         r->track()->remove( r );
@@ -93,6 +99,8 @@ Track::add ( Track_Widget *r )
     _widgets.push_back( r );
 
     r->track( this );
+
+    log_end();
 }
 
 /* snap /r/ to nearest edge */

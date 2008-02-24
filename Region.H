@@ -72,6 +72,7 @@ protected:
             asprintf( &sa[2], ":r %lu", _end );
             asprintf( &sa[3], ":selected %d", _selected );
             asprintf( &sa[4], ":gain %f", _scale );
+//            asprintf( &sa[4], ":track 0x%X", _track->id() );
 
 //            asprintf( &r, ":x %lu\n:l %lu\n:r %lu\n:selected %d\n:gain %f", _offset, _start, _end, _selected, _scale );
 
@@ -103,6 +104,19 @@ protected:
                             else
                                 if ( ! strcmp( s, ":gain" ) )
                                     _scale = atof( v );
+
+/*                                 else */
+/*                                     if ( ! strcmp( s, ":track" ) ) */
+/*                                     { */
+/*                                         int i; */
+/*                                         sscanf( v, "%X", &i ); */
+/*                                         Track *t = (Track*)Loggable::find( i ); */
+
+/*                                         assert( t ); */
+
+/*                                         t->add( this ); */
+/*                                     } */
+
 
                 free( s );
             }

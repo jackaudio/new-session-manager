@@ -43,22 +43,22 @@ Loggable::open ( const char *filename )
     return true;
 }
 
-void
-Loggable::log ( const char *module, const char *action, const char *fmt, ... )
-{
-    va_list args;
+/* void */
+/* Loggable::log ( const char *module, const char *action, const char *fmt, ... ) */
+/* { */
+/*     va_list args; */
 
-    fprintf( _fp, "%-15s %-8s %p ", module, action, _id );
+/*     fprintf( _fp, "%-15s %-8s %p ", module, action, _id ); */
 
-    if ( fmt )
-    {
-        va_start( args, fmt );
-        vfprintf( _fp, fmt, args );
-        va_end( args );
-    }
+/*     if ( fmt ) */
+/*     { */
+/*         va_start( args, fmt ); */
+/*         vfprintf( _fp, fmt, args ); */
+/*         va_end( args ); */
+/*     } */
 
-    fprintf( _fp, "\n" );
-}
+/*     fprintf( _fp, "\n" ); */
+/* } */
 
 
 static
@@ -167,9 +167,13 @@ Loggable::log_create ( void )
 
     char **sa = log_dump();
 
-    log_print( NULL, sa );
-
-    free_sa( sa );
+    if ( sa )
+    {
+        log_print( NULL, sa );
+        free_sa( sa );
+    }
+    else
+        printf( "\n" );
 }
 
 void

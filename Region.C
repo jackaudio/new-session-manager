@@ -54,11 +54,6 @@ void
 Region::init ( void )
 {
 
-/*     align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_CLIP ); */
-/*     labeltype( FL_SHADOW_LABEL ); */
-/*     labelcolor( FL_WHITE ); */
-/*     box( FL_PLASTIC_UP_BOX ); */
-
     _track = NULL;
     _offset = 0;
     _start = 0;

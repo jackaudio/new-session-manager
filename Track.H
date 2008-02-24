@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 
+#include "Loggable.H"
 
 #include <assert.h>
 
@@ -34,7 +35,7 @@ using std::list;
 class Region;
 class Track_Widget;
 
-class Track : public Fl_Group
+class Track : public Fl_Group, public Loggable
 {
     Track *_next;
     Track *_prev;
@@ -47,7 +48,37 @@ protected:
     list <Track_Widget *> _widgets;
     Track_Widget *event_widget ( void );
 
+    const char *class_name ( void ) { return "Track"; }
+
+
+    void set ( char ** ) { return; }
+
+    char ** log_dump ( void )
+        {
+            //          char *r;
+
+            char **sa = (char**)malloc( sizeof( char* ) * 2);
+            sa[0] = (char*)malloc( (_widgets.size() * ((sizeof( int ) * 2) + 3)) + 1 );
+            sa[1] = NULL;
+
+            char *s = sa[0];
+
+            s += sprintf( s, ":items " );
+            for ( list <Track_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
+            {
+                s += sprintf( s, "0x%X", ((Loggable*)(*i))->id() );
+
+                list <Track_Widget *>::const_iterator e = i;
+                if ( ++e != _widgets.end() )
+                    s += sprintf( s, "," );
+            }
+
+            return sa;
+        }
+
+
 public:
+
 
     Track ( int X, int Y, int W, int H ) : Fl_Group( X, Y, W, H )
         {
@@ -56,6 +87,13 @@ public:
 
             box( FL_DOWN_BOX );
             color( fl_darker( FL_GRAY ) );
+
+            log_create();
+        }
+
+    ~Track (  )
+        {
+            log_destroy();
         }
 
     Track *next ( void ) const { return _next; }

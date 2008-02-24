@@ -105,17 +105,21 @@ public:
 
 protected:
 
-    void log ( const char *module, const char *action, const char *fmt, ... );
+//    void log ( const char *module, const char *action, const char *fmt, ... );
     void log_start ( void );
     void log_end ( void );
     void log_create ( void );
     void log_destroy ( void );
 
+public:
+
+    int id ( void ) { return _id; }
+
 };
 
-#ifndef _LOGGABLE_C
-#define log( act, fmt, args... ) log( __CLASS__, act, fmt, ## args )
-#endif
+/* #ifndef _LOGGABLE_C */
+/* #define log( act, fmt, args... ) log( __CLASS__, act, fmt, ## args ) */
+/* #endif */
 
 /* #define LOG_START Logger _logger( this ) */
 /* #define LOG_END          _logger.print( this ) */

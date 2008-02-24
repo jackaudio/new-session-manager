@@ -113,8 +113,11 @@ Region::trim ( enum trim_e t, int X )
 
             long td = timeline->x_to_ts( d );
 
-             if ( td < 0 && _start < 0 - td )
+            if ( td < 0 && _start < 0 - td )
                 td = 0 - _start;
+
+            if ( _start + td >= _end )
+                td = (_end - _start) - timeline->x_to_ts( 1 );
 
             _start += td;
             _offset += td;
@@ -128,7 +131,12 @@ Region::trim ( enum trim_e t, int X )
 
             long td = timeline->x_to_ts( d );
 
-            _end -= td;
+            printf( "%li %li\n", td, _end - _start );
+
+            if ( td >= 0 && _end - _start < td )
+                _end = _start + timeline->x_to_ts( 1 );
+            else
+                _end -= td;
 
             break;
         }

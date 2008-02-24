@@ -179,6 +179,19 @@ Region::handle ( int m )
                     case 3:
                         trim( trimming = RIGHT, X );
                         break;
+                    case 2:
+                    {
+                        /* split */
+                        if ( ! copied )
+                        {
+                            Region *copy = new Region( *this );
+
+                            trim( RIGHT, X );
+                            copy->trim( LEFT, X );
+
+                            _track->add( copy );
+                        }
+                    }
                     default:
                         return 0;
                         break;

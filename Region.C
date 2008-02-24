@@ -131,7 +131,7 @@ Region::trim ( enum trim_e t, int X )
 
             long td = timeline->x_to_ts( d );
 
-            printf( "%li %li\n", td, _end - _start );
+//            printf( "%li %li\n", td, _end - _start );
 
             if ( td >= 0 && _end - _start < td )
                 _end = _start + timeline->x_to_ts( 1 );
@@ -161,6 +161,7 @@ Region::handle ( int m )
 
     int ret;
 
+    log_start();
 
     switch ( m )
     {
@@ -178,11 +179,11 @@ Region::handle ( int m )
                     case 3:
                         trim( trimming = RIGHT, X );
                         break;
-
                     default:
                         return 0;
-
+                        break;
                 }
+
                 fl_cursor( FL_CURSOR_WE );
                 return 1;
             }
@@ -205,11 +206,13 @@ Region::handle ( int m )
                     else
                         _selected = ! _selected;
 
-                    log_change();
                     redraw();
+                    goto changed;
                 }
 
+
                 ret = Track_Widget::handle( m );
+
                 return ret | 1;
 
             }
@@ -221,9 +224,9 @@ Region::handle ( int m )
             if ( trimming != NO )
             {
                 trimming = NO;
-                log_change();
             }
-            return 1;
+            printf( "releasing\n");
+            goto changed;
         case FL_DRAG:
 
             if ( Fl::event_state() & FL_SHIFT &&
@@ -278,20 +281,20 @@ Region::handle ( int m )
                             _track->prev()->add( this );
                 }
 
-//            _track->redraw();
-
             //                  _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
 
             ret = Track_Widget::handle( m );
             return ret | 1;
-
-
-//            _offset = timeline->x_to_ts( x() );
-
         default:
             return Track_Widget::handle( m );
             break;
     }
+
+changed:
+
+    log_end();
+    return 1;
+
 }
 
 void

@@ -22,6 +22,12 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+#include <vector>
+using std::vector;
 
 class Loggable
 {
@@ -29,28 +35,60 @@ class Loggable
     static FILE *_fp;
     static int _log_id;
 
+    static vector <Loggable *> _loggables;
+
 private:
     int _id;
+
+    char **_old_state;
+    char **_new_state;
 
 public:
 
     static bool open ( const char *filename );
 
+
+    static
+    Loggable *
+    find ( int id )
+        {
+            if ( id > _log_id )
+                return NULL;
+
+            return _loggables[ id ];
+        }
+
     Loggable ( )
         {
             _id = ++_log_id;
+            _old_state = NULL;
+
+            _loggables.push_back( this );
         }
 
+
     /* log messages for journal */
-    virtual void log_create ( void ) = 0;
-    virtual void log_destroy ( void ) = 0;
-    virtual void log_move ( void ) = 0;
-    virtual void log_change ( void ) = 0;
+    virtual const char *class_name ( void ) = 0;
+    virtual char ** log_dump ( void ) = 0;
+
+    /* this method must parse an array of name/value pair strings and make the appropriate changes too
+       the object state */
+    virtual void set ( char **sa ) = 0;
+//    void log ( const char *module, const char *action, const char *fmt, ... );
+
+protected:
 
     void log ( const char *module, const char *action, const char *fmt, ... );
+    void log_start ( void );
+    void log_end ( void );
+    void log_create ( void );
+    void log_destroy ( void );
 
 };
 
 #ifndef _LOGGABLE_C
 #define log( act, fmt, args... ) log( __CLASS__, act, fmt, ## args )
 #endif
+
+/* #define LOG_START Logger _logger( this ) */
+/* #define LOG_END          _logger.print( this ) */

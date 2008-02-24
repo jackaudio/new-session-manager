@@ -35,6 +35,8 @@ using namespace std;
 
 #include "Track_Widget.H"
 
+#include "Loggable.H"
+
 /* got I hate C++ */
 #define __CLASS__ "Region"
 
@@ -56,25 +58,56 @@ class Region : public Track_Widget
 
 protected:
 
-    /* general */
-    void log_create ( void )
+    const char *class_name ( void ) { return "Region"; }
+
+    char ** log_dump ( void )
         {
-            log( "create", "%lu \"%s\" %d %f %lu %lu", _offset, _clip->name(), _selected, _scale, _start, _end );
+            //          char *r;
+            char **sa = (char**)malloc( sizeof( char* ) * 6 );
+
+            sa[5] = NULL;
+
+            asprintf( &sa[0], ":x %lu", _offset );
+            asprintf( &sa[1], ":l %lu", _start );
+            asprintf( &sa[2], ":r %lu", _end );
+            asprintf( &sa[3], ":selected %d", _selected );
+            asprintf( &sa[4], ":gain %f", _scale );
+
+//            asprintf( &r, ":x %lu\n:l %lu\n:r %lu\n:selected %d\n:gain %f", _offset, _start, _end, _selected, _scale );
+
+            return sa;
         }
 
-    void log_destroy ( void )
+    void
+    set ( char **sa )
         {
-            log( "destroy", NULL );
-        }
+            for ( int i = 0; sa[i]; ++i )
+            {
+                char *s = sa[i];
 
-    void log_move ( void )
-        {
-            log( "move", "%lu", _offset );
-        }
+                strtok( s, " " );
 
-    void log_change ( void )
-        {
-            log( "change", "%d %f %lu %lu", _selected, _scale, _start, _end );
+                char *v = s + strlen( s );
+
+                if ( ! strcmp( s, ":x" ) )
+                    _offset = atol( v );
+                else
+                    if ( ! strcmp( s, ":l" ) )
+                        _start = atol( v );
+                    else
+                        if ( ! strcmp( s, ":r" ) )
+                            _end = atol( v );
+                        else
+                            if ( ! strcmp( s, ":selected" ) )
+                                _selected = atoi( v );
+                            else
+                                if ( ! strcmp( s, ":gain" ) )
+                                    _scale = atof( v );
+
+                free( s );
+            }
+
+            free( sa );
         }
 
 public:

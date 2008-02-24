@@ -52,6 +52,8 @@ class Time_Point : public Track_Point
 
 protected:
 
+    const char *class_name ( void ) { return "Time_Point"; }
+
     void log_create ( void )  { log( "create", "%lu %d %d", _offset, _time.beats_per_bar, _time.note_type ); }
     void log_destroy ( void ) { log( "destroy", NULL ); }
     void log_move ( void )    { log( "move", "%lu", _offset ); }

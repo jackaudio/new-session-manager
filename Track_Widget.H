@@ -206,6 +206,12 @@ public:
 
             switch ( m )
             {
+                case FL_ENTER:
+                    fl_cursor( FL_CURSOR_HAND );
+                    return 1;
+                case FL_LEAVE:
+                    fl_cursor( FL_CURSOR_DEFAULT );
+                    return 1;
                 case FL_PUSH:
                 {
                     ox = x() - X;
@@ -226,7 +232,7 @@ public:
                 case FL_RELEASE:
                     if ( moved )
                     {
-                        log_move();
+//                        log_move();
                         moved = false;
                     }
 //                    dump();

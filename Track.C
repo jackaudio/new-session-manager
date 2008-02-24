@@ -73,7 +73,6 @@ Track::remove ( Track_Widget *r )
 Track_Widget *
 Track::event_widget ( void )
 {
-// FIXME: doesn't handle overlap!
     int ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() );
     for ( list <Track_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
         if ( ets > (*r)->offset() && ets < (*r)->offset() + (*r)->length() )
@@ -146,7 +145,7 @@ done:
 int
 Track::handle ( int m )
 {
-    static Track_Widget *current_widget;
+    static Track_Widget *pushed;
 
     switch ( m )
     {
@@ -155,27 +154,24 @@ Track::handle ( int m )
             return 1;
         default:
         {
-            Track_Widget *r = event_widget();
-            if ( current_widget )
-                r = current_widget;
+            Track_Widget *r = pushed ? pushed : event_widget();
 
             if ( r )
             {
                 int retval = r->handle( m );
 
                 if ( retval && m == FL_PUSH )
-                    current_widget = r;
+                    pushed = r;
 
                 if ( retval && m == FL_RELEASE )
-                    current_widget = NULL;
+                    pushed = NULL;
 
                 if ( _queued_widget )
                 {
                     remove( _queued_widget );
                     delete _queued_widget;
                     _queued_widget = NULL;
-                    current_widget = NULL;
-//                    redraw();
+                    pushed = NULL;
                 }
 
                 return retval;

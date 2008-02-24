@@ -28,6 +28,8 @@ FILE *Loggable::_fp;
 
 int Loggable::_log_id = 0;
 
+vector <Loggable *> Loggable::_loggables;
+
 bool
 Loggable::open ( const char *filename )
 {
@@ -55,4 +57,119 @@ Loggable::log ( const char *module, const char *action, const char *fmt, ... )
     }
 
     fprintf( _fp, "\n" );
+}
+
+
+static
+void free_sa ( char **sa )
+{
+    char **a = sa;
+    for ( ; *a; a++ )
+        free( *a );
+
+    free( sa );
+}
+
+
+static
+void
+log_print(  char **o, char **n )
+{
+    if ( n )
+        for ( ; *n; n++ )
+            printf( "%s%s", *n, *(n + 1) ? " " : ""  );
+
+    if ( o && *o )
+    {
+        if ( n ) printf( " << " );
+        for ( ; *o; o++ )
+            printf( "%s%s", *o, *(o + 1) ? " " : ""  );
+    }
+
+    printf( "\n" );
+}
+
+/** compare elements of dumps s1 and s2, removing those elements
+    of dst which are not changed from src */
+static
+void
+log_diff (  char **sa1, char **sa2 )
+{
+    if ( ! sa1 )
+        return;
+
+    int w = 0;
+    for ( int i = 0; sa1[ i ]; ++i )
+    {
+        if ( ! strcmp( sa1[ i ], sa2[ i ] ) )
+        {
+            free( sa2[ i ] );
+            free( sa1[ i ] );
+        }
+        else
+        {
+            sa2[ w ] = sa2[ i ];
+            sa1[ w ] = sa1[ i ];
+
+            w++;
+        }
+    }
+
+    sa1[ w ] = NULL;
+    sa2[ w ] = NULL;
+}
+
+
+
+
+
+void
+Loggable::log_start ( void )
+{
+    if ( ! _old_state )
+        _old_state = log_dump();
+}
+
+void
+Loggable::log_end ( void )
+{
+    char **_new_state = log_dump();
+
+    // if ( _old_state )
+
+    log_diff( _old_state, _new_state );
+
+    printf( "%s 0x%X set ", class_name(), _id );
+
+    log_print( _old_state, _new_state );
+
+    free_sa( _old_state );
+    if ( _new_state )
+        free_sa( _new_state );
+
+    _old_state = NULL;
+}
+
+void
+Loggable::log_create ( void )
+{
+    printf( "%s 0x%X new ", class_name(), _id );
+
+    char **sa = log_dump();
+
+    log_print( NULL, sa );
+
+    free_sa( sa );
+}
+
+void
+Loggable::log_destroy ( void )
+{
+    printf( "%s 0x%X destroy ", class_name(), _id );
+
+    char **sa = log_dump();
+
+    log_print( sa, NULL );
+
+    free_sa( sa );
 }

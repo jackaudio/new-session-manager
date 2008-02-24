@@ -28,6 +28,14 @@ protected:
 
     char *_label;
 
+    void set ( char **a )
+        {
+        }
+
+    char ** log_dump ( void )
+        {
+            return NULL;
+        }
     void log_change ( void )
         {
         }

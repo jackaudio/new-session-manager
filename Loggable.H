@@ -36,6 +36,7 @@ class Loggable
     static FILE *_fp;
     static int _log_id;
     static int _level;
+    static int _undo_index;
 
     static vector <Loggable *> _loggables;
 

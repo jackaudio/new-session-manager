@@ -26,9 +26,9 @@
 #include <stdarg.h>
 
 FILE *Loggable::_fp;
-
 int Loggable::_log_id = 0;
 int Loggable::_level = 0;
+int Loggable::_undo_index = 1;
 
 vector <Loggable *> Loggable::_loggables;
 
@@ -101,23 +101,43 @@ Loggable::undo ( void )
 
 //    fflush( _fp );
 
-    fseek( _fp, 0 - BUFSIZ, SEEK_END );
+    fseek( _fp, 0, SEEK_END );
+    size_t len = ftell( _fp );
 
-//    fseek( _fp, 0, SEEK_SET );
+    fseek( _fp, 0 - (BUFSIZ > len ? len : BUFSIZ), SEEK_END );
 
-    size_t len = fread( buf, 1, BUFSIZ, _fp );
+    len = fread( buf, 1, BUFSIZ, _fp );
 
     char *s = buf + len - 1;
 
 // FIXME: handle blocks
-    for ( --s; *s && s > buf; --s )
-        if ( *s == '\n' )
+    int i = 1;
+
+    /* move back _undo_index lines from the end */
+    for ( int j = _undo_index; j-- ; )
+        for ( --s; *s && s >= buf; --s, ++i )
         {
-            s++;
-            break;
+            if ( *s == '\n' )
+            {
+                // s++;
+                break;
+            }
         }
+    s++;
 
     buf[ len ] = NULL;
+
+//    fsync( fileno( _fp ) );
+    /* pop the entry off the end */
+
+/*     fseek( _fp, 0 - i, SEEK_END ); */
+/*     ftruncate( fileno( _fp ), ftell( _fp ) ); */
+
+    if ( ! strlen( s ) )
+    {
+        printf( "corrupt undo file or no undo entries.\n" );
+        return;
+    }
 
     printf( "undoing \"%s\"\n", s );
 
@@ -142,8 +162,9 @@ Loggable::undo ( void )
 
     }
 
-    delete buf;
+    ++_undo_index;
 
+    delete buf;
 }
 
 
@@ -158,6 +179,8 @@ Loggable::log ( const char *fmt, ... )
         vfprintf( _fp, fmt, args );
         va_end( args );
     }
+
+    fflush( _fp );
 }
 
 

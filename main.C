@@ -26,7 +26,7 @@
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Slider.H>
-
+#include <FL/Fl_Button.H>
 
 #include "Scalebar.H"
 
@@ -104,6 +104,10 @@ cb_scroll ( Fl_Widget *w, void *v )
 
 }
 
+void cb_undo ( Fl_Widget *w, void *v )
+{
+    Loggable::undo();
+}
 
 int
 main ( int argc, char **argv )
@@ -128,6 +132,9 @@ main ( int argc, char **argv )
     timeline->scrollbar->zoom( 256 );
     timeline->scrollbar->type( 1 );
     timeline->scrollbar->callback( cb_scroll, 0 );
+
+    Fl_Button *o = new Fl_Button( 0, 0, 50, 50, "undo" );
+    o->callback( cb_undo, 0 );
 
     main_window->end();
     main_window->show();

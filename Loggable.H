@@ -47,25 +47,30 @@ private:
 
     int _nest;
 
+    void log_print(  char **o, char **n );
+    static void log ( const char *fmt, ... );
+
     static
     void indent ( void )
         {
             int n = Loggable::_level;
 
             while ( n-- )
-                printf( "\t" );
+                log( "\t" );
         }
+
 
 public:
 
     static bool open ( const char *filename );
+    static void undo ( void );
 
     static
     void
     block_start ( void )
         {
             indent();
-            printf( "{\n" );
+            log( "{\n" );
             ++Loggable::_level;
         }
     static
@@ -74,7 +79,7 @@ public:
         {
             assert( --Loggable::_level >= 0 );
             indent();
-            printf( "}\n" );
+            log( "}\n" );
         }
 
     static
@@ -84,7 +89,7 @@ public:
             if ( id > _log_id )
                 return NULL;
 
-            return _loggables[ id ];
+            return _loggables[ id - 1 ];
         }
 
     Loggable ( )
@@ -108,7 +113,6 @@ public:
 
 protected:
 
-//    void log ( const char *module, const char *action, const char *fmt, ... );
     void log_start ( void );
     void log_end ( void );
     void log_create ( void );

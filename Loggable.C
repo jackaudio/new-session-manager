@@ -21,6 +21,7 @@
 #include "Loggable.H"
 #undef _LOGABLE_C
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -43,22 +44,121 @@ Loggable::open ( const char *filename )
     return true;
 }
 
-/* void */
-/* Loggable::log ( const char *module, const char *action, const char *fmt, ... ) */
-/* { */
-/*     va_list args; */
+/** sigh. parse a string of ":name value :name value" pairs into an array of strings, one per pair */
+static
+char **
+parse_alist( const char *s )
+{
 
-/*     fprintf( _fp, "%-15s %-8s %p ", module, action, _id ); */
+// FIXME: bogus over allocation...
 
-/*     if ( fmt ) */
-/*     { */
-/*         va_start( args, fmt ); */
-/*         vfprintf( _fp, fmt, args ); */
-/*         va_end( args ); */
-/*     } */
+    int tl = strlen( s );
+    char **r = (char**)malloc( sizeof( char* ) * tl );
 
-/*     fprintf( _fp, "\n" ); */
-/* } */
+    const char *e = s + tl;
+
+    const char *c = NULL;
+    int i = 0;
+    for ( ; ; s++ )
+    {
+
+/*         if ( *s == '\n' ) */
+/*             break; */
+
+//        if ( *s == ':' || s == e )
+        if ( *s == ':' || *s == '\0' )
+        {
+            if ( c )
+            {
+                int l = s - c;
+
+                char *pair = (char*)malloc( l + 1 );
+
+                strncpy( pair, c, l );
+
+                pair[ l ] = '\0';
+
+                r[ i++ ] = pair;
+            }
+
+            c = s;
+
+            if ( *s == '\0' )
+                break;
+        }
+    }
+
+    r[ i ] = NULL;
+
+    return r;
+}
+
+
+void
+Loggable::undo ( void )
+{
+    char *buf = new char[ BUFSIZ ];
+
+//    fflush( _fp );
+
+    fseek( _fp, 0 - BUFSIZ, SEEK_END );
+
+//    fseek( _fp, 0, SEEK_SET );
+
+    size_t len = fread( buf, 1, BUFSIZ, _fp );
+
+    char *s = buf + len - 1;
+
+// FIXME: handle blocks
+    for ( --s; *s && s > buf; --s )
+        if ( *s == '\n' )
+        {
+            s++;
+            break;
+        }
+
+    buf[ len ] = NULL;
+
+    printf( "undoing \"%s\"\n", s );
+
+    int id;
+    sscanf( s, "%*s %X ", &id );
+    Loggable *l = find( id );
+    assert( l );
+
+    char command[40];
+    char *arguments;
+
+    sscanf( s, "%*s %*X %s %*[^\n<] << %a[^\n]", command, &arguments );
+
+    if ( ! strcmp( command, "set" ) )
+    {
+
+        printf( "got set command.\n" );
+
+        char **sa  = parse_alist( arguments );
+
+        l->set( sa );
+
+    }
+
+    delete buf;
+
+}
+
+
+void
+Loggable::log ( const char *fmt, ... )
+{
+    va_list args;
+
+    if ( fmt )
+    {
+        va_start( args, fmt );
+        vfprintf( _fp, fmt, args );
+        va_end( args );
+    }
+}
 
 
 static
@@ -72,22 +172,21 @@ void free_sa ( char **sa )
 }
 
 
-static
 void
-log_print(  char **o, char **n )
+Loggable::log_print(  char **o, char **n )
 {
     if ( n )
         for ( ; *n; n++ )
-            printf( "%s%s", *n, *(n + 1) ? " " : ""  );
+            log( "%s%s", *n, *(n + 1) ? " " : ""  );
 
     if ( o && *o )
     {
-        if ( n ) printf( " << " );
+        if ( n ) log( " << " );
         for ( ; *o; o++ )
-            printf( "%s%s", *o, *(o + 1) ? " " : ""  );
+            log( "%s%s", *o, *(o + 1) ? " " : ""  );
     }
 
-    printf( "\n" );
+    log( "\n" );
 }
 
 /** compare elements of dumps s1 and s2, removing those elements
@@ -152,7 +251,7 @@ Loggable::log_end ( void )
     if ( log_diff( _old_state, _new_state ) )
     {
         indent();
-        printf( "%s 0x%X set ", class_name(), _id );
+        log( "%s 0x%X set ", class_name(), _id );
 
         log_print( _old_state, _new_state );
     }
@@ -178,7 +277,7 @@ void
 Loggable::log_create ( void )
 {
     indent();
-    printf( "%s 0x%X new ", class_name(), _id );
+    log( "%s 0x%X new ", class_name(), _id );
 
     char **sa = log_dump();
 
@@ -188,14 +287,14 @@ Loggable::log_create ( void )
         free_sa( sa );
     }
     else
-        printf( "\n" );
+        log( "\n" );
 }
 
 void
 Loggable::log_destroy ( void )
 {
     indent();
-    printf( "%s 0x%X destroy ", class_name(), _id );
+    log( "%s 0x%X destroy ", class_name(), _id );
 
     char **sa = log_dump();
 

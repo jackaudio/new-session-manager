@@ -88,7 +88,7 @@ protected:
 
                 strtok( s, " " );
 
-                char *v = s + strlen( s );
+                char *v = s + strlen( s ) + 1;
 
                 if ( ! strcmp( s, ":x" ) )
                     _offset = atol( v );
@@ -122,6 +122,8 @@ protected:
             }
 
             free( sa );
+
+            _track->redraw();
         }
 
 public:

@@ -61,6 +61,8 @@ Track::draw ( void )
 
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
+//    printf( "track::draw %d,%d %dx%d\n", X,Y,W,H );
+
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw_box( X, Y, W, H );
 

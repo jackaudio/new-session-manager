@@ -409,9 +409,13 @@ Region::draw ( int X, int Y, int W, int H )
 
     int ch = h() / _clip->channels();
     for ( int i = _clip->channels(); i--; )
-        draw_waveform( rx, y() + (i * ch), rw, ch, _clip, i,
+//        draw_waveform( rx, y() + (i * ch), rw, ch, _clip, i,
+//                       _start + offset, min( (_end - _start) - offset, _end),
+//                       _scale, _selected ? _color : fl_invert_color( _color )  );
+        draw_waveform( rx, X, y() + (i * ch), W, ch, _clip, i,
                        _start + offset, min( (_end - _start) - offset, _end),
                        _scale, _selected ? _color : fl_invert_color( _color )  );
+
 
     timeline->draw_measure_lines( rx, Y, rw, H, _box_color );
 

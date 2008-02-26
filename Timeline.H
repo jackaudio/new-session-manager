@@ -126,6 +126,7 @@ struct Timeline : public Fl_Group
         {
             Timeline *tl = (Timeline *)v;
 
+            printf( "draw_clip: %d,%d %dx%d\n", X, Y, W, H );
             fl_push_clip( X, Y, W, H );
 
             fl_color( rand() );
@@ -145,7 +146,7 @@ struct Timeline : public Fl_Group
 
             X = tracks->x() + Fl::box_dx( tracks->child( 0 )->box() ) + 1;
             Y = tracks->y();
-            W = tracks->w() - Fl::box_dw( tracks->child( 0 )->box() ) - 2;
+            W = tracks->w() - Fl::box_dw( tracks->child( 0 )->box() ) - 1;
             H = tracks->h();
 
 

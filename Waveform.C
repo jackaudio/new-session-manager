@@ -31,20 +31,23 @@
 
 /** draw a portion of /clip/'s waveform. coordinates are the portion to draw  */
 void
-draw_waveform ( int X, int Y, int W, int H, Audio_File *_clip, int channel, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )
+draw_waveform ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int channel, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )
 {
     fl_push_clip( X, Y, W, H );
 
     int j;
 
-    int start = timeline->ts_to_x( _start );
+//    int start = timeline->ts_to_x( _start );
+    int start = timeline->ts_to_x( _start ) + (X - ox);
 
     const Peaks *pk = _clip->peaks( channel );
+
+    _start = timeline->x_to_ts( start );
 
     pk->fill_buffer( _start,  _start + timeline->x_to_ts( W ) );
 
     j = start;
-    for ( int x = X; x < X + W; ++x, ++j )
+    for ( int x = X; x <= X + W; ++x, ++j )
     {
         Peak p = (*pk)[ j ];
 
@@ -70,7 +73,7 @@ draw_waveform ( int X, int Y, int W, int H, Audio_File *_clip, int channel, nfra
     fl_begin_line();
 
     j = start;
-    for ( int x = X; x < X + W; ++x, ++j )
+    for ( int x = X; x <= X + W; ++x, ++j )
     {
         Peak p = (*pk)[ j ];
 
@@ -84,7 +87,7 @@ draw_waveform ( int X, int Y, int W, int H, Audio_File *_clip, int channel, nfra
     fl_begin_line();
 
     j = start;
-    for ( int x = X; x < X + W; ++x, ++j )
+    for ( int x = X; x <= X + W; ++x, ++j )
     {
         Peak p = (*pk)[ j ];
 

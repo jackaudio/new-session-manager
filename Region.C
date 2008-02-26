@@ -407,12 +407,12 @@ Region::draw ( int X, int Y, int W, int H )
 
 //    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
 
-    int ch = h() / _clip->channels();
+    int ch = (h() - Fl::box_dh( box() ))  / _clip->channels();
     for ( int i = _clip->channels(); i--; )
 //        draw_waveform( rx, y() + (i * ch), rw, ch, _clip, i,
 //                       _start + offset, min( (_end - _start) - offset, _end),
 //                       _scale, _selected ? _color : fl_invert_color( _color )  );
-        draw_waveform( rx, X, y() + (i * ch), W, ch, _clip, i,
+        draw_waveform( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch, _clip, i,
                        _start + offset, min( (_end - _start) - offset, _end),
                        _scale, _selected ? _color : fl_invert_color( _color )  );
 

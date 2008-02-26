@@ -50,6 +50,31 @@ static Fl_Color fl_invert_color ( Fl_Color c )
 }
 
 
+#if 0
+/* perhaps use map? */
+map_PRIM ( set )
+{
+/*     if ( narg % 2 != 0 ) */
+/*         printf( "invalid number of arguments\n" ); */
+
+    int id = atoi( arg );
+
+    map_ARG_NEXT( arg, end );
+
+    Logable *l = Loggable::find( id );
+
+    char **sa = malloc( sizeof( char * ) * narg + 1 );
+
+    for ( int i = 0; i < narg; ++i )
+        sa[ i ] = strdup( map_ARG_NEXT( arg, end ) );
+
+    l->set( sa );
+
+    map_RESULT( "" );
+}
+#endif
+
+
 void
 Region::init ( void )
 {

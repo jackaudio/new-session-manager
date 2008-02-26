@@ -51,59 +51,6 @@
 
 Timeline *timeline;
 
-void
-cb_scroll ( Fl_Widget *w, void *v )
-{
-    Scalebar *sb = (Scalebar*)w;
-
-    if ( sb->zoom_changed() )
-    {
-//        timeline->fpp = sb->zoom() * 256;
-        timeline->fpp = sb->zoom() * 1;
-
-/*         timeline->fpp = max( min( timeline->fpp, 4096.0f ), (float)2 ); */
-
-        int maxx = timeline->ts_to_x( timeline->length );
-        sb->range( 0, maxx );
-
-//        timeline->redraw();
-        timeline->redraw();
-    }
-    else
-    {
-        timeline->position( sb->value() );
-    }
-
-/*     timeline->xoffset = timeline->x_to_ts( sb->value() ); */
-/*     //  timeline->tracks->redraw(); */
-/*     timeline->scroll->redraw(); */
-
-    printf( "%lu\n", timeline->xoffset );
-
-/*     for ( int i = timeline->tracks->children(); i-- ; ) */
-/*     { */
-/*         Fl_Group *track = (Fl_Group*)timeline->tracks->child( i ); */
-/*         track->damage( FL_DAMAGE_SCROLL ); */
-/*     } */
-
-/*     for ( int i = timeline->rulers->children(); i-- ; ) */
-/*     { */
-/*         Fl_Group *track = (Fl_Group*)timeline->rulers->child( i ); */
-/*         track->damage( FL_DAMAGE_SCROLL ); */
-/*     } */
-
-
-
-/* /\*         for ( int j = track->children(); j-- ; ) *\/ */
-/* /\*             ((Region*)(track->child( j )))->resize(); *\/ */
-/* /\*     } *\/ */
-
-
-
-
-
-}
-
 void cb_undo ( Fl_Widget *w, void *v )
 {
     Loggable::undo();
@@ -126,12 +73,7 @@ main ( int argc, char **argv )
 /*     track1->next( track2 ); */
 /*     track2->prev( track1 ); */
 
-    timeline->scrollbar = new Scalebar( 0, 600 - 24, 800, 24 );
-    timeline->scrollbar->range( 0, 48000 * 2 );
-    timeline->scrollbar->zoom_range( 2, 8192 );
-    timeline->scrollbar->zoom( 256 );
-    timeline->scrollbar->type( 1 );
-    timeline->scrollbar->callback( cb_scroll, 0 );
+//    timeline->scrollbar = new Scalebar( 0, 600 - 24, 800, 24 );
 
     Fl_Button *o = new Fl_Button( 0, 0, 50, 50, "undo" );
     o->callback( cb_undo, 0 );

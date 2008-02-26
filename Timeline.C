@@ -23,13 +23,72 @@
 #include "Time_Track.H"
 #include "Audio_Track.H"
 
+#include <FL/Fl_Scrollbar.H>
+
+void
+cb_hscroll ( Fl_Widget *w, void *v )
+{
+    Scalebar *sb = (Scalebar*)w;
+
+    if ( sb->zoom_changed() )
+    {
+        timeline->fpp = sb->zoom() * 1;
+
+        int maxx = timeline->ts_to_x( timeline->length );
+        sb->range( 0, maxx );
+
+        timeline->redraw();
+    }
+    else
+    {
+        timeline->position( sb->value() );
+    }
+
+    printf( "%lu\n", timeline->xoffset );
+}
+
+void
+cb_vscroll ( Fl_Widget *w, void *v )
+{
+    Fl_Scrollbar *sb = (Fl_Scrollbar*)w;
+
+    timeline->tracks->position( timeline->tracks->x(), (timeline->rulers->y() + timeline->rulers->h()) - sb->value() );
+    timeline->yposition = sb->value();
+
+    timeline->vscroll->range( 0, timeline->tracks->h() - timeline->h() - timeline->rulers->h() );
+
+    timeline->damage( FL_DAMAGE_SCROLL );
+}
+
+
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, Y, W, H, L )
 {
 
     xoffset = 0;
 
     {
-        Fl_Pack *o = new Fl_Pack( 0, 0, 800, 600, "rulers" );
+        Scalebar *o = new Scalebar( X, H - 18, W - 18, 18 );
+
+        o->range( 0, 48000 * 2 );
+        o->zoom_range( 2, 8192 );
+        o->zoom( 256 );
+        o->type( FL_HORIZONTAL );
+        o->callback( cb_hscroll, 0 );
+
+        hscroll = o;
+    }
+
+    {
+        Fl_Scrollbar *o = new Fl_Scrollbar( W - 18, Y, 18, H - 18 );
+
+        o->type( FL_VERTICAL );
+        o->step( 10 );
+        o->callback( cb_vscroll, 0 );
+        vscroll = o;
+    }
+
+    {
+        Fl_Pack *o = new Fl_Pack( 0, 0, W - vscroll->w(), H - hscroll->h(), "rulers" );
         o->type( Fl_Pack::VERTICAL );
 
         {
@@ -59,13 +118,16 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
 
         }
 
+        o->size( o->w(), o->child( 0 )->h() * o->children() );
         rulers = o;
         o->end();
     }
 
+
     {
-        Fl_Scroll *o = new Fl_Scroll( 0, 24 * 2, 800, 600 - (24 * 3) );
-        o->type( Fl_Scroll::VERTICAL_ALWAYS );
+
+/*         Fl_Scroll *o = new Fl_Scroll( 0, 24 * 2, 800, 600 - (24 * 3) ); */
+/*         o->type( Fl_Scroll::VERTICAL_ALWAYS ); */
 
         sample_rate = 44100;
         fpp = 256;
@@ -73,12 +135,12 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
         length = sample_rate * 60 * 2;
 
         {
-            Fl_Pack *o = new Fl_Pack( 0, 0, 800, 5000 );
+            Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W - vscroll->w(), 5000 );
             o->type( Fl_Pack::VERTICAL );
             o->spacing( 10 );
 
             Track *l = NULL;
-            for ( int i = 6; i--;  )
+            for ( int i = 16; i--;  )
             {
 
                 Track *o = new Audio_Track( 0, 0, 800, 100 );
@@ -93,9 +155,12 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
             o->end();
         }
 
-        scroll = o;
-        o->end();
+/*         scroll = o; */
+/*         o->end(); */
+
     }
+
+    vscroll->range( 0, tracks->h() );
 
     redraw();
 

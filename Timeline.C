@@ -55,7 +55,9 @@ cb_vscroll ( Fl_Widget *w, void *v )
     timeline->tracks->position( timeline->tracks->x(), (timeline->rulers->y() + timeline->rulers->h()) - sb->value() );
     timeline->yposition = sb->value();
 
-    timeline->vscroll->range( 0, timeline->tracks->h() - timeline->h() - timeline->rulers->h() );
+//    timeline->vscroll->range( 0, timeline->tracks->h() - timeline->h() - timeline->rulers->h() );
+
+    sb->value( sb->value(), 30, 0, min( timeline->tracks->h(),  timeline->tracks->h() - timeline->h() - timeline->rulers->h() ) );
 
     timeline->damage( FL_DAMAGE_SCROLL );
 }

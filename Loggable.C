@@ -31,6 +31,7 @@ int Loggable::_level = 0;
 int Loggable::_undo_index = 1;
 
 vector <Loggable *> Loggable::_loggables;
+map <string, create_func*> Loggable::_class_map;
 
 bool
 Loggable::open ( const char *filename )
@@ -45,6 +46,7 @@ Loggable::open ( const char *filename )
 }
 
 /** sigh. parse a string of ":name value :name value" pairs into an array of strings, one per pair */
+// FIXME: doesn't handle the case of :name ":foo bar". Also, quotes should be removed here, not in client code.
 static
 char **
 parse_alist( const char *s )
@@ -94,6 +96,17 @@ parse_alist( const char *s )
 }
 
 
+static
+void free_sa ( char **sa )
+{
+    char **a = sa;
+    for ( ; *a; a++ )
+        free( *a );
+
+    free( sa );
+}
+
+
 void
 Loggable::undo ( void )
 {
@@ -113,17 +126,21 @@ Loggable::undo ( void )
 // FIXME: handle blocks
     int i = 1;
 
-    /* move back _undo_index lines from the end */
+    /* move back _undo_index items from the end */
     for ( int j = _undo_index; j-- ; )
         for ( --s; *s && s >= buf; --s, ++i )
         {
             if ( *s == '\n' )
             {
-                // s++;
+                if ( *(s + 1) == '\t' )
+                    continue;
+
                 break;
             }
         }
     s++;
+
+    strtok( s, "\n" );
 
     buf[ len ] = NULL;
 
@@ -144,23 +161,58 @@ Loggable::undo ( void )
     int id;
     sscanf( s, "%*s %X ", &id );
     Loggable *l = find( id );
-    assert( l );
+//    assert( l );
 
+    char classname[40];
     char command[40];
     char *arguments;
 
-    sscanf( s, "%*s %*X %s %*[^\n<] << %a[^\n]", command, &arguments );
+    sscanf( s, "%s %*X %s %*[^\n<] << %a[^\n]", classname, command, &arguments );
 
-    if ( ! strcmp( command, "set" ) )
+
+    int ui = _undo_index;
+
+
+    if ( ! l )
     {
-
-        printf( "got set command.\n" );
-
-        char **sa  = parse_alist( arguments );
-
-        l->set( sa );
-
+        printf( "corrupt undo?\n" );
+        abort();
     }
+
+
+
+    if ( ! strcmp( command, "destroy" ) )
+    {
+        printf( "should create new %s here\n", classname );
+
+        char **sa = parse_alist( arguments );
+
+        _class_map[ string( classname ) ]( sa );
+    }
+    else
+        if ( ! strcmp( command, "set" ) )
+        {
+
+            printf( "got set command.\n" );
+
+            char **sa  = parse_alist( arguments );
+
+            l->log_start();
+            l->set( sa );
+            l->log_end();
+
+        }
+        else
+            if ( ! strcmp( command, "create" ) )
+            {
+                int id = l->id();
+                delete l;
+                _loggables[ id ] = NULL;
+            }
+
+
+// FIXME: bogus... needs to account for multiple events.
+    _undo_index = ui + 1;
 
     ++_undo_index;
 
@@ -181,17 +233,6 @@ Loggable::log ( const char *fmt, ... )
     }
 
     fflush( _fp );
-}
-
-
-static
-void free_sa ( char **sa )
-{
-    char **a = sa;
-    for ( ; *a; a++ )
-        free( *a );
-
-    free( sa );
 }
 
 
@@ -244,10 +285,6 @@ log_diff (  char **sa1, char **sa2 )
     return w == 0 ? false : true;
 }
 
-
-
-
-
 void
 Loggable::log_start ( void )
 {
@@ -256,6 +293,7 @@ Loggable::log_start ( void )
 
     ++_nest;
 
+    _undo_index = 1;
 }
 
 void
@@ -300,7 +338,7 @@ void
 Loggable::log_create ( void )
 {
     indent();
-    log( "%s 0x%X new ", class_name(), _id );
+    log( "%s 0x%X create ", class_name(), _id );
 
     char **sa = log_dump();
 
@@ -317,11 +355,12 @@ void
 Loggable::log_destroy ( void )
 {
     indent();
-    log( "%s 0x%X destroy ", class_name(), _id );
+    log( "%s 0x%X destroy (nothing) << ", class_name(), _id );
 
     char **sa = log_dump();
 
-    log_print( sa, NULL );
+//    log_print( sa, NULL );
+    log_print( NULL, sa );
 
     free_sa( sa );
 }

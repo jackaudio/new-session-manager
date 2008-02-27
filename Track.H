@@ -91,8 +91,11 @@ public:
             log_create();
         }
 
-    ~Track (  )
+    virtual ~Track (  )
         {
+            /* FIXME: what to do with regions? */
+            parent()->redraw();
+            parent()->remove( this );
             log_destroy();
         }
 

@@ -63,15 +63,18 @@ protected:
     char ** log_dump ( void )
         {
             //          char *r;
-            char **sa = (char**)malloc( sizeof( char* ) * 6 );
+            char **sa = (char**)malloc( sizeof( char* ) * 7 );
 
-            sa[5] = NULL;
+            int i = 0;
 
-            asprintf( &sa[0], ":x %lu", _offset );
-            asprintf( &sa[1], ":l %lu", _start );
-            asprintf( &sa[2], ":r %lu", _end );
-            asprintf( &sa[3], ":selected %d", _selected );
-            asprintf( &sa[4], ":gain %f", _scale );
+            asprintf( &sa[ i++ ], ":source \"%s\"", _clip->name() );
+            asprintf( &sa[ i++ ], ":x %lu", _offset );
+            asprintf( &sa[ i++ ], ":l %lu", _start );
+            asprintf( &sa[ i++ ], ":r %lu", _end );
+            asprintf( &sa[ i++ ], ":selected %d", _selected );
+            asprintf( &sa[ i++ ], ":gain %f", _scale );
+
+            sa[ i ] = NULL;
 //            asprintf( &sa[4], ":track 0x%X", _track->id() );
 
 //            asprintf( &r, ":x %lu\n:l %lu\n:r %lu\n:selected %d\n:gain %f", _offset, _start, _end, _selected, _scale );
@@ -90,6 +93,12 @@ protected:
 
                 char *v = s + strlen( s ) + 1;
 
+                if  ( *v == '"' )
+                {
+                    v++;
+                    v[ strlen( v ) - 2 ] = '\0';
+                }
+
                 if ( ! strcmp( s, ":x" ) )
                     _offset = atol( v );
                 else
@@ -104,7 +113,9 @@ protected:
                             else
                                 if ( ! strcmp( s, ":gain" ) )
                                     _scale = atof( v );
-
+                                else
+                                    if ( ! strcmp( s, ":source" ) )
+                                        _clip = Audio_File::from_file( v );
 /*                                 else */
 /*                                     if ( ! strcmp( s, ":track" ) ) */
 /*                                     { */
@@ -123,10 +134,28 @@ protected:
 
             free( sa );
 
-            _track->redraw();
+            if ( _track )
+                _track->redraw();
+        }
+
+    Region ( )
+        {
+            init();
         }
 
 public:
+
+    /* for loggable */
+    static Loggable *
+    create ( char **sa )
+        {
+            Region *r = new Region;
+
+            r->set( sa );
+
+            return (Loggable *)r;
+        }
+
 
     Fl_Boxtype box ( void ) const { return Region::_box; }
     Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE); }

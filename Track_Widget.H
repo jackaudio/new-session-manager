@@ -53,6 +53,12 @@ public:
             _selected = false;
         }
 
+    virtual ~Track_Widget ( )
+        {
+            redraw();
+            _track->remove( this );
+        }
+
     Fl_Group * parent ( void ) const { return _track; }
 
     int scroll_x ( void ) const { return timeline->ts_to_x( timeline->xoffset ); }

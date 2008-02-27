@@ -53,7 +53,13 @@ Timeline *timeline;
 
 void cb_undo ( Fl_Widget *w, void *v )
 {
+    static char pat[20];
+
+
     Loggable::undo();
+
+    sprintf( pat, "undo %d", Loggable::undo_index() );
+    w->label( pat );
 }
 
 int
@@ -65,6 +71,8 @@ main ( int argc, char **argv )
     Fl::scheme( "plastic" );
 
     Loggable::open( "history" );
+    Loggable::register_create( "Region", &Region::create );
+
 
     timeline = new Timeline( 0, 0, 800, 600, "Timeline" );
 

@@ -28,6 +28,13 @@
 
 #include <vector>
 using std::vector;
+#include <map>
+using std::map;
+#include <string>
+using std::string;
+
+class Loggable;
+typedef Loggable *(create_func)(char **);
 
 class Logger;
 class Loggable
@@ -39,6 +46,8 @@ class Loggable
     static int _undo_index;
 
     static vector <Loggable *> _loggables;
+
+    static map <string, create_func*> _class_map;
 
 private:
     int _id;
@@ -65,13 +74,14 @@ public:
 
     static bool open ( const char *filename );
     static void undo ( void );
+    static int undo_index ( void ) { return _undo_index; }
 
     static
     void
     block_start ( void )
         {
             indent();
-            log( "{\n" );
+//            log( "{\n" );
             ++Loggable::_level;
         }
     static
@@ -80,7 +90,7 @@ public:
         {
             assert( --Loggable::_level >= 0 );
             indent();
-            log( "}\n" );
+//            log( "}\n" );
         }
 
     static
@@ -102,6 +112,21 @@ public:
             _loggables.push_back( this );
         }
 
+    virtual ~Loggable (  )
+        {
+
+
+
+        }
+
+    static
+    void
+    register_create ( const char *name, create_func *func )
+        {
+            printf( "registering %s to %p\n", name, func );
+
+            _class_map[ string( name ) ] = func;
+        }
 
     /* log messages for journal */
     virtual const char *class_name ( void ) = 0;

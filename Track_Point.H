@@ -43,6 +43,11 @@ public:
             _label = NULL;
         }
 
+
+    virtual ~Track_Point ( )
+        {
+        }
+
     void
     draw ( int X, int Y, int W, int H )
         {

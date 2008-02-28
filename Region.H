@@ -157,6 +157,11 @@ public:
         }
 
 
+    ~Region ( )
+        {
+            log_destroy();
+        }
+
     Fl_Boxtype box ( void ) const { return Region::_box; }
     Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE); }
 

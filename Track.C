@@ -76,6 +76,8 @@ Track::draw ( void )
 void
 Track::remove ( Track_Widget *r )
 {
+    Logger _log( this );
+
     _widgets.remove( r );
 }
 
@@ -180,7 +182,7 @@ Track::handle ( int m )
 
                 if ( _queued_widget )
                 {
-                    remove( _queued_widget );
+//                    remove( _queued_widget );
                     delete _queued_widget;
                     _queued_widget = NULL;
                     pushed = NULL;

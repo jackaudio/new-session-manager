@@ -228,7 +228,7 @@ public:
                     if ( Fl::event_state() & FL_CTRL &&
                          Fl::event_button() == 3 )
                     {
-                        log_destroy();
+//                        log_destroy();
 
                         redraw();
                         _track->queue_delete( this );

@@ -78,7 +78,10 @@ public:
         }
 
     ~Time_Point ( )
-        { if ( _label ) delete[] _label; }
+        {
+            if ( _label ) delete[] _label;
+            log_destroy();
+        }
 
 /*     beats_per_bar ( void ) const { return _time.beats_per_bar; } */
 /*     note_type ( void ) const { return _note_type; } */

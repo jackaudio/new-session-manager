@@ -65,7 +65,10 @@ public:
         }
 
     ~Tempo_Point ( )
-        { if ( _label ) delete[] _label; }
+        {
+            if ( _label ) delete[] _label;
+            log_destroy();
+        }
 
     float tempo ( void ) const { return _tempo; }
     void tempo ( float v ) { _tempo = v; }

@@ -207,26 +207,156 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
     {
         measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x ) + xoffset ));
 
-        int bpb = beats_per_bar( x_to_ts( x ) + xoffset );
+        const int abs_x = ts_to_x( xoffset ) + x;
 
-        if ( 0 == (x / measure) % bpb )
+        if ( 0 == abs_x % measure )
         {
-            if ( measure * bpb < 8 )
-                break;
+            int bpb = beats_per_bar( x_to_ts( x ) + xoffset );
 
-            fl_color( bar );
-        }
-        else
-        {
-            if ( measure < 8 )
-                continue;
+            if ( 0 == (abs_x / measure) % bpb )
+            {
+                if ( measure * bpb < 8 )
+                    break;
 
-            fl_color( beat );
-        }
+                fl_color( bar );
+            }
+            else
+            {
+                if ( measure < 8 )
+                    continue;
 
-        if ( 0 == (ts_to_x( xoffset ) + x) % measure )
+                fl_color( beat );
+            }
+
+
             fl_line( x, Y, x, Y + H );
+        }
 
     }
     fl_line_style( FL_SOLID, 0 );
+}
+
+
+void
+Timeline::position ( int X )
+{
+    _old_xposition = xoffset;
+
+    xoffset = x_to_ts( X );
+
+    damage( FL_DAMAGE_SCROLL );
+}
+
+void
+Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
+{
+    Timeline *tl = (Timeline *)v;
+
+//            printf( "draw_clip: %d,%d %dx%d\n", X, Y, W, H );
+    fl_push_clip( X, Y, W, H );
+
+    fl_color( rand() );
+    fl_rectf( X, Y, X + W, Y + H );
+
+    tl->draw_child( *tl->tracks );
+    tl->draw_child( *tl->rulers );
+
+    fl_pop_clip();
+}
+
+
+void
+Timeline::draw ( void )
+{
+    int X, Y, W, H;
+
+    X = tracks->x() + Fl::box_dx( tracks->child( 0 )->box() ) + 1;
+    Y = tracks->y();
+    W = tracks->w() - Fl::box_dw( tracks->child( 0 )->box() ) - 1;
+    H = tracks->h();
+
+
+/*             fl_color( FL_RED ); */
+/*             fl_rect( X, Y, X + W, Y + H ); */
+
+    if ( damage() & FL_DAMAGE_ALL )
+//                 ( damage() & ( FL_DAMAGE_CHILD | FL_DAMAGE_SCROLL ) ) )
+    {
+
+        draw_box( box(), x(), y(), w(), h(), color() );
+
+        fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
+        draw_child( *rulers );
+        fl_pop_clip();
+
+        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - hscroll->h() );
+        draw_child( *tracks );
+        fl_pop_clip();
+
+        draw_child( *hscroll );
+        draw_child( *vscroll );
+
+        return;
+    }
+
+    if ( damage() & FL_DAMAGE_CHILD )
+    {
+
+/*         if ( damage() & FL_DAMAGE_SCROLL ) */
+/*             fl_push_no_clip(); */
+
+        fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
+        update_child( *rulers );
+        fl_pop_clip();
+
+        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h()  - hscroll->h() );
+        update_child( *tracks );
+        fl_pop_clip();
+
+        update_child( *hscroll );
+        update_child( *vscroll );
+
+/*         if ( damage() & FL_DAMAGE_SCROLL ) */
+/*             fl_pop_clip(); */
+
+    }
+
+
+    if ( damage() & FL_DAMAGE_SCROLL )
+    {
+        int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
+        int dy = _old_yposition - yposition;
+
+        if ( ! dy )
+            fl_scroll( X, rulers->y(), W, rulers->h(), dx, 0, draw_clip, this );
+
+        Y = rulers->y() + rulers->h();
+        H = h() - rulers->h() - hscroll->h();
+
+        fl_scroll( X, Y, W, H, dx, dy, draw_clip, this );
+
+        _old_xposition = xoffset;
+        _old_yposition = yposition;
+
+    }
+
+
+}
+
+
+int
+Timeline::handle ( int m )
+{
+    switch ( m )
+    {
+        case FL_MOUSEWHEEL:
+        {
+            if ( hscroll->handle( m ) )
+                return 1;
+
+            return vscroll->handle( m );
+        }
+        default:
+            return Fl_Group::handle( m );
+    }
 }

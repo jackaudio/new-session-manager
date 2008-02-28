@@ -253,7 +253,7 @@ public:
 
                     redraw();
 
-                    if ( ox + X >= _track->x() )
+                    if ( timeline->ts_to_x( timeline->xoffset ) + ox + X > 0 )
                     {
                         int nx = ox + X;
 
@@ -287,8 +287,8 @@ public:
                             pos += d;
 
                         timeline->position( timeline->ts_to_x(  pos ) );
-
-//                        timeline->tracks->redraw();
+                        _track->redraw();
+//                        timeline->redraw();
                     }
 
 

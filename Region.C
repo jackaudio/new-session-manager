@@ -213,11 +213,11 @@ Region::handle ( int m )
                 {
                     case 1:
                         trim( trimming = LEFT, X );
-//                        _log.hold();
+                        _log.hold();
                         break;
                     case 3:
                         trim( trimming = RIGHT, X );
-//                       _log.hold();
+                       _log.hold();
                         break;
                     case 2:
                     {
@@ -284,6 +284,7 @@ Region::handle ( int m )
             if ( trimming != NO )
             {
                 trimming = NO;
+                _log.release();
             }
             if ( dragging )
                 _log.release();

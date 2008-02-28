@@ -53,7 +53,7 @@ protected:
 
     void set ( char ** ) { return; }
 
-    char ** log_dump ( void )
+    char ** get ( void )
         {
             //          char *r;
 

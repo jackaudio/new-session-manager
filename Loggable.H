@@ -130,7 +130,7 @@ public:
 
     /* log messages for journal */
     virtual const char *class_name ( void ) = 0;
-    virtual char ** log_dump ( void ) = 0;
+    virtual char ** get ( void ) = 0;
 
     /* this method must parse an array of name/value pair strings and make the appropriate changes too
        the object state */

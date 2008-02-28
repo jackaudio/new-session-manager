@@ -71,7 +71,9 @@ main ( int argc, char **argv )
     Fl::scheme( "plastic" );
 
     Loggable::open( "history" );
-    Loggable::register_create( "Region", &Region::create );
+    Loggable::register_create( "Region",      &Region::create      );
+    Loggable::register_create( "Tempo_Point", &Tempo_Point::create );
+    Loggable::register_create( "Time_Point",  &Time_Point::create  );
 
 
     timeline = new Timeline( 0, 0, 800, 600, "Timeline" );

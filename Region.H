@@ -60,7 +60,7 @@ protected:
 
     const char *class_name ( void ) { return "Region"; }
 
-    char ** log_dump ( void )
+    char ** get ( void )
         {
             //          char *r;
             char **sa = (char**)malloc( sizeof( char* ) * 8 );

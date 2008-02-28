@@ -183,11 +183,12 @@ Loggable::undo ( void )
 
     if ( ! strcmp( command, "destroy" ) )
     {
-        printf( "should create new %s here\n", classname );
-
         char **sa = parse_alist( arguments );
 
-        _class_map[ string( classname ) ]( sa );
+        if ( ! _class_map[ string( classname ) ] )
+            printf( "error class %s is unregistered!\n", classname );
+        else
+            _class_map[ string( classname ) ]( sa );
     }
     else
         if ( ! strcmp( command, "set" ) )
@@ -289,7 +290,7 @@ void
 Loggable::log_start ( void )
 {
     if ( ! _old_state )
-        _old_state = log_dump();
+        _old_state = get();
 
     ++_nest;
 
@@ -305,7 +306,7 @@ Loggable::log_end ( void )
 
 //    assert( _old_state );
 
-    char **_new_state = log_dump();
+    char **_new_state = get();
 
     // if ( _old_state )
 
@@ -340,7 +341,7 @@ Loggable::log_create ( void )
     indent();
     log( "%s 0x%X create ", class_name(), _id );
 
-    char **sa = log_dump();
+    char **sa = get();
 
     if ( sa )
     {
@@ -357,7 +358,7 @@ Loggable::log_destroy ( void )
     indent();
     log( "%s 0x%X destroy (nothing) << ", class_name(), _id );
 
-    char **sa = log_dump();
+    char **sa = get();
 
 //    log_print( sa, NULL );
     log_print( NULL, sa );

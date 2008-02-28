@@ -40,19 +40,81 @@ protected:
 
     const char *class_name ( void ) { return "Tempo_Point"; }
 
-    char ** log_dump ( void )
+    char ** get ( void )
         {
-            char **sa = (char**)malloc( sizeof( char* ) * 3 );
+            char **sa = (char**)malloc( sizeof( char* ) * 4 );
 
-            sa[2] = NULL;
+            int i = 0;
 
-            asprintf( &sa[0], ":x %lu", _offset );
-            asprintf( &sa[1], ":tempo %f", _tempo );
+            asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
+            asprintf( &sa[i++], ":x %lu", _offset );
+            asprintf( &sa[i++], ":tempo %f", _tempo );
+
+            sa[i] = NULL;
 
             return sa;
         }
 
+    void
+    set ( char **sa )
+        {
+            for ( int i = 0; sa[i]; ++i )
+            {
+                char *s = sa[i];
+
+                strtok( s, " " );
+
+                char *v = s + strlen( s ) + 1;
+
+                if ( ! strcmp( s, ":x" ) )
+                    _offset = atol( v );
+                else
+                    if ( ! strcmp( s, ":tepmo" ) )
+                        _tempo = atof( v );
+                    else
+                        if ( ! strcmp( s, ":track" ) )
+                        {
+                            int i;
+                            sscanf( v, "%X", &i );
+                            Track *t = (Track*)Loggable::find( i );
+
+                            assert( t );
+
+                            t->add( this );
+                        }
+
+
+                free( s );
+            }
+
+            free( sa );
+
+            timeline->rulers->redraw();
+            timeline->tracks->redraw();
+
+            _make_label();
+        }
+
+    Tempo_Point ( )
+        {
+
+        }
+
 public:
+
+    /* for loggable */
+    static Loggable *
+    create ( char **sa )
+        {
+            Tempo_Point *r = new Tempo_Point;
+
+            r->set( sa );
+
+            r->log_create();
+
+            return (Loggable *)r;
+        }
+
 
     Tempo_Point ( nframes_t when, float bpm )
         {
@@ -72,7 +134,6 @@ public:
 
     float tempo ( void ) const { return _tempo; }
     void tempo ( float v ) { _tempo = v; }
-
 
     int
     handle ( int m )

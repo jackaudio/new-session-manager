@@ -25,12 +25,12 @@
 struct time_sig
 {
     int beats_per_bar;
-    int note_type;
+    int beat_type;
 
     time_sig ( int bpb, int note )
         {
             beats_per_bar = bpb;
-            note_type = note;
+            beat_type = note;
         }
 };
 
@@ -47,27 +47,93 @@ class Time_Point : public Track_Point
             if ( ! _label )
                 _label = new char[40];
 
-            snprintf( _label, 40, "%d/%d", _time.beats_per_bar, _time.note_type );
+            snprintf( _label, 40, "%d/%d", _time.beats_per_bar, _time.beat_type );
+        }
+
+    Time_Point ( ) : _time( 4, 4 )
+        {
+
         }
 
 protected:
 
     const char *class_name ( void ) { return "Time_Point"; }
 
-    char ** log_dump ( void )
+    char ** get ( void )
         {
-            char **sa = (char**)malloc( sizeof( char* ) * 4 );
+            char **sa = (char**)malloc( sizeof( char* ) * 5 );
 
-            sa[3] = NULL;
+            int i = 0;
 
-            asprintf( &sa[0], ":x %lu", _offset );
-            asprintf( &sa[1], ":beats_per_bar %d", _time.beats_per_bar );
-            asprintf( &sa[2], ":beat_type %d", _time.note_type );
+            asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
+            asprintf( &sa[i++], ":x %lu", _offset );
+            asprintf( &sa[i++], ":beats_per_bar %d", _time.beats_per_bar );
+            asprintf( &sa[i++], ":beat_type %d", _time.beat_type );
+
+            sa[i] = NULL;
 
             return sa;
         }
 
+    void
+    set ( char **sa )
+        {
+            for ( int i = 0; sa[i]; ++i )
+            {
+                char *s = sa[i];
+
+                strtok( s, " " );
+
+                char *v = s + strlen( s ) + 1;
+
+                if ( ! strcmp( s, ":x" ) )
+                    _offset = atol( v );
+                else
+                    if ( ! strcmp( s, ":beats_per_bar" ) )
+                        _time.beats_per_bar = atoi( v );
+                    else
+                        if ( ! strcmp( s, ":beat_type" ) )
+                            _time.beat_type = atoi( v );
+                        else
+                            if ( ! strcmp( s, ":track" ) )
+                            {
+                                int i;
+                                sscanf( v, "%X", &i );
+                                Track *t = (Track*)Loggable::find( i );
+
+                                assert( t );
+
+                                t->add( this );
+                            }
+
+
+                free( s );
+            }
+
+            free( sa );
+
+            timeline->rulers->redraw();
+            timeline->tracks->redraw();
+
+            _make_label();
+        }
+
+
+
 public:
+
+    /* for loggable */
+    static Loggable *
+    create ( char **sa )
+        {
+            Time_Point *r = new Time_Point;
+
+            r->set( sa );
+
+            r->log_create();
+
+            return (Loggable *)r;
+        }
 
     Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
         {
@@ -84,9 +150,9 @@ public:
         }
 
 /*     beats_per_bar ( void ) const { return _time.beats_per_bar; } */
-/*     note_type ( void ) const { return _note_type; } */
+/*     beat_type ( void ) const { return _beat_type; } */
 
-    void time ( int bpb, int note ) { _time.beats_per_bar = bpb; _time.note_type = note; }
+    void time ( int bpb, int note ) { _time.beats_per_bar = bpb; _time.beat_type = note; }
     time_sig time ( void ) const { return _time; }
 
     int

@@ -53,13 +53,14 @@ Timeline *timeline;
 
 void cb_undo ( Fl_Widget *w, void *v )
 {
-    static char pat[20];
+/*     static char pat[20]; */
 
 
     Loggable::undo();
 
-    sprintf( pat, "undo %d", Loggable::undo_index() );
-    w->label( pat );
+/*     sprintf( pat, "undo %d", Loggable::undo_index() ); */
+/*     w->label( pat ); */
+
 }
 
 int
@@ -76,7 +77,7 @@ main ( int argc, char **argv )
     Loggable::register_create( "Time_Point",  &Time_Point::create  );
 
 
-    timeline = new Timeline( 0, 0, 800, 600, "Timeline" );
+    timeline = new Timeline( 0, 24, 800, 600 - 24, "Timeline" );
 
 //    Region *wave = new Region( Clip::from_file( "streambass8.wav" ) );
 
@@ -85,7 +86,8 @@ main ( int argc, char **argv )
 
 //    timeline->scrollbar = new Scalebar( 0, 600 - 24, 800, 24 );
 
-    Fl_Button *o = new Fl_Button( 0, 0, 50, 50, "undo" );
+    Fl_Button *o = new Fl_Button( 0, 0, 50, 24, "undo" );
+    o->shortcut( FL_CTRL + 'z' );
     o->callback( cb_undo, 0 );
 
     main_window->end();

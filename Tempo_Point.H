@@ -48,7 +48,7 @@ protected:
 
             asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
             asprintf( &sa[i++], ":x %lu", _offset );
-            asprintf( &sa[i++], ":tempo %f", _tempo );
+            asprintf( &sa[i++], ":tempo %.2f", _tempo );
 
             sa[i] = NULL;
 
@@ -69,7 +69,7 @@ protected:
                 if ( ! strcmp( s, ":x" ) )
                     _offset = atol( v );
                 else
-                    if ( ! strcmp( s, ":tepmo" ) )
+                    if ( ! strcmp( s, ":tempo" ) )
                         _tempo = atof( v );
                     else
                         if ( ! strcmp( s, ":track" ) )
@@ -91,6 +91,7 @@ protected:
 
             timeline->rulers->redraw();
             timeline->tracks->redraw();
+
 
             _make_label();
         }

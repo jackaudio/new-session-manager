@@ -104,9 +104,10 @@ Track::add ( Track_Widget *r )
         r->track()->redraw();
     }
 
+    r->track( this );
     _widgets.push_back( r );
 
-    r->track( this );
+    sort();
 }
 
 /* snap /r/ to nearest edge */

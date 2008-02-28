@@ -69,7 +69,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
     xoffset = 0;
 
     {
-        Scalebar *o = new Scalebar( X, H - 18, W - 18, 18 );
+        Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
 
         o->range( 0, 48000 * 2 );
         o->zoom_range( 2, 8192 );
@@ -81,7 +81,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
     }
 
     {
-        Fl_Scrollbar *o = new Fl_Scrollbar( W - 18, Y, 18, H - 18 );
+        Fl_Scrollbar *o = new Fl_Scrollbar( X + W - 18, Y, 18, H - 18 );
 
         o->type( FL_VERTICAL );
         o->step( 10 );
@@ -90,7 +90,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
     }
 
     {
-        Fl_Pack *o = new Fl_Pack( 0, 0, W - vscroll->w(), H - hscroll->h(), "rulers" );
+        Fl_Pack *o = new Fl_Pack( X, Y, W - vscroll->w(), H - hscroll->h(), "rulers" );
         o->type( Fl_Pack::VERTICAL );
 
         {

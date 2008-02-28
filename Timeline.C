@@ -207,13 +207,22 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
     {
         measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x ) + xoffset ));
 
-        /* don't bother with lines this close together */
-        if ( measure < 4 )
-            break;
-        if ( 0 == (x / measure) % beats_per_bar( x_to_ts( x ) + xoffset ) )
+        int bpb = beats_per_bar( x_to_ts( x ) + xoffset );
+
+        if ( 0 == (x / measure) % bpb )
+        {
+            if ( measure * bpb < 8 )
+                break;
+
             fl_color( bar );
+        }
         else
+        {
+            if ( measure < 8 )
+                continue;
+
             fl_color( beat );
+        }
 
         if ( 0 == (ts_to_x( xoffset ) + x) % measure )
             fl_line( x, Y, x, Y + H );

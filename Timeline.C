@@ -190,6 +190,23 @@ Timeline::beats_per_minute ( nframes_t when, float bpm )
     tempo_track->add( new Tempo_Point( when, bpm ) );
 }
 
+/** return the absolute pixel of the nearest measure line to /x/ */
+int
+Timeline::nearest_line ( int ix )
+{
+    for ( int x = ix - 10; x < ix + 10; ++x )
+    {
+        const int measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x ) + xoffset ));
+
+//        const int abs_x = ts_to_x( xoffset ) + x;
+
+        if ( 0 == x % measure )
+            return x;
+    }
+
+    return -1;
+}
+
 /* draw appropriate measure lines inside the given bounding box */
 void
 Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )

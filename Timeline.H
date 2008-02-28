@@ -106,6 +106,8 @@ struct Timeline : public Fl_Group
     float beats_per_minute ( nframes_t when ) const;
     int beats_per_bar ( nframes_t when ) const;
     void beats_per_minute ( nframes_t when, float bpm );
+    int nearest_line ( int ix );
+
     void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
     void position ( int X );
     void draw ( void );

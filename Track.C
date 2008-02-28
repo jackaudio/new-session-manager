@@ -119,6 +119,14 @@ Track::snap ( Track_Widget *r )
     int rx1 = r->x();
     int rx2 = r->x() + r->w();
 
+    int nx = timeline->nearest_line( r->abs_x() );
+
+    if ( nx >= 0 )
+    {
+        r->offset( timeline->x_to_ts( nx ) );
+        return;
+    }
+
     for ( list <Track_Widget*>::iterator i = _widgets.begin(); i != _widgets.end(); i++ )
     {
         const Track_Widget *w = (*i);

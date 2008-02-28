@@ -176,6 +176,14 @@ Timeline::beats_per_minute ( nframes_t when ) const
     return tempo_track->beats_per_minute( when );
 }
 
+int
+Timeline::beats_per_bar ( nframes_t when ) const
+{
+    time_sig t = time_track->time( when );
+
+    return t.beats_per_bar;
+}
+
 void
 Timeline::beats_per_minute ( nframes_t when, float bpm )
 {
@@ -187,7 +195,9 @@ void
 Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 {
     fl_line_style( FL_DASH, 2 );
-    fl_color( fl_color_average( FL_BLACK, color, 0.65f ) );
+
+    Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
+    Fl_Color bar  = fl_color_average( FL_RED, color, 0.65f );
 
 //            int measure = ts_to_x( sample_rate * 60 / beats_per_minute() );
 
@@ -200,6 +210,10 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
         /* don't bother with lines this close together */
         if ( measure < 4 )
             break;
+        if ( 0 == (x / measure) % beats_per_bar( x_to_ts( x ) + xoffset ) )
+            fl_color( bar );
+        else
+            fl_color( beat );
 
         if ( 0 == (ts_to_x( xoffset ) + x) % measure )
             fl_line( x, Y, x, Y + H );

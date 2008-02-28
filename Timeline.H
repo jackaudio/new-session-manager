@@ -100,6 +100,8 @@ struct Timeline : public Fl_Group
 
     float beats_per_minute ( nframes_t when ) const;
     void beats_per_minute ( nframes_t when, float bpm );
+    int beats_per_bar ( nframes_t when ) const;
+
     void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
 
     /** set scroll position */

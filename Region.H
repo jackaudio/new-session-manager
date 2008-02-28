@@ -63,11 +63,12 @@ protected:
     char ** log_dump ( void )
         {
             //          char *r;
-            char **sa = (char**)malloc( sizeof( char* ) * 7 );
+            char **sa = (char**)malloc( sizeof( char* ) * 8 );
 
             int i = 0;
 
-            asprintf( &sa[ i++ ], ":source \"%s\"", _clip->name() );
+            asprintf( &sa[ i++ ], ":source \"%s\"", _clip ? _clip->name() : "" );
+            asprintf( &sa[ i++ ], ":track 0x%X", _track ? _track->id() : 0 );
             asprintf( &sa[ i++ ], ":x %lu", _offset );
             asprintf( &sa[ i++ ], ":l %lu", _start );
             asprintf( &sa[ i++ ], ":r %lu", _end );
@@ -75,9 +76,6 @@ protected:
             asprintf( &sa[ i++ ], ":gain %f", _scale );
 
             sa[ i ] = NULL;
-//            asprintf( &sa[4], ":track 0x%X", _track->id() );
-
-//            asprintf( &r, ":x %lu\n:l %lu\n:r %lu\n:selected %d\n:gain %f", _offset, _start, _end, _selected, _scale );
 
             return sa;
         }
@@ -115,18 +113,23 @@ protected:
                                     _scale = atof( v );
                                 else
                                     if ( ! strcmp( s, ":source" ) )
-                                        _clip = Audio_File::from_file( v );
-/*                                 else */
-/*                                     if ( ! strcmp( s, ":track" ) ) */
-/*                                     { */
-/*                                         int i; */
-/*                                         sscanf( v, "%X", &i ); */
-/*                                         Track *t = (Track*)Loggable::find( i ); */
+                                    {
+                                        if ( ! ( _clip = Audio_File::from_file( v ) ) )
+                                        {
+                                            printf( "Grave error: could not open source \"%s\"\n", v );
+                                        }
+                                    }
+                                    else
+                                        if ( ! strcmp( s, ":track" ) )
+                                        {
+                                            int i;
+                                            sscanf( v, "%X", &i );
+                                            Track *t = (Track*)Loggable::find( i );
 
-/*                                         assert( t ); */
+                                            assert( t );
 
-/*                                         t->add( this ); */
-/*                                     } */
+                                            t->add( this );
+                                        }
 
 
                 free( s );
@@ -153,6 +156,8 @@ public:
 
             r->set( sa );
 
+            r->log_create();
+
             return (Loggable *)r;
         }
 
@@ -167,6 +172,7 @@ public:
 
     Region ( const Region & rhs );
     Region ( Audio_File *c );
+    Region ( Audio_File *c, Track *t, nframes_t o );
 
     int handle ( int m );
     void draw_box( int X, int Y, int W, int H );

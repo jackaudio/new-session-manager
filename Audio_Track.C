@@ -87,11 +87,7 @@ Audio_Track::handle ( int m )
                 return 0;
             }
 
-            Region *r = new Region( c );
-
-            r->offset( timeline->x_to_ts( Fl::event_x() ) );
-
-            this->add( r );
+            Region *r = new Region( c, this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() ) );
 
             redraw();
             return 1;

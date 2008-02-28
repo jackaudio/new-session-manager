@@ -76,7 +76,7 @@ Track::draw ( void )
 void
 Track::remove ( Track_Widget *r )
 {
-    Logger _log( this );
+//    Logger _log( this );
 
     _widgets.remove( r );
 }
@@ -96,7 +96,7 @@ Track::event_widget ( void )
 void
 Track::add ( Track_Widget *r )
 {
-    Logger _log( this );
+//    Logger _log( this );
 
     if ( r->track() )
     {

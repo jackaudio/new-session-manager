@@ -91,6 +91,7 @@ Region::init ( void )
     _color = FL_BLUE;
 }
 
+/* copy constructor */
 Region::Region ( const Region & rhs )
 {
     _offset = rhs._offset;
@@ -103,6 +104,7 @@ Region::Region ( const Region & rhs )
     log_create();
 }
 
+/*  */
 Region::Region ( Audio_File *c )
 {
     init();
@@ -112,6 +114,20 @@ Region::Region ( Audio_File *c )
     log_create();
 }
 
+
+/* used when DND importing */
+Region::Region ( Audio_File *c, Track *t, nframes_t o )
+{
+    init();
+    _clip = c;
+    _end = _clip->length();
+    _track = t;
+    _offset = o;
+
+    _track->add( this );
+
+    log_create();
+}
 
 void
 Region::trim ( enum trim_e t, int X )

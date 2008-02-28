@@ -41,12 +41,6 @@ Audio_File_SF::from_file ( const char *filename )
         return NULL;
     }
 
-/*     if ( si.channels != 1 ) */
-/*     { */
-/*         printf( "error: incompatible format\n" ); */
-/*         goto invalid; */
-/*     } */
-
     if ( si.samplerate != timeline->sample_rate )
     {
         printf( "error: samplerate mismatch!\n" );
@@ -55,7 +49,7 @@ Audio_File_SF::from_file ( const char *filename )
 
     c = new Audio_File_SF;
 
-    c->_filename = filename;
+    c->_filename = strdup( filename );
     c->_length = si.frames;
     c->_channels = si.channels;
 

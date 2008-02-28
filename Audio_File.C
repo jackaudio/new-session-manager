@@ -20,12 +20,17 @@
 #include "Audio_File.H"
 #include "Audio_File_SF.H"
 
+map <string, Audio_File*> Audio_File::_open_files;
+
 /** attmpet to open any supported filetype */
 Audio_File *
 Audio_File::from_file ( const char * filename )
 {
 
     Audio_File *a;
+
+    if ( ( a = _open_files[ string( filename ) ] ) )
+        return a;
 
     if ( ( a = Audio_File_SF::from_file( filename ) ) )
         goto done;
@@ -36,6 +41,7 @@ Audio_File::from_file ( const char * filename )
 
 done:
 
+
     a->_peaks = new Peaks[ a->channels() ];
 
     for ( int i = a->channels(); i-- ; )
@@ -44,6 +50,8 @@ done:
         a->_peaks[i].clip( a );
         a->_peaks[i].open();
     }
+
+    _open_files[ string( filename ) ] = a;
 
     return a;
 }

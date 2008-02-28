@@ -27,8 +27,13 @@ typedef float sample_t;
 
 #include "Peaks.H"
 
+#include <string>
+#include <map>
+using namespace std;
+
 class Audio_File
 {
+    static map <string, Audio_File*> _open_files;
 
 protected:
 

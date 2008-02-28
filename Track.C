@@ -116,16 +116,9 @@ Track::snap ( Track_Widget *r )
 {
     const int snap_pixels = 10;
 
-    int rx1 = r->x();
-    int rx2 = r->x() + r->w();
+    const int rx1 = r->x();
+    const int rx2 = r->x() + r->w();
 
-    int nx = timeline->nearest_line( r->abs_x() );
-
-    if ( nx >= 0 )
-    {
-        r->offset( timeline->x_to_ts( nx ) );
-        return;
-    }
 
     for ( list <Track_Widget*>::iterator i = _widgets.begin(); i != _widgets.end(); i++ )
     {
@@ -134,8 +127,8 @@ Track::snap ( Track_Widget *r )
         if ( w == r )
             continue;
 
-        int wx1 = w->x();
-        int wx2 = w->x() + w->w();
+        const int wx1 = w->x();
+        const int wx2 = w->x() + w->w();
 
         if ( abs( rx1 - wx2 ) < snap_pixels )
         {
@@ -156,6 +149,15 @@ Track::snap ( Track_Widget *r )
         }
     }
 
+    {
+        int nx = timeline->nearest_line( r->abs_x() );
+
+        if ( nx >= 0 )
+        {
+            r->offset( timeline->x_to_ts( nx ) );
+            return;
+        }
+    }
 //    r->offset( timeline->x_to_ts( r->x() ) );
 
 done:

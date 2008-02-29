@@ -87,7 +87,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
         Fl_Scrollbar *o = new Fl_Scrollbar( X + W - 18, Y, 18, H - 18 );
 
         o->type( FL_VERTICAL );
-        o->step( 10 );
+//        o->step( 10 );
         o->callback( cb_vscroll, 0 );
         vscroll = o;
     }

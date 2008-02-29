@@ -87,6 +87,7 @@ Audio_Track::handle ( int m )
                 return 0;
             }
 
+            // FIXME: account for width of track header.
             Region *r = new Region( c, this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() ) );
 
             redraw();

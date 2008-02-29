@@ -147,12 +147,12 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
         {
             Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W - vscroll->w(), 5000 );
             o->type( Fl_Pack::VERTICAL );
-            o->spacing( 10 );
+            o->spacing( 5 );
 
             Track *l = NULL;
             for ( int i = 16; i--;  )
             {
-                Track_Header *t = new Track_Header( 0, 0, 800, 100 );
+                Track_Header *t = new Track_Header( 0, 0, W, 75 );
                 Track *o = new Audio_Track( 0, 0, 1, 100 );
                 o->prev( l );
                 if ( l )
@@ -206,7 +206,7 @@ Timeline::nearest_line ( int ix )
 {
     for ( int x = ix - 10; x < ix + 10; ++x )
     {
-        const int measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x ) + xoffset ));
+        const int measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x - Track_Header::width() ) + xoffset ));
 
 //        const int abs_x = ts_to_x( xoffset ) + x;
 
@@ -232,13 +232,13 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 
     for ( int x = X; x < X + W; ++x )
     {
-        measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x ) + xoffset ));
+        measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x - Track_Header::width() ) + xoffset ));
 
-        const int abs_x = ts_to_x( xoffset ) + x;
+        const int abs_x = ts_to_x( xoffset ) + x - Track_Header::width();
 
         if ( 0 == abs_x % measure )
         {
-            int bpb = beats_per_bar( x_to_ts( x ) + xoffset );
+            int bpb = beats_per_bar( x_to_ts( x -Track_Header::width() ) + xoffset );
 
             if ( 0 == (abs_x / measure) % bpb )
             {

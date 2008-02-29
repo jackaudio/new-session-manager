@@ -66,7 +66,7 @@ void cb_undo ( Fl_Widget *w, void *v )
 int
 main ( int argc, char **argv )
 {
-    Fl_Window *main_window = new Fl_Window( 0, 0, 800, 600 );
+    Fl_Window *main_window = new Fl_Window( 0, 0, 1024, 768 );
 
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
@@ -77,7 +77,7 @@ main ( int argc, char **argv )
     Loggable::register_create( "Time_Point",  &Time_Point::create  );
 
 
-    timeline = new Timeline( 0, 24, 800, 600 - 24, "Timeline" );
+    timeline = new Timeline( 0, 24, main_window->w(), main_window->h() - 24, "Timeline" );
 
 //    Region *wave = new Region( Clip::from_file( "streambass8.wav" ) );
 

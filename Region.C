@@ -193,7 +193,7 @@ Region::handle ( int m )
     static bool copied = false;
     static nframes_t os;
 
-    int X = Fl::event_x();
+    int X = Fl::event_x() - _track->x();
     int Y = Fl::event_y();
 
     int ret;

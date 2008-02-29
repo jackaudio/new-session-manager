@@ -25,6 +25,8 @@
 
 #include <FL/Fl_Scrollbar.H>
 
+#include "Track_Header.H"
+
 void
 cb_hscroll ( Fl_Widget *w, void *v )
 {
@@ -90,7 +92,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
     }
 
     {
-        Fl_Pack *o = new Fl_Pack( X, Y, W - vscroll->w(), H - hscroll->h(), "rulers" );
+        Fl_Pack *o = new Fl_Pack( X + Track_Header::width(), Y, W - Track_Header::width() - vscroll->w(), H - hscroll->h(), "rulers" );
         o->type( Fl_Pack::VERTICAL );
 
         {
@@ -144,13 +146,15 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
             Track *l = NULL;
             for ( int i = 16; i--;  )
             {
-
-                Track *o = new Audio_Track( 0, 0, 800, 100 );
+                Track_Header *t = new Track_Header( 0, 0, 800, 100 );
+                Track *o = new Audio_Track( 0, 0, 1, 100 );
                 o->prev( l );
                 if ( l )
                     l->next( o );
                 l = o;
-                o->end();
+//                o->end();
+
+                t->track( o );
             }
 
             tracks = o;
@@ -345,12 +349,15 @@ Timeline::draw ( void )
         int dy = _old_yposition - yposition;
 
         if ( ! dy )
-            fl_scroll( X, rulers->y(), W, rulers->h(), dx, 0, draw_clip, this );
+            fl_scroll( X + Track_Header::width(), rulers->y(), rulers->w(), rulers->h(), dx, 0, draw_clip, this );
 
         Y = rulers->y() + rulers->h();
         H = h() - rulers->h() - hscroll->h();
 
-        fl_scroll( X, Y, W, H, dx, dy, draw_clip, this );
+        if ( dy == 0 )
+            fl_scroll( X + Track_Header::width(), Y, W - Track_Header::width(), H, dx, dy, draw_clip, this );
+        else
+            fl_scroll( X, Y, W, H, dx, dy, draw_clip, this );
 
         _old_xposition = xoffset;
         _old_yposition = yposition;

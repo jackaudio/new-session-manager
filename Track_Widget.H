@@ -84,7 +84,6 @@ public:
     int abs_x ( void ) const { return timeline->ts_to_x( _offset ); }
     virtual int abs_w ( void ) const { return timeline->ts_to_x( _end - _start ); }
 
-
     Fl_Color color ( void ) { return _color; }
     Fl_Color box_color ( void ) { return _box_color; }
 
@@ -130,11 +129,11 @@ public:
         }
 
 
-    virtual void
-    dump ( void )
-        {
-            printf( "Unknown %p %lu %lu %lu\n", this, _offset, _start, _end );
-        }
+/*     virtual void */
+/*     dump ( void ) */
+/*         { */
+/*             printf( "Unknown %p %lu %lu %lu\n", this, _offset, _start, _end ); */
+/*         } */
 
     virtual void
     draw_label ( const char *label, Fl_Align align )
@@ -253,9 +252,9 @@ public:
 
                     redraw();
 
-                    if ( timeline->ts_to_x( timeline->xoffset ) + ox + X > 0 )
+                    if ( timeline->ts_to_x( timeline->xoffset ) + ox + X > _track->x() )
                     {
-                        int nx = ox + X;
+                        int nx = (ox + X) - _track->x();
 
                         _offset = timeline->x_to_ts( nx ) + timeline->xoffset;
 

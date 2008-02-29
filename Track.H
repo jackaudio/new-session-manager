@@ -88,6 +88,8 @@ public:
             box( FL_DOWN_BOX );
             color( fl_darker( FL_GRAY ) );
 
+            end();
+
             log_create();
         }
 

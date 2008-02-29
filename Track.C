@@ -85,7 +85,7 @@ Track::remove ( Track_Widget *r )
 Track_Widget *
 Track::event_widget ( void )
 {
-    int ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() );
+    int ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() );
     for ( list <Track_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
         if ( ets > (*r)->offset() && ets < (*r)->offset() + (*r)->length() )
             return (*r);

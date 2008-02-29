@@ -67,7 +67,7 @@ public:
     int y ( void ) const { return _track->y(); }
     int h ( void ) const { return _track->h(); }
 
-    int x ( void ) const { return _offset < timeline->xoffset ? -1 : min( 32767, _track->x() + timeline->ts_to_x( _offset - timeline->xoffset ) ); }
+    int x ( void ) const { return _offset < timeline->xoffset ? _track->x() - 1 : min( 32767, _track->x() + timeline->ts_to_x( _offset - timeline->xoffset ) ); }
     virtual int w ( void ) const
         {
             int tx = timeline->ts_to_x( _offset );

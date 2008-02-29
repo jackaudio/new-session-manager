@@ -172,6 +172,10 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
 
     }
 
+    /* make sure scrollbars are on top */
+    add( vscroll );
+    add( hscroll );
+
     vscroll->range( 0, tracks->h() );
 
     redraw();

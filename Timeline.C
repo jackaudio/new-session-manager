@@ -161,6 +161,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, 
 //                o->end();
 
                 t->track( o );
+                t->color( FL_GREEN );
             }
 
             tracks = o;

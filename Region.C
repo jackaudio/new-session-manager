@@ -36,7 +36,7 @@ using namespace std;
 
 extern Timeline *timeline;
 
-Fl_Boxtype Region::_box = FL_PLASTIC_UP_BOX;
+Fl_Boxtype Region::_box = FL_UP_BOX;
 
 Fl_Color Region::_selection_color = FL_MAGENTA;
 

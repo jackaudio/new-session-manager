@@ -51,7 +51,7 @@ Track::draw ( void )
     if ( ! fl_not_clipped( x(), y(), w(), h() ) )
         return;
 
-/*     fl_push_clip( x(), y(), w(), h() ); */
+    fl_push_clip( x(), y(), w(), h() );
 
     Fl_Group::draw();
 
@@ -70,7 +70,7 @@ Track::draw ( void )
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw( X, Y, W, H );
 
-/*     fl_pop_clip(); */
+    fl_pop_clip();
 }
 
 void

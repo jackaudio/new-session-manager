@@ -150,7 +150,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         {
             Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W - vscroll->w(), 5000 );
             o->type( Fl_Pack::VERTICAL );
-            o->spacing( 5 );
+            o->spacing( 0 );
 
             Track *l = NULL;
             for ( int i = 16; i--;  )
@@ -236,10 +236,11 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
     if ( ! _enable_measure_lines )
         return;
 
-    fl_line_style( FL_DASH, 2 );
+//    fl_line_style( FL_DASH, 2 );
+    fl_line_style( FL_DASH, 0 );
 
-    Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
-    Fl_Color bar  = fl_color_average( FL_RED, color, 0.65f );
+     Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
+     Fl_Color bar  = fl_color_average( FL_RED, color, 0.65f );
 
     int measure;
 
@@ -328,7 +329,9 @@ Timeline::draw ( void )
     W = tracks->w() - Fl::box_dw( tracks->child( 0 )->box() ) - 1;
     H = tracks->h();
 
-    if ( damage() & FL_DAMAGE_ALL )
+    if ( (damage() & FL_DAMAGE_ALL)
+         ||
+         damage() & FL_DAMAGE_EXPOSE )
     {
         draw_box( box(), 0, 0, w(), h(), color() );
 
@@ -336,19 +339,21 @@ Timeline::draw ( void )
         draw_child( *rulers );
         fl_pop_clip();
 
-        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - hscroll->h() );
+        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), hscroll->y() - (rulers->y() + rulers->h()) );
         draw_child( *tracks );
         fl_pop_clip();
 
         draw_child( *hscroll );
         draw_child( *vscroll );
 
-        redraw_overlay();
+//        redraw_overlay();
         return;
     }
 
     if ( damage() & FL_DAMAGE_CHILD )
     {
+//        draw_box( box(), 0, 0, w(), h(), color() );
+
         fl_push_clip( rulers->x(), rulers->y(), rulers->w() - vscroll->w(), rulers->h() );
         update_child( *rulers );
         fl_pop_clip();

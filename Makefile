@@ -26,6 +26,9 @@ $(OBJS): Makefile
 test: $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@
 
+mixer: Mixer_Strip.o Mixer.o
+	$(CXX) $(CXXFLAGS) $(LIBS) Mixer_Strip.o Mixer.o -o $@
+
 clean:
 	rm -f $(OBJS) test makedepend
 

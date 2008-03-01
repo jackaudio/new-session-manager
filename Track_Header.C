@@ -41,25 +41,36 @@ Track_Header::cb_input_field ( void )
 Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group ( X, Y, W, H, L )
 {
+
+
+    _name = NULL;
+    _track = NULL;
+    _selected = false;
+    _size = 3;
+
+    Fl_Group::size( w(), height() );
+
     Track_Header *o = this;
     o->box( FL_THIN_UP_BOX );
     {
-        Fl_Group *o = new Fl_Group( 2, 2, 149, 113 );
+        Fl_Group *o = new Fl_Group( 2, 2, 149, 70 );
         o->color( ( Fl_Color ) 53 );
         {
-            Fl_Group *o = new Fl_Group( 4, 4, 144, 66 );
-            {
-                Fl_Input *o = name_field = new Fl_Input( 4, 9, 144, 25 );
-                o->color( ( Fl_Color ) 33 );
-                o->labeltype( FL_NO_LABEL );
-                o->labelcolor( FL_GRAY0 );
-                o->textcolor( 32 );
+            Fl_Input *o = name_field = new Fl_Input( 2, 2, 144, 24 );
+            o->color( ( Fl_Color ) 33 );
+            o->labeltype( FL_NO_LABEL );
+            o->labelcolor( FL_GRAY0 );
+            o->textcolor( 32 );
 
-                o->callback( cb_input_field, (void*)this );
-            }
+            o->callback( cb_input_field, (void*)this );
+        }
+
+        {
+            Fl_Group *o = controls = new Fl_Group( 2, 28, 149, 24 );
+
             {
                 Fl_Button *o = record_button =
-                    new Fl_Button( 6, 38, 26, 27, "@circle" );
+                    new Fl_Button( 6, 28, 26, 24, "@circle" );
                 o->type( 1 );
                 o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
@@ -68,7 +79,7 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
             }
             {
                 Fl_Button *o = mute_button =
-                    new Fl_Button( 35, 38, 26, 27, "m" );
+                    new Fl_Button( 35, 28, 26, 24, "m" );
                 o->type( 1 );
                 o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
@@ -76,7 +87,7 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
             }
             {
                 Fl_Button *o = solo_button =
-                    new Fl_Button( 66, 38, 26, 27, "s" );
+                    new Fl_Button( 66, 28, 26, 24, "s" );
                 o->type( 1 );
                 o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
@@ -84,14 +95,21 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
             }
             {
                 Fl_Menu_Button *o = take_menu =
-                    new Fl_Menu_Button( 97, 38, 47, 27, "T" );
+                    new Fl_Menu_Button( 97, 28, 47, 24, "T" );
                 o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
                 o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
             }
             o->end();
         }
-        o->size( Track_Header::width(), o->h() );
+
+        {
+            Fl_Box *o = new Fl_Box( 0, 76, 149, 38 );
+            o->box( FL_FLAT_BOX );
+            Fl_Group::current()->resizable( o );
+        }
+
+        o->size( Track_Header::width(), h() );
         o->end();
     }
     {
@@ -103,11 +121,6 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
         Fl_Group::current()->resizable( o );
     }
     end();
-
-
-    _name = NULL;
-    _track = NULL;
-    _selected = false;
 
     log_create();
 }

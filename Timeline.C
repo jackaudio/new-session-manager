@@ -155,7 +155,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             Track *l = NULL;
             for ( int i = 16; i--;  )
             {
-                Track_Header *t = new Track_Header( 0, 0, W, 75 );
+//                Track_Header *t = new Track_Header( 0, 0, W, 75 );
+                Track_Header *t = new Track_Header( 0, 0, W, 30 );
                 Track *o = new Audio_Track( 0, 0, 1, 100 );
                 o->prev( l );
                 if ( l )
@@ -399,19 +400,34 @@ Timeline::draw_overlay ( void )
 
 }
 
+
 int
 Timeline::handle ( int m )
 {
+
     switch ( m )
     {
-        case FL_MOUSEWHEEL:
-        {
-            if ( hscroll->handle( m ) )
-                return 1;
 
-            return vscroll->handle( m );
-        }
+/*         case FL_MOUSEWHEEL: */
+/*         { */
+
+/* //            vscroll->deactivate(); */
+
+/*             int r = Fl_Overlay_Window::handle( m ); */
+
+/* /\*             vscroll->activate(); *\/ */
+
+/*             if ( r ) */
+/*                 return r; */
+
+/* /\*             if ( hscroll->handle( m ) ) *\/ */
+/* /\*                 return 1; *\/ */
+
+/* /\*             return vscroll->handle( m ); *\/ */
+
+/*         } */
         default:
             return Fl_Overlay_Window::handle( m );
     }
+
 }

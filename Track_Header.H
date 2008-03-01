@@ -26,6 +26,7 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Pack.H>
+#include <FL/Fl_Box.H>
 
 #include "Loggable.H"
 
@@ -45,6 +46,8 @@ private:
 
     bool _selected;
 
+    int _size;
+
 public:
 
     Fl_Input * name_field;
@@ -52,7 +55,7 @@ public:
     Fl_Button *mute_button;
     Fl_Button *solo_button;
     Fl_Menu_Button *take_menu;
-
+    Fl_Group *controls;
     Fl_Pack *takes;
 
     const char *class_name ( void ) { return "Track_Header"; }
@@ -73,25 +76,32 @@ public:
                     v[ strlen( v ) - 2 ] = '\0';
                 }
 
-                if ( ! strcmp( s, ":selected" ) )
-                    _selected = atoi( v );
+                if ( ! strcmp( s, ":h" ) )
+                {
+                    size( atoi( v ) );
+
+                    Fl_Widget::size( w(), height() );
+                }
                 else
-                    if ( ! strcmp( s, ":name" ) )
-                    {
-                        _name = strdup( v );
-                        name_field->value( _name );
-                    }
+                    if ( ! strcmp( s, ":selected" ) )
+                        _selected = atoi( v );
                     else
-                        if ( ! strcmp( s, ":track" ) )
+                        if ( ! strcmp( s, ":name" ) )
                         {
-                            int i;
-                            sscanf( v, "%X", &i );
-                            Track *t = (Track*)Loggable::find( i );
-
-                            assert( t );
-
-                            _track = t;
+                            _name = strdup( v );
+                            name_field->value( _name );
                         }
+                        else
+                            if ( ! strcmp( s, ":track" ) )
+                            {
+                                int i;
+                                sscanf( v, "%X", &i );
+                                Track *t = (Track*)Loggable::find( i );
+
+                                assert( t );
+
+                                _track = t;
+                            }
 
 
                 free( s );
@@ -103,18 +113,33 @@ public:
 
     char ** get ( void )
         {
-            char **sa = (char**)malloc( sizeof( char* ) * (1 + 3) );
+            char **sa = (char**)malloc( sizeof( char* ) * (1 + 4) );
 
             int i = 0;
 
             asprintf( &sa[ i++ ], ":name \"%s\"", _name ? _name : ""  );
             asprintf( &sa[ i++ ], ":track 0x%X", _track ? _track->id() : 0 );
             asprintf( &sa[ i++ ], ":selected %d", _selected );
+            asprintf( &sa[ i++ ], ":h %d", size() );
 //            asprintf( &sa[ i++ ], ":gain %f", _scale );
 
             sa[ i ] = NULL;
 
             return sa;
+        }
+
+
+
+
+    /* for loggable */
+    static Loggable *
+    create ( char **sa )
+        {
+            Track_Header *r = new Track_Header( 0, 0, 1, 1 );
+
+            r->set( sa );
+
+            return (Loggable *)r;
         }
 
     void
@@ -134,6 +159,33 @@ public:
                 Fl_Group::draw();
         }
 
+    int size ( void ) const { return _size; }
+
+    void size ( int v )
+        {
+            if ( v < 0 || v > 3 )
+                return;
+
+            _size = v;
+            Fl_Group::size( w(), height() );
+            if ( _track )
+                _track->size( _track->w(), height() );
+
+            if ( _size == 0 )
+                controls->hide();
+            else
+                controls->show();
+
+            parent()->redraw();
+        }
+
+    int height ( void ) const
+        {
+            static int table[] = { 30, 80, 150, 300 };
+
+            return table[ _size ];
+        }
+
     const char * name ( void ) const { return _name; }
     bool mute ( void ) const { return mute_button->value(); }
     bool solo ( void ) const { return solo_button->value(); }
@@ -146,6 +198,33 @@ public:
     static int width();
 
     void track( Track * t );
+
+    int handle ( int m )
+        {
+            switch ( m )
+            {
+                case FL_MOUSEWHEEL:
+                {
+
+                    if ( ! Fl::event_shift() )
+                        return 0;
+
+                    int d = Fl::event_dy();
+
+                    printf( "%d\n", d );
+
+                    if ( d < 0 )
+                        size( size() - 1 );
+                    else
+                        size( size() + 1 );
+
+                    return 1;
+                }
+                default:
+                    return Fl_Group::handle( m );
+
+            }
+        }
 
 };
 #endif

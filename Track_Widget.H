@@ -158,18 +158,9 @@ public:
                 }
             }
 
-/*             fl_font( FL_HELVETICA, 14 ); */
-/*             fl_color( FL_BLACK ); */
-/*             fl_draw( label, X + 2, Y + 2, w(), h(), align ); */
-/*             fl_color( FL_WHITE ); */
-/*             fl_draw( label, X, Y, w(), h(), align ); */
-
-            /* for some reasone FL_SHADOW_LABLE doesn't always use
-             * black for the shadow color...so we can't rely on it. */
-
             Fl_Label lab;
 
-            lab.color = FL_WHITE;
+            lab.color = 0;
             lab.type = FL_SHADOW_LABEL;
             lab.value = label;
             lab.font = FL_HELVETICA;

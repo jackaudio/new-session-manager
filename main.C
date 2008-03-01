@@ -47,7 +47,7 @@
 #include "Time_Track.H"
 
 #include "Loggable.H"
-
+#include "Track_Header.H"
 #include "const.h"
 
 Timeline *timeline;
@@ -73,19 +73,13 @@ main ( int argc, char **argv )
     Fl::scheme( "plastic" );
 
     Loggable::open( "history" );
-    Loggable::register_create( "Region",      &Region::create      );
-    Loggable::register_create( "Tempo_Point", &Tempo_Point::create );
-    Loggable::register_create( "Time_Point",  &Time_Point::create  );
-
+    /* welcome to C++ */
+    Loggable::register_create( "Region",        &Region::create        );
+    Loggable::register_create( "Tempo_Point",   &Tempo_Point::create   );
+    Loggable::register_create( "Time_Point",    &Time_Point::create    );
+    Loggable::register_create( "Track_Header",  &Track_Header::create  );
 
     timeline = new Timeline( 0, 24, main_window->w(), main_window->h() - 24, "Timeline" );
-
-//    Region *wave = new Region( Clip::from_file( "streambass8.wav" ) );
-
-/*     track1->next( track2 ); */
-/*     track2->prev( track1 ); */
-
-//    timeline->scrollbar = new Scalebar( 0, 600 - 24, 800, 24 );
 
     Fl_Button *o = new Fl_Button( 0, 0, 50, 24, "undo" );
     o->shortcut( FL_CTRL + 'z' );
@@ -93,8 +87,6 @@ main ( int argc, char **argv )
 
     main_window->end();
     main_window->show();
-
-/*     wave->redraw(); */
 
     Fl::run();
 }

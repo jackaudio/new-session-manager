@@ -327,19 +327,11 @@ Timeline::draw ( void )
     W = tracks->w() - Fl::box_dw( tracks->child( 0 )->box() ) - 1;
     H = tracks->h();
 
-
-/*             fl_color( FL_RED ); */
-/*             fl_rect( X, Y, X + W, Y + H ); */
-
     if ( damage() & FL_DAMAGE_ALL )
-//                 ( damage() & ( FL_DAMAGE_CHILD | FL_DAMAGE_SCROLL ) ) )
     {
-
-        //     draw_box( box(), x(), y(), w(), h(), color() );
-
         draw_box( box(), 0, 0, w(), h(), color() );
 
-        fl_push_clip( x(), rulers->y(), w(), rulers->h() );
+        fl_push_clip( 0, rulers->y(), w(), rulers->h() );
         draw_child( *rulers );
         fl_pop_clip();
 
@@ -356,30 +348,16 @@ Timeline::draw ( void )
 
     if ( damage() & FL_DAMAGE_CHILD )
     {
-
-/*         if ( damage() & FL_DAMAGE_SCROLL ) */
-/*             fl_push_no_clip(); */
-
         fl_push_clip( rulers->x(), rulers->y(), rulers->w() - vscroll->w(), rulers->h() );
         update_child( *rulers );
         fl_pop_clip();
 
-        /* headers */
-        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), Track_Header::width(), h() - rulers->h()  - hscroll->h() );
-        update_child( *tracks );
-        fl_pop_clip();
-
-        /* track bodies */
-        fl_push_clip( tracks->x() + Track_Header::width(), rulers->y() + rulers->h(), tracks->w() - Track_Header::width(), h() - rulers->h()  - hscroll->h() );
+        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), hscroll->y() - (rulers->y() + rulers->h()) );
         update_child( *tracks );
         fl_pop_clip();
 
         update_child( *hscroll );
         update_child( *vscroll );
-
-/*         if ( damage() & FL_DAMAGE_SCROLL ) */
-/*             fl_pop_clip(); */
-
     }
 
 

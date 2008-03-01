@@ -94,12 +94,14 @@ Region::init ( void )
 /* copy constructor */
 Region::Region ( const Region & rhs )
 {
-    _offset = rhs._offset;
-    _track  = rhs._track;
-    _clip   = rhs._clip;
-    _start  = rhs._start;
-    _end    = rhs._end;
-    _scale  = rhs._scale;
+    _offset    = rhs._offset;
+    _track     = rhs._track;
+    _clip      = rhs._clip;
+    _start     = rhs._start;
+    _end       = rhs._end;
+    _scale     = rhs._scale;
+    _box_color = rhs._box_color;
+    _color     = rhs._color;
 
     log_create();
 }
@@ -125,6 +127,22 @@ Region::Region ( Audio_File *c, Track *t, nframes_t o )
     _offset = o;
 
     _track->add( this );
+
+    int sum = 0;
+    const char *s = rindex( _clip->name(), '/' );
+    for ( int i = strlen( s ); i--; )
+        sum += s[ i ];
+
+    while ( sum >> 8 )
+        sum = (sum & 0xFF) + (sum >> 8);
+
+    _color = (Fl_Color)sum;
+
+/*     _color = fl_color_average( FL_YELLOW, (Fl_Color)sum, 0.80 ); */
+
+//    _color = FL_YELLOW;
+
+    _box_color = FL_WHITE;
 
     log_create();
 }
@@ -431,7 +449,7 @@ Region::draw ( int X, int Y, int W, int H )
 //                       _scale, _selected ? _color : fl_invert_color( _color )  );
         draw_waveform( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch, _clip, i,
                        _start + offset, min( (_end - _start) - offset, _end),
-                       _scale, _selected ? _color : fl_invert_color( _color )  );
+                       _scale, _selected ? fl_invert_color( _color ) : _color );
 
 
     timeline->draw_measure_lines( rx, Y, rw, H, _box_color );

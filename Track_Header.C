@@ -46,7 +46,7 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     _name = NULL;
     _track = NULL;
     _selected = false;
-    _size = 3;
+    _size = 1;
 
     Fl_Group::size( w(), height() );
 

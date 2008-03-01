@@ -58,7 +58,7 @@ draw_waveform ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chann
         p.min *= _scale;
 
         // FIXME: cache this stuff.
-        fl_color( fl_color_average( FL_RED, color,  fabs( p.max - p.min ) ) );
+        fl_color( fl_color_average( FL_RED, color, fabs( p.max - p.min ) - 1.0 ) );
 
         if ( p.min < -1.0 || p.max > 1.0 )
             fl_color( FL_RED );

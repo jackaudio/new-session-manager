@@ -117,6 +117,29 @@ public:
             return sa;
         }
 
+    void
+    draw ( void )
+        {
+            if ( _selected )
+            {
+                Fl_Color c = color();
+
+                color( FL_RED );
+
+                Fl_Group::draw();
+
+                color( c );
+            }
+            else
+                Fl_Group::draw();
+        }
+
+    const char * name ( void ) const { return _name; }
+    bool mute ( void ) const { return mute_button->value(); }
+    bool solo ( void ) const { return solo_button->value(); }
+    bool arm ( void ) const { return record_button->value(); }
+    bool selected ( void ) const { return _selected; }
+
     static void cb_input_field ( Fl_Widget *w, void *v );
     void cb_input_field ( void );
 

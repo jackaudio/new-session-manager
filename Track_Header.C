@@ -61,15 +61,16 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
                 Fl_Button *o = record_button =
                     new Fl_Button( 6, 38, 26, 27, "@circle" );
                 o->type( 1 );
-                o->box( FL_ROUNDED_BOX );
+                o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
+                o->selection_color( FL_RED );
                 o->labelsize( 8 );
             }
             {
                 Fl_Button *o = mute_button =
                     new Fl_Button( 35, 38, 26, 27, "m" );
                 o->type( 1 );
-                o->box( FL_ROUNDED_BOX );
+                o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
                 o->labelsize( 11 );
             }
@@ -77,14 +78,14 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
                 Fl_Button *o = solo_button =
                     new Fl_Button( 66, 38, 26, 27, "s" );
                 o->type( 1 );
-                o->box( FL_ROUNDED_BOX );
+                o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
                 o->labelsize( 11 );
             }
             {
                 Fl_Menu_Button *o = take_menu =
                     new Fl_Menu_Button( 97, 38, 47, 27, "T" );
-                o->box( FL_ROUNDED_BOX );
+                o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
                 o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
             }

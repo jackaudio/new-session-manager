@@ -65,12 +65,13 @@ cb_vscroll ( Fl_Widget *w, void *v )
 }
 
 
-Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Group( X, Y, W, H, L )
+Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Window( X, Y, W, H, L )
 {
 
     box( FL_FLAT_BOX );
     xoffset = 0;
 
+    X = Y = 0;
     {
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
 
@@ -327,7 +328,9 @@ Timeline::draw ( void )
 //                 ( damage() & ( FL_DAMAGE_CHILD | FL_DAMAGE_SCROLL ) ) )
     {
 
-        draw_box( box(), x(), y(), w(), h(), color() );
+        //     draw_box( box(), x(), y(), w(), h(), color() );
+
+        draw_box( box(), 0, 0, w(), h(), color() );
 
         fl_push_clip( x(), rulers->y(), w(), rulers->h() );
         draw_child( *rulers );
@@ -340,6 +343,7 @@ Timeline::draw ( void )
         draw_child( *hscroll );
         draw_child( *vscroll );
 
+        redraw_overlay();
         return;
     }
 
@@ -394,6 +398,21 @@ Timeline::draw ( void )
     }
 }
 
+void
+Timeline::draw_overlay ( void )
+{
+
+    // TODO: draw selection rectangle here!
+
+
+/*     fl_color( FL_BLUE ); */
+/*     fl_line_style( FL_DOT, 4 ); */
+
+/*     fl_rect( 300, 400, 200, 300 ); */
+
+/*     fl_line_style( FL_SOLID, 0 ); */
+
+}
 
 int
 Timeline::handle ( int m )
@@ -408,6 +427,6 @@ Timeline::handle ( int m )
             return vscroll->handle( m );
         }
         default:
-            return Fl_Group::handle( m );
+            return Fl_Overlay_Window::handle( m );
     }
 }

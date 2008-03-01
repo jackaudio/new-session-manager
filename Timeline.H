@@ -23,6 +23,7 @@
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Scrollbar.H>
 #include <FL/Fl_Widget.H>
+#include <Fl/Fl_Overlay_Window.H>
 
 #include "Scalebar.H"
 
@@ -48,7 +49,7 @@ class Time_Track;
 #include <list>
 using std::list;
 
-struct Timeline : public Fl_Group
+struct Timeline : public Fl_Overlay_Window
 {
 
     static void draw_clip ( void * v, int X, int Y, int W, int H );
@@ -111,6 +112,7 @@ struct Timeline : public Fl_Group
     void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
     void position ( int X );
     void draw ( void );
+    void draw_overlay ( void );
     int handle ( int m );
 
 };

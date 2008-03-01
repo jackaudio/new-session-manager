@@ -34,10 +34,16 @@ class Track_Header : public Fl_Group, public Loggable
 
 public:
 
-    Track_Header( int X, int Y, int W, int H, const char *L = 0 );
+    Track_Header ( int X, int Y, int W, int H, const char *L = 0 );
+    ~Track_Header ( );
 
 private:
+
     Track * _track;
+
+    char *_name;
+
+    bool _selected;
 
 public:
 
@@ -53,13 +59,66 @@ public:
 
     void set ( char **sa )
         {
-            return;
+            for ( int i = 0; sa[i]; ++i )
+            {
+                char *s = sa[i];
+
+                strtok( s, " " );
+
+                char *v = s + strlen( s ) + 1;
+
+                if  ( *v == '"' )
+                {
+                    v++;
+                    v[ strlen( v ) - 2 ] = '\0';
+                }
+
+                if ( ! strcmp( s, ":selected" ) )
+                    _selected = atoi( v );
+                else
+                    if ( ! strcmp( s, ":name" ) )
+                    {
+                        _name = strdup( v );
+                        name_field->value( _name );
+                    }
+                    else
+                        if ( ! strcmp( s, ":track" ) )
+                        {
+                            int i;
+                            sscanf( v, "%X", &i );
+                            Track *t = (Track*)Loggable::find( i );
+
+                            assert( t );
+
+                            _track = t;
+                        }
+
+
+                free( s );
+            }
+
+            free( sa );
+
         }
 
     char ** get ( void )
         {
-            return NULL;
+            char **sa = (char**)malloc( sizeof( char* ) * (1 + 3) );
+
+            int i = 0;
+
+            asprintf( &sa[ i++ ], ":name \"%s\"", _name ? _name : ""  );
+            asprintf( &sa[ i++ ], ":track 0x%X", _track ? _track->id() : 0 );
+            asprintf( &sa[ i++ ], ":selected %d", _selected );
+//            asprintf( &sa[ i++ ], ":gain %f", _scale );
+
+            sa[ i ] = NULL;
+
+            return sa;
         }
+
+    static void cb_input_field ( Fl_Widget *w, void *v );
+    void cb_input_field ( void );
 
     static int width();
 

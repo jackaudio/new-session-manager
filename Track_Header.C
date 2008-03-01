@@ -19,6 +19,25 @@
 
 #include "Track_Header.H"
 
+void
+Track_Header::cb_input_field ( Fl_Widget *w, void *v )
+{
+    ((Track_Header*)v)->cb_input_field();
+}
+
+void
+Track_Header::cb_input_field ( void )
+{
+    log_start();
+
+    if ( _name )
+        free( _name );
+
+    _name = strdup( name_field->value() );
+
+    log_end();
+}
+
 Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group ( X, Y, W, H, L )
 {
@@ -35,6 +54,8 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
                 o->labeltype( FL_NO_LABEL );
                 o->labelcolor( FL_GRAY0 );
                 o->textcolor( 32 );
+
+                o->callback( cb_input_field, (void*)this );
             }
             {
                 Fl_Button *o = record_button =
@@ -81,6 +102,18 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
         Fl_Group::current()->resizable( o );
     }
     end();
+
+
+    _name = NULL;
+    _track = NULL;
+    _selected = false;
+
+    log_create();
+}
+
+Track_Header::~Track_Header ( )
+{
+    log_destroy();
 }
 
 int

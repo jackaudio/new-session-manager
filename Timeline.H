@@ -57,6 +57,8 @@ struct Timeline : public Fl_Overlay_Window
     int _old_xposition;
     int _old_yposition;
 
+    bool _enable_measure_lines;
+
     enum snap_flags_e {
         SNAP_TO_REGION,
         SNAP_TO_BAR,

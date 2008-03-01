@@ -71,6 +71,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     box( FL_FLAT_BOX );
     xoffset = 0;
 
+    _enable_measure_lines = true;
+
     X = Y = 0;
     {
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
@@ -223,16 +225,20 @@ Timeline::nearest_line ( int ix )
     return -1;
 }
 
-/* draw appropriate measure lines inside the given bounding box */
+/** draw appropriate measure lines inside the given bounding box */
+/* FIXME: this function *really* needs to be optimized. Currently it
+   searched both the time and tempo lists once for every horiontal
+   pixel and performs a number of calculations--this is slow. */
 void
 Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 {
+    if ( ! _enable_measure_lines )
+        return;
+
     fl_line_style( FL_DASH, 2 );
 
     Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
     Fl_Color bar  = fl_color_average( FL_RED, color, 0.65f );
-
-//            int measure = ts_to_x( sample_rate * 60 / beats_per_minute() );
 
     int measure;
 
@@ -267,6 +273,7 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 
     }
     fl_line_style( FL_SOLID, 0 );
+
 }
 
 

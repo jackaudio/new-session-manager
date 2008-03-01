@@ -111,8 +111,6 @@ public:
 
             r->set( sa );
 
-            r->log_create();
-
             return (Loggable *)r;
         }
 

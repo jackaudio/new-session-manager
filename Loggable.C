@@ -106,6 +106,68 @@ void free_sa ( char **sa )
     free( sa );
 }
 
+/* void */
+/* Loggable::redo ( const char *s ) */
+/* { */
+/*     int id; */
+/*     sscanf( s, "%*s %X ", &id ); */
+/*     Loggable *l = find( id ); */
+/* //    assert( l ); */
+
+/*     char classname[40]; */
+/*     char command[40]; */
+/*     char *arguments; */
+
+/*     sscanf( s, "%s %*X %s %*[^\n<] << %a[^\n]", classname, command, &arguments ); */
+
+
+/*     int ui = _undo_index; */
+
+
+/*     if ( ! l ) */
+/*     { */
+/*         printf( "corrupt undo?\n" ); */
+/*         abort(); */
+/*     } */
+
+
+
+/*     if ( ! strcmp( command, "destroy" ) ) */
+/*     { */
+/*         char **sa = parse_alist( arguments ); */
+
+/*         if ( ! _class_map[ string( classname ) ] ) */
+/*             printf( "error class %s is unregistered!\n", classname ); */
+/*         else */
+/*         { */
+/*             /\* create *\/ */
+/*             Loggable *l = _class_map[ string( classname ) ]( sa ); */
+/*             l->update_id( id ); */
+/*         } */
+/*     } */
+/*     else */
+/*         if ( ! strcmp( command, "set" ) ) */
+/*         { */
+
+/*             printf( "got set command.\n" ); */
+
+/*             char **sa  = parse_alist( arguments ); */
+
+/*             l->log_start(); */
+/*             l->set( sa ); */
+/*             l->log_end(); */
+
+/*         } */
+/*         else */
+/*             if ( ! strcmp( command, "create" ) ) */
+/*             { */
+/*                 int id = l->id(); */
+/*                 delete l; */
+/*                 _loggables[ id ] = NULL; */
+/*             } */
+
+
+/* } */
 
 void
 Loggable::undo ( void )
@@ -173,11 +235,11 @@ Loggable::undo ( void )
     int ui = _undo_index;
 
 
-    if ( ! l )
-    {
-        printf( "corrupt undo?\n" );
-        abort();
-    }
+/*     if ( ! l ) */
+/*     { */
+/*         printf( "corrupt undo?\n" ); */
+/*         abort(); */
+/*     } */
 
 
 
@@ -188,7 +250,12 @@ Loggable::undo ( void )
         if ( ! _class_map[ string( classname ) ] )
             printf( "error class %s is unregistered!\n", classname );
         else
-            _class_map[ string( classname ) ]( sa );
+        {
+            /* create */
+            Loggable *l = _class_map[ string( classname ) ]( sa );
+            l->update_id( id );
+            l->log_create();
+        }
     }
     else
         if ( ! strcmp( command, "set" ) )
@@ -220,6 +287,30 @@ Loggable::undo ( void )
     delete buf;
 }
 
+/** write a snapshot of the state of all loggable objects, sufficient
+ * for later reconstruction, to /file/ */
+bool
+Loggable::snapshot( const char *file )
+{
+    FILE *ofp = _fp;
+
+    if ( ! ( _fp = fopen( file, "a" ) ) )
+    {
+        _fp = ofp;
+        return false;
+    }
+
+    for ( int i = 0; i < _log_id; ++i )
+    {
+        _loggables[ i ]->log_create();
+    }
+
+    fclose( _fp );
+
+    _fp = ofp;
+
+    return true;
+}
 
 void
 Loggable::log ( const char *fmt, ... )

@@ -75,6 +75,7 @@ public:
     static bool open ( const char *filename );
     static void undo ( void );
     static int undo_index ( void ) { return _undo_index; }
+    static bool snapshot( const char *file );
 
     static
     void
@@ -112,11 +113,26 @@ public:
             _loggables.push_back( this );
         }
 
+    /** must be called after construction in create() methods */
+    void
+    update_id ( int id )
+        {
+            assert( _id == _log_id );
+
+            _loggables[ _id - 1 ]  = NULL;
+
+            --_log_id;
+
+            _id = id;
+
+            assert( ! _loggables[ _id - 1 ] );
+
+            _loggables[ _id - 1 ] = this;
+        }
+
     virtual ~Loggable (  )
         {
-
-
-
+            _loggables[ _id - 1 ] = NULL;
         }
 
     static
@@ -147,6 +163,7 @@ protected:
 public:
 
     int id ( void ) { return _id; }
+
 
     friend class Logger;
 };

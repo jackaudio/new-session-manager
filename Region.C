@@ -235,7 +235,7 @@ Region::handle ( int m )
                         break;
                     case 3:
                         trim( trimming = RIGHT, X );
-                       _log.hold();
+                        _log.hold();
                         break;
                     case 2:
                     {
@@ -360,21 +360,22 @@ Region::handle ( int m )
                 }
             }
 
-            if ( Y > y() + h() )
+            if ( ! selected() )
             {
-                if ( _track->next() )
-                    if ( Y > _track->next()->y() )
-                        _track->next()->add( this );
-            }
-            else
-                if ( Y < y() )
+                if ( Y > y() + h() )
                 {
-                    if ( _track->prev() )
-                        if ( Y < _track->prev()->y() + _track->prev()->h() )
-                            _track->prev()->add( this );
+                    if ( _track->next() )
+                        if ( Y > _track->next()->y() )
+                            _track->next()->add( this );
                 }
-
-            //                  _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
+                else
+                    if ( Y < y() )
+                    {
+                        if ( _track->prev() )
+                            if ( Y < _track->prev()->y() + _track->prev()->h() )
+                                _track->prev()->add( this );
+                    }
+            }
 
             ret = Track_Widget::handle( m );
             return ret | 1;

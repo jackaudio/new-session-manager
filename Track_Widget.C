@@ -134,7 +134,8 @@ Track_Widget::handle ( int m )
             {
                 int nx = (ox + X) - _track->x();
 
-                _offset = timeline->x_to_ts( nx ) + timeline->xoffset;
+                // _offset = timeline->x_to_ts( nx ) + timeline->xoffset;
+                offset( timeline->x_to_ts( nx ) + timeline->xoffset );
 
                 _track->snap( this );
             }

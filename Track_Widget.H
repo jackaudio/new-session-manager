@@ -85,12 +85,32 @@ public:
                 delete _selection.front();
         }
 
-    static void
-    move_selected ( long d )
+    void
+    offset ( nframes_t where )
         {
-            for ( list <Track_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
-                i->_offset += d;
+
+            if  ( ! selected() )
+            {
+                redraw();
+                _offset = where;
+            }
+            else
+            {
+                long d = where - _offset;
+
+                for ( list <Track_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
+                {
+                    (*i)->redraw();
+
+                    if ( d < 0 )
+                        (*i)->_offset -= 0 - d;
+                    else
+                        (*i)->_offset += d;
+
+                }
+            }
         }
+
 
     Fl_Group * parent ( void ) const { return _track; }
 
@@ -124,7 +144,7 @@ public:
     void track ( Track *t ) {  _track = t; }
 
     nframes_t offset ( void ) const { return _offset; }
-    void offset ( nframes_t o ) { _offset = o; }
+//    void offset ( nframes_t o ) { _offset = o; }
 
     void end ( nframes_t v ) { _end = v; }
     nframes_t end ( void ) const { return _end; }

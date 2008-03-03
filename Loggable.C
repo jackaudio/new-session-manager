@@ -32,6 +32,7 @@ int Loggable::_undo_index = 1;
 
 vector <Loggable *> Loggable::_loggables;
 map <string, create_func*> Loggable::_class_map;
+queue <char *> Loggable::_transaction;
 
 bool
 Loggable::open ( const char *filename )
@@ -315,18 +316,54 @@ Loggable::snapshot( const char *file )
 void
 Loggable::log ( const char *fmt, ... )
 {
+    /* FIXME: bogus limit  */
+    static char buf[1024];
+    static int i = 0;
+
     va_list args;
 
     if ( fmt )
     {
         va_start( args, fmt );
-        vfprintf( _fp, fmt, args );
+        i += vsprintf( buf + i, fmt, args );
         va_end( args );
     }
 
-    fflush( _fp );
+    if ( rindex( buf, '\n' ) )
+    {
+        _transaction.push( strdup( buf ) );
+        i = 0;
+    }
 }
 
+void
+Loggable::flush ( void )
+{
+    int n = _transaction.size();
+
+    if ( n > 1 )
+        fprintf( _fp, "{\n" );
+
+    while ( ! _transaction.empty() )
+    {
+        char *s = _transaction.front();
+
+        _transaction.pop();
+
+        if ( n > 1 )
+            fprintf( _fp, "\t" );
+
+        fprintf( _fp, "%s", s );
+
+        free( s );
+    }
+
+    if ( n > 1 )
+        fprintf( _fp, "}\n" );
+
+
+    fflush( _fp );
+}
 
 void
 Loggable::log_print(  char **o, char **n )
@@ -395,15 +432,11 @@ Loggable::log_end ( void )
     if ( --_nest > 0 )
         return;
 
-//    assert( _old_state );
-
     char **_new_state = get();
-
-    // if ( _old_state )
 
     if ( log_diff( _old_state, _new_state ) )
     {
-        indent();
+//        indent();
         log( "%s 0x%X set ", class_name(), _id );
 
         log_print( _old_state, _new_state );
@@ -417,19 +450,14 @@ Loggable::log_end ( void )
 
     _old_state = NULL;
 
-/*     if ( _old_state ) */
-/*     { */
-/*         free_sa( _old_state ); */
-/*         _old_state = NULL; */
-/*     } */
-
-//    _old_state = NULL;
+    if ( Loggable::_level == 0 )
+        Loggable::flush();
 }
 
 void
 Loggable::log_create ( void )
 {
-    indent();
+//    indent();
     log( "%s 0x%X create ", class_name(), _id );
 
     char **sa = get();
@@ -441,12 +469,15 @@ Loggable::log_create ( void )
     }
     else
         log( "\n" );
+
+    if ( Loggable::_level == 0 )
+        Loggable::flush();
 }
 
 void
 Loggable::log_destroy ( void )
 {
-    indent();
+//    indent();
     log( "%s 0x%X destroy (nothing) << ", class_name(), _id );
 
     char **sa = get();
@@ -455,4 +486,7 @@ Loggable::log_destroy ( void )
     log_print( NULL, sa );
 
     free_sa( sa );
+
+    if ( Loggable::_level == 0 )
+        Loggable::flush();
 }

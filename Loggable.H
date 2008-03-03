@@ -27,11 +27,11 @@
 #include <assert.h>
 
 #include <vector>
-using std::vector;
 #include <map>
-using std::map;
 #include <string>
-using std::string;
+#include <queue>
+using namespace std;
+
 
 class Loggable;
 typedef Loggable *(create_func)(char **);
@@ -49,6 +49,8 @@ class Loggable
 
     static map <string, create_func*> _class_map;
 
+    static queue <char *> _transaction;
+
 private:
     int _id;
 
@@ -60,6 +62,7 @@ private:
     void log_print(  char **o, char **n );
     static void log ( const char *fmt, ... );
 
+    static void flush ( void );
     static
     void indent ( void )
         {
@@ -81,7 +84,7 @@ public:
     void
     block_start ( void )
         {
-            indent();
+//            indent();
 //            log( "{\n" );
             ++Loggable::_level;
         }
@@ -90,7 +93,7 @@ public:
     block_end ( void )
         {
             assert( --Loggable::_level >= 0 );
-            indent();
+//            indent();
 //            log( "}\n" );
         }
 

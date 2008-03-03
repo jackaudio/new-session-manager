@@ -72,7 +72,7 @@ protected:
             asprintf( &sa[ i++ ], ":x %lu", _offset );
             asprintf( &sa[ i++ ], ":l %lu", _start );
             asprintf( &sa[ i++ ], ":r %lu", _end );
-            asprintf( &sa[ i++ ], ":selected %d", _selected );
+            asprintf( &sa[ i++ ], ":selected %d", selected() );
             asprintf( &sa[ i++ ], ":gain %f", _scale );
 
             sa[ i ] = NULL;
@@ -107,7 +107,12 @@ protected:
                             _end = atol( v );
                         else
                             if ( ! strcmp( s, ":selected" ) )
-                                _selected = atoi( v );
+                            {
+                                if ( atoi( v ) )
+                                    select();
+                                else
+                                    deselect();
+                            }
                             else
                                 if ( ! strcmp( s, ":gain" ) )
                                     _scale = atof( v );

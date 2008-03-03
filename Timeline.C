@@ -418,13 +418,18 @@ Timeline::handle ( int m )
             {
                 case FL_Delete:
                 {
-                    for ( int i = tracks->children(); i--; )
-                    {
-                        Track_Header *t = (Track_Header*)tracks->child( i );
 
-                        t->track()->remove_selected();
-                    }
+/*                     for ( int i = tracks->children(); i--; ) */
+/*                     { */
+/*                         Track_Header *t = (Track_Header*)tracks->child( i ); */
+
+/*                         t->track()->remove_selected(); */
+/*                     } */
+
+                    Track_Widget::delete_selected();
+
                     return 1;
+
                 }
 
             }

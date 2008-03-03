@@ -282,7 +282,12 @@ Region::handle ( int m )
                     if ( Fl::event_state() & FL_CTRL )
                         normalize();
                     else
-                        _selected = ! _selected;
+                    {
+                        if ( selected() )
+                            deselect();
+                        else
+                            select();
+                    }
 
                     redraw();
                     goto changed;
@@ -392,7 +397,7 @@ Region::draw_box( int X, int Y, int W, int H )
 
     fl_push_clip( x(), Y, w(), H );
 
-    if ( _selected )
+    if ( selected() )
         fl_draw_box( fl_down( box() ), x() - 10, y(), w() + 50, h(), _selection_color );
 //        fl_draw_box( fl_down( box() ), x() - 10, Y, w() + 50, H, fl_invert_color( _box_color ) );
     else
@@ -449,7 +454,7 @@ Region::draw ( int X, int Y, int W, int H )
 //                       _scale, _selected ? _color : fl_invert_color( _color )  );
         draw_waveform( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch, _clip, i,
                        _start + offset, min( (_end - _start) - offset, _end),
-                       _scale, _selected ? fl_invert_color( _color ) : _color );
+                       _scale, selected() ? fl_invert_color( _color ) : _color );
 
 
     timeline->draw_measure_lines( rx, Y, rw, H, _box_color );

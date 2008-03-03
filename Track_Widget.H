@@ -21,13 +21,17 @@
 
 #include "Track.H"
 #include "Loggable.H"
-
+#include "Audio_File.H"
+#include "Timeline.H"
+#include <list>
 #include <algorithm>
 using namespace std;
 
 /* Base class for virtual widget on a track */
 class Track_Widget : public Loggable
 {
+
+    static list <Track_Widget *> _selection;
 
 protected:
 
@@ -36,8 +40,6 @@ protected:
     nframes_t _offset;                                          /* where on the timeline */
     nframes_t _start;                                           /* first sample from clip */
     nframes_t _end;                                             /* last sample from clip */
-
-    bool _selected;
 
     Fl_Color _color;                                            /* color of waveform */
     Fl_Color _box_color;                                        /* color of background (box) */
@@ -49,17 +51,46 @@ public:
             _track = NULL;
 
             _offset = _start = _end = 0;
-
-            _selected = false;
         }
 
     virtual ~Track_Widget ( )
         {
             redraw();
+
             _track->remove( this );
+
+            _selection.remove( this );
         }
 
-    bool selected ( void ) { return _selected; }
+    bool selected ( void )
+        {
+            return ::find( _selection.begin(), _selection.end(), this ) != _selection.end();
+        }
+
+    void select ( void )
+        {
+            _selection.push_back( this );
+        }
+
+    void deselect ( void )
+        {
+            _selection.remove( this );
+        }
+
+
+    static void
+    delete_selected ( void )
+        {
+            while ( _selection.size() )
+                delete _selection.front();
+        }
+
+    static void
+    move_selected ( long d )
+        {
+            for ( list <Track_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
+                i->_offset += d;
+        }
 
     Fl_Group * parent ( void ) const { return _track; }
 
@@ -130,170 +161,13 @@ public:
             draw_box( X, Y, W, H );
         }
 
-
-/*     virtual void */
-/*     dump ( void ) */
-/*         { */
-/*             printf( "Unknown %p %lu %lu %lu\n", this, _offset, _start, _end ); */
-/*         } */
-
-    virtual void
-    draw_label ( const char *label, Fl_Align align )
-        {
-            int X, Y;
-
-            X = x();
-            Y = y();
-
-            /* FIXME: why do we have to to this here? why doesn't Fl_Lable::draw take care of this stuff? */
-            if ( ! (align & FL_ALIGN_INSIDE) )
-            {
-                if ( align & FL_ALIGN_RIGHT )
-                {
-                    X += w();
-                    align = (Fl_Align)((align & ~FL_ALIGN_RIGHT) | FL_ALIGN_LEFT);
-                }
-                if ( align & FL_ALIGN_BOTTOM  )
-                {
-                    Y += h();
-                    align = (Fl_Align)((align & ~FL_ALIGN_BOTTOM) | FL_ALIGN_TOP);
-                }
-            }
-
-            Fl_Label lab;
-
-            lab.color = 0;
-            lab.type = FL_SHADOW_LABEL;
-            lab.value = label;
-            lab.font = FL_HELVETICA;
-            lab.size = 14;
-
-            int W = w();
-            int H = h();
-
-            if ( align & FL_ALIGN_INSIDE )
-            {
-                X += Fl::box_dx( box() );
-                Y += Fl::box_dy( box() );
-                W -= Fl::box_dw( box() );
-                H -= Fl::box_dh( box() );
-            }
-
-            if ( align & FL_ALIGN_CLIP ) fl_push_clip( X, Y, W, H );
-
-            int dx = 0;
-
-            if ( abs_x() < scroll_x() )
-                dx = min( 32767, scroll_x() - abs_x() );
-
-            lab.draw( X - dx, Y, W, H, align );
-
-            if ( align & FL_ALIGN_CLIP ) fl_pop_clip();
-
-        }
-
-    /* base hanlde just does basic dragging */
-    virtual int
-    handle ( int m )
-        {
-            static int ox, oy;
-            static bool dragging = false;
-
-            int X = Fl::event_x();
-            int Y = Fl::event_y();
-
-            Logger _log( this );
-
-            switch ( m )
-            {
-                case FL_ENTER:
-                    fl_cursor( FL_CURSOR_HAND );
-                    return 1;
-                case FL_LEAVE:
-                    fl_cursor( FL_CURSOR_DEFAULT );
-                    return 1;
-                case FL_PUSH:
-                {
-                    ox = x() - X;
-                    oy = y() - Y;
-
-                    if ( Fl::event_state() & FL_CTRL &&
-                         Fl::event_button() == 3 )
-                    {
-//                        log_destroy();
-
-                        redraw();
-                        _track->queue_delete( this );
-                        return 0;
-                    }
-
-                    return 1;
-                }
-                case FL_RELEASE:
-                    if ( dragging )
-                        _log.release();
-                    dragging = false;
-                    fl_cursor( FL_CURSOR_DEFAULT );
-                    return 1;
-                case FL_DRAG:
-                {
-                    if ( ! dragging )
-                    {
-                        dragging = true;
-                        _log.hold();
-                    }
-
-                    redraw();
-
-                    if ( timeline->ts_to_x( timeline->xoffset ) + ox + X > _track->x() )
-                    {
-                        int nx = (ox + X) - _track->x();
-
-                        _offset = timeline->x_to_ts( nx ) + timeline->xoffset;
-
-                        _track->snap( this );
-                    }
-
-                    //                  _track->redraw();
-                    fl_cursor( FL_CURSOR_MOVE );
-
-
-                    if ( X >= _track->x() + _track->w() ||
-                         X <= _track->x() )
-                    {
-                        /* this drag needs to scroll */
-
-                        nframes_t pos = timeline->xoffset;
-
-                        nframes_t d = timeline->x_to_ts( 100 );
-
-                        if ( X <= _track->x() )
-                        {
-
-                            if ( pos > d )
-                                pos -= d;
-                            else
-                                pos = 0;
-                        }
-                        else
-                            pos += d;
-
-                        timeline->position( timeline->ts_to_x(  pos ) );
-                        _track->redraw();
-//                        timeline->redraw();
-                    }
-
-
-                    return 1;
-                }
-                default:
-                    return 0;
-            }
-        }
-
     bool
     operator< ( const Track_Widget & rhs )
         {
             return _offset < rhs._offset;
         }
+
+    virtual void draw_label ( const char *label, Fl_Align align );
+    virtual int handle ( int m );
+
 };

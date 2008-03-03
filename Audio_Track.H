@@ -35,5 +35,6 @@ public:
 
     int handle ( int m );
     void dump ( void );
+    void remove_selected ( void );
 
 };

@@ -82,6 +82,25 @@ Track::remove ( Track_Widget *r )
 }
 
 
+void
+Track::remove_selected ( void )
+{
+    Loggable::block_start();
+
+    for ( list <Track_Widget *>::iterator r = _widgets.begin(); r != _widgets.end(); )
+        if ( (*r)->selected() )
+        {
+            Track_Widget *t = *r;
+            _widgets.erase( r++ );
+            delete t;
+        }
+        else
+            ++r;
+
+    Loggable::block_end();
+}
+
+
 Track_Widget *
 Track::event_widget ( void )
 {

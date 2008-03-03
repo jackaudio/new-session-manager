@@ -112,6 +112,8 @@ public:
     void remove ( Track_Widget *r );
     void add ( Track_Widget *r );
 
+    void remove_selected ( void );
+
     const list <Track_Widget *> widgets ( void ) const { return _widgets; }
 
     void queue_delete ( Track_Widget *r )

@@ -412,6 +412,23 @@ Timeline::handle ( int m )
 
     switch ( m )
     {
+        case FL_KEYBOARD:
+        {
+            switch ( Fl::event_key() )
+            {
+                case FL_Delete:
+                {
+                    for ( int i = tracks->children(); i--; )
+                    {
+                        Track_Header *t = (Track_Header*)tracks->child( i );
+
+                        t->track()->remove_selected();
+                    }
+                    return 1;
+                }
+
+            }
+        }
 
 /*         case FL_MOUSEWHEEL: */
 /*         { */

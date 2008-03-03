@@ -59,6 +59,8 @@ public:
             _track->remove( this );
         }
 
+    bool selected ( void ) { return _selected; }
+
     Fl_Group * parent ( void ) const { return _track; }
 
     int scroll_x ( void ) const { return timeline->ts_to_x( timeline->xoffset ); }

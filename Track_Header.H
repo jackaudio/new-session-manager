@@ -48,6 +48,8 @@ private:
 
     int _size;
 
+    enum { AUDIO } _type;
+
 public:
 
     Fl_Input * name_field;
@@ -198,6 +200,7 @@ public:
     static int width();
 
     void track( Track * t );
+    Track * track ( void ) { return _track; }
 
     int handle ( int m )
         {

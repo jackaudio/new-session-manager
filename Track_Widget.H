@@ -50,8 +50,9 @@ protected:
         /* mouse coords at start of drag */
         int x;
         int y;
+        int state;
 
-        Drag( int X, int Y ) : x( X ), y( Y ) {}
+        Drag( int X, int Y ) : x( X ), y( Y ) { state = 0; }
     };
 
     Drag *_drag;

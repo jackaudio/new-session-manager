@@ -353,12 +353,14 @@ Region::handle ( int m )
                 else
                     return 0;
 
+            ret = Track_Widget::handle( m );
+
             if ( Fl::event_state() & FL_CTRL )
             {
-                if ( ! copied )
+                if ( _drag->state == 0 )
                 {
                     _track->add( new Region( *this ) );
-                    copied = true;
+                    _drag->state = 1;
                     return 1;
                 }
             }
@@ -380,7 +382,7 @@ Region::handle ( int m )
                     }
             }
 
-            ret = Track_Widget::handle( m );
+//            ret = Track_Widget::handle( m );
             return ret | 1;
         default:
             return Track_Widget::handle( m );

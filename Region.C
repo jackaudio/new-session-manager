@@ -283,10 +283,13 @@ Region::handle ( int m )
                         normalize();
                     else
                     {
-                        if ( selected() )
-                            deselect();
-                        else
-                            select();
+                        if ( Track_Widget::current() == this )
+                        {
+                            if ( selected() )
+                                deselect();
+                            else
+                                select();
+                        }
                     }
 
                     redraw();

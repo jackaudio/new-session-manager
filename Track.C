@@ -117,8 +117,9 @@ Track::add ( Track_Widget *r )
 
     if ( r->track() )
     {
+        r->redraw();
         r->track()->remove( r );
-        r->track()->redraw();
+//        r->track()->redraw();
     }
 
     r->track( this );

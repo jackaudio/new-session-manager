@@ -95,7 +95,8 @@ Region::init ( void )
 Region::Region ( const Region & rhs )
 {
     _offset    = rhs._offset;
-    _track     = rhs._track;
+//    _track     = rhs._track;
+    _track     = NULL;
     _clip      = rhs._clip;
     _start     = rhs._start;
     _end       = rhs._end;

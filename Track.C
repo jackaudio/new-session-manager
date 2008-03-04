@@ -25,9 +25,7 @@
 #include <FL/fl_draw.H>
 
 
-Track_Widget * Track::_queued_widget = NULL;
-
-
+queue <Track_Widget *> Track::_delete_queue;
 
 
 
@@ -202,7 +200,7 @@ Track::handle ( int m )
 
             if ( r )
             {
-                int retval = r->handle( m );
+                int retval = r->dispatch( m );
 
                 if ( retval && m == FL_PUSH )
                     pushed = r;
@@ -210,11 +208,11 @@ Track::handle ( int m )
                 if ( retval && m == FL_RELEASE )
                     pushed = NULL;
 
-                if ( _queued_widget )
+                while ( _delete_queue.size() )
                 {
-//                    remove( _queued_widget );
-                    delete _queued_widget;
-                    _queued_widget = NULL;
+
+                    delete _delete_queue.front();
+                    _delete_queue.pop();
                     pushed = NULL;
                 }
 

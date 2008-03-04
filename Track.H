@@ -30,7 +30,8 @@
 #include <assert.h>
 
 #include <list>
-using std::list;
+#include <queue>
+using namespace std;
 
 class Region;
 class Track_Widget;
@@ -41,7 +42,7 @@ class Track : public Fl_Group, public Loggable
     Track *_prev;
     char *_name;
 
-    static Track_Widget * _queued_widget;
+    static queue <Track_Widget *> _delete_queue;
 
 protected:
 
@@ -118,9 +119,7 @@ public:
 
     void queue_delete ( Track_Widget *r )
         {
-            assert( ! _queued_widget );
-
-            _queued_widget = r;
+            _delete_queue.push( r );
         }
 
     virtual void snap ( Track_Widget *r );

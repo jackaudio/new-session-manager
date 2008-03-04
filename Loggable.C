@@ -361,7 +361,6 @@ Loggable::flush ( void )
     if ( n > 1 )
         fprintf( _fp, "}\n" );
 
-
     fflush( _fp );
 }
 

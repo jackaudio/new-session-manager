@@ -31,7 +31,8 @@ using namespace std;
 class Track_Widget : public Loggable
 {
 
-    static list <Track_Widget *> _selection;
+    static list <Track_Widget *> _selection;                    /* all the widgets making up the selection */
+    static Track_Widget * _current;                             /* the widget initiating events that affect the selection */
 
 protected:
 
@@ -44,6 +45,17 @@ protected:
     Fl_Color _color;                                            /* color of waveform */
     Fl_Color _box_color;                                        /* color of background (box) */
 
+    struct Drag
+    {
+        /* mouse coords at start of drag */
+        int x;
+        int y;
+
+        Drag( int X, int Y ) : x( X ), y( Y ) {}
+    };
+
+    Drag *_drag;
+
 public:
 
     Track_Widget ( )
@@ -51,6 +63,8 @@ public:
             _track = NULL;
 
             _offset = _start = _end = 0;
+
+            _drag = NULL;
         }
 
     virtual ~Track_Widget ( )
@@ -85,6 +99,8 @@ public:
                 delete _selection.front();
         }
 
+    static Track_Widget *current ( void ) { return _current; }
+
     void
     offset ( nframes_t where )
         {
@@ -111,6 +127,8 @@ public:
             }
         }
 
+
+    int dispatch ( int m );
 
     Fl_Group * parent ( void ) const { return _track; }
 

@@ -20,6 +20,7 @@
 #include "Track_Widget.H"
 
 list <Track_Widget *> Track_Widget::_selection;
+Track_Widget * Track_Widget::_current;
 
 void
 Track_Widget::draw_label ( const char *label, Fl_Align align )
@@ -76,13 +77,38 @@ Track_Widget::draw_label ( const char *label, Fl_Align align )
 
 }
 
+int
+Track_Widget::dispatch ( int m )
+{
+    Track_Widget::_current = this;
+
+    if ( selected() )
+    {
+        Loggable::block_start();
+
+        int r = 0;
+
+
+        for ( list <Track_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
+            if ( *i != this )
+                r |= (*i)->handle( m );
+
+        r |= handle( m );
+
+        Loggable::block_end();
+
+        return r;
+    }
+    else
+        return handle( m );
+}
 
 /* base hanlde just does basic dragging */
 int
 Track_Widget::handle ( int m )
 {
-    static int ox, oy;
-    static bool dragging = false;
+/*     static int ox, oy; */
+/*     static bool dragging = false; */
 
     int X = Fl::event_x();
     int Y = Fl::event_y();
@@ -99,8 +125,9 @@ Track_Widget::handle ( int m )
             return 1;
         case FL_PUSH:
         {
-            ox = x() - X;
-            oy = y() - Y;
+
+/*             ox = x() - X; */
+/*             oy = y() - Y; */
 
             if ( Fl::event_state() & FL_CTRL &&
                  Fl::event_button() == 3 )
@@ -115,18 +142,29 @@ Track_Widget::handle ( int m )
             return 1;
         }
         case FL_RELEASE:
-            if ( dragging )
+            if ( _drag )
+            {
                 _log.release();
-            dragging = false;
+                delete _drag;
+                _drag = NULL;
+            }
+
             fl_cursor( FL_CURSOR_DEFAULT );
             return 1;
         case FL_DRAG:
         {
-            if ( ! dragging )
+            if ( ! _drag )
             {
-                dragging = true;
+                _drag = new Drag( x() - X, y() - Y );
+
                 _log.hold();
             }
+
+            const int ox = _drag->x;
+// _current->_drag->x;
+
+/*             const int ox = _drag->x; */
+/*             const int oy = _drag->y; */
 
             redraw();
 
@@ -137,7 +175,8 @@ Track_Widget::handle ( int m )
                 // _offset = timeline->x_to_ts( nx ) + timeline->xoffset;
                 offset( timeline->x_to_ts( nx ) + timeline->xoffset );
 
-                _track->snap( this );
+                if ( Track_Widget::_current == this )
+                    _track->snap( this );
             }
 
             //                  _track->redraw();

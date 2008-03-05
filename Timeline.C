@@ -392,14 +392,24 @@ Timeline::draw ( void )
 void
 Timeline::draw_overlay ( void )
 {
-    fl_color( FL_BLUE );
-    fl_line_style( FL_DOT, 4 );
 
     fl_push_clip( tracks->x() + Track_Header::width(), rulers->y() + rulers->h(),  tracks->w() - Track_Header::width(), h() - rulers->h() - hscroll->h() );
-    fl_rect( _selection.x, _selection.y, _selection.w, _selection.h );
-    fl_pop_clip();
+
+    const Rectangle &r = _selection;
+
+    fl_color( FL_BLACK );
+    fl_line_style( FL_SOLID, 2 );
+    fl_rect( r.x + 2, r.y + 2, r.w, r.h );
+    fl_color( FL_MAGENTA );
+    fl_line_style( FL_DASH, 2 );
+    fl_rect( r.x, r.y, r.w, r.h );
+
 
     fl_line_style( FL_SOLID, 0 );
+
+
+    fl_pop_clip();
+
 
 }
 
@@ -409,13 +419,13 @@ Timeline::draw_overlay ( void )
 void
 Timeline::select( const Rectangle &r )
 {
-    const int Y = r.y - yposition;
+    const int Y = r.y;
 
     for ( int i = tracks->children(); i-- ; )
     {
         Track_Header *t = (Track_Header*)tracks->child( i );
 
-        if ( t->y() >= Y && t->y() + t->h() <= Y + r.h )
+        if ( ! ( t->y() > Y + r.h || t->y() + t->h() < Y ) )
             t->track()->select_range( r.x, r.w );
     }
 }
@@ -445,7 +455,7 @@ Timeline::handle ( int m )
         {
             int r = Fl_Overlay_Window::handle( m );
 
-            if ( r )
+            if ( m != FL_RELEASE && r )
                 return r;
 
             const int X = Fl::event_x();
@@ -455,6 +465,11 @@ Timeline::handle ( int m )
             {
                 case FL_PUSH:
                 {
+                    if ( ! Fl::event_button1() )
+                        return 0;
+
+                    assert( ! drag );
+
                     drag = new Drag( X - x(), Y - y() );
                     _selection.x = drag->x;
                     _selection.y = drag->y;
@@ -462,8 +477,16 @@ Timeline::handle ( int m )
                 }
                 case FL_DRAG:
                 {
-                    _selection.w = X - drag->x;
-                    _selection.h = Y - drag->y;
+                    int ox = X - drag->x;
+                    int oy = Y - drag->y;
+
+                    if ( ox < 0 )
+                        _selection.x = X;
+                    if ( oy < 0 )
+                        _selection.y = Y;
+
+                    _selection.w = abs( ox );
+                    _selection.h = abs( oy );
                     break;
                 }
                 case FL_RELEASE:

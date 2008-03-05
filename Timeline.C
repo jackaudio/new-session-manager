@@ -395,7 +395,9 @@ Timeline::draw_overlay ( void )
     fl_color( FL_BLUE );
     fl_line_style( FL_DOT, 4 );
 
+    fl_push_clip( tracks->x() + Track_Header::width(), rulers->y() + rulers->h(),  tracks->w() - Track_Header::width(), h() - rulers->h() - hscroll->h() );
     fl_rect( _selection.x, _selection.y, _selection.w, _selection.h );
+    fl_pop_clip();
 
     fl_line_style( FL_SOLID, 0 );
 
@@ -407,11 +409,13 @@ Timeline::draw_overlay ( void )
 void
 Timeline::select( const Rectangle &r )
 {
+    const int Y = r.y - yposition;
+
     for ( int i = tracks->children(); i-- ; )
     {
         Track_Header *t = (Track_Header*)tracks->child( i );
 
-        if ( t->y() >= r.y && t->y() + t->h() <= r.y + r.h )
+        if ( t->y() >= Y && t->y() + t->h() <= Y + r.h )
             t->track()->select_range( r.x, r.w );
     }
 }

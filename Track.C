@@ -211,6 +211,8 @@ Track::handle ( int m )
                 if ( retval && m == FL_RELEASE )
                     pushed = NULL;
 
+                Loggable::block_start();
+
                 while ( _delete_queue.size() )
                 {
 
@@ -218,6 +220,8 @@ Track::handle ( int m )
                     _delete_queue.pop();
                     pushed = NULL;
                 }
+
+                Loggable::block_end();
 
                 return retval;
             }

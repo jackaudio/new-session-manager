@@ -84,17 +84,17 @@ public:
     void
     block_start ( void )
         {
-//            indent();
-//            log( "{\n" );
             ++Loggable::_level;
         }
+
     static
     void
     block_end ( void )
         {
             assert( --Loggable::_level >= 0 );
-//            indent();
-//            log( "}\n" );
+
+            if ( Loggable::_level == 0 )
+                flush();
         }
 
     static

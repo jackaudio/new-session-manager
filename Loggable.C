@@ -242,15 +242,26 @@ Loggable::undo ( void )
 
     int ui = _undo_index;
 
+    block_start();
+
+    if ( strcmp( b, "{" ) )
+    {
+        /* It's a single undo, get rid of trailing messages in this block */
+
+        n = 1;
+
+        s = b + 2;
+        s += strlen( s ) - 1;
+    }
+
     while ( n-- )
     {
         while ( s >= b && *(--s) );
 
         s++;
 
-        if ( ( ! strcmp( s, "{" ) )
-             || ( ! strcmp( s, "}" ) ) )
-            continue;
+        if ( ! strcmp( s, "{" ) )
+             break;
 
         if ( *s == '\t' )
             s++;
@@ -312,6 +323,8 @@ Loggable::undo ( void )
 
         s -= 2;
     }
+
+    block_end();
 
 // FIXME: bogus... needs to account for multiple events.
     _undo_index = ui + 1;

@@ -27,19 +27,10 @@
 
 queue <Track_Widget *> Track::_delete_queue;
 
-
-
-static bool
-sort_func ( Track_Widget *lhs, Track_Widget *rhs )
-{
-    return *lhs < *rhs;
-}
-
-
 void
 Track::sort ( void )
 {
-    _widgets.sort( sort_func );
+    _widgets.sort( Track_Widget::sort_func );
 }
 
 void

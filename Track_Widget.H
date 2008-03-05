@@ -89,6 +89,7 @@ public:
                 return;
 
             _selection.push_back( this );
+            _selection.sort( sort_func );
 
             redraw();
         }
@@ -215,5 +216,11 @@ public:
 
     virtual void draw_label ( const char *label, Fl_Align align );
     virtual int handle ( int m );
+
+    static bool
+    sort_func ( Track_Widget *lhs, Track_Widget *rhs )
+        {
+            return *lhs < *rhs;
+        }
 
 };

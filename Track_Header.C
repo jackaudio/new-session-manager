@@ -26,6 +26,13 @@ Track_Header::cb_input_field ( Fl_Widget *w, void *v )
 }
 
 void
+Track_Header::cb_button ( Fl_Widget *w, void *v )
+{
+    ((Track_Header*)v)->cb_button( w );
+}
+
+
+void
 Track_Header::cb_input_field ( void )
 {
     log_start();
@@ -37,6 +44,19 @@ Track_Header::cb_input_field ( void )
 
     log_end();
 }
+
+void
+Track_Header::cb_button ( Fl_Widget *w )
+{
+
+    printf( "FIXME: inform mixer here\n" );
+    if ( w == record_button )
+    {
+
+
+    }
+}
+
 
 Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group ( X, Y, W, H, L )
@@ -76,6 +96,7 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
                 o->color( FL_LIGHT1 );
                 o->selection_color( FL_RED );
                 o->labelsize( 8 );
+                o->callback( cb_button, this );
             }
             {
                 Fl_Button *o = mute_button =
@@ -84,6 +105,7 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
                 o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
                 o->labelsize( 11 );
+                o->callback( cb_button, this );
             }
             {
                 Fl_Button *o = solo_button =
@@ -92,6 +114,7 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
                 o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
                 o->labelsize( 11 );
+                o->callback( cb_button, this );
             }
             {
                 Fl_Menu_Button *o = take_menu =

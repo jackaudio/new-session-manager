@@ -122,6 +122,9 @@ public:
             asprintf( &sa[ i++ ], ":name \"%s\"", _name ? _name : ""  );
             asprintf( &sa[ i++ ], ":track 0x%X", _track ? _track->id() : 0 );
             asprintf( &sa[ i++ ], ":selected %d", _selected );
+/*             asprintf( &sa[ i++ ], ":record %d", record_button->value() ); */
+/*             asprintf( &sa[ i++ ], ":solo %d", solo_button->value() ); */
+/*             asprintf( &sa[ i++ ], ":mute %d", mute_button->value() ); */
             asprintf( &sa[ i++ ], ":h %d", size() );
 //            asprintf( &sa[ i++ ], ":gain %f", _scale );
 
@@ -196,6 +199,9 @@ public:
 
     static void cb_input_field ( Fl_Widget *w, void *v );
     void cb_input_field ( void );
+    static void cb_button ( Fl_Widget *w, void *v );
+    void cb_button ( Fl_Widget *w );
+
 
     static int width();
 

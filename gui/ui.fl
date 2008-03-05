@@ -1,5 +1,5 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0107 
+version 1.0108 
 header_name {.H} 
 code_name {.C}
 comment {//
@@ -537,7 +537,7 @@ if ( p )
     phrase_c->grid( p );
 
 o->maximum( phrase::phrases() );}
-              xywh {164 703 40 25} color 36 labeltype NO_LABEL when 1
+              xywh {164 703 40 25} color 36 labeltype NO_LABEL when 1 value 1
             }
             Fl_Light_Button phrase_mute_button {
               label Mute
@@ -561,7 +561,7 @@ o->maximum( phrase::phrases() );}
           code0 {update_pattern_widgets();}
         } {
           Fl_Box pattern_canvas_widget {
-            label Pattern selected
+            label Pattern
             xywh {4 102 860 590} box FLAT_BOX color 37 labelsize 100 align 16 resizable
             code0 {\#include "draw.H"}
             code1 {o->set_canvas( pattern_c );}
@@ -583,7 +583,7 @@ if ( p )
     pattern_c->grid( p );
 
 o->maximum( pattern::patterns() );}
-              xywh {164 703 40 25} color 36 labeltype NO_LABEL when 1
+              xywh {164 703 40 25} color 36 labeltype NO_LABEL when 1 value 1
               code0 {o->maximum( 1 );}
               code1 {// pattern::signal_create_destroy.connect( sigc::mem_fun( o, static_cast<void (Fl_Spinner::*)(double)>(&Fl_Spinner::maximum) ) );}
             }
@@ -623,14 +623,14 @@ pattern_mute_button->value( 0 );}
               Fl_Spinner pattern_channel_spinner {
                 label Channel
                 callback {((pattern *)pattern_c->grid())->channel( o->value() - 1 );}
-                xywh {815 700 40 24} color 36 when 1
+                xywh {815 700 40 24} color 36 when 1 value 1
                 code0 {\#include "../pattern.H"}
                 code1 {o->maximum( 16 );}
               }
               Fl_Spinner pattern_port_spinner {
                 label Port
                 callback {((pattern *)pattern_c->grid())->port( o->value() - 1 );}
-                xywh {815 734 40 24} color 36 when 1
+                xywh {815 734 40 24} color 36 when 1 value 1
                 code0 {o->maximum( 16 );}
               }
               Fl_Output mapping_text {
@@ -976,7 +976,8 @@ detach_button->value( 0 );} open
       } {}
     }
   }
-  Function {make_about_popup()} {} {
+  Function {make_about_popup()} {open
+  } {
     Fl_Window about_popup {
       label About open
       xywh {944 405 539 608} type Single non_modal size_range {539 608 539 608} visible
@@ -1004,7 +1005,7 @@ You should have received a copy of the GNU General Public License along with thi
       }
       Fl_Button {} {
         label {http://non.tuxfamily.org}
-        callback {system( "x-www-browser http://non.tuxfamily.org &" );}
+        callback {fl_open_uri( "http://non.tuxfamily.org" );} selected
         xywh {178 554 188 30} color 14 labeltype SHADOW_LABEL labelcolor 6
       }
       Fl_Return_Button {} {

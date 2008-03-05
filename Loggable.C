@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 
 FILE *Loggable::_fp;
 int Loggable::_log_id = 0;
@@ -198,14 +199,20 @@ Loggable::undo ( void )
                 if ( *(s + 1) == '\t' )
                     continue;
 
+                if ( *(s + 1) == '}' )
+                {
+                    *(s + 1) = NULL;
+                    continue;
+                }
+
                 break;
             }
         }
     s++;
 
-    strtok( s, "\n" );
 
     buf[ len ] = NULL;
+
 
 //    fsync( fileno( _fp ) );
     /* pop the entry off the end */
@@ -219,21 +226,47 @@ Loggable::undo ( void )
         return;
     }
 
-    printf( "undoing \"%s\"\n", s );
+    char *b = s;
 
-    int id;
-    sscanf( s, "%*s %X ", &id );
-    Loggable *l = find( id );
-//    assert( l );
+    s += strlen( s ) - 1;
 
-    char classname[40];
-    char command[40];
-    char *arguments;
+    if ( strtok( b, "\n" ) == NULL )
+    {
+        printf( "error, empty undo transaction!\n" );
+        abort();
+    }
 
-    sscanf( s, "%s %*X %s %*[^\n<] << %a[^\n]", classname, command, &arguments );
-
+    int n = 1;
+    while ( strtok( NULL, "\n" ) )
+        ++n;
 
     int ui = _undo_index;
+
+    while ( n-- )
+    {
+        while ( s >= b && *(--s) );
+
+        s++;
+
+        if ( ( ! strcmp( s, "{" ) )
+             || ( ! strcmp( s, "}" ) ) )
+            continue;
+
+        if ( *s == '\t' )
+            s++;
+
+        printf( "undoing \"%s\"\n", s );
+
+        int id;
+        sscanf( s, "%*s %X ", &id );
+        Loggable *l = find( id );
+//    assert( l );
+
+        char classname[40];
+        char command[40];
+        char *arguments;
+
+        sscanf( s, "%s %*X %s %*[^\n<] << %a[^\n]", classname, command, &arguments );
 
 
 /*     if ( ! l ) */
@@ -242,48 +275,49 @@ Loggable::undo ( void )
 /*         abort(); */
 /*     } */
 
-
-
-    if ( ! strcmp( command, "destroy" ) )
-    {
-        char **sa = parse_alist( arguments );
-
-        if ( ! _class_map[ string( classname ) ] )
-            printf( "error class %s is unregistered!\n", classname );
-        else
+        if ( ! strcmp( command, "destroy" ) )
         {
-            /* create */
-            Loggable *l = _class_map[ string( classname ) ]( sa );
-            l->update_id( id );
-            l->log_create();
-        }
-    }
-    else
-        if ( ! strcmp( command, "set" ) )
-        {
+            char **sa = parse_alist( arguments );
 
-            printf( "got set command.\n" );
-
-            char **sa  = parse_alist( arguments );
-
-            l->log_start();
-            l->set( sa );
-            l->log_end();
-
-        }
-        else
-            if ( ! strcmp( command, "create" ) )
+            if ( ! _class_map[ string( classname ) ] )
+                printf( "error class %s is unregistered!\n", classname );
+            else
             {
-                int id = l->id();
-                delete l;
-                _loggables[ id ] = NULL;
+                /* create */
+                Loggable *l = _class_map[ string( classname ) ]( sa );
+                l->update_id( id );
+                l->log_create();
             }
+        }
+        else
+            if ( ! strcmp( command, "set" ) )
+            {
 
+                printf( "got set command.\n" );
+
+                char **sa  = parse_alist( arguments );
+
+                l->log_start();
+                l->set( sa );
+                l->log_end();
+
+            }
+            else
+                if ( ! strcmp( command, "create" ) )
+                {
+                    int id = l->id();
+                    delete l;
+                    _loggables[ id ] = NULL;
+                }
+
+        s -= 2;
+    }
 
 // FIXME: bogus... needs to account for multiple events.
     _undo_index = ui + 1;
 
     ++_undo_index;
+
 
     delete buf;
 }

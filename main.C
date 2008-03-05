@@ -54,14 +54,7 @@ Timeline *timeline;
 
 void cb_undo ( Fl_Widget *w, void *v )
 {
-/*     static char pat[20]; */
-
-
     Loggable::undo();
-
-/*     sprintf( pat, "undo %d", Loggable::undo_index() ); */
-/*     w->label( pat ); */
-
 }
 
 int

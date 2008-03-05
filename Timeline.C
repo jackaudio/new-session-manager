@@ -77,7 +77,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     {
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
 
-        o->range( 0, 48000 * 2 );
+        o->range( 0, 48000 * 300 );
         o->zoom_range( 2, 8192 );
         o->zoom( 256 );
         o->type( FL_HORIZONTAL );

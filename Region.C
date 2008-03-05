@@ -152,6 +152,7 @@ void
 Region::trim ( enum trim_e t, int X )
 {
 
+    X -= _track->x();
     redraw();
 
     switch ( t )
@@ -204,15 +205,14 @@ Region::trim ( enum trim_e t, int X )
 int
 Region::handle ( int m )
 {
-    static bool dragging = false;
-
     static int ox, oy;
     static enum trim_e trimming;
 
     static bool copied = false;
     static nframes_t os;
 
-    int X = Fl::event_x() - _track->x();
+//    int X = Fl::event_x() - _track->x();
+    int X = Fl::event_x();
     int Y = Fl::event_y();
 
     int ret;
@@ -232,10 +232,12 @@ Region::handle ( int m )
                 {
                     case 1:
                         trim( trimming = LEFT, X );
+                        _drag = new Drag( x() - X, y() - Y );
                         _log.hold();
                         break;
                     case 3:
                         trim( trimming = RIGHT, X );
+                        _drag = new Drag( x() - X, y() - Y );
                         _log.hold();
                         break;
                     case 2:
@@ -306,24 +308,29 @@ Region::handle ( int m )
             break;
         }
         case FL_RELEASE:
+
+        {
+
             Track_Widget::handle( m );
+
             copied = false;
             if ( trimming != NO )
             {
                 trimming = NO;
-                _log.release();
+//                _log.release();
             }
-            if ( dragging )
-                _log.release();
 
-            dragging = false;
+/*             delete _drag; */
+/*             _drag = NULL; */
+
             goto changed;
+        }
         case FL_DRAG:
 
-            if ( ! dragging )
+            if ( ! _drag )
             {
+                _drag = new Drag( x() - X, y() - Y );
                 _log.hold();
-                dragging = true;
             }
 
             if ( Fl::event_state() & FL_SHIFT &&
@@ -354,7 +361,6 @@ Region::handle ( int m )
                 else
                     return 0;
 
-            ret = Track_Widget::handle( m );
 
             if ( Fl::event_state() & FL_CTRL )
             {
@@ -383,7 +389,7 @@ Region::handle ( int m )
                     }
             }
 
-//            ret = Track_Widget::handle( m );
+            ret = Track_Widget::handle( m );
             return ret | 1;
         default:
             return Track_Widget::handle( m );

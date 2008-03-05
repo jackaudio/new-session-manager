@@ -257,7 +257,7 @@ Region::handle ( int m )
                             log_end();
 
                             Loggable::block_end();
-                            return 1;
+                            return 0;
                         }
                     }
                     default:
@@ -273,16 +273,12 @@ Region::handle ( int m )
                 ox = x() - X;
                 oy = y() - Y;
 
-                if ( Fl::event_state() && FL_CTRL )
-                {
+                if ( Fl::event_ctrl() )
                     os = _start;
-//                    Fl::local_grab( this );
-                }
 
-
-                if ( Fl::event_button() == 2 )
+                if ( Fl::event_button2() )
                 {
-                    if ( Fl::event_state() & FL_CTRL )
+                    if ( Fl::event_ctrl() )
                         normalize();
                     else
                     {
@@ -298,12 +294,8 @@ Region::handle ( int m )
                     redraw();
                     goto changed;
                 }
-
-
-                ret = Track_Widget::handle( m );
-
-                return ret | 1;
-
+                else
+                    return Track_Widget::handle( m );
             }
             break;
         }
@@ -398,7 +390,6 @@ Region::handle ( int m )
 
 changed:
 
-//    log_end();
     return 1;
 
 }

@@ -125,21 +125,18 @@ Track_Widget::handle ( int m )
             return 1;
         case FL_PUSH:
         {
-
-/*             ox = x() - X; */
-/*             oy = y() - Y; */
-
             if ( Fl::event_state() & FL_CTRL &&
-                 Fl::event_button() == 3 )
+                 Fl::event_button3() )
             {
-//                        log_destroy();
-
                 redraw();
                 _track->queue_delete( this );
                 return 0;
             }
+            else
+                if ( Fl::event_button1() )
+                    return 1;
 
-            return 1;
+            return 0;
         }
         case FL_RELEASE:
             if ( _drag )

@@ -49,6 +49,18 @@ class Time_Track;
 #include <list>
 using std::list;
 
+
+struct Rectangle
+{
+    int x;
+    int y;
+    int w;
+    int h;
+
+    Rectangle ( ) : x( 0 ), y( 0 ), w( 0 ), h( 0 ) {}
+    Rectangle ( int X, int Y, int W, int H ) : x( X ), y( Y ), w( W ), h( H ) {}
+};
+
 struct Timeline : public Fl_Overlay_Window
 {
 
@@ -56,6 +68,8 @@ struct Timeline : public Fl_Overlay_Window
 
     int _old_xposition;
     int _old_yposition;
+
+    Rectangle _selection;
 
     bool _enable_measure_lines;
 
@@ -116,5 +130,7 @@ struct Timeline : public Fl_Overlay_Window
     void draw ( void );
     void draw_overlay ( void );
     int handle ( int m );
+
+    void select( const Rectangle &r );
 
 };

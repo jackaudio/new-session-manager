@@ -27,6 +27,16 @@
 #include <algorithm>
 using namespace std;
 
+struct Drag
+{
+    /* mouse coords at start of drag */
+    int x;
+    int y;
+    int state;
+
+    Drag( int X, int Y ) : x( X ), y( Y ) { state = 0; }
+};
+
 /* Base class for virtual widget on a track */
 class Track_Widget : public Loggable
 {
@@ -45,15 +55,6 @@ protected:
     Fl_Color _color;                                            /* color of waveform */
     Fl_Color _box_color;                                        /* color of background (box) */
 
-    struct Drag
-    {
-        /* mouse coords at start of drag */
-        int x;
-        int y;
-        int state;
-
-        Drag( int X, int Y ) : x( X ), y( Y ) { state = 0; }
-    };
 
     Drag *_drag;
 
@@ -84,12 +85,18 @@ public:
 
     void select ( void )
         {
+            if ( selected() )
+                return;
+
             _selection.push_back( this );
+
+            redraw();
         }
 
     void deselect ( void )
         {
             _selection.remove( this );
+            redraw();
         }
 
 

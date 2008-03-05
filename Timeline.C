@@ -346,7 +346,7 @@ Timeline::draw ( void )
         draw_child( *hscroll );
         draw_child( *vscroll );
 
-//        redraw_overlay();
+        redraw_overlay();
         return;
     }
 
@@ -392,23 +392,34 @@ Timeline::draw ( void )
 void
 Timeline::draw_overlay ( void )
 {
+    fl_color( FL_BLUE );
+    fl_line_style( FL_DOT, 4 );
 
-    // TODO: draw selection rectangle here!
+    fl_rect( _selection.x, _selection.y, _selection.w, _selection.h );
 
-
-/*     fl_color( FL_BLUE ); */
-/*     fl_line_style( FL_DOT, 4 ); */
-
-/*     fl_rect( 300, 400, 200, 300 ); */
-
-/*     fl_line_style( FL_SOLID, 0 ); */
+    fl_line_style( FL_SOLID, 0 );
 
 }
 
+// #include "Track_Widget.H"
+
+/** select all widgets in inside rectangle /r/ */
+void
+Timeline::select( const Rectangle &r )
+{
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track_Header *t = (Track_Header*)tracks->child( i );
+
+        if ( t->y() >= r.y && t->y() + t->h() <= r.y + r.h )
+            t->track()->select_range( r.x, r.w );
+    }
+}
 
 int
 Timeline::handle ( int m )
 {
+    static Drag *drag = NULL;
 
     switch ( m )
     {
@@ -418,43 +429,57 @@ Timeline::handle ( int m )
             {
                 case FL_Delete:
                 {
-
-/*                     for ( int i = tracks->children(); i--; ) */
-/*                     { */
-/*                         Track_Header *t = (Track_Header*)tracks->child( i ); */
-
-/*                         t->track()->remove_selected(); */
-/*                     } */
-
                     Track_Widget::delete_selected();
 
                     return 1;
-
                 }
-
             }
+
+            return 0;
         }
-
-/*         case FL_MOUSEWHEEL: */
-/*         { */
-
-/* //            vscroll->deactivate(); */
-
-/*             int r = Fl_Overlay_Window::handle( m ); */
-
-/* /\*             vscroll->activate(); *\/ */
-
-/*             if ( r ) */
-/*                 return r; */
-
-/* /\*             if ( hscroll->handle( m ) ) *\/ */
-/* /\*                 return 1; *\/ */
-
-/* /\*             return vscroll->handle( m ); *\/ */
-
-/*         } */
         default:
-            return Fl_Overlay_Window::handle( m );
+        {
+            int r = Fl_Overlay_Window::handle( m );
+
+            if ( r )
+                return r;
+
+            const int X = Fl::event_x();
+            const int Y = Fl::event_y();
+
+            switch ( m )
+            {
+                case FL_PUSH:
+                {
+                    drag = new Drag( X - x(), Y - y() );
+                    _selection.x = drag->x;
+                    _selection.y = drag->y;
+                    break;
+                }
+                case FL_DRAG:
+                {
+                    _selection.w = X - drag->x;
+                    _selection.h = Y - drag->y;
+                    break;
+                }
+                case FL_RELEASE:
+                {
+                    delete drag;
+                    drag = NULL;
+
+                    select( _selection );
+
+                    _selection.w = _selection.h = 0;
+                    break;
+                }
+                default:
+                    return 0;
+                    break;
+            }
+
+            redraw_overlay();
+            return 1;
+        }
     }
 
 }

@@ -102,12 +102,23 @@ Track::remove_selected ( void )
 Track_Widget *
 Track::event_widget ( void )
 {
-    int ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() );
+    nframes_t ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() );
     for ( list <Track_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
         if ( ets > (*r)->offset() && ets < (*r)->offset() + (*r)->length() )
             return (*r);
 
     return NULL;
+}
+
+void
+Track::select_range ( int X, int W )
+{
+    nframes_t sts = timeline->xoffset + timeline->x_to_ts( X - x() );
+    nframes_t ets = sts + timeline->x_to_ts( W );
+
+    for ( list <Track_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
+        if ( ! ( (*r)->offset() > ets || (*r)->offset() + (*r)->length() < sts ) )
+            (*r)->select();
 }
 
 void

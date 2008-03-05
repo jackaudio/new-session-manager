@@ -113,6 +113,8 @@ public:
     void remove ( Track_Widget *r );
     void add ( Track_Widget *r );
 
+    void select_range ( int X, int W );
+
     void remove_selected ( void );
 
     const list <Track_Widget *> widgets ( void ) const { return _widgets; }

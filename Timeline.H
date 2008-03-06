@@ -101,7 +101,7 @@ public:
 
     nframes_t xoffset;
 
-    int yposition;
+    int _yposition;
 
     Timeline ( int X, int Y, int W, int H, const char *L=0 );
 
@@ -117,7 +117,8 @@ public:
     int nearest_line ( int ix );
 
     void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
-    void position ( int X );
+    void xposition ( int X );
+    void yposition ( int Y );
     void draw ( void );
     void draw_overlay ( void );
     int handle ( int m );

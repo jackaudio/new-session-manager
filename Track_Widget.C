@@ -214,7 +214,7 @@ Track_Widget::handle ( int m )
                 else
                     pos += d;
 
-                timeline->position( timeline->ts_to_x(  pos ) );
+                timeline->xposition( timeline->ts_to_x(  pos ) );
                 _track->redraw();
             }
 

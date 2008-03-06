@@ -40,11 +40,9 @@ Timeline::cb_scroll ( Fl_Widget *w )
     {
         tracks->position( tracks->x(), (rulers->y() + rulers->h()) - vscroll->value() );
 
-        yposition = vscroll->value();
+        yposition( vscroll->value() );
 
         vscroll->value( vscroll->value(), 30, 0, min( tracks->h(),  tracks->h() - h() - rulers->h() ) );
-
-        damage( FL_DAMAGE_SCROLL );
     }
     else
     {
@@ -59,7 +57,7 @@ Timeline::cb_scroll ( Fl_Widget *w )
         }
         else
         {
-            position( hscroll->value() );
+            xposition( hscroll->value() );
         }
     }
 }
@@ -279,11 +277,21 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 
 
 void
-Timeline::position ( int X )
+Timeline::xposition ( int X )
 {
-    _old_xposition = xoffset;
+//    _old_xposition = xoffset;
 
     xoffset = x_to_ts( X );
+
+    damage( FL_DAMAGE_SCROLL );
+}
+
+void
+Timeline::yposition ( int Y )
+{
+//    _old_yposition = _yposition;
+
+    _yposition = Y;
 
     damage( FL_DAMAGE_SCROLL );
 }
@@ -369,7 +377,7 @@ Timeline::draw ( void )
     if ( damage() & FL_DAMAGE_SCROLL )
     {
         int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
-        int dy = _old_yposition - yposition;
+        int dy = _old_yposition - _yposition;
 
         if ( ! dy )
             fl_scroll( X + Track_Header::width(), rulers->y(), rulers->w() - Fl::box_dw( rulers->child(0)->box() ), rulers->h(), dx, 0, draw_clip, this );
@@ -383,7 +391,7 @@ Timeline::draw ( void )
             fl_scroll( X, Y, W, H, dx, dy, draw_clip, this );
 
         _old_xposition = xoffset;
-        _old_yposition = yposition;
+        _old_yposition = _yposition;
 
     }
 }

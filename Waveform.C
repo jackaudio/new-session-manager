@@ -31,7 +31,7 @@
 
 /** draw a portion of /clip/'s waveform. coordinates are the portion to draw  */
 void
-draw_waveform ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int channel, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )
+draw_waveform ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int channel, float fpp, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )
 {
     fl_push_clip( X, Y, W, H );
 
@@ -44,7 +44,7 @@ draw_waveform ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chann
 
     _start = timeline->x_to_ts( start );
 
-    pk->fill_buffer( _start,  _start + timeline->x_to_ts( W ) );
+    pk->fill_buffer( fpp, _start,  _start + timeline->x_to_ts( W ) );
 
     j = start;
     for ( int x = X; x <= X + W; ++x, ++j )

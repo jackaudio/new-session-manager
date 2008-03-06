@@ -50,9 +50,9 @@ Timeline::cb_scroll ( Fl_Widget *w )
     {
         if ( hscroll->zoom_changed() )
         {
-            fpp = hscroll->zoom() * 1;
+            _fpp = hscroll->zoom() * 1;
 
-            int maxx = ts_to_x( length );
+            int maxx = ts_to_x( _length );
             hscroll->range( 0, maxx );
 
             redraw();
@@ -142,9 +142,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 /*         Fl_Scroll *o = new Fl_Scroll( 0, 24 * 2, 800, 600 - (24 * 3) ); */
 /*         o->type( Fl_Scroll::VERTICAL_ALWAYS ); */
 
-        sample_rate = 44100;
-        fpp = 256;
-        length = sample_rate * 60 * 2;
+        _sample_rate = 44100;
+        _fpp = 256;
+        _length = _sample_rate * 60 * 2;
 
         {
             Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W - vscroll->w(), 5000 );
@@ -214,7 +214,7 @@ Timeline::nearest_line ( int ix )
 {
     for ( int x = ix - 10; x < ix + 10; ++x )
     {
-        const int measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x - Track_Header::width() ) + xoffset ));
+        const int measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track_Header::width() ) + xoffset ));
 
 //        const int abs_x = ts_to_x( xoffset ) + x;
 
@@ -245,7 +245,7 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 
     for ( int x = X; x < X + W; ++x )
     {
-        measure = ts_to_x( (double)(sample_rate * 60) / beats_per_minute( x_to_ts( x - Track_Header::width() ) + xoffset ));
+        measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track_Header::width() ) + xoffset ));
 
         const int abs_x = ts_to_x( xoffset ) + x - Track_Header::width();
 
@@ -397,12 +397,19 @@ Timeline::draw_overlay ( void )
     const Rectangle &r = _selection;
 
     fl_color( FL_BLACK );
+
     fl_line_style( FL_SOLID, 2 );
+
     fl_rect( r.x + 2, r.y + 2, r.w, r.h );
     fl_color( FL_MAGENTA );
     fl_line_style( FL_DASH, 2 );
     fl_rect( r.x, r.y, r.w, r.h );
 
+    fl_line( r.x, r.y, r.x + r.w, r.y + r.h );
+
+    fl_line( r.x + r.w, r.y, r.x, r.y + r.h );
+
+/*     fl_overlay_rect( r.x, r.y, r.w, r.h ); */
 
     fl_line_style( FL_SOLID, 0 );
 

@@ -91,36 +91,25 @@ class Timeline : public Fl_Overlay_Window
     static void cb_scroll ( Fl_Widget *w, void *v );
     void cb_scroll ( Fl_Widget *w );
 
+    float _fpp;                                                  /* frames per pixel */
+    nframes_t _sample_rate;
+    nframes_t _length;
+
+
 public:
 
-    float fpp;                                                  /* frames per pixel */
-//    nframes_t fpp;
-
-    nframes_t sample_rate;
 
     nframes_t xoffset;
-
-    nframes_t length;
 
     int yposition;
 
     Timeline ( int X, int Y, int W, int H, const char *L=0 );
 
-    int
-    ts_to_x( nframes_t ts )
-        {
-//            assert( ts / fpp > 0 );
-            return  ts / fpp;
-        }
-
-    nframes_t
-    x_to_ts ( int x )
-        {
-            return x * fpp;
-        }
-
-/* #define FOR_CHILDREN_OF( name, ind )                                    \ */
-/*     for ( int i = (name) ->children(); i-- && ( (ind) = (name) ->child( i ) ); ) */
+    float fpp ( void ) const { return _fpp; }
+    nframes_t length ( void ) const { return _length; }
+    nframes_t sample_rate ( void ) const { return _sample_rate; }
+    int ts_to_x( nframes_t ts ) const { return  ts / _fpp; }
+    nframes_t x_to_ts ( int x ) const { return x * _fpp; }
 
     float beats_per_minute ( nframes_t when ) const;
     int beats_per_bar ( nframes_t when ) const;

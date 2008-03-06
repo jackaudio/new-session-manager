@@ -465,10 +465,7 @@ Region::draw ( int X, int Y, int W, int H )
 
     int ch = (h() - Fl::box_dh( box() ))  / _clip->channels();
     for ( int i = _clip->channels(); i--; )
-//        draw_waveform( rx, y() + (i * ch), rw, ch, _clip, i,
-//                       _start + offset, min( (_end - _start) - offset, _end),
-//                       _scale, _selected ? _color : fl_invert_color( _color )  );
-        draw_waveform( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch, _clip, i,
+        draw_waveform( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch, _clip, i, timeline->fpp(),
                        _start + offset, min( (_end - _start) - offset, _end),
                        _scale, selected() ? fl_invert_color( _color ) : _color );
 
@@ -485,7 +482,7 @@ Region::draw ( int X, int Y, int W, int H )
     {
         char pat[40];
 
-        snprintf( pat, sizeof( pat ), "%dm:%.1fs", (int)(length() / timeline->sample_rate) / 60, (double)length() / timeline->sample_rate );
+        snprintf( pat, sizeof( pat ), "%dm:%.1fs", (int)(length() / timeline->sample_rate()) / 60, (double)length() / timeline->sample_rate() );
 
         draw_label( pat, (Fl_Align)(FL_ALIGN_INSIDE | FL_ALIGN_CENTER), FL_GREEN );
     }
@@ -510,7 +507,7 @@ Region::normalize ( void )
     printf( "normalize: start=%lu end=%lu\n", _start, _end );
 
     /* FIXME: punt */
-    _scale = _clip->peaks( 0 )->normalization_factor( _start, _end );
+    _scale = _clip->peaks( 0 )->normalization_factor( timeline->fpp(), _start, _end );
 }
 
 

@@ -41,7 +41,7 @@ Audio_File_SF::from_file ( const char *filename )
         return NULL;
     }
 
-    if ( si.samplerate != timeline->sample_rate )
+    if ( si.samplerate != timeline->sample_rate() )
     {
         printf( "error: samplerate mismatch!\n" );
         goto invalid;

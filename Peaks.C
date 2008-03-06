@@ -43,13 +43,15 @@ Peaks::peakbuffer Peaks::peakbuf;
 /** Prepare a buffer of peaks from /s/ to /e/ for reading. Must be
  * called before any calls to operator[] */
 void
-Peaks::fill_buffer ( int s, int e ) const
+Peaks::fill_buffer ( float fpp, int s, int e ) const
 {
-    if ( timeline->fpp < _peaks->chunksize )
+    _fpp = fpp;
+
+    if ( fpp < _peaks->chunksize )
     {
         /* looks like we're going to have to switch to a higher resolution peak file
          or read directly from the source */
-        read_peaks( s, e, (e - s) / timeline->fpp, timeline->fpp );
+        read_peaks( s, e, (e - s) / fpp, fpp );
     }
     else
     {
@@ -144,9 +146,9 @@ Peaks::peak ( nframes_t start, nframes_t end ) const
     /* Is there a better way to return this?  */
     static Peak p;
 
-    if ( timeline->fpp < _peaks->chunksize )
+    if ( _fpp < _peaks->chunksize )
     {
-        assert( timeline->fpp == peakbuf.buf->chunksize );
+        assert( _fpp == peakbuf.buf->chunksize );
 
         start = (start - peakbuf.offset) / peakbuf.buf->chunksize;
         end = (end - peakbuf.offset) / peakbuf.buf->chunksize;
@@ -288,11 +290,11 @@ Peaks::make_peaks ( int chunksize )
     /end/ (uses known peak data if possible */
 
 float
-Peaks::normalization_factor( nframes_t start, nframes_t end ) const
+Peaks::normalization_factor( float fpp, nframes_t start, nframes_t end ) const
 {
     float s;
 
-    fill_buffer( start, end );
+    fill_buffer( fpp, start, end );
 
     Peak p = peak( start, end );
 

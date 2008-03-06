@@ -107,9 +107,6 @@ Track_Widget::dispatch ( int m )
 int
 Track_Widget::handle ( int m )
 {
-/*     static int ox, oy; */
-/*     static bool dragging = false; */
-
     int X = Fl::event_x();
     int Y = Fl::event_y();
 
@@ -146,7 +143,7 @@ Track_Widget::handle ( int m )
                 _drag = NULL;
             }
 
-            fl_cursor( FL_CURSOR_DEFAULT );
+            fl_cursor( FL_CURSOR_HAND );
             return 1;
         case FL_DRAG:
         {

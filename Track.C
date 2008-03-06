@@ -191,12 +191,30 @@ int
 Track::handle ( int m )
 {
     static Track_Widget *pushed;
+    static Track_Widget *belowmouse;
 
     switch ( m )
     {
-        case FL_MOVE:
-            /* these aren't used, so don't bother doing lookups for them */
+        case FL_ENTER:
+        case FL_LEAVE:
             return 1;
+        case FL_MOVE:
+        {
+            /* these aren't used, so don't bother doing lookups for them */
+            Track_Widget *r = event_widget();
+
+            if ( r != belowmouse )
+            {
+                if ( belowmouse )
+                    belowmouse->handle( FL_LEAVE );
+                belowmouse = r;
+
+                if ( r )
+                    r->handle( FL_ENTER );
+            }
+
+            return 1;
+        }
         default:
         {
             Track_Widget *r = pushed ? pushed : event_widget();
@@ -216,9 +234,19 @@ Track::handle ( int m )
                 while ( _delete_queue.size() )
                 {
 
-                    delete _delete_queue.front();
+                    Track_Widget *t = _delete_queue.front();
                     _delete_queue.pop();
-                    pushed = NULL;
+
+
+                    if ( pushed == t )
+                        pushed = NULL;
+                    if ( belowmouse == t )
+                    {
+                        belowmouse->handle( FL_LEAVE );
+                        belowmouse = NULL;
+                    }
+
+                    delete t;
                 }
 
                 Loggable::block_end();

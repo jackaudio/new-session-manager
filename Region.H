@@ -43,9 +43,11 @@ using namespace std;
 class Region : public Track_Widget
 {
 
-    Audio_File *_clip;                                                /* clip this region represents */
+    Audio_File *_clip;                                          /* clip this region represents */
 
     float _scale;                                               /* amplitude adjustment */
+
+    bool _current;                                              /* region is receiving operations */
 
     static Fl_Boxtype _box;
     static Fl_Color _selection_color;

@@ -29,6 +29,14 @@ test: $(OBJS)
 mixer: Mixer_Strip.o Mixer.o
 	$(CXX) $(CXXFLAGS) $(LIBS) Mixer_Strip.o Mixer.o -o $@
 
+
+ESRCS=Audio_File.C Audio_File_SF.C Loggable.C
+EOBJS=$(ESRCS:.C=.o)
+
+engine: $(EOBJS)
+	$(CXX) $(CXXFLAGS) $(LIBS) $(EOBJS) -o $@
+
+
 clean:
 	rm -f $(OBJS) test makedepend
 

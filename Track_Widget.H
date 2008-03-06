@@ -214,7 +214,7 @@ public:
             return _offset < rhs._offset;
         }
 
-    virtual void draw_label ( const char *label, Fl_Align align );
+    virtual void draw_label ( const char *label, Fl_Align align, Fl_Color color=(Fl_Color)0 );
     virtual int handle ( int m );
 
     static bool

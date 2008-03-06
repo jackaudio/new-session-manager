@@ -23,7 +23,7 @@ list <Track_Widget *> Track_Widget::_selection;
 Track_Widget * Track_Widget::_current;
 
 void
-Track_Widget::draw_label ( const char *label, Fl_Align align )
+Track_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )
 {
     int X, Y;
 
@@ -47,7 +47,7 @@ Track_Widget::draw_label ( const char *label, Fl_Align align )
 
     Fl_Label lab;
 
-    lab.color = 0;
+    lab.color = color;
     lab.type = FL_SHADOW_LABEL;
     lab.value = label;
     lab.font = FL_HELVETICA;

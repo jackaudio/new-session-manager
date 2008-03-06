@@ -112,8 +112,7 @@ protected:
 
             free( sa );
 
-            timeline->rulers->redraw();
-            timeline->tracks->redraw();
+            timeline->redraw();
 
             _make_label();
         }
@@ -161,7 +160,7 @@ public:
             if ( m == FL_RELEASE )
             {
                 _track->sort();
-                timeline->tracks->redraw();
+                timeline->redraw();
             }
             return r;
         }

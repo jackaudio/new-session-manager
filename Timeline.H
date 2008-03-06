@@ -61,9 +61,8 @@ struct Rectangle
     Rectangle ( int X, int Y, int W, int H ) : x( X ), y( Y ), w( W ), h( H ) {}
 };
 
-struct Timeline : public Fl_Overlay_Window
+class Timeline : public Fl_Overlay_Window
 {
-
     static void draw_clip ( void * v, int X, int Y, int W, int H );
 
     int _old_xposition;
@@ -88,6 +87,12 @@ struct Timeline : public Fl_Overlay_Window
     Tempo_Track *tempo_track;
     Time_Track *time_track;
 
+
+    static void cb_scroll ( Fl_Widget *w, void *v );
+    void cb_scroll ( Fl_Widget *w );
+
+public:
+
     float fpp;                                                  /* frames per pixel */
 //    nframes_t fpp;
 
@@ -98,9 +103,6 @@ struct Timeline : public Fl_Overlay_Window
     nframes_t length;
 
     int yposition;
-
-    int _beats_per_bar;
-    float _beats_per_minute;
 
     Timeline ( int X, int Y, int W, int H, const char *L=0 );
 

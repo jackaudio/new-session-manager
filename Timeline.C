@@ -28,40 +28,40 @@
 #include "Track_Header.H"
 
 void
-cb_hscroll ( Fl_Widget *w, void *v )
+Timeline::cb_scroll ( Fl_Widget *w, void *v )
 {
-    Scalebar *sb = (Scalebar*)w;
-
-    if ( sb->zoom_changed() )
-    {
-        timeline->fpp = sb->zoom() * 1;
-
-        int maxx = timeline->ts_to_x( timeline->length );
-        sb->range( 0, maxx );
-
-        timeline->redraw();
-    }
-    else
-    {
-        timeline->position( sb->value() );
-    }
-
-    printf( "%lu\n", timeline->xoffset );
+    ((Timeline*)v)->cb_scroll( w );
 }
 
 void
-cb_vscroll ( Fl_Widget *w, void *v )
+Timeline::cb_scroll ( Fl_Widget *w )
 {
-    Fl_Scrollbar *sb = (Fl_Scrollbar*)w;
+    if ( w == vscroll )
+    {
+        tracks->position( tracks->x(), (rulers->y() + rulers->h()) - vscroll->value() );
 
-    timeline->tracks->position( timeline->tracks->x(), (timeline->rulers->y() + timeline->rulers->h()) - sb->value() );
-    timeline->yposition = sb->value();
+        yposition = vscroll->value();
 
-//    timeline->vscroll->range( 0, timeline->tracks->h() - timeline->h() - timeline->rulers->h() );
+        vscroll->value( vscroll->value(), 30, 0, min( tracks->h(),  tracks->h() - h() - rulers->h() ) );
 
-    sb->value( sb->value(), 30, 0, min( timeline->tracks->h(),  timeline->tracks->h() - timeline->h() - timeline->rulers->h() ) );
+        damage( FL_DAMAGE_SCROLL );
+    }
+    else
+    {
+        if ( hscroll->zoom_changed() )
+        {
+            fpp = hscroll->zoom() * 1;
 
-    timeline->damage( FL_DAMAGE_SCROLL );
+            int maxx = ts_to_x( length );
+            hscroll->range( 0, maxx );
+
+            redraw();
+        }
+        else
+        {
+            position( hscroll->value() );
+        }
+    }
 }
 
 
@@ -81,7 +81,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         o->zoom_range( 2, 8192 );
         o->zoom( 256 );
         o->type( FL_HORIZONTAL );
-        o->callback( cb_hscroll, 0 );
+        o->callback( cb_scroll, this );
 
         hscroll = o;
     }
@@ -91,7 +91,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
         o->type( FL_VERTICAL );
 //        o->step( 10 );
-        o->callback( cb_vscroll, 0 );
+        o->callback( cb_scroll, this );
         vscroll = o;
     }
 
@@ -144,7 +144,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
         sample_rate = 44100;
         fpp = 256;
-        _beats_per_minute = 120;
         length = sample_rate * 60 * 2;
 
         {

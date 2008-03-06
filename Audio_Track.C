@@ -79,7 +79,12 @@ Audio_Track::handle ( int m )
 
             printf( "pasted file \"%s\"\n", file );
 
+            fl_cursor( FL_CURSOR_WAIT );
+            Fl::check();
+
             Audio_File *c = Audio_File::from_file( file );
+
+            fl_cursor( FL_CURSOR_DEFAULT );
 
             if ( ! c )
             {

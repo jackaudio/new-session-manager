@@ -225,10 +225,12 @@ Region::handle ( int m )
     {
         case FL_ENTER:
             _current = true;
+            Track_Widget::handle( m );
             redraw();
             break;
         case FL_LEAVE:
             _current = false;
+            Track_Widget::handle( m );
             redraw();
             break;
         case FL_PUSH:

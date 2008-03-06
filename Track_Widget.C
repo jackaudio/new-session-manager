@@ -143,6 +143,7 @@ Track_Widget::handle ( int m )
             return 1;
         case FL_PUSH:
         {
+            /* deletion */
             if ( Fl::event_state() & FL_CTRL &&
                  Fl::event_button3() )
             {
@@ -165,6 +166,7 @@ Track_Widget::handle ( int m )
             }
 
             fl_cursor( FL_CURSOR_HAND );
+
             return 1;
         case FL_DRAG:
         {
@@ -175,11 +177,9 @@ Track_Widget::handle ( int m )
                 _log.hold();
             }
 
-            const int ox = _drag->x;
-// _current->_drag->x;
+            fl_cursor( FL_CURSOR_MOVE );
 
-/*             const int ox = _drag->x; */
-/*             const int oy = _drag->y; */
+            const int ox = _drag->x;
 
             redraw();
 
@@ -193,10 +193,6 @@ Track_Widget::handle ( int m )
                 if ( Track_Widget::_current == this )
                     _track->snap( this );
             }
-
-            //                  _track->redraw();
-            fl_cursor( FL_CURSOR_MOVE );
-
 
             if ( X >= _track->x() + _track->w() ||
                  X <= _track->x() )
@@ -220,9 +216,7 @@ Track_Widget::handle ( int m )
 
                 timeline->position( timeline->ts_to_x(  pos ) );
                 _track->redraw();
-//                        timeline->redraw();
             }
-
 
             return 1;
         }

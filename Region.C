@@ -236,8 +236,8 @@ Region::handle ( int m )
         case FL_PUSH:
         {
 
-            if ( Fl::event_state() & FL_SHIFT &&
-                 ! ( Fl::event_state() & FL_CTRL ))
+            /* trimming / splitting  */
+            if ( Fl::event_shift() && ! Fl::event_ctrl() )
             {
                 switch ( Fl::event_button() )
                 {
@@ -283,10 +283,10 @@ Region::handle ( int m )
             {
                 ox = x() - X;
                 oy = y() - Y;
+                /* for panning */
+                os = _start;
 
-                if ( Fl::event_ctrl() )
-                    os = _start;
-
+                /* normalization and selection */
                 if ( Fl::event_button2() )
                 {
                     if ( Fl::event_ctrl() )
@@ -305,6 +305,11 @@ Region::handle ( int m )
                     redraw();
                     goto changed;
                 }
+                if ( Fl::event_button1() && Fl::event_ctrl() )
+                {
+                    /* duplication */
+                    return 1;
+                }
                 else
                     return Track_Widget::handle( m );
             }
@@ -313,18 +318,11 @@ Region::handle ( int m )
         case FL_RELEASE:
 
         {
-
             Track_Widget::handle( m );
 
             copied = false;
             if ( trimming != NO )
-            {
                 trimming = NO;
-//                _log.release();
-            }
-
-/*             delete _drag; */
-/*             _drag = NULL; */
 
             goto changed;
         }
@@ -336,6 +334,7 @@ Region::handle ( int m )
                 _log.hold();
             }
 
+            /* panning */
             if ( Fl::event_state() & FL_SHIFT &&
                  Fl::event_state() & FL_CTRL )
             {
@@ -355,6 +354,7 @@ Region::handle ( int m )
                 return 1;
             }
 
+            /* trimming */
             if ( Fl::event_state() & FL_SHIFT )
                 if ( trimming )
                 {
@@ -364,7 +364,7 @@ Region::handle ( int m )
                 else
                     return 0;
 
-
+            /* duplication */
             if ( Fl::event_state() & FL_CTRL )
             {
                 if ( _drag->state == 0 )
@@ -375,6 +375,7 @@ Region::handle ( int m )
                 }
             }
 
+            /* track jumping */
             if ( ! selected() )
             {
                 if ( Y > y() + h() )

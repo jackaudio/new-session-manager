@@ -45,13 +45,20 @@ Track_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )
         }
     }
 
+
     Fl_Label lab;
 
     lab.color = color;
-    lab.type = FL_SHADOW_LABEL;
+//    lab.type = FL_SHADOW_LABEL;
+    lab.type = FL_ENGRAVED_LABEL;
     lab.value = label;
     lab.font = FL_HELVETICA;
     lab.size = 14;
+
+    int lw, lh;
+
+    fl_font( lab.font, lab.size );
+    fl_measure( lab.value, lw, lh );
 
     int W = w();
     int H = h();
@@ -70,6 +77,20 @@ Track_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )
 
     if ( abs_x() < scroll_x() )
         dx = min( 32767, scroll_x() - abs_x() );
+
+    {
+        const Fl_Boxtype b = FL_ROUND_UP_BOX;
+        const int bx = Fl::box_dx( b );
+        const int bw = Fl::box_dw( b );
+
+        if ( align & FL_ALIGN_BOTTOM )
+            fl_draw_box( b, X - dx - bx, Y + H - lh, lw + bw, lh, FL_GRAY );
+        else
+            if ( align & FL_ALIGN_LEFT )
+                fl_draw_box( b, X - dx, Y, lw + bw, lh, FL_GRAY );
+            else
+                fl_draw_box( b, X - dx - bx + ((W / 2) - (lw / 2)), Y + ((H / 2) - (lh / 2)), lw + bw, lh, FL_GRAY );
+    }
 
     lab.draw( X - dx, Y, W, H, align );
 

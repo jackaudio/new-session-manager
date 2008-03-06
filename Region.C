@@ -484,7 +484,7 @@ Region::draw ( int X, int Y, int W, int H )
 
         snprintf( pat, sizeof( pat ), "%dm:%.1fs", (int)(length() / timeline->sample_rate) / 60, (double)length() / timeline->sample_rate );
 
-        draw_label( pat, (Fl_Align)(FL_ALIGN_INSIDE | FL_ALIGN_CENTER), FL_GRAY );
+        draw_label( pat, (Fl_Align)(FL_ALIGN_INSIDE | FL_ALIGN_CENTER), FL_GREEN );
     }
 
 /*     if ( _selected ) */

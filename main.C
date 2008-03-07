@@ -45,6 +45,7 @@
 #include "Timeline.H"
 #include "Tempo_Track.H"
 #include "Time_Track.H"
+#include "Control_Track.H"
 
 #include "Loggable.H"
 #include "Track_Header.H"
@@ -70,6 +71,7 @@ main ( int argc, char **argv )
     Loggable::register_create( "Region",        &Region::create        );
     Loggable::register_create( "Tempo_Point",   &Tempo_Point::create   );
     Loggable::register_create( "Time_Point",    &Time_Point::create    );
+    Loggable::register_create( "Control_Point", &Control_Point::create );
     Loggable::register_create( "Track_Header",  &Track_Header::create  );
 
     timeline = new Timeline( 0, 24, main_window->w(), main_window->h() - 24, "Timeline" );

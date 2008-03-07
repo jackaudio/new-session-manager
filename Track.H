@@ -109,7 +109,6 @@ public:
 
     void sort ( void );
 
-    void draw ( void );
     void remove ( Track_Widget *r );
     void add ( Track_Widget *r );
 
@@ -128,5 +127,6 @@ public:
 
     virtual void snap ( Track_Widget *r );
     virtual int handle ( int m );
+    virtual void draw ( void );
 
 };

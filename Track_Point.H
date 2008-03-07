@@ -48,7 +48,7 @@ public:
         {
         }
 
-    void
+    virtual void
     draw ( int X, int Y, int W, int H )
         {
             Track_Widget::draw( x(), Y, w(), H );

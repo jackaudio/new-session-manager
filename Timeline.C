@@ -22,7 +22,7 @@
 #include "Tempo_Track.H"
 #include "Time_Track.H"
 #include "Audio_Track.H"
-
+#include "Control_Track.H"
 #include <FL/Fl_Scrollbar.H>
 
 #include "Track_Header.H"
@@ -42,7 +42,9 @@ Timeline::cb_scroll ( Fl_Widget *w )
 
         yposition( vscroll->value() );
 
-        vscroll->value( vscroll->value(), 30, 0, min( tracks->h(),  tracks->h() - h() - rulers->h() ) );
+        int rh = h() - rulers->h();
+
+        vscroll->value( vscroll->value(), 30, 0, max( tracks->h() - rh, rh) );
     }
     else
     {
@@ -150,7 +152,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->spacing( 0 );
 
             Track *l = NULL;
-            for ( int i = 16; i--;  )
+            for ( int i = 8; i--;  )
             {
 //                Track_Header *t = new Track_Header( 0, 0, W, 75 );
                 Track_Header *t = new Track_Header( 0, 0, W, 30 );
@@ -163,6 +165,14 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
                 t->track( o );
                 t->color( (Fl_Color)rand() );
+            }
+
+            {
+                Track_Header *t = new Track_Header( 0, 0, W, 30 );
+                Track *o = new Control_Track( 0, 0, 1, 100 );
+                o->color( FL_BLUE );
+                t->color( FL_RED );
+                t->track( o );
             }
 
             tracks = o;

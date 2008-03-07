@@ -124,6 +124,8 @@ public:
             _delete_queue.push( r );
         }
 
+    Track_Widget * overlaps ( Track_Widget *r );
+
     virtual void snap ( Track_Widget *r );
     virtual int handle ( int m );
 

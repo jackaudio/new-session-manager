@@ -33,6 +33,20 @@ Track::sort ( void )
     _widgets.sort( Track_Widget::sort_func );
 }
 
+/** return a pointer to the widget that /r/ overlaps, or NULL if none. */
+Track_Widget *
+Track::overlaps ( Track_Widget *r )
+{
+    for ( list <Track_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
+    {
+        if ( *i == r ) continue;
+        if ( ! ( (*i)->offset() > r->offset() + r->length() || (*i)->offset() + (*i)->length() < r->offset() ) )
+            return *i;
+    }
+
+    return NULL;
+}
+
 void
 Track::draw ( void )
 {
@@ -55,9 +69,44 @@ Track::draw ( void )
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw_box( X, Y, W, H );
 
+    /* draw crossfades */
+    for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
+    {
+        Track_Widget *o = overlaps( *r );
+
+        if ( o )
+        {
+            if ( *o < **r )
+            {
+                Rectangle b( (*r)->x(), o->y(), (o->x() + o->w()) - (*r)->x(), o->h() );
+
+                Fl_Color c = fl_color_average( o->box_color(), (*r)->box_color(), 0.50f );
+                c = fl_color_average( c, FL_YELLOW, 0.20f );
+
+                fl_push_clip( b.x, b.y, b.w, b.h );
+
+                draw_box( o->box(), b.x - 100, b.y, b.w + 200, b.h, c );
+
+/*                 fl_color( FL_BLACK ); */
+/*                 fl_line_style( FL_DOT, 4 ); */
+
+/*                 fl_line( b.x, b.y, b.x + b.w, b.y + b.h ); */
+
+/*                 fl_line( b.x, b.y + b.h, b.x + b.w, b.y ); */
+
+/*                 fl_line_style( FL_SOLID, 0 ); */
+
+                fl_pop_clip();
+
+            }
+        }
+    }
+
+
     /* TODO: detect overlap and draw with transparency/crossfade */
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw( X, Y, W, H );
+
 
     fl_pop_clip();
 }

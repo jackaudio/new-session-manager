@@ -85,7 +85,8 @@ Track::draw ( void )
 
                 fl_push_clip( b.x, b.y, b.w, b.h );
 
-                draw_box( o->box(), b.x - 100, b.y, b.w + 200, b.h, c );
+                draw_box( FL_FLAT_BOX, b.x - 100, b.y, b.w + 200, b.h, c );
+                draw_box( FL_UP_FRAME, b.x - 100, b.y, b.w + 200, b.h, c );
 
 /*                 fl_color( FL_BLACK ); */
 /*                 fl_line_style( FL_DOT, 4 ); */

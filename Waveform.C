@@ -49,35 +49,43 @@ draw_waveform ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chann
 
     pk->fill_buffer( fpp, _start,  _start + timeline->x_to_ts( W ) );
 
+    const int halfheight = H / 2;
+    const int mid = Y + halfheight;
+
+    fl_line_style( FL_SOLID, 1 );
+
     j = start;
     for ( int x = X; x <= X + W; ++x, ++j )
     {
         Peak p = (*pk)[ j ];
 
-        int mid = Y + (H / 2);
-
         p.max *= _scale;
         p.min *= _scale;
 
+        const float diff = fabs( p.max - p.min );
+
         if ( vary_color )
-            fl_color( fl_color_average( FL_RED, color, min( 1.0, fabs( p.max - p.min ) ) ) );
+            fl_color( fl_color_average( FL_WHITE, color, min( 1.0f, diff ) ) );
         else
             fl_color( color );
 
-/*         p.min = max( p.min, -1.0f ); */
-/*         p.max = min( p.max, 1.0f ); */
+        if ( diff > 1.0f )
+            fl_color( FL_RED );
 
-/*         if ( p.min < -1.0 || p.max > 1.0 ) */
+        const int ty = mid + (halfheight * p.min);
+        const int by = mid + (halfheight * p.max );
+        fl_line( x, ty, x, by );
+
+/*         if ( outline ) */
 /*         { */
-/*             fl_color( FL_RED ); */
-/*             fl_line( x, Y, x, Y + H ); */
+/*             fl_color( fl_darker( fl_darker( color ) ) ); */
+/*             fl_line( x, ty - 2, x, ty ); */
+/*             fl_line( x, by + 2, x, by ); */
 /*         } */
-/*         else */
-
-        fl_line( x, mid + (H / 2 * p.min), x, mid + (H / 2 * p.max) );
-
 
     }
+
+    fl_line_style( FL_SOLID, 0 );
 
     if ( outline )
     {

@@ -154,6 +154,7 @@ public:
                         _y = (float)Y / parent()->h();
                         redraw();
                     }
+                    track()->sort();
                     break;
                 }
             }

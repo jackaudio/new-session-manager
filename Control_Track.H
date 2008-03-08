@@ -53,12 +53,32 @@ public:
 
             fl_color( selection_color() );
 
-            fl_begin_line();
+            fl_begin_complex_polygon();
 
-            for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-                fl_vertex( (*r)->x(), (*r)->y() );
+            list <Track_Widget *>::const_iterator e = _widgets.end();
+            e--;
 
-            fl_end_line();
+            if ( _widgets.size() )
+                for ( list <Track_Widget *>::const_iterator r = _widgets.begin(); ; r++ )
+                {
+                    if ( r == _widgets.begin() )
+                    {
+                        fl_vertex( x(), y() + h() );
+                        fl_vertex( x(), (*r)->y() );
+                    }
+
+                    fl_vertex( (*r)->x(), (*r)->y() );
+
+                    if ( r == e )
+                    {
+                        fl_vertex( x() + w(), (*r)->y() );
+                        fl_vertex( x() + w(), y() + h() );
+                        break;
+                    }
+
+                }
+
+            fl_end_complex_polygon();
 
             fl_line_style( FL_SOLID, 0 );
 
@@ -73,8 +93,8 @@ public:
         {
             int r = Track::handle( m );
 
-           if ( r )
-               return r;
+            if ( r )
+                return r;
 
             switch ( m )
             {

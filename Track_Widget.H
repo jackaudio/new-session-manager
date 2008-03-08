@@ -147,7 +147,15 @@ public:
     virtual int y ( void ) const { return _track->y(); }
     virtual int h ( void ) const { return _track->h(); }
 
-    int x ( void ) const { return _offset < timeline->xoffset ? _track->x() - 1 : min( 32767, _track->x() + timeline->ts_to_x( _offset - timeline->xoffset ) ); }
+    /* used by regions */
+    virtual int x ( void ) const { return _offset < timeline->xoffset ? _track->x() - 1 : min( 32767, _track->x() + timeline->ts_to_x( _offset - timeline->xoffset ) ); }
+
+    /* use this as x() when you need to draw lines between widgets */
+    int line_x ( void ) const
+        {
+            return _offset < timeline->xoffset ? max( -32768, _track->x() -  timeline->ts_to_x( timeline->xoffset - _offset )) : min( 32767, _track->x() + timeline->ts_to_x( _offset - timeline->xoffset ) );
+        }
+
     virtual int w ( void ) const
         {
             int tx = timeline->ts_to_x( _offset );
@@ -199,12 +207,18 @@ public:
     virtual void
     draw_box ( int X, int Y, int W, int H )
         {
+            if ( x() > X + W || x() + w() < X )
+                return;
+
             fl_draw_box( box(), x(), y(), w(), h(), _box_color );
         }
 
     virtual void
     draw ( int X, int Y, int W, int H )
         {
+            if ( x() > X + W || x() + w() < X )
+                return;
+
             draw_box( X, Y, W, H );
         }
 

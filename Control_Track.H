@@ -48,7 +48,7 @@ public:
 
             fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
-            fl_line_style( FL_SOLID, 2 );
+            fl_line_style( FL_SOLID, 4 );
 
             fl_color( FL_RED );
 

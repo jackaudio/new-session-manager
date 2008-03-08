@@ -159,6 +159,7 @@ public:
             return r;
         }
 
+    int x ( void ) const { return line_x(); }
     int y ( void ) const { return parent()->y() + ((float)parent()->h() * _y); }
     int w ( void ) const { return 6; }
     int h ( void ) const { return 6; }

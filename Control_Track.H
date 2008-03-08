@@ -29,6 +29,7 @@ public:
 
     Control_Track ( int X, int Y, int W, int H ) : Track( X, Y, W, H )
         {
+            color( fl_darker( FL_GREEN ) );
         }
 
     void
@@ -50,7 +51,7 @@ public:
 
             fl_line_style( FL_SOLID, 4 );
 
-            fl_color( FL_RED );
+            fl_color( selection_color() );
 
             fl_begin_line();
 

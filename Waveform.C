@@ -65,10 +65,15 @@ draw_waveform ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chann
         else
             fl_color( color );
 
-        if ( p.min < -1.0 || p.max > 1.0 )
-            fl_color( FL_RED );
 
-        fl_line( x, mid + (H / 2 * p.min), x, mid + (H / 2 * p.max) );
+        if ( p.min < -1.0 || p.max > 1.0 )
+        {
+            fl_color( FL_RED );
+            fl_line( x, Y, x, Y + H );
+        }
+        else
+            fl_line( x, mid + (H / 2 * p.min), x, mid + (H / 2 * p.max) );
+
 
     }
 

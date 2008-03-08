@@ -145,7 +145,7 @@ public:
     nframes_t scroll_ts ( void ) const { return timeline->xoffset; }
 
     virtual int y ( void ) const { return _track->y(); }
-    int h ( void ) const { return _track->h(); }
+    virtual int h ( void ) const { return _track->h(); }
 
     int x ( void ) const { return _offset < timeline->xoffset ? _track->x() - 1 : min( 32767, _track->x() + timeline->ts_to_x( _offset - timeline->xoffset ) ); }
     virtual int w ( void ) const

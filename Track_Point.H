@@ -28,9 +28,9 @@ protected:
 
     char *_label;
 
-    void set ( char **a )
-        {
-        }
+/*     void set ( char **a ) */
+/*         { */
+/*         } */
 
 public:
 

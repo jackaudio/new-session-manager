@@ -62,7 +62,7 @@ public:
             fl_line_style( FL_SOLID, 0 );
 
             for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-                (*r)->draw( X, Y, W, H );
+                (*r)->draw_box( X, Y, W, H );
 
             fl_pop_clip();
         }
@@ -72,8 +72,8 @@ public:
         {
             int r = Track::handle( m );
 
-//            if ( r )
-//                return r;
+           if ( r )
+               return r;
 
             switch ( m )
             {
@@ -81,17 +81,15 @@ public:
                 {
                     if ( Fl::event_button1() )
                     {
-                        Control_Point *r = new Control_Point( timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ), (float)(Fl::event_y() - y()) / h() );
+                        Control_Point *r = new Control_Point( this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ), (float)(Fl::event_y() - y()) / h() );
 
                         add( r );
                     }
 
-                    return 0;
+                    return 1;
                 }
                 default:
                     return 0;
             }
-
-            return r;
         }
 };

@@ -111,8 +111,9 @@ public:
         }
 
 
-    Control_Point ( nframes_t when, float y )
+    Control_Point ( Track *t, nframes_t when, float y )
         {
+            _track = t;
             _y = y;
             _offset = when;
 
@@ -135,31 +136,44 @@ public:
         {
             int r = Track_Widget::handle( m );
 
-            if ( m == FL_RELEASE )
+            switch ( m )
             {
-                _track->sort();
-                timeline->redraw();
+
+                case FL_RELEASE:
+                    _track->sort();
+                    redraw();
+                    break;
+                case FL_DRAG:
+                {
+                    int Y = Fl::event_y() - parent()->y();
+
+                    if ( Y >= 0 && Y < parent()->h() )
+                    {
+                        _y = (float)Y / parent()->h();
+                        redraw();
+                    }
+                    break;
+                }
             }
+
             return r;
         }
 
-    int
-    y ( void ) const
-        {
-            return _track->y() + ((float)h() * _y);
-        }
+    int y ( void ) const { return parent()->y() + ((float)parent()->h() * _y); }
+    int w ( void ) const { return 6; }
+    int h ( void ) const { return 6; }
 
-    void
-    draw_box ( int X, int Y, int W, int H )
-        {
-//            Track_Widget::draw_box( x(), y(), w(), h() );
-        }
+/*     void */
+/*     draw_box ( int X, int Y, int W, int H ) */
+/*         { */
+/*         } */
 
      void
     draw ( int X, int Y, int W, int H )
         {
-            fl_color( FL_RED );
-            fl_draw_box( FL_UP_BOX, x(), y(), 6, 6, FL_RED );
-//            fl_rectf( x(), y() + ry, 6, 6 );
+
+//            fl_draw_box( box(), x(), y(), w(), h(), box_color() );
+            return;
         }
+
 };

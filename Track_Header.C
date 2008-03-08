@@ -58,9 +58,15 @@ Track_Header::cb_button ( Fl_Widget *w )
     else
     if ( w == take_menu )
     {
-        printf( "%d\n", take_menu->value() );
+        int v = take_menu->value();
 
-        const char *s = take_menu->menu()[ take_menu->value() ].text;
+        if ( v == 0 )
+        {
+            show_all_takes( take_menu->menu()[ v ].value() );
+            return;
+        }
+
+        const char *s = take_menu->menu()[ v ].text;
 
         for ( int i = takes->children(); i--; )
         {
@@ -140,6 +146,7 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
                 o->color( FL_LIGHT1 );
                 o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
                 o->callback( cb_button, this );
+                o->add( "Show all takes", 0, 0, 0, FL_MENU_TOGGLE );
             }
             o->end();
         }
@@ -180,6 +187,6 @@ Track_Header::width()
 void
 Track_Header::track( Track * t )
 {
-    t->size( 1, h() );
+//    t->size( 1, h() );
     takes->insert( *t, 0 );
 }

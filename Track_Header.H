@@ -168,14 +168,9 @@ public:
 
     int size ( void ) const { return _size; }
 
-    void size ( int v )
+    /* adjust size of widget and children */
+    void resize ( void )
         {
-            if ( v < 0 || v > 3 )
-                return;
-
-            _size = v;
-
-
             for ( int i = takes->children(); i--; )
             {
                 takes->child( i )->size( w(), height()  );
@@ -186,12 +181,22 @@ public:
             else
                 Fl_Group::size( w(), height() );
 
-            if ( _size == 0 )
+            if ( controls->y() + controls->h() > y() + h() )
                 controls->hide();
             else
                 controls->show();
 
             parent()->redraw();
+        }
+
+    void size ( int v )
+        {
+            if ( v < 0 || v > 3 )
+                return;
+
+            _size = v;
+
+            resize();
         }
 
     int height ( void ) const
@@ -201,7 +206,11 @@ public:
             return table[ _size ];
         }
 
-    void show_all_takes ( void ) { Fl_Group::size( w(), height() * takes->children() ); _show_all_takes = true; }
+    void show_all_takes ( bool b )
+        {
+            _show_all_takes = b;
+            resize();
+        }
 
     const char * name ( void ) const { return _name; }
     bool mute ( void ) const { return mute_button->value(); }

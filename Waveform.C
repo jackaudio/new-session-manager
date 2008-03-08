@@ -56,23 +56,25 @@ draw_waveform ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chann
 
         int mid = Y + (H / 2);
 
-
         p.max *= _scale;
         p.min *= _scale;
 
         if ( vary_color )
-            fl_color( fl_color_average( FL_RED, color, fabs( p.max - p.min ) - 1.0 ) );
+            fl_color( fl_color_average( FL_RED, color, min( 1.0, fabs( p.max - p.min ) ) ) );
         else
             fl_color( color );
 
+/*         p.min = max( p.min, -1.0f ); */
+/*         p.max = min( p.max, 1.0f ); */
 
-        if ( p.min < -1.0 || p.max > 1.0 )
-        {
-            fl_color( FL_RED );
-            fl_line( x, Y, x, Y + H );
-        }
-        else
-            fl_line( x, mid + (H / 2 * p.min), x, mid + (H / 2 * p.max) );
+/*         if ( p.min < -1.0 || p.max > 1.0 ) */
+/*         { */
+/*             fl_color( FL_RED ); */
+/*             fl_line( x, Y, x, Y + H ); */
+/*         } */
+/*         else */
+
+        fl_line( x, mid + (H / 2 * p.min), x, mid + (H / 2 * p.max) );
 
 
     }

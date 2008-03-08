@@ -294,7 +294,12 @@ Peaks::normalization_factor( float fpp, nframes_t start, nframes_t end ) const
 {
     float s;
 
-    fill_buffer( fpp, start, end );
+//    fill_buffer( fpp, start, end );
+
+    if ( end - start < _peaks->chunksize * 4 )
+        fill_buffer( _clip->length() / 4, start, end );
+    else
+        fill_buffer( _clip->length(), start, end );
 
     Peak p = peak( start, end );
 

@@ -43,8 +43,6 @@ public:
 
             Fl_Group::draw();
 
-            timeline->draw_measure_lines( x(), y(), w(), h(), color() );
-
             int X, Y, W, H;
 
             fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
@@ -81,6 +79,8 @@ public:
             fl_end_complex_polygon();
 
             fl_line_style( FL_SOLID, 0 );
+
+            timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 
             for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
                 (*r)->draw_box( X, Y, W, H );

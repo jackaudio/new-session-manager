@@ -49,7 +49,7 @@ public:
 
             fl_line_style( FL_SOLID, 4 );
 
-            fl_color( selection_color() );
+            fl_color( fl_color_average( selection_color(), color(), 0.90f ) );
 
             fl_begin_complex_polygon();
 

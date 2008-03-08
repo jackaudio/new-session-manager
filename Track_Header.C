@@ -55,6 +55,24 @@ Track_Header::cb_button ( Fl_Widget *w )
 
 
     }
+    else
+    if ( w == take_menu )
+    {
+        printf( "%d\n", take_menu->value() );
+
+        const char *s = take_menu->menu()[ take_menu->value() ].text;
+
+        for ( int i = takes->children(); i--; )
+        {
+            Track *t = (Track*)takes->child( i );
+            if ( ! strcmp( s, t->name() ) )
+            {
+                track( t );
+                redraw();
+                break;
+            }
+        }
+    }
 }
 
 
@@ -62,10 +80,9 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group ( X, Y, W, H, L )
 {
 
-
     _name = NULL;
-    _track = NULL;
     _selected = false;
+    _show_all_takes = false;
     _size = 1;
 
     Fl_Group::size( w(), height() );
@@ -122,6 +139,7 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
                 o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
                 o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
+                o->callback( cb_button, this );
             }
             o->end();
         }
@@ -162,8 +180,6 @@ Track_Header::width()
 void
 Track_Header::track( Track * t )
 {
-    _track = t;
-
-    t->size( 1, takes->h() );
-    takes->add( t );
+    t->size( 1, h() );
+    takes->insert( *t, 0 );
 }

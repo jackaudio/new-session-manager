@@ -40,11 +40,13 @@ public:
 
 private:
 
-    Track * _track;
+//    Track * _track;
 
     char *_name;
 
     bool _selected;
+
+    bool _show_all_takes;
 
     int _size;
 
@@ -102,7 +104,7 @@ public:
 
                                 assert( t );
 
-                                _track = t;
+                                track( t );
                             }
 
 
@@ -120,7 +122,7 @@ public:
             int i = 0;
 
             asprintf( &sa[ i++ ], ":name \"%s\"", _name ? _name : ""  );
-            asprintf( &sa[ i++ ], ":track 0x%X", _track ? _track->id() : 0 );
+            asprintf( &sa[ i++ ], ":track 0x%X", track() ? track()->id() : 0 );
             asprintf( &sa[ i++ ], ":selected %d", _selected );
 /*             asprintf( &sa[ i++ ], ":record %d", record_button->value() ); */
 /*             asprintf( &sa[ i++ ], ":solo %d", solo_button->value() ); */
@@ -172,9 +174,17 @@ public:
                 return;
 
             _size = v;
-            Fl_Group::size( w(), height() );
-            if ( _track )
-                _track->size( _track->w(), height() );
+
+
+            for ( int i = takes->children(); i--; )
+            {
+                takes->child( i )->size( w(), height()  );
+            }
+
+            if ( _show_all_takes )
+                Fl_Group::size( w(), height() * takes->children() );
+            else
+                Fl_Group::size( w(), height() );
 
             if ( _size == 0 )
                 controls->hide();
@@ -191,6 +201,8 @@ public:
             return table[ _size ];
         }
 
+    void show_all_takes ( void ) { Fl_Group::size( w(), height() * takes->children() ); _show_all_takes = true; }
+
     const char * name ( void ) const { return _name; }
     bool mute ( void ) const { return mute_button->value(); }
     bool solo ( void ) const { return solo_button->value(); }
@@ -206,7 +218,22 @@ public:
     static int width();
 
     void track( Track * t );
-    Track * track ( void ) { return _track; }
+    Track * track ( void ) { return (Track*)takes->child( 0 ); }
+
+    void add ( Track * t )
+        {
+            takes->add( t );
+            char pat[20];
+            snprintf( pat, sizeof( pat ), "%d", takes->children() );
+            t->name( strdup( pat ) );
+            take_menu->add( t->name() );
+        }
+
+    void remote ( Track *t )
+        {
+            takes->remove( t );
+//            take_menu->remove( t->name() );
+        }
 
     int handle ( int m )
         {

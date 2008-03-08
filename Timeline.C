@@ -163,8 +163,13 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
                 l = o;
 //                o->end();
 
-                t->track( o );
+                t->add( o );
+                t->add( new Control_Track( 0, 0, 1, 100 ) );
+                t->show_all_takes();
+
                 t->color( (Fl_Color)rand() );
+
+
             }
 
             {

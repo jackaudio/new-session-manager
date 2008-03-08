@@ -65,6 +65,7 @@ main ( int argc, char **argv )
 
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
+//    Fl::scheme( "gtk+" );
 
     Loggable::open( "history" );
     /* welcome to C++ */
@@ -81,7 +82,7 @@ main ( int argc, char **argv )
     o->callback( cb_undo, 0 );
 
     main_window->end();
-    main_window->show();
+    main_window->show( argc, argv );
 
     Fl::run();
 }

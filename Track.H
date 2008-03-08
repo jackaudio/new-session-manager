@@ -107,6 +107,9 @@ public:
     void prev ( Track *t ) { _prev = t; }
     void next ( Track *t ) { _next = t; }
 
+    const char * name ( void ) const { return _name; }
+    void name ( char *s ) { if ( _name ) free( _name ); _name = s; }
+
     void sort ( void );
 
     void remove ( Track_Widget *r );

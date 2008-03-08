@@ -44,9 +44,9 @@ protected:
 
             int i = 0;
 
-            asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
             asprintf( &sa[i++], ":x %lu", _offset );
             asprintf( &sa[i++], ":y %.2f", _y );
+            asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
 
             sa[i] = NULL;
 
@@ -67,7 +67,7 @@ protected:
                 if ( ! strcmp( s, ":x" ) )
                     _offset = atol( v );
                 else
-                    if ( ! strcmp( s, ":control" ) )
+                    if ( ! strcmp( s, ":y" ) )
                         _y = atof( v );
                     else
                         if ( ! strcmp( s, ":track" ) )
@@ -79,6 +79,8 @@ protected:
                             assert( t );
 
                             t->add( this );
+
+                            t->sort();
                         }
 
 

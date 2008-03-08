@@ -52,6 +52,8 @@ private:
 
     enum { AUDIO } _type;
 
+    Track *_track;
+
 public:
 
     Fl_Input * name_field;
@@ -60,7 +62,12 @@ public:
     Fl_Button *solo_button;
     Fl_Menu_Button *take_menu;
     Fl_Group *controls;
+
+    Fl_Pack *pack;
+    Fl_Pack *control;
     Fl_Pack *takes;
+
+
 
     const char *class_name ( void ) { return "Track_Header"; }
 
@@ -166,38 +173,12 @@ public:
                 Fl_Group::draw();
         }
 
+    void add_control( Track *t );
+
     int size ( void ) const { return _size; }
 
-    /* adjust size of widget and children */
-    void resize ( void )
-        {
-            for ( int i = takes->children(); i--; )
-            {
-                takes->child( i )->size( w(), height()  );
-            }
-
-            if ( _show_all_takes )
-                Fl_Group::size( w(), height() * takes->children() );
-            else
-                Fl_Group::size( w(), height() );
-
-            if ( controls->y() + controls->h() > y() + h() )
-                controls->hide();
-            else
-                controls->show();
-
-            parent()->redraw();
-        }
-
-    void size ( int v )
-        {
-            if ( v < 0 || v > 3 )
-                return;
-
-            _size = v;
-
-            resize();
-        }
+    void resize ( void );
+    void size ( int v );
 
     int height ( void ) const
         {
@@ -224,10 +205,10 @@ public:
     void cb_button ( Fl_Widget *w );
 
 
-    static int width();
+    static int width ( void ) { return 150; }
 
     void track( Track * t );
-    Track * track ( void ) { return (Track*)takes->child( 0 ); }
+    Track * track ( void ) { return _track; }
 
     void add ( Track * t )
         {

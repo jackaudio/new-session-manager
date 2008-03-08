@@ -163,17 +163,11 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
                 l = o;
 //                o->end();
 
-                t->add( o );
-                t->add( new Control_Track( 0, 0, 1, 100 ) );
-                t->color( (Fl_Color)rand() );
-            }
-
-            {
-                Track_Header *t = new Track_Header( 0, 0, W, 30 );
-                Track *o = new Control_Track( 0, 0, 1, 100 );
-                o->color( FL_BLUE );
-                t->color( FL_RED );
                 t->track( o );
+                t->add( new Audio_Track( 0, 0, 1, 100 ) );
+                t->add( new Audio_Track( 0, 0, 1, 100 ) );
+                t->add_control( new Control_Track( 0, 0, 1, 100 ) );
+                t->color( (Fl_Color)rand() );
             }
 
             tracks = o;

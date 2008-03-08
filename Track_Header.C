@@ -56,29 +56,29 @@ Track_Header::cb_button ( Fl_Widget *w )
 
     }
     else
-    if ( w == take_menu )
-    {
-        int v = take_menu->value();
-
-        if ( v == 0 )
+        if ( w == take_menu )
         {
-            show_all_takes( take_menu->menu()[ v ].value() );
-            return;
-        }
+            int v = take_menu->value();
 
-        const char *s = take_menu->menu()[ v ].text;
-
-        for ( int i = takes->children(); i--; )
-        {
-            Track *t = (Track*)takes->child( i );
-            if ( ! strcmp( s, t->name() ) )
+            if ( v == 0 )
             {
-                track( t );
-                redraw();
-                break;
+                show_all_takes( take_menu->menu()[ v ].value() );
+                return;
+            }
+
+            const char *s = take_menu->menu()[ v ].text;
+
+            for ( int i = takes->children(); i--; )
+            {
+                Track *t = (Track*)takes->child( i );
+                if ( ! strcmp( s, t->name() ) )
+                {
+                    track( t );
+                    redraw();
+                    break;
+                }
             }
         }
-    }
 }
 
 
@@ -86,6 +86,7 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group ( X, Y, W, H, L )
 {
 
+    _track = NULL;
     _name = NULL;
     _selected = false;
     _show_all_takes = false;
@@ -161,12 +162,23 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
         o->end();
     }
     {
-        Fl_Pack *o = takes = new Fl_Pack( 150, 0, 1006, 115 );
+        Fl_Pack *o = pack = new Fl_Pack( width(), 0, 1006, 115 );
         o->labeltype( FL_NO_LABEL );
-        o->align( FL_ALIGN_CLIP );
         o->resize( x() + width(), y(), w() - width(), h() );
-        o->end();
         Fl_Group::current()->resizable( o );
+
+        {
+            Fl_Pack *o = control = new Fl_Pack( width(), 0, pack->w(), 115 );
+            o->end();
+        }
+
+        {
+            Fl_Pack *o = takes = new Fl_Pack( width(), 0, pack->w(), 115 );
+            o->end();
+            o->hide();
+        }
+
+        o->end();
     }
     end();
 
@@ -178,15 +190,80 @@ Track_Header::~Track_Header ( )
     log_destroy();
 }
 
-int
-Track_Header::width()
+
+static int pack_visible( Fl_Pack *p )
 {
-    return 150;
+    int v = 0;
+    for ( int i = p->children(); i--; )
+        if ( p->child( i )->visible() )
+            v++;
+
+    return v;
+}
+
+/* adjust size of widget and children */
+void
+Track_Header::resize ( void )
+{
+    for ( int i = takes->children(); i--; )
+        takes->child( i )->size( w(), height()  );
+
+    for ( int i = control->children(); i--; )
+        control->child( i )->size( w(), height()  );
+
+    if ( _show_all_takes )
+    {
+        takes->show();
+        Fl_Group::size( w(), height() * ( 1 + takes->children() + pack_visible( control ) ) );
+    }
+    else
+    {
+        takes->hide();
+        Fl_Group::size( w(), height() * ( 1 + pack_visible( control ) ) );
+    }
+
+    if ( track() )
+        track()->size( w(), height() );
+
+
+    if ( controls->y() + controls->h() > y() + h() )
+        controls->hide();
+    else
+        controls->show();
+
+    parent()->redraw();
+}
+
+void
+Track_Header::size ( int v )
+{
+    if ( v < 0 || v > 3 )
+        return;
+
+    _size = v;
+
+    resize();
 }
 
 void
 Track_Header::track( Track * t )
 {
 //    t->size( 1, h() );
-    takes->insert( *t, 0 );
+    if ( track() )
+        add( track() );
+
+//        takes->insert( *track(), 0 );
+
+    _track = t;
+    pack->insert( *t, 0 );
+
+    resize();
+}
+
+void
+Track_Header::add_control( Track *t )
+{
+    control->add( t );
+
+    resize();
 }

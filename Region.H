@@ -47,8 +47,6 @@ class Region : public Track_Widget
 
     float _scale;                                               /* amplitude adjustment */
 
-    bool _current;                                              /* region is receiving operations */
-
     static Fl_Boxtype _box;
     static Fl_Color _selection_color;
     static Fl_Color selection_color ( void ) { return _selection_color; }
@@ -152,6 +150,8 @@ protected:
         {
             init();
         }
+
+    bool current ( void ) const { return this == Track::belowmouse(); }
 
 public:
 

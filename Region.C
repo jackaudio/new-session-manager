@@ -85,7 +85,6 @@ Region::init ( void )
     _end = 0;
     _scale = 1.0f;
     _clip = NULL;
-    _current = false;
 
     _box_color = FL_CYAN;
     _color = FL_BLUE;
@@ -103,7 +102,6 @@ Region::Region ( const Region & rhs )
     _scale     = rhs._scale;
     _box_color = rhs._box_color;
     _color     = rhs._color;
-    _current   = false;
 
     log_create();
 }
@@ -224,12 +222,10 @@ Region::handle ( int m )
     switch ( m )
     {
         case FL_ENTER:
-            _current = true;
             Track_Widget::handle( m );
             redraw();
             break;
         case FL_LEAVE:
-            _current = false;
             Track_Widget::handle( m );
             redraw();
             break;
@@ -476,7 +472,7 @@ Region::draw ( int X, int Y, int W, int H )
 
     draw_label( _clip->name(), align() );
 
-    if ( _current )
+    if ( current() )
     {
         char pat[40];
 

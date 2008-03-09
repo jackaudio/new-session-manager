@@ -26,7 +26,8 @@
 
 
 queue <Track_Widget *> Track::_delete_queue;
-Track_Widget *Track::pushed = NULL;
+Track_Widget *Track::_pushed = NULL;
+Track_Widget *Track::_belowmouse = NULL;
 
 void
 Track::sort ( void )
@@ -241,17 +242,14 @@ done:
 int
 Track::handle ( int m )
 {
-//    static Track_Widget *pushed;
-    static Track_Widget *belowmouse;
 
     switch ( m )
     {
         case FL_DND_ENTER:
             printf( "enter\n" );
-            if ( pushed && pushed->track()->class_name() == class_name() )
+            if ( pushed() && pushed()->track()->class_name() == class_name() )
             {
-                printf( "%s -> %s\n", pushed->track()->class_name(), class_name() );
-                add( pushed );
+                add( pushed() );
                 redraw();
             }
         case FL_DND_LEAVE:
@@ -260,11 +258,11 @@ Track::handle ( int m )
         {
             Track_Widget *r = event_widget();
 
-            if ( r != belowmouse )
+            if ( r != belowmouse() )
             {
-                if ( belowmouse )
-                    belowmouse->handle( FL_LEAVE );
-                belowmouse = r;
+                if ( belowmouse() )
+                    belowmouse()->handle( FL_LEAVE );
+                _belowmouse = r;
 
                 if ( r )
                     r->handle( FL_ENTER );
@@ -274,17 +272,17 @@ Track::handle ( int m )
         }
         default:
         {
-            Track_Widget *r = pushed ? pushed : event_widget();
+            Track_Widget *r = pushed() ? pushed() : event_widget();
 
             if ( r )
             {
                 int retval = r->dispatch( m );
 
                 if ( retval && m == FL_PUSH )
-                    pushed = r;
+                    _pushed = r;
 
                 if ( retval && m == FL_RELEASE )
-                    pushed = NULL;
+                    _pushed = NULL;
 
                 Loggable::block_start();
 
@@ -295,12 +293,12 @@ Track::handle ( int m )
                     _delete_queue.pop();
 
 
-                    if ( pushed == t )
-                        pushed = NULL;
-                    if ( belowmouse == t )
+                    if ( pushed() == t )
+                        _pushed = NULL;
+                    if ( belowmouse() == t )
                     {
-                        belowmouse->handle( FL_LEAVE );
-                        belowmouse = NULL;
+                        belowmouse()->handle( FL_LEAVE );
+                        _belowmouse = NULL;
                     }
 
                     delete t;

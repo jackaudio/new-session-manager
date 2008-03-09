@@ -42,7 +42,8 @@ class Track : public Fl_Group, public Loggable
     char *_name;
 
     static queue <Track_Widget *> _delete_queue;
-    static Track_Widget *pushed;
+    static Track_Widget *_pushed;
+    static Track_Widget *_belowmouse;
 
 protected:
 
@@ -100,6 +101,9 @@ public:
             parent()->remove( this );
             log_destroy();
         }
+
+    static Track_Widget *pushed ( void )  { return _pushed; };
+    static Track_Widget *belowmouse ( void )  { return _belowmouse; };
 
     const char * name ( void ) const { return _name; }
     void name ( char *s ) { if ( _name ) free( _name ); _name = s; }

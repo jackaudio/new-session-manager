@@ -71,7 +71,7 @@ Audio_Track::handle ( int m )
 
 
             if ( ! strcmp( text, "Region" ) )
-                 return 0;
+                return 1;
 
             char *file;
 

@@ -139,7 +139,7 @@ public:
 
     int dispatch ( int m );
 
-    Fl_Group * parent ( void ) const { return _track; }
+    Fl_Widget * parent ( void ) const { return _track; }
 
     int scroll_x ( void ) const { return timeline->ts_to_x( timeline->xoffset ); }
     nframes_t scroll_ts ( void ) const { return timeline->xoffset; }

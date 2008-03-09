@@ -44,7 +44,7 @@ public:
 
             fl_push_clip( x(), y(), w(), h() );
 
-            Fl_Group::draw();
+            draw_box();
 
             int X, Y, W, H;
 

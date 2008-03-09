@@ -114,7 +114,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->align( FL_ALIGN_LEFT );
 
             tempo_track = o;
-            o->end();
+//            o->end();
 
         }
 
@@ -130,7 +130,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->align( FL_ALIGN_LEFT );
 
             time_track = o;
-            o->end();
+            //          o->end();
 
         }
 

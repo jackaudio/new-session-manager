@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <FL/Fl_Widget.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl.H>
 // #include "Region.H"
@@ -36,7 +37,10 @@ using namespace std;
 class Region;
 class Track_Widget;
 
-class Track : public Fl_Group, public Loggable
+
+/* This is the base class for all track types. */
+
+class Track : public Fl_Widget, public Loggable
 {
 
     char *_name;
@@ -82,41 +86,14 @@ protected:
 public:
 
 
-    Track ( int X, int Y, int W, int H ) : Fl_Group( X, Y, W, H )
-        {
-            _name = NULL;
-
-            box( FL_DOWN_BOX );
-            color( fl_darker( FL_GRAY ) );
-
-            end();
-
-            log_create();
-        }
-
-/*     const Track & operator= ( const Track & rhs ) */
-/*         { */
-/*             if ( *this = rhs ) */
-/*                 return; */
-
-/*         } */
-
-    virtual ~Track (  )
-        {
-            /* FIXME: what to do with regions? */
-            parent()->redraw();
-            parent()->remove( this );
-            log_destroy();
-        }
-
-
-
+    Track ( int X, int Y, int W, int H );
+    virtual ~Track (  );
 
     static Track_Widget *pushed ( void )  { return _pushed; };
     static Track_Widget *belowmouse ( void )  { return _belowmouse; };
 
     const char * name ( void ) const { return _name; }
-    void name ( char *s ) { if ( _name ) free( _name ); _name = s; }
+    void name ( char *s ) { if ( _name ) free( _name ); _name = s; label( _name ); }
 
     void sort ( void );
 

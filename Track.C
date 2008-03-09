@@ -29,6 +29,25 @@ queue <Track_Widget *> Track::_delete_queue;
 Track_Widget *Track::_pushed = NULL;
 Track_Widget *Track::_belowmouse = NULL;
 
+Track::Track ( int X, int Y, int W, int H ) : Fl_Widget( X, Y, W, H )
+{
+    _name = NULL;
+
+    box( FL_DOWN_BOX );
+    color( fl_darker( FL_GRAY ) );
+    align( FL_ALIGN_LEFT );
+
+    log_create();
+}
+
+Track::~Track (  )
+{
+    /* FIXME: what to do with regions? */
+    parent()->redraw();
+    parent()->remove( this );
+    log_destroy();
+}
+
 void
 Track::sort ( void )
 {
@@ -61,7 +80,7 @@ Track::draw ( void )
 
     fl_push_clip( x(), y(), w(), h() );
 
-    Fl_Group::draw();
+    draw_box();
 
     int X, Y, W, H;
 
@@ -332,7 +351,7 @@ Track::handle ( int m )
                 return retval;
             }
             else
-                return Fl_Group::handle( m );
+                return Fl_Widget::handle( m );
         }
     }
 }

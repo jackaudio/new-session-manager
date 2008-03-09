@@ -212,11 +212,15 @@ public:
 
     void add ( Track * t )
         {
-            takes->add( t );
-            char pat[20];
-            snprintf( pat, sizeof( pat ), "%d", takes->children() );
-            t->name( strdup( pat ) );
-            take_menu->add( t->name() );
+            takes->insert( *t, 0 );
+            if ( ! t->name() )
+            {
+                char pat[20];
+                snprintf( pat, sizeof( pat ), "%d", takes->children() );
+                t->name( strdup( pat ) );
+                take_menu->add( t->name() );
+            }
+
         }
 
     void remote ( Track *t )

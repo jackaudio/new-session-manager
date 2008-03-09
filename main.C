@@ -63,6 +63,8 @@ main ( int argc, char **argv )
 {
     Fl_Window *main_window = new Fl_Window( 0, 0, 1024, 768 );
 
+    Fl::visual( FL_RGB8 );
+
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
 //    Fl::scheme( "gtk+" );

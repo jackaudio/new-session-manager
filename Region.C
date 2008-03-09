@@ -464,7 +464,7 @@ Region::draw ( int X, int Y, int W, int H )
                        _scale, selected() ? fl_invert_color( _color ) : _color );
 
 
-    timeline->draw_measure_lines( rx, Y, rw, H, _box_color );
+//    timeline->draw_measure_lines( rx, Y, rw, H, _box_color );
 
     fl_color( FL_BLACK );
     fl_line( rx, Y, rx, Y + H );

@@ -25,6 +25,9 @@
 #include "Control_Track.H"
 #include <FL/Fl_Scrollbar.H>
 
+#include <FL/Fl_Image.H>
+#include <FL/Fl_RGB_Image.H> // needed for alpha blending
+
 #include "Track_Header.H"
 
 void
@@ -353,6 +356,34 @@ Timeline::draw ( void )
         draw_child( *vscroll );
 
         redraw_overlay();
+
+
+    Rectangle &r = _selection;
+
+/*     unsigned char *data = fl_read_image( NULL, r.x, r.y, r.w, r.h, 0 ); */
+
+/*     Fl_RGB_Image bi( data, r.w, r.h, 3 ); */
+
+/*     bi.color_average( FL_BLACK, 0.50f ); */
+
+/*     bi.draw( r.x, r.y ); */
+
+/*     delete[] data; */
+
+
+    if ( r.w && r.h )
+    {
+    const unsigned char data[] = { 0, 127, 0, 96,
+                                   0, 96, 0, 127 };
+    Fl_RGB_Image bi( data, 2, 2, 2 );
+
+    Fl_Image *bi2 = bi.copy( r.w, r.h );
+
+    bi2->draw( r.x, r.y );
+
+    delete bi2;
+    }
+
         return;
     }
 
@@ -393,11 +424,14 @@ Timeline::draw ( void )
         _old_yposition = _yposition;
 
     }
+
 }
 
 void
 Timeline::draw_overlay ( void )
 {
+    if ( ! ( _selection.w && _selection.h ) )
+        return;
 
     fl_push_clip( tracks->x() + Track_Header::width(), rulers->y() + rulers->h(),  tracks->w() - Track_Header::width(), h() - rulers->h() - hscroll->h() );
 
@@ -421,8 +455,28 @@ Timeline::draw_overlay ( void )
     fl_line_style( FL_SOLID, 0 );
 
 
-    fl_pop_clip();
+/*     const unsigned char data[] = { 127, 127, 127, 96, */
+/*                                    127, 96, 127, 40 }; */
+/*     Fl_RGB_Image bi( data, 2, 2, 2 ); */
 
+/*     Fl_Image *bi2 = bi.copy( r.w, r.h ); */
+
+/*     bi2->draw( r.x, r.y ); */
+
+/*     delete bi2; */
+
+
+/*     unsigned char *data = fl_read_image( NULL, r.x, r.y, r.w, r.h, 0 ); */
+
+/*     Fl_RGB_Image bi( data, r.w, r.h, 3 ); */
+
+/*     bi.color_average( FL_BLACK, 0.50f ); */
+
+/*     bi.draw( r.x, r.y ); */
+
+/*     delete[] data; */
+
+    fl_pop_clip();
 
 }
 
@@ -500,6 +554,8 @@ Timeline::handle ( int m )
 
                     _selection.w = abs( ox );
                     _selection.h = abs( oy );
+
+                    redraw();
                     break;
                 }
                 case FL_RELEASE:

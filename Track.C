@@ -60,8 +60,6 @@ Track::draw ( void )
 
     Fl_Group::draw();
 
-    timeline->draw_measure_lines( x(), y(), w(), h(), color() );
-
     int X, Y, W, H;
 
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
@@ -110,6 +108,7 @@ Track::draw ( void )
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw( X, Y, W, H );
 
+    timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 
     fl_pop_clip();
 }

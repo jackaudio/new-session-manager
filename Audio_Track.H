@@ -33,6 +33,14 @@ public:
         {
         }
 
+
+    Track * clone_empty ( void )
+        {
+            Audio_Track *t = new Audio_Track( x(), y(), w(), h() );
+
+            return t;
+        }
+
     const char *class_name ( void ) { return "Audio_Track"; }
 
     int handle ( int m );

@@ -94,6 +94,13 @@ public:
             log_create();
         }
 
+/*     const Track & operator= ( const Track & rhs ) */
+/*         { */
+/*             if ( *this = rhs ) */
+/*                 return; */
+
+/*         } */
+
     virtual ~Track (  )
         {
             /* FIXME: what to do with regions? */
@@ -101,6 +108,9 @@ public:
             parent()->remove( this );
             log_destroy();
         }
+
+
+
 
     static Track_Widget *pushed ( void )  { return _pushed; };
     static Track_Widget *belowmouse ( void )  { return _belowmouse; };
@@ -125,6 +135,16 @@ public:
         }
 
     Track_Widget * overlaps ( Track_Widget *r );
+
+    virtual Track * clone ( void )
+        {
+            assert( 0 );
+        }
+
+    virtual Track * clone_empty ( void )
+        {
+            return NULL;
+        }
 
     virtual void snap ( Track_Widget *r );
     virtual int handle ( int m );

@@ -23,31 +23,41 @@
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Scrollbar.H>
 #include <FL/Fl_Widget.H>
-#include <Fl/Fl_Overlay_Window.H>
+#include <FL/fl_draw.H>
 
 #include "Scalebar.H"
 
 #include "Audio_File.H" // just for nframes_t
+
 #include <math.h>
-
 #include <assert.h>
-
-#include <FL/fl_draw.H>
 
 class Timeline;
 extern Timeline *timeline;
 
 #include "Track.H"
-// #include "Tempo_Track.H"
 
 class Tempo_Track;
 class Time_Track;
 
-// #include "Tempo_Point.H"
-// #include "Region.H"
-
 #include <list>
 using std::list;
+
+
+// disables double-buffering to make unnecessary redrawing more apparent
+// #define DEBUG_TIMELINE_DRAWING
+
+#ifndef DEBUG_TIMELINE_DRAWING
+
+#include <Fl/Fl_Overlay_Window.H>
+
+#else
+
+#include <FL/Fl_Single_Window.H>
+#define Fl_Overlay_Window Fl_Single_Window
+#define redraw_overlay()
+#endif
+
 
 
 struct Rectangle
@@ -60,6 +70,8 @@ struct Rectangle
     Rectangle ( ) : x( 0 ), y( 0 ), w( 0 ), h( 0 ) {}
     Rectangle ( int X, int Y, int W, int H ) : x( X ), y( Y ), w( W ), h( H ) {}
 };
+
+
 
 class Timeline : public Fl_Overlay_Window
 {

@@ -39,48 +39,48 @@ bool Waveform::vary_color = true;
  * outlined, filled, polygonal, rectified. */
 
 /** draw a portion of /clip/'s waveform. coordinates are the portion to draw  */
-    void
-    Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int channel, float fpp, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )
-    {
-        fl_push_clip( X, Y, W, H );
+void
+Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int channel, float fpp, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )
+{
+    fl_push_clip( X, Y, W, H );
 
-        int j;
+    int j;
 
 //    int start = timeline->ts_to_x( _start );
-        int start = timeline->ts_to_x( _start ) + (X - ox);
+    int start = timeline->ts_to_x( _start ) + (X - ox);
 
-        const Peaks *pk = _clip->peaks( channel );
+    const Peaks *pk = _clip->peaks( channel );
 
-        _start = timeline->x_to_ts( start );
+    _start = timeline->x_to_ts( start );
 
-        pk->fill_buffer( fpp, _start,  _start + timeline->x_to_ts( W ) );
+    pk->fill_buffer( fpp, _start,  _start + timeline->x_to_ts( W ) );
 
-        const int halfheight = H / 2;
-        const int mid = Y + halfheight;
+    const int halfheight = H / 2;
+    const int mid = Y + halfheight;
 
-        if ( Waveform::fill )
+    if ( Waveform::fill )
+    {
+        j = start;
+        for ( int x = X; x <= X + W; ++x, ++j )
         {
-            j = start;
-            for ( int x = X; x <= X + W; ++x, ++j )
-            {
-                Peak p = (*pk)[ j ];
+            Peak p = (*pk)[ j ];
 
-                p.max *= _scale;
-                p.min *= _scale;
+            p.max *= _scale;
+            p.min *= _scale;
 
-                const float diff = fabs( p.max - p.min );
+            const float diff = fabs( p.max - p.min );
 
+            if ( diff > 2.0f )
+                fl_color( FL_RED );
+            else
                 if ( Waveform::vary_color )
-                    fl_color( fl_color_average( FL_WHITE, color, min( 1.0f, diff ) ) );
+                    fl_color( fl_color_average( FL_WHITE, color, diff / 2.0f ) );
                 else
                     fl_color( color );
 
-                if ( diff > 1.0f )
-                    fl_color( FL_RED );
-
-                const int ty = mid + (halfheight * p.min);
-                const int by = mid + (halfheight * p.max );
-                fl_line( x, ty, x, by );
+            const int ty = mid + (halfheight * p.min);
+            const int by = mid + (halfheight * p.max );
+            fl_line( x, ty, x, by );
 
 /*         if ( outline ) */
 /*         { */
@@ -89,48 +89,48 @@ bool Waveform::vary_color = true;
 /*             fl_line( x, by + 2, x, by ); */
 /*         } */
 
-            }
         }
-
-
-        if ( Waveform::outline )
-        {
-
-            fl_color( fl_darker( fl_darker( color ) ) );
-
-            fl_line_style( FL_SOLID, 2 );
-
-            fl_begin_line();
-
-            j = start;
-            for ( int x = X; x <= X + W; ++x, ++j )
-            {
-                Peak p = (*pk)[ j ];
-
-                p.min *= _scale;
-
-                fl_vertex( x, Y + (H / 2) + ((float)H / 2 *  p.min ));
-            }
-
-            fl_end_line();
-
-            fl_begin_line();
-
-            j = start;
-            for ( int x = X; x <= X + W; ++x, ++j )
-            {
-                Peak p = (*pk)[ j ];
-
-                p.max *= _scale;
-
-                fl_vertex( x, Y + (H / 2) + ((float)H / 2 * p.max ));
-            }
-
-            fl_end_line();
-
-            fl_line_style( FL_SOLID, 0 );
-
-        }
-
-        fl_pop_clip();
     }
+
+
+    if ( Waveform::outline )
+    {
+
+        fl_color( fl_darker( fl_darker( color ) ) );
+
+        fl_line_style( FL_SOLID, 2 );
+
+        fl_begin_line();
+
+        j = start;
+        for ( int x = X; x <= X + W; ++x, ++j )
+        {
+            Peak p = (*pk)[ j ];
+
+            p.min *= _scale;
+
+            fl_vertex( x, Y + (H / 2) + ((float)H / 2 *  p.min ));
+        }
+
+        fl_end_line();
+
+        fl_begin_line();
+
+        j = start;
+        for ( int x = X; x <= X + W; ++x, ++j )
+        {
+            Peak p = (*pk)[ j ];
+
+            p.max *= _scale;
+
+            fl_vertex( x, Y + (H / 2) + ((float)H / 2 * p.max ));
+        }
+
+        fl_end_line();
+
+        fl_line_style( FL_SOLID, 0 );
+
+    }
+
+    fl_pop_clip();
+}

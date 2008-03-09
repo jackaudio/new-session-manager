@@ -303,10 +303,10 @@ Peaks::normalization_factor( float fpp, nframes_t start, nframes_t end ) const
 
     Peak p = peak( start, end );
 
-    s = fabs( 1.0f / p.max );
+    s = 1.0f / fabs( p.max );
 
     if ( s * p.min < -1.0 )
-        s = 1 / fabs( p.max );
+        s = 1.0f / fabs( p.min );
 
     return s;
 }

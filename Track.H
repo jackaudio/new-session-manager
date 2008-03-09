@@ -38,18 +38,18 @@ class Track_Widget;
 
 class Track : public Fl_Group, public Loggable
 {
-    Track *_next;
-    Track *_prev;
+
     char *_name;
 
     static queue <Track_Widget *> _delete_queue;
+    static Track_Widget *pushed;
 
 protected:
 
     list <Track_Widget *> _widgets;
     Track_Widget *event_widget ( void );
 
-    const char *class_name ( void ) { return "Track"; }
+    virtual const char *class_name ( void ) { return "Track"; }
 
 
     void set ( char ** ) { return; }
@@ -83,7 +83,6 @@ public:
 
     Track ( int X, int Y, int W, int H ) : Fl_Group( X, Y, W, H )
         {
-            _next = _prev = NULL;
             _name = NULL;
 
             box( FL_DOWN_BOX );
@@ -101,11 +100,6 @@ public:
             parent()->remove( this );
             log_destroy();
         }
-
-    Track *next ( void ) const { return _next; }
-    Track *prev ( void ) const { return _prev; }
-    void prev ( Track *t ) { _prev = t; }
-    void next ( Track *t ) { _next = t; }
 
     const char * name ( void ) const { return _name; }
     void name ( char *s ) { if ( _name ) free( _name ); _name = s; }

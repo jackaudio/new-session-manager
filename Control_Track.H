@@ -27,10 +27,13 @@ class Control_Track : public Track
 
 public:
 
+
     Control_Track ( int X, int Y, int W, int H ) : Track( X, Y, W, H )
         {
             color( fl_darker( FL_GREEN ) );
         }
+
+    const char *class_name ( void ) { return "Control_Track"; }
 
     void
     draw ( void )

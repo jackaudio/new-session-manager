@@ -55,17 +55,23 @@ Audio_Track::handle ( int m )
 {
     switch ( m )
     {
-        case FL_DND_DRAG:
-        case FL_DND_ENTER:
-        case FL_ENTER:
-//                    dump();
-            return 1;
-        case FL_DND_LEAVE:
+
+       case FL_DND_DRAG:
+           return Track::handle( m ) | 1;
+
+/*         case FL_DND_ENTER: */
+/*         case FL_DND_LEAVE: */
+
         case FL_DND_RELEASE:
             return 1;
+
         case FL_PASTE:
         {
             const char *text = Fl::event_text();
+
+
+            if ( ! strcmp( text, "Region" ) )
+                 return 0;
 
             char *file;
 

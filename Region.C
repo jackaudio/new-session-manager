@@ -380,16 +380,14 @@ Region::handle ( int m )
             {
                 if ( Y > y() + h() )
                 {
-                    if ( _track->next() )
-                        if ( Y > _track->next()->y() )
-                            _track->next()->add( this );
+                    Fl::copy( class_name(), strlen( class_name() ), 0 );
+                    Fl::dnd();
                 }
                 else
                     if ( Y < y() )
                     {
-                        if ( _track->prev() )
-                            if ( Y < _track->prev()->y() + _track->prev()->h() )
-                                _track->prev()->add( this );
+                        Fl::copy( class_name(), strlen( class_name() ), 0 );
+                        Fl::dnd();
                     }
             }
 

@@ -169,6 +169,7 @@ Track_Widget::handle ( int m )
 
             return 1;
         case FL_DRAG:
+        case FL_DND_DRAG:
         {
             if ( ! _drag )
             {

@@ -26,6 +26,7 @@
 
 
 queue <Track_Widget *> Track::_delete_queue;
+Track_Widget *Track::pushed = NULL;
 
 void
 Track::sort ( void )
@@ -240,17 +241,23 @@ done:
 int
 Track::handle ( int m )
 {
-    static Track_Widget *pushed;
+//    static Track_Widget *pushed;
     static Track_Widget *belowmouse;
 
     switch ( m )
     {
-        case FL_ENTER:
-        case FL_LEAVE:
+        case FL_DND_ENTER:
+            printf( "enter\n" );
+            if ( pushed && pushed->track()->class_name() == class_name() )
+            {
+                printf( "%s -> %s\n", pushed->track()->class_name(), class_name() );
+                add( pushed );
+                redraw();
+            }
+        case FL_DND_LEAVE:
             return 1;
         case FL_MOVE:
         {
-            /* these aren't used, so don't bother doing lookups for them */
             Track_Widget *r = event_widget();
 
             if ( r != belowmouse )
@@ -263,7 +270,7 @@ Track::handle ( int m )
                     r->handle( FL_ENTER );
             }
 
-            return 1;
+            return 0;
         }
         default:
         {

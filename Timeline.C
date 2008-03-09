@@ -151,17 +151,11 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->type( Fl_Pack::VERTICAL );
             o->spacing( 0 );
 
-            Track *l = NULL;
             for ( int i = 8; i--;  )
             {
 //                Track_Header *t = new Track_Header( 0, 0, W, 75 );
                 Track_Header *t = new Track_Header( 0, 0, W, 30 );
                 Track *o = new Audio_Track( 0, 0, 1, 100 );
-                o->prev( l );
-                if ( l )
-                    l->next( o );
-                l = o;
-//                o->end();
 
                 t->track( o );
                 t->add( new Audio_Track( 0, 0, 1, 100 ) );

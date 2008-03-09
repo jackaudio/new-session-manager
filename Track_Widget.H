@@ -173,6 +173,7 @@ public:
     virtual int abs_w ( void ) const { return timeline->ts_to_x( _end - _start ); }
 
     Fl_Color color ( void ) { return _color; }
+    void color ( Fl_Color v ) { _color = v; }
     Fl_Color box_color ( void ) { return _box_color; }
 
     Track * track ( void ) const { return _track; }

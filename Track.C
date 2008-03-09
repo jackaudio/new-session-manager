@@ -49,6 +49,9 @@ Track::overlaps ( Track_Widget *r )
     return NULL;
 }
 
+
+#include "Waveform.H"
+
 void
 Track::draw ( void )
 {
@@ -69,6 +72,10 @@ Track::draw ( void )
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw_box( X, Y, W, H );
 
+    for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
+        (*r)->draw( X, Y, W, H );
+
+
     /* draw crossfades */
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
     {
@@ -88,6 +95,25 @@ Track::draw ( void )
                 draw_box( FL_FLAT_BOX, b.x - 100, b.y, b.w + 200, b.h, c );
                 draw_box( FL_UP_FRAME, b.x - 100, b.y, b.w + 200, b.h, c );
 
+
+                /* draw overlapping waveforms in X-ray style. */
+                Waveform::fill = false;
+
+/*                 Fl_Color oc = o->color(); */
+/*                 Fl_Color rc = (*r)->color(); */
+
+/*                 /\* give each region a different color *\/ */
+/*                 o->color( FL_RED ); */
+/*                 (*r)->color( FL_GREEN ); */
+
+                o->draw( b.x, b.y, b.w, b.h );
+                (*r)->draw( b.x, b.y, b.w, b.h );
+                Waveform::fill = true;
+
+
+/*                 o->color( oc ); */
+/*                 (*r)->color( rc ); */
+
 /*                 fl_color( FL_BLACK ); */
 /*                 fl_line_style( FL_DOT, 4 ); */
 
@@ -105,9 +131,6 @@ Track::draw ( void )
             }
         }
     }
-
-    for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-        (*r)->draw( X, Y, W, H );
 
     timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 

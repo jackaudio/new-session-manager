@@ -459,7 +459,7 @@ Region::draw ( int X, int Y, int W, int H )
 
     int ch = (h() - Fl::box_dh( box() ))  / _clip->channels();
     for ( int i = _clip->channels(); i--; )
-        draw_waveform( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch, _clip, i, timeline->fpp(),
+        Waveform::draw( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch, _clip, i, timeline->fpp(),
                        _start + offset, min( (_end - _start) - offset, _end),
                        _scale, selected() ? fl_invert_color( _color ) : _color );
 

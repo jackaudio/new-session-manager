@@ -37,7 +37,7 @@ Track::Track ( int X, int Y, int W, int H ) : Fl_Widget( X, Y, W, H )
     color( fl_darker( FL_GRAY ) );
     align( FL_ALIGN_LEFT );
 
-    log_create();
+//    log_create();
 }
 
 Track::~Track (  )
@@ -45,7 +45,7 @@ Track::~Track (  )
     /* FIXME: what to do with regions? */
     parent()->redraw();
     parent()->remove( this );
-    log_destroy();
+//    log_destroy();
 }
 
 void

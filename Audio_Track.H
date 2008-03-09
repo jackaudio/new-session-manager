@@ -31,6 +31,12 @@ public:
 
     Audio_Track ( int X, int Y, int W, int H ) : Track( X, Y, W, H )
         {
+            log_create();
+        }
+
+    ~Audio_Track ( )
+        {
+            log_destroy();
         }
 
 

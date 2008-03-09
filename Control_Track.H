@@ -31,6 +31,13 @@ public:
     Control_Track ( int X, int Y, int W, int H ) : Track( X, Y, W, H )
         {
             color( fl_darker( FL_GREEN ) );
+
+            log_create();
+        }
+
+    ~Control_Track ( )
+        {
+            log_destroy();
         }
 
     const char *class_name ( void ) { return "Control_Track"; }

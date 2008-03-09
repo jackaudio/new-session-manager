@@ -67,17 +67,19 @@ protected:
             sa[0] = (char*)malloc( (_widgets.size() * ((sizeof( int ) * 2) + 3)) + 1 );
             sa[1] = NULL;
 
-            char *s = sa[0];
+            sa[0][0] = '\0';
 
-            s += sprintf( s, ":items " );
-            for ( list <Track_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
-            {
-                s += sprintf( s, "0x%X", ((Loggable*)(*i))->id() );
+/*             char *s = sa[0]; */
 
-                list <Track_Widget *>::const_iterator e = i;
-                if ( ++e != _widgets.end() )
-                    s += sprintf( s, "," );
-            }
+/*             s += sprintf( s, ":items " ); */
+/*             for ( list <Track_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ ) */
+/*             { */
+/*                 s += sprintf( s, "0x%X", ((Loggable*)(*i))->id() ); */
+
+/*                 list <Track_Widget *>::const_iterator e = i; */
+/*                 if ( ++e != _widgets.end() ) */
+/*                     s += sprintf( s, "," ); */
+/*             } */
 
             return sa;
         }

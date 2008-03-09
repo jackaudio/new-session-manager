@@ -81,7 +81,7 @@ Track::draw ( void )
                 Rectangle b( (*r)->x(), o->y(), (o->x() + o->w()) - (*r)->x(), o->h() );
 
                 Fl_Color c = fl_color_average( o->box_color(), (*r)->box_color(), 0.50f );
-                c = fl_color_average( c, FL_YELLOW, 0.20f );
+                c = fl_color_average( c, FL_YELLOW, 0.30f );
 
                 fl_push_clip( b.x, b.y, b.w, b.h );
 
@@ -90,6 +90,9 @@ Track::draw ( void )
 
 /*                 fl_color( FL_BLACK ); */
 /*                 fl_line_style( FL_DOT, 4 ); */
+
+/*                 b.x = (*r)->line_x(); */
+/*                 b.w = min( 32767, (*r)->abs_w() ); */
 
 /*                 fl_line( b.x, b.y, b.x + b.w, b.y + b.h ); */
 
@@ -103,8 +106,6 @@ Track::draw ( void )
         }
     }
 
-
-    /* TODO: detect overlap and draw with transparency/crossfade */
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw( X, Y, W, H );
 

@@ -102,9 +102,20 @@ Track::draw ( void )
 
         if ( o )
         {
-            if ( *o < **r )
+            if ( *o <= **r )
             {
-                Rectangle b( (*r)->x(), o->y(), (o->x() + o->w()) - (*r)->x(), o->h() );
+
+/*                 if ( o->x() == (*r)->x() && o->w() == (*r)->w() ) */
+/*                     printf( "complete superposition\n" ); */
+
+                if ( (*r)->x() >= o->x() && (*r)->x() + (*r)->w() <= o->x() + o->w() )
+                    /* completely inside */
+                    continue;
+
+                Rectangle b( (*r)->x(),
+                               o->y(),
+                               (o->x() + o->w()) - (*r)->x(),
+                               o->h() );
 
                 Fl_Color c = fl_color_average( o->box_color(), (*r)->box_color(), 0.50f );
                 c = fl_color_average( c, FL_YELLOW, 0.30f );
@@ -114,6 +125,28 @@ Track::draw ( void )
                 draw_box( FL_FLAT_BOX, b.x - 100, b.y, b.w + 200, b.h, c );
                 draw_box( FL_UP_FRAME, b.x - 100, b.y, b.w + 200, b.h, c );
 
+
+                fl_pop_clip();
+
+            }
+        }
+
+    }
+
+    for ( list <Track_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
+    {
+        Track_Widget *o = overlaps( *r );
+
+        if ( o )
+        {
+            if ( *o <= **r )
+            {
+
+                if ( (*r)->x() >= o->x() && (*r)->x() + (*r)->w() <= o->x() + o->w() )
+                    /* completely inside */
+                    continue;
+
+                Rectangle b( (*r)->x(), o->y(), (o->x() + o->w()) - (*r)->x(), o->h() );
 
                 /* draw overlapping waveforms in X-ray style. */
                 Waveform::fill = false;
@@ -145,7 +178,7 @@ Track::draw ( void )
 
 /*                 fl_line_style( FL_SOLID, 0 ); */
 
-                fl_pop_clip();
+//                fl_pop_clip();
 
             }
         }

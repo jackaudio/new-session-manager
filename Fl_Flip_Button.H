@@ -44,7 +44,11 @@ public:
             type( FL_TOGGLE_BUTTON );
         }
 
-    virtual ~Fl_Flip_Button ( ) { }
+    virtual ~Fl_Flip_Button ( )
+        {
+            if ( _off ) free( _off );
+            if ( _on )  free( _on );
+        }
 
 protected:
 

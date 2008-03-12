@@ -18,7 +18,7 @@
 /*******************************************************************************/
 
 /* a VU meter, either horizontal or vertical.  Color is a gradient
-   from color() to selection_color(). box() is used to draw the
+   from min_color() to max_color(). box() is used to draw the
    individual 'lights'. division() controls how many 'lights' there
    are. */
 
@@ -53,9 +53,8 @@ void
 VU_Meter::draw ( void )
 {
 //    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), color() );
-
-    int v = (value() / maximum()) * _divisions;
-    int pv = (_peak / maximum()) * _divisions;
+    int v = pos( value() );
+    int pv = pos( _peak );
 
     int bh = h() / _divisions;
     int bw = w() / _divisions;

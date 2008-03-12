@@ -37,6 +37,8 @@ class VU_Meter : public Fl_Widget
     Fl_Color _min_color;
     Fl_Color _max_color;
 
+    int pos ( float v ) { return ( v / _maximum ) * _divisions; }
+
 protected:
 
     virtual void draw ( void );
@@ -52,7 +54,7 @@ public:
     void minimum ( float v ) { _minimum = v; redraw(); }
     float minimum ( void ) const { return _minimum; }
 
-    void value ( float v ) { _value = v; redraw(); }
+    void value ( float v ) { if ( pos( v ) != pos( _value ) ) redraw();  _value = v; }
     float value ( void ) const { return _value; }
 
     void reset ( void ) { _peak = 0.0f; }

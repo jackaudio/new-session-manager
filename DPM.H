@@ -21,14 +21,10 @@
 
 #include <FL/Fl_Valuator.H> // for FL_HORIZONTAL and FL_VERTICAL
 
-class VU_Meter : public Fl_Widget
+#include "Meter.H"
+
+class DPM : public Meter
 {
-
-    float _peak;
-
-    float _value;
-    float _minimum;
-    float _maximum;
 
     int _type;
     int _divisions;
@@ -37,27 +33,20 @@ class VU_Meter : public Fl_Widget
     Fl_Color _min_color;
     Fl_Color _max_color;
 
-    int pos ( float v ) { return ( v / _maximum ) * _divisions; }
+    int pos ( float v )
+        {
+            return deflection( v ) * _divisions;
+        }
 
 protected:
 
     virtual void draw ( void );
-    virtual int handle ( int m );
 
 public:
 
-    VU_Meter ( int X, int Y, int W, int H,  const char *L = 0 );
+    DPM ( int X, int Y, int W, int H,  const char *L = 0 );
 
-    void maximum( float v ) { _maximum = v; redraw(); }
-    float maximum ( void ) const { return _maximum; }
-
-    void minimum ( float v ) { _minimum = v; redraw(); }
-    float minimum ( void ) const { return _minimum; }
-
-    void value ( float v ) { if ( pos( v ) != pos( _value ) ) redraw();  _value = v; }
-    float value ( void ) const { return _value; }
-
-    void reset ( void ) { _peak = 0.0f; }
+//    void value ( float v ) { if ( pos( v ) != pos( value() ) )  redraw(); Meter::value( v ) }
 
     bool divisions ( void ) const { return _divisions; }
     void divisions ( int v ) { _divisions = v; }

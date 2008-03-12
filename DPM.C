@@ -17,22 +17,19 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-/* a VU meter, either horizontal or vertical.  Color is a gradient
-   from min_color() to max_color(). box() is used to draw the
+/* a Digital Peak Meter, either horizontal or vertical.  Color is a
+   gradient from min_color() to max_color(). box() is used to draw the
    individual 'lights'. division() controls how many 'lights' there
-   are. */
+   are. value() is volume in dBFS */
 
-#include "VU_Meter.H"
+#include "DPM.H"
 
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 
-VU_Meter::VU_Meter ( int X, int Y, int W, int H, const char *L ) :
-    Fl_Widget( X, Y, W, H, L )
+DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
+    Meter( X, Y, W, H, L )
 {
-
-    _peak = 0.0f;
-
     divisions( 32 );
     type( FL_VERTICAL );
 
@@ -42,19 +39,17 @@ VU_Meter::VU_Meter ( int X, int Y, int W, int H, const char *L ) :
     max_color( FL_RED );
 
     box( FL_ROUNDED_BOX );
-
-    minimum( 0.0f );
-    maximum( 1.0f );
-
-    value( 0.0f );
 }
 
+/* which marks to draw beside meter */
+const int marks [] = { -70, -50, -40, -30, -10, -3, 0, 4 };
+
 void
-VU_Meter::draw ( void )
+DPM::draw ( void )
 {
 //    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), color() );
     int v = pos( value() );
-    int pv = pos( _peak );
+    int pv = pos( peak() );
 
     int bh = h() / _divisions;
     int bw = w() / _divisions;
@@ -75,21 +70,4 @@ VU_Meter::draw ( void )
         else
             draw_box( box(), x(), y() + h() - (p * bh), w(), bh, c );
     }
-
-    if ( value() > _peak )
-        _peak = value();
-}
-
-
-int
-VU_Meter::handle ( int m )
-{
-    switch ( m )
-    {
-        case FL_PUSH:
-            reset();
-            break;
-    }
-
-    return 0;
 }

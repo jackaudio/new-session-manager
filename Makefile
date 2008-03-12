@@ -1,5 +1,5 @@
 
-CXXFLAGS=-ggdb -Wall -O0
+CXXFLAGS=-ggdb -Wall -O0 -fno-rtti -fno-exceptions
 #LIBS=-L/usr/lib/sox -I/usr/include/sox -lsox -lsfx
 LIBS=-lsndfile  `fltk-config --ldflags`
 # CXXFLAGS=`fltk-config -cxxflags`
@@ -26,8 +26,8 @@ $(OBJS): Makefile
 test: $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@
 
-mixer: Mixer_Strip.o Mixer.o
-	$(CXX) $(CXXFLAGS) $(LIBS) Mixer_Strip.o Mixer.o -o $@
+mixer: Mixer_Strip.o Mixer.o DPM.o
+	$(CXX) $(CXXFLAGS) $(LIBS) Mixer_Strip.o Mixer.o DPM.o -o $@
 
 
 ESRCS=Audio_File.C Audio_File_SF.C Loggable.C

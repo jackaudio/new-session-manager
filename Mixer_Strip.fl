@@ -2,7 +2,7 @@
 version 1.0108 
 header_name {.H} 
 code_name {.C}
-decl {\#include "VU_Meter.H"} {selected public global
+decl {\#include "DPM.H"} {public global
 } 
 
 widget_class Mixer_Strip {open
@@ -42,9 +42,9 @@ widget_class Mixer_Strip {open
       xywh {14 195 33 471} type {Vert Knob} color 32 selection_color 1 minimum 1.5 maximum 0 step 0.01 value 1 textsize 14
     }
     Fl_Box meter {
-      label VU
+      label DPM selected
       xywh {57 193 55 484} box ROUNDED_BOX selection_color 88
-      class VU_Meter
+      class DPM
     }
   }
   Fl_Box {} {

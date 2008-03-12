@@ -65,7 +65,7 @@ DPM::draw ( void )
         if ( ! active_r() )
             c = fl_inactive( c );
 
-        if ( _type == FL_HORIZONTAL )
+        if ( type() == FL_HORIZONTAL )
             draw_box( box(), x() + (p * bw), y(), bw, h(), c );
         else
             draw_box( box(), x(), y() + h() - (p * bh), w(), bh, c );

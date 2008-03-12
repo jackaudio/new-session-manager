@@ -26,7 +26,6 @@
 class DPM : public Meter
 {
 
-    int _type;
     int _divisions;
     float _dim;
 
@@ -50,9 +49,6 @@ public:
 
     bool divisions ( void ) const { return _divisions; }
     void divisions ( int v ) { _divisions = v; }
-
-    int type ( void ) const { return _type; }
-    void type ( int v ) { _type = v; }
 
     float dim ( void ) const { return _dim; }
     void dim ( float v ) { _dim = v; redraw(); }

@@ -24,6 +24,8 @@
 class VU_Meter : public Fl_Widget
 {
 
+    float _peak;
+
     float _value;
     float _minimum;
     float _maximum;
@@ -38,11 +40,11 @@ class VU_Meter : public Fl_Widget
 protected:
 
     virtual void draw ( void );
+    virtual int handle ( int m );
 
 public:
 
     VU_Meter ( int X, int Y, int W, int H,  const char *L = 0 );
-
 
     void maximum( float v ) { _maximum = v; redraw(); }
     float maximum ( void ) const { return _maximum; }
@@ -52,6 +54,8 @@ public:
 
     void value ( float v ) { _value = v; redraw(); }
     float value ( void ) const { return _value; }
+
+    void reset ( void ) { _peak = 0.0f; }
 
     bool divisions ( void ) const { return _divisions; }
     void divisions ( int v ) { _divisions = v; }

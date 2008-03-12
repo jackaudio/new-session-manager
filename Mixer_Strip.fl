@@ -2,7 +2,8 @@
 version 1.0108 
 header_name {.H} 
 code_name {.C}
-decl {\#include "VU_Meter.H"} {} 
+decl {\#include "VU_Meter.H"} {selected public global
+} 
 
 widget_class Mixer_Strip {open
   xywh {1051 42 124 816} type Double box UP_FRAME color 32 selection_color 63 resizable
@@ -21,7 +22,7 @@ widget_class Mixer_Strip {open
   } {
     Fl_Button {} {
       label {@circle}
-      private xywh {7 143 35 25} type Toggle
+      private xywh {7 143 35 25} type Toggle labelsize 10
     }
     Fl_Button {} {
       label m
@@ -35,13 +36,13 @@ widget_class Mixer_Strip {open
   Fl_Group {} {open
     xywh {13 178 104 509} resizable
   } {
-    Fl_Value_Slider {} {
+    Fl_Value_Slider gain {
       label Gain
       callback {// parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );}
       xywh {14 195 33 471} type {Vert Knob} color 32 selection_color 1 minimum 1.5 maximum 0 step 0.01 value 1 textsize 14
     }
-    Fl_Box {} {
-      label VU selected
+    Fl_Box meter {
+      label VU
       xywh {57 193 55 484} box ROUNDED_BOX selection_color 88
       class VU_Meter
     }

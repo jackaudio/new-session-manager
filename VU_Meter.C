@@ -31,6 +31,8 @@ VU_Meter::VU_Meter ( int X, int Y, int W, int H, const char *L ) :
     Fl_Widget( X, Y, W, H, L )
 {
 
+    _peak = 0.0f;
+
     divisions( 32 );
     type( FL_VERTICAL );
 
@@ -53,6 +55,7 @@ VU_Meter::draw ( void )
 //    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), color() );
 
     int v = (value() / maximum()) * _divisions;
+    int pv = (_peak / maximum()) * _divisions;
 
     int bh = h() / _divisions;
     int bw = w() / _divisions;
@@ -61,7 +64,7 @@ VU_Meter::draw ( void )
     {
         Fl_Color c = fl_color_average( _max_color, _min_color, (float)p / _divisions );
 
-        if ( p > v )
+        if ( p > v && p != pv )
 //            c = fl_color_average( color(), c, _dim );
             c = fl_color_average( FL_BLACK, c, _dim );
 
@@ -72,6 +75,22 @@ VU_Meter::draw ( void )
             draw_box( box(), x() + (p * bw), y(), bw, h(), c );
         else
             draw_box( box(), x(), y() + h() - (p * bh), w(), bh, c );
-
     }
+
+    if ( value() > _peak )
+        _peak = value();
+}
+
+
+int
+VU_Meter::handle ( int m )
+{
+    switch ( m )
+    {
+        case FL_PUSH:
+            reset();
+            break;
+    }
+
+    return 0;
 }

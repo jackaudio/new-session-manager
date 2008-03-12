@@ -39,6 +39,7 @@ class DPM : public Meter
 
 protected:
 
+    virtual void draw_label ( void );
     virtual void draw ( void );
 
 public:

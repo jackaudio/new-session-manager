@@ -26,6 +26,10 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl_Group.H>
+
+#include <math.h>
+#include <stdio.h>
 
 DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
     Meter( X, Y, W, H, L )
@@ -35,14 +39,35 @@ DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
 
     dim( 0.80f );
 
-    min_color( FL_GREEN );
+    min_color( fl_darker( FL_GREEN ) );
     max_color( FL_RED );
 
     box( FL_ROUNDED_BOX );
 }
 
 /* which marks to draw beside meter */
-const int marks [] = { -70, -50, -40, -30, -10, -3, 0, 4 };
+const int marks [] = { -70, -50, -40, -30, -20, -10, -3, 0, 4 };
+
+void
+DPM::draw_label ( void )
+{
+    /* dirty hack */
+    if ( parent()->child( 0 ) == this )
+    {
+        fl_font( FL_TIMES, 8 );
+        fl_color( FL_WHITE );
+        /* draw marks */
+        for ( int i = sizeof( marks ) / sizeof( marks[0] ); i-- ; )
+        {
+            char pat[5];
+            sprintf( pat, "%d", marks[ i ] );
+
+            int v = h() *  deflection( (float)marks[ i ] );
+
+            fl_draw( pat, x() - 20, (y() + h() - 8) - v, 19, 8, (Fl_Align) (FL_ALIGN_RIGHT | FL_ALIGN_TOP) );
+        }
+    }
+}
 
 void
 DPM::draw ( void )
@@ -54,9 +79,13 @@ DPM::draw ( void )
     int bh = h() / _divisions;
     int bw = w() / _divisions;
 
+    if ( damage() & FL_DAMAGE_ALL )
+        draw_label();
+
     for ( int p = _divisions; p > 0; p-- )
     {
-        Fl_Color c = fl_color_average( _max_color, _min_color, (float)p / _divisions );
+//        Fl_Color c = fl_color_average( _min_color, _max_color, ((30.0f * log10f( (float)(_divisions - p ) ) )) / _divisions );
+        Fl_Color c = fl_color_average( _max_color, _min_color, (float) p / _divisions );
 
         if ( p > v && p != pv )
 //            c = fl_color_average( color(), c, _dim );
@@ -70,4 +99,5 @@ DPM::draw ( void )
         else
             draw_box( box(), x(), y() + h() - (p * bh), w(), bh, c );
     }
+
 }

@@ -40,8 +40,8 @@ widget_class Mixer_Strip {open
     }
   }
   Fl_Button {} {
-    label {output/input} selected
-    xywh {52 182 59 25} type Toggle box ROUNDED_BOX color 106 selection_color 65 align 64
+    label {output/input}
+    xywh {56 182 55 25} type Toggle box ROUNDED_BOX color 106 selection_color 65 align 64
     class Fl_Flip_Button
   }
   Fl_Group {} {open
@@ -53,13 +53,13 @@ widget_class Mixer_Strip {open
       xywh {9 208 33 448} type {Vert Knob} color 32 selection_color 1 minimum 1.5 maximum 0 step 0.01 value 1 textsize 14
     }
     Fl_Pack meters_pack {
-      label meters open
-      xywh {52 208 59 471} type HORIZONTAL labeltype NO_LABEL align 0
+      label meters open selected
+      xywh {56 208 55 471} type HORIZONTAL labeltype NO_LABEL align 0
       class Fl_Scalepack
     } {
       Fl_Box meter {
         label DPM
-        xywh {52 208 28 459} box ROUNDED_BOX selection_color 88
+        xywh {56 208 24 459} box ROUNDED_BOX selection_color 88
         class DPM
       }
       Fl_Box {} {

@@ -36,21 +36,21 @@ VU_Meter::VU_Meter ( int X, int Y, int W, int H, const char *L ) :
 
     dim( 0.80f );
 
-    color( FL_GREEN );
-    selection_color( FL_RED );
+    min_color( FL_GREEN );
+    max_color( FL_RED );
 
     box( FL_ROUNDED_BOX );
 
     minimum( 0.0f );
     maximum( 1.0f );
 
-    value( 0.4f );
+    value( 0.0f );
 }
 
 void
 VU_Meter::draw ( void )
 {
-    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
+//    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), color() );
 
     int v = (value() / maximum()) * _divisions;
 
@@ -59,9 +59,10 @@ VU_Meter::draw ( void )
 
     for ( int p = _divisions; p > 0; p-- )
     {
-        Fl_Color c = fl_color_average( selection_color(), color(), (float)p / _divisions );
+        Fl_Color c = fl_color_average( _max_color, _min_color, (float)p / _divisions );
 
         if ( p > v )
+//            c = fl_color_average( color(), c, _dim );
             c = fl_color_average( FL_BLACK, c, _dim );
 
         if ( ! active_r() )

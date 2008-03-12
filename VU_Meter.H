@@ -32,6 +32,9 @@ class VU_Meter : public Fl_Widget
     int _divisions;
     float _dim;
 
+    Fl_Color _min_color;
+    Fl_Color _max_color;
+
 protected:
 
     virtual void draw ( void );
@@ -58,5 +61,11 @@ public:
 
     float dim ( void ) const { return _dim; }
     void dim ( float v ) { _dim = v; redraw(); }
+
+    Fl_Color min_color ( void ) const { return _min_color; }
+    void min_color ( Fl_Color v ) { _min_color = v; }
+
+    Fl_Color max_color ( void ) const { return _max_color; }
+    void max_color ( Fl_Color v ) { _max_color = v; }
 
 };

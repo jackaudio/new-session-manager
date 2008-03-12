@@ -5,6 +5,9 @@ code_name {.C}
 decl {\#include "DPM.H"} {public global
 } 
 
+decl {\#include "Fl_Scalepack.H"} {public global
+} 
+
 widget_class Mixer_Strip {open
   xywh {1051 42 124 816} type Double box UP_FRAME color 32 selection_color 63 resizable
   code0 {size( 120, h() );} visible
@@ -41,10 +44,31 @@ widget_class Mixer_Strip {open
       callback {// parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );}
       xywh {14 195 33 471} type {Vert Knob} color 32 selection_color 1 minimum 1.5 maximum 0 step 0.01 value 1 textsize 14
     }
-    Fl_Box meter {
-      label DPM selected
-      xywh {57 193 55 484} box ROUNDED_BOX selection_color 88
-      class DPM
+    Fl_Pack meters_pack {
+      label meters open selected
+      xywh {57 189 59 490} type HORIZONTAL
+      class Fl_Scalepack
+    } {
+      Fl_Box meter {
+        label DPM
+        xywh {57 193 28 484} box ROUNDED_BOX selection_color 88
+        class DPM
+      }
+      Fl_Box {} {
+        label DPM
+        xywh {86 193 30 484} box ROUNDED_BOX selection_color 88
+        class DPM
+      }
+      Fl_Box {} {
+        label DPM
+        xywh {96 203 20 476} box ROUNDED_BOX selection_color 88
+        class DPM
+      }
+      Fl_Box {} {
+        label DPM
+        xywh {106 213 20 476} box ROUNDED_BOX selection_color 88
+        class DPM
+      }
     }
   }
   Fl_Box {} {

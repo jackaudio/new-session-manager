@@ -17,57 +17,25 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-/* a Digital Peak Meter, either horizontal or vertical.  Color is a
-   gradient from min_color() to max_color(). box() is used to draw the
-   individual 'lights'. division() controls how many 'lights' there
-   are. value() is volume in dBFS */
+#pragma once
 
-#include "DPM.H"
+#include <FL/Fl_Group.H>
 
-#include <FL/Fl.H>
-#include <FL/fl_draw.H>
-
-DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
-    Meter( X, Y, W, H, L )
+class Fl_Scalepack : public Fl_Group
 {
-    divisions( 64 );
-    type( FL_VERTICAL );
 
-    dim( 0.80f );
+    int _spacing;
 
-    min_color( FL_GREEN );
-    max_color( FL_RED );
+public:
 
-    box( FL_ROUNDED_BOX );
-}
+    enum { VERTICAL, HORIZONTAL };
 
-/* which marks to draw beside meter */
-const int marks [] = { -70, -50, -40, -30, -10, -3, 0, 4 };
+    Fl_Scalepack ( int X, int Y, int W, int H, const char *L = 0 );
+    virtual ~Fl_Scalepack ( ) { }
 
-void
-DPM::draw ( void )
-{
-//    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), color() );
-    int v = pos( value() );
-    int pv = pos( peak() );
+    int spacing ( void ) const { return _spacing; }
+    void spacing ( int v ) { _spacing = v; redraw(); }
 
-    int bh = h() / _divisions;
-    int bw = w() / _divisions;
+    virtual void draw ( void );
 
-    for ( int p = _divisions; p > 0; p-- )
-    {
-        Fl_Color c = fl_color_average( _max_color, _min_color, (float)p / _divisions );
-
-        if ( p > v && p != pv )
-//            c = fl_color_average( color(), c, _dim );
-            c = fl_color_average( FL_BLACK, c, _dim );
-
-        if ( ! active_r() )
-            c = fl_inactive( c );
-
-        if ( _type == FL_HORIZONTAL )
-            draw_box( box(), x() + (p * bw), y(), bw, h(), c );
-        else
-            draw_box( box(), x(), y() + h() - (p * bh), w(), bh, c );
-    }
-}
+};

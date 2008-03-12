@@ -50,26 +50,22 @@ VU_Meter::VU_Meter ( int X, int Y, int W, int H, const char *L ) :
 void
 VU_Meter::draw ( void )
 {
-    int v;
-
-    v = (value() / maximum()) * _divisions;
-
     draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
+
+    int v = (value() / maximum()) * _divisions;
 
     int bh = h() / _divisions;
     int bw = w() / _divisions;
-
-    int b = 0;
 
     for ( int p = _divisions; p > 0; p-- )
     {
         Fl_Color c = fl_color_average( selection_color(), color(), (float)p / _divisions );
 
-        if ( ! active_r() )
-            c = fl_inactive( c );
-
         if ( p > v )
             c = fl_color_average( FL_BLACK, c, _dim );
+
+        if ( ! active_r() )
+            c = fl_inactive( c );
 
         if ( _type == FL_HORIZONTAL )
             draw_box( box(), x() + (p * bw), y(), bw, h(), c );
@@ -77,7 +73,4 @@ VU_Meter::draw ( void )
             draw_box( box(), x(), y() + h() - (p * bh), w(), bh, c );
 
     }
-
-    // we don't care about the label
-    // draw_label (tx, y() + by, tw, h() - bh);
 }

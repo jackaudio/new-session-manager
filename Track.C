@@ -86,10 +86,23 @@ Track::draw ( void )
 
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
+
+    if ( pushed() && pushed()->track() == this )
+    {
+        /* make sure the pushed widget is above all others */
+        remove( pushed() );
+        add( pushed() );
+    }
+
+    int xfades = 0;
+
 //    printf( "track::draw %d,%d %dx%d\n", X,Y,W,H );
+
+    timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw_box( X, Y, W, H );
+
 
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw( X, Y, W, H );
@@ -112,6 +125,8 @@ Track::draw ( void )
                     /* completely inside */
                     continue;
 
+                ++xfades;
+
                 Rectangle b( (*r)->x(),
                                o->y(),
                                (o->x() + o->w()) - (*r)->x(),
@@ -133,7 +148,9 @@ Track::draw ( void )
 
     }
 
-    for ( list <Track_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
+//    printf( "There are %d xfades\n", xfades );
+
+    for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
     {
         Track_Widget *o = overlaps( *r );
 
@@ -184,7 +201,6 @@ Track::draw ( void )
         }
     }
 
-    timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 
     fl_pop_clip();
 }

@@ -99,42 +99,36 @@ protected:
 
                 if ( ! strcmp( s, ":x" ) )
                     _offset = atol( v );
-                else
-                    if ( ! strcmp( s, ":l" ) )
-                        _start = atol( v );
+                else if ( ! strcmp( s, ":l" ) )
+                    _start = atol( v );
+                else if ( ! strcmp( s, ":r" ) )
+                    _end = atol( v );
+                else if ( ! strcmp( s, ":selected" ) )
+                {
+                    if ( atoi( v ) )
+                        select();
                     else
-                        if ( ! strcmp( s, ":r" ) )
-                            _end = atol( v );
-                        else
-                            if ( ! strcmp( s, ":selected" ) )
-                            {
-                                if ( atoi( v ) )
-                                    select();
-                                else
-                                    deselect();
-                            }
-                            else
-                                if ( ! strcmp( s, ":gain" ) )
-                                    _scale = atof( v );
-                                else
-                                    if ( ! strcmp( s, ":source" ) )
-                                    {
-                                        if ( ! ( _clip = Audio_File::from_file( v ) ) )
-                                        {
-                                            printf( "Grave error: could not open source \"%s\"\n", v );
-                                        }
-                                    }
-                                    else
-                                        if ( ! strcmp( s, ":track" ) )
-                                        {
-                                            int i;
-                                            sscanf( v, "%X", &i );
-                                            Track *t = (Track*)Loggable::find( i );
+                        deselect();
+                }
+                else if ( ! strcmp( s, ":gain" ) )
+                    _scale = atof( v );
+                else if ( ! strcmp( s, ":source" ) )
+                {
+                    if ( ! ( _clip = Audio_File::from_file( v ) ) )
+                    {
+                        printf( "Grave error: could not open source \"%s\"\n", v );
+                    }
+                }
+                else if ( ! strcmp( s, ":track" ) )
+                {
+                    int i;
+                    sscanf( v, "%X", &i );
+                    Track *t = (Track*)Loggable::find( i );
 
-                                            assert( t );
+                    assert( t );
 
-                                            t->add( this );
-                                        }
+                    t->add( this );
+                }
 
 
                 free( s );

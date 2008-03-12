@@ -8,6 +8,9 @@ decl {\#include "DPM.H"} {public global
 decl {\#include "Fl_Scalepack.H"} {public global
 } 
 
+decl {\#include "Fl_Flip_Button.H"} {public global
+} 
+
 widget_class Mixer_Strip {open
   xywh {1051 42 124 816} type Double box UP_FRAME color 32 selection_color 63 resizable
   code0 {size( 120, h() );} visible
@@ -36,37 +39,42 @@ widget_class Mixer_Strip {open
       private xywh {82 143 35 25} type Toggle
     }
   }
+  Fl_Button {} {
+    label {output/input} selected
+    xywh {52 182 59 25} type Toggle box ROUNDED_BOX color 106 selection_color 65 align 64
+    class Fl_Flip_Button
+  }
   Fl_Group {} {open
-    xywh {13 178 104 509} resizable
+    xywh {8 208 103 471} resizable
   } {
     Fl_Value_Slider gain {
       label Gain
       callback {// parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );}
-      xywh {14 195 33 471} type {Vert Knob} color 32 selection_color 1 minimum 1.5 maximum 0 step 0.01 value 1 textsize 14
+      xywh {9 208 33 448} type {Vert Knob} color 32 selection_color 1 minimum 1.5 maximum 0 step 0.01 value 1 textsize 14
     }
     Fl_Pack meters_pack {
-      label meters open selected
-      xywh {57 189 59 490} type HORIZONTAL
+      label meters open
+      xywh {52 208 59 471} type HORIZONTAL labeltype NO_LABEL align 0
       class Fl_Scalepack
     } {
       Fl_Box meter {
         label DPM
-        xywh {57 193 28 484} box ROUNDED_BOX selection_color 88
+        xywh {52 208 28 459} box ROUNDED_BOX selection_color 88
         class DPM
       }
       Fl_Box {} {
         label DPM
-        xywh {86 193 30 484} box ROUNDED_BOX selection_color 88
+        xywh {81 208 30 459} box ROUNDED_BOX selection_color 88
         class DPM
       }
       Fl_Box {} {
         label DPM
-        xywh {96 203 20 476} box ROUNDED_BOX selection_color 88
+        xywh {91 208 20 461} box ROUNDED_BOX selection_color 88
         class DPM
       }
       Fl_Box {} {
         label DPM
-        xywh {106 213 20 476} box ROUNDED_BOX selection_color 88
+        xywh {101 208 10 471} box ROUNDED_BOX selection_color 88
         class DPM
       }
     }

@@ -21,10 +21,10 @@
 
 #include <FL/Fl_Widget.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl.H>
 
 #include <vector>
 using namespace std;
-
 
 class Panner : public Fl_Widget
 {
@@ -48,6 +48,8 @@ class Panner : public Fl_Widget
     static int pw ( void ) { return 6; }
     static int ph ( void ) { return 6; }
 
+    static int _configs[][12];
+
     void bbox ( int &X, int &Y, int &W, int &H )
         {
             W = w() - Fl::box_dw( box() ) - pw();
@@ -55,6 +57,8 @@ class Panner : public Fl_Widget
             X = x() + Fl::box_dx( box() );
             Y = y() + Fl::box_dy( box() );
         }
+
+    Point * event_point ( void );
 
 public:
 
@@ -73,113 +77,8 @@ public:
 
     virtual ~Panner ( ) { }
 
-    Point *
-    event_point ( void )
-        {
+    virtual void draw ( void );
+    virtual int handle ( int );
 
-            int X, Y, W, H;
-
-            bbox( X, Y, W, H );
-
-            for ( int i = _ins; i--; )
-            {
-                Point *p = &_points[ i ];
-
-                if ( Fl::event_inside( X + ((p->x * (W / 2)) + (W / 2)),
-                                       Y + ((p->y * (H / 2)) + (H / 2)), pw(), ph() ) )
-                    return p;
-            }
-
-            return NULL;
-        }
-
-    virtual void
-    draw ( void )
-        {
-            draw_box();
-//            draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
-            draw_label();
-
-            int tw, th, tx, ty;
-
-            bbox( tx, ty, tw, th );
-
-            fl_color(  FL_GRAY );
-
-            switch ( _outs )
-            {
-                case 2:                                         /* stereo */
-
-                case 4:                                         /* quad */
-                    fl_line( x(), y(), x()+ w(), y() + h() );
-                    fl_line( x() + w(), y(), x(), y() + h() );
-                    break;
-                case 5:                                         /* 5.1 */
-                    fl_line( x(), y(), x() + w(), y() + h() );
-                    fl_line( x() + w(), y(), x(), y() + h() );
-                    fl_line( x() + (w() / 2), y(), x() + (w() / 2), y() + (h() / 2) );
-                    break;
-
-
-            }
-
-
-
-            for ( int i = _ins; i--; )
-            {
-                Point *p = &_points[ i ];
-
-                fl_color( (Fl_Color) 10 + i );
-
-                const int bx = tx + ((tw / 2) * p->x + (tw / 2));
-                const int by = ty + ((th / 2) * p->y + (th / 2));
-
-                fl_rectf( bx, by, pw(), ph() );
-
-                char pat[4];
-                snprintf( pat, 4, "%d", i + 1 );
-
-                fl_color( FL_BLACK );
-                fl_font( FL_HELVETICA, ph() + 2 );
-                fl_draw( pat, bx, by + ph() );
-            }
-        }
-
-    virtual int
-    handle ( int m )
-        {
-            static Point *drag;
-
-            switch ( m )
-            {
-
-                case FL_PUSH:
-                    if ( ( drag = event_point() ) )
-                    {
-                        printf( "bing\n" );
-                        return 1;
-                    }
-                    else
-                        return 0;
-                case FL_RELEASE:
-                    drag = NULL;
-                    return 1;
-                case FL_DRAG:
-                {
-                    float X = Fl::event_x() - x();
-                    float Y = Fl::event_y() - y();
-
-                    drag->x = (float)(X / (w() / 2)) - 1.0f;
-                    drag->y = (float)(Y / (h() / 2)) - 1.0f;
-
-                    redraw();
-
-                    return 1;
-                }
-
-            }
-
-            return 0;
-        }
 
 };

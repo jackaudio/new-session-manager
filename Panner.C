@@ -22,24 +22,36 @@
 
 /* 2D Panner widget. Supports various multichannel configurations. */
 
+enum {
+    NONE = -1,
+    R    = 90,
+    L    = 270,
+    C   = 0,
+    FL   = 315,
+    FR   = 45,
+    RL   = 225,
+    RR   = 135,
+};
+
 /* multichannel layouts, in degrees */
 int Panner::_configs[][12] =
 {
-    /* none */
-    { -1 },
-    /* mono */
-    { -1 },
+    /* none, error condition? */
+    { NONE },
+    /* mono, panner disabled */
+    { NONE },
     /* stereo */
-    { 270, 90 },
-    { -1 },
+    { L, R },
+    /* stereo + mono */
+    { L, R, C },
     /* quad */
-    { 315, 45, 225, 135 },
+    { FL, FR, RL, RR },
     /* 5.1 */
-    { 315, 45, 225, 135, 0 },
-    { -1 },
+    { FL, FR, RL, RR, C },
+    /* no such config */
+    { NONE },
     /* 7.1 */
-    { 315, 45, 225, 135, 0, 270, 90 },
-
+    { FL, FR, RL, RR, C, L, R },
 };
 
 
@@ -84,7 +96,9 @@ Panner::draw ( void )
         {
             int a = _configs[ _outs ][ i ];
 
-            a += 90;
+            // FIXME: this is a hack... Why does fl_arc seem to put 0 degrees at 3 o'clock and inverted?
+            a -= 90;
+            a = 360 - a;
 
             fl_arc( tx, ty, tw, th, a - 3, a + 3 );
         }

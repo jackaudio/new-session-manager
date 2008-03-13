@@ -19,10 +19,14 @@
 
 /* Base class for all meters */
 
+#include <FL/Fl.H>
+#include <FL/Fl_Widget.H>
+
 class Meter : public Fl_Widget
 {
 
     float _peak;
+    float _old_value;
     float _value;
 
 protected:
@@ -31,7 +35,12 @@ protected:
     virtual int handle ( int m )
         {
             if ( m == FL_PUSH )
-                reset();
+            {
+//                if ( Fl::event_button3() )
+//                    hide();
+//                else
+                    reset();
+            }
 
             return 0;
         }
@@ -61,27 +70,66 @@ protected:
             return def / 115.0f;
         }
 
+    float old_value ( void ) const { return _old_value; }
+
 public:
 
     Meter ( int X, int Y, int W, int H,  const char *L = 0 ) :
         Fl_Widget( X, Y, W, H, L )
         {
             _peak = _value = -80.0f;
+            _old_value = 4.0f;
         }
 
     virtual ~Meter ( ) { }
 
     void value ( float v )
         {
-            _value = v;
+            if ( _value != v )
+            {
+                damage( FL_DAMAGE_USER1 );
 
-            if ( _value > _peak )
-                _peak = _value;
+                _old_value = _value;
+                _value = v;
+
+                if ( _value > _peak )
+                    _peak = _value;
+            }
         }
 
     float value ( void ) const { return _value; }
     float peak ( void ) const { return _peak; }
 
     void reset ( void ) { _peak = -80.0f; redraw(); }
+
+};
+
+#include <FL/Fl_Group.H>
+#include <stdio.h>
+
+
+/* ... Extension methods for any group containing only meters. Access
+ * via a cast to (Meter_Pack *) */
+
+class Meter_Pack : public Fl_Group
+{
+
+public:
+
+/** return a pointer to the meter for channel /c/ in group of meters /g/ */
+    Meter *
+    channel ( int c )
+        {
+            if ( c > children() )
+            {
+                fprintf( stderr, "no such channel\n" );
+                return NULL;
+            }
+
+            return (Meter *)child( c );
+        }
+
+    int
+    channels ( void ) const { return children(); }
 
 };

@@ -26,16 +26,30 @@
 class DPM : public Meter
 {
 
-    int _divisions;
-    float _dim;
+    int _segments;
 
-    Fl_Color _min_color;
-    Fl_Color _max_color;
 
     int pos ( float v )
         {
-            return deflection( v ) * _divisions;
+            return deflection( v ) * _segments;
         }
+
+    static float _dim;
+    static Fl_Color _gradient[];
+    static Fl_Color _dim_gradient[];
+
+    Fl_Color
+    div_color ( int i )
+        {
+            return _gradient[ i * 127 / _segments ];
+        }
+
+    Fl_Color
+    dim_div_color ( int i )
+        {
+            return _dim_gradient[ i * 127 / _segments ];
+        }
+
 
 protected:
 
@@ -48,16 +62,20 @@ public:
 
 //    void value ( float v ) { if ( pos( v ) != pos( value() ) )  redraw(); Meter::value( v ) }
 
-    bool divisions ( void ) const { return _divisions; }
-    void divisions ( int v ) { _divisions = v; }
+    bool segments ( void ) const { return _segments; }
+    void segments ( int v ) { _segments = v; }
 
     float dim ( void ) const { return _dim; }
     void dim ( float v ) { _dim = v; redraw(); }
 
-    Fl_Color min_color ( void ) const { return _min_color; }
-    void min_color ( Fl_Color v ) { _min_color = v; }
+    static
+    void
+    blend ( Fl_Color min, Fl_Color max )
+        {
+            for ( int i = 128; i-- ; )
+                _gradient[ i ] = fl_color_average( max, min, i / (float)128 );
 
-    Fl_Color max_color ( void ) const { return _max_color; }
-    void max_color ( Fl_Color v ) { _max_color = v; }
-
+            for ( int i = 128; i-- ; )
+                _dim_gradient[ i ] = fl_color_average( FL_BLACK, _gradient[ i ], _dim );
+        }
 };

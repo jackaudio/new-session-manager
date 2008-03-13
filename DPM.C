@@ -24,6 +24,11 @@
 
 #include "DPM.H"
 
+/* we cache the gradient for (probably excessive) speed */
+float DPM::_dim;
+Fl_Color DPM::_gradient[128] = { (Fl_Color)-1 };
+Fl_Color DPM::_dim_gradient[128];
+
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Group.H>
@@ -34,13 +39,14 @@
 DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
     Meter( X, Y, W, H, L )
 {
-    divisions( 64 );
+    segments( 64 );
     type( FL_VERTICAL );
 
-    dim( 0.80f );
+    dim( 0.70f );
 
-    min_color( fl_darker( FL_GREEN ) );
-    max_color( FL_RED );
+    /* initialize gradients */
+    if ( DPM::_gradient[ 0 ] == -1 )
+        DPM::blend( FL_GREEN, FL_RED );
 
     box( FL_ROUNDED_BOX );
 }
@@ -72,32 +78,60 @@ DPM::draw_label ( void )
 void
 DPM::draw ( void )
 {
-//    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), color() );
     int v = pos( value() );
     int pv = pos( peak() );
 
-    int bh = h() / _divisions;
-    int bw = w() / _divisions;
+    int bh = h() / _segments;
+    int bw = w() / _segments;
 
-    if ( damage() & FL_DAMAGE_ALL )
+    if ( damage() == FL_DAMAGE_ALL )
         draw_label();
 
-    for ( int p = _divisions; p > 0; p-- )
+    const int active = active_r();
+
+    int hi, lo;
+
+    /* only draw as many segments as necessary */
+    if ( damage() == FL_DAMAGE_USER1 )
     {
-//        Fl_Color c = fl_color_average( _min_color, _max_color, ((30.0f * log10f( (float)(_divisions - p ) ) )) / _divisions );
-        Fl_Color c = fl_color_average( _max_color, _min_color, (float) p / _divisions );
+        if ( old_value() > value() )
+        {
+            hi = pos( old_value() );
+            lo = v;
+        }
+        else
+        {
+            hi = v;
+            lo = pos( old_value() );
+        }
+    }
+    else
+    {
+        lo = 0;
+        hi = _segments;
+    }
+
+
+    for ( int p = hi; p > lo; p-- )
+    {
+        Fl_Color c = DPM::div_color( p );
 
         if ( p > v && p != pv )
-//            c = fl_color_average( color(), c, _dim );
-            c = fl_color_average( FL_BLACK, c, _dim );
+            c = dim_div_color( p );
 
-        if ( ! active_r() )
+        if ( ! active )
             c = fl_inactive( c );
 
         if ( type() == FL_HORIZONTAL )
-            draw_box( box(), x() + (p * bw), y(), bw, h(), c );
+            fl_draw_box( box(), x() + (p * bw), y(), bw, h(), c );
         else
-            draw_box( box(), x(), y() + h() - (p * bh), w(), bh, c );
-    }
+            fl_draw_box( box(), x(), y() + h() - (p * bh), w(), bh, c );
+
+/*         fl_color( c ); */
+/*         fl_rectf( x(), y() + h() - (p * bh), w(), bh ); */
+/*         fl_color( FL_BLACK ); */
+/*         fl_rect( x(), y() + h() - (p * bh), w(), bh ); */
+
+   }
 
 }

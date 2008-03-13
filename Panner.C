@@ -25,16 +25,20 @@
 /* multichannel layouts, in degrees */
 int Panner::_configs[][12] =
 {
+    /* none */
+    { -1 },
     /* mono */
     { -1 },
     /* stereo */
-    { 270, 90, -1 },
+    { 270, 90 },
+    { -1 },
     /* quad */
-    { 315, 45, 225, 135, -1 },
+    { 315, 45, 225, 135 },
     /* 5.1 */
-    { 315, 45, 225, 135, 0, -1 },
+    { 315, 45, 225, 135, 0 },
+    { -1 },
     /* 7.1 */
-    { 315, 45, 225, 135, 0, 270, 90, -1 },
+    { 315, 45, 225, 135, 0, 270, 90 },
 
 };
 
@@ -46,6 +50,9 @@ Panner::event_point ( void )
     int X, Y, W, H;
 
     bbox( X, Y, W, H );
+
+    W -= pw();
+    H -= ph();
 
     for ( int i = _ins; i--; )
     {
@@ -70,26 +77,21 @@ Panner::draw ( void )
 
     bbox( tx, ty, tw, th );
 
-    fl_color(  FL_GRAY );
-
-    switch ( _outs )
+    fl_color( FL_WHITE  );
+    if ( _configs[ _outs ][0] >= 0 )
     {
-        case 2:                                         /* stereo */
+        for ( int i = _outs; i--; )
+        {
+            int a = _configs[ _outs ][ i ];
 
-        case 4:                                         /* quad */
-            fl_line( x(), y(), x()+ w(), y() + h() );
-            fl_line( x() + w(), y(), x(), y() + h() );
-            break;
-        case 5:                                         /* 5.1 */
-            fl_line( x(), y(), x() + w(), y() + h() );
-            fl_line( x() + w(), y(), x(), y() + h() );
-            fl_line( x() + (w() / 2), y(), x() + (w() / 2), y() + (h() / 2) );
-            break;
+            a += 90;
 
-
+            fl_arc( tx, ty, tw, th, a - 3, a + 3 );
+        }
     }
 
-
+    tw -= pw();
+    th -= ph();
 
     for ( int i = _ins; i--; )
     {

@@ -52,8 +52,8 @@ class Panner : public Fl_Widget
 
     void bbox ( int &X, int &Y, int &W, int &H )
         {
-            W = w() - Fl::box_dw( box() ) - pw();
-            H = h() - Fl::box_dh( box() ) - ph();
+            W = w() - Fl::box_dw( box() );
+            H = h() - Fl::box_dh( box() );
             X = x() + Fl::box_dx( box() );
             Y = y() + Fl::box_dy( box() );
         }
@@ -72,7 +72,6 @@ public:
             _points.push_back( Point( 1, -1 ) );
 
             _outs = 5;
-
         }
 
     virtual ~Panner ( ) { }

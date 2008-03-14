@@ -127,7 +127,7 @@ void
 Panner::draw ( void )
 {
 //    draw_box();
-            draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
+    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
     draw_label();
 
     int tw, th, tx, ty;
@@ -147,51 +147,37 @@ Panner::draw ( void )
 
     fl_arc( tx, ty, tw, th, 0, 360 );
 
-
     if ( _configs[ _outs ][0] >= 0 )
     {
         for ( int i = _outs; i--; )
         {
             int a = _configs[ _outs ][ i ];
 
-            // FIXME: this is a hack... Why does fl_arc seem to put 0 degrees at 3 o'clock and inverted?
-            a -= 90;
-            a = 360 - a;
+            Point p( 1.2f, (float)a );
 
-/* /\*             fl_color( FL_WHITE  ); *\/ */
-/*             fl_line_style( FL_SOLID, 10 ); */
-/*             fl_arc( tx, ty, tw, th, a - 20, a + 20 ); */
-/*             fl_line_style( FL_SOLID, 0 ); */
+            float px, py;
 
-/*             Point p = angle_to_axes( a ); */
-/* //            printf( "%d: %f, %f\n", i, p.x, p.y ); */
+            p.axes( &px, &py );
 
-            {
-                float A;
-                int X, Y;
+            fl_push_matrix();
 
-                A = a * ( M_PI / 180 );
+            const int bx = tx + ((tw / 2) * px + (tw / 2));
+            const int by = ty + ((th / 2) * py + (th / 2));
 
-                float r = tw / 2;
+            fl_translate( bx, by );
 
-                X = r * cos( A );
-                Y = -r * sin( A );
+            fl_scale( 5, 5 );
 
-                fl_push_matrix();
+            a = 90 - a;
 
-                fl_translate( (tx + (tw / 2)) + X, (ty + (th / 2)) + Y );
+            fl_rotate( a );
 
-                fl_scale( 5, 5 );
+            draw_speaker( FL_WHITE );
 
-                fl_rotate( a );
+            fl_rotate( -a );
 
-                draw_speaker( FL_WHITE );
+            fl_pop_matrix();
 
-                fl_rotate( -a );
-
-                fl_pop_matrix();
-
-            }
         }
     }
 
@@ -211,9 +197,11 @@ Panner::draw ( void )
         const int bx = tx + ((tw / 2) * px + (tw / 2));
         const int by = ty + ((th / 2) * py + (th / 2));
 
+        /* draw point */
         fl_color( c );
         fl_pie( bx, by, pw(), ph(), 0, 360 );
 
+        /* draw echo */
         fl_color( c = fl_darker( c ) );
         fl_arc( bx - 5, by - 5, pw() + 10, ph() + 10, 0, 360 );
         fl_color( c = fl_darker( c ) );
@@ -221,12 +209,19 @@ Panner::draw ( void )
         fl_color( c = fl_darker( c ) );
         fl_arc( bx - 30, by - 30, pw() + 60, ph() + 60, 0, 360 );
 
+        /* draw number */
         char pat[4];
         snprintf( pat, 4, "%d", i + 1 );
 
         fl_color( FL_BLACK );
         fl_font( FL_HELVETICA, ph() + 2 );
         fl_draw( pat, bx + 1, by + 1, pw() - 1, ph() - 1, FL_ALIGN_CENTER );
+
+        /* draw line */
+
+/*         fl_color( FL_WHITE ); */
+/*         fl_line( bx + pw() / 2, by + ph() / 2, tx + (tw / 2), ty + (th / 2) ); */
+
     }
 
     fl_pop_clip();
@@ -262,7 +257,7 @@ Panner::handle ( int m )
 /*             drag->x = (float)(X / (w() / 2)) - 1.0f; */
 /*             drag->y = (float)(Y / (h() / 2)) - 1.0f; */
 
-/*             printf( "%f\n", drag->distance( angle_to_axes( _configs[ _outs ][ 0 ] ) ) ); */
+//            printf( "%f\n", drag->distance( angle_to_axes( _configs[ _outs ][ 0 ] ) ) );
 
             redraw();
 

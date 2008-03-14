@@ -41,7 +41,7 @@ class Panner : public Fl_Widget
         float a;
 
         Point ( ) : d( 0.0f ), a( 0.0f ) { }
-        Point ( float X, float Y ) : d( X ), a( Y ) { }
+        Point ( float D, float A ) : d( D ), a( A ) { }
 
         /** translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
         void

@@ -72,56 +72,47 @@ static void draw_speaker ( Fl_Color col )
 }
 
 
+/** set X, Y, W, and H to the bounding box of point /p/ in screen coords */
+void
+Panner::point_bbox ( const Point *p, int *X, int *Y, int *W, int *H ) const
+{
+    int tx, ty, tw, th;
+
+    bbox( tx, ty, tw, th );
+
+    tw -= pw();
+    th -= ph();
+
+    float px, py;
+
+    p->axes( &px, &py );
+
+    *X = tx + ((tw / 2) * px + (tw / 2));
+    *Y = ty + ((th / 2) * py + (th / 2));
+
+    *W = pw();
+    *H = ph();
+}
+
 Panner::Point *
 Panner::event_point ( void )
 {
-
-    int X, Y, W, H;
-
-    bbox( X, Y, W, H );
-
-    W -= pw();
-    H -= ph();
-
     for ( int i = _ins; i--; )
     {
+        int px, py, pw, ph;
+
         Point *p = &_points[ i ];
 
-        float px, py;
+        point_bbox( p, &px, &py, &pw, &ph );
 
-        p->axes( &px, &py );
+//        printf( "%d, %d -- %d %d %d %d\n", Fl::event_x(), Fl::event_y(),  px, py, pw, ph );
 
-        if ( Fl::event_inside( X + ((px * (W / 2)) + (W / 2)),
-                               Y + ((py * (H / 2)) + (H / 2)), pw(), ph() ) )
+        if ( Fl::event_inside( px, py, pw, ph ) )
             return p;
-
     }
 
     return NULL;
 }
-
-/* translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
-/* Panner::Point */
-/* Panner::angle_to_axes ( float a ) */
-/* { */
-/*     Point p; */
-
-/*     a -= 90; */
-/*     a = 360 - a; */
-
-/*     double A; */
-
-/*     A = a * ( M_PI / 180 ); */
-
-/*     // const float r = tw / 2; */
-
-/*     const double  r = 1.0f; */
-
-/*     p.x = r * cos( A ); */
-/*     p.y = -r * sin( A ); */
-
-/*     return p; */
-/* } */
 
 void
 Panner::draw ( void )
@@ -181,8 +172,7 @@ Panner::draw ( void )
         }
     }
 
-    tw -= pw();
-    th -= ph();
+    /* ensure that points are drawn *inside* the circle */
 
     for ( int i = _ins; i--; )
     {
@@ -190,32 +180,28 @@ Panner::draw ( void )
 
         Fl_Color c = (Fl_Color)(10 + i);
 
-        float px, py;
-
-        p->axes( &px, &py );
-
-        const int bx = tx + ((tw / 2) * px + (tw / 2));
-        const int by = ty + ((th / 2) * py + (th / 2));
+        int px, py, pw, ph;
+        point_bbox( p, &px, &py, &pw, &ph );
 
         /* draw point */
         fl_color( c );
-        fl_pie( bx, by, pw(), ph(), 0, 360 );
+        fl_pie( px, py, pw, ph, 0, 360 );
 
         /* draw echo */
         fl_color( c = fl_darker( c ) );
-        fl_arc( bx - 5, by - 5, pw() + 10, ph() + 10, 0, 360 );
+        fl_arc( px - 5, py - 5, pw + 10, ph + 10, 0, 360 );
         fl_color( c = fl_darker( c ) );
-        fl_arc( bx - 10, by - 10, pw() + 20, ph() + 20, 0, 360 );
+        fl_arc( px - 10, py - 10, pw + 20, ph + 20, 0, 360 );
         fl_color( c = fl_darker( c ) );
-        fl_arc( bx - 30, by - 30, pw() + 60, ph() + 60, 0, 360 );
+        fl_arc( px - 30, py - 30, pw + 60, ph + 60, 0, 360 );
 
         /* draw number */
         char pat[4];
         snprintf( pat, 4, "%d", i + 1 );
 
         fl_color( FL_BLACK );
-        fl_font( FL_HELVETICA, ph() + 2 );
-        fl_draw( pat, bx + 1, by + 1, pw() - 1, ph() - 1, FL_ALIGN_CENTER );
+        fl_font( FL_HELVETICA, ph + 2 );
+        fl_draw( pat, px + 1, py + 1, pw - 1, ph - 1, FL_ALIGN_CENTER );
 
         /* draw line */
 
@@ -252,12 +238,22 @@ Panner::handle ( int m )
             float X = Fl::event_x() - x();
             float Y = Fl::event_y() - y();
 
-            drag->angle( (float)(X / (w() / 2)) - 1.0f, (float)(Y / (h() / 2)) - 1.0f );
+            int tx, ty, tw, th;
+            bbox( tx, ty, tw, th );
 
-/*             drag->x = (float)(X / (w() / 2)) - 1.0f; */
-/*             drag->y = (float)(Y / (h() / 2)) - 1.0f; */
+            drag->angle( (float)(X / (tw / 2)) - 1.0f, (float)(Y / (th / 2)) - 1.0f );
 
-//            printf( "%f\n", drag->distance( angle_to_axes( _configs[ _outs ][ 0 ] ) ) );
+            /* calculate gains for all output channels */
+            {
+                for ( int i = _ins; i--; )
+                {
+                    int a = _configs[ _outs ][ i ];
+
+                    printf( "%d:%f ", i, 1.0f -  drag->distance( Point( 1.0f, a ) ) / 2.0f );
+                }
+
+                printf( "\n" );
+            }
 
             redraw();
 

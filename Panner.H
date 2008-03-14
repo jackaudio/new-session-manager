@@ -109,13 +109,15 @@ class Panner : public Fl_Widget
 
     static int _configs[][12];
 
-    void bbox ( int &X, int &Y, int &W, int &H )
+    void bbox ( int &X, int &Y, int &W, int &H ) const
         {
             W = w() - Fl::box_dw( box() );
             H = h() - Fl::box_dh( box() );
             X = x() + Fl::box_dx( box() );
             Y = y() + Fl::box_dy( box() );
         }
+
+    void point_bbox ( const Point *p, int *X, int *Y, int *W, int *H ) const;
 
     Point * event_point ( void );
     Point angle_to_axes ( float a );

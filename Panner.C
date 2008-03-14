@@ -24,16 +24,6 @@
 
 /* 2D Panner widget. Supports various multichannel configurations. */
 
-enum {
-    NONE = -1,
-    R    = 90,
-    L    = 270,
-    C   = 0,
-    FL   = 315,
-    FR   = 45,
-    RL   = 225,
-    RR   = 135,
-};
 
 /* multichannel layouts, in degrees */
 int Panner::_configs[][12] =
@@ -97,36 +87,41 @@ Panner::event_point ( void )
     {
         Point *p = &_points[ i ];
 
-        if ( Fl::event_inside( X + ((p->x * (W / 2)) + (W / 2)),
-                               Y + ((p->y * (H / 2)) + (H / 2)), pw(), ph() ) )
+        float px, py;
+
+        p->axes( &px, &py );
+
+        if ( Fl::event_inside( X + ((px * (W / 2)) + (W / 2)),
+                               Y + ((py * (H / 2)) + (H / 2)), pw(), ph() ) )
             return p;
+
     }
 
     return NULL;
 }
 
 /* translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
-Panner::Point
-Panner::angle_to_axes ( float a )
-{
-    Point p;
+/* Panner::Point */
+/* Panner::angle_to_axes ( float a ) */
+/* { */
+/*     Point p; */
 
-    a -= 90;
-    a = 360 - a;
+/*     a -= 90; */
+/*     a = 360 - a; */
 
-    double A;
+/*     double A; */
 
-    A = a * ( M_PI / 180 );
+/*     A = a * ( M_PI / 180 ); */
 
-    // const float r = tw / 2;
+/*     // const float r = tw / 2; */
 
-    const double  r = 1.0f;
+/*     const double  r = 1.0f; */
 
-    p.x = r * cos( A );
-    p.y = -r * sin( A );
+/*     p.x = r * cos( A ); */
+/*     p.y = -r * sin( A ); */
 
-    return p;
-}
+/*     return p; */
+/* } */
 
 void
 Panner::draw ( void )
@@ -166,8 +161,8 @@ Panner::draw ( void )
 /*             fl_arc( tx, ty, tw, th, a - 20, a + 20 ); */
 /*             fl_line_style( FL_SOLID, 0 ); */
 
-            Point p = angle_to_axes( a );
-//            printf( "%d: %f, %f\n", i, p.x, p.y );
+/*             Point p = angle_to_axes( a ); */
+/* //            printf( "%d: %f, %f\n", i, p.x, p.y ); */
 
             {
                 float A;
@@ -207,17 +202,21 @@ Panner::draw ( void )
 
         fl_color( (Fl_Color) 10 + i );
 
-        const int bx = tx + ((tw / 2) * p->x + (tw / 2));
-        const int by = ty + ((th / 2) * p->y + (th / 2));
+        float px, py;
 
-        fl_rectf( bx, by, pw(), ph() );
+        p->axes( &px, &py );
+
+        const int bx = tx + ((tw / 2) * px + (tw / 2));
+        const int by = ty + ((th / 2) * py + (th / 2));
+
+        fl_pie( bx, by, pw(), ph(), 0, 360 );
 
         char pat[4];
         snprintf( pat, 4, "%d", i + 1 );
 
         fl_color( FL_BLACK );
         fl_font( FL_HELVETICA, ph() + 2 );
-        fl_draw( pat, bx, by + ph() );
+        fl_draw( pat, bx + 1, by + 1, pw() - 1, ph() - 1, FL_ALIGN_CENTER );
     }
 }
 
@@ -246,10 +245,12 @@ Panner::handle ( int m )
             float X = Fl::event_x() - x();
             float Y = Fl::event_y() - y();
 
-            drag->x = (float)(X / (w() / 2)) - 1.0f;
-            drag->y = (float)(Y / (h() / 2)) - 1.0f;
+            drag->angle( (float)(X / (w() / 2)) - 1.0f, (float)(Y / (h() / 2)) - 1.0f );
 
-            printf( "%f\n", drag->distance( angle_to_axes( _configs[ _outs ][ 0 ] ) ) );
+/*             drag->x = (float)(X / (w() / 2)) - 1.0f; */
+/*             drag->y = (float)(Y / (h() / 2)) - 1.0f; */
+
+/*             printf( "%f\n", drag->distance( angle_to_axes( _configs[ _outs ][ 0 ] ) ) ); */
 
             redraw();
 

@@ -34,18 +34,67 @@ class Panner : public Fl_Widget
     struct Point
     {
         /* axes */
-        float x, y;
 
-        Point ( ) : x( 0.0f ), y( 0.0f ) { }
-        Point ( float X, float Y ) : x( X ), y( Y ) { }
+        /* distance from center (from 0 to 1) */
+        float d;
+        /* angle */
+        float a;
 
+        Point ( ) : d( 0.0f ), a( 0.0f ) { }
+        Point ( float X, float Y ) : d( X ), a( Y ) { }
 
-        /* return the distance between the point and that referenced by /p/ */
+        /** translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
+        void
+        axes ( float *X, float *Y ) const
+            {
+                /* rotate */
+                float A = ( 270 - a ) * ( M_PI / 180 );
+
+                *X = -d * cosf( A );
+                *Y = d * sinf( A );
+            }
+
+        void
+        angle ( float X1, float Y1 )
+            {
+
+                float X2, Y2;
+
+                Y2 = X2 = 0;
+
+                float t;
+
+                t = atan2( X2 - X1, Y2 - Y1 );
+
+                a = t * (180 / M_PI);
+
+                if ( a < 0 )
+                    a = 360 + a;
+
+                a = 360 - a;
+
+                /* standard distance calculation */
+                d = sqrt( pow( X2 - X1, 2 ) + pow( Y2 - Y1, 2 ) );
+
+                if ( d > 1.0f )
+                    d = 1.0f;
+            }
+
+        /** return the distance between the point and that referenced by /p/ */
         float
         distance ( const Point &p )
             {
-                return sqrt( pow( x - p.x, 2 ) + pow( y - p.y, 2 ) );
+                /* first, transform point coords */
+
+                float x1, y1, x2, y2;
+
+                axes( &x1, &y1 );
+                p.axes( &x2, &y2 );
+
+                /* standard distance calculation */
+                return sqrt( pow( x1 - x2, 2 ) + pow( y1 - y2, 2 ) );
             }
+
     };
 
 
@@ -55,8 +104,8 @@ class Panner : public Fl_Widget
 
     vector <Point> _points;
 
-    static int pw ( void ) { return 6; }
-    static int ph ( void ) { return 6; }
+    static int pw ( void ) { return 12; }
+    static int ph ( void ) { return 12; }
 
     static int _configs[][12];
 
@@ -71,16 +120,28 @@ class Panner : public Fl_Widget
     Point * event_point ( void );
     Point angle_to_axes ( float a );
 
+    enum {
+        NONE = -1,
+        R    = 90,
+        L    = 270,
+        C   = 0,
+        FL   = 315,
+        FR   = 45,
+        RL   = 225,
+        RR   = 135,
+    };
+
 public:
+
 
     Panner ( int X, int Y, int W, int H, const char *L = 0 ) :
         Fl_Widget( X, Y, W, H, L )
         {
             _ins = _outs = 4;
-            _points.push_back( Point( -1, -1 ) );
-            _points.push_back( Point( 1, 1 ) );
-            _points.push_back( Point( -1, 1 ) );
-            _points.push_back( Point( 1, -1 ) );
+            _points.push_back( Point( 1, FL ) );
+            _points.push_back( Point( 1, FR ) );
+            _points.push_back( Point( 1, RL ) );
+            _points.push_back( Point( 1, RR ) );
 
             _outs = 5;
         }

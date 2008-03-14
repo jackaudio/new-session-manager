@@ -69,13 +69,13 @@ Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chan
             p.max *= _scale;
             p.min *= _scale;
 
-            if ( Waveform::logarithmic )
-            {
-                p.max = 10.0f * log10f( p.max );
-                p.min = 10.0f * log10f( p.min );
-            }
-
             const float diff = fabs( p.max - p.min );
+
+/*             if ( Waveform::logarithmic ) */
+/*             { */
+/*                 p.max = 10.0f * log10f( p.max ); */
+/*                 p.min = 10.0f * log10f( p.min ); */
+/*             } */
 
             if ( diff > 2.0f )
                 fl_color( FL_RED );

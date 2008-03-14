@@ -1,5 +1,5 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0107 
+version 1.0108 
 header_name {.H} 
 code_name {.C}
 comment {//
@@ -70,7 +70,7 @@ window->hide();}
   }
 } 
 
-decl {\#include "../transport.H"} {selected public
+decl {\#include "../transport.H"} {public
 } 
 
 decl {extern Fl_Color velocity_colors[];} {} 
@@ -81,12 +81,12 @@ decl {\#include <stdio.h>} {}
 
 decl {\#include <stdlib.h>} {} 
 
-widget_class Visual_Metronome {open
-  xywh {201 31 1278 1003} type Single hide resizable
+widget_class Visual_Metronome {open selected
+  xywh {763 217 1278 1003} type Single resizable
   code0 {_bpb = _tpb = -1; _beat = _tick = _flip = 0;}
-  code1 {o->box( FL_NO_BOX );}
-  code2 {o->label( 0 );}
-  class Fl_Group
+  code1 {this->box( FL_NO_BOX );}
+  code2 {this->label( 0 );}
+  class Fl_Group visible
 } {
   Fl_Slider progress {
     private xywh {119 95 1149 23} type Horizontal box ROUND_UP_BOX color 32 selection_color 71

@@ -595,9 +595,8 @@ g->mode( g->mode() == MUTE ? PLAY : MUTE );
 
 o->value( g->mode() == MUTE );
 
-pattern_solo_button->value( 0 );}
+pattern_solo_button->value( 0 );} selected
               xywh {10 738 90 23} type Normal color 37
-              code0 {// o->type(FL_RADIO_BUTTON);}
             }
             Fl_Light_Button pattern_solo_button {
               label Solo
@@ -609,7 +608,6 @@ o->value( g->mode() == SOLO );
 
 pattern_mute_button->value( 0 );}
               xywh {110 738 91 23} type Normal color 37
-              code0 {// o->type( FL_RADIO_BUTTON );}
             }
             Fl_Text_Editor pattern_notes_edit {
               label {Notes:}
@@ -935,7 +933,7 @@ else
           }
           Fl_Counter {} {
             callback {transport.set_beats_per_minute( o->value() );}
-            xywh {43 41 97 24} labeltype NO_LABEL align 4
+            xywh {43 41 97 24} labeltype NO_LABEL align 4 step 0.1
             code1 {transport.signal_tempo_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Counter::*)(double)>(&Fl_Counter::value) ) );}
             code2 {o->value( transport.beats_per_minute );}
           }
@@ -1005,7 +1003,7 @@ You should have received a copy of the GNU General Public License along with thi
       }
       Fl_Button {} {
         label {http://non.tuxfamily.org}
-        callback {fl_open_uri( "http://non.tuxfamily.org" );} selected
+        callback {fl_open_uri( "http://non.tuxfamily.org" );}
         xywh {178 554 188 30} color 14 labeltype SHADOW_LABEL labelcolor 6
       }
       Fl_Return_Button {} {
@@ -1642,14 +1640,13 @@ return r;} {}
 } 
 
 widget_class Triggers {open
-  xywh {121 31 1278 1003} type Double hide resizable
+  xywh {796 43 1278 1003} type Double resizable
   code0 {populate();}
   code1 {\#include <Fl/Fl_Dial.H>}
-  class Fl_Group
+  class Fl_Group visible
 } {
   Fl_Pack rows {open
     xywh {25 25 15 15}
-    code0 {// o->position( x(), y() );}
   } {}
   Function {populate( void )} {open private return_type void
   } {

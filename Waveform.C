@@ -34,6 +34,7 @@
 bool Waveform::fill = true;
 bool Waveform::outline = true;
 bool Waveform::vary_color = true;
+bool Waveform::logarithmic = true;
 
 /* TODO: split the variations into separate functions. eg, plain,
  * outlined, filled, polygonal, rectified. */
@@ -67,6 +68,12 @@ Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chan
 
             p.max *= _scale;
             p.min *= _scale;
+
+            if ( Waveform::logarithmic )
+            {
+                p.max = 10.0f * log10f( p.max );
+                p.min = 10.0f * log10f( p.min );
+            }
 
             const float diff = fabs( p.max - p.min );
 

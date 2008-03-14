@@ -34,6 +34,7 @@ public:
     static bool fill;
     static bool outline;
     static bool vary_color;
+    static bool logarithmic;
 
     static void draw ( int rx, int X, int Y, int W, int H, Audio_File *_clip, int channel, float fpp, nframes_t _start, nframes_t _end, float _scale, Fl_Color color );
 

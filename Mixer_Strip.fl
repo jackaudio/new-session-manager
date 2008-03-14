@@ -14,6 +14,9 @@ decl {\#include "Fl_Scalepack.H"} {public global
 decl {\#include "Fl_Flip_Button.H"} {public global
 } 
 
+decl {\#include "Fl_Arc_Dial.H"} {public global
+} 
+
 widget_class Mixer_Strip {open
   xywh {1051 42 124 816} type Double box UP_FRAME color 32 selection_color 63 resizable
   code0 {size( 120, h() );} visible
@@ -24,7 +27,7 @@ widget_class Mixer_Strip {open
   }
   Fl_Box {} {
     label {<Oscilloscope>}
-    xywh {7 33 110 104} box UP_FRAME
+    xywh {7 33 110 104} box UP_FRAME hide
   }
   Fl_Group {} {open
     xywh {7 143 110 25}
@@ -83,11 +86,27 @@ widget_class Mixer_Strip {open
     }
   }
   Fl_Box {} {
-    label Pan selected
+    label Pan
     xywh {6 693 110 90} box THIN_UP_BOX labelsize 11 align 1
     class Panner
   }
   Fl_Progress {} {
     xywh {8 789 110 21} labeltype NO_LABEL
+  }
+  Fl_Dial {} {
+    xywh {10 36 41 39} box OVAL_FRAME color 52 selection_color 55
+    class Fl_Arc_Dial
+  }
+  Fl_Dial {} {selected
+    xywh {10 80 41 39} box OVAL_FRAME color 52 selection_color 55
+    class Fl_Arc_Dial
+  }
+  Fl_Dial {} {
+    xywh {73 36 41 39} box OVAL_FRAME color 52 selection_color 55
+    class Fl_Arc_Dial
+  }
+  Fl_Dial {} {
+    xywh {73 80 41 39} box OVAL_FRAME color 52 selection_color 55
+    class Fl_Arc_Dial
   }
 } 

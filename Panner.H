@@ -23,6 +23,8 @@
 #include <FL/fl_draw.H>
 #include <FL/Fl.H>
 
+#include <math.h>
+
 #include <vector>
 using namespace std;
 
@@ -36,6 +38,14 @@ class Panner : public Fl_Widget
 
         Point ( ) : x( 0.0f ), y( 0.0f ) { }
         Point ( float X, float Y ) : x( X ), y( Y ) { }
+
+
+        /* return the distance between the point and that referenced by /p/ */
+        float
+        distance ( const Point &p )
+            {
+                return sqrt( pow( x - p.x, 2 ) + pow( y - p.y, 2 ) );
+            }
     };
 
 
@@ -59,6 +69,7 @@ class Panner : public Fl_Widget
         }
 
     Point * event_point ( void );
+    Point angle_to_axes ( float a );
 
 public:
 

@@ -105,28 +105,28 @@ Panner::event_point ( void )
     return NULL;
 }
 
-#if 0
 /* translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
-void
-Panner::angle_to_axes ( float a, float *X, float *Y )
+Panner::Point
+Panner::angle_to_axes ( float a )
 {
+    Point p;
 
-    float A;
-//    int X, Y;
+    a -= 90;
+    a = 360 - a;
+
+    double A;
 
     A = a * ( M_PI / 180 );
 
-    float r = tw / 2;
+    // const float r = tw / 2;
 
-    X = r * cos( A );
-    Y = -r * sin( A );
+    const double  r = 1.0f;
 
-/*     fl_push_matrix(); */
+    p.x = r * cos( A );
+    p.y = -r * sin( A );
 
-/*     fl_translate( (tx + (tw / 2)) + X, (ty + (th / 2)) + Y ); */
-
+    return p;
 }
-#endif
 
 void
 Panner::draw ( void )
@@ -161,9 +161,13 @@ Panner::draw ( void )
             a -= 90;
             a = 360 - a;
 
-/*             fl_color( FL_WHITE  ); */
+/* /\*             fl_color( FL_WHITE  ); *\/ */
+/*             fl_line_style( FL_SOLID, 10 ); */
+/*             fl_arc( tx, ty, tw, th, a - 20, a + 20 ); */
+/*             fl_line_style( FL_SOLID, 0 ); */
 
-/*             fl_arc( tx, ty, tw, th, a - 3, a + 3 ); */
+            Point p = angle_to_axes( a );
+//            printf( "%d: %f, %f\n", i, p.x, p.y );
 
             {
                 float A;
@@ -244,6 +248,8 @@ Panner::handle ( int m )
 
             drag->x = (float)(X / (w() / 2)) - 1.0f;
             drag->y = (float)(Y / (h() / 2)) - 1.0f;
+
+            printf( "%f\n", drag->distance( angle_to_axes( _configs[ _outs ][ 0 ] ) ) );
 
             redraw();
 

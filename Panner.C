@@ -20,6 +20,8 @@
 
 #include "Panner.H"
 
+#include <math.h>
+
 /* 2D Panner widget. Supports various multichannel configurations. */
 
 enum {
@@ -55,6 +57,31 @@ int Panner::_configs[][12] =
 };
 
 
+/* speaker symbol */
+#define BP fl_begin_polygon()
+#define EP fl_end_polygon()
+#define BCP fl_begin_complex_polygon()
+#define ECP fl_end_complex_polygon()
+#define BL fl_begin_line()
+#define EL fl_end_line()
+#define BC fl_begin_loop()
+#define EC fl_end_loop()
+#define vv(x,y) fl_vertex(x,y)
+
+static void draw_speaker ( Fl_Color col )
+{
+    fl_color(col);
+
+    BP; vv(0.2,0.4); vv(0.6,0.4); vv(0.6,-0.4); vv(0.2,-0.4); EP;
+    BP; vv(-0.6,0.8); vv(0.2,0.0); vv(-0.6,-0.8); EP;
+
+    fl_color( fl_darker( col ) );
+
+    BC; vv(0.2,0.4); vv(0.6,0.4); vv(0.6,-0.4); vv(0.2,-0.4); EC;
+    BC; vv(-0.6,0.8); vv(0.2,0.0); vv(-0.6,-0.8); EC;
+}
+
+
 Panner::Point *
 Panner::event_point ( void )
 {
@@ -78,18 +105,52 @@ Panner::event_point ( void )
     return NULL;
 }
 
+#if 0
+/* translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
+void
+Panner::angle_to_axes ( float a, float *X, float *Y )
+{
+
+    float A;
+//    int X, Y;
+
+    A = a * ( M_PI / 180 );
+
+    float r = tw / 2;
+
+    X = r * cos( A );
+    Y = -r * sin( A );
+
+/*     fl_push_matrix(); */
+
+/*     fl_translate( (tx + (tw / 2)) + X, (ty + (th / 2)) + Y ); */
+
+}
+#endif
+
 void
 Panner::draw ( void )
 {
-    draw_box();
-//            draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
+//    draw_box();
+            draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
     draw_label();
 
     int tw, th, tx, ty;
 
     bbox( tx, ty, tw, th );
 
-    fl_color( FL_WHITE  );
+    fl_color( FL_WHITE );
+
+    const int b = 10;
+
+    tx += b;
+    ty += b;
+    tw -= b * 2;
+    th -= b * 2;
+
+    fl_arc( tx, ty, tw, th, 0, 360 );
+
+
     if ( _configs[ _outs ][0] >= 0 )
     {
         for ( int i = _outs; i--; )
@@ -100,7 +161,36 @@ Panner::draw ( void )
             a -= 90;
             a = 360 - a;
 
-            fl_arc( tx, ty, tw, th, a - 3, a + 3 );
+/*             fl_color( FL_WHITE  ); */
+
+/*             fl_arc( tx, ty, tw, th, a - 3, a + 3 ); */
+
+            {
+                float A;
+                int X, Y;
+
+                A = a * ( M_PI / 180 );
+
+                float r = tw / 2;
+
+                X = r * cos( A );
+                Y = -r * sin( A );
+
+                fl_push_matrix();
+
+                fl_translate( (tx + (tw / 2)) + X, (ty + (th / 2)) + Y );
+
+                fl_scale( 5, 5 );
+
+                fl_rotate( a );
+
+                draw_speaker( FL_WHITE );
+
+                fl_rotate( -a );
+
+                fl_pop_matrix();
+
+            }
         }
     }
 

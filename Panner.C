@@ -134,6 +134,8 @@ Panner::draw ( void )
 
     bbox( tx, ty, tw, th );
 
+    fl_push_clip( tx, ty, tw, th );
+
     fl_color( FL_WHITE );
 
     const int b = 10;
@@ -200,7 +202,7 @@ Panner::draw ( void )
     {
         Point *p = &_points[ i ];
 
-        fl_color( (Fl_Color) 10 + i );
+        Fl_Color c = (Fl_Color)(10 + i);
 
         float px, py;
 
@@ -209,7 +211,15 @@ Panner::draw ( void )
         const int bx = tx + ((tw / 2) * px + (tw / 2));
         const int by = ty + ((th / 2) * py + (th / 2));
 
+        fl_color( c );
         fl_pie( bx, by, pw(), ph(), 0, 360 );
+
+        fl_color( c = fl_darker( c ) );
+        fl_arc( bx - 5, by - 5, pw() + 10, ph() + 10, 0, 360 );
+        fl_color( c = fl_darker( c ) );
+        fl_arc( bx - 10, by - 10, pw() + 20, ph() + 20, 0, 360 );
+        fl_color( c = fl_darker( c ) );
+        fl_arc( bx - 30, by - 30, pw() + 60, ph() + 60, 0, 360 );
 
         char pat[4];
         snprintf( pat, 4, "%d", i + 1 );
@@ -218,6 +228,8 @@ Panner::draw ( void )
         fl_font( FL_HELVETICA, ph() + 2 );
         fl_draw( pat, bx + 1, by + 1, pw() - 1, ph() - 1, FL_ALIGN_CENTER );
     }
+
+    fl_pop_clip();
 }
 
 

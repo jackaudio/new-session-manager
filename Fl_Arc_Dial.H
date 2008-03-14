@@ -23,6 +23,8 @@
 
 #include <FL/Fl_Dial.H>
 
+#include <algorithm>
+
 class Fl_Arc_Dial : public Fl_Dial
 {
 
@@ -73,8 +75,16 @@ protected:
             if ( type() == FL_FILL_DIAL )
                 fl_arc( X, Y, W, H, 270 - angle1(), 270 - angle  );
             else
-                fl_arc( X, Y, W, H, 270 - angle - 3, 270 - angle + 3 );
+            {
+                const int d = 6;
 
-            fl_line_style( FL_SOLID, 0 );
+                /* account for edge conditions */
+                angle = angle < angle1() + d ? angle1() + d : angle;
+                angle = angle > angle2() - d ? angle2() - d : angle;
+
+                fl_arc( X, Y, W, H, 270 - (angle - d), 270 - (angle + d) );
+
+                fl_line_style( FL_SOLID, 0 );
+            }
         }
 };

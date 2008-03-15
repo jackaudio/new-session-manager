@@ -249,7 +249,14 @@ Panner::handle ( int m )
                 {
                     int a = _configs[ _outs ][ i ];
 
-                    printf( "%d:%f ", i, 1.0f -  drag->distance( Point( 1.0f, a ) ) / 2.0f );
+//                    float g = 1.0f - drag->distance( Point( 1.0f, a ) ) / 2.0f;
+                    float g = drag->distance( Point( 1.0f, a ) ) / 2.0f;
+
+/*                     g = 1.0f / pow( g, 2 ); */
+
+/*                     g = 20.0f * log10f( g ); */
+
+                    printf( "%d:%f ", i, g );
                 }
 
                 printf( "\n" );

@@ -117,9 +117,18 @@ Panner::event_point ( void )
 void
 Panner::draw ( void )
 {
-//    draw_box();
-    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
+    draw_box();
+//    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
     draw_label();
+
+
+    if ( _bypassed )
+    {
+        fl_color( 0 );
+        fl_font( FL_HELVETICA, 12 );
+        fl_draw( "(bypass)", x(), y(), w(), h(), FL_ALIGN_CENTER );
+        return;
+    }
 
     int tw, th, tx, ty;
 
@@ -213,6 +222,21 @@ Panner::draw ( void )
     fl_pop_clip();
 }
 
+/* return the current gain setting for the path in/out  */
+float
+Panner::gain ( int ich, int och )
+{
+    int a = _configs[ _outs ][ och ];
+
+//                    float g = 1.0f - drag->distance( Point( 1.0f, a ) ) / 2.0f;
+    float g = _points[ ich ].distance( Point( 1.0f, a ) ) / 2.0f;
+
+/*                     g = 1.0f / pow( g, 2 ); */
+
+/*                     g = 20.0f * log10f( g ); */
+
+    return g;
+}
 
 int
 Panner::handle ( int m )
@@ -223,11 +247,15 @@ Panner::handle ( int m )
     {
 
         case FL_PUSH:
-            if ( ( drag = event_point() ) )
+
+            if ( Fl::event_button2() )
             {
-                printf( "bing\n" );
-                return 1;
+                _bypassed = ! _bypassed;
+                redraw();
+                return 0;
             }
+            else if ( Fl::event_button1() && ( drag = event_point() ) )
+                return 1;
             else
                 return 0;
         case FL_RELEASE:
@@ -241,12 +269,16 @@ Panner::handle ( int m )
             int tx, ty, tw, th;
             bbox( tx, ty, tw, th );
 
-            drag->angle( (float)(X / (tw / 2)) - 1.0f, (float)(Y / (th / 2)) - 1.0f );
+            if ( _outs < 3 )
+                drag->angle( (float)(X / (tw / 2)) - 1.0f, 0.0f );
+            else
+                drag->angle( (float)(X / (tw / 2)) - 1.0f, (float)(Y / (th / 2)) - 1.0f );
 
             /* calculate gains for all output channels */
             {
                 for ( int i = _ins; i--; )
                 {
+
                     int a = _configs[ _outs ][ i ];
 
 //                    float g = 1.0f - drag->distance( Point( 1.0f, a ) ) / 2.0f;

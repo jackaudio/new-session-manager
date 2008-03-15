@@ -86,8 +86,8 @@ widget_class Mixer_Strip {open
     }
   }
   Fl_Box {} {
-    label Pan
-    xywh {6 693 110 90} box THIN_UP_BOX labelsize 11 align 1
+    label Pan selected
+    xywh {6 693 110 90} box THIN_UP_BOX color 32 labelsize 11 align 1
     class Panner
   }
   Fl_Progress {} {
@@ -97,7 +97,7 @@ widget_class Mixer_Strip {open
     xywh {10 36 41 39} box OVAL_FRAME color 52 selection_color 55
     class Fl_Arc_Dial
   }
-  Fl_Dial {} {selected
+  Fl_Dial {} {
     xywh {10 80 41 39} box OVAL_FRAME color 52 selection_color 55
     class Fl_Arc_Dial
   }

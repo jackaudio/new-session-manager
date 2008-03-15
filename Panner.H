@@ -102,6 +102,8 @@ class Panner : public Fl_Widget
     int _ins,
         _outs;
 
+    bool _bypassed;
+
     vector <Point> _points;
 
     static int pw ( void ) { return 12; }
@@ -133,25 +135,37 @@ class Panner : public Fl_Widget
         RR   = 135,
     };
 
+
+protected:
+
+    virtual void draw ( void );
+    virtual int handle ( int );
+
 public:
 
 
     Panner ( int X, int Y, int W, int H, const char *L = 0 ) :
         Fl_Widget( X, Y, W, H, L )
         {
-            _ins = _outs = 4;
-            _points.push_back( Point( 1, FL ) );
-            _points.push_back( Point( 1, FR ) );
-            _points.push_back( Point( 1, RL ) );
-            _points.push_back( Point( 1, RR ) );
+            _bypassed = false;
 
-            _outs = 5;
+            _ins = 1;
+
+            _outs = 7;
+
+//            _ins = _outs = 4;
+
+            _points.push_back( Point( 1, FL ) );
+
+/*             _points.push_back( Point( 1, FR ) ); */
+/*             _points.push_back( Point( 1, RL ) ); */
+/*             _points.push_back( Point( 1, RR ) ); */
+
+
         }
 
     virtual ~Panner ( ) { }
 
-    virtual void draw ( void );
-    virtual int handle ( int );
-
+    float gain ( int ich, int och );
 
 };

@@ -34,9 +34,40 @@ public:
         Fl_Dial( X, Y, W, H, L )
         {
             box( FL_OVAL_BOX );
+//            step( 0.1f );
         }
 
 protected:
+
+    int handle ( int m )
+        {
+            /* Fl_Dial and friends should really handle mousewheel, but they don't in FTLK1 */
+
+            switch ( m )
+            {
+                case FL_MOUSEWHEEL:
+                {
+                    if ( this != Fl::belowmouse() )
+                        return 0;
+
+                    int d = Fl::event_dy();
+
+                    double v = increment( value(), d );
+
+                    if ( v < minimum() )
+                        v = minimum();
+                    else if ( v > maximum() )
+                        v = maximum();
+
+                    value( v );
+
+                    return 1;
+                }
+            }
+
+            return Fl_Dial::handle( m );
+        }
+
 
     virtual void
     draw ( void )

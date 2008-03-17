@@ -595,7 +595,7 @@ g->mode( g->mode() == MUTE ? PLAY : MUTE );
 
 o->value( g->mode() == MUTE );
 
-pattern_solo_button->value( 0 );} selected
+pattern_solo_button->value( 0 );}
               xywh {10 738 90 23} type Normal color 37
             }
             Fl_Light_Button pattern_solo_button {
@@ -1003,7 +1003,12 @@ You should have received a copy of the GNU General Public License along with thi
       }
       Fl_Button {} {
         label {http://non.tuxfamily.org}
-        callback {fl_open_uri( "http://non.tuxfamily.org" );}
+        callback {\#if ! ( FL_MAJOR_VERSION >= 1 && FL_MINOR_VERSION >= 1 && FL_PATCH_VERSION >= 8 )
+	// FIXME: got a better idea?
+	system( "x-www-browser http://non.tuxfamily.org &" );
+\#else
+	fl_open_uri( "http://non.tuxfamily.org" );
+\#endif} selected
         xywh {178 554 188 30} color 14 labeltype SHADOW_LABEL labelcolor 6
       }
       Fl_Return_Button {} {
@@ -1640,7 +1645,7 @@ return r;} {}
 } 
 
 widget_class Triggers {open
-  xywh {796 43 1278 1003} type Double resizable
+  xywh {429 76 1278 1003} type Double resizable
   code0 {populate();}
   code1 {\#include <Fl/Fl_Dial.H>}
   class Fl_Group visible

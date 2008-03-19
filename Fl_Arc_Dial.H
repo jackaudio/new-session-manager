@@ -37,6 +37,45 @@ public:
 //            step( 0.1f );
         }
 
+private:
+
+    /** This simple box is suitable for use with knob-type widgets. It
+     * comprises a border with shadow, and a cap with glare-lines akin
+     * to those seen on burnished aluminum knobs. */
+    static void
+    draw_burnished_oval_box ( int x, int y, int w, int h, Fl_Color c )
+        {
+            /* draw background */
+            fl_color( fl_darker( c ) );
+            fl_pie( x, y, w, h, 0, 360 );
+            fl_color( fl_darker( fl_darker( c ) ) );
+            fl_pie( x, y, w, h, 180 + 215, 180 + 45 );
+
+            /* shrink */
+            x += w / 8;
+            y += h / 8;
+            h -= h / 4;
+            w -= w / 4;
+
+            /* draw cap */
+            fl_color( c );
+            fl_pie( x, y, w, h, 0, 360 );
+
+            /* draw glare */
+
+            const int a1 = 10;
+            const int a2 = 90;
+
+            fl_color( fl_lighter( c ) );
+            fl_pie( x, y, w, h, a1, a2 );
+            fl_pie( x, y, w, h, 180 + a1, 180 + a2 );
+            fl_color( fl_lighter( fl_lighter( c ) ) );
+
+            const int d = (a2 - a1) / 2;
+            fl_pie( x, y, w, h, a1 + (d / 2), a2 - (d / 2) );
+            fl_pie( x, y, w, h, 180 + a1 + (d / 2), 180 + a2 - (d / 2) );
+        }
+
 protected:
 
     int handle ( int m )
@@ -87,7 +126,9 @@ protected:
 
             double angle = ( angle2() - angle1() ) * ( value() - minimum()) / ( maximum() - minimum() ) + angle1();
 
-            draw_box();
+//            draw_box();
+            draw_burnished_oval_box( x(), y(), w(), h(), color() );
+
             draw_label();
 
             fl_line_style( FL_SOLID, W / 6 );
@@ -97,9 +138,12 @@ protected:
             W -= W / 4;
             H -= H / 4;
 
-            fl_color( fl_color_average( FL_BLACK, selection_color(), 0.80f ) );
-
-            fl_arc( X, Y, W, H, 270 - angle1(), 270 - angle2() );
+            if ( box() == FL_NO_BOX )
+            {
+                /* draw backgrond arc */
+                fl_color( fl_color_average( FL_BLACK, selection_color(), 0.80f ) );
+                fl_arc( X, Y, W, H, 270 - angle1(), 270 - angle2() );
+            }
 
             fl_color( selection_color() );
 

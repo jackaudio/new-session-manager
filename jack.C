@@ -368,7 +368,10 @@ midi_init ( void )
 {
     MESSAGE( "Initializing Jack MIDI" );
 
-    if (( client = jack_client_new ( APP_NAME )) == 0 )
+/*     if (( client = jack_client_new ( APP_NAME )) == 0 ) */
+/*         return 0; */
+
+    if (( client = jack_client_open ( APP_NAME, (jack_options_t)0, NULL )) == 0 )
         return 0;
 
     /* create output ports */
@@ -406,9 +409,6 @@ midi_init ( void )
 //1    jack_set_buffer_size_callback( client, bufsize, 0 );
     jack_set_process_callback( client, process, 0 );
 
-    jack_activate( client );
-
-    sample_rate = jack_get_sample_rate( client );
 
 /*     /\* initialize buffer size *\/ */
 /*     transport_poll(); */
@@ -421,6 +421,16 @@ midi_init ( void )
     }
     else
         WARNING( "could not take over as timebase master" );
+
+    jack_activate( client );
+
+    sample_rate = jack_get_sample_rate( client );
+
+    /* FIXME: hack! we need to wait until jack finally calls our
+     * timebase and process callbacks in order to be able to test for
+     * valid transport info. */
+    MESSAGE( "Waiting for JACK..." );
+    usleep( 500000 );
 
     return 1;
 }

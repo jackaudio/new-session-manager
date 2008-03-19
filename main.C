@@ -164,6 +164,9 @@ main ( int argc, char **argv )
     if ( ! midi_init() )
         ASSERTION( "Could not initialize MIDI system! (is Jack running and with MIDI ports enabled?)" );
 
+    if ( ! transport.valid )
+        ASSERTION( "The version of JACK you are using does not appear to be capable of passing BBT positional information." );
+
     MESSAGE( "Initializing GUI" );
 
     init_colors();

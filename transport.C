@@ -33,7 +33,7 @@ extern jack_client_t *client;
 
 Transport transport;
 
-static bool _done;
+static volatile bool _done;
 
 /** callback for when we're Timebase Master, mostly taken from
  * transport.c in Jack's example clients. */
@@ -100,7 +100,9 @@ Transport::poll ( void )
     ts = jack_transport_query( client, &pos );
 
     rolling = ts == JackTransportRolling;
-    valid = pos.valid == JackPositionBBT;
+
+    valid = pos.valid & JackPositionBBT;
+
     bar = pos.bar;
     beat = pos.beat;
     tick = pos.tick;

@@ -165,7 +165,10 @@ main ( int argc, char **argv )
         ASSERTION( "Could not initialize MIDI system! (is Jack running and with MIDI ports enabled?)" );
 
     if ( ! transport.valid )
-        ASSERTION( "The version of JACK you are using does not appear to be capable of passing BBT positional information." );
+        if ( transport.master )
+            ASSERTION( "The version of JACK you are using does not appear to be capable of passing BBT positional information." );
+        else
+            ASSERTION( "Either the version of JACK you are using does pass BBT information, or the current timebase master does not provide it." );
 
     MESSAGE( "Initializing GUI" );
 

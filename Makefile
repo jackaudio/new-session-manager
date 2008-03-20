@@ -10,7 +10,7 @@ SYSTEM_PATH=$(prefix)/share/non-sequencer/
 DOCUMENT_PATH=$(prefix)/share/doc/non-sequencer/
 USE_LASH=1
 
-VERSION=1.9.0
+VERSION=1.9.1
 
 # Debugging
 CFLAGS:=-O0 -ggdb -fno-omit-frame-pointer -Wall

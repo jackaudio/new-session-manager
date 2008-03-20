@@ -14,6 +14,9 @@ decl {\#include "Fl_Scalepack.H"} {public global
 decl {\#include "Fl_Flip_Button.H"} {public global
 } 
 
+decl {\#include "Boxtypes.H"} {public global
+} 
+
 decl {\#include "Fl_Arc_Dial.H"} {public global
 } 
 
@@ -86,27 +89,28 @@ widget_class Mixer_Strip {open
     }
   }
   Fl_Box {} {
-    label Pan selected
+    label Pan
     xywh {6 693 110 90} box THIN_UP_BOX color 32 labelsize 11 align 1
     class Panner
   }
-  Fl_Progress {} {
-    xywh {8 789 110 21} labeltype NO_LABEL
-  }
   Fl_Dial {} {
     xywh {10 36 41 39} box OVAL_FRAME color 52 selection_color 55
+    code0 {o->box( FL_BURNISHED_OVAL_BOX );}
     class Fl_Arc_Dial
   }
   Fl_Dial {} {
-    xywh {10 80 41 39} box OVAL_FRAME color 52 selection_color 55
+    xywh {10 80 41 39} selection_color 55
+    code0 {o->box( FL_BURNISHED_OVAL_BOX );}
     class Fl_Arc_Dial
   }
   Fl_Dial {} {
     xywh {73 36 41 39} box OVAL_FRAME color 52 selection_color 55
+    code0 {o->box( FL_BURNISHED_OVAL_BOX );}
     class Fl_Arc_Dial
   }
-  Fl_Dial {} {
+  Fl_Dial {} {selected
     xywh {73 80 41 39} box OVAL_FRAME color 52 selection_color 55
+    code0 {o->box( FL_BURNISHED_OVAL_BOX );}
     class Fl_Arc_Dial
   }
 } 

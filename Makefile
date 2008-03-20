@@ -26,8 +26,8 @@ $(OBJS): Makefile
 test: $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@
 
-mixer: Mixer_Strip.o Mixer.o DPM.o Fl_Scalepack.o Panner.o
-	$(CXX) $(CXXFLAGS) $(LIBS) Mixer_Strip.o Mixer.o DPM.o Fl_Scalepack.o Panner.o -o $@
+mixer: Mixer_Strip.o Mixer.o DPM.o Fl_Scalepack.o Panner.o Boxtypes.o
+	$(CXX) $(CXXFLAGS) $(LIBS) Mixer_Strip.o Mixer.o DPM.o Fl_Scalepack.o Boxtypes.o Panner.o -o $@
 
 
 ESRCS=Audio_File.C Audio_File_SF.C Loggable.C

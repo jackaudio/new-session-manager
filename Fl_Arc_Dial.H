@@ -39,42 +39,6 @@ public:
 
 private:
 
-    /** This simple box is suitable for use with knob-type widgets. It
-     * comprises a border with shadow, and a cap with glare-lines akin
-     * to those seen on burnished aluminum knobs. */
-    static void
-    draw_burnished_oval_box ( int x, int y, int w, int h, Fl_Color c )
-        {
-            /* draw background */
-            fl_color( fl_darker( c ) );
-            fl_pie( x, y, w, h, 0, 360 );
-            fl_color( fl_darker( fl_darker( c ) ) );
-            fl_pie( x, y, w, h, 180 + 215, 180 + 45 );
-
-            /* shrink */
-            x += w / 8;
-            y += h / 8;
-            h -= h / 4;
-            w -= w / 4;
-
-            /* draw cap */
-            fl_color( c );
-            fl_pie( x, y, w, h, 0, 360 );
-
-            /* draw glare */
-
-            const int a1 = 10;
-            const int a2 = 90;
-
-            fl_color( fl_lighter( c ) );
-            fl_pie( x, y, w, h, a1, a2 );
-            fl_pie( x, y, w, h, 180 + a1, 180 + a2 );
-            fl_color( fl_lighter( fl_lighter( c ) ) );
-
-            const int d = (a2 - a1) / 2;
-            fl_pie( x, y, w, h, a1 + (d / 2), a2 - (d / 2) );
-            fl_pie( x, y, w, h, 180 + a1 + (d / 2), 180 + a2 - (d / 2) );
-        }
 
 protected:
 
@@ -116,8 +80,11 @@ protected:
             int W = w();
             int H = h();
 
-            if ( damage() & FL_DAMAGE_ALL )
-                draw_box( box(), X, Y, W, H, color() );
+/*            if ( damage() & FL_DAMAGE_ALL ) */
+            draw_box();
+//                draw_box( box(), X, Y, W, H, color() );
+
+//                draw_burnished_oval_box( x(), y(), w(), h(), color() );
 
             X += Fl::box_dx(box());
             Y += Fl::box_dy(box());
@@ -127,7 +94,6 @@ protected:
             double angle = ( angle2() - angle1() ) * ( value() - minimum()) / ( maximum() - minimum() ) + angle1();
 
 //            draw_box();
-            draw_burnished_oval_box( x(), y(), w(), h(), color() );
 
             draw_label();
 

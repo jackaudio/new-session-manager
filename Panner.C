@@ -223,19 +223,10 @@ Panner::draw ( void )
 }
 
 /* return the current gain setting for the path in/out  */
-float
-Panner::gain ( int ich, int och )
+Panner::Point
+Panner::point( int i )
 {
-    int a = _configs[ _outs ][ och ];
-
-//                    float g = 1.0f - drag->distance( Point( 1.0f, a ) ) / 2.0f;
-    float g = _points[ ich ].distance( Point( 1.0f, a ) ) / 2.0f;
-
-/*                     g = 1.0f / pow( g, 2 ); */
-
-/*                     g = 20.0f * log10f( g ); */
-
-    return g;
+    return _points[ i ];
 }
 
 int
@@ -269,30 +260,13 @@ Panner::handle ( int m )
             int tx, ty, tw, th;
             bbox( tx, ty, tw, th );
 
-            if ( _outs < 3 )
-                drag->angle( (float)(X / (tw / 2)) - 1.0f, 0.0f );
-            else
+/*             if ( _outs < 3 ) */
+/*                 drag->angle( (float)(X / (tw / 2)) - 1.0f, 0.0f ); */
+/*             else */
                 drag->angle( (float)(X / (tw / 2)) - 1.0f, (float)(Y / (th / 2)) - 1.0f );
 
-            /* calculate gains for all output channels */
-            {
-                for ( int i = _ins; i--; )
-                {
 
-                    int a = _configs[ _outs ][ i ];
-
-//                    float g = 1.0f - drag->distance( Point( 1.0f, a ) ) / 2.0f;
-                    float g = drag->distance( Point( 1.0f, a ) ) / 2.0f;
-
-/*                     g = 1.0f / pow( g, 2 ); */
-
-/*                     g = 20.0f * log10f( g ); */
-
-                    printf( "%d:%f ", i, g );
-                }
-
-                printf( "\n" );
-            }
+            printf( "%f %f\n", drag->a, drag->d );
 
             redraw();
 

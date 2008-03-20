@@ -151,7 +151,7 @@ public:
 
             _ins = 1;
 
-            _outs = 7;
+            _outs = 1;
 
 //            _ins = _outs = 4;
 
@@ -166,6 +166,6 @@ public:
 
     virtual ~Panner ( ) { }
 
-    float gain ( int ich, int och );
+    Panner::Point point ( int i );
 
 };

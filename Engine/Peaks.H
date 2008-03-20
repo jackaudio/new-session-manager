@@ -70,7 +70,6 @@ class Peaks
 
     const char *peakname ( const char *filename ) const;
 
-    Peak & peak ( nframes_t start, nframes_t end ) const;
 
     // Peaks ( );
 
@@ -109,6 +108,8 @@ public:
 
     bool current ( void ) const;
     bool make_peaks ( int chunksize );
+
+    Peak & peak ( nframes_t start, nframes_t end ) const;
 
     Peak & operator[] ( int X ) const;
 

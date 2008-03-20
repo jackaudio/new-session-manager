@@ -6,4 +6,5 @@ all: all
 
 %:
 	@ make -s -C FL CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" $@
+	@ make -s -C Timeline CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" $@
 	@ make -s -C Mixer CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" $@

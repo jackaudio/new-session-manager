@@ -18,7 +18,7 @@
 /*******************************************************************************/
 
 #include "Audio_File_SF.H"
-#include "Timeline.H"
+// #include "Timeline.H"
 
 #include <sndfile.h>
 
@@ -41,11 +41,11 @@ Audio_File_SF::from_file ( const char *filename )
         return NULL;
     }
 
-    if ( si.samplerate != timeline->sample_rate() )
-    {
-        printf( "error: samplerate mismatch!\n" );
-        goto invalid;
-    }
+/*     if ( si.samplerate != timeline->sample_rate() ) */
+/*     { */
+/*         printf( "error: samplerate mismatch!\n" ); */
+/*         goto invalid; */
+/*     } */
 
     c = new Audio_File_SF;
 

@@ -18,7 +18,8 @@
 /*******************************************************************************/
 
 #include "Peaks.H"
-#include "Timeline.H"
+
+// #include "Timeline.H"
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -177,7 +178,13 @@ Peaks::peak ( nframes_t start, nframes_t end ) const
 Peak &
 Peaks::operator[] ( int X ) const
 {
-    return peak( timeline->x_to_ts( X ), timeline->x_to_ts( X + 1 ) );
+
+    Peak p;
+    p.min = 0;
+    p.max = 0;
+    return  p;
+//    return peak( timeline->x_to_ts( X ), timeline->x_to_ts( X + 1 ) );
+
 }
 
 

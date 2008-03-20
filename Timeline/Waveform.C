@@ -64,7 +64,9 @@ Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chan
         j = start;
         for ( int x = X; x <= X + W; ++x, ++j )
         {
-            Peak p = (*pk)[ j ];
+//            Peak p = (*pk)[ j ];
+
+            Peak p = pk->peak( timeline->x_to_ts( j ), timeline->x_to_ts( j + 1 ) );
 
             p.max *= _scale;
             p.min *= _scale;
@@ -112,7 +114,8 @@ Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chan
         j = start;
         for ( int x = X; x <= X + W; ++x, ++j )
         {
-            Peak p = (*pk)[ j ];
+//            Peak p = (*pk)[ j ];
+            Peak p = pk->peak( timeline->x_to_ts( j ), timeline->x_to_ts( j + 1 ) );
 
             p.min *= _scale;
 
@@ -126,7 +129,8 @@ Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chan
         j = start;
         for ( int x = X; x <= X + W; ++x, ++j )
         {
-            Peak p = (*pk)[ j ];
+//            Peak p = (*pk)[ j ];
+            Peak p = pk->peak( timeline->x_to_ts( j ), timeline->x_to_ts( j + 1 ) );
 
             p.max *= _scale;
 

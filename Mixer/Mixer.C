@@ -33,7 +33,7 @@
 
 Fl_Single_Window *main_window;
 
-#include "Boxtypes.H"
+#include <FL/Boxtypes.H>
 
 int
 main ( int argc, char **arv )

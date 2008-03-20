@@ -8,16 +8,16 @@ decl {\#include "DPM.H"} {public global
 decl {\#include "Panner.H"} {public global
 } 
 
-decl {\#include "Fl_Scalepack.H"} {public global
+decl {\#include <FL/Fl_Scalepack.H>} {public global
 } 
 
-decl {\#include "Fl_Flip_Button.H"} {public global
+decl {\#include <FL/Fl_Flip_Button.H>} {public global
 } 
 
-decl {\#include "Boxtypes.H"} {public global
+decl {\#include <FL/Fl_Arc_Dial.H>} {public global
 } 
 
-decl {\#include "Fl_Arc_Dial.H"} {public global
+decl {\#include <FL/Boxtypes.H>} {selected public global
 } 
 
 widget_class Mixer_Strip {open
@@ -49,7 +49,7 @@ widget_class Mixer_Strip {open
     }
   }
   Fl_Button {} {
-    label {post/pre} selected
+    label {post/pre}
     xywh {61 183 45 22} type Toggle box ROUNDED_BOX color 106 selection_color 65 align 64
     class Fl_Flip_Button
   }

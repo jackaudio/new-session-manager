@@ -16,45 +16,31 @@
 /* with This program; see the file COPYING.  If not,write to the Free Software */
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
-
 #pragma once
-
-// class Track;
-
-// #include "Waveform.H"
 
 #include "Audio_File.H"
 #include "Track.H"
 #include "Timeline.H"
 
-#include <algorithm>
-using namespace std;
 /* Regions are "virtual" FLTK widgets; this is necessary because the
  * dimensions of real FLTK widgets are limited to 16-bits, which is
  * far too little for our purposes */
 
 #include "Track_Widget.H"
-
 #include "Loggable.H"
 
-/* got I hate C++ */
-#define __CLASS__ "Region"
+class Region;
 
-class Region : public Track_Widget
+/* Base for engine. Just to maintain state. Must be free of FLTK
+ * stuff */
+class Region_Base : public Track_Widget
 {
+
+private:
 
     Audio_File *_clip;                                          /* clip this region represents */
 
     float _scale;                                               /* amplitude adjustment */
-
-    static Fl_Boxtype _box;
-    static Fl_Color _selection_color;
-    static Fl_Color selection_color ( void ) { return _selection_color; }
-    static void selection_color ( Fl_Color v ) { _selection_color = v; }
-
-    enum trim_e { NO, LEFT, RIGHT };
-    void trim ( enum trim_e t, int X );
-    void init ( void );
 
 protected:
 
@@ -130,15 +116,55 @@ protected:
                     t->add( this );
                 }
 
-
                 free( s );
             }
 
             free( sa );
 
+#ifndef ENGINE
             if ( _track )
                 _track->redraw();
+#endif
         }
+
+public:
+
+    Region_Base ( )
+        {
+            _start = _offset = _end = 0;
+            _clip = NULL;
+            _scale = 1.0f;
+        }
+
+#ifdef ENGINE
+    /* for loggable */
+    static Loggable *
+    create ( char **sa )
+        {
+            Region_Base *r = new Region_Base;
+
+            r->set( sa );
+
+            return (Loggable *)r;
+        }
+#else
+    friend class Region;
+#endif
+
+};
+
+#ifndef ENGINE
+class Region : public Region_Base
+{
+
+    static Fl_Boxtype _box;
+    static Fl_Color _selection_color;
+    static Fl_Color selection_color ( void ) { return _selection_color; }
+    static void selection_color ( Fl_Color v ) { _selection_color = v; }
+
+    enum trim_e { NO, LEFT, RIGHT };
+    void trim ( enum trim_e t, int X );
+    void init ( void );
 
     Region ( )
         {
@@ -149,7 +175,6 @@ protected:
 
 public:
 
-    /* for loggable */
     static Loggable *
     create ( char **sa )
         {
@@ -159,7 +184,6 @@ public:
 
             return (Loggable *)r;
         }
-
 
     ~Region ( )
         {
@@ -183,5 +207,4 @@ public:
     void dump ( void );
 
 };
-
-#undef __CLASS__
+#endif

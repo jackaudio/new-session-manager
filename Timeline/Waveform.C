@@ -39,6 +39,8 @@ bool Waveform::logarithmic = true;
 /* TODO: split the variations into separate functions. eg, plain,
  * outlined, filled, polygonal, rectified. */
 
+/* TODO: this should be made completely independent of /timeline/ so that it can be used for other purposes (file previews) */
+
 /** draw a portion of /clip/'s waveform. coordinates are the portion to draw  */
 void
 Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int channel, float fpp, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )

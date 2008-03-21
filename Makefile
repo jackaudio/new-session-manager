@@ -5,6 +5,6 @@ LIBS := -lsndfile  `fltk-config --ldflags`
 all: all
 
 %:
-	@ make -s -C FL CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" $@
-	@ make -s -C Timeline CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" $@
-	@ make -s -C Mixer CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" $@
+	@ $(MAKE) -s -C FL CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" $@
+	@ $(MAKE) -s -C Timeline CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" $@
+	@ $(MAKE) -s -C Mixer CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" $@

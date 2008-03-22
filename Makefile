@@ -30,6 +30,8 @@ ifeq ($(USE_LASH),1)
 	CXXFLAGS+=-DUSE_LASH `pkg-config --cflags lash-1.0`
 endif
 
+# uncomment this line to print each playback event to the console (not RT safe)
+# CXXFLAGS+= -DDEBUG_EVENTS
 
 SRCS= \
      canvas.C \

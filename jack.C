@@ -150,7 +150,7 @@ midi_write_event ( int port, const midievent *e )
         return;
     }
 
-#ifndef NDEBUG
+#ifdef DEBUG_EVENTS
     e->pretty_print();
 #endif
 

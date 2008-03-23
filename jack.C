@@ -48,12 +48,18 @@ int sample_rate;
 
 const int MAX_PORT = 16;
 
+const int subticks_per_tick = 2048;
+
 /* timers for notes on all channels and ports. When a note is played,
  * the respective value in this array is set to the note duraction in
- * ticks. Decremented in each process cycle, when this value reaches
- * zero, a note off is generated--regardless of the state of the
- * transport */
-double notes_on[MAX_PORT][16][128];
+ * subticks (an arbitrary division of the tick used only for this
+ * purpose). Decremented in each process cycle, when this value
+ * reaches zero, a note off is generated--regardless of the state of
+ * the transport */
+int notes_on[MAX_PORT][16][128];
+
+/* number of notes currently playing on each port */
+int port_notes_on[MAX_PORT];
 
 typedef unsigned char byte_t;
 
@@ -114,11 +120,13 @@ midi_output_event ( int port, const midievent *e, tick_t duration )
 {
     if ( duration )
     {
-        if ( notes_on[ port ][ e->channel() ][ e->note() ] > transport.ticks_per_period )
+        if ( notes_on[ port ][ e->channel() ][ e->note() ] > transport.ticks_per_period * subticks_per_tick )
             WARNING( "duplicate note on?" );
         else
         {
-            notes_on[ port ][ e->channel() ][ e->note() ] = (duration + 0.0001f) + (e->timestamp());
+            notes_on[ port ][ e->channel() ][ e->note() ] = (duration + e->timestamp()) * subticks_per_tick;
+
+            ++port_notes_on[ port ];
 
             midi_output_event( port, e );
         }
@@ -168,7 +176,8 @@ midi_output_immediate_event ( int port, const midievent *e )
         if ( e->is_note_on() )
         {
             /* use timestamp as duration */
-            notes_on[ port ][ e->channel() ][ e->note() ] = e->timestamp();
+            notes_on[ port ][ e->channel() ][ e->note() ] = e->timestamp() * subticks_per_tick;
+            ++port_notes_on[ port ];
         }
 }
 
@@ -305,34 +314,41 @@ process ( jack_nframes_t nframes, void *arg )
 
 schedule:
 
-    for ( int i = MAX_PORT; i-- ; )
+    const int subticks_per_period = transport.ticks_per_period * subticks_per_tick;
+
+    for ( uint i = MAX_PORT; i-- ; )
     {
         /* reserve and clear buffers */
         output[ i ].buf = jack_port_get_buffer( output[ i ].port, nframes );
         jack_midi_clear_buffer( output[ i ].buf );
 
-        /* handle scheduled note offs */
-        for ( uint j = 16; j-- ; )
+        if ( port_notes_on[ i ] > 0 )
         {
-            register double *note = &notes_on[ i ][ j ][ 0 ];
+            /* handle scheduled note offs */
+            for ( uint j = 16; j-- ; )
+            {
+                register int *note = &notes_on[ i ][ j ][ 0 ];
 
-            for ( register uint k = 0; k < 128; note++, k++ )
-                if ( *note )
-                    if ( ( *note -= transport.ticks_per_period ) <= 0 )
-                    {
-                        static midievent e;
+                for ( register uint k = 0; k < 128; ++note, ++k )
+                    if ( *note )
+                        if ( ( *note -= subticks_per_period ) <= 0 )
+                        {
+                            static midievent e;
 
-                        e.status( midievent::NOTE_OFF );
-                        e.channel( j );
-                        e.note( k );
-                        e.note_velocity( 64 );
+                            e.status( midievent::NOTE_OFF );
+                            e.channel( j );
+                            e.note( k );
+                            e.note_velocity( 64 );
 
-                        e.timestamp( ((tick_t)transport.ticks_per_period) + *note );
+                            e.timestamp( (subticks_per_period + *note) / subticks_per_tick );
 
-                        *note = 0;
+                            *note = 0;
+                            --port_notes_on[ i ];
 
-                        midi_output_event( i, &e );
-                    }
+                            midi_output_event( i, &e );
+                        }
+            }
+
         }
 
         static midievent e;
@@ -402,9 +418,12 @@ midi_init ( void )
 
     /* clear notes */
     for ( int p = MAX_PORT; p--; )
+    {
+        port_notes_on[ p ] = 0;
         for ( int c = 16; c-- ; )
             for ( int n = 128; n-- ; )
                 notes_on[ p ][ c ][ n ] = 0;
+    }
 
 //1    jack_set_buffer_size_callback( client, bufsize, 0 );
     jack_set_process_callback( client, process, 0 );

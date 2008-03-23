@@ -72,7 +72,6 @@ void
 init_song ( void )
 {
     song.filename = NULL;
-    song.dirty( false );
 
     pattern_c->grid( NULL );
     phrase_c->grid( NULL );
@@ -81,6 +80,8 @@ init_song ( void )
     playlist->insert( 0, 1 );
     pattern_c->grid( new pattern );
     phrase_c->grid( new phrase );
+
+    song.dirty( false );
 }
 
 void

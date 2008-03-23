@@ -94,7 +94,9 @@ if ( transport.rolling )
 	if ( ui->tabs->value() == ui->phrase_tab )
 		ui->phrase_canvas_widget->draw_playhead();
 
-}} {}
+}
+
+ui->transport_state->do_callback();} {}
 } 
 
 class UI {open
@@ -955,8 +957,31 @@ else
           }
         }
       }
-      Fl_Output status {
-        xywh {0 776 869 25} box UP_BOX color 32 labeltype NO_LABEL textcolor 55
+      Fl_Group {} {open
+        xywh {-1 772 869 33}
+      } {
+        Fl_Output status {
+          xywh {-1 776 783 25} box UP_BOX color 32 labeltype NO_LABEL textcolor 55 resizable
+        }
+        Fl_Box transport_state {
+          label state
+          callback {const char *s = "INVALID";
+
+if ( transport.master )
+	s = "Master";
+else if ( transport.valid )
+	s = "Slave";
+
+if ( s != o->label() )
+{
+	o->label( s );
+	if ( ! strcmp( s, "INVALID" ) )
+		o->color( FL_RED );
+	else
+		o->color( FL_GREEN );
+}} selected
+          xywh {781 776 87 25} box UP_BOX
+        }
       }
     }
   }
@@ -1473,8 +1498,7 @@ _c->signal_draw.connect( sigc::mem_fun( this, &O_Canvas::draw_notes ) );
 _c->signal_resize.connect( sigc::mem_fun( this, &O_Canvas::clear ) );
 
 _c->signal_settings_change.connect( sigc::ptr_fun( &UI::update_canvas_widgets ) );
-_c->signal_settings_change.connect( sigc::mem_fun( song, &song_settings::set_dirty ) );} {selected
-    }
+_c->signal_settings_change.connect( sigc::mem_fun( song, &song_settings::set_dirty ) );} {}
   }
   Function {click_to_focus()} {open return_type bool
   } {
@@ -1647,10 +1671,10 @@ return r;} {}
 } 
 
 widget_class Triggers {open
-  xywh {397 42 1278 1003} type Double resizable
+  xywh {335 80 1278 1003} type Double hide resizable
   code0 {populate();}
   code1 {\#include <Fl/Fl_Dial.H>}
-  class Fl_Group visible
+  class Fl_Group
 } {
   Fl_Pack rows {open
     xywh {25 25 15 15}

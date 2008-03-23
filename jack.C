@@ -121,7 +121,7 @@ midi_output_event ( int port, const midievent *e, tick_t duration )
     if ( duration )
     {
         if ( notes_on[ port ][ e->channel() ][ e->note() ] > transport.ticks_per_period * subticks_per_tick )
-            WARNING( "duplicate note on?" );
+            DWARNING( "duplicate note on?" );
         else
         {
             notes_on[ port ][ e->channel() ][ e->note() ] = (duration + e->timestamp()) * subticks_per_tick;
@@ -227,7 +227,7 @@ process ( jack_nframes_t nframes, void *arg )
         goto schedule;
 
     if ( ph != onph )
-        WARNING( "dropped ticks" );
+        DWARNING( "dropped ticks" );
 
     onph = nph;
 
@@ -414,7 +414,7 @@ midi_init ( void )
     for ( int i = 32 * 16 * MAX_PORT; i-- ; )
         freelist.append( new event );
 
-    DEBUG( "allocated output buffer space for %lu events", freelist.size() );
+    DMESSAGE( "allocated output buffer space for %lu events", freelist.size() );
 
     /* clear notes */
     for ( int p = MAX_PORT; p--; )

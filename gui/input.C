@@ -241,7 +241,7 @@ canvas_input_callback ( O_Canvas *widget, Canvas *c, int m )
                     int note;
                     if ( ( note = c->is_row_name( x, y ) ) >= 0 )
                     {
-                        DEBUG( "click on row %d", note );
+                        DMESSAGE( "click on row %d", note );
                         Instrument *i = ((pattern *)c->grid())->mapping.instrument();
 
                         if ( i )

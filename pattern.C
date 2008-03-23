@@ -76,7 +76,7 @@ pattern::_add ( void )
 
 pattern::~pattern ( void )
 {
-    DEBUG( "deleting pattern %d", number() );
+    DMESSAGE( "deleting pattern %d", number() );
     signal_create_destroy();
 }
 
@@ -415,7 +415,7 @@ pattern::play ( tick_t start, tick_t end ) const
 
     if ( _index < end - start )
     {
-        DEBUG( "Triggered pattern %d at tick %lu (ls: %lu, le: %lu, o: %lu)", number(), start, _start, _end, offset  );
+        DMESSAGE( "Triggered pattern %d at tick %lu (ls: %lu, le: %lu, o: %lu)", number(), start, _start, _end, offset  );
 
         _cleared = false;
     }
@@ -473,7 +473,7 @@ try_again:
     offset += d->length;
     goto try_again;
 
-    DEBUG( "out of events, resetting to satisfy loop" );
+    DMESSAGE( "out of events, resetting to satisfy loop" );
 
 done: ;
 

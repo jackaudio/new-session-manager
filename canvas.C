@@ -102,7 +102,7 @@ Canvas::grid ( Grid *g )
     m.vp = &g->viewport;
 
     char *s = m.vp->dump();
-    DEBUG( "viewport: %s", s );
+    DMESSAGE( "viewport: %s", s );
     free( s );
 
     m.ruler_drawn = false;
@@ -130,7 +130,7 @@ Canvas::_update_row_mapping ( void )
     for ( int i = 128; i-- ; )
         m.rtn[i] = m.ntr[i] = -1;
 
-    DEBUG( "updating row mapping" );
+    DMESSAGE( "updating row mapping" );
 
     /* rebuild */
     int r = 0;
@@ -226,7 +226,7 @@ Canvas::resize_grid ( void )
             return;
     }
 
-    DEBUG( "resizing grid %dx%d", m.vp->w, m.vp->h );
+    DMESSAGE( "resizing grid %dx%d", m.vp->w, m.vp->h );
 
     if ( m.previous )
     {
@@ -509,7 +509,7 @@ Canvas::draw_playhead ( void )
 void
 Canvas::draw ( void )
 {
-    DEBUG( "drawing canvas" );
+    DMESSAGE( "drawing canvas" );
 
     draw_mapping();
     draw_ruler();
@@ -524,7 +524,7 @@ Canvas::draw ( void )
 void
 Canvas::redraw ( void )
 {
-    DEBUG( "redrawing canvas" );
+    DMESSAGE( "redrawing canvas" );
 
     if ( ! m.grid_drawn )
         draw();

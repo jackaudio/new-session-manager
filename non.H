@@ -105,12 +105,12 @@ struct song_settings
 
                 if ( b )
                 {
-                    MESSAGE( "song is now dirty" );
+                    DMESSAGE( "song is now dirty" );
                     signal_dirty();
                 }
                 else
                 {
-                    MESSAGE( "song is now clean" );
+                    DMESSAGE( "song is now clean" );
                     signal_clean();
                 }
             }

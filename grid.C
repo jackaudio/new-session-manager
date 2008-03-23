@@ -57,7 +57,7 @@ Grid::Grid ( void )
 
 Grid::~Grid ( void )
 {
-    DEBUG( "deleting grid" );
+    DMESSAGE( "deleting grid" );
 
     if ( _name )
         free( _name );
@@ -333,7 +333,7 @@ Grid::put ( int x, int y, tick_t l )
     if ( get( &d, x, y ) || get( &d, x + xl - 1, y ) )
         return;
 
-    DEBUG( "put %d,%d", x, y );
+    DMESSAGE( "put %d,%d", x, y );
 
     lock();
 
@@ -379,7 +379,7 @@ Grid::move ( int x, int y, int nx, int ny )
 
     if ( e )
     {
-        DEBUG( "moving note" );
+        DMESSAGE( "moving note" );
 
         event *on = e,
             *off = e->link();
@@ -410,7 +410,7 @@ Grid::adj_velocity ( int x, int y, int n )
 
     if ( e )
     {
-        DEBUG( "adjusting velocity" );
+        DMESSAGE( "adjusting velocity" );
 
         {
             int v = e->note_velocity();
@@ -438,7 +438,7 @@ Grid::adj_duration ( int x, int y, int l )
 
     if ( e )
     {
-        DEBUG( "adjusting duration" );
+        DMESSAGE( "adjusting duration" );
 
         {
             int v = ts_to_x( e->note_duration() );
@@ -781,7 +781,7 @@ Grid::resolution ( unsigned int n )
         ASSERTION( "bad resolution: %d", n );
 
     _ppqn = n / 4;
-    DEBUG( "%d setting resolution to %d", n, _ppqn );
+    DMESSAGE( "%d setting resolution to %d", n, _ppqn );
 
     signal_events_change();
 

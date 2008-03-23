@@ -1419,7 +1419,7 @@ return p;} {}
 
 if ( _c )
 {
-	DEBUG( "Resizing canvas." );
+	DMESSAGE( "Resizing canvas." );
 	_c->resize( 0 + 1, 0 + 1, w - 1, h - 1 );
 }
 

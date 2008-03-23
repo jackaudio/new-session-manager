@@ -188,7 +188,7 @@ Instrument::read ( const char *s )
         else
             m.velocity = velocity;
 
-        DEBUG( "name: \"%s\", note: %d, velocity: %d%%", m.name, note, m.velocity );
+        DMESSAGE( "name: \"%s\", note: %d, velocity: %d%%", m.name, note, m.velocity );
 
         _map[ note ] = m;
     }
@@ -222,7 +222,7 @@ Instrument::write ( const char *s ) const
         }
     }
 
-    DEBUG( "wrote %d lines to instrument file \"%s\"", n, pat );
+    DMESSAGE( "wrote %d lines to instrument file \"%s\"", n, pat );
 
     fclose( fp );
 

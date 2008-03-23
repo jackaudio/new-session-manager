@@ -48,7 +48,7 @@ int sample_rate;
 
 const int MAX_PORT = 16;
 
-const int subticks_per_tick = 2048;
+const int subticks_per_tick = 4096;
 
 /* timers for notes on all channels and ports. When a note is played,
  * the respective value in this array is set to the note duraction in
@@ -209,16 +209,16 @@ process ( jack_nframes_t nframes, void *arg )
     static tick_t onph = 0;
     static int old_play_mode = PATTERN;
 
-    ::nframes = nframes;
+    static int not_dropped = 0;
 
-    // init all port buffers (maybe we should only do this as needed)
-    /* loop over stuff */
+    ::nframes = nframes;
 
     transport.nframes = nframes;
     transport.poll();
 
-    tick_t ph = trunc( transport.ticks );
-    tick_t nph = trunc( transport.ticks + transport.ticks_per_period );
+    /* ph-nph is exclusive. It is important that in normal continuous playback each tick is covered exactly once! */
+    const tick_t ph = transport.ticks;
+    const tick_t nph = trunc( transport.ticks + transport.ticks_per_period );
 
     if ( ! transport.valid )
         goto schedule;
@@ -227,12 +227,20 @@ process ( jack_nframes_t nframes, void *arg )
         goto schedule;
 
     if ( ph != onph )
-        DWARNING( "dropped ticks" );
+    {
+        if ( onph > ph )
+            DWARNING( "duplicated %lu ticks (out of %d)", onph - ph, (int)(not_dropped * transport.ticks_per_period) );
+        else
+            DWARNING( "dropped %lu ticks (out of %d)", ph - onph, (int)(not_dropped * transport.ticks_per_period) );
+
+        not_dropped = 0;
+    }
+
+    ++not_dropped;
 
     onph = nph;
 
-//  MESSAGE( "tpp %f %f-%f", transport.ticks_per_period, ph, nph );
-//  MESSAGE( "tpp %f %lu-%lu", transport.ticks_per_period, ph, nph );
+//  DMESSAGE( "tpp %f %lu-%lu", transport.ticks_per_period, ph, nph );
 
     switch ( old_play_mode )
     {

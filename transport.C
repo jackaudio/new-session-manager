@@ -37,20 +37,26 @@ static volatile bool _done;
 
 /** callback for when we're Timebase Master, mostly taken from
  * transport.c in Jack's example clients. */
+/* FIXME: there is a subtle interaction here between the tempo and
+ * JACK's buffer size. Inflating ticks_per_beat (as jack_transport
+ * does) diminishes the effect of this correlation, but does not
+ * eliminate it... This is caused by the accumulation of a precision
+ * error, and all timebase master routines I've examined appear to
+ * suffer from this same tempo distortion (and all use the magic
+ * number of 1920 ticks_per_beat in an attempt to reduce the magnitude
+ * of the error. Currently, we keep this behaviour. */
 void
 Transport::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos, void *arg )
 {
-    pos->valid = JackPositionBBT;
-    pos->beats_per_bar = transport._master_beats_per_bar;
-    pos->ticks_per_beat = PPQN;
-
-    /* FIXME: WTF is this? Quarter note? */
-    pos->beat_type = transport._master_beat_type;
-
-    pos->beats_per_minute = transport._master_beats_per_minute;
 
     if ( new_pos || ! _done )
     {
+        pos->valid = JackPositionBBT;
+        pos->beats_per_bar = transport._master_beats_per_bar;
+        pos->ticks_per_beat = 1920.0;                           /* magic number means what? */
+        pos->beat_type = transport._master_beat_type;
+        pos->beats_per_minute = transport._master_beats_per_minute;
+
         double wallclock = (double)pos->frame / (pos->frame_rate * 60);
 
         unsigned long abs_tick = wallclock * pos->beats_per_minute * pos->ticks_per_beat;
@@ -66,17 +72,19 @@ Transport::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack
     }
     else
     {
-        // FIXME: use ticks_per_period here?
         pos->tick += nframes * pos->ticks_per_beat * pos->beats_per_minute / (pos->frame_rate * 60);
 
-        while (pos->tick >= pos->ticks_per_beat) {
+        while ( pos->tick >= pos->ticks_per_beat )
+        {
             pos->tick -= pos->ticks_per_beat;
-            if (++pos->beat > pos->beats_per_bar) {
+
+            if ( ++pos->beat > pos->beats_per_bar )
+            {
                 pos->beat = 1;
+
                 ++pos->bar;
-                pos->bar_start_tick +=
-                    pos->beats_per_bar
-                    * pos->ticks_per_beat;
+
+                pos->bar_start_tick += pos->beats_per_bar * pos->ticks_per_beat;
             }
         }
     }
@@ -132,17 +140,22 @@ Transport::poll ( void )
 
     /* FIXME: this only needs to be calculated if bpm or framerate changes  */
     {
-        double frames_per_beat = frame_rate * 60 / beats_per_minute;
+        const double frames_per_beat = frame_rate * 60 / beats_per_minute;
 
         frames_per_tick = frames_per_beat / (double)PPQN;
         ticks_per_period = nframes / frames_per_tick;
     }
 
     tick_t abs_tick = (pos.bar * pos.beats_per_bar + pos.beat) * pos.ticks_per_beat + pos.tick;
-    ticks = abs_tick * (PPQN / pos.ticks_per_beat);
-//    ticks = abs_tick / (pos.ticks_per_beat / PPQN);
+//    tick_t abs_tick = pos.bar_start_tick + (pos.beat * pos.ticks_per_beat) + pos.tick;
 
-    tick = tick * (PPQN / pos.ticks_per_beat);
+    /* scale Jack's ticks to our ticks */
+
+    const double pulses_per_tick = PPQN / pos.ticks_per_beat;
+
+    ticks = abs_tick * pulses_per_tick;
+    tick = tick * pulses_per_tick;
+
     ticks_per_beat = PPQN;
 }
 

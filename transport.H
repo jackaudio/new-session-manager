@@ -53,8 +53,8 @@ public:
     playhead_t ticks;
 
     unsigned beats_per_bar;
-    unsigned ticks_per_beat;
     unsigned beat_type;
+    double ticks_per_beat;
     double beats_per_minute;
 
     double ticks_per_period;

@@ -40,10 +40,15 @@
 
   The following libraries are required to build Non.
 
-* FLTK 1.1.x
+
+* FLTK >= 1.1.7 (with `fluid`)
 * JACK >= 0.103.0
 * sigc++ 2.0
 
   The following are optional:
 
 * LASH >= 0.5.4
+
+; Community
+
+  Feel free to drop by the `#non` channel on irc.freenode.net.

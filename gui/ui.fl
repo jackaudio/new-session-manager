@@ -1008,7 +1008,7 @@ You should have received a copy of the GNU General Public License along with thi
 	system( "x-www-browser http://non.tuxfamily.org &" );
 \#else
 	fl_open_uri( "http://non.tuxfamily.org" );
-\#endif} selected
+\#endif}
         xywh {178 554 188 30} color 14 labeltype SHADOW_LABEL labelcolor 6
       }
       Fl_Return_Button {} {
@@ -1472,7 +1472,9 @@ _c->resize( x(), y(), w(), h() );
 _c->signal_draw.connect( sigc::mem_fun( this, &O_Canvas::draw_notes ) );
 _c->signal_resize.connect( sigc::mem_fun( this, &O_Canvas::clear ) );
 
-_c->signal_settings_change.connect( sigc::ptr_fun( &UI::update_canvas_widgets ) );} {}
+_c->signal_settings_change.connect( sigc::ptr_fun( &UI::update_canvas_widgets ) );
+_c->signal_settings_change.connect( sigc::mem_fun( song, &song_settings::set_dirty ) );} {selected
+    }
   }
   Function {click_to_focus()} {open return_type bool
   } {
@@ -1645,7 +1647,7 @@ return r;} {}
 } 
 
 widget_class Triggers {open
-  xywh {429 76 1278 1003} type Double resizable
+  xywh {397 42 1278 1003} type Double resizable
   code0 {populate();}
   code1 {\#include <Fl/Fl_Dial.H>}
   class Fl_Group visible

@@ -104,10 +104,22 @@ struct song_settings
                 _dirty = b;
 
                 if ( b )
+                {
+                    MESSAGE( "song is now dirty" );
                     signal_dirty();
+                }
                 else
+                {
+                    MESSAGE( "song is now clean" );
                     signal_clean();
+                }
             }
+        }
+
+    void
+    set_dirty ( void )
+        {
+            dirty( true );
         }
 
     struct {

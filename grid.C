@@ -784,6 +784,8 @@ Grid::resolution ( unsigned int n )
     DEBUG( "%d setting resolution to %d", n, _ppqn );
 
     signal_events_change();
+
+    signal_settings_change();
 }
 
 int
@@ -804,6 +806,8 @@ Grid::name ( char *s )
     if ( _name ) free ( _name );
 
     _name = s;
+
+    signal_settings_change();
 }
 
 const char *
@@ -818,6 +822,8 @@ Grid::notes ( char *s )
     if ( _notes ) free ( _notes );
 
     _notes = s;
+
+    signal_settings_change();
 }
 
 char *

@@ -71,6 +71,8 @@ sequence::unlock ( void )
     _rd = _rw;
 
     _rw = NULL;
+
+    song.set_dirty();
 }
 
 void
@@ -426,6 +428,8 @@ sequence::name ( const char *s )
     if ( _name ) free( _name );
 
     _name = strdup( s );
+
+    song.set_dirty();
 }
 
 char *
@@ -440,4 +444,6 @@ sequence::notes ( const char *s )
     if ( _notes ) free( _notes );
 
     _notes = strdup( s );
+
+    song.set_dirty();
 }

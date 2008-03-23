@@ -85,7 +85,7 @@ void
 Canvas::handle_event_change ( void )
 {
     /* mark the song as dirty and pass the signal on */
-    song.dirty( true );
+    song.set_dirty();
 
     signal_draw();
 }
@@ -914,6 +914,8 @@ Canvas::h_zoom ( float n )
     m.vp->w = max( 32, min( (int)(m.vp->w * n), 256 ) );
 
     resize_grid();
+
+    song.set_dirty();
 }
 
 void
@@ -928,6 +930,9 @@ Canvas::v_zoom_fit ( void )
     m.vp->y = 0;
 
     resize_grid();
+
+    song.set_dirty();
+
 }
 
 /** adjust vertical zoom (* n) */
@@ -937,6 +942,8 @@ Canvas::v_zoom ( float n )
     m.vp->h = max( 1, min( (int)(m.vp->h * n), m.maxh ) );
 
     resize_grid();
+
+    song.set_dirty();
 }
 
 void

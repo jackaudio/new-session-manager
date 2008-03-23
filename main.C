@@ -113,6 +113,8 @@ load_song ( const char *name )
 
     song.filename = strdup( name );
 
+    song.dirty( false );
+
     return true;
 }
 
@@ -151,6 +153,8 @@ main ( int argc, char **argv )
     init_song();
 
     pattern::signal_create_destroy.connect( mem_fun( phrase_c,  &Canvas::v_zoom_fit ) );
+    pattern::signal_create_destroy.connect( mem_fun( song, &song_settings::set_dirty ) );
+    phrase::signal_create_destroy.connect( mem_fun( song, &song_settings::set_dirty ) );
 
     if ( ! lash.init( &argc, &argv ) )
         WARNING( "error initializing LASH" );
@@ -169,6 +173,8 @@ main ( int argc, char **argv )
             ASSERTION( "The version of JACK you are using does not appear to be capable of passing BBT positional information." );
         else
             ASSERTION( "Either the version of JACK you are using does pass BBT information, or the current timebase master does not provide it." );
+
+    song.dirty( false );
 
     MESSAGE( "Initializing GUI" );
 

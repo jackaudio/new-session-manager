@@ -6,9 +6,6 @@
 ; General
 
 * allow deletion and renumbering of individual patterns and phrases.
-* dirty the song more often than just on note manipulation. Pattern
-   names, playlist chances, viewport size adjustments--all need to
-   dirty the song.
 * add mode for disconnected operation. This is especially important
    for the situation where there is a timebase master when Non is
    started that exits before Non is closed, resulting in a lack of BBT

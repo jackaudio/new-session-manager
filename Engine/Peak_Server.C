@@ -25,24 +25,29 @@
 
 /* Peak Server
 
-   The peak server streams peak data to any timeline editors or other clients that ask for it.
+   The Peak Server streams peak data to any Timeline Editors or other
+   clients that ask for it.
 
-   Peak request looks like:
+   Peak request looks like (in ASCII)
 
    >  read_peaks "foo.wav" fpp start end
 
-   Response looks like (in binary floats):
+   Where "foo.wav" is the base name. (actual filenames may differ if
+   the channels of the source are 'broken out')
 
-   >  channels length min max min max min max
-               length ...
+   Response looks like (in binary)
 
+   >  (int)channels (int)length (float)min max min max min max
+   >                     length ...
+
+   Were length specifies the number of Peaks (min/max pairs). The
+   first channel is transmitted first, and any others follow.
   */
 
 #include "Audio_File.H"
 #include "Peaks.H"
 
 typedef unsigned long tick_t;
-
 
 #define PEAK_PORT 6100
 
@@ -68,9 +73,21 @@ Peak_Server::handle_request ( int s, const char *buf, int l )
     tick_t start, end;
 
     if ( 4 != sscanf( buf, "read_peaks \"%[^\"]\" %f %lu %lu", source, &fpp, &start, &end ) )
-      fprintf( stderr, "error: malformed peak request!\n" );
+    {
+      const char *err = "error: malformed request\n";
+      fprintf( stderr, err );
+      send( s, err, strlen( err ), 0 );
+      return;
+    }
 
     Audio_File *af = Audio_File::from_file( source );
+
+    if ( ! af )
+    {
+        const char *err = "error: could not open source\n";
+        send( s, err, strlen( err ), 0 );
+        return;
+    }
 
     int channels = af->channels();
 
@@ -87,5 +104,5 @@ Peak_Server::handle_request ( int s, const char *buf, int l )
         send( s, pk->peakbuf(), peaks * sizeof( Peak ), 0 );
     }
 
-    delete af;
+//    delete af;
 }

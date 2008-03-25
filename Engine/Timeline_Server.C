@@ -26,6 +26,8 @@
 #include "Timeline_Server.H"
 
 #include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
 
 /* Timeline Server.
 
@@ -65,7 +67,9 @@ Timeline_Server::handle_hang_up ( int s )
 }
 
 void
-Timeline_Server::handle_request ( const char *s, int l )
+Timeline_Server::handle_request ( int s, const char *buf, int l )
 {
-    printf( "request: %s", s );
+    printf( "request: %s", buf );
+
+    send( s, "fuckoff\n", strlen( "fuckoff\n" ), 0 );
 }

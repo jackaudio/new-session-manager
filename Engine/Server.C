@@ -31,6 +31,10 @@
 #include <sys/select.h>
 
 /* Generic TCP server class */
+
+/*  */
+
+
 #define MAX_HOST_NAME 512
 
 /** open a socket listening on TCP port /port/. Returns -1 in case of error. */
@@ -154,21 +158,23 @@ Server::run ( void )
                     }
                     else
                     {
-                        /* echo to others */
-                        for ( int j = maxfd; j-- ; )
-                        {
-                            if ( ! FD_ISSET( j, &master ) )
-                                continue;
 
-                            if ( j != server && j != i )
+                        if ( echos() )
+                            /* echo to others */
+                            for ( int j = maxfd; j-- ; )
                             {
-                                if ( send( j, buf, l, 0 ) < 0 )
-                                    perror( "send()" );
+                                if ( ! FD_ISSET( j, &master ) )
+                                    continue;
+
+                                if ( j != server && j != i )
+                                {
+                                    if ( send( j, buf, l, 0 ) < 0 )
+                                        perror( "send()" );
+                                }
                             }
-                        }
 
                         buf[ l ] = '\0';
-                        handle_request( buf, l );
+                        handle_request( i, buf, l );
                     }
                 }
             }

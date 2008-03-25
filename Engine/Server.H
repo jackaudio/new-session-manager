@@ -31,7 +31,9 @@ public:
 
 protected:
 
+    virtual bool echos ( void ) { return true; }
+
     virtual void handle_hang_up ( int s ) = 0;
     virtual void handle_new ( int s ) = 0;
-    virtual void handle_request ( const char *s, int l ) = 0;
+    virtual void handle_request ( int s, const char *s, int l ) = 0;
 };

@@ -28,7 +28,7 @@ protected:
 
     void handle_new ( int s );
     void handle_hang_up ( int s );
-    void handle_request ( const char *s, int l );
+    void handle_request ( int s, const char *s, int l );
 
 public:
 

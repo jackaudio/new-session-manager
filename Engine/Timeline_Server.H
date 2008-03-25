@@ -34,5 +34,7 @@ public:
 
     Timeline_Server ( int port ) : Server ( port )
         {
+            fork( false );
+            echo( true );
         }
 };

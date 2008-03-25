@@ -1,6 +1,7 @@
 
 SRCS= \
       Server.C \
+      Peak_Server.C \
       Timeline_Server.C \
       main.C \
       Audio_File.C \

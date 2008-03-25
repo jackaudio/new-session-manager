@@ -17,57 +17,24 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#pragma once
 
-#include "const.h"
-#include "Audio_File.H"
-#include "Peaks.H"
-#include "Loggable.H"
+#include "Server.H"
 
-
-
-#include "Timeline_Server.H"
-#include "Peak_Server.H"
-
-/* TODO:
-
-   Run server process here.
-
-   * Manage session file.
-   * Keep state for all relevant objects (must mirror that in Timeline)
-   * Listen for incoming connections.
-   * Send and recieve 'do' messages to client(s), recording do and undo portions to journal. Serve peaks (maybe in a separate process?)
-
-      Peak request looks like:
-
-     >  read_peaks "foo.wav" fpp start end
-
-      Response looks like (in binary floats):
-
-     >  length min max min max min max
-
-
-  State must be communicated to realtime thread locklessly so that:
-
-  Realtime:
-
-   * Manage JACK transport.
-   * Manage JACK outputs.
-   * Stream regions from disk.
-   * Manage JACK inputs.
-   * Stream tracks to disk when recording.
-   * Stream control points as OSC messages. (RT safe?)
-*/
-
-int
-main ( int argc, char **argv )
+class Peak_Server : public Server
 {
 
-/*     Timeline_Server tls( 6110 ); */
+protected:
 
-/*     tls.run(); */
+    void handle_new ( int s );
+    void handle_hang_up ( int s );
+    void handle_request ( int s, const char *s, int l );
 
+public:
 
-    Peak_Server pks( 6111 );
-
-    pks.run();
-}
+    Peak_Server ( int port ) : Server ( port )
+        {
+            fork( true );
+            echo( false );
+        }
+};

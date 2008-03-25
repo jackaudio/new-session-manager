@@ -17,10 +17,14 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#pragma once
+
 class Server
 {
 
     int _port;
+    bool _echo;
+    bool _fork;
 
     static int listen_on_port ( int port );
 
@@ -29,9 +33,13 @@ public:
     Server ( int port );
     void run ( void );
 
+    bool echo ( void ) { return _echo; }
+    bool fork ( void ) { return _fork; }
+    void echo ( bool b ) { _echo = b; }
+    void fork ( bool b) { _fork = b; }
+
 protected:
 
-    virtual bool echos ( void ) { return true; }
 
     virtual void handle_hang_up ( int s ) = 0;
     virtual void handle_new ( int s ) = 0;

@@ -83,6 +83,8 @@ Server::listen_on_port ( int port )
 Server::Server ( int port )
 {
     _port = port;
+    _echo = false;
+    _fork = false;
 }
 
 void
@@ -159,7 +161,7 @@ Server::run ( void )
                     else
                     {
 
-                        if ( echos() )
+                        if ( echo() )
                             /* echo to others */
                             for ( int j = maxfd; j-- ; )
                             {

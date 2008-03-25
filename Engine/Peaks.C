@@ -38,27 +38,33 @@
 
 #include <math.h>
 
-Peaks::peakbuffer Peaks::peakbuf;
+Peaks::peakbuffer Peaks::_peakbuf;
 
 
 /** Prepare a buffer of peaks from /s/ to /e/ for reading. Must be
  * called before any calls to operator[] */
-void
+int
 Peaks::fill_buffer ( float fpp, int s, int e ) const
 {
     _fpp = fpp;
 
-    if ( fpp < _peaks->chunksize )
+    /* FIXME: repair this */
+//    if ( fpp < _peaks->chunksize )
     {
         /* looks like we're going to have to switch to a higher resolution peak file
          or read directly from the source */
         read_peaks( s, e, (e - s) / fpp, fpp );
+
+        /* FIXME: are we *SURE* we got them all? */
+        return e - s;
     }
-    else
-    {
-        /* we'll just downsample on the fly in this case--no need for extra copying into
-         the buffer */
-    }
+
+/*     else */
+/*     { */
+/*         /\* we'll just downsample on the fly in this case--no need for extra copying into */
+/*          the buffer *\/ */
+/*     } */
+
 }
 
 
@@ -123,19 +129,19 @@ Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
 {
     printf( "reading peaks %d @ %d\n", npeaks, chunksize );
 
-    if ( peakbuf.size < npeaks )
+    if ( _peakbuf.size < npeaks )
     {
-        peakbuf.size = npeaks;
-//        printf( "reallocating peak buffer %li\n", peakbuf.size );
-        peakbuf.buf = (peakdata*)realloc( peakbuf.buf, sizeof( peakdata ) + (peakbuf.size * sizeof( Peak )) );
+        _peakbuf.size = npeaks;
+//        printf( "reallocating peak buffer %li\n", _peakbuf.size );
+        _peakbuf.buf = (peakdata*)realloc( _peakbuf.buf, sizeof( peakdata ) + (_peakbuf.size * sizeof( Peak )) );
     }
 
     _clip->open();
     _clip->seek( s );
 
-    peakbuf.offset = s;
-    peakbuf.buf->chunksize = chunksize;
-    peakbuf.len = clip_read_peaks( peakbuf.buf->data, npeaks, chunksize );
+    _peakbuf.offset = s;
+    _peakbuf.buf->chunksize = chunksize;
+    _peakbuf.len = clip_read_peaks( _peakbuf.buf->data, npeaks, chunksize );
 
     _clip->close();
 }
@@ -149,17 +155,17 @@ Peaks::peak ( nframes_t start, nframes_t end ) const
 
     if ( _fpp < _peaks->chunksize )
     {
-        assert( _fpp == peakbuf.buf->chunksize );
+        assert( _fpp == _peakbuf.buf->chunksize );
 
-        start = (start - peakbuf.offset) / peakbuf.buf->chunksize;
-        end = (end - peakbuf.offset) / peakbuf.buf->chunksize;
+        start = (start - _peakbuf.offset) / _peakbuf.buf->chunksize;
+        end = (end - _peakbuf.offset) / _peakbuf.buf->chunksize;
 
-        if ( end > peakbuf.len )
-            end = peakbuf.len;
+        if ( end > _peakbuf.len )
+            end = _peakbuf.len;
 
-//        assert( peakbuf.len > start );
+//        assert( _peakbuf.len > start );
 
-        downsample( peakbuf.buf->data, start, end, &p.max, &p.min );
+        downsample( _peakbuf.buf->data, start, end, &p.max, &p.min );
     }
     else
     {
@@ -175,17 +181,18 @@ Peaks::peak ( nframes_t start, nframes_t end ) const
 /* virtual array. Index is a Pixel value, and it returns the
  * (resampled) peaks for that pixel based on the current timeline
  * zoom. */
-Peak &
-Peaks::operator[] ( int X ) const
-{
 
-    Peak p;
-    p.min = 0;
-    p.max = 0;
-    return  p;
-//    return peak( timeline->x_to_ts( X ), timeline->x_to_ts( X + 1 ) );
+/* Peak & */
+/* Peaks::operator[] ( int X ) const */
+/* { */
 
-}
+/*     Peak p; */
+/*     p.min = 0; */
+/*     p.max = 0; */
+/*     return  p; */
+/* //    return peak( timeline->x_to_ts( X ), timeline->x_to_ts( X + 1 ) ); */
+
+/* } */
 
 
 const char *

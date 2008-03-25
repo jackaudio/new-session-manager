@@ -54,7 +54,7 @@ class Peaks
             }
     };
 
-    static peakbuffer peakbuf;
+    static peakbuffer _peakbuf;
 
     Audio_File *_clip;
     int _channel;
@@ -96,10 +96,11 @@ public:
             _channel = 0;
         }
 
+    Peak *peakbuf ( void ) const { return Peaks::_peakbuf.buf->data; }
     void clip ( Audio_File *c ) { _clip = c; }
     void channel ( int v ) { _channel = v; }
 
-    void fill_buffer ( float fpp, int s, int e ) const;
+    int fill_buffer ( float fpp, int s, int e ) const;
 
     void downsample ( Peak *peaks, int s, int e, float *mhi, float *mlo ) const;
     void read ( int X, float *hi, float *lo ) const;

@@ -460,7 +460,8 @@ Region::draw ( int X, int Y, int W, int H )
     Peak *pbuf;
 
     _clip->read_peaks( timeline->fpp(),
-                       _start + offset, min( (_end - _start) - offset, _end),
+//                       _start + offset, min( (_end - _start) - offset, _end),
+                       _start + offset, _start + offset + timeline->x_to_ts( W ),
                        &peaks, &pbuf, &channels );
 
     assert( pbuf );

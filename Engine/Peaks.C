@@ -48,6 +48,8 @@ Peaks::fill_buffer ( float fpp, int s, int e ) const
 {
     _fpp = fpp;
 
+    printf( "fill_buffer\n" );
+
     /* FIXME: repair this */
 //    if ( fpp < _peaks->chunksize )
     {

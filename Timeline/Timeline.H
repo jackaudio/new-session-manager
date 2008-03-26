@@ -27,7 +27,9 @@
 
 #include "Scalebar.H"
 
-#include "Audio_File.H" // just for nframes_t
+/* #include "Audio_File.H" // just for nframes_t */
+
+typedef unsigned long nframes_t;
 
 #include <math.h>
 #include <assert.h>

@@ -21,7 +21,6 @@
 
 #include "Track.H"
 #include "Loggable.H"
-#include "Audio_File.H"
 #include "Timeline.H"
 #include <list>
 #include <algorithm>

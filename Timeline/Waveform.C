@@ -24,7 +24,6 @@
 #include <FL/fl_draw.H>
 
 #include "Timeline.H"
-#include "Audio_File.H"
 
 #include "Waveform.H"
 
@@ -43,20 +42,17 @@ bool Waveform::logarithmic = true;
 
 /** draw a portion of /clip/'s waveform. coordinates are the portion to draw  */
 void
-Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int channel, float fpp, nframes_t _start, nframes_t _end, float _scale, Fl_Color color )
+Waveform::draw ( int ox, int X, int Y, int W, int H,
+                 Peak *pbuf, int peaks,
+                 Fl_Color color )
 {
     fl_push_clip( X, Y, W, H );
 
     int j;
 
-//    int start = timeline->ts_to_x( _start );
-    int start = timeline->ts_to_x( _start ) + (X - ox);
+//    int start = timeline->ts_to_x( _start ) + (X - ox);
 
-    const Peaks *pk = _clip->peaks( channel );
-
-    _start = timeline->x_to_ts( start );
-
-    pk->fill_buffer( fpp, _start,  _start + timeline->x_to_ts( W ) );
+    int start = 0;
 
     const int halfheight = H / 2;
     const int mid = Y + halfheight;
@@ -66,12 +62,7 @@ Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chan
         j = start;
         for ( int x = X; x <= X + W; ++x, ++j )
         {
-//            Peak p = (*pk)[ j ];
-
-            Peak p = pk->peak( timeline->x_to_ts( j ), timeline->x_to_ts( j + 1 ) );
-
-            p.max *= _scale;
-            p.min *= _scale;
+            const Peak p = pbuf[ j ];
 
             const float diff = fabs( p.max - p.min );
 
@@ -103,7 +94,6 @@ Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chan
         }
     }
 
-
     if ( Waveform::outline )
     {
 
@@ -116,10 +106,7 @@ Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chan
         j = start;
         for ( int x = X; x <= X + W; ++x, ++j )
         {
-//            Peak p = (*pk)[ j ];
-            Peak p = pk->peak( timeline->x_to_ts( j ), timeline->x_to_ts( j + 1 ) );
-
-            p.min *= _scale;
+            const Peak p = pbuf[ j ];
 
             fl_vertex( x, Y + (H / 2) + ((float)H / 2 *  p.min ));
         }
@@ -131,10 +118,7 @@ Waveform::draw ( int ox, int X, int Y, int W, int H, Audio_File *_clip, int chan
         j = start;
         for ( int x = X; x <= X + W; ++x, ++j )
         {
-//            Peak p = (*pk)[ j ];
-            Peak p = pk->peak( timeline->x_to_ts( j ), timeline->x_to_ts( j + 1 ) );
-
-            p.max *= _scale;
+            const Peak p = pbuf[ j ];
 
             fl_vertex( x, Y + (H / 2) + ((float)H / 2 * p.max ));
         }

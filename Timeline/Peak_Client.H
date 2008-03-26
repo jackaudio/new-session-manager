@@ -19,24 +19,22 @@
 
 #pragma once
 
-#include <FL/Fl_Widget.H>
-#include <FL/fl_draw.H>
+int connect_to_host ( const char *host, int port );
+typedef unsigned long nframes_t;
 
-#include "Timeline.H"
+struct Peak {
+    float min, max;
+};
 
-#include "Peak_Client.H"
+class Peak_Client
+{
 
-class Waveform {
+    int _socket;
 
 public:
 
-    static bool fill;
-    static bool outline;
-    static bool vary_color;
-    static bool logarithmic;
-
-    static void draw ( int ox, int X, int Y, int W, int H,
-                       Peak *pbuf, int peaks,
-                       Fl_Color color );
+    bool connect ( const char *host );
+    bool get_info ( const char *source, nframes_t *len, int *channels );
+    bool read_peaks ( const char *source, float fpp, nframes_t start, nframes_t end, int *peaks, Peak **pbuf, int *channels );
 
 };

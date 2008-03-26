@@ -8,9 +8,7 @@ SRCS= \
       Timeline.C \
       Track_Header.C \
       Track_Widget.C \
-      ../Engine/Audio_File.C \
-      ../Engine/Audio_File_SF.C \
-      ../Engine/Peaks.C \
+      Peak_Client.C \
       ../Engine/Loggable.C \
 
 OBJS=$(SRCS:.C=.o)

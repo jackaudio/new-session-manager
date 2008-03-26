@@ -34,6 +34,9 @@
 //using  std::algorithm;
 using namespace std;
 
+
+#include "Peak_Client.H"
+
 extern Timeline *timeline;
 
 Fl_Boxtype Region::_box = FL_UP_BOX;
@@ -107,7 +110,7 @@ Region::Region ( const Region & rhs )
 }
 
 /*  */
-Region::Region ( Audio_File *c )
+Region::Region ( Clip *c )
 {
     init();
     _clip = c;
@@ -118,7 +121,7 @@ Region::Region ( Audio_File *c )
 
 
 /* used when DND importing */
-Region::Region ( Audio_File *c, Track *t, nframes_t o )
+Region::Region ( Clip *c, Track *t, nframes_t o )
 {
     init();
     _clip = c;
@@ -451,17 +454,42 @@ Region::draw ( int X, int Y, int W, int H )
 
     fl_push_clip( rx, Y, rw, H );
 
-    /* dirty hack to keep the box from flipping to vertical at small sizes */
-//    fl_draw_box( box(), rx - 10, Y, rw + 50, H, _box_color );
+    /* get actual peak data */
+    int channels;
+    int peaks;
+    Peak *pbuf;
 
-
-//    fl_push_clip( x() + Fl::box_dx( box() ), y(), w() - Fl::box_dw( box() ), h() );
-
-    int ch = (h() - Fl::box_dh( box() ))  / _clip->channels();
-    for ( int i = _clip->channels(); i--; )
-        Waveform::draw( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch, _clip, i, timeline->fpp(),
+    _clip->read_peaks( timeline->fpp(),
                        _start + offset, min( (_end - _start) - offset, _end),
-                       _scale, selected() ? fl_invert_color( _color ) : _color );
+                       &peaks, &pbuf, &channels );
+
+    assert( pbuf );
+
+    int ch = (h() - Fl::box_dh( box() ))  / channels;
+
+    for ( int i = 0; i < channels; ++i )
+    {
+        Peak *pb = pbuf + (peaks * i);
+
+        /* scale it */
+        for ( int j = peaks; j--; )
+        {
+            pb[ j ].min *= _scale;
+            pb[ j ].max *= _scale;
+        }
+
+        Waveform::draw( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch,
+                        pb, peaks,
+                        selected() ? fl_invert_color( _color ) : _color );
+    }
+
+    delete pbuf;
+
+/*     for ( int i = _clip->channels(); i--; ) */
+/*         Waveform::draw( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, */
+/*                         ch, _clip, i, timeline->fpp(), */
+/*                        _start + offset, min( (_end - _start) - offset, _end), */
+/*                        _scale, selected() ? fl_invert_color( _color ) : _color ); */
 
 
     timeline->draw_measure_lines( rx, Y, rw, H, _box_color );
@@ -474,21 +502,14 @@ Region::draw ( int X, int Y, int W, int H )
 
     if ( current() )
     {
+        /* draw length bubble */
+
         char pat[40];
 
         snprintf( pat, sizeof( pat ), "%dm:%.1fs", (int)(length() / timeline->sample_rate()) / 60, (double)length() / timeline->sample_rate() );
 
         draw_label( pat, (Fl_Align)(FL_ALIGN_INSIDE | FL_ALIGN_CENTER), FL_GREEN );
     }
-
-/*     if ( _selected ) */
-/*     { */
-/*         fl_color( selection_color() ); */
-
-/*         fl_line_style( FL_SOLID, 4 ); */
-/*         fl_rect( x(), y(), w(), h() ); */
-/*         fl_line_style( FL_SOLID, 0 ); */
-/*     } */
 
     fl_pop_clip();
 
@@ -500,15 +521,7 @@ Region::normalize ( void )
 {
     printf( "normalize: start=%lu end=%lu\n", _start, _end );
 
-    /* FIXME: punt */
-    _scale = _clip->peaks( 0 )->normalization_factor( timeline->fpp(), _start, _end );
-}
+    /* FIXME: figure out a way to do this via the peak server */
+/*     _scale = _clip->peaks( 0 )->normalization_factor( timeline->fpp(), _start, _end );  */
 
-
-void
-Region::dump ( void )
-{
-//    printf( "Region %p %lu { \"%s\" %lu %lu }\n", this, _offset, _clip->name(),  _start, _end );
-    /* how about in STD?  */
-    printf( "Region\n\t%p\n\toffset\n\t\t%lu\n\tranage\n\t\t%lu\n\t\t%lu\n\tsource\n\t\t\"%s\"\n\n", this, _offset, _start, _end, _clip->name() );
 }

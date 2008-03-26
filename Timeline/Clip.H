@@ -19,24 +19,52 @@
 
 #pragma once
 
-#include <FL/Fl_Widget.H>
-#include <FL/fl_draw.H>
+typedef unsigned long nframes_t;
 
-#include "Timeline.H"
+/* a clip is just a stupid wrapper object for communicating with the peak server */
 
 #include "Peak_Client.H"
+extern Peak_Client peak_client;
 
-class Waveform {
+class Clip
+{
+    const char *_filename;
+    nframes_t _length;                                              /* length of file in samples */
+    int _channels;
 
 public:
 
-    static bool fill;
-    static bool outline;
-    static bool vary_color;
-    static bool logarithmic;
+    Clip ( )
+        {
+            _filename = NULL;
+            _length = _channels = 0;
+        }
 
-    static void draw ( int ox, int X, int Y, int W, int H,
-                       Peak *pbuf, int peaks,
-                       Fl_Color color );
+    const char *name ( void ) const { return _filename; }
+    nframes_t length ( void ) const  { return _length; }
+    int channels ( void ) const { return _channels; }
 
+    static Clip *
+    from_file ( const char * filename )
+        {
+
+            Clip *c = new Clip;
+
+            c->_filename = filename;
+
+            if ( ! peak_client.get_info( filename, &c->_length, &c->_channels ) )
+            {
+                delete c;
+                return false;
+            }
+
+            return c;
+        }
+
+    bool
+    read_peaks ( float fpp, nframes_t start, nframes_t end,
+                 int *peaks, Peak **pbuf, int *channels )
+        {
+            return peak_client.read_peaks( _filename, fpp, start, end, peaks, pbuf, channels );
+        }
 };

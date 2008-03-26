@@ -38,10 +38,11 @@
    Response looks like (in binary)
 
    >  (int)channels (int)length (float)min max min max min max
-   >                     length ...
+   >                            min max min max
 
-   Were length specifies the number of Peaks (min/max pairs). The
-   first channel is transmitted first, and any others follow.
+   Were length specifies the number of Peaks (min/max pairs) (for each
+   channel) The first channel is transmitted first, and any others
+   follow.
   */
 
 #include "Audio_File.H"
@@ -72,12 +73,22 @@ Peak_Server::handle_request ( int s, const char *buf, int l )
     float fpp;
     tick_t start, end;
 
-    if ( 4 != sscanf( buf, "read_peaks \"%[^\"]\" %f %lu %lu", source, &fpp, &start, &end ) )
+    enum { GET_INFO, READ_PEAKS } request;
+
+    if ( 1 == sscanf( buf, "get_info \"%[^\"]\"", source ) )
     {
-      const char *err = "error: malformed request\n";
-      fprintf( stderr, err );
-      send( s, err, strlen( err ), 0 );
-      return;
+        request = GET_INFO;
+    }
+    else if ( 4 == sscanf( buf, "read_peaks \"%[^\"]\" %f %lu %lu", source, &fpp, &start, &end ) )
+    {
+        request = READ_PEAKS;
+    }
+    else
+    {
+        const char *err = "error: malformed request\n";
+        fprintf( stderr, err );
+        send( s, err, strlen( err ), 0 );
+        return;
     }
 
     Audio_File *af = Audio_File::from_file( source );
@@ -89,19 +100,45 @@ Peak_Server::handle_request ( int s, const char *buf, int l )
         return;
     }
 
-    int channels = af->channels();
-
-    send( s, &channels, sizeof( int ), 0 );
-
-    for ( int i = 0; i < af->channels(); ++i )
+    switch ( request )
     {
-        const Peaks *pk = af->peaks( i );
+        case GET_INFO:
+        {
+            char buf[128];
 
-        int peaks = pk->fill_buffer( fpp, start, end );
+            snprintf( buf, sizeof( buf ), "length=%lu channels=%d\n", af->length(), af->channels() );
 
-        send( s, &peaks, sizeof( int ), 0 );
+            send( s, buf, strlen( buf ), 0 );
 
-        send( s, pk->peakbuf(), peaks * sizeof( Peak ), 0 );
+            break;
+        }
+        case READ_PEAKS:
+        {
+
+            int data[2];
+            int peaks;
+
+            data[0] = af->channels();
+            data[1] = peaks = (end - start) / fpp;
+
+            send( s, &data, sizeof( data ), 0 );
+
+            for ( int i = 0; i < af->channels(); ++i )
+            {
+                const Peaks *pk = af->peaks( i );
+
+                int npeaks = pk->fill_buffer( fpp, start, end );
+
+                if ( ! ( peaks == npeaks ) )
+                    printf( "wtf?! %d %d\n", peaks, npeaks );
+
+//                send( s, &peaks, sizeof( int ), 0 );
+
+                send( s, pk->peakbuf(), npeaks * sizeof( Peak ), 0 );
+            }
+
+            break;
+        }
     }
 
 //    delete af;

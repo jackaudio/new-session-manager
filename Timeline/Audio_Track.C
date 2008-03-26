@@ -88,12 +88,13 @@ Audio_Track::handle ( int m )
             fl_cursor( FL_CURSOR_WAIT );
             Fl::check();
 
-            Audio_File *c = Audio_File::from_file( file );
+            Clip *c = Clip::from_file( file );
 
             fl_cursor( FL_CURSOR_DEFAULT );
 
             if ( ! c )
             {
+                printf( "could not open file\n" );
                 free( file );
                 return 0;
             }
@@ -106,22 +107,4 @@ Audio_Track::handle ( int m )
         default:
             return Track::handle( m );
     }
-}
-
-
-
-void
-Audio_Track::dump ( void )
-{
-
-    printf( "1 \"%s\" {\n", /* name() */ "Track" );
-
-    sort();
-    for ( list <Track_Widget *>::const_iterator r = _widgets.begin(); r != _widgets.end(); r++ )
-    {
-        printf( "\t" );
-        ((Region*)(*r))->dump();
-    }
-
-    printf( "}\n" );
 }

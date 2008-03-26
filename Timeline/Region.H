@@ -18,7 +18,7 @@
 /*******************************************************************************/
 #pragma once
 
-#include "Audio_File.H"
+#include "Clip.H"
 #include "Track.H"
 #include "Timeline.H"
 
@@ -38,7 +38,7 @@ class Region_Base : public Track_Widget
 
 private:
 
-    Audio_File *_clip;                                          /* clip this region represents */
+    Clip *_clip;                                          /* clip this region represents */
 
     float _scale;                                               /* amplitude adjustment */
 
@@ -100,7 +100,7 @@ protected:
                     _scale = atof( v );
                 else if ( ! strcmp( s, ":source" ) )
                 {
-                    if ( ! ( _clip = Audio_File::from_file( v ) ) )
+                    if ( ! ( _clip = Clip::from_file( v ) ) )
                     {
                         printf( "Grave error: could not open source \"%s\"\n", v );
                     }
@@ -194,8 +194,8 @@ public:
     Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE); }
 
     Region ( const Region & rhs );
-    Region ( Audio_File *c );
-    Region ( Audio_File *c, Track *t, nframes_t o );
+    Region ( Clip *c );
+    Region ( Clip *c, Track *t, nframes_t o );
 
     int handle ( int m );
     void draw_box( int X, int Y, int W, int H );
@@ -203,8 +203,6 @@ public:
     void resize ( void );
 
     void normalize ( void );
-
-    void dump ( void );
 
 };
 #endif

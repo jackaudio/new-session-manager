@@ -56,7 +56,7 @@ Peaks::fill_buffer ( float fpp, int s, int e ) const
         read_peaks( s, e, (e - s) / fpp, fpp );
 
         /* FIXME: are we *SURE* we got them all? */
-        return e - s;
+        return (e - s) / fpp;
     }
 
 /*     else */

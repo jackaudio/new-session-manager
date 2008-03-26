@@ -123,19 +123,23 @@ Peak_Server::handle_request ( int s, const char *buf, int l )
 
             send( s, &data, sizeof( data ), 0 );
 
-            for ( int i = 0; i < af->channels(); ++i )
-            {
-                const Peaks *pk = af->peaks( i );
+            const Peaks *pk = af->peaks();
 
-                int npeaks = pk->fill_buffer( fpp, start, end );
+            int npeaks = pk->fill_buffer( fpp, start, end );
 
-                if ( ! ( peaks == npeaks ) )
-                    printf( "wtf?! %d %d\n", peaks, npeaks );
+            /* deinterlace and transmit */
+            int channels = af->channels();
 
-//                send( s, &peaks, sizeof( int ), 0 );
+            /* FIXME: really inefficient */
+            for ( int i = 0; i < channels; i++ )
+                for ( int j = i; j < npeaks * channels; j += channels )
+                    send( s, pk->peakbuf() + j, sizeof( Peak ), 0 );
 
-                send( s, pk->peakbuf(), npeaks * sizeof( Peak ), 0 );
-            }
+
+/*             for ( int i = 0; i < af->channels(); ++i ) */
+/*             { */
+/*                 send( s, pk->peakbuf(), npeaks * sizeof( Peak ), 0 ); */
+/*             } */
 
             break;
         }

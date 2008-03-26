@@ -54,7 +54,7 @@ public:
 
     static Audio_File *from_file ( const char *filename );
 
-    Peaks const * peaks ( int channel ) { return &_peaks[ channel ]; }
+    Peaks const * peaks ( ) { return _peaks; }
     const char *name ( void ) const { return _filename; }
     nframes_t length ( void ) const  { return _length; }
     int channels ( void ) const { return _channels; }

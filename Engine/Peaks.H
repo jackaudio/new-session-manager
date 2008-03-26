@@ -57,16 +57,14 @@ class Peaks
     static peakbuffer _peakbuf;
 
     Audio_File *_clip;
-    int _channel;
-
-    peakdata *_peaks;
 
     size_t _len;
 
     mutable float _fpp;
 
     void read_peaks ( int s, int e, int npeaks, int chunksize ) const;
-    int clip_read_peaks ( Peak *peaks, int npeaks, int chunksize ) const;
+    int read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const;
+    int read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const;
 
     const char *peakname ( const char *filename ) const;
 
@@ -77,28 +75,18 @@ public:
 
     Peaks ( )
         {
-           _peaks = new peakdata;
-
-            _peaks->chunksize = 0;
             _len = 0;
             _clip = NULL;
-            _channel = 0;
-
         }
 
     Peaks ( Audio_File *c )
         {
-            _peaks = new peakdata;
-
-            _peaks->chunksize = 0;
             _len = 0;
             _clip = c;
-            _channel = 0;
         }
 
     Peak *peakbuf ( void ) const { return Peaks::_peakbuf.buf->data; }
     void clip ( Audio_File *c ) { _clip = c; }
-    void channel ( int v ) { _channel = v; }
 
     int fill_buffer ( float fpp, int s, int e ) const;
 

@@ -91,22 +91,27 @@ Audio_File_SF::seek ( nframes_t offset )
     sf_seek( _in, offset, SEEK_SET );
 }
 
+/* if channels is -1, then all channels are read into buffer
+ (interleaved).  buf should be big enough to hold them all */
 nframes_t
 Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
 {
-    if ( _channels == 1 )
-        return sf_read_float ( _in, buf, len );
+    if ( _channels == 1 || channel == -1 )
+        return sf_readf_float( _in, buf, len );
+    else
+    {
+        sample_t *tmp = new sample_t[ len * _channels ];
 
-    sample_t *tmp = new sample_t[ len * _channels ];
+        nframes_t rlen = sf_readf_float( _in, tmp, len );
 
-    nframes_t rlen = sf_readf_float( _in, tmp, len );
+        /* extract the requested channel */
+        for ( int i = channel; i < rlen; i += _channels )
+            *(buf++) = tmp[ i ];
 
-    for ( int i = channel; i < rlen; i += _channels )
-        *(buf++) = tmp[ i ];
+        delete tmp;
 
-    delete tmp;
-
-    return rlen;
+        return rlen;
+    }
 }
 
 /** read samples from /start/ to /end/ into /buf/ */

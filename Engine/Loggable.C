@@ -47,8 +47,11 @@ Loggable::open ( const char *filename )
     return true;
 }
 
-/** sigh. parse a string of ":name value :name value" pairs into an array of strings, one per pair */
-// FIXME: doesn't handle the case of :name ":foo bar". Also, quotes should be removed here, not in client code.
+/** sigh. parse a string of ":name value :name value" pairs into an
+ * array of strings, one per pair */
+// FIXME: doesn't handle the case of :name ":foo bar", nested quotes
+// or other things it should. Also, quotes should be removed here, not
+// in client code.
 static
 char **
 parse_alist( const char *s )
@@ -108,68 +111,66 @@ void free_sa ( char **sa )
     free( sa );
 }
 
-/* void */
-/* Loggable::redo ( const char *s ) */
-/* { */
-/*     int id; */
-/*     sscanf( s, "%*s %X ", &id ); */
-/*     Loggable *l = find( id ); */
-/* //    assert( l ); */
+/** 'do' a message like "Region 0xF1 set :r 123" */
+bool
+Loggable::do_this ( const char *s, bool reverse )
+{
+    int id;
+    sscanf( s, "%*s %X ", &id );
+    Loggable *l = find( id );
+//    assert( l );
 
-/*     char classname[40]; */
-/*     char command[40]; */
-/*     char *arguments; */
+    char classname[40];
+    char command[40];
+    char *arguments;
 
-/*     sscanf( s, "%s %*X %s %*[^\n<] << %a[^\n]", classname, command, &arguments ); */
+    const char *create, *destroy;
 
+    if ( reverse )
+    {
+        sscanf( s, "%s %*X %s %*[^\n<] %a[^\n]", classname, command, &arguments );
+        create = "destroy";
+        destroy = "create";
+    }
+    else
+    {
+        sscanf( s, "%s %*X %s %a[^\n<]", classname, command, &arguments );
+        create = "create";
+        destroy = "destroy";
+    }
 
-/*     int ui = _undo_index; */
+    if ( ! strcmp( command, destroy ) )
+    {
+        int id = l->id();
+        delete l;
+        _loggables[ id ] = NULL;
+    }
+    else if ( ! strcmp( command, "set" ) )
+    {
+        printf( "got set command.\n" );
 
+        char **sa  = parse_alist( arguments );
 
-/*     if ( ! l ) */
-/*     { */
-/*         printf( "corrupt undo?\n" ); */
-/*         abort(); */
-/*     } */
+        l->log_start();
+        l->set( sa );
+        l->log_end();
+    }
+    else if ( ! strcmp( command, create ) )
+    {
+        char **sa = parse_alist( arguments );
 
+        if ( ! _class_map[ string( classname ) ] )
+            printf( "error class %s is unregistered!\n", classname );
+        else
+        {
+            /* create */
+            Loggable *l = _class_map[ string( classname ) ]( sa );
+            l->update_id( id );
+            l->log_create();
+        }
 
-
-/*     if ( ! strcmp( command, "destroy" ) ) */
-/*     { */
-/*         char **sa = parse_alist( arguments ); */
-
-/*         if ( ! _class_map[ string( classname ) ] ) */
-/*             printf( "error class %s is unregistered!\n", classname ); */
-/*         else */
-/*         { */
-/*             /\* create *\/ */
-/*             Loggable *l = _class_map[ string( classname ) ]( sa ); */
-/*             l->update_id( id ); */
-/*         } */
-/*     } */
-/*     else */
-/*         if ( ! strcmp( command, "set" ) ) */
-/*         { */
-
-/*             printf( "got set command.\n" ); */
-
-/*             char **sa  = parse_alist( arguments ); */
-
-/*             l->log_start(); */
-/*             l->set( sa ); */
-/*             l->log_end(); */
-
-/*         } */
-/*         else */
-/*             if ( ! strcmp( command, "create" ) ) */
-/*             { */
-/*                 int id = l->id(); */
-/*                 delete l; */
-/*                 _loggables[ id ] = NULL; */
-/*             } */
-
-
-/* } */
+    }
+}
 
 void
 Loggable::undo ( void )
@@ -210,15 +211,7 @@ Loggable::undo ( void )
         }
     s++;
 
-
     buf[ len ] = NULL;
-
-
-//    fsync( fileno( _fp ) );
-    /* pop the entry off the end */
-
-/*     fseek( _fp, 0 - i, SEEK_END ); */
-/*     ftruncate( fileno( _fp ), ftell( _fp ) ); */
 
     if ( ! strlen( s ) )
     {
@@ -268,58 +261,7 @@ Loggable::undo ( void )
 
         printf( "undoing \"%s\"\n", s );
 
-        int id;
-        sscanf( s, "%*s %X ", &id );
-        Loggable *l = find( id );
-//    assert( l );
-
-        char classname[40];
-        char command[40];
-        char *arguments;
-
-        sscanf( s, "%s %*X %s %*[^\n<] << %a[^\n]", classname, command, &arguments );
-
-
-/*     if ( ! l ) */
-/*     { */
-/*         printf( "corrupt undo?\n" ); */
-/*         abort(); */
-/*     } */
-
-        if ( ! strcmp( command, "destroy" ) )
-        {
-            char **sa = parse_alist( arguments );
-
-            if ( ! _class_map[ string( classname ) ] )
-                printf( "error class %s is unregistered!\n", classname );
-            else
-            {
-                /* create */
-                Loggable *l = _class_map[ string( classname ) ]( sa );
-                l->update_id( id );
-                l->log_create();
-            }
-        }
-        else
-            if ( ! strcmp( command, "set" ) )
-            {
-
-                printf( "got set command.\n" );
-
-                char **sa  = parse_alist( arguments );
-
-                l->log_start();
-                l->set( sa );
-                l->log_end();
-
-            }
-            else
-                if ( ! strcmp( command, "create" ) )
-                {
-                    int id = l->id();
-                    delete l;
-                    _loggables[ id ] = NULL;
-                }
+        do_this( s, true );
 
         s -= 2;
     }

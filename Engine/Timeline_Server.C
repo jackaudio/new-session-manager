@@ -31,7 +31,6 @@
 
 /* Timeline Server.
 
-
    The timeline server runs in its own thread and manages communication
    between the engine and any connected timeline editors.
 
@@ -70,6 +69,8 @@ void
 Timeline_Server::handle_request ( int s, const char *buf, int l )
 {
     printf( "request: %s", buf );
+
+    // Loggable::do( buf );
 
     send( s, "fuckoff\n", strlen( "fuckoff\n" ), 0 );
 }

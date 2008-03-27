@@ -156,6 +156,9 @@ public:
     virtual void set ( char **sa ) = 0;
 //    void log ( const char *module, const char *action, const char *fmt, ... );
 
+
+    static bool do_this ( const char *s, bool reverse );
+
 protected:
 
     void log_start ( void );

@@ -35,16 +35,16 @@ class Peaks
 
     struct peakdata {
 
-        int chunksize;                                               /* should always be a power of 2 */
+        int chunksize;             /* should always be a power of 2 */
         Peak data[];
 
     };
 
     struct peakbuffer {
 
-        size_t size;                                            /* total allocation size */
-        size_t len;                                             /* number of peaks  */
-        nframes_t offset;                                       /* starting sample */
+        size_t size;                       /* total allocation size */
+        size_t len;                             /* number of peaks  */
+        nframes_t offset;                        /* starting sample */
 
         peakdata *buf;
 

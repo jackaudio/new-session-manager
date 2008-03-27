@@ -62,12 +62,16 @@ int
 main ( int argc, char **argv )
 {
 
-/*     Timeline_Server tls( 6110 ); */
+    if ( ! fork() )
+    {
+        Peak_Server pks( 6111 );
 
-/*     tls.run(); */
+        pks.run();
+        exit( 0 );
+    }
 
+    Timeline_Server tls( 6110 );
 
-    Peak_Server pks( 6111 );
+    tls.run();
 
-    pks.run();
 }

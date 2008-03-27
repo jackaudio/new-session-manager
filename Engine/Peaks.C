@@ -147,16 +147,13 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
 }
 
 int
-Peaks::read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const
+Peaks::read_source_peaks ( Peak *peaks, int npeaks, int chunksize ) const
 {
     int channels = _clip->channels();
 
     sample_t *fbuf = new sample_t[ chunksize * channels ];
 
     size_t len;
-
-    _clip->open();
-    _clip->seek( s );
 
     int i;
     for ( i = 0; i < npeaks; ++i )
@@ -189,6 +186,17 @@ Peaks::read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize )
     }
 
     delete fbuf;
+
+    return i;
+}
+
+int
+Peaks::read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const
+{
+    _clip->open();
+    _clip->seek( s );
+
+    int i = read_source_peaks( peaks, npeaks, chunksize );
 
     _clip->close();
 
@@ -340,10 +348,8 @@ Peaks::make_peaks ( int chunksize )
     Peak peaks[ _clip->channels() ];
 
     size_t len;
-    nframes_t s = 0;
     do {
-        len = read_source_peaks( peaks, s, 1, chunksize );
-        s += len * chunksize;
+        len = read_source_peaks( peaks, 1, chunksize );
         fwrite( peaks, sizeof( peaks ), 1, fp );
     }
     while ( len );

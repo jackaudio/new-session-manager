@@ -127,19 +127,20 @@ Peak_Server::handle_request ( int s, const char *buf, int l )
 
             int npeaks = pk->fill_buffer( fpp, start, end );
 
-            /* deinterlace and transmit */
             int channels = af->channels();
 
-            /* FIXME: really inefficient */
+            Peak *pbuf = new Peak[ npeaks * channels ];
+
+            /* deinterlace */
+            int k = 0;
             for ( int i = 0; i < channels; i++ )
                 for ( int j = i; j < npeaks * channels; j += channels )
-                    send( s, pk->peakbuf() + j, sizeof( Peak ), 0 );
+                    pbuf[ k++ ] = pk->peakbuf()[ j ];
 
+            /* transmit */
+            send( s, pbuf, sizeof( Peak ) * npeaks * channels, 0 );
 
-/*             for ( int i = 0; i < af->channels(); ++i ) */
-/*             { */
-/*                 send( s, pk->peakbuf(), npeaks * sizeof( Peak ), 0 ); */
-/*             } */
+            delete pbuf;
 
             break;
         }

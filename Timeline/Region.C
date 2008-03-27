@@ -459,9 +459,10 @@ Region::draw ( int X, int Y, int W, int H )
     int peaks;
     Peak *pbuf;
 
+    const nframes_t start = _start + offset + timeline->x_to_ts( X - rx );
     _clip->read_peaks( timeline->fpp(),
-//                       _start + offset, min( (_end - _start) - offset, _end),
-                       _start + offset, _start + offset + timeline->x_to_ts( W ),
+                       start,
+                       start + timeline->x_to_ts( W ),
                        &peaks, &pbuf, &channels );
 
     assert( pbuf );
@@ -479,7 +480,7 @@ Region::draw ( int X, int Y, int W, int H )
             pb[ j ].max *= _scale;
         }
 
-        Waveform::draw( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch,
+        Waveform::draw( X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch,
                         pb, peaks,
                         selected() ? fl_invert_color( _color ) : _color );
     }

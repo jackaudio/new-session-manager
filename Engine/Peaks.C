@@ -48,25 +48,10 @@ Peaks::fill_buffer ( float fpp, int s, int e ) const
 {
     _fpp = fpp;
 
-    printf( "fill_buffer\n" );
+    read_peaks( s, e, (e - s) / fpp, fpp );
 
-    /* FIXME: repair this */
-//    if ( fpp < _peaks->chunksize )
-    {
-        /* looks like we're going to have to switch to a higher resolution peak file
-           or read directly from the source */
-        read_peaks( s, e, (e - s) / fpp, fpp );
-
-        /* FIXME: are we *SURE* we got them all? */
-        return (e - s) / fpp;
-    }
-
-/*     else */
-/*     { */
-/*         /\* we'll just downsample on the fly in this case--no need for extra copying into */
-/*          the buffer *\/ */
-/*     } */
-
+    /* FIXME: are we *SURE* we got them all? */
+    return (e - s) / fpp;
 }
 
 
@@ -94,53 +79,69 @@ Peaks::downsample ( Peak *peaks, int s, int e, float *mhi, float *mlo ) const
 int
 Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const
 {
-    int fd;
+    FILE *fp;
 
-    if ( ( fd = ::open( peakname( _clip->name() ), O_RDONLY ) ) < 0 )
+    if ( ! ( fp = fopen( peakname( _clip->name() ), "r" ) ) )
     {
         printf( "failed to open peak file!" );
         return 0;
     }
 
-    Peak *pbuf = new Peak[ chunksize ];
-
     /* get chunk size of peak file */
     int pfchunksize;
-    ::read( fd, &pfchunksize, sizeof( int ) );
+    fread( &pfchunksize, sizeof( int ), 1, fp );
+
+    int channels = _clip->channels();
+    const int ratio = chunksize / pfchunksize;
+
+    if ( ratio == 1 )
+    {
+        int len = fread( peaks, sizeof( Peak ) * channels, npeaks, fp );
+        fclose( fp );
+        return len;
+    }
+
+    Peak *pbuf = new Peak[ ratio * channels ];
 
     /* locate to start position */
-    lseek( fd, SEEK_CUR, s / pfchunksize );
+    fseek( fp, (s * channels / pfchunksize) * sizeof( Peak ), SEEK_CUR );
 
     size_t len;
+
 
     int i;
     for ( i = 0; i < npeaks; ++i )
     {
         /* read in a buffer */
-        len = ::read( fd, pbuf, chunksize );
+        len = fread( pbuf, sizeof( Peak ) * channels, ratio, fp );
 
-        Peak &p = peaks[ i ];
+        Peak *pk = peaks + (i * channels);
 
-//        downsample( pbuf,
+        /* get the peak for each channel */
+        for ( int j = 0; j < channels; ++j )
+        {
+            Peak &p = pk[ j ];
 
-        p.min = 0;
-        p.max = 0;
+            p.min = 0;
+            p.max = 0;
 
-/*         for ( int j = len; j--; ) */
-/*         { */
-/*             if ( fbuf[ j ] > p.max ) */
-/*                 p.max = fbuf[ j ]; */
-/*             if ( fbuf[ j ] < p.min ) */
-/*                 p.min = fbuf[ j ]; */
-/*         } */
+            for ( int k = j; k < len * channels; k += channels )
+            {
+                if ( pbuf[ k ].max > p.max )
+                    p.max = pbuf[ k ].max;
+                if ( pbuf[ k ].min < p.min )
+                    p.min = pbuf[ k ].min;
+            }
 
-        if ( len < chunksize )
+        }
+
+        if ( len < ratio )
             break;
     }
 
-/*     delete fbuf; */
+    delete pbuf;
 
-    _clip->close();
+    fclose( fp );
 
     return i;
 }
@@ -208,7 +209,13 @@ Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
 
     _peakbuf.offset = s;
     _peakbuf.buf->chunksize = chunksize;
-    _peakbuf.len = read_source_peaks( _peakbuf.buf->data, s, npeaks, chunksize );
+
+    /* FIXME: compart to (minimum) peakfile chunk size */
+    if ( chunksize < 256 )
+        _peakbuf.len = read_source_peaks( _peakbuf.buf->data, s, npeaks, chunksize );
+    else
+        _peakbuf.len = read_peakfile_peaks( _peakbuf.buf->data, s, npeaks, chunksize );
+
 }
 
 /** Return the peak for the range of samples */
@@ -336,7 +343,7 @@ Peaks::make_peaks ( int chunksize )
     nframes_t s = 0;
     do {
         len = read_source_peaks( peaks, s, 1, chunksize );
-        s += len;
+        s += len * chunksize;
         fwrite( peaks, sizeof( peaks ), 1, fp );
     }
     while ( len );

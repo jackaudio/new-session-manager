@@ -35,7 +35,7 @@ public:
     static bool vary_color;
     static bool logarithmic;
 
-    static void draw ( int ox, int X, int Y, int W, int H,
+    static void draw ( int X, int Y, int W, int H,
                        Peak *pbuf, int peaks,
                        Fl_Color color );
 

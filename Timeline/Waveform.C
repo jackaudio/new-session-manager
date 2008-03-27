@@ -42,7 +42,7 @@ bool Waveform::logarithmic = true;
 
 /** draw a portion of /clip/'s waveform. coordinates are the portion to draw  */
 void
-Waveform::draw ( int ox, int X, int Y, int W, int H,
+Waveform::draw (  int X, int Y, int W, int H,
                  Peak *pbuf, int peaks,
                  Fl_Color color )
 {

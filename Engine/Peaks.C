@@ -55,26 +55,26 @@ Peaks::fill_buffer ( float fpp, int s, int e ) const
 }
 
 
-inline void
-Peaks::downsample ( Peak *peaks, int s, int e, float *mhi, float *mlo ) const
-{
-    *mhi = 0;
-    *mlo = 0;
+/* inline void */
+/* Peaks::downsample ( Peak *peaks, int s, int e, float *mhi, float *mlo ) const */
+/* { */
+/*     *mhi = 0; */
+/*     *mlo = 0; */
 
-    if ( e > _len )
-        e = _len;
+/*     if ( e > _len ) */
+/*         e = _len; */
 
-    for ( int j = s; j < e; j++ )
-    {
-        const float lo = peaks[ j ].min;
-        const float hi = peaks[ j ].max;
+/*     for ( int j = s; j < e; j++ ) */
+/*     { */
+/*         const float lo = peaks[ j ].min; */
+/*         const float hi = peaks[ j ].max; */
 
-        if ( hi > *mhi )
-            *mhi = hi;
-        if ( lo < *mlo )
-            *mlo = lo;
-    }
-}
+/*         if ( hi > *mhi ) */
+/*             *mhi = hi; */
+/*         if ( lo < *mlo ) */
+/*             *mlo = lo; */
+/*     } */
+/* } */
 
 int
 Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const
@@ -227,39 +227,22 @@ Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
 }
 
 /** Return the peak for the range of samples */
-Peak &
-Peaks::peak ( nframes_t start, nframes_t end ) const
-{
-    /* Is there a better way to return this?  */
-    static Peak p;
-
-    start = (start - _peakbuf.offset) / _peakbuf.buf->chunksize;
-    end = (end - _peakbuf.offset) / _peakbuf.buf->chunksize;
-
-    if ( end > _peakbuf.len )
-        end = _peakbuf.len;
-
-    downsample( _peakbuf.buf->data, start, end, &p.max, &p.min );
-
-    return p;
-}
-
-/* virtual array. Index is a Pixel value, and it returns the
- * (resampled) peaks for that pixel based on the current timeline
- * zoom. */
-
 /* Peak & */
-/* Peaks::operator[] ( int X ) const */
+/* Peaks::peak ( nframes_t start, nframes_t end ) const */
 /* { */
+/*     /\* Is there a better way to return this?  *\/ */
+/*     static Peak p; */
 
-/*     Peak p; */
-/*     p.min = 0; */
-/*     p.max = 0; */
-/*     return  p; */
-/* //    return peak( timeline->x_to_ts( X ), timeline->x_to_ts( X + 1 ) ); */
+/*     start = (start - _peakbuf.offset) / _peakbuf.buf->chunksize; */
+/*     end = (end - _peakbuf.offset) / _peakbuf.buf->chunksize; */
 
+/*     if ( end > _peakbuf.len ) */
+/*         end = _peakbuf.len; */
+
+/*     downsample( _peakbuf.buf->data, start, end, &p.max, &p.min ); */
+
+/*     return p; */
 /* } */
-
 
 const char *
 Peaks::peakname ( const char *filename ) const
@@ -365,24 +348,24 @@ Peaks::make_peaks ( int chunksize )
 /** return normalization factor for range of samples from /start/ to
     /end/ (uses known peak data if possible */
 
-float
-Peaks::normalization_factor( float fpp, nframes_t start, nframes_t end ) const
-{
-    float s;
+/* float */
+/* Peaks::normalization_factor( float fpp, nframes_t start, nframes_t end ) const */
+/* { */
+/*     float s; */
 
-//    fill_buffer( fpp, start, end );
+/* //    fill_buffer( fpp, start, end ); */
 
-/*     if ( end - start < _peaks->chunksize * 4 ) */
-/*         fill_buffer( _clip->length() / 4, start, end ); */
-/*     else */
-/*         fill_buffer( _clip->length(), start, end ); */
+/* /\*     if ( end - start < _peaks->chunksize * 4 ) *\/ */
+/* /\*         fill_buffer( _clip->length() / 4, start, end ); *\/ */
+/* /\*     else *\/ */
+/* /\*         fill_buffer( _clip->length(), start, end ); *\/ */
 
-    Peak p = peak( start, end );
+/*     Peak p = peak( start, end ); */
 
-    s = 1.0f / fabs( p.max );
+/*     s = 1.0f / fabs( p.max ); */
 
-    if ( s * p.min < -1.0 )
-        s = 1.0f / fabs( p.min );
+/*     if ( s * p.min < -1.0 ) */
+/*         s = 1.0f / fabs( p.min ); */
 
-    return s;
-}
+/*     return s; */
+/* } */

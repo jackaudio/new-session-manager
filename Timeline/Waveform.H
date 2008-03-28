@@ -24,7 +24,7 @@
 
 #include "Timeline.H"
 
-#include "Peak_Client.H"
+#include "Peaks.H"
 
 class Waveform {
 

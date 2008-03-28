@@ -35,8 +35,6 @@
 using namespace std;
 
 
-#include "Peak_Client.H"
-
 extern Timeline *timeline;
 
 Fl_Boxtype Region::_box = FL_UP_BOX;
@@ -110,7 +108,7 @@ Region::Region ( const Region & rhs )
 }
 
 /*  */
-Region::Region ( Clip *c )
+Region::Region ( Audio_File *c )
 {
     init();
     _clip = c;
@@ -121,7 +119,7 @@ Region::Region ( Clip *c )
 
 
 /* used when DND importing */
-Region::Region ( Clip *c, Track *t, nframes_t o )
+Region::Region ( Audio_File *c, Track *t, nframes_t o )
 {
     init();
     _clip = c;

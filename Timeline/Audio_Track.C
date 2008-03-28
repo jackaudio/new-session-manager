@@ -88,7 +88,7 @@ Audio_Track::handle ( int m )
             fl_cursor( FL_CURSOR_WAIT );
             Fl::check();
 
-            Clip *c = Clip::from_file( file );
+            Audio_File *c = Audio_File::from_file( file );
 
             fl_cursor( FL_CURSOR_DEFAULT );
 

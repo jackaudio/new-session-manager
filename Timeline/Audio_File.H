@@ -19,22 +19,55 @@
 
 #pragma once
 
-int connect_to_host ( const char *host, int port );
+/* Base class for all audio file library interfaces */
+#include <stdlib.h>
+
 typedef unsigned long nframes_t;
+typedef float sample_t;
 
-struct Peak {
-    float min, max;
-};
+#include "Peaks.H"
 
-class Peak_Client
+#include <string>
+#include <map>
+using namespace std;
+
+class Audio_File
 {
+    static map <string, Audio_File*> _open_files;
 
-    int _socket;
+protected:
+
+
+    const char *_filename;
+    nframes_t _length;                                              /* length of file in samples */
+    int _channels;
+
+    Peaks *_peaks;
 
 public:
 
-    bool connect ( const char *host );
-    bool get_info ( const char *source, nframes_t *len, int *channels );
-    bool read_peaks ( const char *source, float fpp, nframes_t start, nframes_t end, int *peaks, Peak **pbuf, int *channels );
+    Audio_File ( )
+        {
+            _filename = NULL;
+            _length = _channels = 0;
+        }
+
+    static Audio_File *from_file ( const char *filename );
+
+    Peaks const * peaks ( ) { return _peaks; }
+    const char *name ( void ) const { return _filename; }
+    nframes_t length ( void ) const  { return _length; }
+    int channels ( void ) const { return _channels; }
+
+//    Peaks const * peaks ( void ) { return &_peaks; }
+
+    virtual bool open ( void ) = 0;
+    virtual void close ( void ) = 0;
+    virtual void seek ( nframes_t offset ) = 0;
+    virtual nframes_t read ( sample_t *buf, int channel, nframes_t len ) = 0;
+    virtual nframes_t read ( sample_t *buf, int channel, nframes_t start, nframes_t end ) = 0;
+
+    bool read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, Peak **pbuf, int *channels );
+
 
 };

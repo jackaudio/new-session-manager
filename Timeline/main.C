@@ -53,10 +53,6 @@
 
 Timeline *timeline;
 
-#include "Peak_Client.H"
-
-Peak_Client peak_client;
-
 void cb_undo ( Fl_Widget *w, void *v )
 {
     Loggable::undo();
@@ -73,12 +69,6 @@ main ( int argc, char **argv )
     Fl::scheme( "plastic" );
 //    Fl::scheme( "gtk+" );
 
-
-    if ( ! peak_client.connect( "localhost" ) )
-    {
-        fprintf( stderr, "Could not connect to peak server!\n" );
-        return 1;
-    }
 
     Loggable::open( "history" );
     /* welcome to C++ */

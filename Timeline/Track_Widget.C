@@ -17,10 +17,21 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* TODO:
+
+   What if we solve the continuous-modification/sync issue by making a
+   copy of the 'pushed' widget, and operating on that instead (hiding
+   the original), then when the widget is released, copy its data into
+   the original?
+
+ */
 #include "Track_Widget.H"
 
 list <Track_Widget *> Track_Widget::_selection;
-Track_Widget * Track_Widget::_current;
+Track_Widget * Track_Widget::_current = NULL;
+Track_Widget * Track_Widget::_pushed = NULL;
+Track_Widget * Track_Widget::_original = NULL;
+Track_Widget * Track_Widget::_belowmouse = NULL;
 
 void
 Track_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )

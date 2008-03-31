@@ -27,6 +27,12 @@ struct time_sig
     int beats_per_bar;
     int beat_type;
 
+    time_sig ( )
+        {
+            beats_per_bar = 0;
+            beat_type = 0;
+        }
+
     time_sig ( int bpb, int note )
         {
             beats_per_bar = bpb;
@@ -118,7 +124,6 @@ protected:
         }
 
 
-
 public:
 
     /* for loggable */
@@ -138,6 +143,17 @@ public:
             _make_label();
 
             log_create();
+        }
+
+    Time_Point ( const Time_Point &rhs )
+        {
+            _offset = rhs._offset;
+            _time = rhs._time;
+        }
+
+    Track_Widget *clone ( const Track_Widget *r )
+        {
+            return new Time_Point( *(Time_Point*)r );
         }
 
     ~Time_Point ( )

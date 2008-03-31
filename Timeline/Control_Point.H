@@ -124,6 +124,17 @@ public:
             log_create();
         }
 
+    Control_Point ( const Control_Point &rhs )
+        {
+            _offset = rhs._offset;
+            _y = rhs._y;
+        }
+
+    Track_Widget *clone ( const Track_Widget *r )
+        {
+            return new Control_Point( *(Control_Point*)r );
+        }
+
     ~Control_Point ( )
         {
 //            if ( _label ) delete[] _label;

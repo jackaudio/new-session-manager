@@ -171,7 +171,7 @@ class Region : public Region_Base
             init();
         }
 
-    bool current ( void ) const { return this == Track::belowmouse(); }
+    bool current ( void ) const { return this == belowmouse(); }
 
 public:
 
@@ -184,6 +184,9 @@ public:
 
             return (Loggable *)r;
         }
+
+
+    Track_Widget *clone ( const Track_Widget *r );
 
     ~Region ( )
         {

@@ -123,6 +123,17 @@ public:
             log_create();
         }
 
+    Tempo_Point ( const Tempo_Point &rhs )
+        {
+            _offset = rhs._offset;
+            _tempo = rhs._tempo;
+        }
+
+    Track_Widget *clone ( const Track_Widget *r )
+        {
+            return new Tempo_Point( *(Tempo_Point*)r );
+        }
+
     ~Tempo_Point ( )
         {
             if ( _label ) delete[] _label;

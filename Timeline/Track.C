@@ -26,8 +26,6 @@
 
 
 queue <Track_Widget *> Track::_delete_queue;
-Track_Widget *Track::_pushed = NULL;
-Track_Widget *Track::_belowmouse = NULL;
 
 Track::Track ( int X, int Y, int W, int H ) : Fl_Widget( X, Y, W, H )
 {
@@ -87,11 +85,11 @@ Track::draw ( void )
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
 
-    if ( pushed() && pushed()->track() == this )
+    if ( Track_Widget::pushed() && Track_Widget::pushed()->track() == this )
     {
-        /* make sure the pushed widget is above all others */
-        remove( pushed() );
-        add( pushed() );
+        /* make sure the Track_Widget::pushed widget is above all others */
+        remove( Track_Widget::pushed() );
+        add( Track_Widget::pushed() );
     }
 
     int xfades = 0;
@@ -338,9 +336,9 @@ Track::handle ( int m )
     {
         case FL_DND_ENTER:
             printf( "enter\n" );
-            if ( pushed() && pushed()->track()->class_name() == class_name() )
+            if ( Track_Widget::pushed() && Track_Widget::pushed()->track()->class_name() == class_name() )
             {
-                add( pushed() );
+                add( Track_Widget::pushed() );
                 redraw();
             }
         case FL_DND_LEAVE:
@@ -349,11 +347,11 @@ Track::handle ( int m )
         {
             Track_Widget *r = event_widget();
 
-            if ( r != belowmouse() )
+            if ( r != Track_Widget::belowmouse() )
             {
-                if ( belowmouse() )
-                    belowmouse()->handle( FL_LEAVE );
-                _belowmouse = r;
+                if ( Track_Widget::belowmouse() )
+                    Track_Widget::belowmouse()->handle( FL_LEAVE );
+                Track_Widget::belowmouse( r );
 
                 if ( r )
                     r->handle( FL_ENTER );
@@ -363,17 +361,24 @@ Track::handle ( int m )
         }
         default:
         {
-            Track_Widget *r = pushed() ? pushed() : event_widget();
+            Track_Widget *r = Track_Widget::pushed() ? Track_Widget::pushed() : event_widget();
 
             if ( r )
             {
                 int retval = r->dispatch( m );
 
                 if ( retval && m == FL_PUSH )
-                    _pushed = r;
+                {
+                    Track_Widget::original( r );
+                    Track_Widget::pushed( r->clone( r ) );
+                }
 
                 if ( retval && m == FL_RELEASE )
-                    _pushed = NULL;
+                {
+                    /* FIXME: copy here */
+                    Track_Widget::pushed( NULL );
+                    Track_Widget::original( NULL );
+                }
 
                 Loggable::block_start();
 
@@ -384,12 +389,12 @@ Track::handle ( int m )
                     _delete_queue.pop();
 
 
-                    if ( pushed() == t )
-                        _pushed = NULL;
-                    if ( belowmouse() == t )
+                    if ( Track_Widget::pushed() == t )
+                        Track_Widget::pushed( NULL );
+                    if ( Track_Widget::belowmouse() == t )
                     {
-                        belowmouse()->handle( FL_LEAVE );
-                        _belowmouse = NULL;
+                        Track_Widget::belowmouse()->handle( FL_LEAVE );
+                        Track_Widget::belowmouse( NULL );
                     }
 
                     delete t;

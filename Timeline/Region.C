@@ -107,6 +107,12 @@ Region::Region ( const Region & rhs )
     log_create();
 }
 
+Track_Widget *
+Region::clone ( const Track_Widget *r )
+{
+    return new Region( *(Region*)r );
+}
+
 /*  */
 Region::Region ( Audio_File *c )
 {

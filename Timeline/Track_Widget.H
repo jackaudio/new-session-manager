@@ -41,7 +41,14 @@ class Track_Widget : public Loggable
 {
 
     static list <Track_Widget *> _selection;                    /* all the widgets making up the selection */
+
+    /* FIXME: is this not the same as /pushed/? */
     static Track_Widget * _current;                             /* the widget initiating events that affect the selection */
+
+    /* these are actually managed in the Track classes */
+    static Track_Widget * _pushed;                              /* the widget receiving drag events (a copy) */
+    static Track_Widget * _original;                            /* the original of the /pushed/ widget */
+    static Track_Widget * _belowmouse;                          /* the widget below the mouse cursor */
 
 protected:
 
@@ -77,6 +84,15 @@ public:
             _selection.remove( this );
         }
 
+
+    Track_Widget ( const Track_Widget &rhs )
+        {
+            _offset = rhs._offset;
+            _track = rhs._track;
+        }
+
+    virtual Track_Widget *clone ( const Track_Widget *r ) = 0;
+
     bool selected ( void )
         {
             return ::find( _selection.begin(), _selection.end(), this ) != _selection.end();
@@ -107,7 +123,17 @@ public:
                 delete _selection.front();
         }
 
-    static Track_Widget *current ( void ) { return _current; }
+    static Track_Widget *current    ( void ) { return Track_Widget::_current; }
+
+    static Track_Widget *pushed     ( void ) { return Track_Widget::_pushed; }
+    static Track_Widget *original   ( void ) { return Track_Widget::_original; }
+    static Track_Widget *belowmouse ( void ) { return Track_Widget::_belowmouse; }
+
+    static void pushed     ( Track_Widget *w ) { Track_Widget::_pushed     = w; }
+    static void original   ( Track_Widget *w ) { Track_Widget::_original   = w; }
+    static void belowmouse ( Track_Widget *w ) { Track_Widget::_belowmouse = w; }
+
+//    static void pushed ( Track_Widget *w ) { Track_Widget::_pushed = w; }
 
     void
     offset ( nframes_t where )

@@ -55,9 +55,9 @@ protected:
 
             asprintf( &sa[ i++ ], ":source \"%s\"", _clip ? _clip->name() : "" );
             asprintf( &sa[ i++ ], ":track 0x%X", _track ? _track->id() : 0 );
-            asprintf( &sa[ i++ ], ":x %lu", _offset );
-            asprintf( &sa[ i++ ], ":l %lu", _start );
-            asprintf( &sa[ i++ ], ":r %lu", _end );
+            asprintf( &sa[ i++ ], ":x %lu", _r->offset );
+            asprintf( &sa[ i++ ], ":l %lu", _r->start );
+            asprintf( &sa[ i++ ], ":r %lu", _r->end );
             asprintf( &sa[ i++ ], ":selected %d", selected() );
             asprintf( &sa[ i++ ], ":gain %f", _scale );
 
@@ -84,11 +84,11 @@ protected:
                 }
 
                 if ( ! strcmp( s, ":x" ) )
-                    _offset = atol( v );
+                    _r->offset = atol( v );
                 else if ( ! strcmp( s, ":l" ) )
-                    _start = atol( v );
+                    _r->start = atol( v );
                 else if ( ! strcmp( s, ":r" ) )
-                    _end = atol( v );
+                    _r->end = atol( v );
                 else if ( ! strcmp( s, ":selected" ) )
                 {
                     if ( atoi( v ) )
@@ -131,7 +131,6 @@ public:
 
     Region_Base ( )
         {
-            _start = _offset = _end = 0;
             _clip = NULL;
             _scale = 1.0f;
         }

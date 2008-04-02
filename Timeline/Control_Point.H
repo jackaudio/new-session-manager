@@ -44,7 +44,7 @@ protected:
 
             int i = 0;
 
-            asprintf( &sa[i++], ":x %lu", _offset );
+            asprintf( &sa[i++], ":x %lu", _r->offset );
             asprintf( &sa[i++], ":y %.2f", _y );
             asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
 
@@ -65,7 +65,7 @@ protected:
                 char *v = s + strlen( s ) + 1;
 
                 if ( ! strcmp( s, ":x" ) )
-                    _offset = atol( v );
+                    _r->offset = atol( v );
                 else
                     if ( ! strcmp( s, ":y" ) )
                         _y = atof( v );
@@ -117,7 +117,7 @@ public:
         {
             _track = t;
             _y = y;
-            _offset = when;
+            _r->offset = when;
 
 //            _make_label();
 
@@ -126,7 +126,7 @@ public:
 
     Control_Point ( const Control_Point &rhs )
         {
-            _offset = rhs._offset;
+            _r->offset = rhs._r->offset;
             _y = rhs._y;
         }
 

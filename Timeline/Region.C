@@ -81,9 +81,9 @@ Region::init ( void )
 {
 
     _track = NULL;
-    _offset = 0;
-    _start = 0;
-    _end = 0;
+    _r->offset = 0;
+    _r->start = 0;
+    _r->end = 0;
     _scale = 1.0f;
     _clip = NULL;
 
@@ -94,12 +94,12 @@ Region::init ( void )
 /* copy constructor */
 Region::Region ( const Region & rhs )
 {
-    _offset    = rhs._offset;
+    _r->offset    = rhs._r->offset;
     _track     = rhs._track;
 //    _track     = NULL;
     _clip      = rhs._clip;
-    _start     = rhs._start;
-    _end       = rhs._end;
+    _r->start     = rhs._r->start;
+    _r->end       = rhs._r->end;
     _scale     = rhs._scale;
     _box_color = rhs._box_color;
     _color     = rhs._color;
@@ -118,7 +118,7 @@ Region::Region ( Audio_File *c )
 {
     init();
     _clip = c;
-    _end = _clip->length();
+    _r->end = _clip->length();
 
     log_create();
 }
@@ -129,9 +129,9 @@ Region::Region ( Audio_File *c, Track *t, nframes_t o )
 {
     init();
     _clip = c;
-    _end = _clip->length();
+    _r->end = _clip->length();
     _track = t;
-    _offset = o;
+    _r->offset = o;
 
     _track->add( this );
 
@@ -175,14 +175,14 @@ Region::trim ( enum trim_e t, int X )
 
             long td = timeline->x_to_ts( d );
 
-            if ( td < 0 && _start < 0 - td )
-                td = 0 - _start;
+            if ( td < 0 && _r->start < 0 - td )
+                td = 0 - _r->start;
 
-            if ( _start + td >= _end )
-                td = (_end - _start) - timeline->x_to_ts( 1 );
+            if ( _r->start + td >= _r->end )
+                td = (_r->end - _r->start) - timeline->x_to_ts( 1 );
 
-            _start += td;
-            _offset += td;
+            _r->start += td;
+            _r->offset += td;
             break;
         }
         case RIGHT:
@@ -193,12 +193,12 @@ Region::trim ( enum trim_e t, int X )
 
             long td = timeline->x_to_ts( d );
 
-//            printf( "%li %li\n", td, _end - _start );
+//            printf( "%li %li\n", td, _r->end - _r->start );
 
-            if ( td >= 0 && _end - _start < td )
-                _end = _start + timeline->x_to_ts( 1 );
+            if ( td >= 0 && _r->end - _r->start < td )
+                _r->end = _r->start + timeline->x_to_ts( 1 );
             else
-                _end -= td;
+                _r->end -= td;
 
             break;
         }
@@ -224,7 +224,7 @@ Region::handle ( int m )
     int ret;
 
     Logger _log( this );
-//log_start();
+//log_r->start();
 
     switch ( m )
     {
@@ -246,12 +246,12 @@ Region::handle ( int m )
                 {
                     case 1:
                         trim( trimming = LEFT, X );
-                        _drag = new Drag( x() - X, y() - Y );
+                        begin_drag( Drag( x() - X, y() - Y ) );
                         _log.hold();
                         break;
                     case 3:
                         trim( trimming = RIGHT, X );
-                        _drag = new Drag( x() - X, y() - Y );
+                        begin_drag( Drag( x() - X, y() - Y ) );
                         _log.hold();
                         break;
                     case 2:
@@ -287,7 +287,7 @@ Region::handle ( int m )
                 ox = x() - X;
                 oy = y() - Y;
                 /* for panning */
-                os = _start;
+                os = _r->start;
 
                 /* normalization and selection */
                 if ( Fl::event_button2() )
@@ -333,7 +333,7 @@ Region::handle ( int m )
 
             if ( ! _drag )
             {
-                _drag = new Drag( x() - X, y() - Y );
+                begin_drag( Drag( x() - X, y() - Y ) );
                 _log.hold();
             }
 
@@ -344,14 +344,14 @@ Region::handle ( int m )
                 int d = (ox + X) - x();
                 long td = timeline->x_to_ts( d );
 
-                nframes_t W = _end - _start;
+                nframes_t W = _r->end - _r->start;
 
                 if ( td > 0 && os < td )
-                    _start = 0;
+                    _r->start = 0;
                 else
-                    _start = os - td;
+                    _r->start = os - td;
 
-                _end = _start + W;
+                _r->end = _r->start + W;
 
                 _track->redraw();
                 return 1;
@@ -439,15 +439,15 @@ Region::draw ( int X, int Y, int W, int H )
         return;
 
     int OX = scroll_x();
-    int ox = timeline->ts_to_x( _offset );
+    int ox = timeline->ts_to_x( _r->offset );
 
     if ( ox > OX + _track->w() ||
          ox < OX && ox + abs_w() < OX )
         return;
 
-    int rw = timeline->ts_to_x( _end - _start );
+    int rw = timeline->ts_to_x( _r->end - _r->start );
 
-    nframes_t end = _offset + ( _end - _start );
+    nframes_t end = _r->offset + ( _r->end - _r->start );
 
     /* calculate waveform offset due to scrolling */
     nframes_t offset = 0;
@@ -455,7 +455,7 @@ Region::draw ( int X, int Y, int W, int H )
     {
         offset = timeline->x_to_ts( OX - ox );
 
-        rw = timeline->ts_to_x( (_end - _start) - offset );
+        rw = timeline->ts_to_x( (_r->end - _r->start) - offset );
     }
 
     rw = min( rw, _track->w() );
@@ -469,7 +469,7 @@ Region::draw ( int X, int Y, int W, int H )
     int peaks;
     Peak *pbuf;
 
-    const nframes_t start = _start + offset + timeline->x_to_ts( X - rx );
+    const nframes_t start = _r->start + offset + timeline->x_to_ts( X - rx );
     _clip->read_peaks( timeline->fpp(),
                        start,
                        start + timeline->x_to_ts( W ),
@@ -500,7 +500,7 @@ Region::draw ( int X, int Y, int W, int H )
 /*     for ( int i = _clip->channels(); i--; ) */
 /*         Waveform::draw( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, */
 /*                         ch, _clip, i, timeline->fpp(), */
-/*                        _start + offset, min( (_end - _start) - offset, _end), */
+/*                        _r->start + offset, min( (_r->end - _r->start) - offset, _r->end), */
 /*                        _scale, selected() ? fl_invert_color( _color ) : _color ); */
 
 
@@ -531,9 +531,9 @@ Region::draw ( int X, int Y, int W, int H )
 void
 Region::normalize ( void )
 {
-    printf( "normalize: start=%lu end=%lu\n", _start, _end );
+    printf( "normalize: start=%lu end=%lu\n", _r->start, _r->end );
 
     /* FIXME: figure out a way to do this via the peak server */
-/*     _scale = _clip->peaks( 0 )->normalization_factor( timeline->fpp(), _start, _end );  */
+/*     _scale = _clip->peaks( 0 )->normalization_factor( timeline->fpp(), _r->start, _r->end );  */
 
 }

@@ -47,7 +47,7 @@ protected:
             int i = 0;
 
             asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
-            asprintf( &sa[i++], ":x %lu", _offset );
+            asprintf( &sa[i++], ":x %lu", _r->offset );
             asprintf( &sa[i++], ":tempo %.2f", _tempo );
 
             sa[i] = NULL;
@@ -67,7 +67,7 @@ protected:
                 char *v = s + strlen( s ) + 1;
 
                 if ( ! strcmp( s, ":x" ) )
-                    _offset = atol( v );
+                    _r->offset = atol( v );
                 else
                     if ( ! strcmp( s, ":tempo" ) )
                         _tempo = atof( v );
@@ -116,7 +116,7 @@ public:
     Tempo_Point ( nframes_t when, float bpm )
         {
             _tempo = bpm;
-            _offset = when;
+            _r->offset = when;
 
             _make_label();
 
@@ -125,7 +125,7 @@ public:
 
     Tempo_Point ( const Tempo_Point &rhs )
         {
-            _offset = rhs._offset;
+            _r->offset = rhs._r->offset;
             _tempo = rhs._tempo;
         }
 

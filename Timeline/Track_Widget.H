@@ -26,6 +26,8 @@
 #include <algorithm>
 using namespace std;
 
+class Track_Widget;
+
 struct Drag
 {
     /* mouse coords at start of drag */
@@ -33,7 +35,16 @@ struct Drag
     int y;
     int state;
 
+    Track_Widget *original;
+
     Drag( int X, int Y ) : x( X ), y( Y ) { state = 0; }
+};
+
+struct Range
+{
+    nframes_t offset;                      /* where on the timeline */
+    nframes_t start;                      /* first sample from clip */
+    nframes_t end;                         /* last sample from clip */
 };
 
 /* Base class for virtual widget on a track */
@@ -54,9 +65,8 @@ protected:
 
     Track *_track;                                              /* track this region belongs to */
 
-    nframes_t _offset;                                          /* where on the timeline */
-    nframes_t _start;                                           /* first sample from clip */
-    nframes_t _end;                                             /* last sample from clip */
+    Range _range;                                               /* range for playback */
+    Range *_r;                                                  /* range for editing / display (points to the same thing as above, except for when dragging etc) */
 
     Fl_Color _color;                                            /* color of waveform */
     Fl_Color _box_color;                                        /* color of background (box) */
@@ -71,7 +81,9 @@ public:
         {
             _track = NULL;
 
-            _offset = _start = _end = 0;
+            _r = &_range;
+
+            _r->offset = _r->start = _r->end = 0;
 
             _shown = true;
 
@@ -90,7 +102,7 @@ public:
 
     Track_Widget ( const Track_Widget &rhs )
         {
-            _offset = rhs._offset;
+            *_r = *rhs._r;
             _track = rhs._track;
         }
 
@@ -129,11 +141,9 @@ public:
     static Track_Widget *current    ( void ) { return Track_Widget::_current; }
 
     static Track_Widget *pushed     ( void ) { return Track_Widget::_pushed; }
-    static Track_Widget *original   ( void ) { return Track_Widget::_original; }
     static Track_Widget *belowmouse ( void ) { return Track_Widget::_belowmouse; }
 
     static void pushed     ( Track_Widget *w ) { Track_Widget::_pushed     = w; }
-    static void original   ( Track_Widget *w ) { Track_Widget::_original   = w; }
     static void belowmouse ( Track_Widget *w ) { Track_Widget::_belowmouse = w; }
 
 //    static void pushed ( Track_Widget *w ) { Track_Widget::_pushed = w; }
@@ -142,6 +152,22 @@ public:
     void show ( void ) { _shown = true; }
     void hide ( void ) { _shown = false; }
 
+    void begin_drag ( const Drag &d )
+        {
+            _drag = new Drag( d );
+            _r = new Range( _range );
+        }
+
+    void end_drag ( void )
+        {
+            _range = *_r;
+            delete _r;
+            _r = &_range;
+
+            delete _drag;
+            _drag = NULL;
+        }
+
     void
     offset ( nframes_t where )
         {
@@ -149,20 +175,20 @@ public:
             if  ( ! selected() )
             {
                 redraw();
-                _offset = where;
+                _r->offset = where;
             }
             else
             {
-                long d = where - _offset;
+                long d = where - _r->offset;
 
                 for ( list <Track_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
                 {
                     (*i)->redraw();
 
                     if ( d < 0 )
-                        (*i)->_offset -= 0 - d;
+                        (*i)->_r->offset -= 0 - d;
                     else
-                        (*i)->_offset += d;
+                        (*i)->_r->offset += d;
 
                 }
             }
@@ -180,17 +206,17 @@ public:
     virtual int h ( void ) const { return _track->h(); }
 
     /* used by regions */
-    virtual int x ( void ) const { return _offset < timeline->xoffset ? _track->x() - 1 : min( 32767, _track->x() + timeline->ts_to_x( _offset - timeline->xoffset ) ); }
+    virtual int x ( void ) const { return _r->offset < timeline->xoffset ? _track->x() - 1 : min( 32767, _track->x() + timeline->ts_to_x( _r->offset - timeline->xoffset ) ); }
 
     /* use this as x() when you need to draw lines between widgets */
     int line_x ( void ) const
         {
-            return _offset < timeline->xoffset ? max( -32768, _track->x() -  timeline->ts_to_x( timeline->xoffset - _offset )) : min( 32767, _track->x() + timeline->ts_to_x( _offset - timeline->xoffset ) );
+            return _r->offset < timeline->xoffset ? max( -32768, _track->x() -  timeline->ts_to_x( timeline->xoffset - _r->offset )) : min( 32767, _track->x() + timeline->ts_to_x( _r->offset - timeline->xoffset ) );
         }
 
     virtual int w ( void ) const
         {
-            int tx = timeline->ts_to_x( _offset );
+            int tx = timeline->ts_to_x( _r->offset );
 
             int rw;
             if ( tx < scroll_x() )
@@ -201,8 +227,8 @@ public:
             return min( rw, _track->w() );
         }
 
-    int abs_x ( void ) const { return timeline->ts_to_x( _offset ); }
-    virtual int abs_w ( void ) const { return timeline->ts_to_x( _end - _start ); }
+    int abs_x ( void ) const { return timeline->ts_to_x( _r->offset ); }
+    virtual int abs_w ( void ) const { return timeline->ts_to_x( _r->end - _r->start ); }
 
     Fl_Color color ( void ) { return _color; }
     void color ( Fl_Color v ) { _color = v; }
@@ -211,15 +237,15 @@ public:
     Track * track ( void ) const { return _track; }
     void track ( Track *t ) {  _track = t; }
 
-    nframes_t offset ( void ) const { return _offset; }
-//    void offset ( nframes_t o ) { _offset = o; }
+    nframes_t offset ( void ) const { return _r->offset; }
+//    void offset ( nframes_t o ) { _r->offset = o; }
 
-    void end ( nframes_t v ) { _end = v; }
-    nframes_t end ( void ) const { return _end; }
-    void start ( nframes_t v ) { _start = v; }
-    nframes_t start ( void ) const { return _start; }
+    void end ( nframes_t v ) { _r->end = v; }
+    nframes_t end ( void ) const { return _r->end; }
+    void start ( nframes_t v ) { _r->start = v; }
+    nframes_t start ( void ) const { return _r->start; }
 
-    virtual nframes_t length ( void ) const { return _end - _start; }
+    virtual nframes_t length ( void ) const { return _r->end - _r->start; }
 
     virtual Fl_Boxtype box ( void ) const { return FL_UP_BOX; }
     virtual Fl_Align align ( void ) const { return (Fl_Align)0; }
@@ -258,13 +284,13 @@ public:
     bool
     operator< ( const Track_Widget & rhs )
         {
-            return _offset < rhs._offset;
+            return _r->offset < rhs._r->offset;
         }
 
     bool
     operator<=( const Track_Widget & rhs )
         {
-            return _offset <= rhs._offset;
+            return _r->offset <= rhs._r->offset;
         }
 
     virtual void draw_label ( const char *label, Fl_Align align, Fl_Color color=(Fl_Color)0 );

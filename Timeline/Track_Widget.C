@@ -30,7 +30,6 @@
 list <Track_Widget *> Track_Widget::_selection;
 Track_Widget * Track_Widget::_current = NULL;
 Track_Widget * Track_Widget::_pushed = NULL;
-Track_Widget * Track_Widget::_original = NULL;
 Track_Widget * Track_Widget::_belowmouse = NULL;
 
 void
@@ -171,9 +170,8 @@ Track_Widget::handle ( int m )
         case FL_RELEASE:
             if ( _drag )
             {
+                end_drag();
                 _log.release();
-                delete _drag;
-                _drag = NULL;
             }
 
             fl_cursor( FL_CURSOR_HAND );
@@ -184,8 +182,7 @@ Track_Widget::handle ( int m )
         {
             if ( ! _drag )
             {
-                _drag = new Drag( x() - X, y() - Y );
-
+                begin_drag ( Drag( x() - X, y() - Y ) );
                 _log.hold();
             }
 
@@ -199,7 +196,7 @@ Track_Widget::handle ( int m )
             {
                 int nx = (ox + X) - _track->x();
 
-                // _offset = timeline->x_to_ts( nx ) + timeline->xoffset;
+                // _r->offset = timeline->x_to_ts( nx ) + timeline->xoffset;
                 offset( timeline->x_to_ts( nx ) + timeline->xoffset );
 
                 if ( Track_Widget::_current == this )

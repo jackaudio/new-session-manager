@@ -72,7 +72,7 @@ protected:
             int i = 0;
 
             asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
-            asprintf( &sa[i++], ":x %lu", _offset );
+            asprintf( &sa[i++], ":x %lu", _r->offset );
             asprintf( &sa[i++], ":beats_per_bar %d", _time.beats_per_bar );
             asprintf( &sa[i++], ":beat_type %d", _time.beat_type );
 
@@ -93,7 +93,7 @@ protected:
                 char *v = s + strlen( s ) + 1;
 
                 if ( ! strcmp( s, ":x" ) )
-                    _offset = atol( v );
+                    _r->offset = atol( v );
                 else
                     if ( ! strcmp( s, ":beats_per_bar" ) )
                         _time.beats_per_bar = atoi( v );
@@ -139,7 +139,7 @@ public:
 
     Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
         {
-            _offset = when;
+            _r->offset = when;
             _make_label();
 
             log_create();
@@ -147,7 +147,7 @@ public:
 
     Time_Point ( const Time_Point &rhs )
         {
-            _offset = rhs._offset;
+            _r->offset = rhs._r->offset;
             _time = rhs._time;
         }
 

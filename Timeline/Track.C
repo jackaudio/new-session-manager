@@ -374,20 +374,10 @@ Track::handle ( int m )
                 int retval = r->dispatch( m );
 
                 if ( retval && m == FL_PUSH )
-                {
-                    Track_Widget::original( r );
-                    Track_Widget::pushed( r->clone( r ) );
-                    r->hide();
-                }
+                    Track_Widget::pushed( r );
 
                 if ( retval && m == FL_RELEASE )
-                {
-                    *Track_Widget::original() = *Track_Widget::pushed();
-                    delete Track_Widget::pushed();
-
                     Track_Widget::pushed( NULL );
-                    Track_Widget::original( NULL );
-                }
 
                 Loggable::block_start();
 

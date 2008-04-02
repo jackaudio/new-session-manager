@@ -50,7 +50,7 @@ Waveform::draw (  int X, int Y, int W, int H,
 
     int j;
 
-//    int start = timeline->ts_to_x( _start ) + (X - ox);
+//    int start = timeline->ts_to_x( _r->start ) + (X - ox);
 
     int start = 0;
 

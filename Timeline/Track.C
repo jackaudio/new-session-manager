@@ -103,15 +103,18 @@ Track::draw ( void )
 
 
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-        (*r)->draw( X, Y, W, H );
+            (*r)->draw( X, Y, W, H );
 
 
     /* draw crossfades */
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
     {
+        if ( ! (*r)->shown() )
+            continue;
+
         Track_Widget *o = overlaps( *r );
 
-        if ( o )
+        if ( o && o->shown() )
         {
             if ( *o <= **r )
             {
@@ -150,9 +153,12 @@ Track::draw ( void )
 
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
     {
+        if ( ! (*r)->shown() )
+            continue;
+
         Track_Widget *o = overlaps( *r );
 
-        if ( o )
+        if ( o && o->shown() )
         {
             if ( *o <= **r )
             {
@@ -371,11 +377,14 @@ Track::handle ( int m )
                 {
                     Track_Widget::original( r );
                     Track_Widget::pushed( r->clone( r ) );
+                    r->hide();
                 }
 
                 if ( retval && m == FL_RELEASE )
                 {
-                    /* FIXME: copy here */
+                    *Track_Widget::original() = *Track_Widget::pushed();
+                    delete Track_Widget::pushed();
+
                     Track_Widget::pushed( NULL );
                     Track_Widget::original( NULL );
                 }

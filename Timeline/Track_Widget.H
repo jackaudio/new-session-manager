@@ -61,6 +61,7 @@ protected:
     Fl_Color _color;                                            /* color of waveform */
     Fl_Color _box_color;                                        /* color of background (box) */
 
+    bool _shown;
 
     Drag *_drag;
 
@@ -71,6 +72,8 @@ public:
             _track = NULL;
 
             _offset = _start = _end = 0;
+
+            _shown = true;
 
             _drag = NULL;
         }
@@ -134,6 +137,10 @@ public:
     static void belowmouse ( Track_Widget *w ) { Track_Widget::_belowmouse = w; }
 
 //    static void pushed ( Track_Widget *w ) { Track_Widget::_pushed = w; }
+
+    bool shown ( void ) const { return _shown; }
+    void show ( void ) { _shown = true; }
+    void hide ( void ) { _shown = false; }
 
     void
     offset ( nframes_t where )

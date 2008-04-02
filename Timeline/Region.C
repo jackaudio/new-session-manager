@@ -95,8 +95,8 @@ Region::init ( void )
 Region::Region ( const Region & rhs )
 {
     _offset    = rhs._offset;
-//    _track     = rhs._track;
-    _track     = NULL;
+    _track     = rhs._track;
+//    _track     = NULL;
     _clip      = rhs._clip;
     _start     = rhs._start;
     _end       = rhs._end;
@@ -410,6 +410,9 @@ changed:
 void
 Region::draw_box( int X, int Y, int W, int H )
 {
+    if ( ! shown() )
+        return;
+
     /* dirty hack to keep the box from flipping to vertical at small sizes */
 
     fl_push_clip( x(), Y, w(), H );
@@ -429,6 +432,9 @@ Region::draw_box( int X, int Y, int W, int H )
 void
 Region::draw ( int X, int Y, int W, int H )
 {
+    if ( ! shown() )
+        return;
+
     if ( ! ( W > 0 && H > 0 ) )
         return;
 

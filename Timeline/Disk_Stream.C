@@ -24,7 +24,38 @@ static float seconds_to_buffer = 5.0f;
    thread (or vice-versa). */
 /* FIXME: handle termination of IO thread in destructor */
 /* FIXME: could all of this not simply be included in the Track_Header
-          class? */
+   class? */
+/* FIXME: deal with (jack) buffer size changes */
+/* FIXME: can this be made to actually handle capture? */
+/* FIXME: needs error handling everywhere! */
+
+Disk_Stream::Disk_Stream ( const Track_Header *th, float frame_rate, nframes_t nframes, int channels ) : _th( th )
+{
+    _frame = 0;
+
+    const int blocks = frame_rate * seconds_to_buffer / nframes;
+
+    _nframes = nframes;
+
+    size_t bufsize = blocks * nframes * sizeof( sample_t );
+
+    for ( int i = channels(); i-- )
+        _rb[ i ] = jack_ringbuffer_create( bufsize );
+
+    sem_init( &_blocks, 0, blocks );
+
+    run();
+}
+
+virtual ~Disk_Stream::Disk_Stream ( )
+{
+    _th = NULL;
+
+    sem_destroy( &_blocks );
+
+    for ( int i = channels(); i-- )
+        jack_ringbuffer_free( _rb[ i ] );
+}
 
 /** start Disk_Stream thread */
 void
@@ -41,13 +72,13 @@ Disk_Stream::io_thread ( void *arg )
     ((Disk_Stream*)arg)->io_thread();
 }
 
-
 /* THREAD: IO */
 /** read a block of data from the track into /buf/ */
+void
 Disk_Stream::read_block ( sample_t *buf )
 {
     if ( _th->track()->play( buf, _frame, _nframes, channels() ) )
-        _frame += nframes;
+        _frame += _nframes;
     else
         /* error */;
 }
@@ -87,10 +118,19 @@ Disk_Stream::io_thread ( void )
 }
 
 /* THREAD: RT */
+/** take a block from the ringbuffers and send it out the track's
+ * ports */
 void
-Disk_Stream::process ( nframes_t nframes )
+Disk_Stream::process ( vector <Port*> ports )
 {
-    _th->channels();
+    const size_t block_size = _nframes * sizeof( sample_t );
+
+    for ( int i = channels(); i-- )
+    {
+        sample_t *buf = _th->output[ i ]->buffer();
+
+        jack_ringbuffer_read( _rb[ i ], buf, block_size );
+    }
 
     block_processed();
 }

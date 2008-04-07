@@ -22,6 +22,8 @@
 #include <jack/ringbuffer.h>
 #include <semaphore.h>
 
+#include "Track_Header.H"
+
 class Disk_Stream
 {
 
@@ -37,6 +39,8 @@ class Disk_Stream
 
     int channels ( void ) const { return _rb.size(); }
 
+    Track * track ( void ) const { return _th->track(); }
+
 protected:
 
     void block_processed ( void ) { sem_post( &_blocks ); }
@@ -44,48 +48,31 @@ protected:
 
 public:
 
+    /* must be set before any Disk_Streams are created */
     static float seconds_to_buffer;
 
-    Disk_Stream ( const Track_Header *th, float frame_rate, nframes_t nframes, int channels ) : _th( th )
-        {
-            _frame = 0;
+    Disk_Stream ( const Track_Header *th, float frame_rate, nframes_t nframes, int channels );
 
-            const int blocks = frame_rate * seconds_to_buffer / nframes;
-
-            _nframes = nframes;
-
-            size_t bufsize = blocks * nframes * sizeof( sample_t );
-
-            for ( int i = channels(); i-- )
-                _rb[ i ] = jack_ringbuffer_create( bufsize );
-
-            sem_init( &_blocks, 0, blocks );
-
-            run();
-        }
-
-    virtual ~Disk_Stream ( )
-        {
-            _th = NULL;
-
-            sem_destroy( &_blocks );
-
-            for ( int i = channels(); i-- )
-                jack_ringbuffer_free( _rb[ i ] );
-        }
+    virtual ~Disk_Stream ( );
 
     void
-    resize_buffer ( void )
+    resize ( nframes_t nframes )
         {
+            if ( nframes != _nframes )
+                /* FIXME: to something here! */;
         }
-
 
     void
     seek ( nframes_t frame )
         {
             _frame = frame;
+            /* FIXME: need to signal the IO thread somehow? */
         }
 
     void run ( void );
+    void io_thread ( void *arg );
+    void read_block ( sample_t *buf );
+    void io_thread ( void );
+    void process ( vector <Port*> ports );
 
 };

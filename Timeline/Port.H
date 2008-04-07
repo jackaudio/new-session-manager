@@ -19,19 +19,17 @@
 
 class Port
 {
-    jack_ringbuffer_t _rb;
     jack_port_t *_port;
     const char *_name;
 
 public:
 
-    Port ( jack_port_t *port, nframes_t nframes );
+    Port ( jack_port_t *port );
     ~Port ( );
 
     bool connected ( void ) const { return jack_port_connected( _port ); }
     const char * name ( void ) const { return _name; }
 
     nframes_t write ( sample_t *buf, nframes_t nframes );
-    void process ( nframes_t nframes );
 
 };

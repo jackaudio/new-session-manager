@@ -17,36 +17,26 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-/* RT/thread-safe interface to a single jack port. */
-
 /* nframes is the number of frames to buffer */
-Port::Port ( jack_port_t *port, nframes_t nframes )
+Port::Port ( jack_port_t *port )
 {
     _port = port;
-    _rb = jack_ringbuffer_create( nframes * sizeof( stample_t ) );
-
     _name = jack_port_name( _port );
 }
 
 Port::~Port ( )
 {
-    jack_ringbuffer_free( _rb );
+    /* close port? */
 }
 
-nframes_t
+void
 Port::write ( sample_t *buf, nframes_t nframes )
 {
-    const size_t size = nframes * sizeof( sample_t );
-
-    return jack_ringbuffer_write( _rb, buf, size ) / sizeof( sample_t );
+    memcpy( buffer(), buf, nframes * sizeof( sample_t ) );
 }
 
-/* runs in the RT thread! */
-void
-Port::process ( nframes_t nframes )
+sample_t *
+Port::buffer ( void )
 {
-    sample_t *buf = jack_port_get_buffer( _port, nframes );
-
-    /* FIXME: check size */
-    jack_ringbuffer_read( _rb, buf, nframes );
+    return (sample_t*)jack_port_get_buffer( _port );
 }

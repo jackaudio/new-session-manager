@@ -206,5 +206,7 @@ public:
 
     void normalize ( void );
 
+    nframes_t read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel );
+
 };
 #endif

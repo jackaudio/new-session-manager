@@ -447,7 +447,7 @@ Region::draw ( int X, int Y, int W, int H )
 
     int rw = timeline->ts_to_x( _r->end - _r->start );
 
-    nframes_t end = _r->offset + ( _r->end - _r->start );
+//    nframes_t end = _r->offset + ( _r->end - _r->start );
 
     /* calculate waveform offset due to scrolling */
     nframes_t offset = 0;
@@ -536,4 +536,67 @@ Region::normalize ( void )
     /* FIXME: figure out a way to do this via the peak server */
 /*     _scale = _clip->peaks( 0 )->normalization_factor( timeline->fpp(), _r->start, _r->end );  */
 
+}
+
+/** read the overlapping part of /channel/ at /pos/ for /nframes/ of
+    this region into /buf/, where /pos/ is in timeline frames */
+/* this runs in the diskstream thread. */
+/* FIXME: it is far more efficient to read all the channels from a
+ multichannel source at once... But how should we handle the case of a
+ mismatch between the number of channels in this region's source and
+ the number of channels on the track/buffer this data is being read
+ for? Would it not be better to simply buffer and deinterlace the
+ frames in the Audio_File class instead, so that sequential requests
+ for different channels at the same position avoid hitting the disk
+ again? */
+/* FIXME: should fade-out/fade-ins not be handled here? */
+nframes_t
+Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel )
+{
+    const Range &r = _range;
+
+    /* do nothing if we aren't covered by this frame range */
+    const nframes_t length = r.end - r.start;
+    if ( ! ( pos > r.offset + length || r.offset + length < pos ) )
+        return 0;
+
+    /* calculate offsets into file and sample buffer */
+
+    nframes_t sofs, ofs, cnt;
+
+    if ( pos < r.offset )
+    {
+        sofs = 0;
+        ofs = r.offset - pos;
+        cnt = nframes - ofs;
+    }
+    else
+    {
+        ofs = 0;
+        sofs = pos - r.offset;
+    }
+
+    if ( sofs > nframes )
+        return 0;
+
+    const nframes_t start = ofs + r.start + sofs;
+    const nframes_t len = min( cnt, nframes - sofs );
+    const nframes_t end = start + len;
+
+    if ( len == 0 )
+        return 0;
+
+    /* now that we know how much and where to read, get on with it */
+
+    /* FIXME: seeking can be very expensive. Esp. with compressed
+     * formats. We should attempt to avoid it. But here or in the
+     * Audio_File class? */
+    cnt = _clip->read( buf + ofs, channel, start, end );
+
+    /* apply gain */
+
+    for ( int i = cnt; i--; )
+        buf[i] *= _scale;
+
+    return cnt;
 }

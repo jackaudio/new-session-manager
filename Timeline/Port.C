@@ -17,6 +17,10 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include "Port.H"
+
+#include <string.h>
+
 /* nframes is the number of frames to buffer */
 Port::Port ( jack_port_t *port )
 {
@@ -32,11 +36,11 @@ Port::~Port ( )
 void
 Port::write ( sample_t *buf, nframes_t nframes )
 {
-    memcpy( buffer(), buf, nframes * sizeof( sample_t ) );
+    memcpy( buffer( nframes ), buf, nframes * sizeof( sample_t ) );
 }
 
 sample_t *
-Port::buffer ( void )
+Port::buffer ( nframes_t nframes )
 {
-    return (sample_t*)jack_port_get_buffer( _port );
+    return (sample_t*)jack_port_get_buffer( _port, nframes );
 }

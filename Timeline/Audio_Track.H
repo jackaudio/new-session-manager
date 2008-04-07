@@ -22,6 +22,7 @@
 #include "Track.H"
 #include "Region.H"
 
+
 #include <FL/Fl_Input.H>
 
 class Audio_Track : public Track
@@ -53,6 +54,6 @@ public:
     void dump ( void );
     void remove_selected ( void );
 
-    void play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels );
+    nframes_t play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels );
 
 };

@@ -117,7 +117,7 @@ Audio_Track::handle ( int m )
 /* THREAD: IO */
 /** determine region coverage and fill /buf/ with interleaved samples
  * from /frame/ to /nframes/ for exactly /channels/ channels. */
-void
+nframes_t
 Audio_Track::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels )
 {
     sample_t *cbuf = new sample_t[ nframes ];
@@ -125,9 +125,9 @@ Audio_Track::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int chann
     /* quick and dirty--let the regions figure out coverage for themselves */
     for ( list <Track_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
     {
-        const Region *r = (Region*)i;
+        const Region *r = (Region*)(*i);
 
-        for ( int i = channels; i-- )
+        for ( int i = channels; i--;  )
         {
             memset( cbuf, 0, nframes * sizeof( sample_t ) );
 
@@ -136,8 +136,11 @@ Audio_Track::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int chann
 
             /* interleave */
             int k = 0;
-            for ( int j = 0; j < nframes; j += channels )
+            for ( unsigned int j = 0; j < nframes; j += channels )
                 buf[ j ] = cbuf[ k++ ];
         }
     }
+
+    /* FIXME: bogus */
+    return nframes;
 }

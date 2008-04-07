@@ -11,6 +11,8 @@ SRCS= \
       Peaks.C \
       Audio_File.C \
       Audio_File_SF.C \
+      Port.C \
+      Disk_Stream.C \
       Loggable.C \
 
 OBJS=$(SRCS:.C=.o)
@@ -25,8 +27,10 @@ $(OBJS): Makefile
 
 include ../make.inc
 
+#LIBS:=$(LIBS) -ljack -lpthread
+
 timeline: $(OBJS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LIBS) $(OBJS) -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LIBS) -ljack -lpthread $(OBJS) -o $@
 
 clean:
 	rm -f $(OBJS) timeline makedepend

@@ -17,6 +17,14 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#pragma once
+
+#include <jack/jack.h>
+
+typedef float sample_t;
+//typedef jack_nframes_t nframes_t;
+typedef unsigned long nframes_t;
+
 class Port
 {
     jack_port_t *_port;
@@ -31,5 +39,5 @@ public:
     const char * name ( void ) const { return _name; }
 
     void write ( sample_t *buf, nframes_t nframes );
-
+    sample_t *buffer ( nframes_t nframes );
 };

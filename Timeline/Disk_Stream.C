@@ -17,9 +17,12 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include "Disk_Stream.H"
 #include "Track_Header.H"
+#include "Audio_Track.H"
+#include "Port.H"
 
-static float seconds_to_buffer = 5.0f;
+float Disk_Stream::seconds_to_buffer = 5.0f;
 
 /* A Disk_Stream uses a separate I/O thread to stream a track's
    regions from disk into a ringbuffer, to be processed by the RT
@@ -31,9 +34,10 @@ static float seconds_to_buffer = 5.0f;
 /* FIXME: can this be made to actually handle capture? */
 /* FIXME: needs error handling everywhere! */
 
-Disk_Stream::Disk_Stream ( const Track_Header *th, float frame_rate, nframes_t nframes, int channels ) : _th( th )
+Disk_Stream::Disk_Stream ( Track_Header *th, float frame_rate, nframes_t nframes, int channels ) : _th( th )
 {
     _frame = 0;
+    _thread = 0;
 
     const int blocks = frame_rate * seconds_to_buffer / nframes;
 
@@ -41,7 +45,7 @@ Disk_Stream::Disk_Stream ( const Track_Header *th, float frame_rate, nframes_t n
 
     size_t bufsize = blocks * nframes * sizeof( sample_t );
 
-    for ( int i = channels(); i-- )
+    for ( int i = channels; i--; )
         _rb[ i ] = jack_ringbuffer_create( bufsize );
 
     sem_init( &_blocks, 0, blocks );
@@ -49,18 +53,18 @@ Disk_Stream::Disk_Stream ( const Track_Header *th, float frame_rate, nframes_t n
     run();
 }
 
-virtual ~Disk_Stream::Disk_Stream ( )
+Disk_Stream::~Disk_Stream ( )
 {
     _th = NULL;
 
     sem_destroy( &_blocks );
 
-    for ( int i = channels(); i-- )
+    for ( int i = channels(); i--; )
         jack_ringbuffer_free( _rb[ i ] );
 }
 
 Audio_Track *
-Disk_Stream::track ( void ) const
+Disk_Stream::track ( void )
 {
     return (Audio_Track*)_th->track();
 }
@@ -69,15 +73,23 @@ Disk_Stream::track ( void ) const
 void
 Disk_Stream::run ( void )
 {
-    if ( pthread_create( 0, 0, &Disk_Stream::io_thread, this ) != 0 )
+    if ( pthread_create( &_thread, NULL, &Disk_Stream::io_thread, this ) != 0 )
         /* error */;
 }
 
+/* void */
+/* DIsk_Stream::shutdown ( void ) */
+/* { */
+/*     pthread_join( &_thread, NULL ); */
+/* } */
+
 /* static wrapper */
-void
+void *
 Disk_Stream::io_thread ( void *arg )
 {
     ((Disk_Stream*)arg)->io_thread();
+
+    return NULL;
 }
 
 /* THREAD: IO */
@@ -111,13 +123,13 @@ Disk_Stream::io_thread ( void )
 
         /* deinterleave the buffer and stuff it into the per-channel ringbuffers */
 
-        for ( int i = channels(); i-- )
+        for ( int i = channels(); i--; )
         {
             int k = 0;
-            for ( int j = i; j < _nframes; j += channels() )
+            for ( unsigned int j = i; j < _nframes; j += channels() )
                 cbuf[ k++ ] = buf[ j ];
 
-            jack_ringbuffer_write( _rb[ i ], cbuf, block_size );
+            jack_ringbuffer_write( _rb[ i ], (char*)cbuf, block_size );
         }
     }
 
@@ -129,15 +141,16 @@ Disk_Stream::io_thread ( void )
 /** take a block from the ringbuffers and send it out the track's
  * ports */
 void
-Disk_Stream::process ( vector <Port*> ports )
+Disk_Stream::process ( void )
 {
     const size_t block_size = _nframes * sizeof( sample_t );
 
-    for ( int i = channels(); i-- )
+    for ( int i = channels(); i--;  )
     {
-        sample_t *buf = _th->output[ i ]->buffer();
+        sample_t *buf = (_th->output)[ i ].buffer( _nframes );
 
-        jack_ringbuffer_read( _rb[ i ], buf, block_size );
+        /* FIXME: handle underrun */
+        jack_ringbuffer_read( _rb[ i ], (char*)buf, block_size );
     }
 
     block_processed();

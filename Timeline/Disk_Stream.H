@@ -19,20 +19,29 @@
 
 #pragma once
 
+#include "Port.H" // for nframes_t
+
 #include <jack/ringbuffer.h>
 #include <semaphore.h>
+#include <errno.h>
+
+#include <pthread.h>
 
 #include <vector>
 using std::vector;
 
 class Track_Header;
+class Audio_Track;
 
 class Disk_Stream
 {
 
-    const Track_Header *_th;                                    /* Track_Header we whould be playing */
+    pthread_t _thread;
+
+    Track_Header *_th;                                    /* Track_Header we whould be playing */
 
     nframes_t _nframes;
+    nframes_t _frame;
 
     vector <jack_ringbuffer_t *> _rb;
 
@@ -42,19 +51,21 @@ class Disk_Stream
 
     int channels ( void ) const { return _rb.size(); }
 
-    Audio_Track * track ( void ) const;
+    Audio_Track * track ( void );
+
+    static void *io_thread ( void *arg );
 
 protected:
 
     void block_processed ( void ) { sem_post( &_blocks ); }
-    bool wait_for_block ( void ) { while ( sem_wait( &_work ) == EINTR ); return true; }
+    bool wait_for_block ( void ) { while ( sem_wait( &_blocks ) == EINTR ); return true; }
 
 public:
 
     /* must be set before any Disk_Streams are created */
     static float seconds_to_buffer;
 
-    Disk_Stream ( const Track_Header *th, float frame_rate, nframes_t nframes, int channels );
+    Disk_Stream ( Track_Header *th, float frame_rate, nframes_t nframes, int channels );
 
     virtual ~Disk_Stream ( );
 
@@ -73,9 +84,8 @@ public:
         }
 
     void run ( void );
-    void io_thread ( void *arg );
     void read_block ( sample_t *buf );
     void io_thread ( void );
-    void process ( vector <Port*> ports );
+    void process ( void );
 
 };

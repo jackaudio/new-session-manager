@@ -551,7 +551,7 @@ Region::normalize ( void )
  again? */
 /* FIXME: should fade-out/fade-ins not be handled here? */
 nframes_t
-Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel )
+Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const
 {
     const Range &r = _range;
 

@@ -30,6 +30,10 @@
 
 #include "Loggable.H"
 
+#include "Port.H"
+#include <vector>
+using std::vector;
+
 class Track_Header : public Fl_Group, public Loggable
 {
 
@@ -67,6 +71,8 @@ public:
     Fl_Pack *control;
     Fl_Pack *takes;
 
+
+    vector <Port> output;                                       /* output ports... */
 
 
     const char *class_name ( void ) { return "Track_Header"; }

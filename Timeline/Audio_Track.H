@@ -53,4 +53,6 @@ public:
     void dump ( void );
     void remove_selected ( void );
 
+    void play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels );
+
 };

@@ -30,6 +30,6 @@ public:
     bool connected ( void ) const { return jack_port_connected( _port ); }
     const char * name ( void ) const { return _name; }
 
-    nframes_t write ( sample_t *buf, nframes_t nframes );
+    void write ( sample_t *buf, nframes_t nframes );
 
 };

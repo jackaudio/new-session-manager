@@ -17,6 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include "Track_Header.H"
+
 static float seconds_to_buffer = 5.0f;
 
 /* A Disk_Stream uses a separate I/O thread to stream a track's
@@ -57,6 +59,12 @@ virtual ~Disk_Stream::Disk_Stream ( )
         jack_ringbuffer_free( _rb[ i ] );
 }
 
+Audio_Track *
+Disk_Stream::track ( void ) const
+{
+    return (Audio_Track*)_th->track();
+}
+
 /** start Disk_Stream thread */
 void
 Disk_Stream::run ( void )
@@ -77,7 +85,7 @@ Disk_Stream::io_thread ( void *arg )
 void
 Disk_Stream::read_block ( sample_t *buf )
 {
-    if ( _th->track()->play( buf, _frame, _nframes, channels() ) )
+    if ( track()->play( buf, _frame, _nframes, channels() ) )
         _frame += _nframes;
     else
         /* error */;

@@ -22,7 +22,10 @@
 #include <jack/ringbuffer.h>
 #include <semaphore.h>
 
-#include "Track_Header.H"
+#include <vector>
+using std::vector;
+
+class Track_Header;
 
 class Disk_Stream
 {
@@ -39,7 +42,7 @@ class Disk_Stream
 
     int channels ( void ) const { return _rb.size(); }
 
-    Track * track ( void ) const { return _th->track(); }
+    Audio_Track * track ( void ) const;
 
 protected:
 

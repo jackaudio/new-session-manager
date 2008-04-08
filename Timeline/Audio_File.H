@@ -22,7 +22,7 @@
 /* Base class for all audio file library interfaces */
 #include <stdlib.h>
 
-typedef unsigned long nframes_t;
+#include "types.h"
 typedef float sample_t;
 
 #include "Peaks.H"

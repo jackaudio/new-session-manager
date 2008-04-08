@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 
-typedef unsigned long nframes_t;
+#include "types.h"
 
 struct Peak {
     float min;

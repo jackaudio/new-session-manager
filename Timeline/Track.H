@@ -38,6 +38,8 @@ class Region;
 class Track_Widget;
 
 
+#include "types.h"
+
 /* This is the base class for all track types. */
 
 class Track : public Fl_Widget, public Loggable
@@ -123,5 +125,7 @@ public:
     virtual void snap ( Track_Widget *r );
     virtual int handle ( int m );
     virtual void draw ( void );
+
+    virtual nframes_t process ( nframes_t nframes ) { return 0; }
 
 };

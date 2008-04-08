@@ -27,9 +27,12 @@
 
 #include "Scalebar.H"
 
+/* FIXME: this class needs a lot of cleaning up. Too many public
+ * members etc. */
+
 /* #include "Audio_File.H" // just for nframes_t */
 
-typedef unsigned long nframes_t;
+#include "types.h"
 
 #include <math.h>
 #include <assert.h>
@@ -74,8 +77,11 @@ struct Rectangle
 };
 
 
+class Engine;
 
-class Timeline : public Fl_Overlay_Window
+#include "Mutex.H"
+
+class Timeline : public Fl_Overlay_Window, public Mutex
 {
     static void draw_clip ( void * v, int X, int Y, int W, int H );
 
@@ -112,7 +118,6 @@ class Timeline : public Fl_Overlay_Window
 
 public:
 
-
     nframes_t xoffset;
 
     int _yposition;
@@ -139,4 +144,9 @@ public:
 
     void select( const Rectangle &r );
 
+private:
+
+    friend class Engine; // FIXME: only Engine::process() needs to be friended.x
+
+    nframes_t process ( nframes_t nframes );
 };

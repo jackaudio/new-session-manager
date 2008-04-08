@@ -13,6 +13,7 @@ SRCS= \
       Audio_File_SF.C \
       Port.C \
       Disk_Stream.C \
+      Engine.C \
       Loggable.C \
 
 OBJS=$(SRCS:.C=.o)

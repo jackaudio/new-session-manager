@@ -96,6 +96,8 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     _show_all_takes = false;
     _size = 1;
 
+//    diskstream = new Disk_Stream( this );
+
     Fl_Group::size( w(), height() );
 
     Track_Header *o = this;
@@ -275,4 +277,15 @@ Track_Header::add_control( Track *t )
     control->add( t );
 
     resize();
+}
+
+
+/**********/
+/* Engine */
+/**********/
+
+nframes_t
+Track_Header::process ( nframes_t nframes )
+{
+    return track()->process( nframes );
 }

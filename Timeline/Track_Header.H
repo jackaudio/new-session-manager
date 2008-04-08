@@ -34,6 +34,8 @@
 #include <vector>
 using std::vector;
 
+class Disk_Stream;
+
 class Track_Header : public Fl_Group, public Loggable
 {
 
@@ -71,9 +73,8 @@ public:
     Fl_Pack *control;
     Fl_Pack *takes;
 
-
     vector <Port> output;                                       /* output ports... */
-
+    Disk_Stream *diskstream;
 
     const char *class_name ( void ) { return "Track_Header"; }
 
@@ -262,5 +263,7 @@ public:
             }
         }
 
+
+    nframes_t process ( nframes_t nframes );
 };
 #endif

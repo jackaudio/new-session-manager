@@ -17,7 +17,6 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-
 #include "Timeline.H"
 #include "Tempo_Track.H"
 #include "Time_Track.H"
@@ -596,4 +595,24 @@ Timeline::handle ( int m )
         }
     }
 
+}
+
+
+/**********/
+/* Engine */
+/**********/
+
+/** call process() on each track header */
+nframes_t
+Timeline::process ( nframes_t nframes )
+{
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track_Header *t = (Track_Header*)tracks->child( i );
+
+        t->process( nframes );
+    }
+
+    /* FIXME: BOGUS */
+    return nframes;
 }

@@ -49,8 +49,8 @@ Port::write ( sample_t *buf, nframes_t nframes )
     memcpy( buffer( nframes ), buf, nframes * sizeof( sample_t ) );
 }
 
-sample_t *
+void *
 Port::buffer ( nframes_t nframes )
 {
-    return (sample_t*)jack_port_get_buffer( _port, nframes );
+    return jack_port_get_buffer( _port, nframes );
 }

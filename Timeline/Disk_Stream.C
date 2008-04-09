@@ -22,7 +22,8 @@
 #include "Audio_Track.H"
 #include "Port.H"
 
-float Disk_Stream::seconds_to_buffer = 5.0f;
+// float Disk_Stream::seconds_to_buffer = 5.0f;
+float Disk_Stream::seconds_to_buffer = 1.0f;
 
 /* A Disk_Stream uses a separate I/O thread to stream a track's
    regions from disk into a ringbuffer, to be processed by the RT
@@ -38,6 +39,8 @@ Disk_Stream::Disk_Stream ( Track_Header *th, float frame_rate, nframes_t nframes
 {
     _frame = 0;
     _thread = 0;
+
+    printf( "nframes %lu\n", nframes );
 
     const int blocks = frame_rate * seconds_to_buffer / nframes;
 
@@ -102,7 +105,7 @@ Disk_Stream::read_block ( sample_t *buf )
     if ( ! timeline )
         return;
 
-    printf( "IO: attempting to read block @ %lu\n", _frame );
+//    printf( "IO: attempting to read block @ %lu\n", _frame );
 
     if ( ! track() )
     {
@@ -145,7 +148,7 @@ Disk_Stream::io_thread ( void )
         for ( int i = channels(); i--; )
         {
             int k = 0;
-            for ( unsigned int j = i; j < _nframes; j += channels() )
+            for ( unsigned int j = i; k < _nframes; j += channels() )
                 cbuf[ k++ ] = buf[ j ];
 
             jack_ringbuffer_write( _rb[ i ], (char*)cbuf, block_size );
@@ -166,10 +169,11 @@ Disk_Stream::process ( nframes_t nframes )
 
     for ( int i = channels(); i--;  )
     {
-        sample_t *buf = (_th->output)[ i ].buffer( _nframes );
+        void *buf = (_th->output)[ i ].buffer( _nframes );
 
         /* FIXME: handle underrun */
-        jack_ringbuffer_read( _rb[ i ], (char*)buf, block_size );
+        if ( jack_ringbuffer_read( _rb[ i ], (char*)buf, block_size ) < block_size )
+            printf( "disktream (rt): buffer underrun!\n" );
     }
 
     block_processed();

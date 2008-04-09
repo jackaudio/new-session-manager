@@ -135,10 +135,15 @@ Audio_Track::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int chann
             if ( ! r->read( cbuf, frame, nframes, i ) )
                 /* error ? */;
 
-            /* interleave */
-            int k = 0;
-            for ( unsigned int j = 0; j < nframes; j += channels )
-                buf[ j ] = cbuf[ k++ ];
+            if ( channels == 1 )
+                memcpy( buf, cbuf, nframes * sizeof( sample_t ) );
+            else
+            {
+                /* interleave */
+                int k = 0;
+                for ( unsigned int j = i; k < nframes; j += channels )
+                    buf[ j ] = cbuf[ k++ ];
+            }
         }
     }
 

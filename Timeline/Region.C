@@ -565,11 +565,13 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
 
     nframes_t sofs, ofs, cnt;
 
+    cnt = nframes;
+
     if ( pos < r.offset )
     {
         sofs = 0;
         ofs = r.offset - pos;
-        cnt = nframes - ofs;
+        cnt -= ofs;
     }
     else
     {
@@ -577,10 +579,11 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
         sofs = pos - r.offset;
     }
 
-    if ( ofs > nframes )
+    if ( ofs >= nframes )
         return 0;
 
-    const nframes_t start = ofs + r.start + sofs;
+//    const nframes_t start = ofs + r.start + sofs;
+    const nframes_t start =  r.start + sofs;
     const nframes_t len = min( cnt, nframes - ofs );
     const nframes_t end = start + len;
 
@@ -592,12 +595,18 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
     /* FIXME: seeking can be very expensive. Esp. with compressed
      * formats. We should attempt to avoid it. But here or in the
      * Audio_File class? */
+
+    //    printf( "reading region ofs = %lu, sofs = %lu, %lu-%lu\n", ofs, sofs, start, end  );
+
     cnt = _clip->read( buf + ofs, channel, start, end );
 
     /* apply gain */
 
-    for ( int i = cnt; i--; )
-        buf[i] *= _scale;
+    if ( _scale != 1.0f )
+        for ( int i = cnt; i--; )
+            buf[i] *= _scale;
+
+//    printf( "read %lu frames\n", cnt );
 
     return cnt;
 }

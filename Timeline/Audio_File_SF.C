@@ -98,15 +98,15 @@ Audio_File_SF::seek ( nframes_t offset )
 nframes_t
 Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
 {
+    if ( len > 256 * 100 )
+        printf( "warning: attempt to read an insane number of frames (%lu) from soundfile\n", len );
+
+//    printf( "len = %lu, channels = %d\n", len, _channels );
+
     if ( _channels == 1 || channel == -1 )
         return sf_readf_float( _in, buf, len );
     else
     {
-        if ( len > 256 * 100 )
-            printf( "warning: attempt to read an insane number of frames (%lu) from soundfile\n", len );
-
-        printf( "len = %lu, channels = %d\n", len, _channels );
-
         sample_t *tmp = new sample_t[ len * _channels ];
 
         nframes_t rlen = sf_readf_float( _in, tmp, len );

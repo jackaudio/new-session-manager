@@ -40,5 +40,5 @@ public:
     const char * name ( void ) const { return _name; }
 
     void write ( sample_t *buf, nframes_t nframes );
-    sample_t *buffer ( nframes_t nframes );
+    void *buffer ( nframes_t nframes );
 };

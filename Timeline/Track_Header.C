@@ -19,6 +19,9 @@
 
 #include "Track_Header.H"
 
+#include "Disk_Stream.H"
+#include "Engine.H"
+
 void
 Track_Header::cb_input_field ( Fl_Widget *w, void *v )
 {
@@ -85,6 +88,7 @@ Track_Header::cb_button ( Fl_Widget *w )
         }
 }
 
+#include "Port.H"
 
 Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group ( X, Y, W, H, L )
@@ -96,7 +100,9 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     _show_all_takes = false;
     _size = 1;
 
-//    diskstream = new Disk_Stream( this );
+    output.push_back( Port( "foo" ) );
+
+    diskstream = new Disk_Stream( this, engine->frame_rate(), engine->nframes(), 1 );
 
     Fl_Group::size( w(), height() );
 
@@ -284,8 +290,12 @@ Track_Header::add_control( Track *t )
 /* Engine */
 /**********/
 
+/* THREAD: RT */
 nframes_t
 Track_Header::process ( nframes_t nframes )
 {
-    return track()->process( nframes );
+    if ( diskstream )
+        return diskstream->process( nframes );
+    else
+        return 0;
 }

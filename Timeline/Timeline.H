@@ -79,9 +79,9 @@ struct Rectangle
 
 class Engine;
 
-#include "Mutex.H"
+#include "RWLock.H"
 
-class Timeline : public Fl_Overlay_Window, public Mutex
+class Timeline : public Fl_Overlay_Window, public RWLock
 {
     static void draw_clip ( void * v, int X, int Y, int W, int H );
 

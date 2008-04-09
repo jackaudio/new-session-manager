@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <assert.h>
+
 Audio_File_SF *
 Audio_File_SF::from_file ( const char *filename )
 {
@@ -100,6 +102,11 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
         return sf_readf_float( _in, buf, len );
     else
     {
+        if ( len > 256 * 100 )
+            printf( "warning: attempt to read an insane number of frames (%lu) from soundfile\n", len );
+
+        printf( "len = %lu, channels = %d\n", len, _channels );
+
         sample_t *tmp = new sample_t[ len * _channels ];
 
         nframes_t rlen = sf_readf_float( _in, tmp, len );
@@ -118,6 +125,8 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
 nframes_t
 Audio_File_SF::read ( sample_t *buf, int channel, nframes_t start, nframes_t end )
 {
+    assert( end > start );
+
     open();
 
     seek( start );

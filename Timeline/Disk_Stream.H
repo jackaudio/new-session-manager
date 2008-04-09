@@ -86,6 +86,6 @@ public:
     void run ( void );
     void read_block ( sample_t *buf );
     void io_thread ( void );
-    void process ( void );
+    nframes_t process ( nframes_t nframes );
 
 };

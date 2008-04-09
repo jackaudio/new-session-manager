@@ -555,9 +555,10 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
 {
     const Range &r = _range;
 
-    /* do nothing if we aren't covered by this frame range */
     const nframes_t length = r.end - r.start;
-    if ( ! ( pos > r.offset + length || r.offset + length < pos ) )
+
+    /* do nothing if we aren't covered by this frame range */
+    if ( pos > r.offset + length || pos + nframes < r.offset )
         return 0;
 
     /* calculate offsets into file and sample buffer */
@@ -576,11 +577,11 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
         sofs = pos - r.offset;
     }
 
-    if ( sofs > nframes )
+    if ( ofs > nframes )
         return 0;
 
     const nframes_t start = ofs + r.start + sofs;
-    const nframes_t len = min( cnt, nframes - sofs );
+    const nframes_t len = min( cnt, nframes - ofs );
     const nframes_t end = start + len;
 
     if ( len == 0 )

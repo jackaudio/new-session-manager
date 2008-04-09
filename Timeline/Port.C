@@ -21,6 +21,8 @@
 
 #include <string.h>
 
+#include "Engine.H"
+
 /* nframes is the number of frames to buffer */
 Port::Port ( jack_port_t *port )
 {
@@ -28,9 +30,17 @@ Port::Port ( jack_port_t *port )
     _name = jack_port_name( _port );
 }
 
+Port::Port ( const char *name )
+{
+    _name = name;
+
+    _port = jack_port_register( engine->client(), _name, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0 );
+}
+
 Port::~Port ( )
 {
     /* close port? */
+//    jack_port_unregister( engine->client(), _port );
 }
 
 void

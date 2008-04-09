@@ -31,6 +31,12 @@ public:
     Mutex ( )
         {
 //            _lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+            pthread_mutex_init( &_lock, NULL );
+        }
+
+    virtual ~Mutex ( )
+        {
+            pthread_mutex_destroy( &_lock );
         }
 
     void

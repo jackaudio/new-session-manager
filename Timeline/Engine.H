@@ -19,26 +19,49 @@
 
 #pragma once
 
+#include "Mutex.H"
+
 #include <jack/jack.h>
 
-typedef float sample_t;
-//typedef jack_nframes_t nframes_t;
-#include "types.h"
+typedef jack_nframes_t nframes_t;
 
-class Port
+class Port;
+
+class Engine : public Mutex
 {
-    jack_port_t *_port;
-    const char *_name;
+    jack_client_t *_client;
+
+    /* I know locking out the process callback is cheating, even
+       though we use trylock... The thing is, every other DAW does
+       this too and you can hear it in the glitches Ardour and friends
+       produce when reconfiguring I/O... Working out a message queue
+       system would obviously be better, but a DAW isn't a performance
+       instrument anyway, so I think these drop-outs are a reasonable
+       compromise. Obviously, this lock should never be held during
+       blocking operations. */
+
+    int _buffers_dropped;                                       /* buffers dropped because of locking */
+
+    static int process ( nframes_t nframes, void *arg );
+    int process ( nframes_t nframes );
+
+private:
+
+    friend class Port;
+    jack_client_t * client ( void ) { return _client; }
 
 public:
 
-    Port ( jack_port_t *port );
-    Port ( const char *name );
-    ~Port ( );
 
-    bool connected ( void ) const { return jack_port_connected( _port ); }
-    const char * name ( void ) const { return _name; }
 
-    void write ( sample_t *buf, nframes_t nframes );
-    sample_t *buffer ( nframes_t nframes );
+    Engine ( );
+
+    int init ( void );
+
+    nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
+    float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }
+
 };
+
+
+extern Engine * engine;

@@ -46,7 +46,7 @@ Disk_Stream::Disk_Stream ( Track_Header *th, float frame_rate, nframes_t nframes
     size_t bufsize = blocks * nframes * sizeof( sample_t );
 
     for ( int i = channels; i--; )
-        _rb[ i ] = jack_ringbuffer_create( bufsize );
+        _rb.push_back( jack_ringbuffer_create( bufsize ) );
 
     sem_init( &_blocks, 0, blocks );
 
@@ -97,10 +97,27 @@ Disk_Stream::io_thread ( void *arg )
 void
 Disk_Stream::read_block ( sample_t *buf )
 {
+
+    /* stupid chicken/egg */
+    if ( ! timeline )
+        return;
+
+    printf( "IO: attempting to read block @ %lu\n", _frame );
+
+    if ( ! track() )
+    {
+//        _frame += _nframes;
+        return;
+    }
+
+    timeline->rdlock();
+
     if ( track()->play( buf, _frame, _nframes, channels() ) )
         _frame += _nframes;
     else
         /* error */;
+
+    timeline->unlock();
 }
 
 /* THREAD: IO */
@@ -119,6 +136,8 @@ Disk_Stream::io_thread ( void )
 
     while ( wait_for_block() )
     {
+//        printf( "IO: RT thread is ready for more data...\n" );
+
         read_block( buf );
 
         /* deinterleave the buffer and stuff it into the per-channel ringbuffers */
@@ -140,8 +159,8 @@ Disk_Stream::io_thread ( void )
 /* THREAD: RT */
 /** take a block from the ringbuffers and send it out the track's
  * ports */
-void
-Disk_Stream::process ( void )
+nframes_t
+Disk_Stream::process ( nframes_t nframes )
 {
     const size_t block_size = _nframes * sizeof( sample_t );
 
@@ -154,4 +173,7 @@ Disk_Stream::process ( void )
     }
 
     block_processed();
+
+    /* FIXME: bogus */
+    return nframes;
 }

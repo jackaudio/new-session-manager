@@ -51,6 +51,9 @@
 #include "Track_Header.H"
 // #include "const.h"
 
+#include "Engine.H"
+
+Engine *engine;
 Timeline *timeline;
 
 void cb_undo ( Fl_Widget *w, void *v )
@@ -77,6 +80,10 @@ main ( int argc, char **argv )
     Loggable::register_create( "Time_Point",    &Time_Point::create    );
     Loggable::register_create( "Control_Point", &Control_Point::create );
     Loggable::register_create( "Track_Header",  &Track_Header::create  );
+
+    /* we don't really need a pointer for this */
+    engine = new Engine;
+    engine->init();
 
     timeline = new Timeline( 0, 24, main_window->w(), main_window->h() - 24, "Timeline" );
 

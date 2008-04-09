@@ -24,8 +24,8 @@
 #include "Control_Track.H"
 #include <FL/Fl_Scrollbar.H>
 
-#include <FL/Fl_Image.H>
-#include <FL/Fl_RGB_Image.H> // needed for alpha blending
+// #include <FL/Fl_Image.H>
+// #include <FL/Fl_RGB_Image.H> // needed for alpha blending
 
 #include "Track_Header.H"
 
@@ -153,7 +153,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->type( Fl_Pack::VERTICAL );
             o->spacing( 0 );
 
-            for ( int i = 8; i--;  )
+            for ( int i = 1; i--;  )
             {
 //                Track_Header *t = new Track_Header( 0, 0, W, 75 );
                 Track_Header *t = new Track_Header( 0, 0, W, 30 );

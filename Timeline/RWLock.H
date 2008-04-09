@@ -19,26 +19,54 @@
 
 #pragma once
 
-#include <jack/jack.h>
+#include <pthread.h>
 
-typedef float sample_t;
-//typedef jack_nframes_t nframes_t;
-#include "types.h"
-
-class Port
+class RWLock
 {
-    jack_port_t *_port;
-    const char *_name;
+
+    pthread_rwlock_t _lock;
 
 public:
 
-    Port ( jack_port_t *port );
-    Port ( const char *name );
-    ~Port ( );
+    RWLock ( )
+        {
+//            _lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+            pthread_rwlock_init( &_lock, NULL );
+        }
 
-    bool connected ( void ) const { return jack_port_connected( _port ); }
-    const char * name ( void ) const { return _name; }
+    virtual ~RWLock ( )
+        {
+            pthread_rwlock_destroy( &_lock );
+        }
 
-    void write ( sample_t *buf, nframes_t nframes );
-    sample_t *buffer ( nframes_t nframes );
+    void
+    rdlock ( void )
+        {
+            pthread_rwlock_rdlock( &_lock );
+        }
+
+    void
+    wrlock ( void )
+        {
+            pthread_rwlock_wrlock( &_lock );
+        }
+
+    void
+    unlock ( void )
+        {
+            pthread_rwlock_unlock( &_lock );
+        }
+
+    int
+    tryrdlock ( void )
+        {
+            return pthread_rwlock_tryrdlock( &_lock );
+        }
+
+    int
+    trywrlock ( void )
+        {
+            return pthread_rwlock_trywrlock( &_lock );
+        }
+
 };

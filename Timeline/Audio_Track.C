@@ -99,7 +99,8 @@ Audio_Track::handle ( int m )
                 return 0;
             }
 
-            Region *r = new Region( c, this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ) );
+//            Region *r =
+            new Region( c, this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ) );
 
             redraw();
             return 1;
@@ -123,7 +124,7 @@ Audio_Track::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int chann
     sample_t *cbuf = new sample_t[ nframes ];
 
     /* quick and dirty--let the regions figure out coverage for themselves */
-    for ( list <Track_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
+    for ( list <Track_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); ++i )
     {
         const Region *r = (Region*)(*i);
 
@@ -141,6 +142,15 @@ Audio_Track::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int chann
         }
     }
 
+    delete[] cbuf;
+
     /* FIXME: bogus */
     return nframes;
 }
+
+/* /\* THREAD: RT *\/ */
+/* nframes_t */
+/* Audio_Track::process ( nframes_t nframes ) */
+/* { */
+/*     return disktream->process( nframes ); */
+/* } */

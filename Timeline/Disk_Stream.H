@@ -49,6 +49,8 @@ class Disk_Stream
 
     sem_t _blocks;                                                /* semaphore to wake the IO thread with */
 
+//   volatile  nframes_t _seek_request;
+
     int channels ( void ) const { return _rb.size(); }
 
     Audio_Track * track ( void );

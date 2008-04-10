@@ -27,6 +27,10 @@ class Audio_File_SF : public Audio_File
 
     SNDFILE *_in;
 
+    /* used to avoid unnecessary seeking--libsndfile isn't smart
+     * enough to do this for us */
+    nframes_t _current_read;
+
 public:
 
     static Audio_File_SF *from_file ( const char *filename );

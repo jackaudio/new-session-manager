@@ -23,7 +23,8 @@
 #include "Port.H"
 
 // float Disk_Stream::seconds_to_buffer = 5.0f;
-float Disk_Stream::seconds_to_buffer = 1.0f;
+float Disk_Stream::seconds_to_buffer = 5.0f;
+// size_t Disk_Stream::disk_block_frames = 2048;
 
 /* A Disk_Stream uses a separate I/O thread to stream a track's
    regions from disk into a ringbuffer, to be processed by the RT
@@ -47,6 +48,9 @@ Disk_Stream::Disk_Stream ( Track_Header *th, float frame_rate, nframes_t nframes
     _nframes = nframes;
 
     size_t bufsize = blocks * nframes * sizeof( sample_t );
+
+/*     const int blocks = 64; */
+/*     const size_t bufsize = (blocks * (nframes * sizeof( sample_t ))) + sizeof( sample_t ); */
 
     for ( int i = channels; i--; )
         _rb.push_back( jack_ringbuffer_create( bufsize ) );
@@ -151,6 +155,12 @@ Disk_Stream::io_thread ( void )
             for ( unsigned int j = i; k < _nframes; j += channels() )
                 cbuf[ k++ ] = buf[ j ];
 
+            while ( jack_ringbuffer_write_space( _rb[ i ] ) < block_size )
+            {
+                printf( "IO: disk buffer overrun!\n" );
+                usleep( 2000 );
+            }
+
             jack_ringbuffer_write( _rb[ i ], (char*)cbuf, block_size );
         }
     }
@@ -161,19 +171,39 @@ Disk_Stream::io_thread ( void )
 
 /* THREAD: RT */
 /** take a block from the ringbuffers and send it out the track's
- * ports */
+ *  ports */
 nframes_t
 Disk_Stream::process ( nframes_t nframes )
 {
-    const size_t block_size = _nframes * sizeof( sample_t );
+    const size_t block_size = nframes * sizeof( sample_t );
+
+//    printf( "process: %lu %lu %lu\n", _frame, _frame + nframes, nframes );
 
     for ( int i = channels(); i--;  )
     {
-        void *buf = (_th->output)[ i ].buffer( _nframes );
+
+        void *buf = _th->output[ i ].buffer( nframes );
 
         /* FIXME: handle underrun */
+
+/*         if ( jack_ringbuffer_read_space( _rb[ i ] ) < block_size ) */
+/*         { */
+/*             printf( "disktream (rt): buffer underrun!\n" ); */
+/*             memset( buf, 0, block_size ); */
+/*         } */
+/*         else */
+
         if ( jack_ringbuffer_read( _rb[ i ], (char*)buf, block_size ) < block_size )
-            printf( "disktream (rt): buffer underrun!\n" );
+        {
+            printf( "RT: buffer underrun (disk can't keep up).\n" );
+            memset( buf, 0, block_size );
+        }
+
+/*             /\* testing. *\/ */
+/*         FILE *fp = fopen( "testing.au", "a" ); */
+/*         fwrite( buf, block_size, 1, fp ); */
+/*         fclose( fp ); */
+
     }
 
     block_processed();

@@ -62,7 +62,6 @@ Engine::process ( nframes_t nframes )
         return 0;
     }
 
-
     /* handle chicken/egg problem */
     if ( timeline )
         /* this will initiate the process() call graph for the various

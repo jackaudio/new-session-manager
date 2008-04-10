@@ -33,6 +33,7 @@ Audio_File_SF::from_file ( const char *filename )
     SNDFILE *in;
     SF_INFO si;
 
+
     Audio_File_SF *c = NULL;
 
     memset( &si, 0, sizeof( si ) );
@@ -51,6 +52,7 @@ Audio_File_SF::from_file ( const char *filename )
 
     c = new Audio_File_SF;
 
+    c->_current_read = 0;
     c->_filename = strdup( filename );
     c->_length = si.frames;
     c->_channels = si.channels;
@@ -90,7 +92,10 @@ Audio_File_SF::close ( void )
 void
 Audio_File_SF::seek ( nframes_t offset )
 {
-    sf_seek( _in, offset, SEEK_SET );
+    if ( offset != _current_read )
+    {
+        sf_seek( _in, _current_read = offset, SEEK_SET );
+    }
 }
 
 /* if channels is -1, then all channels are read into buffer
@@ -103,22 +108,26 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
 
 //    printf( "len = %lu, channels = %d\n", len, _channels );
 
+    nframes_t rlen;
+
     if ( _channels == 1 || channel == -1 )
-        return sf_readf_float( _in, buf, len );
+        rlen = sf_readf_float( _in, buf, len );
     else
     {
         sample_t *tmp = new sample_t[ len * _channels ];
 
-        nframes_t rlen = sf_readf_float( _in, tmp, len );
+        rlen = sf_readf_float( _in, tmp, len );
 
         /* extract the requested channel */
         for ( int i = channel; i < rlen; i += _channels )
             *(buf++) = tmp[ i ];
 
         delete tmp;
-
-        return rlen;
     }
+
+    _current_read += rlen;
+
+    return rlen;
 }
 
 /** read samples from /start/ to /end/ into /buf/ */

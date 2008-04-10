@@ -30,7 +30,6 @@ public:
 
     Mutex ( )
         {
-//            _lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
             pthread_mutex_init( &_lock, NULL );
         }
 
@@ -51,10 +50,10 @@ public:
             pthread_mutex_unlock( &_lock );
         }
 
-    int
+    bool
     trylock ( void )
         {
-            return pthread_mutex_trylock( &_lock );
+            return pthread_mutex_trylock( &_lock ) == 0;
         }
 
 };

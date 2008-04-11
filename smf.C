@@ -346,6 +346,9 @@ smf::open_track ( const char *name, int num )
         write_meta_event ( smf::NAME, name );
 
     ++_tracks;
+
+    _status = 0;
+
     // FIXME: write time signature here
 }
 
@@ -392,6 +395,7 @@ smf::write_meta_event ( byte_t type, int n )
 // FIXME: handle time sig, key sig, proprietary
     }
 
+    _status = 0;
 }
 
 void

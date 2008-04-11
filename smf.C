@@ -805,23 +805,27 @@ smf::read_pattern_info ( pattern *p )
                 name_set = true;
                 break;
             case smf::INSTRUMENT:
-                // FIXME: decode mapping;
             {
                 char *s = read_text();
 
-
                 char pat[256];
 
-                if ( 1 == sscanf( s, "Instrument: %s", pat ) )
+                if ( 1 == sscanf( s, "Instrument: %[^\n]", pat ) )
                 {
                     if ( ! p->mapping.open( Mapping::INSTRUMENT, pat ) )
+                    {
+                        p->mapping.open( Mapping::SCALE, "Chromatic" );
                         WARNING( "could not find instrument \"%s\"", pat );
+                    }
                 }
                 else
-                    if ( 1 == sscanf( s, "Scale: %s", pat ) )
+                    if ( 1 == sscanf( s, "Scale: %[^\n]", pat ) )
                     {
                         if ( ! p->mapping.open( Mapping::SCALE, pat ) )
+                        {
+                            p->mapping.open( Mapping::SCALE, "Chromatic" );
                             WARNING( "could not find scale \"%s\"", pat );
+                        }
                     }
                 break;
             }

@@ -119,7 +119,7 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
         rlen = sf_readf_float( _in, tmp, len );
 
         /* extract the requested channel */
-        for ( int i = channel; i < rlen; i += _channels )
+        for ( int i = channel; i < rlen * _channels; i += _channels )
             *(buf++) = tmp[ i ];
 
         delete tmp;

@@ -100,7 +100,13 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     _show_all_takes = false;
     _size = 1;
 
-    output.push_back( Port( "foo" ) );
+    {
+        char pname[40];
+        static int n = 0;
+        snprintf( pname, sizeof( pname ), "out-%d", n++ );
+
+        output.push_back( Port( strdup( pname ) ) );
+    }
 
     diskstream = new Disk_Stream( this, engine->frame_rate(), engine->nframes(), 1 );
 
@@ -298,4 +304,12 @@ Track_Header::process ( nframes_t nframes )
         return diskstream->process( nframes );
     else
         return 0;
+}
+
+/* THREAD: RT */
+void
+Track_Header::seek ( nframes_t frame )
+{
+    if ( diskstream )
+        return diskstream->seek( frame );
 }

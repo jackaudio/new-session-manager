@@ -264,6 +264,8 @@ public:
         }
 
 
+    /* Engine */
     nframes_t process ( nframes_t nframes );
+    void seek ( nframes_t frame );
 };
 #endif

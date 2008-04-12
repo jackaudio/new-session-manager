@@ -148,5 +148,8 @@ private:
 
     friend class Engine; // FIXME: only Engine::process() needs to be friended.x
 
+    /* Engine */
     nframes_t process ( nframes_t nframes );
+    void seek ( nframes_t frame );
+    int seek_pending ( void );
 };

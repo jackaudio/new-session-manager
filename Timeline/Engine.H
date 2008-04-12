@@ -44,6 +44,8 @@ class Engine : public Mutex
 
     static int process ( nframes_t nframes, void *arg );
     int process ( nframes_t nframes );
+    static int sync ( jack_transport_state_t state, jack_position_t *pos, void *arg );
+    int sync ( jack_transport_state_t state, jack_position_t *pos );
 
 private:
 
@@ -52,11 +54,11 @@ private:
 
 public:
 
-
-
     Engine ( );
 
     int init ( void );
+
+    void request_locate ( nframes_t frame );
 
     nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
     float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }

@@ -40,6 +40,63 @@ Engine::process ( nframes_t nframes, void *arg )
     return ((Engine*)arg)->process( nframes );
 }
 
+/* static wrapper */
+int
+Engine::sync ( jack_transport_state_t state, jack_position_t *pos, void *arg )
+{
+    return ((Engine*)arg)->sync( state, pos );
+}
+
+void
+Engine::request_locate ( nframes_t frame )
+{
+    if ( timeline )
+        timeline->seek( frame );
+}
+
+/* THREAD: RT */
+/** This is the jack slow-sync callback. */
+int
+Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
+{
+    static bool seeking = false;
+
+    switch ( state )
+    {
+        case JackTransportStopped:           /* new position requested */
+            /* JACK docs lie. This is only called when the transport
+               is *really* stopped, not when starting a slow-sync
+               cycle */
+            request_locate( pos->frame );
+            return 1;
+         case JackTransportStarting:          /* this means JACK is polling slow-sync clients */
+        {
+            if ( ! seeking )
+            {
+                request_locate( pos->frame );
+                seeking = true;
+            }
+
+            int r = timeline->seek_pending();
+
+            if ( ! r )
+                seeking = false;
+
+            return ! seeking;
+        }
+        case JackTransportRolling:           /* JACK's timeout has expired */
+            /* FIXME: what's the right thing to do here? */
+//            request_locate( pos->frame );
+            return 1;
+//            return transport.frame == pos->frame;
+            break;
+        default:
+            printf( "unknown transport state.\n" );
+    }
+
+    return 0;
+}
+
 /* THREAD: RT */
 int
 Engine::process ( nframes_t nframes )
@@ -82,6 +139,10 @@ Engine::init ( void )
         return 0;
 
     jack_set_process_callback( _client, &Engine::process, this );
+
+    /* FIXME: should we wait to register this until after the session
+     has been loaded (and we have disk threads running)? */
+    jack_set_sync_callback( _client, &Engine::sync, this );
 
     jack_activate( _client );
 

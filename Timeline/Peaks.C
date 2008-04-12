@@ -38,6 +38,8 @@
 
 #include <math.h>
 
+#include <FL/Fl.H> // for Fl::check();
+
 Peaks::peakbuffer Peaks::_peakbuf;
 
 
@@ -305,6 +307,8 @@ Peaks::current ( void ) const
 }
 
 
+/* FIXME: we need to work out a way to run this in another thread and
+ possibly stream back the data to the GUI */
 /** build peaks file for /filename/ if necessary */
 bool
 Peaks::make_peaks ( int chunksize )
@@ -334,6 +338,8 @@ Peaks::make_peaks ( int chunksize )
     do {
         len = read_source_peaks( peaks, 1, chunksize );
         fwrite( peaks, sizeof( peaks ), 1, fp );
+        /* FIXME: GUI code shouldn't be here! */
+        Fl::check();
     }
     while ( len );
 

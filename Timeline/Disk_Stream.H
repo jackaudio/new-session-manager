@@ -27,13 +27,15 @@
 
 #include <pthread.h>
 
+#include "Mutex.H"
+
 #include <vector>
 using std::vector;
 
 class Track_Header;
 class Audio_Track;
 
-class Disk_Stream
+class Disk_Stream : public Mutex
 {
 
     pthread_t _thread;
@@ -49,7 +51,11 @@ class Disk_Stream
 
     sem_t _blocks;                                                /* semaphore to wake the IO thread with */
 
-//   volatile  nframes_t _seek_request;
+    int _total_blocks;
+
+    volatile nframes_t _pending_seek;                           /* absolute transport position to seek to */
+
+    volatile int _terminate;
 
     int channels ( void ) const { return _rb.size(); }
 
@@ -60,7 +66,19 @@ class Disk_Stream
 protected:
 
     void block_processed ( void ) { sem_post( &_blocks ); }
-    bool wait_for_block ( void ) { while ( sem_wait( &_blocks ) == EINTR ); return true; }
+    bool wait_for_block ( void )
+        {
+            if ( _terminate )
+                return false;
+            else
+            {
+                while ( sem_wait( &_blocks ) == EINTR );
+                return true;
+            }
+        }
+
+    void read_block ( sample_t *buf, nframes_t nframes );
+    void io_thread ( void );
 
 public:
 
@@ -71,23 +89,12 @@ public:
 
     virtual ~Disk_Stream ( );
 
-    void
-    resize ( nframes_t nframes )
-        {
-            if ( nframes != _nframes )
-                /* FIXME: to something here! */;
-        }
-
-    void
-    seek ( nframes_t frame )
-        {
-            _frame = frame;
-            /* FIXME: need to signal the IO thread somehow? */
-        }
+    void resize ( nframes_t nframes );
+    void seek ( nframes_t frame );
+    bool seek_pending ( void );
 
     void run ( void );
-    void read_block ( sample_t *buf );
-    void io_thread ( void );
     nframes_t process ( nframes_t nframes );
 
+    int output_buffer_percent ( void );
 };

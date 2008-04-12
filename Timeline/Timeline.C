@@ -29,6 +29,9 @@
 
 #include "Track_Header.H"
 
+
+#include "Disk_Stream.H"
+
 void
 Timeline::cb_scroll ( Fl_Widget *w, void *v )
 {
@@ -153,7 +156,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->type( Fl_Pack::VERTICAL );
             o->spacing( 0 );
 
-            for ( int i = 1; i--;  )
+            for ( int i = 2; i--;  )
             {
 //                Track_Header *t = new Track_Header( 0, 0, W, 75 );
                 Track_Header *t = new Track_Header( 0, 0, W, 30 );
@@ -615,4 +618,31 @@ Timeline::process ( nframes_t nframes )
 
     /* FIXME: BOGUS */
     return nframes;
+}
+
+/* THREAD: RT */
+void
+Timeline::seek ( nframes_t frame )
+{
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track_Header *t = (Track_Header*)tracks->child( i );
+
+        t->seek( frame );
+    }
+}
+
+/* THREAD: RT */
+int
+Timeline::seek_pending ( void )
+{
+    int r = 0;
+
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track_Header *t = (Track_Header*)tracks->child( i );
+
+        if ( t->diskstream )
+            r += t->diskstream->output_buffer_percent() < 50;
+    }
 }

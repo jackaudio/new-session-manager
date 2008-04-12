@@ -41,10 +41,10 @@ Audio_File::from_file ( const char * filename )
 
 done:
 
-    a->_peaks = new Peaks;
+/*     a->_peaks = new Peaks; */
 
-    a->_peaks->clip( a );
-    a->_peaks->open();
+/*     a->_peaks->clip( a ); */
+/*     a->_peaks->open(); */
 
     _open_files[ string( filename ) ] = a;
 

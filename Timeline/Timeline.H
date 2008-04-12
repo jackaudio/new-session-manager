@@ -138,9 +138,12 @@ public:
     void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
     void xposition ( int X );
     void yposition ( int Y );
+    void draw_playhead ( void );
+    void redraw_playhead ( void );
     void draw ( void );
     void draw_overlay ( void );
     int handle ( int m );
+    static void update_cb ( void *arg );
 
     void select( const Rectangle &r );
 

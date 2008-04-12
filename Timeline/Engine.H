@@ -50,6 +50,7 @@ class Engine : public Mutex
 private:
 
     friend class Port;
+    friend class Transport;
     jack_client_t * client ( void ) { return _client; }
 
 public:

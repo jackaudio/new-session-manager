@@ -29,8 +29,12 @@
 
 #include "Track_Header.H"
 
+const float UPDATE_FREQ = 0.02f;
+
 
 #include "Disk_Stream.H"
+
+#include "Transport.H"
 
 void
 Timeline::cb_scroll ( Fl_Widget *w, void *v )
@@ -178,6 +182,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
     }
 
+
     /* make sure scrollbars are on top */
     add( vscroll );
     add( hscroll );
@@ -187,6 +192,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     redraw();
 
     end();
+
+    Fl::add_timeout( UPDATE_FREQ, update_cb, this );
+
 }
 
 
@@ -447,8 +455,42 @@ Timeline::draw ( void )
 }
 
 void
+Timeline::draw_playhead ( void )
+{
+    int x = ( ts_to_x( transport.frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track_Header::width();
+
+    if ( x < 0 || x > tracks->w() )
+        return;
+
+    fl_color( FL_RED );
+
+    fl_line( x, rulers->y() + rulers->h(), x, rulers->y() + rulers->h() + tracks->h() );
+}
+
+void
+Timeline::redraw_playhead ( void )
+{
+    redraw_overlay();
+}
+
+
+/** called so many times a second to redraw the playhead etc.  */
+void
+Timeline::update_cb ( void *arg )
+{
+    Fl::repeat_timeout( UPDATE_FREQ, update_cb, arg );
+
+    Timeline *tl = (Timeline *)arg;
+
+    tl->redraw_playhead();
+}
+
+void
 Timeline::draw_overlay ( void )
 {
+
+    draw_playhead();
+
     if ( ! ( _selection.w && _selection.h ) )
         return;
 

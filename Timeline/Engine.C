@@ -18,6 +18,7 @@
 /*******************************************************************************/
 
 #include "Engine.H"
+#include "Transport.H"
 
 #include "Timeline.H" // for process()
 
@@ -69,7 +70,7 @@ Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
                cycle */
             request_locate( pos->frame );
             return 1;
-         case JackTransportStarting:          /* this means JACK is polling slow-sync clients */
+        case JackTransportStarting:          /* this means JACK is polling slow-sync clients */
         {
             if ( ! seeking )
             {
@@ -101,12 +102,9 @@ Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
 int
 Engine::process ( nframes_t nframes )
 {
-    jack_position_t pos;
-    jack_transport_state_t ts;
+    transport.poll();
 
-    ts = jack_transport_query( _client, &pos );
-
-    if ( ts != JackTransportRolling )
+    if ( ! transport.rolling )
         return 0;
 
     if ( ! trylock() )

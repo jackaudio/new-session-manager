@@ -14,6 +14,7 @@ SRCS= \
       Port.C \
       Disk_Stream.C \
       Engine.C \
+      Transport.C \
       Loggable.C \
 
 OBJS=$(SRCS:.C=.o)

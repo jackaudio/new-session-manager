@@ -459,12 +459,17 @@ Timeline::draw_playhead ( void )
 {
     int x = ( ts_to_x( transport.frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track_Header::width();
 
-    if ( x < 0 || x > tracks->w() )
+    if ( x < tracks->x() + Track_Header::width() || x > tracks->x() + tracks->w() )
         return;
 
     fl_color( FL_RED );
 
-    fl_line( x, rulers->y() + rulers->h(), x, rulers->y() + rulers->h() + tracks->h() );
+    int y = rulers->y() + rulers->h();
+    int h = this->h() - hscroll->h();
+
+    fl_rectf( x - 2, y, 5, 2 );
+
+    fl_line( x, y, x, h );
 }
 
 void

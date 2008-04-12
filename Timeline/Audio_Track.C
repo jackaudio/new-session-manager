@@ -124,25 +124,31 @@ Audio_Track::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int chann
     sample_t *cbuf = new sample_t[ nframes ];
 
     /* quick and dirty--let the regions figure out coverage for themselves */
-    for ( list <Track_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); ++i )
+    for ( list <Track_Widget *>::const_iterator i = _widgets.begin();
+          i != _widgets.end(); i++ )
     {
         const Region *r = (Region*)(*i);
 
         for ( int i = channels; i--;  )
         {
-            memset( cbuf, 0, nframes * sizeof( sample_t ) );
+//            memset( cbuf, 0, nframes * sizeof( sample_t ) );
 
             if ( ! r->read( cbuf, frame, nframes, i ) )
-                /* error ? */;
+                /* error ? */
+                continue;
 
             if ( channels == 1 )
-                memcpy( buf, cbuf, nframes * sizeof( sample_t ) );
+            {
+//                memcpy( buf, cbuf, nframes * sizeof( sample_t ) );
+                for ( unsigned int j = 0; j < nframes; ++j )
+                    buf[ j ] += cbuf[ j ];
+            }
             else
             {
-                /* interleave */
+                /* mix and interleave */
                 int k = 0;
                 for ( unsigned int j = i; k < nframes; j += channels )
-                    buf[ j ] = cbuf[ k++ ];
+                    buf[ j ] += cbuf[ k++ ];
             }
         }
     }

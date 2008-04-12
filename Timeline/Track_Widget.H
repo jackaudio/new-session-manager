@@ -61,6 +61,9 @@ class Track_Widget : public Loggable
     static Track_Widget * _original;                            /* the original of the /pushed/ widget */
     static Track_Widget * _belowmouse;                          /* the widget below the mouse cursor */
 
+    /* can't have this */
+    Track_Widget ( const Track_Widget &rhs );
+
 protected:
 
     Track *_track;                                              /* track this region belongs to */
@@ -99,12 +102,26 @@ public:
             _selection.remove( this );
         }
 
-
-    Track_Widget ( const Track_Widget &rhs )
+    const Track_Widget &
+    operator= ( const Track_Widget &rhs )
         {
-            *_r = *rhs._r;
-            _track = rhs._track;
+            if ( this == &rhs )
+                return *this;
+
+            _r         = &_range;
+            _range     = rhs._range;
+            _track     = rhs._track;
+            _box_color = rhs._box_color;
+            _color     = rhs._color;
+
+            return *this;
         }
+
+
+/*     Track_Widget ( const Track_Widget &rhs ) */
+/*         { */
+/*             *this = rhs; */
+/*         } */
 
     virtual Track_Widget *clone ( const Track_Widget *r ) = 0;
 

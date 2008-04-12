@@ -105,6 +105,7 @@ Engine::process ( nframes_t nframes )
     transport.poll();
 
     if ( ! transport.rolling )
+        /* FIXME: fill all ports with silence */
         return 0;
 
     if ( ! trylock() )

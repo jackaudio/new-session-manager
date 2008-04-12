@@ -94,15 +94,10 @@ Region::init ( void )
 /* copy constructor */
 Region::Region ( const Region & rhs )
 {
-    _r->offset    = rhs._r->offset;
-    _track     = rhs._track;
-//    _track     = NULL;
+    *((Track_Widget*)this) = (Track_Widget &)rhs;
+
     _clip      = rhs._clip;
-    _r->start     = rhs._r->start;
-    _r->end       = rhs._r->end;
     _scale     = rhs._scale;
-    _box_color = rhs._box_color;
-    _color     = rhs._color;
 
     log_create();
 }
@@ -553,7 +548,7 @@ Region::normalize ( void )
 nframes_t
 Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const
 {
-    const Range &r = _range;
+    const Range r = _range;
 
     const nframes_t length = r.end - r.start;
 

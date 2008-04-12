@@ -174,6 +174,8 @@ void
 Disk_Stream::read_block ( sample_t *buf, nframes_t nframes )
 {
 
+    memset( buf, 0, nframes * sizeof( sample_t ) * channels() );
+
     /* stupid chicken/egg */
     if ( ! timeline )
         return;
@@ -224,7 +226,7 @@ Disk_Stream::io_thread ( void )
     {
 //        printf( "IO: RT thread is ready for more data...\n" );
 
-        printf( "IO: disk buffer is %3d%% full\r", output_buffer_percent() );
+//        printf( "IO: disk buffer is %3d%% full\r", output_buffer_percent() );
 
 //        lock(); // for seeking
 

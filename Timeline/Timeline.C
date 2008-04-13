@@ -475,7 +475,13 @@ Timeline::draw_playhead ( void )
 void
 Timeline::redraw_playhead ( void )
 {
-    redraw_overlay();
+    static nframes_t last_playhead = -1;
+
+    if ( last_playhead != transport.frame )
+    {
+        redraw_overlay();
+        last_playhead = transport.frame;
+    }
 }
 
 

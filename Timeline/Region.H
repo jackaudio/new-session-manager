@@ -38,11 +38,12 @@ class Region_Base : public Track_Widget
 
 public:
 
-    enum fade_type_e { Linear, Cosine, Logarithmic, Parabolic };
-    enum fade_dir_e { FADE_IN, FADE_OUT };
 
     struct Fade
     {
+        enum fade_type_e { Linear, Cosine, Logarithmic, Parabolic };
+        enum fade_dir_e { In, Out };
+
         fade_type_e type;
         nframes_t length;
 
@@ -53,11 +54,50 @@ public:
             }
 
         bool
-        operator< ( const Fade &rhs )
+        operator< ( const Fade &rhs ) const
             {
                 return length < rhs.length;
             }
+
+        /** Return gain for frame /index/ of /nframes/ on a gain curve
+         * of type /type/.*/
+        /* FIXME: calling a function per sample is bad, switching on
+         * type mid fade is bad. */
+        inline float
+        gain ( nframes_t index ) const
+            {
+                float g;
+
+                const float fi = index / (float)length;
+
+                switch ( type )
+                {
+                    case Linear:
+                        g = fi;
+                        break;
+                    case Cosine:
+//            g = sin( fi * M_PI / 2 );
+                        g = (1.0f - cos( fi * M_PI )) / 2.0f;
+                        break;
+                    case Logarithmic:
+                        g = pow( 0.1f, (1.0f - fi) * 5.0f );
+                        break;
+                    case Parabolic:
+                        g = 1.0f - (1.0f - fi) * (1.0f - fi);
+                        break;
+                    default:
+                        g = 1.0f;
+                }
+
+                return g;
+
+            }
+
+        void apply ( sample_t *buf, fade_dir_e dir, long start, nframes_t end, nframes_t nframes ) const;
     };
+
+/*     struct Fade_In : public Fade; */
+/*     struct Fade_Out : public Fade; */
 
 private:
 
@@ -227,6 +267,8 @@ public:
     Region ( Audio_File *c, Track *t, nframes_t o );
 
     int handle ( int m );
+    void draw_fade ( const Fade &fade, Fade::fade_dir_e dir, int X, int W );
+
     void draw_box( int X, int Y, int W, int H );
     void draw ( int X, int Y, int W, int H );
     void resize ( void );

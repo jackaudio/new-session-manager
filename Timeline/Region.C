@@ -38,8 +38,6 @@ using namespace std;
 extern Timeline *timeline;
 
 
-static inline float
-fade_gain ( Region::fade_type_e type, nframes_t index, nframes_t nframes );
 
 Fl_Boxtype Region::_box = FL_UP_BOX;
 
@@ -93,6 +91,11 @@ Region::init ( void )
 
     _box_color = FL_CYAN;
     _color = FL_BLUE;
+
+    _fade_in.length = 256;
+    _fade_in.type = Fade::Linear;
+
+    _fade_out = _fade_in;
 }
 
 /* copy constructor */
@@ -102,6 +105,9 @@ Region::Region ( const Region & rhs )
 
     _clip      = rhs._clip;
     _scale     = rhs._scale;
+
+    _fade_in   = rhs._fade_in;
+    _fade_out  = rhs._fade_out;
 
     log_create();
 }
@@ -406,6 +412,48 @@ changed:
 
 }
 
+
+/** Draws the curve for a single fade. /X/ and /W/ repersent the
+ portion of the region covered by this draw, which may or may not
+ cover the fade in question. */
+void
+Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, int X, int W )
+{
+    const int dy = y() + Fl::box_dy( box() );
+    const int dh = h() - Fl::box_dh( box() );
+    const int height = dh;
+
+    fl_color( fl_lighter( FL_BLACK ) );
+    fl_line_style( FL_SOLID, 2 );
+
+    fl_begin_polygon();
+
+    if ( dir == Fade::In )
+    {
+        fl_vertex( line_x(), dy );
+        fl_vertex( line_x(), dy + height );
+    }
+    else
+    {
+        fl_vertex( line_x() + w(), dy );
+        fl_vertex( line_x() + w(), dy + height );
+    }
+
+    const int width = timeline->ts_to_x( fade.length );
+
+    for ( int i = X; i < line_x() + width; i += 3 )
+    {
+        const int x = i;
+
+        const int y = dy + (height * (1.0f - fade.gain( timeline->x_to_ts( i - this->x() ))));
+
+        fl_vertex( x, y );
+    }
+
+    fl_end_polygon();
+    fl_line_style( FL_SOLID, 0 );
+}
+
 void
 Region::draw_box( int X, int Y, int W, int H )
 {
@@ -423,41 +471,8 @@ Region::draw_box( int X, int Y, int W, int H )
         fl_draw_box( box(), x() - 10, y(), w() + 50, h(), _box_color );
 
     /* draw fades */
-    {
-
-        int dy = y() + Fl::box_dy( box() );
-        int dh = h() - Fl::box_dh( box() );
-
-        fl_color( fl_lighter( FL_BLACK ) );
-        fl_line_style( FL_SOLID, 2 );
-
-        Fade fade = _fade_in;
-        fade.length = 20000;
-        fade.type = Cosine;
-
-        fl_begin_polygon();
-
-        fl_vertex( x(), dy );
-
-        const int height = dh;
-
-        fl_vertex( x(), dy + height );
-
-        const int width = timeline->ts_to_x( fade.length );
-
-        for ( int i = X; i < line_x() + width; i += 3 )
-        {
-            const int x = i;
-
-            const int y = dy + (height * (1.0f - fade_gain( fade.type, timeline->x_to_ts( i - this->x() ), fade.length )));
-
-            fl_vertex( x, y );
-        }
-
-        fl_end_polygon();
-        fl_line_style( FL_SOLID, 0 );
-
-    }
+    draw_fade( _fade_in, Fade::In, X, W );
+    draw_fade( _fade_out, Fade::Out, X, W );
 
     fl_pop_clip();
 }
@@ -518,7 +533,7 @@ Region::draw ( int X, int Y, int W, int H )
     /* FIXME: testing! */
         Fade fade = _fade_in;
         fade.length = 20000;
-        fade.type = Cosine;
+        fade.type = Fade::Cosine;
 
     for ( int i = 0; i < channels; ++i )
     {
@@ -536,7 +551,7 @@ Region::draw ( int X, int Y, int W, int H )
         /* if ( draw_fade_waveform ) */
         for ( int j = min( fw, peaks ); j--; )
         {
-            const float g = fade_gain( fade.type, j, fw );
+            const float g = fade.gain( j );
             pb[ j ].min *= g;
             pb[ j ].max *= g;
         }
@@ -599,68 +614,23 @@ Region::normalize ( void )
 /**********/
 
 
-/** Return gain for frame /index/ of /nframes/ on a gain curve of type /type/.*/
-/* FIXME: calling a function per sample is bad, switching on type mid
- * fade is bad. */
-static inline float
-fade_gain ( Region::fade_type_e type, nframes_t index, nframes_t nframes )
-{
-    float g;
-
-    const float fi = index / (float)nframes;
-
-    switch ( type )
-    {
-        case Region::Linear:
-            g = fi;
-            break;
-        case Region::Cosine:
-//            g = sin( fi * M_PI / 2 );
-            g = (1.0f - cos( fi * M_PI )) / 2.0f;
-            break;
-        case Region::Logarithmic:
-            g = pow( 0.1f, (1.0f - fi) * 5.0f );
-            break;
-        case Region::Parabolic:
-            g = 1.0f - (1.0f - fi) * (1.0f - fi);
-            break;
-        default:
-            g = 1.0f;
-    }
-
-    return g;
-
-}
-
 /** Apply a (portion of) fade-out from /start/ to /end/ assuming a
  * buffer size of /nframes/. /start/ and /end/ are relative to the
  * given buffer, and /start/ may be negative. */
-static void
-apply_fade ( sample_t *buf, Region::fade_dir_e dir, Region::fade_type_e type, long start, nframes_t end, nframes_t nframes )
+void
+Region::Fade::apply ( sample_t *buf, Region::Fade::fade_dir_e dir, long start, nframes_t end, nframes_t nframes ) const
 {
-    printf( "apply fade %s: start=%ld end=%lu\n", dir == Region::FADE_OUT ? "out" : "in", start, end );
+    printf( "apply fade %s: start=%ld end=%lu\n", dir == Fade::Out ? "out" : "in", start, end );
 
     nframes_t i = start > 0 ? start : 0;
     nframes_t e = end > nframes ? nframes : end;
 
-    if ( dir == Region::FADE_OUT )
+    if ( dir == Fade::Out )
         for ( ; i < e; ++i )
-        {
-            long n = end - start;
-
-            const float g = fade_gain( type, (n - 1) - (i - start), n);
-
-//            printf( "gain for %lu is %f\n", i, g );
-            buf[ i ] *= g;
-        }
+            buf[ i ] *= gain( (length - 1) - (i - start) );
     else
         for ( ; i < e; ++i )
-        {
-            const float g = fade_gain( type, i - start, end - start );
-
-//            printf( "gain for %lu is %f\n", i, g );
-            buf[ i ] *= g;
-        }
+            buf[ i ] *= gain( i - start );
 }
 
 
@@ -817,7 +787,7 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
     Fade declick;
 
     declick.length = 256;
-    declick.type   = Linear;
+    declick.type   = Fade::Linear;
 
     {
         Fade fade;
@@ -829,7 +799,7 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
         {
             const long d = 0 - sofs;
 
-            apply_fade( buf + ofs, FADE_IN, fade.type, d, d + fade.length, cnt - ofs );
+            fade.apply( buf + ofs, Fade::In, d, d + fade.length, cnt - ofs );
         }
 
         fade = declick < _fade_out ? _fade_out : declick;
@@ -839,7 +809,7 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
         {
             const nframes_t d = r.end - start;
 
-            apply_fade( buf, FADE_OUT, fade.type, cnt + (long)d - fade.length, cnt + d, cnt );
+            fade.apply( buf, Fade::Out, cnt + (long)d - fade.length, cnt + d, cnt );
         }
     }
 //    printf( "read %lu frames\n", cnt );

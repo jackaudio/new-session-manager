@@ -422,6 +422,43 @@ Region::draw_box( int X, int Y, int W, int H )
     else
         fl_draw_box( box(), x() - 10, y(), w() + 50, h(), _box_color );
 
+    /* draw fades */
+    {
+
+        int dy = y() + Fl::box_dy( box() );
+        int dh = h() - Fl::box_dh( box() );
+
+        fl_color( fl_lighter( FL_BLACK ) );
+        fl_line_style( FL_SOLID, 2 );
+
+        Fade fade = _fade_in;
+        fade.length = 20000;
+        fade.type = Cosine;
+
+        fl_begin_polygon();
+
+        fl_vertex( x(), dy );
+
+        const int height = dh;
+
+        fl_vertex( x(), dy + height );
+
+        const int width = timeline->ts_to_x( fade.length );
+
+        for ( int i = X; i < line_x() + width; i += 3 )
+        {
+            const int x = i;
+
+            const int y = dy + (height * (1.0f - fade_gain( fade.type, timeline->x_to_ts( i - this->x() ), fade.length )));
+
+            fl_vertex( x, y );
+        }
+
+        fl_end_polygon();
+        fl_line_style( FL_SOLID, 0 );
+
+    }
+
     fl_pop_clip();
 }
 
@@ -478,6 +515,11 @@ Region::draw ( int X, int Y, int W, int H )
 
     int ch = (h() - Fl::box_dh( box() ))  / channels;
 
+    /* FIXME: testing! */
+        Fade fade = _fade_in;
+        fade.length = 20000;
+        fade.type = Cosine;
+
     for ( int i = 0; i < channels; ++i )
     {
         Peak *pb = pbuf + (peaks * i);
@@ -487,6 +529,16 @@ Region::draw ( int X, int Y, int W, int H )
         {
             pb[ j ].min *= _scale;
             pb[ j ].max *= _scale;
+        }
+
+        int fw = timeline->ts_to_x( fade.length );
+
+        /* if ( draw_fade_waveform ) */
+        for ( int j = min( fw, peaks ); j--; )
+        {
+            const float g = fade_gain( fade.type, j, fw );
+            pb[ j ].min *= g;
+            pb[ j ].max *= g;
         }
 
         Waveform::draw( X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch,
@@ -501,40 +553,6 @@ Region::draw ( int X, int Y, int W, int H )
 /*                         ch, _clip, i, timeline->fpp(), */
 /*                        _r->start + offset, min( (_r->end - _r->start) - offset, _r->end), */
 /*                        _scale, selected() ? fl_invert_color( _color ) : _color ); */
-
-
-
-    /* draw fades */
-
-    {
-        fl_color( FL_BLACK );
-        fl_line_style( FL_SOLID, 2 );
-
-        Fade fade = _fade_in;
-        fade.length = 20000;
-        fade.type = Cosine;
-
-        fl_begin_line();
-
-        const int height = h();
-
-        const int width = timeline->ts_to_x( fade.length );
-
-        for ( int i = X; i < line_x() + width; i += 3 )
-        {
-            const int x = i;
-
-            const int y = this->y() + (height * (1.0f - fade_gain( fade.type, timeline->x_to_ts( i - this->x() ), fade.length )));
-
-            fl_vertex( x, y );
-        }
-
-        fl_end_line();
-        fl_line_style( FL_SOLID, 0 );
-
-    }
-
-
 
 
 

@@ -520,7 +520,7 @@ Region::draw ( int X, int Y, int W, int H )
 
         const int width = timeline->ts_to_x( fade.length );
 
-        for ( int i = X; i < line_x() + width; i++ )
+        for ( int i = X; i < line_x() + width; i += 3 )
         {
             const int x = i;
 

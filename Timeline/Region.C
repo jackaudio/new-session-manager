@@ -539,14 +539,11 @@ Region::normalize ( void )
 /**********/
 
 
-enum fade_type_e { Linear, Cosine, Logarithmic, Parabolic };
-enum fade_dir_e { FADE_IN, FADE_OUT };
-
 /** Return gain for frame /index/ of /nframes/ on a gain curve of type /type/.*/
 /* FIXME: calling a function per sample is bad, switching on type mid
  * fade is bad. */
 static inline float
-fade_gain ( fade_type_e type, nframes_t index, nframes_t nframes )
+fade_gain ( Region::fade_type_e type, nframes_t index, nframes_t nframes )
 {
     float g = 0;
 
@@ -554,17 +551,17 @@ fade_gain ( fade_type_e type, nframes_t index, nframes_t nframes )
 
     switch ( type )
     {
-        case Linear:
+        case Region::Linear:
             g = fi;
             break;
-        case Cosine:
+        case Region::Cosine:
 //            g = sin( fi * M_PI / 2 );
             g = (1.0f - cos( fi * M_PI )) / 2.0f;
             break;
-        case Logarithmic:
+        case Region::Logarithmic:
             g = pow( 0.1f, (1.0f - fi) * 5.0f );
             break;
-        case Parabolic:
+        case Region::Parabolic:
             g = 1.0f - (1.0f - fi) * (1.0f - fi);
             break;
     }
@@ -577,25 +574,21 @@ fade_gain ( fade_type_e type, nframes_t index, nframes_t nframes )
  * buffer size of /nframes/. /start/ and /end/ are relative to the
  * given buffer, and /start/ may be negative. */
 static void
-apply_fade ( sample_t *buf, fade_dir_e dir, fade_type_e type, long start, nframes_t end, nframes_t nframes )
+apply_fade ( sample_t *buf, Region::fade_dir_e dir, Region::fade_type_e type, long start, nframes_t end, nframes_t nframes )
 {
-    float gain = 1.0f;
-
-    printf( "apply fade %s: start=%ld end=%lu\n", dir == FADE_OUT ? "out" : "in", start, end );
+    printf( "apply fade %s: start=%ld end=%lu\n", dir == Region::FADE_OUT ? "out" : "in", start, end );
 
     nframes_t i = start > 0 ? start : 0;
     nframes_t e = end > nframes ? nframes : end;
 
-    float d = dir == FADE_OUT ? 1.0f : -1.0f;
-
-    if ( dir == FADE_OUT )
+    if ( dir == Region::FADE_OUT )
         for ( ; i < e; ++i )
         {
             long n = end - start;
 
             const float g = fade_gain( type, (n - 1) - (i - start), n);
 
-            printf( "gain for %lu is %f\n", i, g );
+//            printf( "gain for %lu is %f\n", i, g );
             buf[ i ] *= g;
         }
     else
@@ -603,7 +596,7 @@ apply_fade ( sample_t *buf, fade_dir_e dir, fade_type_e type, long start, nframe
         {
             const float g = fade_gain( type, i - start, end - start );
 
-            printf( "gain for %lu is %f\n", i, g );
+//            printf( "gain for %lu is %f\n", i, g );
             buf[ i ] *= g;
         }
 }
@@ -756,30 +749,37 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
         for ( int i = cnt; i--; )
             buf[i] *= _scale;
 
-    /* TODO: do fade in/out here */
-
     /* perform declicking if necessary */
 
-    /* FIXME: shouldn't this be wallclock time? */
-    const nframes_t declick_frames = 256;
-    const fade_type_e type = Linear;
+    /* FIXME: keep the declick defults someplace else */
+    Fade declick;
 
-    if ( start + cnt + declick_frames > r.end )
+    declick.length = 256;
+    declick.type   = Linear;
+
     {
-        /* declick end */
-        const nframes_t d = r.end - start;
+        Fade fade;
 
-        apply_fade( buf, FADE_OUT, type , cnt + (long)d - declick_frames, cnt + d, cnt );
+        fade = declick < _fade_in ? _fade_in : declick;
+
+        /* do fade in if necessary */
+        if ( sofs < fade.length )
+        {
+            const long d = 0 - sofs;
+
+            apply_fade( buf + ofs, FADE_IN, fade.type, d, d + fade.length, cnt - ofs );
+        }
+
+        fade = declick < _fade_out ? _fade_out : declick;
+
+        /* do fade out if necessary */
+        if ( start + cnt + fade.length > r.end )
+        {
+            const nframes_t d = r.end - start;
+
+            apply_fade( buf, FADE_OUT, fade.type, cnt + (long)d - fade.length, cnt + d, cnt );
+        }
     }
-
-    if ( sofs < declick_frames )
-    {
-        /* declick start */
-        const long d = 0 - sofs;
-
-        apply_fade( buf + ofs, FADE_IN, type, d, d + declick_frames, cnt - ofs );
-    }
-
 //    printf( "read %lu frames\n", cnt );
 
     return cnt;

@@ -36,11 +36,37 @@ class Region;
 class Region_Base : public Track_Widget
 {
 
+public:
+
+    enum fade_type_e { Linear, Cosine, Logarithmic, Parabolic };
+    enum fade_dir_e { FADE_IN, FADE_OUT };
+
+    struct Fade
+    {
+        fade_type_e type;
+        nframes_t length;
+
+        Fade ( )
+            {
+                type   = Linear;
+                length = 0;
+            }
+
+        bool
+        operator< ( const Fade &rhs )
+            {
+                return length < rhs.length;
+            }
+    };
+
 private:
 
     Audio_File *_clip;                                          /* clip this region represents */
 
     float _scale;                                               /* amplitude adjustment */
+
+    Fade _fade_in;
+    Fade _fade_out;
 
 protected:
 
@@ -173,6 +199,7 @@ class Region : public Region_Base
     bool current ( void ) const { return this == belowmouse(); }
 
 public:
+
 
     static Loggable *
     create ( char **sa )

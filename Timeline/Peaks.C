@@ -141,7 +141,7 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
             break;
     }
 
-    delete pbuf;
+    delete[] pbuf;
 
     fclose( fp );
 
@@ -187,7 +187,7 @@ Peaks::read_source_peaks ( Peak *peaks, int npeaks, int chunksize ) const
             break;
     }
 
-    delete fbuf;
+    delete[] fbuf;
 
     return i;
 }

@@ -78,7 +78,10 @@ Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
                 seeking = true;
             }
 
-            int r = timeline->seek_pending();
+            int r = true;
+
+            if ( timeline )
+                r = timeline->seek_pending();
 
             if ( ! r )
                 seeking = false;

@@ -40,7 +40,7 @@
 /* FIXME: needs error handling everywhere! */
 /* TODO: handle capture too */
 
-float Disk_Stream::seconds_to_buffer = 1.0f;
+float Disk_Stream::seconds_to_buffer = 5.0f;
 // size_t Disk_Stream::disk_block_frames = 2048;
 
 Disk_Stream::Disk_Stream ( Track_Header *th, float frame_rate, nframes_t nframes, int channels ) : _th( th )

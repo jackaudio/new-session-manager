@@ -760,14 +760,16 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
 
     /* perform declicking if necessary */
 
-    const nframes_t declick_frames = 1024;
+    /* FIXME: shouldn't this be wallclock time? */
+    const nframes_t declick_frames = 256;
+    const fade_type_e type = Linear;
 
     if ( start + cnt + declick_frames > r.end )
     {
         /* declick end */
         const nframes_t d = r.end - start;
 
-        apply_fade( buf, FADE_OUT, Cosine, cnt + (long)d - declick_frames, cnt + d, cnt );
+        apply_fade( buf, FADE_OUT, type , cnt + (long)d - declick_frames, cnt + d, cnt );
     }
 
     if ( sofs < declick_frames )
@@ -775,7 +777,7 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
         /* declick start */
         const long d = 0 - sofs;
 
-        apply_fade( buf + ofs, FADE_IN, Cosine, d, d + declick_frames, cnt - ofs );
+        apply_fade( buf + ofs, FADE_IN, type, d, d + declick_frames, cnt - ofs );
     }
 
 //    printf( "read %lu frames\n", cnt );

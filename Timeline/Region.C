@@ -37,6 +37,10 @@ using namespace std;
 
 extern Timeline *timeline;
 
+
+static inline float
+fade_gain ( Region::fade_type_e type, nframes_t index, nframes_t nframes );
+
 Fl_Boxtype Region::_box = FL_UP_BOX;
 
 Fl_Color Region::_selection_color = FL_MAGENTA;
@@ -490,13 +494,49 @@ Region::draw ( int X, int Y, int W, int H )
                         selected() ? fl_invert_color( _color ) : _color );
     }
 
-    delete pbuf;
+    delete[] pbuf;
 
 /*     for ( int i = _clip->channels(); i--; ) */
 /*         Waveform::draw( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, */
 /*                         ch, _clip, i, timeline->fpp(), */
 /*                        _r->start + offset, min( (_r->end - _r->start) - offset, _r->end), */
 /*                        _scale, selected() ? fl_invert_color( _color ) : _color ); */
+
+
+
+    /* draw fades */
+
+    {
+        fl_color( FL_BLACK );
+        fl_line_style( FL_SOLID, 2 );
+
+        Fade fade = _fade_in;
+        fade.length = 20000;
+        fade.type = Cosine;
+
+        fl_begin_line();
+
+        const int height = h();
+
+        const int width = timeline->ts_to_x( fade.length );
+
+        for ( int i = X; i < line_x() + width; i++ )
+        {
+            const int x = i;
+
+            const int y = this->y() + (height * (1.0f - fade_gain( fade.type, timeline->x_to_ts( i - this->x() ), fade.length )));
+
+            fl_vertex( x, y );
+        }
+
+        fl_end_line();
+        fl_line_style( FL_SOLID, 0 );
+
+    }
+
+
+
+
 
 
     timeline->draw_measure_lines( rx, Y, rw, H, _box_color );
@@ -534,6 +574,8 @@ Region::normalize ( void )
 }
 
 
+
+
 /**********/
 /* Engine */
 /**********/
@@ -545,7 +587,7 @@ Region::normalize ( void )
 static inline float
 fade_gain ( Region::fade_type_e type, nframes_t index, nframes_t nframes )
 {
-    float g = 0;
+    float g;
 
     const float fi = index / (float)nframes;
 
@@ -564,6 +606,8 @@ fade_gain ( Region::fade_type_e type, nframes_t index, nframes_t nframes )
         case Region::Parabolic:
             g = 1.0f - (1.0f - fi) * (1.0f - fi);
             break;
+        default:
+            g = 1.0f;
     }
 
     return g;

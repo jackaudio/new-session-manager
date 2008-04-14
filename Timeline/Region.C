@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 #include <algorithm>
-//using  std::algorithm;
+// using  std::algorithm;
 using namespace std;
 
 
@@ -533,6 +533,162 @@ Region::normalize ( void )
 
 }
 
+
+/**********/
+/* Engine */
+/**********/
+
+
+enum fade_type_e { Linear, Cosine, Logarithmic, Parabolic };
+enum fade_dir_e { FADE_IN, FADE_OUT };
+
+/** Return gain for frame /index/ of /nframes/ on a gain curve of type /type/.*/
+/* FIXME: calling a function per sample is bad, switching on type mid
+ * fade is bad. */
+static inline float
+fade_gain ( fade_type_e type, nframes_t index, nframes_t nframes )
+{
+    float g = 0;
+
+    const float fi = index / (float)nframes;
+
+    switch ( type )
+    {
+        case Linear:
+            g = fi;
+            break;
+        case Cosine:
+//            g = sin( fi * M_PI / 2 );
+            g = (1.0f - cos( fi * M_PI )) / 2.0f;
+            break;
+        case Logarithmic:
+            g = pow( 0.1f, (1.0f - fi) * 5.0f );
+            break;
+        case Parabolic:
+            g = 1.0f - (1.0f - fi) * (1.0f - fi);
+            break;
+    }
+
+    return g;
+
+}
+
+/** Apply a (portion of) fade-out from /start/ to /end/ assuming a
+ * buffer size of /nframes/. /start/ and /end/ are relative to the
+ * given buffer, and /start/ may be negative. */
+static void
+apply_fade ( sample_t *buf, fade_dir_e dir, fade_type_e type, long start, nframes_t end, nframes_t nframes )
+{
+    float gain = 1.0f;
+
+    printf( "apply fade %s: start=%ld end=%lu\n", dir == FADE_OUT ? "out" : "in", start, end );
+
+    nframes_t i = start > 0 ? start : 0;
+    nframes_t e = end > nframes ? nframes : end;
+
+    float d = dir == FADE_OUT ? 1.0f : -1.0f;
+
+    if ( dir == FADE_OUT )
+        for ( ; i < e; ++i )
+        {
+            long n = end - start;
+
+            const float g = fade_gain( type, (n - 1) - (i - start), n);
+
+            printf( "gain for %lu is %f\n", i, g );
+            buf[ i ] *= g;
+        }
+    else
+        for ( ; i < e; ++i )
+        {
+            const float g = fade_gain( type, i - start, end - start );
+
+            printf( "gain for %lu is %f\n", i, g );
+            buf[ i ] *= g;
+        }
+}
+
+
+#if 0
+/** Compute the gain value (0 to 1f) for a fade-in/out curve of /type/
+ * (LINEAR, QUADRAIC, CUBIC), of /nframes/ in length at point
+ * /offset/ */
+static inline
+float gain_on_curve ( int type, int dir, nframes_t nframes, nframes_t offset, nframes_t length )
+{
+    float a, b;
+
+    /* FIXME: these first two sections should *definitely* be cached */
+
+    /* calculate coefficients */
+    if ( dir == FADE_OUT )
+    {
+        a = -1.0f / (double)nframes;
+        /* fixme why would we need to know the clip length? */
+        b = length / (double)nframes;
+//        b = nframes;
+    }
+    else
+    {
+        a = 1.0f / (double)nframes;
+        b = 0.0f;
+    }
+
+    float c[4];
+
+    /* interpolate points */
+    switch ( type )
+    {
+        case Linear:
+            c[1] = a;
+            c[0] = b;
+            break;
+        case Quadratic:
+            c[2] = a * a;
+            c[1] = 2.0f * a * b;
+            c[0] = b * b;
+            break;
+        case Cubic:
+        {
+            const float a2 = a * a;
+            const float b2 = b * b;
+            c[3] = a * a2;
+            c[2] = 3.0f * a2 * b;
+            c[1] = 3.0f * a * b2;
+            c[0] = b * b2;
+            break;
+        }
+        default:
+            printf( "unknown curve order\n" );
+    }
+
+    /* now get the gain for the given point */
+
+    const float f  = offset;
+    const float f2 = f * f;
+
+    float g = 1.0f;
+
+    switch ( type )
+    {
+        case Linear:
+            g *= c[1] * f + c[0];
+            break;
+        case Quadratic:
+            g *= c[2] * f2 + c[1] * f + c[0];
+            break;
+        case Cubic:
+            g *= c[3] * f2 * f + c[2] * f2 + c[1] * f + c[0];
+            break;
+    }
+
+    printf( "gain for %lu is %f\n", offset, g );
+
+    return g;
+}
+#endif
+
+/* THREAD: IO */
 /** read the overlapping part of /channel/ at /pos/ for /nframes/ of
     this region into /buf/, where /pos/ is in timeline frames */
 /* this runs in the diskstream thread. */
@@ -544,7 +700,6 @@ Region::normalize ( void )
  frames in the Audio_File class instead, so that sequential requests
  for different channels at the same position avoid hitting the disk
  again? */
-/* FIXME: should fade-out/fade-ins not be handled here? */
 nframes_t
 Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const
 {
@@ -600,6 +755,28 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
     if ( _scale != 1.0f )
         for ( int i = cnt; i--; )
             buf[i] *= _scale;
+
+    /* TODO: do fade in/out here */
+
+    /* perform declicking if necessary */
+
+    const nframes_t declick_frames = 1024;
+
+    if ( start + cnt + declick_frames > r.end )
+    {
+        /* declick end */
+        const nframes_t d = r.end - start;
+
+        apply_fade( buf, FADE_OUT, Cosine, cnt + (long)d - declick_frames, cnt + d, cnt );
+    }
+
+    if ( sofs < declick_frames )
+    {
+        /* declick start */
+        const long d = 0 - sofs;
+
+        apply_fade( buf + ofs, FADE_IN, Cosine, d, d + declick_frames, cnt - ofs );
+    }
 
 //    printf( "read %lu frames\n", cnt );
 

@@ -19,6 +19,7 @@
 
 #include "Audio_Track.H"
 
+#include <Fl/fl_ask.H>
 
 static
 void
@@ -94,6 +95,7 @@ Audio_Track::handle ( int m )
 
             if ( ! c )
             {
+                fl_alert( "Could not import file \"%s\": Unsupported file type.", file );
                 printf( "could not open file\n" );
                 free( file );
                 return 0;

@@ -267,7 +267,7 @@ public:
     Region ( Audio_File *c, Track *t, nframes_t o );
 
     int handle ( int m );
-    void draw_fade ( const Fade &fade, Fade::fade_dir_e dir, int X, int W );
+    void draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool filled, int X, int W );
 
     void draw_box( int X, int Y, int W, int H );
     void draw ( int X, int Y, int W, int H );

@@ -41,7 +41,7 @@ public:
 
     struct Fade
     {
-        enum fade_type_e { Linear, Sigmoid, Logarithmic, Parabolic };
+        enum fade_type_e { Linear = 0, Sigmoid, Logarithmic, Parabolic };
         enum fade_dir_e { In, Out };
 
         fade_type_e type;

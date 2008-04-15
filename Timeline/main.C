@@ -72,7 +72,6 @@ main ( int argc, char **argv )
     Fl::scheme( "plastic" );
 //    Fl::scheme( "gtk+" );
 
-
     Loggable::open( "history" );
     /* welcome to C++ */
     Loggable::register_create( "Region",        &Region::create        );

@@ -27,7 +27,7 @@
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Box.H>
-
+#include <FL/Fl_Menu_Item.H>
 #include <stdio.h>
 
 #include <algorithm>
@@ -256,15 +256,15 @@ Region::handle ( int m )
                 printf( "setting fade in length to %lu\n", _fade_in.length );
             }
             else
-            if ( Fl::event_key() == FL_F + 4 )
-            {
-                long offset = length() - x_to_offset( X );
+                if ( Fl::event_key() == FL_F + 4 )
+                {
+                    long offset = length() - x_to_offset( X );
 
-                if ( offset > 0 )
-                    _fade_out.length = offset;
+                    if ( offset > 0 )
+                        _fade_out.length = offset;
 
-                printf( "setting fade out length to %lu\n", _fade_in.length );
-            }
+                    printf( "setting fade out length to %lu\n", _fade_in.length );
+                }
 
 
             redraw();
@@ -342,10 +342,47 @@ Region::handle ( int m )
                     redraw();
                     goto changed;
                 }
-                if ( Fl::event_button1() && Fl::event_ctrl() )
+                else if ( Fl::event_button1() && Fl::event_ctrl() )
                 {
                     /* duplication */
                     return 1;
+                }
+                else if ( Fl::event_button3() )
+                {
+                    /* context menu */
+
+                    Fade::fade_type_e it = _fade_in.type;
+                    Fade::fade_type_e ot = _fade_out.type;
+
+                    Fl_Menu_Item menu[] =
+                        {
+                            { "Fade",        0, 0, 0, FL_SUBMENU    },
+                            { "In",          0, 0, 0, FL_SUBMENU    },
+                            { "Linear",           0, 0, 0, FL_MENU_RADIO | ( it == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
+                            { "Sigmoid",          0, 0, 0, FL_MENU_RADIO | ( it == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
+                            { "Logarithmic",      0, 0, 0, FL_MENU_RADIO | ( it == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
+                            { "Parabolic",        0, 0, 0, FL_MENU_RADIO | ( it == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
+                            { 0 },
+                            { "Out",         0, 0, 0, FL_SUBMENU    },
+                            { "Linear",           0, 0, 0, FL_MENU_RADIO | ( ot == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
+                            { "Sigmoid",          0, 0, 0, FL_MENU_RADIO | ( ot == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
+                            { "Logarothmic",      0, 0, 0, FL_MENU_RADIO | ( ot == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
+                            { "Parabolic",        0, 0, 0, FL_MENU_RADIO | ( ot == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
+                            { 0 },
+                            { 0 },
+                            { 0 },
+                        };
+
+                    const Fl_Menu_Item *r = menu->popup( X, Y, "Region" );
+
+                    if ( r )
+                    {
+                        if ( r > &menu[1] && r < &menu[6] )
+                            _fade_in.type = (Fade::fade_type_e)(int)(r - &menu[2]);
+                        else if ( r > &menu[7] && r < &menu[12] )
+                            _fade_out.type = (Fade::fade_type_e)(int)(r - &menu[8]);
+                    }
+
                 }
                 else
                     return Track_Widget::handle( m );

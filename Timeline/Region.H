@@ -76,11 +76,11 @@ public:
                         g = fi;
                         break;
                     case Sigmoid:
-//            g = sin( fi * M_PI / 2 );
                         g = (1.0f - cos( fi * M_PI )) / 2.0f;
                         break;
                     case Logarithmic:
-                        g = pow( 0.1f, (1.0f - fi) * 5.0f );
+                        /* FIXME: this is wrong */
+                        g = pow( 0.1f, (1.0f - fi) * 3.0f );
                         break;
                     case Parabolic:
                         g = 1.0f - (1.0f - fi) * (1.0f - fi);

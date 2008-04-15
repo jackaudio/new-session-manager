@@ -518,6 +518,8 @@ Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int X, in
     for ( int i = 0; i < width; ++i, ts += tsx )
         fl_vertex( i / (float)width, 1.0f - fade.gain( ts ) );
 
+    fl_vertex( 1.0, 0.0 );
+
     if ( line )
         fl_end_line();
     else

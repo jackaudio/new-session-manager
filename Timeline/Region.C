@@ -446,7 +446,7 @@ changed:
  portion of the region covered by this draw, which may or may not
  cover the fade in question. */
 void
-Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool filled, int X, int W )
+Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int X, int W )
 {
     const int dy = y() + Fl::box_dy( box() );
     const int dh = h() - Fl::box_dh( box() );
@@ -458,41 +458,33 @@ Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool filled, int X, 
     fl_push_matrix();
 
     if ( dir == Fade::In )
-    {
         fl_translate( line_x(), dy );
-        fl_scale( width, height );
-    }
     else
     {
-        //      fl_translate( line_x() + abs_w(), dy + height );
         fl_translate( line_x() + abs_w(), dy );
-        fl_scale( width, height );
-
         /* flip */
         fl_scale( -1.0, 1.0 );
-//        fl_scale( 1.0, -1.0 );
     }
 
-    if ( filled )
-        fl_begin_polygon();
-    else
+    fl_scale( width, height );
+
+    if ( line )
         fl_begin_line();
+    else
+        fl_begin_polygon();
 
     fl_vertex( 0.0, 0.0 );
     fl_vertex( 0.0, 1.0 );
 
-    for ( int i = 0; i < width; ++i )
-    {
-        const float x = i / (float)width;
-        const float y = 1.0f - fade.gain( timeline->x_to_ts( i ) );
+    nframes_t tsx = timeline->x_to_ts( 1 );
+    nframes_t ts = 0;
+    for ( int i = 0; i < width; ++i, ts += tsx )
+        fl_vertex( i / (float)width, 1.0f - fade.gain( ts ) );
 
-        fl_vertex( x, y );
-    }
-
-    if ( filled )
-        fl_end_polygon();
-    else
+    if ( line )
         fl_end_line();
+    else
+        fl_end_polygon();
 
     fl_pop_matrix();
 }
@@ -514,8 +506,8 @@ Region::draw_box( int X, int Y, int W, int H )
         fl_draw_box( box(), x() - 10, y(), w() + 50, h(), _box_color );
 
     /* draw fades */
-    draw_fade( _fade_in, Fade::In, true, X, W );
-    draw_fade( _fade_out, Fade::Out, true, X, W );
+    draw_fade( _fade_in, Fade::In, false, X, W );
+    draw_fade( _fade_out, Fade::Out, false, X, W );
 
     fl_pop_clip();
 }
@@ -572,8 +564,8 @@ Region::draw ( int X, int Y, int W, int H )
     assert( pbuf );
 
     /* draw fade curve outlines--this is only here because of crossfades */
-    draw_fade( _fade_in, Fade::In, false, X, W );
-    draw_fade( _fade_out, Fade::Out, false, X, W );
+    draw_fade( _fade_in, Fade::In, true, X, W );
+    draw_fade( _fade_out, Fade::Out, true, X, W );
 
     int ch = (h() - Fl::box_dh( box() ))  / channels;
 

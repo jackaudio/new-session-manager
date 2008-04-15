@@ -41,7 +41,7 @@ public:
 
     struct Fade
     {
-        enum fade_type_e { Linear, Cosine, Logarithmic, Parabolic };
+        enum fade_type_e { Linear, Sigmoid, Logarithmic, Parabolic };
         enum fade_dir_e { In, Out };
 
         fade_type_e type;
@@ -75,7 +75,7 @@ public:
                     case Linear:
                         g = fi;
                         break;
-                    case Cosine:
+                    case Sigmoid:
 //            g = sin( fi * M_PI / 2 );
                         g = (1.0f - cos( fi * M_PI )) / 2.0f;
                         break;

@@ -93,7 +93,7 @@ Region::init ( void )
     _color = FL_BLUE;
 
     _fade_in.length = 256;
-    _fade_in.type = Fade::Linear;
+    _fade_in.type = Fade::Cosine;
 
     _fade_out = _fade_in;
 }
@@ -422,36 +422,43 @@ Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, int X, int W )
     const int dy = y() + Fl::box_dy( box() );
     const int dh = h() - Fl::box_dh( box() );
     const int height = dh;
+    const int width = timeline->ts_to_x( fade.length );
 
     fl_color( fl_lighter( FL_BLACK ) );
-    fl_line_style( FL_SOLID, 2 );
 
-    fl_begin_polygon();
+    fl_push_matrix();
 
     if ( dir == Fade::In )
     {
-        fl_vertex( line_x(), dy );
-        fl_vertex( line_x(), dy + height );
+        fl_translate( line_x(), dy );
+        fl_scale( width, height );
     }
     else
     {
-        fl_vertex( line_x() + w(), dy );
-        fl_vertex( line_x() + w(), dy + height );
+        fl_translate( line_x() + abs_w(), dy + height );
+        fl_scale( width, height );
+
+        /* flip */
+        fl_scale( -1.0, 1.0 );
+        fl_scale( 1.0, -1.0 );
     }
 
-    const int width = timeline->ts_to_x( fade.length );
+    fl_begin_polygon();
 
-    for ( int i = X; i < line_x() + width; i += 3 )
+    fl_vertex( 0.0, 0.0 );
+    fl_vertex( 0.0, 1.0 );
+
+    for ( int i = 0; i < width; ++i )
     {
-        const int x = i;
-
-        const int y = dy + (height * (1.0f - fade.gain( timeline->x_to_ts( i - this->x() ))));
+        const float x = i / (float)width;
+        const float y = 1.0f - fade.gain( timeline->x_to_ts( i ) );
 
         fl_vertex( x, y );
     }
 
     fl_end_polygon();
-    fl_line_style( FL_SOLID, 0 );
+
+    fl_pop_matrix();
 }
 
 void
@@ -533,7 +540,7 @@ Region::draw ( int X, int Y, int W, int H )
     /* FIXME: testing! */
         Fade fade = _fade_in;
         fade.length = 20000;
-        fade.type = Fade::Cosine;
+        fade.type = Fade::Sigmoid;
 
     for ( int i = 0; i < channels; ++i )
     {
@@ -546,15 +553,15 @@ Region::draw ( int X, int Y, int W, int H )
             pb[ j ].max *= _scale;
         }
 
-        int fw = timeline->ts_to_x( fade.length );
+/*         int fw = timeline->ts_to_x( fade.length ); */
 
-        /* if ( draw_fade_waveform ) */
-        for ( int j = min( fw, peaks ); j--; )
-        {
-            const float g = fade.gain( j );
-            pb[ j ].min *= g;
-            pb[ j ].max *= g;
-        }
+/*         /\* if ( draw_fade_waveform ) *\/ */
+/*         for ( int j = min( fw, peaks ); j--; ) */
+/*         { */
+/*             const float g = fade.gain( j * timeline->fpp() ); */
+/*             pb[ j ].min *= g; */
+/*             pb[ j ].max *= g; */
+/*         } */
 
         Waveform::draw( X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch,
                         pb, peaks,

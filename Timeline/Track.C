@@ -340,6 +340,10 @@ Track::handle ( int m )
 
     switch ( m )
     {
+        case FL_FOCUS:
+            return 1;
+        case FL_UNFOCUS:
+            return 1;
         case FL_DND_ENTER:
             printf( "enter\n" );
             if ( Track_Widget::pushed() && Track_Widget::pushed()->track()->class_name() == class_name() )
@@ -374,7 +378,11 @@ Track::handle ( int m )
                 int retval = r->dispatch( m );
 
                 if ( retval && m == FL_PUSH )
+                {
+                    take_focus();
+
                     Track_Widget::pushed( r );
+                }
 
                 if ( retval && m == FL_RELEASE )
                     Track_Widget::pushed( NULL );

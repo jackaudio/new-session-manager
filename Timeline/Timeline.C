@@ -589,6 +589,8 @@ Timeline::handle ( int m )
 
                     return 1;
                 }
+                default:
+                    return Fl_Overlay_Window::handle( m );
             }
 
             return 0;
@@ -607,6 +609,8 @@ Timeline::handle ( int m )
             {
                 case FL_PUSH:
                 {
+                    take_focus();
+
                     if ( ! Fl::event_button1() )
                         return 0;
 

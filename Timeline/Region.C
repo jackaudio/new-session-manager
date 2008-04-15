@@ -213,6 +213,9 @@ Region::trim ( enum trim_e t, int X )
     }
 }
 
+/* convert a screen x coord into an offset into the region */
+#define x_to_offset( X ) ( timeline->x_to_ts( scroll_x() + ( (X) - _track->x() ) ) - _r->offset )
+
 int
 Region::handle ( int m )
 {
@@ -241,6 +244,32 @@ Region::handle ( int m )
             Track_Widget::handle( m );
             redraw();
             break;
+        case FL_KEYBOARD:
+        {
+            if ( Fl::event_key() == FL_F + 3 )
+            {
+                nframes_t offset = x_to_offset( X );
+
+                if ( offset < length() )
+                    _fade_in.length = offset;
+
+                printf( "setting fade in length to %lu\n", _fade_in.length );
+            }
+            else
+            if ( Fl::event_key() == FL_F + 4 )
+            {
+                long offset = length() - x_to_offset( X );
+
+                if ( offset > 0 )
+                    _fade_out.length = offset;
+
+                printf( "setting fade out length to %lu\n", _fade_in.length );
+            }
+
+
+            redraw();
+            return 1;
+        }
         case FL_PUSH:
         {
 

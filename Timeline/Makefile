@@ -13,12 +13,15 @@ SRCS= \
       Audio_File_SF.C \
       Port.C \
       Disk_Stream.C \
-      dsp.c \
+      Playback_DS.C \
+      Record_DS.C \
+      dsp.C \
       Engine.C \
       Transport.C \
       Loggable.C \
 
-OBJS=$(SRCS:.C=.o)
+OBJS:=$(SRCS:.C=.o)
+# OBJS:=$(OBJS:.c=.o)
 
 INCLUDES=-I../Engine -I../FL
 
@@ -33,6 +36,8 @@ include ../make.inc
 #LIBS:=$(LIBS) -ljack -lpthread
 
 timeline: $(OBJS)
+	echo $(SRCS) >/dev/stderr
+	echo $(OBJS) >/dev/stderr
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LIBS) -ljack -lpthread $(OBJS) -o $@
 
 clean:

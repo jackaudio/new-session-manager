@@ -21,24 +21,27 @@
 
 #include <jack/jack.h>
 
-typedef float sample_t;
-//typedef jack_nframes_t nframes_t;
 #include "types.h"
 
 class Port
 {
+
     jack_port_t *_port;
     const char *_name;
 
 public:
 
+    enum direction_e { Output, Input };
+
     Port ( jack_port_t *port );
-    Port ( const char *name );
+    Port ( const char *name, direction_e dir );
     ~Port ( );
 
     bool connected ( void ) const { return jack_port_connected( _port ); }
     const char * name ( void ) const { return _name; }
 
     void write ( sample_t *buf, nframes_t nframes );
+    void read ( sample_t *buf, nframes_t nframes );
     void *buffer ( nframes_t nframes );
+
 };

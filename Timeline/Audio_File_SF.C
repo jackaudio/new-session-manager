@@ -33,7 +33,6 @@ Audio_File_SF::from_file ( const char *filename )
     SNDFILE *in;
     SF_INFO si;
 
-
     Audio_File_SF *c = NULL;
 
     memset( &si, 0, sizeof( si ) );
@@ -53,9 +52,10 @@ Audio_File_SF::from_file ( const char *filename )
     c = new Audio_File_SF;
 
     c->_current_read = 0;
-    c->_filename = strdup( filename );
-    c->_length = si.frames;
-    c->_channels = si.channels;
+    c->_filename     = strdup( filename );
+    c->_length       = si.frames;
+    c->_samplerate   = si.samplerate;
+    c->_channels     = si.channels;
 
     c->_in = in;
 //    sf_close( in );
@@ -66,6 +66,38 @@ invalid:
 
     sf_close( in );
     return NULL;
+}
+
+Audio_File_SF *
+Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels, const char *format )
+{
+    SF_INFO si;
+    SNDFILE *out;
+
+    memset( &si, 0, sizeof( si ) );
+
+    si.samplerate =  samplerate;
+    si.channels   =  channels;
+
+    /* FIXME: bogus */
+    si.format = SF_FORMAT_WAV | SF_FORMAT_PCM_24 | SF_ENDIAN_CPU;
+
+    if ( ! ( out = sf_open( filename, SFM_WRITE, &si ) ) )
+    {
+        printf( "couldn't create soundfile.\n" );
+        return NULL;
+    }
+
+    Audio_File_SF *c = new Audio_File_SF;
+
+    c->_filename   = strdup( filename );
+    c->_length     = 0;
+    c->_samplerate = samplerate;
+    c->_channels   = channels;
+
+    c->_in         = out;
+
+    return c;
 }
 
 bool
@@ -145,4 +177,13 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t start, nframes_t end
     close();
 
     return len;
+}
+
+
+/** write /nframes/ from /buf/ to soundfile. Should be interleaved for
+ * the appropriate number of channels */
+nframes_t
+Audio_File_SF::write ( sample_t *buf, nframes_t nframes )
+{
+    return sf_writef_float( _in, buf, nframes );
 }

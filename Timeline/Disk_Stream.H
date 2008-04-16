@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "Port.H" // for nframes_t
+#include "types.h"
 
 #include <jack/ringbuffer.h>
 #include <semaphore.h>
@@ -38,30 +38,30 @@ class Audio_Track;
 class Disk_Stream : public Mutex
 {
 
-    pthread_t _thread;
+protected:
 
-    Track_Header *_th;                                    /* Track_Header we whould be playing */
+    pthread_t _thread;                                 /* io thread */
 
-    nframes_t _nframes;
-    nframes_t _frame;
+    Track_Header *_th;                 /* Track_Header we belong to */
 
-    vector <jack_ringbuffer_t *> _rb;
+    nframes_t _nframes;                              /* buffer size */
 
-    // jack_ringbuffer_t *_rb;                                     /* One interleaved ringbuffer for all channels */
+    nframes_t _frame;                      /* location of disk read */
 
-    sem_t _blocks;                                                /* semaphore to wake the IO thread with */
+    vector < jack_ringbuffer_t * >_rb; /* one ringbuffer for each channel */
 
-    int _total_blocks;
+    sem_t _blocks;          /* semaphore to wake the IO thread with */
 
-    volatile nframes_t _pending_seek;                           /* absolute transport position to seek to */
+    int _total_blocks; /* total number of blocks that we can  buffer */
 
+    volatile nframes_t _pending_seek; /* absolute transport position to seek to */
     volatile int _terminate;
 
     int channels ( void ) const { return _rb.size(); }
 
     Audio_Track * track ( void );
 
-    static void *io_thread ( void *arg );
+    static void *disk_thread ( void *arg );
 
 protected:
 
@@ -77,8 +77,7 @@ protected:
             }
         }
 
-    void read_block ( sample_t *buf, nframes_t nframes );
-    void io_thread ( void );
+    virtual void disk_thread ( void ) = 0;
 
 public:
 
@@ -90,11 +89,14 @@ public:
     virtual ~Disk_Stream ( );
 
     void resize ( nframes_t nframes );
-    void seek ( nframes_t frame );
-    bool seek_pending ( void );
+
+/*     void seek ( nframes_t frame ); */
+/*     bool seek_pending ( void ); */
 
     void run ( void );
-    nframes_t process ( nframes_t nframes );
 
-    int output_buffer_percent ( void );
+    virtual nframes_t process ( nframes_t nframes ) = 0;
+
+    int buffer_percent ( void );
+
 };

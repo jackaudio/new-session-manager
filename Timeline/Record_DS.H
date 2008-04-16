@@ -17,49 +17,39 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Port.H"
+#pragma once
 
-#include <string.h>
+#include "Disk_Stream.H"
 
-#include "Engine.H"
+#include "Audio_File_SF.H"
+class Audio_File;
 
-/* nframes is the number of frames to buffer */
-Port::Port ( jack_port_t *port )
+class Record_DS : public Disk_Stream
 {
-    _port = port;
-    _name = jack_port_name( _port );
-}
 
-Port::Port ( const char *name, direction_e dir )
-{
-    _name = name;
+    Audio_File_SF *_af;                             /* capture file */
 
-    _port = jack_port_register( engine->client(), _name,
-                                JACK_DEFAULT_AUDIO_TYPE,
-                                dir == Output ? JackPortIsOutput : JackPortIsInput,
-                                0 );
-}
+    void write_block ( sample_t *buf, nframes_t nframes );
+    void disk_thread ( void );
 
-Port::~Port ( )
-{
-    /* close port? */
-//    jack_port_unregister( engine->client(), _port );
-}
+public:
 
-void
-Port::write ( sample_t *buf, nframes_t nframes )
-{
-    memcpy( buffer( nframes ), buf, nframes * sizeof( sample_t ) );
-}
+    Record_DS ( Track_Header *th, float frame_rate, nframes_t nframes, int channels ) :
+        Disk_Stream( th, frame_rate, nframes, channels )
+        {
+            /* FIXME: we need our semaphore set to 0, no? */
 
-void
-Port::read ( sample_t *buf, nframes_t nframes )
-{
-    memcpy( buf, buffer( nframes ), nframes * sizeof( sample_t ) );
-}
+            _af = Audio_File_SF::create( "testing.wav", 48000, 1, "Wav/24" );
 
-void *
-Port::buffer ( nframes_t nframes )
-{
-    return jack_port_get_buffer( _port, nframes );
-}
+            sem_destroy( &_blocks );
+            sem_init( &_blocks, 0, 0 );
+
+            run();
+        }
+
+/*     bool seek_pending ( void ); */
+/*     void seek ( nframes_t frame ); */
+
+    nframes_t process ( nframes_t nframes );
+
+};

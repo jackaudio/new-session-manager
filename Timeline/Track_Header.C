@@ -19,8 +19,12 @@
 
 #include "Track_Header.H"
 
-#include "Disk_Stream.H"
+#include "Playback_DS.H"
+#include "Record_DS.H"
+
 #include "Engine.H"
+
+#include "Port.H"
 
 void
 Track_Header::cb_input_field ( Fl_Widget *w, void *v )
@@ -88,8 +92,6 @@ Track_Header::cb_button ( Fl_Widget *w )
         }
 }
 
-#include "Port.H"
-
 Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group ( X, Y, W, H, L )
 {
@@ -102,13 +104,20 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
 
     {
         char pname[40];
-        static int n = 0;
-        snprintf( pname, sizeof( pname ), "out-%d", n++ );
+        static int no = 0, ni = 0;
 
-        output.push_back( Port( strdup( pname ) ) );
+        snprintf( pname, sizeof( pname ), "out-%d", no++ );
+
+        output.push_back( Port( strdup( pname ), Port::Output ) );
+
+        snprintf( pname, sizeof( pname ), "in-%d", ni++ );
+
+        input.push_back( Port( strdup( pname ), Port::Input ) );
+
     }
 
-    diskstream = new Disk_Stream( this, engine->frame_rate(), engine->nframes(), 1 );
+    playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), 1 );
+    record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), 1 );
 
     Fl_Group::size( w(), height() );
 
@@ -300,8 +309,11 @@ Track_Header::add_control( Track *t )
 nframes_t
 Track_Header::process ( nframes_t nframes )
 {
-    if ( diskstream )
-        return diskstream->process( nframes );
+    if ( playback_ds )
+    {
+        record_ds->process( nframes );
+        return playback_ds->process( nframes );
+    }
     else
         return 0;
 }
@@ -310,6 +322,6 @@ Track_Header::process ( nframes_t nframes )
 void
 Track_Header::seek ( nframes_t frame )
 {
-    if ( diskstream )
-        return diskstream->seek( frame );
+    if ( playback_ds )
+        return playback_ds->seek( frame );
 }

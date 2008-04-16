@@ -30,11 +30,16 @@
 
 #include "Loggable.H"
 
-#include "Port.H"
+// #include "Port.H"
+
+
 #include <vector>
 using std::vector;
 
-class Disk_Stream;
+class Playback_DS;
+class Record_DS;
+
+class Port;
 
 class Track_Header : public Fl_Group, public Loggable
 {
@@ -73,8 +78,11 @@ public:
     Fl_Pack *control;
     Fl_Pack *takes;
 
+    vector <Port> input;
     vector <Port> output;                                       /* output ports... */
-    Disk_Stream *diskstream;
+
+    Playback_DS *playback_ds;
+    Record_DS *record_ds;
 
     const char *class_name ( void ) { return "Track_Header"; }
 

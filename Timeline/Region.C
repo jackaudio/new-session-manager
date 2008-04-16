@@ -709,7 +709,8 @@ Region::Fade::apply ( sample_t *buf, Region::Fade::fade_dir_e dir, long start, n
     const float inc = increment();
     float fi = ( i - start ) / (float)length;
 
-    buf += i;
+//    buf += i;
+    buf = &buf[ i ];
 
     nframes_t n = e - i;
 

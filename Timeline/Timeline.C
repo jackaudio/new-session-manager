@@ -32,7 +32,7 @@
 const float UPDATE_FREQ = 0.02f;
 
 
-#include "Disk_Stream.H"
+#include "Playback_DS.H"
 
 #include "Transport.H"
 
@@ -160,7 +160,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->type( Fl_Pack::VERTICAL );
             o->spacing( 0 );
 
-            for ( int i = 2; i--;  )
+            for ( int i = 1; i--;  )
             {
 //                Track_Header *t = new Track_Header( 0, 0, W, 75 );
                 Track_Header *t = new Track_Header( 0, 0, W, 30 );
@@ -699,7 +699,7 @@ Timeline::seek_pending ( void )
     {
         Track_Header *t = (Track_Header*)tracks->child( i );
 
-        if ( t->diskstream )
-            r += t->diskstream->output_buffer_percent() < 50;
+        if ( t->playback_ds )
+            r += t->playback_ds->buffer_percent() < 50;
     }
 }

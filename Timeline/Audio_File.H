@@ -39,7 +39,8 @@ protected:
 
 
     const char *_filename;
-    nframes_t _length;                                              /* length of file in samples */
+    nframes_t _length;                 /* length of file in samples */
+    nframes_t _samplerate;                   /* sample rate */
     int _channels;
 
     Peaks *_peaks;
@@ -58,7 +59,7 @@ public:
     const char *name ( void ) const { return _filename; }
     nframes_t length ( void ) const  { return _length; }
     int channels ( void ) const { return _channels; }
-
+    nframes_t samplerate ( void ) const { return _samplerate; }
 //    Peaks const * peaks ( void ) { return &_peaks; }
 
     virtual bool open ( void ) = 0;
@@ -66,6 +67,7 @@ public:
     virtual void seek ( nframes_t offset ) = 0;
     virtual nframes_t read ( sample_t *buf, int channel, nframes_t len ) = 0;
     virtual nframes_t read ( sample_t *buf, int channel, nframes_t start, nframes_t end ) = 0;
+    virtual nframes_t write ( sample_t *buf, nframes_t len ) = 0;
 
     bool read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, Peak **pbuf, int *channels );
 

@@ -36,6 +36,12 @@ public:
     static Audio_File_SF *from_file ( const char *filename );
     static Audio_File_SF *create ( const char *filename, nframes_t samplerate, int channels, const char *format );
 
+    ~Audio_File_SF ( )
+        {
+            /* stupid C++ */
+            close();
+        }
+
     bool open ( void );
     void close ( void );
     void seek ( nframes_t offset );

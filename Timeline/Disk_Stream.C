@@ -78,11 +78,6 @@ Disk_Stream::Disk_Stream ( Track_Header *th, float frame_rate, nframes_t nframes
 
 Disk_Stream::~Disk_Stream ( )
 {
-
-    /* stop the IO thread */
-    _terminate = true;
-    pthread_join( _thread, NULL );
-
     /* it isn't safe to do all this with the RT thread running */
     engine->lock();
 
@@ -94,6 +89,14 @@ Disk_Stream::~Disk_Stream ( )
         jack_ringbuffer_free( _rb[ i ] );
 
     engine->unlock();
+}
+
+/** stop the IO thread, block until it finishes. */
+void
+Disk_Stream::shutdown ( void )
+{
+    _terminate = true;
+    pthread_join( _thread, NULL );
 }
 
 Audio_Track *
@@ -118,12 +121,6 @@ Disk_Stream::resize ( nframes_t nframes )
         /* FIXME: to something here! */;
 }
 
-
-/* void */
-/* DIsk_Stream::shutdown ( void ) */
-/* { */
-/*     pthread_join( &_thread, NULL ); */
-/* } */
 
 /* static wrapper */
 void *

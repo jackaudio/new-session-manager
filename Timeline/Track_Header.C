@@ -19,6 +19,7 @@
 
 #include "Track_Header.H"
 
+#include "Transport.H"
 #include "Playback_DS.H"
 #include "Record_DS.H"
 
@@ -59,8 +60,11 @@ Track_Header::cb_button ( Fl_Widget *w )
     printf( "FIXME: inform mixer here\n" );
     if ( w == record_button )
     {
-
-
+            /* FIXME: wrong place for this! */
+        if ( record_button->value() )
+            record_ds->start( transport.frame );
+        else
+            record_ds->stop( transport.frame );
     }
     else
         if ( w == take_menu )
@@ -114,10 +118,14 @@ Track_Header::Track_Header ( int X, int Y, int W, int H, const char *L ) :
 
         input.push_back( Port( strdup( pname ), Port::Input ) );
 
+        snprintf( pname, sizeof( pname ), "in-%d", ni++ );
+
+        input.push_back( Port( strdup( pname ), Port::Input ) );
+
     }
 
     playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), 1 );
-    record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), 1 );
+    record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), 2 );
 
     Fl_Group::size( w(), height() );
 

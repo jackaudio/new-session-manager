@@ -94,6 +94,7 @@ public:
 /*     bool seek_pending ( void ); */
 
     void run ( void );
+    void shutdown ( void );
 
     virtual nframes_t process ( nframes_t nframes ) = 0;
 

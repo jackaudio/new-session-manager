@@ -27,6 +27,8 @@ class Audio_File;
 class Record_DS : public Disk_Stream
 {
 
+    volatile bool _recording;
+
     Audio_File_SF *_af;                             /* capture file */
 
     void write_block ( sample_t *buf, nframes_t nframes );
@@ -37,19 +39,17 @@ public:
     Record_DS ( Track_Header *th, float frame_rate, nframes_t nframes, int channels ) :
         Disk_Stream( th, frame_rate, nframes, channels )
         {
-            /* FIXME: we need our semaphore set to 0, no? */
-
-            _af = Audio_File_SF::create( "testing.wav", 48000, 1, "Wav/24" );
-
             sem_destroy( &_blocks );
             sem_init( &_blocks, 0, 0 );
 
-            run();
+            _recording = false;
         }
 
 /*     bool seek_pending ( void ); */
 /*     void seek ( nframes_t frame ); */
 
+    void start ( nframes_t frame );
+    void stop ( nframes_t frame );
     nframes_t process ( nframes_t nframes );
 
 };

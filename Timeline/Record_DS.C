@@ -123,15 +123,66 @@ Record_DS::disk_thread ( void )
 
     printf( "IO thread terminating.\n" );
 
+    delete[] cbuf;
     delete[] buf;
 }
 
+
+/** begin recording */
+/* FIXME: we need to make note of the exact frame we were on when recording began */
+void
+Record_DS::start ( nframes_t frame )
+{
+    /* FIXME: flush buffers here? */
+
+    if ( _recording )
+    {
+        printf( "programming error: attempt to start recording while recording is still in progress\n" );
+        return;
+    }
+
+    _af = Audio_File_SF::create( "testing.wav", 48000, channels(), "Wav/24" );
+
+    _frame = frame;
+
+    run();
+
+    _recording = true;
+
+}
+
+/** finalize the recording process. */
+void
+Record_DS::stop ( nframes_t frame )
+{
+
+    if ( ! _recording )
+    {
+        printf( "programming error: attempt to stop recording when no recording is being made\n" );
+        return;
+    }
+
+    shutdown();
+
+    /* FIXME: flush buffers here? */
+    delete _af;
+    _af = NULL;
+
+    _recording = false;
+
+    printf( "recording finished\n" );
+}
+
+
 /* THREAD: RT */
-/** take a single block from the ringbuffers and send it out the
- *  attached track's ports */
+/** read from the attached track's ports and stuff the ringbuffers */
 nframes_t
 Record_DS::process ( nframes_t nframes )
 {
+
+    if ( ! _recording )
+        return 0;
+
     const size_t block_size = nframes * sizeof( sample_t );
 
 //    printf( "process: %lu %lu %lu\n", _frame, _frame + nframes, nframes );

@@ -103,22 +103,31 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
 bool
 Audio_File_SF::open ( void )
 {
+    SF_INFO si;
 
-/*     SF_INFO si; */
+    assert( _in == NULL );
 
-/*     memset( &si, 0, sizeof( si ) ); */
+    memset( &si, 0, sizeof( si ) );
 
-/*     if ( ! ( _in = sf_open( _filename, SFM_READ, &si ) ) ) */
-/*         return false; */
+    if ( ! ( _in = sf_open( _filename, SFM_READ, &si ) ) )
+        return false;
 
-    seek( 0 );
+    _current_read = 0;
+    _length       = si.frames;
+    _samplerate   = si.samplerate;
+    _channels     = si.channels;
+
+//    seek( 0 );
     return true;
 }
 
 void
 Audio_File_SF::close ( void )
 {
-//    sf_close( _in );
+    if ( _in )
+        sf_close( _in );
+
+    _in = NULL;
 }
 
 void

@@ -165,8 +165,19 @@ Record_DS::stop ( nframes_t frame )
     shutdown();
 
     /* FIXME: flush buffers here? */
+
+    char *name = strdup( _af->name() );
     delete _af;
     _af = NULL;
+
+    Audio_File *af = Audio_File::from_file( name );
+
+    if ( ! af )
+        printf( "impossible!\n" );
+
+    new Region( af, track(), _frame );
+
+    track()->redraw();
 
     _recording = false;
 

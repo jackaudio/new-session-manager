@@ -53,9 +53,7 @@ public:
             _length = _channels = 0;
         }
 
-    virtual ~Audio_File ( )
-        {
-        }
+    virtual ~Audio_File ( );
 
     static Audio_File *from_file ( const char *filename );
 

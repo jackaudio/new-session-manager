@@ -60,7 +60,7 @@ Waveform::draw (  int X, int Y, int W, int H,
     if ( Waveform::fill )
     {
         j = start;
-        for ( int x = X; x <= X + W; ++x, ++j )
+        for ( int x = X; x < X + W; ++x, ++j )
         {
             const Peak p = pbuf[ j ];
 
@@ -104,7 +104,7 @@ Waveform::draw (  int X, int Y, int W, int H,
         fl_begin_line();
 
         j = start;
-        for ( int x = X; x <= X + W; ++x, ++j )
+        for ( int x = X; x < X + W; ++x, ++j )
         {
             const Peak p = pbuf[ j ];
 
@@ -116,7 +116,7 @@ Waveform::draw (  int X, int Y, int W, int H,
         fl_begin_line();
 
         j = start;
-        for ( int x = X; x <= X + W; ++x, ++j )
+        for ( int x = X; x < X + W; ++x, ++j )
         {
             const Peak p = pbuf[ j ];
 

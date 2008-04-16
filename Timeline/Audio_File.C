@@ -22,6 +22,11 @@
 
 map <string, Audio_File*> Audio_File::_open_files;
 
+Audio_File::~Audio_File ( )
+{
+    _open_files[ string( _filename ) ] = NULL;
+}
+
 /** attmpet to open any supported filetype */
 Audio_File *
 Audio_File::from_file ( const char * filename )

@@ -55,8 +55,6 @@ buffer_mix_with_gain ( sample_t *dst, sample_t *src, nframes_t nframes, float g 
 void
 buffer_interleave_one_channel ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes )
 {
-    nframes *= channels;
-
     dst += channel;
 
     while ( nframes-- )
@@ -69,8 +67,6 @@ buffer_interleave_one_channel ( sample_t *dst, sample_t *src, int channel, int c
 void
 buffer_interleave_one_channel_and_mix ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes )
 {
-    nframes *= channels;
-
     dst += channel;
 
     while ( nframes-- )

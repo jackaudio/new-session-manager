@@ -90,7 +90,7 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
     }
 
     /* get chunk size of peak file */
-    int pfchunksize;
+    int pfchunksize = 0;
     fread( &pfchunksize, sizeof( int ), 1, fp );
 
     int channels = _clip->channels();
@@ -108,8 +108,7 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
     /* locate to start position */
     fseek( fp, (s * channels / pfchunksize) * sizeof( Peak ), SEEK_CUR );
 
-    size_t len;
-
+    size_t len = 0;
 
     int i;
     for ( i = 0; i < npeaks; ++i )
@@ -195,12 +194,12 @@ Peaks::read_source_peaks ( Peak *peaks, int npeaks, int chunksize ) const
 int
 Peaks::read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const
 {
-    _clip->open();
+//    _clip->open();
     _clip->seek( s );
 
     int i = read_source_peaks( peaks, npeaks, chunksize );
 
-    _clip->close();
+//    _clip->close();
 
     return i;
 }
@@ -318,14 +317,16 @@ Peaks::make_peaks ( int chunksize )
     if ( current() )
         return true;
 
-    if ( ! _clip->open() )
-        return false;
+    _clip->seek( 0 );
+
+/*     if ( ! _clip->open() ) */
+/*         return false; */
 
     FILE *fp = fopen( peakname( filename ), "w" );
 
     if ( fp == NULL )
     {
-        _clip->close();
+//        _clip->close();
         return false;
     }
 
@@ -343,7 +344,7 @@ Peaks::make_peaks ( int chunksize )
     }
     while ( len );
 
-    _clip->close();
+//    _clip->close();
 
     fclose( fp );
 

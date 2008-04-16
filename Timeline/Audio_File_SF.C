@@ -163,7 +163,7 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
         for ( int i = channel; i < rlen * _channels; i += _channels )
             *(buf++) = tmp[ i ];
 
-        delete tmp;
+        delete[] tmp;
     }
 
     _current_read += rlen;
@@ -177,13 +177,13 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t start, nframes_t end
 {
     assert( end > start );
 
-    open();
+//    open();
 
     seek( start );
 
     nframes_t len = read( buf, channel, end - start );
 
-    close();
+//    close();
 
     return len;
 }

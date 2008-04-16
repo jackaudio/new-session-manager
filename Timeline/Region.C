@@ -144,6 +144,9 @@ Region::Region ( Audio_File *c, Track *t, nframes_t o )
 
     int sum = 0;
     const char *s = rindex( _clip->name(), '/' );
+    if ( ! s )
+        s = _clip->name();
+
     for ( int i = strlen( s ); i--; )
         sum += s[ i ];
 
@@ -713,6 +716,8 @@ Region::Fade::apply ( sample_t *buf, Region::Fade::fade_dir_e dir, long start, n
     buf = &buf[ i ];
 
     nframes_t n = e - i;
+
+    assert( i + n <= nframes );
 
     if ( dir == Fade::Out )
     {

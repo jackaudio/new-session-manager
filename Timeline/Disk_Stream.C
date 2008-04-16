@@ -28,7 +28,7 @@
 /**********/
 
 /* A Disk_Stream uses a separate I/O thread to stream a track's
-   regions from disk into a ringbuffer, to be processed by the RT
+   regions from disk into a ringbuffer to be processed by the RT
    thread (or vice-versa). The I/O thread syncronizes access with the
    user thread via the Timeline mutex. The size of the buffer (in
    seconds) must be set before any Disk_Stream objects are created;
@@ -38,7 +38,15 @@
 /* FIXME: handle termination of IO thread in destructor */
 /* FIXME: deal with (jack) buffer size changes */
 /* FIXME: needs error handling everywhere! */
-/* TODO: handle capture too */
+/* TODO: handle capture too. For this to work with some kind of
+ * punch-in/out system, I believe we'll have to always keep at least
+ * one buffer's worth of input. We would need this anyway in order to
+ * pass input through to output (software monitoring). What about
+ * looped recording? */
+/* TODO: latency compensation? Does this really apply to us? (we're
+ * not hosting plugins here) */
+/* TODO: read/write data from/to disk in larger chunks to avoid
+ * excessive seeking. 256k is supposedly the sweetspot. */
 
 float Disk_Stream::seconds_to_buffer = 5.0f;
 // size_t Disk_Stream::disk_block_frames = 2048;

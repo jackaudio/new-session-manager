@@ -100,26 +100,24 @@ public:
 
                     Fl_Widget::size( w(), height() );
                 }
-                else
-                    if ( ! strcmp( s, ":selected" ) )
-                        _selected = atoi( v );
-                    else
-                        if ( ! strcmp( s, ":name" ) )
-                        {
-                            _name = strdup( v );
-                            name_field->value( _name );
-                        }
-                        else
-                            if ( ! strcmp( s, ":track" ) )
-                            {
-                                int i;
-                                sscanf( v, "%X", &i );
-                                Track *t = (Track*)Loggable::find( i );
+                else if ( ! strcmp( s, ":selected" ) )
+                    _selected = atoi( v );
+//                else if ( ! strcmp( s, ":armed"
+                else if ( ! strcmp( s, ":name" ) )
+                {
+                    _name = strdup( v );
+                    name_field->value( _name );
+                }
+                else if ( ! strcmp( s, ":track" ) )
+                {
+                    int i;
+                    sscanf( v, "%X", &i );
+                    Track *t = (Track*)Loggable::find( i );
 
-                                assert( t );
+                    assert( t );
 
-                                track( t );
-                            }
+                    track( t );
+                }
 
 
                 free( s );
@@ -131,14 +129,15 @@ public:
 
     char ** get ( void )
         {
-            char **sa = (char**)malloc( sizeof( char* ) * (1 + 4) );
+            char **sa = (char**)malloc( sizeof( char* ) * (1 + 5) );
 
             int i = 0;
 
             asprintf( &sa[ i++ ], ":name \"%s\"", _name ? _name : ""  );
             asprintf( &sa[ i++ ], ":track 0x%X", track() ? track()->id() : 0 );
             asprintf( &sa[ i++ ], ":selected %d", _selected );
-/*             asprintf( &sa[ i++ ], ":record %d", record_button->value() ); */
+//            asprintf( &sa[ i++ ], ":record %d", record_button->value() );
+
 /*             asprintf( &sa[ i++ ], ":solo %d", solo_button->value() ); */
 /*             asprintf( &sa[ i++ ], ":mute %d", mute_button->value() ); */
             asprintf( &sa[ i++ ], ":h %d", size() );
@@ -203,7 +202,7 @@ public:
     const char * name ( void ) const { return _name; }
     bool mute ( void ) const { return mute_button->value(); }
     bool solo ( void ) const { return solo_button->value(); }
-    bool arm ( void ) const { return record_button->value(); }
+    bool armed ( void ) const { return record_button->value(); }
     bool selected ( void ) const { return _selected; }
 
     static void cb_input_field ( Fl_Widget *w, void *v );

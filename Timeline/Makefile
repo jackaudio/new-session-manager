@@ -13,6 +13,7 @@ SRCS= \
       Audio_File_SF.C \
       Port.C \
       Disk_Stream.C \
+      dsp.c \
       Engine.C \
       Transport.C \
       Loggable.C \

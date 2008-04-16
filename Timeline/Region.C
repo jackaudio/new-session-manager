@@ -22,6 +22,8 @@
 #include "Timeline.H"
 #include "Waveform.H"
 
+#include "dsp.h"
+
 #include <FL/fl_draw.H>
 #include <FL/Fl.H>
 #include <FL/Fl_Group.H>
@@ -850,9 +852,7 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
 
     /* apply gain */
 
-    if ( _scale != 1.0f )
-        for ( int i = cnt; i--; )
-            buf[i] *= _scale;
+    buffer_apply_gain( buf, cnt, _scale );
 
     /* perform declicking if necessary */
 

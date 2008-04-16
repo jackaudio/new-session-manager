@@ -19,6 +19,8 @@
 
 #include "Audio_Track.H"
 
+#include "dsp.h"
+
 #include <Fl/fl_ask.H>
 
 static
@@ -142,18 +144,9 @@ Audio_Track::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int chann
                 continue;
 
             if ( channels == 1 )
-            {
-//                memcpy( buf, cbuf, nframes * sizeof( sample_t ) );
-                for ( unsigned int j = 0; j < nfr; ++j )
-                    buf[ j ] += cbuf[ j ];
-            }
+                buffer_mix( buf, cbuf, nframes );
             else
-            {
-                /* mix and interleave */
-                int k = 0;
-                for ( unsigned int j = i; k < nfr; j += channels )
-                    buf[ j ] += cbuf[ k++ ];
-            }
+                buffer_interleave_one_channel_and_mix( buf, cbuf, i, channels, nframes );
         }
     }
 

@@ -17,62 +17,14 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Audio_File.H"
-#include "Audio_File_SF.H"
+#pragma once
 
-map <string, Audio_File*> Audio_File::_open_files;
+#include "types.h"
 
-/** attmpet to open any supported filetype */
-Audio_File *
-Audio_File::from_file ( const char * filename )
-{
-
-    Audio_File *a;
-
-    if ( ( a = _open_files[ string( filename ) ] ) )
-        return a;
-
-    if ( ( a = Audio_File_SF::from_file( filename ) ) )
-        goto done;
-
-// TODO: other formats
-
-    return NULL;
-
-done:
-
-/*     a->_peaks = new Peaks; */
-
-/*     a->_peaks->clip( a ); */
-/*     a->_peaks->open(); */
-
-    _open_files[ string( filename ) ] = a;
-
-    return a;
-}
-
-
-bool
-Audio_File::read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, Peak **pbuf, int *channels )
-{
-    Peaks pk;
-
-    pk.clip( this );
-
-    if ( ! pk.open() )
-        return false;
-
-    *peaks = pk.fill_buffer( fpp, start, end );
-
-    *channels = this->channels();
-
-    *pbuf = new Peak[ *peaks * *channels ];
-
-    /* deintereave peaks */
-    int k = 0;
-    for ( int i = 0; i < *channels; i++ )
-        for ( int j = i; j < *peaks * *channels; j += *channels )
-            (*pbuf)[ k++ ] = pk.peakbuf()[ j ];
-
-    return true;
-}
+void buffer_apply_gain ( sample_t *buf, nframes_t nframes, float g );
+void buffer_apply_gain_buffer ( sample_t *buf, sample_t *gainbuf, nframes_t nframes );
+void buffer_mix ( sample_t *dst, sample_t *src, nframes_t nframes );
+void buffer_mix_with_gain ( sample_t *dst, sample_t *src, nframes_t nframes, float g );
+void buffer_interleave_one_channel ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes );
+void buffer_interleave_one_channel_and_mix ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes );
+void buffer_deinterleave_one_channel ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes );

@@ -85,13 +85,17 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
 
     if ( ! ( fp = fopen( peakname( _clip->name() ), "r" ) ) )
     {
-        printf( "failed to open peak file!" );
+        printf( "failed to open peak file!\n" );
         return 0;
     }
 
     /* get chunk size of peak file */
     int pfchunksize = 0;
-    fread( &pfchunksize, sizeof( int ), 1, fp );
+    if ( fread( &pfchunksize, sizeof( int ), 1, fp ) != 1 )
+    {
+        printf( "invalid peak file!\n" );
+        return 0;
+    }
 
     int channels = _clip->channels();
     const int ratio = chunksize / pfchunksize;

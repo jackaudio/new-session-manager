@@ -23,6 +23,8 @@
 #include "Port.H"
 #include "Engine.H" // for locking.
 
+#include "dsp.h"
+
 /**********/
 /* Engine */
 /**********/
@@ -225,8 +227,6 @@ Disk_Stream::io_thread ( void )
 
     /* buffer to hold the interleaved data returned by the track reader */
     sample_t *buf = new sample_t[ _nframes * channels() ];
-    /* buffer for a single channel */
-    sample_t *cbuf = new sample_t[ _nframes ];
 
     const size_t block_size = _nframes * sizeof( sample_t );
 
@@ -259,10 +259,6 @@ Disk_Stream::io_thread ( void )
 
         for ( int i = channels(); i--; )
         {
-            int k = 0;
-            for ( unsigned int j = i; k < _nframes; j += channels() )
-                cbuf[ k++ ] = buf[ j ];
-
             while ( jack_ringbuffer_write_space( _rb[ i ] ) < block_size )
             {
                 printf( "IO: disk buffer overrun!\n" );
@@ -270,14 +266,46 @@ Disk_Stream::io_thread ( void )
                 usleep( 2000 );
             }
 
-            jack_ringbuffer_write( _rb[ i ], (char*)cbuf, block_size );
+            /* deinterleave direcectly into the ringbuffer to avoid
+             * unnecessary copying */
+
+            jack_ringbuffer_data_t rbd[2];
+
+            jack_ringbuffer_get_write_vector( _rb[ i ], rbd );
+
+            if ( rbd[ 0 ].len >= _nframes )
+                /* it'll all fit in one go */
+                buffer_deinterleave_one_channel( (sample_t*)rbd[ 0 ].buf, buf, i, channels(), _nframes );
+            else if ( rbd[ 1 ].len )
+            {
+                /* there's enough space in the ringbuffer, but it's not contiguous */
+
+                /* do the first half */
+                const nframes_t f = rbd[ 1 ].len / sizeof( sample_t );
+
+                buffer_deinterleave_one_channel( (sample_t*)rbd[ 0 ].buf, buf, i, channels(), f );
+
+                assert( rbd[ 1 ].len >= (_nframes - f) * sizeof( sample_t ) );
+
+                /* do the second half */
+                buffer_deinterleave_one_channel( (sample_t*)rbd[ 1 ].buf, buf + f, i, channels(), _nframes - f );
+            }
+            else
+                printf( "programming error: expected more space in ringbuffer\n" );
+
+/*             buffer_deinterleave_one_channel( (sample_t*)rbd.buf, buf, i, channels(), _nframes ); */
+/*             jack_ringbuffer_write( _rb[ i ], (char*)cbuf, block_size ); */
+
+            jack_ringbuffer_write_advance( _rb[ i ], _nframes * sizeof( sample_t ) );
+
+
+
         }
     }
 
     printf( "IO thread terminating.\n" );
 
     delete[] buf;
-    delete[] cbuf;
 }
 
 /* THREAD: RT */

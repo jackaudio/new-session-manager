@@ -482,8 +482,8 @@ changed:
 
 
 /** Draws the curve for a single fade. /X/ and /W/ repersent the
- portion of the region covered by this draw, which may or may not
- cover the fade in question. */
+    portion of the region covered by this draw, which may or may not
+    cover the fade in question. */
 void
 Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int X, int W )
 {
@@ -515,10 +515,16 @@ Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int X, in
     fl_vertex( 0.0, 0.0 );
     fl_vertex( 0.0, 1.0 );
 
-    nframes_t tsx = timeline->x_to_ts( 1 );
-    nframes_t ts = 0;
-    for ( int i = 0; i < width; ++i, ts += tsx )
-        fl_vertex( i / (float)width, 1.0f - fade.gain( ts ) );
+
+//    if ( draw_real_fade_curve )
+    {
+        nframes_t tsx = timeline->x_to_ts( 1 );
+        nframes_t ts = 0;
+
+        for ( int i = 0; i < width; ++i, ts += tsx )
+            fl_vertex( i / (float)width, 1.0f - fade.gain( ts / (float)fade.length ) );
+
+    }
 
     fl_vertex( 1.0, 0.0 );
 
@@ -695,17 +701,27 @@ Region::normalize ( void )
 void
 Region::Fade::apply ( sample_t *buf, Region::Fade::fade_dir_e dir, long start, nframes_t end, nframes_t nframes ) const
 {
-    printf( "apply fade %s: start=%ld end=%lu\n", dir == Fade::Out ? "out" : "in", start, end );
+//    printf( "apply fade %s: start=%ld end=%lu\n", dir == Fade::Out ? "out" : "in", start, end );
 
-    nframes_t i = start > 0 ? start : 0;
-    nframes_t e = end > nframes ? nframes : end;
+    const nframes_t i = start > 0 ? start : 0;
+    const nframes_t e = end > nframes ? nframes : end;
+
+    const float inc = increment();
+    float fi = ( i - start ) / (float)length;
+
+    buf += i;
+
+    nframes_t n = e - i;
 
     if ( dir == Fade::Out )
-        for ( ; i < e; ++i )
-            buf[ i ] *= gain( (length - 1) - (i - start) );
+    {
+        fi = 1.0f - fi;
+        for ( ; n--; fi -= inc  )
+            *(buf++) *= gain( fi );
+    }
     else
-        for ( ; i < e; ++i )
-            buf[ i ] *= gain( i - start );
+        for ( ; n--; fi += inc )
+            *(buf++) *= gain( fi );
 }
 
 
@@ -793,13 +809,13 @@ float gain_on_curve ( int type, int dir, nframes_t nframes, nframes_t offset, nf
     this region into /buf/, where /pos/ is in timeline frames */
 /* this runs in the diskstream thread. */
 /* FIXME: it is far more efficient to read all the channels from a
- multichannel source at once... But how should we handle the case of a
- mismatch between the number of channels in this region's source and
- the number of channels on the track/buffer this data is being read
- for? Would it not be better to simply buffer and deinterlace the
- frames in the Audio_File class instead, so that sequential requests
- for different channels at the same position avoid hitting the disk
- again? */
+   multichannel source at once... But how should we handle the case of a
+   mismatch between the number of channels in this region's source and
+   the number of channels on the track/buffer this data is being read
+   for? Would it not be better to simply buffer and deinterlace the
+   frames in the Audio_File class instead, so that sequential requests
+   for different channels at the same position avoid hitting the disk
+   again? */
 nframes_t
 Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const
 {

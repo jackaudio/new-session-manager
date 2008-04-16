@@ -59,38 +59,31 @@ public:
                 return length < rhs.length;
             }
 
+        float increment ( void ) const
+            {
+                return 1.0f / (float)length;
+            }
+
         /** Return gain for frame /index/ of /nframes/ on a gain curve
          * of type /type/.*/
         /* FIXME: calling a function per sample is bad, switching on
          * type mid fade is bad. */
         inline float
-        gain ( nframes_t index ) const
+        gain ( const float fi ) const
             {
-                float g;
-
-                const float fi = index / (float)length;
-
                 switch ( type )
                 {
                     case Linear:
-                        g = fi;
-                        break;
+                        return fi;
                     case Sigmoid:
-                        g = (1.0f - cos( fi * M_PI )) / 2.0f;
-                        break;
+                        return (1.0f - cos( fi * M_PI )) / 2.0f;
                     case Logarithmic:
-                        /* FIXME: this is wrong */
-                        g = pow( 0.1f, (1.0f - fi) * 3.0f );
-                        break;
+                        return pow( 0.1f, (1.0f - fi) * 3.0f );
                     case Parabolic:
-                        g = 1.0f - (1.0f - fi) * (1.0f - fi);
-                        break;
+                        return 1.0f - (1.0f - fi) * (1.0f - fi);
                     default:
-                        g = 1.0f;
+                        return 1.0f;
                 }
-
-                return g;
-
             }
 
         void apply ( sample_t *buf, fade_dir_e dir, long start, nframes_t end, nframes_t nframes ) const;

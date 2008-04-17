@@ -86,6 +86,45 @@ Peaks::fill_buffer ( float fpp, nframes_t s, nframes_t e ) const
 /*     } */
 /* } */
 
+#if 0
+const int HEADER_SIZE = 24;
+
+bool
+Peaks::read_header ( void )
+{
+    int major, minor;
+
+    if ( 2 != fscanf( _fp, "NON-PEAKS%2d%2d", &major, &minor ) )
+        return false;
+
+    if ( major != VERSION_MAJOR )
+        /* incompatible version */
+        return false;
+
+    int data[3];
+
+    int header_size;
+
+    fread( &header_size, sizeof( int ), 1, _fp );
+
+    if ( header_size < sizeof( data ) )
+        return false;
+
+    fread( data, sizeof( data ), 1, _fp );
+
+    int chunksize  = data[1];
+    int channels   = data[2];
+    int peaksize   = data[3];
+
+    _data_offset = header_size + 12;
+
+    if ( header_size > sizeof( data ) )
+        fseek( _fp, _data_offset, SEEK_SET );
+
+    return true;
+}
+#endif
+
 int
 Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const
 {
@@ -98,12 +137,14 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
     }
 
     /* get chunk size of peak file */
-    int pfchunksize = 0;
-    if ( fread( &pfchunksize, sizeof( int ), 1, fp ) != 1 )
-    {
-        printf( "invalid peak file!\n" );
-        return 0;
-    }
+    /* FIXME: bogus */
+    int pfchunksize = 256;
+
+/*     if ( fread( &pfchunksize, sizeof( int ), 1, fp ) != 1 ) */
+/*     { */
+/*         printf( "invalid peak file!\n" ); */
+/*         return 0; */
+/*     } */
 
     int channels = _clip->channels();
     const int ratio = chunksize / pfchunksize;
@@ -343,8 +384,8 @@ Peaks::make_peaks ( int chunksize )
         return false;
     }
 
-    /* write chunksize first */
-    fwrite( &chunksize, sizeof( int ), 1, fp );
+/*     /\* write chunksize first *\/ */
+/*     fwrite( &chunksize, sizeof( int ), 1, fp ); */
 
     Peak peaks[ _clip->channels() ];
 
@@ -392,14 +433,12 @@ Peaks::make_peaks ( int chunksize )
 
 
 
-
-
-
 Peak_Writer::Peak_Writer ( const char *filename, int chunksize, int channels )
 {
 
-    _channels = channels;
+    _channels  = channels;
     _chunksize = chunksize;
+    _index     = 0;
 
     _peak = new Peak[ channels ];
     memset( _peak, 0, sizeof( Peak ) * channels );
@@ -407,7 +446,7 @@ Peak_Writer::Peak_Writer ( const char *filename, int chunksize, int channels )
     if ( ! ( _fp = fopen( peakname( filename ), "w" ) ) )
         /* error! */;
 
-    write_header();
+//    write_header();
 }
 
 Peak_Writer::~Peak_Writer ( )
@@ -423,14 +462,19 @@ Peak_Writer::write_header ( void )
 
     int data[] = { _chunksize, _channels, sizeof( Peak ) };
 
+    int size = sizeof( data );
+
+    fwrite( &size, sizeof( size ), 1, _fp );
+
     fwrite( &data, sizeof( data ), 1, _fp );
+
 }
 
 /** append peaks for samples in /buf/ to peakfile */
 void
 Peak_Writer::write ( sample_t *buf, nframes_t nframes )
 {
-    for ( int i = _chunksize; nframes--; --i, buf += _channels )
+    for ( ; nframes--; ++_index, buf += _channels )
     {
         for ( int j = 0; j < _channels; ++j )
         {
@@ -442,11 +486,11 @@ Peak_Writer::write ( sample_t *buf, nframes_t nframes )
                 p->min = *buf;
         }
 
-        if ( ! i )
+        if ( _index == _chunksize - 1 )
         {
             fwrite( _peak, sizeof( Peak ), _channels, _fp );
             memset( _peak, 0, sizeof( Peak ) * _channels );
-            i = _chunksize;
+            _index = 0;
         }
 
     }

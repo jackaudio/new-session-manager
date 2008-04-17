@@ -118,6 +118,8 @@ class Peak_Writer
     int _chunksize;
     int _channels;
 
+    int _index;
+
 public:
 
     Peak_Writer ( const char *filename, int chunksize, int channels );

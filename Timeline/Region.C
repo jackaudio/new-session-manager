@@ -656,9 +656,6 @@ Region::draw ( void )
                             pbuf + i, peaks, channels,
                             selected() ? fl_invert_color( _color ) : _color );
         }
-
-        delete[] pbuf;
-
     }
 
     timeline->draw_measure_lines( rx, Y, rw, H, _box_color );

@@ -82,8 +82,8 @@ Waveform::draw ( int X, int Y, int W, int H,
                 else
                     fl_color( color );
 
-            const int ty = mid + (halfheight * p.min);
-            const int by = mid + (halfheight * p.max );
+            const int ty = mid + ( halfheight * p.min );
+            const int by = mid + ( halfheight * p.max );
             fl_line( x, ty, x, by );
 
 /*         if ( outline ) */
@@ -96,6 +96,8 @@ Waveform::draw ( int X, int Y, int W, int H,
         }
     }
 
+    const int ty = Y + halfheight;
+
     if ( Waveform::outline )
     {
 
@@ -107,11 +109,7 @@ Waveform::draw ( int X, int Y, int W, int H,
 
         j = start;
         for ( int x = X; x < X + W; ++x, j += skip )
-        {
-            const Peak p = pbuf[ j ];
-
-            fl_vertex( x, Y + (H / 2) + ((float)H / 2 *  p.min ));
-        }
+            fl_vertex( x, ty + ( halfheight * pbuf[ j ].min ) );
 
         fl_end_line();
 
@@ -119,11 +117,7 @@ Waveform::draw ( int X, int Y, int W, int H,
 
         j = start;
         for ( int x = X; x < X + W; ++x, j += skip )
-        {
-            const Peak p = pbuf[ j ];
-
-            fl_vertex( x, Y + (H / 2) + ((float)H / 2 * p.max ));
-        }
+            fl_vertex( x, ty + ( halfheight * pbuf[ j ].max ) );
 
         fl_end_line();
 

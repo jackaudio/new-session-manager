@@ -124,21 +124,19 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
         /* get the peak for each channel */
         for ( int j = 0; j < channels; ++j )
         {
-            Peak &p = pk[ j ];
+            Peak *p = &pk[ j ];
 
-            p.min = 0;
-            p.max = 0;
+            p->min = 0;
+            p->max = 0;
 
             const Peak *pb = pbuf + j;
 
             for ( int k = len * channels; k--; pb += channels )
             {
-                const Peak pp = *pb;
-
-                if ( pp.max > p.max )
-                    p.max = pp.max;
-                if ( pp.min < p.min )
-                    p.min = pp.min;
+                if ( pb->max > p->max )
+                    p->max = pb->max;
+                if ( pb->min < p->min )
+                    p->min = pb->min;
             }
 
         }

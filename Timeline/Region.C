@@ -562,9 +562,7 @@ Region::draw_box( int X, int Y, int W, int H )
     fl_pop_clip();
 }
 
-/* Draw (part of) region. OX is pixel offset from start of timeline, X
-   Y W and H are the portion of the widget to draw (arrived at by
-   intersection of the clip and relative to OX) */
+/** Draw (part of) region. X, Y, W and H are the rectangle we're clipped to. */
 void
 Region::draw ( int X, int Y, int W, int H )
 {
@@ -572,6 +570,7 @@ Region::draw ( int X, int Y, int W, int H )
         return;
 
     if ( ! ( W > 0 && H > 0 ) )
+        /* WTF? */
         return;
 
     int OX = scroll_x();
@@ -579,7 +578,13 @@ Region::draw ( int X, int Y, int W, int H )
 
     if ( ox > OX + _track->w() ||
          ox < OX && ox + abs_w() < OX )
+        /* not in viewport */
         return;
+
+    if ( x() > X + W || x() + w() < X )
+        /* no coverage */
+        return;
+
 
     int rw = timeline->ts_to_x( _r->end - _r->start );
 
@@ -598,37 +603,45 @@ Region::draw ( int X, int Y, int W, int H )
 
     int rx = x();
 
-    fl_push_clip( rx, Y, rw, H );
+//    fl_push_clip( rx, Y, rw, H );
 
     /* get actual peak data */
     int channels;
     int peaks;
     Peak *pbuf;
 
-    const nframes_t start = _r->start + offset + timeline->x_to_ts( X - rx );
-    _clip->read_peaks( timeline->fpp(),
-                       start,
-                       start + timeline->x_to_ts( W ),
-                       &peaks, &pbuf, &channels );
 
-    assert( pbuf );
+//    const nframes_t start = _r->start + offset + timeline->x_to_ts( X - rx );
+    nframes_t start = _r->start + offset;
 
-    /* draw fade curve outlines--this is only here because of crossfades */
-    draw_fade( _fade_in, Fade::In, true, X, W );
-    draw_fade( _fade_out, Fade::Out, true, X, W );
+/*  if ( X - rx > 0 ) */
+/*         start += timeline->x_to_ts( X - rx ); */
 
-    int ch = (h() - Fl::box_dh( box() ))  / channels;
-
-    for ( int i = 0; i < channels; ++i )
+    printf( "offset=%lu start=%lu\n", offset, start, X, rx  );
+    if ( _clip->read_peaks( timeline->fpp(),
+                            start,
+                            start + timeline->x_to_ts( W ),
+                            &peaks, &pbuf, &channels ) )
     {
-        Peak *pb = pbuf + (peaks * i);
 
-        /* scale it */
-        for ( int j = peaks; j--; )
+        assert( pbuf );
+
+        /* draw fade curve outlines--this is only here because of crossfades */
+        draw_fade( _fade_in, Fade::In, true, X, W );
+        draw_fade( _fade_out, Fade::Out, true, X, W );
+
+        int ch = (h() - Fl::box_dh( box() ))  / channels;
+
+        for ( int i = 0; i < channels; ++i )
         {
-            pb[ j ].min *= _scale;
-            pb[ j ].max *= _scale;
-        }
+            Peak *pb = pbuf + (peaks * i);
+
+            /* scale it */
+            for ( int j = peaks; j--; )
+            {
+                pb[ j ].min *= _scale;
+                pb[ j ].max *= _scale;
+            }
 
 /*         int fw = timeline->ts_to_x( fade.length ); */
 
@@ -640,21 +653,14 @@ Region::draw ( int X, int Y, int W, int H )
 /*             pb[ j ].max *= g; */
 /*         } */
 
-        Waveform::draw( X, (y() + Fl::box_dy( box() )) + (i * ch), W, ch,
-                        pb, peaks,
-                        selected() ? fl_invert_color( _color ) : _color );
+            Waveform::draw( max( X, rx ), (y() + Fl::box_dy( box() )) + (i * ch), min( W, rw ), ch,
+                            pb, peaks,
+                            selected() ? fl_invert_color( _color ) : _color );
+        }
+
+        delete[] pbuf;
+
     }
-
-    delete[] pbuf;
-
-/*     for ( int i = _clip->channels(); i--; ) */
-/*         Waveform::draw( rx, X, (y() + Fl::box_dy( box() )) + (i * ch), W, */
-/*                         ch, _clip, i, timeline->fpp(), */
-/*                        _r->start + offset, min( (_r->end - _r->start) - offset, _r->end), */
-/*                        _scale, selected() ? fl_invert_color( _color ) : _color ); */
-
-
-
 
     timeline->draw_measure_lines( rx, Y, rw, H, _box_color );
 
@@ -675,7 +681,7 @@ Region::draw ( int X, int Y, int W, int H )
         draw_label( pat, (Fl_Align)(FL_ALIGN_INSIDE | FL_ALIGN_CENTER), FL_GREEN );
     }
 
-    fl_pop_clip();
+//    fl_pop_clip();
 
 }
 

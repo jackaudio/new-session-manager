@@ -62,6 +62,10 @@ Audio_File::read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, P
 {
     Peaks pk;
 
+    *peaks    = 0;
+    *channels = 0;
+    *pbuf     = NULL;
+
     pk.clip( this );
 
     if ( ! pk.open() )

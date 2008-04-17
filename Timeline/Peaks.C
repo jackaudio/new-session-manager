@@ -50,10 +50,7 @@ Peaks::fill_buffer ( float fpp, int s, int e ) const
 {
     _fpp = fpp;
 
-    read_peaks( s, e, (e - s) / fpp, fpp );
-
-    /* FIXME: are we *SURE* we got them all? */
-    return (e - s) / fpp;
+    return read_peaks( s, e, (e - s) / fpp, fpp );
 }
 
 
@@ -100,6 +97,11 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
     int channels = _clip->channels();
     const int ratio = chunksize / pfchunksize;
 
+    /* locate to start position */
+    if ( fseek( fp, (s * channels / pfchunksize) * sizeof( Peak ), SEEK_CUR ) )
+        /* failed to seek... peaks not ready? */
+        return 0;
+
     if ( ratio == 1 )
     {
         int len = fread( peaks, sizeof( Peak ) * channels, npeaks, fp );
@@ -108,9 +110,6 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
     }
 
     Peak *pbuf = new Peak[ ratio * channels ];
-
-    /* locate to start position */
-    fseek( fp, (s * channels / pfchunksize) * sizeof( Peak ), SEEK_CUR );
 
     size_t len = 0;
 
@@ -208,7 +207,7 @@ Peaks::read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize )
     return i;
 }
 
-void
+int
 Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
 {
     printf( "reading peaks %d @ %d\n", npeaks, chunksize );
@@ -220,6 +219,8 @@ Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
         _peakbuf.buf = (peakdata*)realloc( _peakbuf.buf, sizeof( peakdata ) + (_peakbuf.size * sizeof( Peak )) );
     }
 
+    assert( s >= 0 );
+
     _peakbuf.offset = s;
     _peakbuf.buf->chunksize = chunksize;
 
@@ -229,6 +230,7 @@ Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
     else
         _peakbuf.len = read_peakfile_peaks( _peakbuf.buf->data, s, npeaks, chunksize );
 
+    return _peakbuf.len;
 }
 
 /** Return the peak for the range of samples */
@@ -266,7 +268,9 @@ Peaks::open ( void )
 
     int fd;
 
-    make_peaks( 256 );
+    /* Build peaks asyncronously */
+    if ( ! fork() )
+        exit( make_peaks( 256 ) );
 
     if ( ( fd = ::open( peakname( filename ), O_RDONLY ) ) < 0 )
         return false;
@@ -344,7 +348,7 @@ Peaks::make_peaks ( int chunksize )
         len = read_source_peaks( peaks, 1, chunksize );
         fwrite( peaks, sizeof( peaks ), 1, fp );
         /* FIXME: GUI code shouldn't be here! */
-        Fl::check();
+//        Fl::check();
     }
     while ( len );
 

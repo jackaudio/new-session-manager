@@ -103,7 +103,7 @@ Track::draw ( void )
 
 
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-            (*r)->draw( X, Y, W, H );
+        (*r)->draw( X, Y, W, H );
 
 
     /* draw crossfades */

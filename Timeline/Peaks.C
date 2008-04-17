@@ -268,9 +268,10 @@ Peaks::open ( void )
 
     int fd;
 
+    if ( ! current() )
     /* Build peaks asyncronously */
-    if ( ! fork() )
-        exit( make_peaks( 256 ) );
+        if ( ! fork() )
+            exit( make_peaks( 256 ) );
 
     if ( ( fd = ::open( peakname( filename ), O_RDONLY ) ) < 0 )
         return false;

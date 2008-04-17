@@ -57,6 +57,8 @@ Waveform::draw ( int X, int Y, int W, int H,
     const int halfheight = H / 2;
     const int mid = Y + halfheight;
 
+    W = min( peaks, W );
+
     if ( Waveform::fill )
     {
         j = start;

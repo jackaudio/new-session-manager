@@ -31,6 +31,8 @@ typedef float sample_t;
 #include <map>
 using namespace std;
 
+class Peak_Writer;
+
 class Audio_File
 {
     static map <string, Audio_File*> _open_files;
@@ -44,6 +46,8 @@ protected:
     int _channels;
 
     Peaks *_peaks;
+
+    Peak_Writer *_peak_writer;
 
 public:
 

@@ -27,6 +27,8 @@
 
 #include <assert.h>
 
+#include "Peaks.H"
+
 Audio_File_SF *
 Audio_File_SF::from_file ( const char *filename )
 {
@@ -97,6 +99,9 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
 
     c->_in         = out;
 
+    /* FIXME: 256 ? */
+    c->_peak_writer = new Peak_Writer( filename, 256, channels );
+
     return c;
 }
 
@@ -126,6 +131,9 @@ Audio_File_SF::close ( void )
 {
     if ( _in )
         sf_close( _in );
+
+    if ( _peak_writer )
+        delete _peak_writer;
 
     _in = NULL;
 }
@@ -194,5 +202,7 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t start, nframes_t end
 nframes_t
 Audio_File_SF::write ( sample_t *buf, nframes_t nframes )
 {
+    _peak_writer->write( buf, nframes );
+
     return sf_writef_float( _in, buf, nframes );
 }

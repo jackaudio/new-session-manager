@@ -23,6 +23,7 @@
 
 #include "Audio_File_SF.H"
 class Audio_File;
+class Peak_Writer;
 
 class Record_DS : public Disk_Stream
 {

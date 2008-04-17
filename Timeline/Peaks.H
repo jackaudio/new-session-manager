@@ -67,7 +67,7 @@ class Peaks
     int read_source_peaks ( Peak *peaks, int npeaks, int chunksize ) const;
     int read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const;
 
-    const char *peakname ( const char *filename ) const;
+//    const char *peakname ( const char *filename ) const;
 
 
     // Peaks ( );
@@ -102,5 +102,29 @@ public:
     Peak & peak ( nframes_t start, nframes_t end ) const;
 
     Peak & operator[] ( int X ) const;
+
+};
+
+#include <stdio.h>
+
+class Peak_Writer
+{
+
+    static const int VERSION_MAJOR = 0;
+    static const int VERSION_MINOR = 1;
+
+    FILE *_fp;
+    Peak *_peak;
+    int _chunksize;
+    int _channels;
+
+public:
+
+    Peak_Writer ( const char *filename, int chunksize, int channels );
+    ~Peak_Writer ( );
+
+    void write_header ( void );
+    void write ( sample_t *buf, nframes_t nframes );
+
 
 };

@@ -43,6 +43,17 @@
 Peaks::peakbuffer Peaks::_peakbuf;
 
 
+static
+const char *
+peakname ( const char *filename )
+{
+    static char file[512];
+
+    snprintf( file, 512, "%s.peak", filename );
+
+    return (const char*)&file;
+}
+
 /** Prepare a buffer of peaks from /s/ to /e/ for reading. Must be
  * called before any calls to operator[] */
 int
@@ -253,15 +264,6 @@ Peaks::read_peaks ( nframes_t s, nframes_t e, int npeaks, int chunksize ) const
 /*     return p; */
 /* } */
 
-const char *
-Peaks::peakname ( const char *filename ) const
-{
-    static char file[512];
-
-    snprintf( file, 512, "%s.peak", filename );
-
-    return (const char*)&file;
-}
 
 bool
 Peaks::open ( void )
@@ -271,7 +273,7 @@ Peaks::open ( void )
     int fd;
 
     if ( ! current() )
-    /* Build peaks asyncronously */
+        /* Build peaks asyncronously */
         if ( ! fork() )
             exit( make_peaks( 256 ) );
 
@@ -318,7 +320,7 @@ Peaks::current ( void ) const
 
 
 /* FIXME: we need to work out a way to run this in another thread and
- possibly stream back the data to the GUI */
+   possibly stream back the data to the GUI */
 /** build peaks file for /filename/ if necessary */
 bool
 Peaks::make_peaks ( int chunksize )
@@ -387,3 +389,65 @@ Peaks::make_peaks ( int chunksize )
 
 /*     return s; */
 /* } */
+
+
+
+
+
+
+Peak_Writer::Peak_Writer ( const char *filename, int chunksize, int channels )
+{
+
+    _channels = channels;
+    _chunksize = chunksize;
+
+    _peak = new Peak[ channels ];
+    memset( _peak, 0, sizeof( Peak ) * channels );
+
+    if ( ! ( _fp = fopen( peakname( filename ), "w" ) ) )
+        /* error! */;
+
+    write_header();
+}
+
+Peak_Writer::~Peak_Writer ( )
+{
+    fclose( _fp );
+    delete _peak;
+}
+
+void
+Peak_Writer::write_header ( void )
+{
+    fprintf( _fp, "NON-PEAKS%2d%2d", VERSION_MAJOR, VERSION_MINOR );
+
+    int data[] = { _chunksize, _channels, sizeof( Peak ) };
+
+    fwrite( &data, sizeof( data ), 1, _fp );
+}
+
+/** append peaks for samples in /buf/ to peakfile */
+void
+Peak_Writer::write ( sample_t *buf, nframes_t nframes )
+{
+    for ( int i = _chunksize; nframes--; --i, buf += _channels )
+    {
+        for ( int j = 0; j < _channels; ++j )
+        {
+            Peak *p = _peak + j;
+
+            if ( *buf > p->max )
+                p->max = *buf;
+            if ( *buf < p->min )
+                p->min = *buf;
+        }
+
+        if ( ! i )
+        {
+            fwrite( _peak, sizeof( Peak ), _channels, _fp );
+            memset( _peak, 0, sizeof( Peak ) * _channels );
+            i = _chunksize;
+        }
+
+    }
+}

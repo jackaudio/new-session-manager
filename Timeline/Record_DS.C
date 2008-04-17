@@ -142,7 +142,6 @@ Record_DS::start ( nframes_t frame )
     }
 
     _af = Audio_File_SF::create( "testing.wav", 48000, channels(), "Wav/24" );
-
     _frame = frame;
 
     run();

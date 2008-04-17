@@ -74,8 +74,6 @@ protected:
     Fl_Color _color;                                            /* color of waveform */
     Fl_Color _box_color;                                        /* color of background (box) */
 
-    bool _shown;
-
     Drag *_drag;
 
 public:
@@ -87,8 +85,6 @@ public:
             _r = &_range;
 
             _r->offset = _r->start = _r->end = 0;
-
-            _shown = true;
 
             _drag = NULL;
         }
@@ -164,10 +160,6 @@ public:
     static void belowmouse ( Track_Widget *w ) { Track_Widget::_belowmouse = w; }
 
 //    static void pushed ( Track_Widget *w ) { Track_Widget::_pushed = w; }
-
-    bool shown ( void ) const { return _shown; }
-    void show ( void ) { _shown = true; }
-    void hide ( void ) { _shown = false; }
 
     void begin_drag ( const Drag &d )
         {
@@ -281,21 +273,15 @@ public:
 
     /* just draw a simple box */
     virtual void
-    draw_box ( int X, int Y, int W, int H )
+    draw_box ( void )
         {
-            if ( x() > X + W || x() + w() < X )
-                return;
-
             fl_draw_box( box(), x(), y(), w(), h(), _box_color );
         }
 
     virtual void
-    draw ( int X, int Y, int W, int H )
+    draw ( void )
         {
-            if ( x() > X + W || x() + w() < X )
-                return;
-
-            draw_box( X, Y, W, H );
+            draw_box();
         }
 
     bool

@@ -93,7 +93,7 @@ public:
             timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 
             for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-                (*r)->draw_box( X, Y, W, H );
+                (*r)->draw_box();
 
             fl_pop_clip();
         }

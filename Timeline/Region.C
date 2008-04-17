@@ -540,14 +540,11 @@ Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int X, in
 }
 
 void
-Region::draw_box( int X, int Y, int W, int H )
+Region::draw_box( void )
 {
-    if ( ! shown() )
-        return;
-
     /* dirty hack to keep the box from flipping to vertical at small sizes */
 
-    fl_push_clip( x(), Y, w(), H );
+    fl_push_clip( x(), y(), w(), h() );
 
     if ( selected() )
         fl_draw_box( fl_down( box() ), x() - 10, y(), w() + 50, h(), _selection_color );
@@ -556,27 +553,24 @@ Region::draw_box( int X, int Y, int W, int H )
         fl_draw_box( box(), x() - 10, y(), w() + 50, h(), _box_color );
 
     /* draw fades */
-    draw_fade( _fade_in, Fade::In, false, X, W );
-    draw_fade( _fade_out, Fade::Out, false, X, W );
+    draw_fade( _fade_in, Fade::In, false, x(), w() );
+    draw_fade( _fade_out, Fade::Out, false, x(), w() );
 
     fl_pop_clip();
 }
 
 /** Draw (part of) region. X, Y, W and H are the rectangle we're clipped to. */
 void
-Region::draw ( int X, int Y, int W, int H )
+Region::draw ( void )
 {
-    if ( ! shown() )
-        return;
-
     /* intersect clip with region */
-    /* FIXME: wouldn't it be better to get rid of the useless X Y W H arguments and
-     just intersect with the real clipping region? */
+
+    int X, Y, W, H;
 
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
     if ( ! ( W > 0 && H > 0 ) )
-        /* WTF? */
+        /* no coverage */
         return;
 
     int OX = scroll_x();
@@ -587,13 +581,7 @@ Region::draw ( int X, int Y, int W, int H )
         /* not in viewport */
         return;
 
-    if ( x() > X + W || x() + w() < X )
-        /* no coverage */
-        return;
-
-
     int rw = timeline->ts_to_x( _r->end - _r->start );
-
 //    nframes_t end = _r->offset + ( _r->end - _r->start );
 
     /* calculate waveform offset due to scrolling */
@@ -609,7 +597,7 @@ Region::draw ( int X, int Y, int W, int H )
 
     int rx = x();
 
-//    fl_push_clip( rx, Y, rw, H );
+    fl_push_clip( rx, Y, rw, H );
 
     /* get actual peak data */
     int channels;
@@ -624,10 +612,9 @@ Region::draw ( int X, int Y, int W, int H )
     if ( X - rx > 0 )
         start += timeline->x_to_ts( X - rx );
 
-    printf( "offset=%lu start=%lu\n", offset, start, X, rx  );
     if ( _clip->read_peaks( timeline->fpp(),
                             start,
-                            start + timeline->x_to_ts( min( rw, W ) ),
+                            start + timeline->x_to_ts( W ),
                             &peaks, &pbuf, &channels ) )
     {
 
@@ -660,12 +647,9 @@ Region::draw ( int X, int Y, int W, int H )
 /*             pb[ j ].max *= g; */
 /*         } */
 
-            const int nx = max( X, rx );
-            const int nw = min( nx + W, nx + rw ) - nx;
-
-            Waveform::draw( nx,
+            Waveform::draw( X,
                             (y() + Fl::box_dy( box() )) + (i * ch),
-                            nw,
+                            W,
                             ch,
                             pb, peaks,
                             selected() ? fl_invert_color( _color ) : _color );
@@ -694,7 +678,7 @@ Region::draw ( int X, int Y, int W, int H )
         draw_label( pat, (Fl_Align)(FL_ALIGN_INSIDE | FL_ALIGN_CENTER), FL_GREEN );
     }
 
-//    fl_pop_clip();
+    fl_pop_clip();
 
 }
 

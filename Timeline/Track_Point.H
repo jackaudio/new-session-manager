@@ -49,9 +49,9 @@ public:
         }
 
     virtual void
-    draw ( int X, int Y, int W, int H )
+    draw ( void )
         {
-            Track_Widget::draw( x(), Y, w(), H );
+            Track_Widget::draw();
 
             draw_label( _label, align() );
         }

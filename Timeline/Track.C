@@ -99,22 +99,19 @@ Track::draw ( void )
     timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-        (*r)->draw_box( X, Y, W, H );
+        (*r)->draw_box();
 
 
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-        (*r)->draw( X, Y, W, H );
+        (*r)->draw();
 
 
     /* draw crossfades */
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
     {
-        if ( ! (*r)->shown() )
-            continue;
-
         Track_Widget *o = overlaps( *r );
 
-        if ( o && o->shown() )
+        if ( o )
         {
             if ( *o <= **r )
             {
@@ -153,12 +150,9 @@ Track::draw ( void )
 
     for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
     {
-        if ( ! (*r)->shown() )
-            continue;
-
         Track_Widget *o = overlaps( *r );
 
-        if ( o && o->shown() )
+        if ( o )
         {
             if ( *o <= **r )
             {
@@ -179,8 +173,13 @@ Track::draw ( void )
 /*                 o->color( FL_RED ); */
 /*                 (*r)->color( FL_GREEN ); */
 
-                o->draw( b.x, b.y, b.w, b.h );
-                (*r)->draw( b.x, b.y, b.w, b.h );
+                fl_push_clip( b.x, b.y, b.w, b.h );
+
+                o->draw();
+                (*r)->draw();
+
+                fl_pop_clip();
+
                 Waveform::fill = true;
 
 

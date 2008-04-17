@@ -626,16 +626,18 @@ Region::draw ( void )
 
         int ch = (h() - Fl::box_dh( box() ))  / channels;
 
+
+        /* scale it */
+        for ( int j = peaks * channels; j--; )
+        {
+            pbuf[ j ].min *= _scale;
+            pbuf[ j ].max *= _scale;
+        }
+
+
         for ( int i = 0; i < channels; ++i )
         {
-            Peak *pb = pbuf + (peaks * i);
-
-            /* scale it */
-            for ( int j = peaks; j--; )
-            {
-                pb[ j ].min *= _scale;
-                pb[ j ].max *= _scale;
-            }
+//            Peak *pb = pbuf + (peaks * i);
 
 /*         int fw = timeline->ts_to_x( fade.length ); */
 
@@ -651,7 +653,7 @@ Region::draw ( void )
                             (y() + Fl::box_dy( box() )) + (i * ch),
                             W,
                             ch,
-                            pb, peaks,
+                            pbuf + i, peaks, channels,
                             selected() ? fl_invert_color( _color ) : _color );
         }
 

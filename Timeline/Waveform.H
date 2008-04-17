@@ -36,7 +36,7 @@ public:
     static bool logarithmic;
 
     static void draw ( int X, int Y, int W, int H,
-                       Peak *pbuf, int peaks,
+                       Peak *pbuf, int peaks, int skip,
                        Fl_Color color );
 
 };

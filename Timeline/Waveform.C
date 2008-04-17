@@ -43,7 +43,7 @@ bool Waveform::logarithmic = true;
 /** draw a portion of /clip/'s waveform. coordinates are the portion to draw  */
 void
 Waveform::draw ( int X, int Y, int W, int H,
-                 Peak *pbuf, int peaks,
+                 Peak *pbuf, int peaks, int skip,
                  Fl_Color color )
 {
     fl_push_clip( X, Y, W, H );
@@ -62,7 +62,7 @@ Waveform::draw ( int X, int Y, int W, int H,
     if ( Waveform::fill )
     {
         j = start;
-        for ( int x = X; x < X + W; ++x, ++j )
+        for ( int x = X; x < X + W; ++x, j += skip )
         {
             const Peak p = pbuf[ j ];
 
@@ -106,7 +106,7 @@ Waveform::draw ( int X, int Y, int W, int H,
         fl_begin_line();
 
         j = start;
-        for ( int x = X; x < X + W; ++x, ++j )
+        for ( int x = X; x < X + W; ++x, j += skip )
         {
             const Peak p = pbuf[ j ];
 
@@ -118,7 +118,7 @@ Waveform::draw ( int X, int Y, int W, int H,
         fl_begin_line();
 
         j = start;
-        for ( int x = X; x < X + W; ++x, ++j )
+        for ( int x = X; x < X + W; ++x, j += skip )
         {
             const Peak p = pbuf[ j ];
 

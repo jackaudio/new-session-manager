@@ -77,11 +77,13 @@ Audio_File::read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, P
 
     *pbuf = new Peak[ *peaks * *channels ];
 
-    /* deintereave peaks */
-    int k = 0;
-    for ( int i = 0; i < *channels; i++ )
-        for ( int j = i; j < *peaks * *channels; j += *channels )
-            (*pbuf)[ k++ ] = pk.peakbuf()[ j ];
+    memcpy( *pbuf, pk.peakbuf(), *peaks * *channels * sizeof( Peak ) );
+
+/*     /\* deintereave peaks *\/ */
+/*     int k = 0; */
+/*     for ( int i = 0; i < *channels; i++ ) */
+/*         for ( int j = i; j < *peaks * *channels; j += *channels ) */
+/*             (*pbuf)[ k++ ] = pk.peakbuf()[ j ]; */
 
     return true;
 }

@@ -46,7 +46,7 @@ Peaks::peakbuffer Peaks::_peakbuf;
 /** Prepare a buffer of peaks from /s/ to /e/ for reading. Must be
  * called before any calls to operator[] */
 int
-Peaks::fill_buffer ( float fpp, int s, int e ) const
+Peaks::fill_buffer ( float fpp, nframes_t s, nframes_t e ) const
 {
     _fpp = fpp;
 
@@ -208,7 +208,7 @@ Peaks::read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize )
 }
 
 int
-Peaks::read_peaks ( int s, int e, int npeaks, int chunksize ) const
+Peaks::read_peaks ( nframes_t s, nframes_t e, int npeaks, int chunksize ) const
 {
     printf( "reading peaks %d @ %d\n", npeaks, chunksize );
 

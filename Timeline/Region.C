@@ -569,6 +569,12 @@ Region::draw ( int X, int Y, int W, int H )
     if ( ! shown() )
         return;
 
+    /* intersect clip with region */
+    /* FIXME: wouldn't it be better to get rid of the useless X Y W H arguments and
+     just intersect with the real clipping region? */
+
+    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
+
     if ( ! ( W > 0 && H > 0 ) )
         /* WTF? */
         return;
@@ -596,7 +602,7 @@ Region::draw ( int X, int Y, int W, int H )
     {
         offset = timeline->x_to_ts( OX - ox );
 
-        rw = timeline->ts_to_x( (_r->end - _r->start) - offset );
+        rw -= OX - ox;
     }
 
     rw = min( rw, _track->w() );
@@ -614,13 +620,14 @@ Region::draw ( int X, int Y, int W, int H )
 //    const nframes_t start = _r->start + offset + timeline->x_to_ts( X - rx );
     nframes_t start = _r->start + offset;
 
-/*  if ( X - rx > 0 ) */
-/*         start += timeline->x_to_ts( X - rx ); */
+    /* compensate for ??? */
+    if ( X - rx > 0 )
+        start += timeline->x_to_ts( X - rx );
 
     printf( "offset=%lu start=%lu\n", offset, start, X, rx  );
     if ( _clip->read_peaks( timeline->fpp(),
                             start,
-                            start + timeline->x_to_ts( W ),
+                            start + timeline->x_to_ts( min( rw, W ) ),
                             &peaks, &pbuf, &channels ) )
     {
 
@@ -653,7 +660,13 @@ Region::draw ( int X, int Y, int W, int H )
 /*             pb[ j ].max *= g; */
 /*         } */
 
-            Waveform::draw( max( X, rx ), (y() + Fl::box_dy( box() )) + (i * ch), min( W, rw ), ch,
+            const int nx = max( X, rx );
+            const int nw = min( nx + W, nx + rw ) - nx;
+
+            Waveform::draw( nx,
+                            (y() + Fl::box_dy( box() )) + (i * ch),
+                            nw,
+                            ch,
                             pb, peaks,
                             selected() ? fl_invert_color( _color ) : _color );
         }

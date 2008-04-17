@@ -62,7 +62,7 @@ class Peaks
 
     mutable float _fpp;
 
-    int read_peaks ( int s, int e, int npeaks, int chunksize ) const;
+    int read_peaks ( nframes_t s, nframes_t e, int npeaks, int chunksize ) const;
     int read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const;
     int read_source_peaks ( Peak *peaks, int npeaks, int chunksize ) const;
     int read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const;
@@ -89,7 +89,7 @@ public:
     Peak *peakbuf ( void ) const { return Peaks::_peakbuf.buf->data; }
     void clip ( Audio_File *c ) { _clip = c; }
 
-    int fill_buffer ( float fpp, int s, int e ) const;
+    int fill_buffer ( float fpp, nframes_t s, nframes_t e ) const;
 
     void downsample ( Peak *peaks, int s, int e, float *mhi, float *mlo ) const;
     void read ( int X, float *hi, float *lo ) const;

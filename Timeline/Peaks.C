@@ -45,11 +45,11 @@ Peaks::peakbuffer Peaks::_peakbuf;
 
 static
 const char *
-peakname ( const char *filename )
+peakname ( const char *filename, int chunksize )
 {
     static char file[512];
 
-    snprintf( file, 512, "%s.peak", filename );
+    snprintf( file, 512, "%s-[%d].peak", filename, chunksize );
 
     return (const char*)&file;
 }
@@ -64,87 +64,39 @@ Peaks::fill_buffer ( float fpp, nframes_t s, nframes_t e ) const
     return read_peaks( s, e, (e - s) / fpp, fpp );
 }
 
-
-/* inline void */
-/* Peaks::downsample ( Peak *peaks, int s, int e, float *mhi, float *mlo ) const */
-/* { */
-/*     *mhi = 0; */
-/*     *mlo = 0; */
-
-/*     if ( e > _len ) */
-/*         e = _len; */
-
-/*     for ( int j = s; j < e; j++ ) */
-/*     { */
-/*         const float lo = peaks[ j ].min; */
-/*         const float hi = peaks[ j ].max; */
-
-/*         if ( hi > *mhi ) */
-/*             *mhi = hi; */
-/*         if ( lo < *mlo ) */
-/*             *mlo = lo; */
-/*     } */
-/* } */
-
-#if 0
-const int HEADER_SIZE = 24;
-
-bool
-Peaks::read_header ( void )
+static int
+nearest_power_of_two ( int v )
 {
-    int major, minor;
+    int p = 1;
+    while ( 1 << p < v )
+        ++p;
 
-    if ( 2 != fscanf( _fp, "NON-PEAKS%2d%2d", &major, &minor ) )
-        return false;
-
-    if ( major != VERSION_MAJOR )
-        /* incompatible version */
-        return false;
-
-    int data[3];
-
-    int header_size;
-
-    fread( &header_size, sizeof( int ), 1, _fp );
-
-    if ( header_size < sizeof( data ) )
-        return false;
-
-    fread( data, sizeof( data ), 1, _fp );
-
-    int chunksize  = data[1];
-    int channels   = data[2];
-    int peaksize   = data[3];
-
-    _data_offset = header_size + 12;
-
-    if ( header_size > sizeof( data ) )
-        fseek( _fp, _data_offset, SEEK_SET );
-
-    return true;
+    return 1 << p;
 }
-#endif
+
+const int MAX_CHUNKSIZE = 4096;
+const int MIN_CHUNKSIZE = 256;
 
 int
 Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const
 {
     FILE *fp;
 
-    if ( ! ( fp = fopen( peakname( _clip->name() ), "r" ) ) )
+    int best_fit = nearest_power_of_two( chunksize );
+
+    int pfchunksize;
+
+//    for ( pfchunksize = best_fit; pfchunksize < MAX_CHUNKSIZE; pfchunksize <<= 1 )
+    for ( pfchunksize = best_fit; pfchunksize >= MIN_CHUNKSIZE; pfchunksize >>= 1 )
+        if ( ( fp = fopen( peakname( _clip->name(), pfchunksize ), "r" ) ) )
+            break;
+
+    if ( ! fp )
     {
         printf( "failed to open peak file!\n" );
+
         return 0;
     }
-
-    /* get chunk size of peak file */
-    /* FIXME: bogus */
-    int pfchunksize = 256;
-
-/*     if ( fread( &pfchunksize, sizeof( int ), 1, fp ) != 1 ) */
-/*     { */
-/*         printf( "invalid peak file!\n" ); */
-/*         return 0; */
-/*     } */
 
     int channels = _clip->channels();
     const int ratio = chunksize / pfchunksize;
@@ -287,25 +239,6 @@ Peaks::read_peaks ( nframes_t s, nframes_t e, int npeaks, int chunksize ) const
     return _peakbuf.len;
 }
 
-/** Return the peak for the range of samples */
-/* Peak & */
-/* Peaks::peak ( nframes_t start, nframes_t end ) const */
-/* { */
-/*     /\* Is there a better way to return this?  *\/ */
-/*     static Peak p; */
-
-/*     start = (start - _peakbuf.offset) / _peakbuf.buf->chunksize; */
-/*     end = (end - _peakbuf.offset) / _peakbuf.buf->chunksize; */
-
-/*     if ( end > _peakbuf.len ) */
-/*         end = _peakbuf.len; */
-
-/*     downsample( _peakbuf.buf->data, start, end, &p.max, &p.min ); */
-
-/*     return p; */
-/* } */
-
-
 bool
 Peaks::open ( void )
 {
@@ -318,7 +251,8 @@ Peaks::open ( void )
         if ( ! fork() )
             exit( make_peaks( 256 ) );
 
-    if ( ( fd = ::open( peakname( filename ), O_RDONLY ) ) < 0 )
+    /* FIXME: 256 == bogus */
+    if ( ( fd = ::open( peakname( filename, 256 ), O_RDONLY ) ) < 0 )
         return false;
 
     {
@@ -345,7 +279,8 @@ Peaks::current ( void ) const
     if ( ( sfd = ::open( _clip->name(), O_RDONLY ) ) < 0 )
         return true;
 
-    if ( ( pfd = ::open( peakname( _clip->name() ), O_RDONLY ) ) < 0 )
+    /* FIXME: 256 == bogus  */
+    if ( ( pfd = ::open( peakname( _clip->name(), 256 ), O_RDONLY ) ) < 0 )
         return false;
 
     struct stat sst, pst;
@@ -373,19 +308,10 @@ Peaks::make_peaks ( int chunksize )
 
     _clip->seek( 0 );
 
-/*     if ( ! _clip->open() ) */
-/*         return false; */
+    FILE *fp = fopen( peakname( filename, chunksize ), "w" );
 
-    FILE *fp = fopen( peakname( filename ), "w" );
-
-    if ( fp == NULL )
-    {
-//        _clip->close();
+    if ( ! fp )
         return false;
-    }
-
-/*     /\* write chunksize first *\/ */
-/*     fwrite( &chunksize, sizeof( int ), 1, fp ); */
 
     Peak peaks[ _clip->channels() ];
 
@@ -393,12 +319,8 @@ Peaks::make_peaks ( int chunksize )
     do {
         len = read_source_peaks( peaks, 1, chunksize );
         fwrite( peaks, sizeof( peaks ), 1, fp );
-        /* FIXME: GUI code shouldn't be here! */
-//        Fl::check();
     }
     while ( len );
-
-//    _clip->close();
 
     fclose( fp );
 
@@ -443,31 +365,14 @@ Peak_Writer::Peak_Writer ( const char *filename, int chunksize, int channels )
     _peak = new Peak[ channels ];
     memset( _peak, 0, sizeof( Peak ) * channels );
 
-    if ( ! ( _fp = fopen( peakname( filename ), "w" ) ) )
+    if ( ! ( _fp = fopen( peakname( filename, chunksize ), "w" ) ) )
         /* error! */;
-
-//    write_header();
 }
 
 Peak_Writer::~Peak_Writer ( )
 {
     fclose( _fp );
     delete _peak;
-}
-
-void
-Peak_Writer::write_header ( void )
-{
-    fprintf( _fp, "NON-PEAKS%2d%2d", VERSION_MAJOR, VERSION_MINOR );
-
-    int data[] = { _chunksize, _channels, sizeof( Peak ) };
-
-    int size = sizeof( data );
-
-    fwrite( &size, sizeof( size ), 1, _fp );
-
-    fwrite( &data, sizeof( data ), 1, _fp );
-
 }
 
 /** append peaks for samples in /buf/ to peakfile */

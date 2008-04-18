@@ -24,6 +24,8 @@
 #include "Control_Track.H"
 #include <FL/Fl_Scrollbar.H>
 
+#include "Ruler_Track.H"
+
 // #include <FL/Fl_Image.H>
 // #include <FL/Fl_RGB_Image.H> // needed for alpha blending
 
@@ -140,6 +142,22 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
         }
 
+        {
+            Ruler_Track *o = new Ruler_Track( 0, 24, 800, 24 );
+
+            o->color( FL_GREEN );
+
+/*             o->add( new Time_Point( 0, 4, 4 ) ); */
+/*             o->add( new Time_Point( 345344, 6, 8 ) ); */
+
+            o->label( "Ruler" );
+            o->align( FL_ALIGN_LEFT );
+
+            ruler_track = o;
+            //          o->end();
+
+        }
+
         o->size( o->w(), o->child( 0 )->h() * o->children() );
         rulers = o;
         o->end();
@@ -218,6 +236,36 @@ Timeline::beats_per_minute ( nframes_t when, float bpm )
     tempo_track->add( new Tempo_Point( when, bpm ) );
 }
 
+#if 0
+struct BBT
+{
+    int bar, beat, tick;
+
+    BBT ( int bar, int beat, int tick ) : bar( bar ), beat( beat ), tick( tick )
+        {
+        }
+};
+
+/** returns the BBT value for timestamp /when/ by examining the tempo/time maps */
+BBT
+Timeline::bbt ( nframes_t when )
+{
+    Tempo_Track *tempo = (Tempo_Track*)rulers->child( 0 );
+
+    BBT bbt;
+
+    for ( list <Track_Widget *>::const_iterator i = tempo.widgets.begin();
+          i != tempo.widgets.end(); ++i )
+    {
+        Tempo_Point *p = *i;
+
+    }
+
+
+
+};
+#endif
+
 /** return the absolute pixel of the nearest measure line to /x/ */
 int
 Timeline::nearest_line ( int ix )
@@ -240,7 +288,7 @@ Timeline::nearest_line ( int ix )
    searched both the time and tempo lists once for every horiontal
    pixel and performs a number of calculations--this is slow. */
 void
-Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
+Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
 {
     if ( ! _enable_measure_lines )
         return;
@@ -248,14 +296,15 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 //    fl_line_style( FL_DASH, 2 );
     fl_line_style( FL_DASH, 0 );
 
-     Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
-     Fl_Color bar  = fl_color_average( FL_RED, color, 0.65f );
+    Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
+    Fl_Color bar  = fl_color_average( FL_RED, color, 0.65f );
 
     int measure;
 
     for ( int x = X; x < X + W; ++x )
     {
-        measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track_Header::width() ) + xoffset ));
+
+        measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track_Header::width() ) + xoffset ) );
 
         const int abs_x = ts_to_x( xoffset ) + x - Track_Header::width();
 
@@ -267,6 +316,41 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
             {
                 if ( measure * bpb < 8 )
                     break;
+
+                if ( BBT )
+                {
+                    fl_font( FL_HELVETICA, 14 );
+
+                    fl_color( fl_lighter( color ) );
+
+                    char pat[40];
+
+                    const nframes_t ts = x_to_ts( abs_x );
+
+//                    if ( draw_hms )
+                    {
+
+                        const double seconds = (double)ts / _sample_rate;
+
+                        int S = (int)seconds;
+                        int M = S / 60; S -= M * 60;
+                        int H = M / 60; M -= H * 60;
+
+                        snprintf( pat, sizeof( pat ), "%d:%d:%d", H, M, S );
+                    }
+//                    else if ( draw_bbt )
+                    {
+
+/*                         const int bar = */
+/*                         const int beat; */
+/*                         const int tick = 0; */
+
+/*                         snprintf( pat, sizeof( pat ), "%d:%d:%d", bar, beat, tick ); */
+                    }
+
+
+                    fl_draw( pat, x, Y + 14 );
+                }
 
                 fl_color( bar );
             }
@@ -287,6 +371,18 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 
 }
 
+void
+Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
+{
+    draw_measure( X, Y, W, H, color, false );
+}
+
+/** just like draw mesure lines except that it also draws the BBT values.  */
+void
+Timeline::draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color )
+{
+    draw_measure( X, Y, W, H, color, true );
+}
 
 void
 Timeline::xposition ( int X )

@@ -44,6 +44,7 @@ extern Timeline *timeline;
 
 class Tempo_Track;
 class Time_Track;
+class Ruler_Track;
 
 #include <list>
 using std::list;
@@ -98,14 +99,15 @@ class Timeline : public Fl_Overlay_Window, public RWLock
         SNAP_TO_BEAT
     } snap_to;
 
-    Fl_Scroll *scroll;
-    Fl_Pack *tracks;
-    Fl_Pack *rulers;
-    Scalebar *hscroll;
+    Fl_Scroll    *scroll;
+    Fl_Pack      *tracks;
+    Fl_Pack      *rulers;
+    Scalebar     *hscroll;
     Fl_Scrollbar *vscroll;
 
     Tempo_Track *tempo_track;
-    Time_Track *time_track;
+    Time_Track  *time_track;
+    Ruler_Track *ruler_track;
 
 
     static void cb_scroll ( Fl_Widget *w, void *v );
@@ -136,6 +138,9 @@ public:
     int nearest_line ( int ix );
 
     void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
+    void draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color );
+    void draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT );
+
     void xposition ( int X );
     void yposition ( int Y );
     void draw_playhead ( void );

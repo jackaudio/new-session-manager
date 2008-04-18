@@ -31,8 +31,8 @@
 #include <assert.h>
 
 #include <list>
-#include <queue>
-using namespace std;
+
+// using namespace std;
 
 class Region;
 class Track_Widget;
@@ -51,7 +51,7 @@ class Track : public Fl_Widget, public Loggable
 
 protected:
 
-    list <Track_Widget *> _widgets;
+    std::list <Track_Widget *> _widgets;
     Track_Widget *event_widget ( void );
 
     virtual const char *class_name ( void ) { return "Track"; }
@@ -103,7 +103,7 @@ public:
 
     void remove_selected ( void );
 
-    const list <Track_Widget *> widgets ( void ) const { return _widgets; }
+    const std::list <Track_Widget *> widgets ( void ) const { return _widgets; }
 
     void queue_delete ( Track_Widget *r )
         {

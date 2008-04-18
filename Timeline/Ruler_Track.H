@@ -17,65 +17,27 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Audio_File.H"
-#include "Audio_File_SF.H"
+#pragma once
 
-std::map <std::string, Audio_File*> Audio_File::_open_files;
+#include "Track.H"
+#include "Ruler_Point.H"
+#include "Timeline.H"
 
-Audio_File::~Audio_File ( )
-{
-    _open_files[ std::string( _filename ) ] = NULL;
-}
-
-/** attmpet to open any supported filetype */
-Audio_File *
-Audio_File::from_file ( const char * filename )
+class Ruler_Track : public Track
 {
 
-    Audio_File *a;
+public:
 
-    if ( ( a = _open_files[ std::string( filename ) ] ) )
-        return a;
+    Ruler_Track ( int X, int Y, int W, int H ) : Track ( X, Y, W, H )
+        {
+            box( FL_UP_BOX );
+        }
 
-    if ( ( a = Audio_File_SF::from_file( filename ) ) )
-        goto done;
+    void
+    draw ( void )
+        {
+            Track::draw();
+            timeline->draw_measure_BBT( x(), y(), w(), h(), FL_WHITE );
 
-// TODO: other formats
-
-    return NULL;
-
-done:
-
-/*     a->_peaks = new Peaks; */
-
-/*     a->_peaks->clip( a ); */
-/*     a->_peaks->open(); */
-
-    _open_files[ std::string( filename ) ] = a;
-
-    return a;
-}
-
-
-bool
-Audio_File::read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, Peak **pbuf, int *channels )
-{
-    Peaks pk;
-
-    *peaks    = 0;
-    *channels = 0;
-    *pbuf     = NULL;
-
-    pk.clip( this );
-
-    if ( ! pk.open() )
-        return false;
-
-    *peaks = pk.fill_buffer( fpp, start, end );
-
-    *channels = this->channels();
-
-    *pbuf = pk.peakbuf();
-
-    return true;
-}
+        }
+};

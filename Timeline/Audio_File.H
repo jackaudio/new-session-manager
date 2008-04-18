@@ -23,19 +23,17 @@
 #include <stdlib.h>
 
 #include "types.h"
-typedef float sample_t;
 
 #include "Peaks.H"
 
 #include <string>
 #include <map>
-using namespace std;
 
 class Peak_Writer;
 
 class Audio_File
 {
-    static map <string, Audio_File*> _open_files;
+    static std::map <std::string, Audio_File*> _open_files;
 
 protected:
 

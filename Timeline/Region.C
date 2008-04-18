@@ -913,3 +913,21 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
 
     return cnt;
 }
+
+
+/* THREAD: IO */
+/** write /nframes/ from /buf/ to source. /buf/ is interleaved and
+    must match the channel layout of the write source!  */
+nframes_t
+Region::write ( sample_t *buf, nframes_t nframes )
+{
+    nframes_t l = _clip->write( buf, nframes );
+
+    _range.end += l;
+
+    /* FIXME: too much? */
+//    _track->damage( FL_DAMAGE_EXPOSE, x() + w(), y(), 10/* FIXME: guess */, h() );
+    redraw();
+
+    return l;
+}

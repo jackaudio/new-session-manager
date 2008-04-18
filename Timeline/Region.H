@@ -271,7 +271,9 @@ public:
 
     void normalize ( void );
 
+    /* Engine */
     nframes_t read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const;
+    nframes_t write ( sample_t *buf, nframes_t nframes );
 
 };
 #endif

@@ -344,14 +344,14 @@ Track_Header::seek ( nframes_t frame )
 /* THREAD: IO */
 /** create capture region and prepare to record */
 void
-Track_Header::record ( nframes_t nframes )
+Track_Header::record ( nframes_t frame )
 {
     assert( _capture == NULL );
 
     /* FIXME: hack */
     Audio_File *af = Audio_File_SF::create( "testing.wav", 48000, input.size(), "Wav/24" );
 
-    _capture = new Region( af, track(), nframes );
+    _capture = new Region( af, track(), frame );
 
     /* FIXME: wrong place for this */
     _capture->_r->end = 0;
@@ -362,10 +362,7 @@ Track_Header::record ( nframes_t nframes )
 void
 Track_Header::write ( sample_t *buf, nframes_t nframes )
 {
-    _capture->_r->end +=_capture->_clip->write( buf, nframes );
-
-    /* FIXME: too much? */
-    _capture->redraw();
+    _capture->write( buf, nframes );
 }
 
 /* THREAD: IO */

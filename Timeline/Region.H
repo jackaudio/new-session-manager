@@ -101,6 +101,7 @@ private:
     Fade _fade_in;
     Fade _fade_out;
 
+    friend class Track_Header;                                  /* for _clip */
 protected:
 
     const char *class_name ( void ) { return "Region"; }
@@ -230,6 +231,8 @@ class Region : public Region_Base
         }
 
     bool current ( void ) const { return this == belowmouse(); }
+
+    friend class Track_Header; /* for _clip in Track_Header::write()  */
 
 public:
 

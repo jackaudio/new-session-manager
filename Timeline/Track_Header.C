@@ -333,3 +333,44 @@ Track_Header::seek ( nframes_t frame )
     if ( playback_ds )
         return playback_ds->seek( frame );
 }
+
+
+
+/* FIXME: what about theading issues with this region/audiofile being
+ accessible from the UI thread? Need locking? */
+
+#include "Region.H"
+
+/* THREAD: IO */
+/** create capture region and prepare to record */
+void
+Track_Header::record ( nframes_t nframes )
+{
+    assert( _capture == NULL );
+
+    /* FIXME: hack */
+    Audio_File *af = Audio_File_SF::create( "testing.wav", 48000, input.size(), "Wav/24" );
+
+    _capture = new Region( af, track(), nframes );
+
+    /* FIXME: wrong place for this */
+    _capture->_r->end = 0;
+}
+
+/* THREAD: IO */
+/** write a block to the (already opened) capture file */
+void
+Track_Header::write ( sample_t *buf, nframes_t nframes )
+{
+    _capture->_r->end +=_capture->_clip->write( buf, nframes );
+
+    /* FIXME: too much? */
+    _capture->redraw();
+}
+
+/* THREAD: IO */
+void
+Track_Header::stop ( nframes_t nframes )
+{
+    _capture = NULL;
+}

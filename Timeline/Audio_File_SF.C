@@ -84,7 +84,7 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
     /* FIXME: bogus */
     si.format = SF_FORMAT_WAV | SF_FORMAT_PCM_24 | SF_ENDIAN_CPU;
 
-    if ( ! ( out = sf_open( filename, SFM_WRITE, &si ) ) )
+    if ( ! ( out = sf_open( filename, SFM_RDWR, &si ) ) )
     {
         printf( "couldn't create soundfile.\n" );
         return NULL;
@@ -143,7 +143,7 @@ Audio_File_SF::seek ( nframes_t offset )
 {
     if ( offset != _current_read )
     {
-        sf_seek( _in, _current_read = offset, SEEK_SET );
+        sf_seek( _in, _current_read = offset, SEEK_SET | SFM_READ );
     }
 }
 
@@ -196,7 +196,6 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t start, nframes_t end
     return len;
 }
 
-
 /** write /nframes/ from /buf/ to soundfile. Should be interleaved for
  * the appropriate number of channels */
 nframes_t
@@ -204,5 +203,9 @@ Audio_File_SF::write ( sample_t *buf, nframes_t nframes )
 {
     _peak_writer->write( buf, nframes );
 
-    return sf_writef_float( _in, buf, nframes );
+    nframes_t l = sf_writef_float( _in, buf, nframes );
+
+    _length += l;
+
+    return l;
 }

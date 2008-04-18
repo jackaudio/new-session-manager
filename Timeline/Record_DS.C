@@ -41,7 +41,7 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
 
 //    timeline->wrlock();
 
-    _af->write( buf, nframes );
+    _th->write( buf, nframes );
 
 //    track()->record( buf, _frame, nframes, channels() );
 
@@ -141,8 +141,10 @@ Record_DS::start ( nframes_t frame )
         return;
     }
 
-    _af = Audio_File_SF::create( "testing.wav", 48000, channels(), "Wav/24" );
+
     _frame = frame;
+
+    _th->record( frame );
 
     run();
 
@@ -165,20 +167,22 @@ Record_DS::stop ( nframes_t frame )
 
     /* FIXME: flush buffers here? */
 
-    char *name = strdup( _af->name() );
-    delete _af;
-    _af = NULL;
+/*     char *name = strdup( _af->name() ); */
+/*     delete _af; */
+/*     _af = NULL; */
 
-    Audio_File *af = Audio_File::from_file( name );
+/*     Audio_File *af = Audio_File::from_file( name ); */
 
-    if ( ! af )
-        printf( "impossible!\n" );
+/*     if ( ! af ) */
+/*         printf( "impossible!\n" ); */
 
-    new Region( af, track(), _frame );
+/*     new Region( af, track(), _frame ); */
 
-    track()->redraw();
+/*     track()->redraw(); */
 
     _recording = false;
+
+    _th->stop( frame );
 
     printf( "recording finished\n" );
 }

@@ -32,6 +32,7 @@
 
 // #include "Port.H"
 
+/* TODO: rename this to Audio_Track_Header or something since it's audio specific. */
 
 #include <vector>
 using std::vector;
@@ -64,6 +65,8 @@ private:
     enum { AUDIO } _type;
 
     Track *_track;
+
+    Region *_capture;                                           /* capture region */
 
 public:
 
@@ -274,5 +277,9 @@ public:
     /* Engine */
     nframes_t process ( nframes_t nframes );
     void seek ( nframes_t frame );
+    void record ( nframes_t nframes );
+    void write ( sample_t *buf, nframes_t nframes );
+    void stop ( nframes_t nframes );
+
 };
 #endif

@@ -29,11 +29,8 @@
 #include "Track_Widget.H"
 #include "Loggable.H"
 
-class Region;
 
-/* Base for engine. Just to maintain state. Must be free of FLTK
- * stuff */
-class Region_Base : public Track_Widget
+class Region : public Track_Widget
 {
 
 public:
@@ -181,40 +178,11 @@ protected:
 
             free( sa );
 
-#ifndef ENGINE
             if ( _track )
                 _track->redraw();
-#endif
         }
 
 public:
-
-    Region_Base ( )
-        {
-            _clip = NULL;
-            _scale = 1.0f;
-        }
-
-#ifdef ENGINE
-    /* for loggable */
-    static Loggable *
-    create ( char **sa )
-        {
-            Region_Base *r = new Region_Base;
-
-            r->set( sa );
-
-            return (Loggable *)r;
-        }
-#else
-    friend class Region;
-#endif
-
-};
-
-#ifndef ENGINE
-class Region : public Region_Base
-{
 
     static Fl_Boxtype _box;
     static Fl_Color _selection_color;
@@ -276,4 +244,3 @@ public:
     nframes_t write ( sample_t *buf, nframes_t nframes );
 
 };
-#endif

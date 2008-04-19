@@ -69,6 +69,9 @@ private:
 
     Region *_capture;                                           /* capture region */
 
+    bool create_outputs ( int n );
+    bool create_inputs ( int n );
+
 public:
 
     Fl_Input * name_field;

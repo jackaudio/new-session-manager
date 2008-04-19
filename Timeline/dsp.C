@@ -79,7 +79,6 @@ buffer_interleave_one_channel_and_mix ( sample_t *dst, sample_t *src, int channe
 void
 buffer_deinterleave_one_channel ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes )
 {
-    nframes *= channels;
     src += channel;
 
     while ( nframes-- )

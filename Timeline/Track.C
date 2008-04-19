@@ -60,7 +60,7 @@ Track::cb_button ( Fl_Widget *w )
     printf( "FIXME: inform mixer here\n" );
     if ( w == record_button )
     {
-            /* FIXME: wrong place for this! */
+        /* FIXME: wrong place for this! */
         if ( record_button->value() )
             record_ds->start( transport.frame );
         else
@@ -108,26 +108,6 @@ Track::Track ( int X, int Y, int W, int H, const char *L ) :
 
     labeltype( FL_NO_LABEL );
 
-    {
-        char pname[40];
-        static int no = 0, ni = 0;
-
-        snprintf( pname, sizeof( pname ), "out-%d", no++ );
-
-        output.push_back( Port( strdup( pname ), Port::Output ) );
-
-        snprintf( pname, sizeof( pname ), "in-%d", ni++ );
-
-        input.push_back( Port( strdup( pname ), Port::Input ) );
-
-        snprintf( pname, sizeof( pname ), "in-%d", ni++ );
-
-        input.push_back( Port( strdup( pname ), Port::Input ) );
-
-    }
-
-    playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), 1 );
-    record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), 2 );
 
     Fl_Group::size( w(), height() );
 
@@ -227,6 +207,13 @@ Track::Track ( int X, int Y, int W, int H, const char *L ) :
     if ( L )
         name( L );
 
+    /* FIXME: should be configurable, but where? */
+    create_outputs( 2 );
+    create_inputs( 2 );
+
+    playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), output.size() );
+    record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), input.size() );
+
     log_create();
 }
 
@@ -318,6 +305,39 @@ Track::add_control( Sequence *t )
 /* Engine */
 /**********/
 
+bool
+Track::create_outputs ( int n )
+{
+    char pname[256];
+
+    for ( int i = 0; i < n; ++i )
+    {
+        snprintf( pname, sizeof( pname ), "%s/out-%d", name(), i + 1 );
+        output.push_back( Port( strdup( pname ), Port::Output ) );
+    }
+
+    /* FIXME: bogus */
+    return true;
+}
+
+bool
+Track::create_inputs ( int n )
+{
+    char pname[256];
+
+    for ( int i = 0; i < n; ++i )
+    {
+        snprintf( pname, sizeof( pname ), "%s/in-%d", name(), i + 1 );
+        input.push_back( Port( strdup( pname ), Port::Input ) );
+    }
+
+    /* FIXME: bogus */
+    return true;
+}
+
+
+
+
 /* THREAD: RT */
 nframes_t
 Track::process ( nframes_t nframes )
@@ -342,7 +362,7 @@ Track::seek ( nframes_t frame )
 
 
 /* FIXME: what about theading issues with this region/audiofile being
- accessible from the UI thread? Need locking? */
+   accessible from the UI thread? Need locking? */
 
 #include "Region.H"
 

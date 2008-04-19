@@ -19,14 +19,14 @@
 
 #pragma once
 
-#include "Track.H"
+#include "Sequence.H"
 #include "Loggable.H"
 #include "Timeline.H"
 #include <list>
 #include <algorithm>
 using namespace std;
 
-class Track_Widget;
+class Sequence_Widget;
 
 struct Drag
 {
@@ -35,7 +35,7 @@ struct Drag
     int y;
     int state;
 
-    Track_Widget *original;
+    Sequence_Widget *original;
 
     Drag( int X, int Y ) : x( X ), y( Y ) { state = 0; }
 };
@@ -48,25 +48,25 @@ struct Range
 };
 
 /* Base class for virtual widget on a track */
-class Track_Widget : public Loggable
+class Sequence_Widget : public Loggable
 {
 
-    static list <Track_Widget *> _selection;                    /* all the widgets making up the selection */
+    static list <Sequence_Widget *> _selection;                    /* all the widgets making up the selection */
 
     /* FIXME: is this not the same as /pushed/? */
-    static Track_Widget * _current;                             /* the widget initiating events that affect the selection */
+    static Sequence_Widget * _current;                             /* the widget initiating events that affect the selection */
 
-    /* these are actually managed in the Track classes */
-    static Track_Widget * _pushed;                              /* the widget receiving drag events (a copy) */
-    static Track_Widget * _original;                            /* the original of the /pushed/ widget */
-    static Track_Widget * _belowmouse;                          /* the widget below the mouse cursor */
+    /* these are actually managed in the Sequence classes */
+    static Sequence_Widget * _pushed;                              /* the widget receiving drag events (a copy) */
+    static Sequence_Widget * _original;                            /* the original of the /pushed/ widget */
+    static Sequence_Widget * _belowmouse;                          /* the widget below the mouse cursor */
 
     /* can't have this */
-    Track_Widget ( const Track_Widget &rhs );
+    Sequence_Widget ( const Sequence_Widget &rhs );
 
 protected:
 
-    Track *_track;                                              /* track this region belongs to */
+    Sequence *_track;                                              /* track this region belongs to */
 
     Range _range;                                               /* range for playback */
     Range *_r;                                                  /* range for editing / display (points to the same thing as above, except for when dragging etc) */
@@ -78,7 +78,7 @@ protected:
 
 public:
 
-    Track_Widget ( )
+    Sequence_Widget ( )
         {
             _track = NULL;
 
@@ -89,7 +89,7 @@ public:
             _drag = NULL;
         }
 
-    virtual ~Track_Widget ( )
+    virtual ~Sequence_Widget ( )
         {
             redraw();
 
@@ -98,8 +98,8 @@ public:
             _selection.remove( this );
         }
 
-    const Track_Widget &
-    operator= ( const Track_Widget &rhs )
+    const Sequence_Widget &
+    operator= ( const Sequence_Widget &rhs )
         {
             if ( this == &rhs )
                 return *this;
@@ -114,12 +114,12 @@ public:
         }
 
 
-/*     Track_Widget ( const Track_Widget &rhs ) */
+/*     Sequence_Widget ( const Sequence_Widget &rhs ) */
 /*         { */
 /*             *this = rhs; */
 /*         } */
 
-    virtual Track_Widget *clone ( const Track_Widget *r ) = 0;
+    virtual Sequence_Widget *clone ( const Sequence_Widget *r ) = 0;
 
     bool selected ( void )
         {
@@ -151,15 +151,15 @@ public:
                 delete _selection.front();
         }
 
-    static Track_Widget *current    ( void ) { return Track_Widget::_current; }
+    static Sequence_Widget *current    ( void ) { return Sequence_Widget::_current; }
 
-    static Track_Widget *pushed     ( void ) { return Track_Widget::_pushed; }
-    static Track_Widget *belowmouse ( void ) { return Track_Widget::_belowmouse; }
+    static Sequence_Widget *pushed     ( void ) { return Sequence_Widget::_pushed; }
+    static Sequence_Widget *belowmouse ( void ) { return Sequence_Widget::_belowmouse; }
 
-    static void pushed     ( Track_Widget *w ) { Track_Widget::_pushed     = w; }
-    static void belowmouse ( Track_Widget *w ) { Track_Widget::_belowmouse = w; }
+    static void pushed     ( Sequence_Widget *w ) { Sequence_Widget::_pushed     = w; }
+    static void belowmouse ( Sequence_Widget *w ) { Sequence_Widget::_belowmouse = w; }
 
-//    static void pushed ( Track_Widget *w ) { Track_Widget::_pushed = w; }
+//    static void pushed ( Sequence_Widget *w ) { Sequence_Widget::_pushed = w; }
 
     void begin_drag ( const Drag &d )
         {
@@ -190,7 +190,7 @@ public:
             {
                 long d = where - _r->offset;
 
-                for ( list <Track_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
+                for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
                 {
                     (*i)->redraw();
 
@@ -243,8 +243,8 @@ public:
     void color ( Fl_Color v ) { _color = v; }
     Fl_Color box_color ( void ) { return _box_color; }
 
-    Track * track ( void ) const { return _track; }
-    void track ( Track *t ) {  _track = t; }
+    Sequence * track ( void ) const { return _track; }
+    void track ( Sequence *t ) {  _track = t; }
 
     nframes_t offset ( void ) const { return _r->offset; }
 //    void offset ( nframes_t o ) { _r->offset = o; }
@@ -285,13 +285,13 @@ public:
         }
 
     bool
-    operator< ( const Track_Widget & rhs )
+    operator< ( const Sequence_Widget & rhs )
         {
             return _r->offset < rhs._r->offset;
         }
 
     bool
-    operator<=( const Track_Widget & rhs )
+    operator<=( const Sequence_Widget & rhs )
         {
             return _r->offset <= rhs._r->offset;
         }
@@ -300,7 +300,7 @@ public:
     virtual int handle ( int m );
 
     static bool
-    sort_func ( Track_Widget *lhs, Track_Widget *rhs )
+    sort_func ( Sequence_Widget *lhs, Sequence_Widget *rhs )
         {
             return *lhs < *rhs;
         }

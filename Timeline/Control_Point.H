@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include "Track_Point.H"
+#include "Sequence_Point.H"
 
-class Control_Point : public Track_Point
+class Control_Point : public Sequence_Point
 {
     float _y;
 
@@ -74,7 +74,7 @@ protected:
                         {
                             int i;
                             sscanf( v, "%X", &i );
-                            Track *t = (Track*)Loggable::find( i );
+                            Sequence *t = (Sequence*)Loggable::find( i );
 
                             assert( t );
 
@@ -113,7 +113,7 @@ public:
         }
 
 
-    Control_Point ( Track *t, nframes_t when, float y )
+    Control_Point ( Sequence *t, nframes_t when, float y )
         {
             _track = t;
             _y = y;
@@ -130,7 +130,7 @@ public:
             _y = rhs._y;
         }
 
-    Track_Widget *clone ( const Track_Widget *r )
+    Sequence_Widget *clone ( const Sequence_Widget *r )
         {
             return new Control_Point( *(Control_Point*)r );
         }
@@ -147,7 +147,7 @@ public:
     int
     handle ( int m )
         {
-            int r = Track_Widget::handle( m );
+            int r = Sequence_Widget::handle( m );
 
             switch ( m )
             {

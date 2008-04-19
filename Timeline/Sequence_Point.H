@@ -19,25 +19,40 @@
 
 #pragma once
 
-#include "Track.H"
-#include "Ruler_Point.H"
-#include "Timeline.H"
+#include "Sequence_Widget.H"
 
-class Ruler_Track : public Track
+class Sequence_Point : public Sequence_Widget
 {
+
+protected:
+
+    char *_label;
+
+/*     void set ( char **a ) */
+/*         { */
+/*         } */
 
 public:
 
-    Ruler_Track ( int X, int Y, int W, int H ) : Track ( X, Y, W, H )
+    Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
+    int abs_w ( void ) const { return 10; }
+    nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
+
+    Sequence_Point ( )
         {
-            box( FL_UP_BOX );
+            _label = NULL;
         }
 
-    void
+
+    virtual ~Sequence_Point ( )
+        {
+        }
+
+    virtual void
     draw ( void )
         {
-            Track::draw();
-            timeline->draw_measure_BBT( x(), y(), w(), h(), FL_WHITE );
+            Sequence_Widget::draw();
 
+            draw_label( _label, align() );
         }
 };

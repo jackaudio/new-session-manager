@@ -19,40 +19,25 @@
 
 #pragma once
 
-#include "Track.H"
-#include "Tempo_Point.H"
+#include "Sequence.H"
+#include "Ruler_Point.H"
+#include "Timeline.H"
 
-#include <list>
-
-class Tempo_Track : public Track
+class Ruler_Sequence : public Sequence
 {
 
 public:
 
-    Tempo_Track ( int X, int Y, int W, int H ) : Track ( X, Y, W, H )
+    Ruler_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
         {
             box( FL_UP_BOX );
         }
 
-    float
-    beats_per_minute ( nframes_t when )
-        {
-//            sort();
-
-            for ( std::list <Track_Widget *>::const_reverse_iterator i = _widgets.rbegin();
-                  i != _widgets.rend(); i++ )
-            {
-                if ( (*i)->offset() < when )
-                    return ((Tempo_Point*)(*i))->tempo();
-            }
-
-            return 120.0;
-        }
-
     void
-    beats_per_minute ( nframes_t when, float bpm )
+    draw ( void )
         {
-            add( new Tempo_Point( when, bpm ) );
-        }
+            Sequence::draw();
+            timeline->draw_measure_BBT( x(), y(), w(), h(), FL_WHITE );
 
+        }
 };

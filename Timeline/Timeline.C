@@ -18,18 +18,18 @@
 /*******************************************************************************/
 
 #include "Timeline.H"
-#include "Tempo_Track.H"
-#include "Time_Track.H"
-#include "Audio_Track.H"
-#include "Control_Track.H"
+#include "Tempo_Sequence.H"
+#include "Time_Sequence.H"
+#include "Audio_Sequence.H"
+#include "Control_Sequence.H"
 #include <FL/Fl_Scrollbar.H>
 
-#include "Ruler_Track.H"
+#include "Ruler_Sequence.H"
 
 // #include <FL/Fl_Image.H>
 // #include <FL/Fl_RGB_Image.H> // needed for alpha blending
 
-#include "Track_Header.H"
+#include "Track.H"
 
 const float UPDATE_FREQ = 0.02f;
 
@@ -107,11 +107,11 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     }
 
     {
-        Fl_Pack *o = new Fl_Pack( X + Track_Header::width(), Y, (W - Track_Header::width()) - vscroll->w(), H - hscroll->h(), "rulers" );
+        Fl_Pack *o = new Fl_Pack( X + Track::width(), Y, (W - Track::width()) - vscroll->w(), H - hscroll->h(), "rulers" );
         o->type( Fl_Pack::VERTICAL );
 
         {
-            Tempo_Track *o = new Tempo_Track( 0, 0, 800, 24 );
+            Tempo_Sequence *o = new Tempo_Sequence( 0, 0, 800, 24 );
 
             o->color( FL_RED );
 
@@ -127,7 +127,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         }
 
         {
-            Time_Track *o = new Time_Track( 0, 24, 800, 24 );
+            Time_Sequence *o = new Time_Sequence( 0, 24, 800, 24 );
 
             o->color( fl_color_average( FL_RED, FL_WHITE, 0.50f ) );
 
@@ -143,7 +143,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         }
 
         {
-            Ruler_Track *o = new Ruler_Track( 0, 24, 800, 24 );
+            Ruler_Sequence *o = new Ruler_Sequence( 0, 24, 800, 24 );
 
             o->color( FL_GREEN );
 
@@ -180,14 +180,14 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
 /*             for ( int i = 1; i--;  ) */
 /*             { */
-/* //                Track_Header *t = new Track_Header( 0, 0, W, 75 ); */
-/*                 Track_Header *t = new Track_Header( 0, 0, W, 30 ); */
-/*                 Track *o = new Audio_Track( 0, 0, 1, 100 ); */
+/* //                Track *t = new Track( 0, 0, W, 75 ); */
+/*                 Track *t = new Track( 0, 0, W, 30 ); */
+/*                 Sequence *o = new Audio_Sequence( 0, 0, 1, 100 ); */
 
 /*                 t->track( o ); */
-/*                 t->add( new Audio_Track( 0, 0, 1, 100 ) ); */
-/*                 t->add( new Audio_Track( 0, 0, 1, 100 ) ); */
-/*                 t->add_control( new Control_Track( 0, 0, 1, 100 ) ); */
+/*                 t->add( new Audio_Sequence( 0, 0, 1, 100 ) ); */
+/*                 t->add( new Audio_Sequence( 0, 0, 1, 100 ) ); */
+/*                 t->add_control( new Control_Sequence( 0, 0, 1, 100 ) ); */
 /*                 t->color( (Fl_Color)rand() ); */
 /*             } */
 
@@ -250,11 +250,11 @@ struct BBT
 BBT
 Timeline::bbt ( nframes_t when )
 {
-    Tempo_Track *tempo = (Tempo_Track*)rulers->child( 0 );
+    Tempo_Sequence *tempo = (Tempo_Sequence*)rulers->child( 0 );
 
     BBT bbt;
 
-    for ( list <Track_Widget *>::const_iterator i = tempo.widgets.begin();
+    for ( list <Sequence_Widget *>::const_iterator i = tempo.widgets.begin();
           i != tempo.widgets.end(); ++i )
     {
         Tempo_Point *p = *i;
@@ -272,7 +272,7 @@ Timeline::nearest_line ( int ix )
 {
     for ( int x = ix - 10; x < ix + 10; ++x )
     {
-        const int measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track_Header::width() ) + xoffset ));
+        const int measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ));
 
 //        const int abs_x = ts_to_x( xoffset ) + x;
 
@@ -304,13 +304,13 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
     for ( int x = X; x < X + W; ++x )
     {
 
-        measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track_Header::width() ) + xoffset ) );
+        measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
 
-        const int abs_x = ts_to_x( xoffset ) + x - Track_Header::width();
+        const int abs_x = ts_to_x( xoffset ) + x - Track::width();
 
         if ( 0 == abs_x % measure )
         {
-            int bpb = beats_per_bar( x_to_ts( x -Track_Header::width() ) + xoffset );
+            int bpb = beats_per_bar( x_to_ts( x -Track::width() ) + xoffset );
 
             if ( 0 == (abs_x / measure) % bpb )
             {
@@ -419,12 +419,12 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
     tl->draw_child( *tl->rulers );
 
     /* headers */
-    fl_push_clip( tl->tracks->x(), tl->rulers->y() + tl->rulers->h(), Track_Header::width(), tl->h() - tl->rulers->h()  - tl->hscroll->h() );
+    fl_push_clip( tl->tracks->x(), tl->rulers->y() + tl->rulers->h(), Track::width(), tl->h() - tl->rulers->h()  - tl->hscroll->h() );
     tl->draw_child( *tl->tracks );
     fl_pop_clip();
 
     /* track bodies */
-    fl_push_clip( tl->tracks->x() + Track_Header::width(), tl->rulers->y() + tl->rulers->h(), tl->tracks->w() - Track_Header::width(), tl->h() - tl->rulers->h()  - tl->hscroll->h() );
+    fl_push_clip( tl->tracks->x() + Track::width(), tl->rulers->y() + tl->rulers->h(), tl->tracks->w() - Track::width(), tl->h() - tl->rulers->h()  - tl->hscroll->h() );
     tl->draw_child( *tl->tracks );
     fl_pop_clip();
 
@@ -541,13 +541,13 @@ Timeline::draw ( void )
         int dy = _old_yposition - _yposition;
 
         if ( ! dy )
-            fl_scroll( X + Track_Header::width(), rulers->y(), rulers->w() - Fl::box_dw( rulers->child(0)->box() ), rulers->h(), dx, 0, draw_clip, this );
+            fl_scroll( X + Track::width(), rulers->y(), rulers->w() - Fl::box_dw( rulers->child(0)->box() ), rulers->h(), dx, 0, draw_clip, this );
 
         Y = rulers->y() + rulers->h();
         H = h() - rulers->h() - hscroll->h();
 
         if ( dy == 0 )
-            fl_scroll( X + Track_Header::width(), Y, W - Track_Header::width(), H, dx, dy, draw_clip, this );
+            fl_scroll( X + Track::width(), Y, W - Track::width(), H, dx, dy, draw_clip, this );
         else
             fl_scroll( X, Y, W, H, dx, dy, draw_clip, this );
 
@@ -561,9 +561,9 @@ Timeline::draw ( void )
 void
 Timeline::draw_playhead ( void )
 {
-    int x = ( ts_to_x( transport.frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track_Header::width();
+    int x = ( ts_to_x( transport.frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track::width();
 
-    if ( x < tracks->x() + Track_Header::width() || x > tracks->x() + tracks->w() )
+    if ( x < tracks->x() + Track::width() || x > tracks->x() + tracks->w() )
         return;
 
     fl_color( FL_RED );
@@ -609,7 +609,7 @@ Timeline::draw_overlay ( void )
     if ( ! ( _selection.w && _selection.h ) )
         return;
 
-    fl_push_clip( tracks->x() + Track_Header::width(), rulers->y() + rulers->h(),  tracks->w() - Track_Header::width(), h() - rulers->h() - hscroll->h() );
+    fl_push_clip( tracks->x() + Track::width(), rulers->y() + rulers->h(),  tracks->w() - Track::width(), h() - rulers->h() - hscroll->h() );
 
     const Rectangle &r = _selection;
 
@@ -659,7 +659,7 @@ Timeline::draw_overlay ( void )
 
 }
 
-// #include "Track_Widget.H"
+// #include "Sequence_Widget.H"
 
 /** select all widgets in inside rectangle /r/ */
 void
@@ -669,7 +669,7 @@ Timeline::select( const Rectangle &r )
 
     for ( int i = tracks->children(); i-- ; )
     {
-        Track_Header *t = (Track_Header*)tracks->child( i );
+        Track *t = (Track*)tracks->child( i );
 
         if ( ! ( t->y() > Y + r.h || t->y() + t->h() < Y ) )
             t->track()->select_range( r.x, r.w );
@@ -689,7 +689,7 @@ Timeline::handle ( int m )
             {
                 case FL_Delete:
                 {
-                    Track_Widget::delete_selected();
+                    Sequence_Widget::delete_selected();
 
                     return 1;
                 }
@@ -740,16 +740,16 @@ Timeline::handle ( int m )
                             /* FIXME: prompt for I/O config? */
 
                             /* add audio track */
-                            Track_Header *t = new Track_Header( 0, 0, tracks->w(), 30 );
+                            Track *t = new Track( 0, 0, tracks->w(), 30 );
 
                             add_track( t );
 
-                            Track *o = new Audio_Track( 0, 0, 1, 100 );
+                            Sequence *o = new Audio_Sequence( 0, 0, 1, 100 );
 
                             t->track( o );
-//                            t->add( new Audio_Track( 0, 0, 1, 100 ) );
-//                            t->add( new Audio_Track( 0, 0, 1, 100 ) );
-                            t->add_control( new Control_Track( 0, 0, 1, 100 ) );
+//                            t->add( new Audio_Sequence( 0, 0, 1, 100 ) );
+//                            t->add( new Audio_Sequence( 0, 0, 1, 100 ) );
+                            t->add_control( new Control_Sequence( 0, 0, 1, 100 ) );
                             t->color( (Fl_Color)rand() );
 
                         }
@@ -798,7 +798,7 @@ Timeline::handle ( int m )
 
 
 void
-Timeline::add_track ( Track_Header *track )
+Timeline::add_track ( Track *track )
 {
     printf( "added new track to the timeline\n" );
     /* FIXME: do locking */
@@ -810,7 +810,7 @@ Timeline::add_track ( Track_Header *track )
 }
 
 void
-Timeline::remove_track ( Track_Header *track )
+Timeline::remove_track ( Track *track )
 {
     printf( "removed track from the timeline\n" );
 
@@ -833,7 +833,7 @@ Timeline::process ( nframes_t nframes )
 {
     for ( int i = tracks->children(); i-- ; )
     {
-        Track_Header *t = (Track_Header*)tracks->child( i );
+        Track *t = (Track*)tracks->child( i );
 
         t->process( nframes );
     }
@@ -848,7 +848,7 @@ Timeline::seek ( nframes_t frame )
 {
     for ( int i = tracks->children(); i-- ; )
     {
-        Track_Header *t = (Track_Header*)tracks->child( i );
+        Track *t = (Track*)tracks->child( i );
 
         t->seek( frame );
     }
@@ -862,7 +862,7 @@ Timeline::seek_pending ( void )
 
     for ( int i = tracks->children(); i-- ; )
     {
-        Track_Header *t = (Track_Header*)tracks->child( i );
+        Track *t = (Track*)tracks->child( i );
 
         if ( t->playback_ds )
             r += t->playback_ds->buffer_percent() < 50;

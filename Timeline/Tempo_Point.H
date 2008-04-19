@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include "Track_Point.H"
-// #include "Tempo_Track.H"
+#include "Sequence_Point.H"
+// #include "Tempo_Sequence.H"
 
-class Tempo_Point : public Track_Point
+class Tempo_Point : public Sequence_Point
 {
     float _tempo;
 
@@ -60,7 +60,7 @@ public:
             _tempo = rhs._tempo;
         }
 
-    Track_Widget *clone ( const Track_Widget *r )
+    Sequence_Widget *clone ( const Sequence_Widget *r )
         {
             return new Tempo_Point( *(Tempo_Point*)r );
         }

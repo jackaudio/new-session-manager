@@ -18,7 +18,7 @@
 /*******************************************************************************/
 
 #include "Time_Point.H"
-#include "Time_Track.H"
+#include "Time_Sequence.H"
 #include "Timeline.H" // for timeline->time_track
 
 char **

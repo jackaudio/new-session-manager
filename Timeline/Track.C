@@ -18,400 +18,356 @@
 /*******************************************************************************/
 
 #include "Track.H"
-#include "Timeline.H"
+
+#include "Transport.H"
+#include "Playback_DS.H"
+#include "Record_DS.H"
+
+#include "Engine.H"
+
+#include "Port.H"
+
+void
+Track::cb_input_field ( Fl_Widget *w, void *v )
+{
+    ((Track*)v)->cb_input_field();
+}
+
+void
+Track::cb_button ( Fl_Widget *w, void *v )
+{
+    ((Track*)v)->cb_button( w );
+}
+
+
+void
+Track::cb_input_field ( void )
+{
+    log_start();
+
+    if ( _name )
+        free( _name );
+
+    _name = strdup( name_field->value() );
+
+    log_end();
+}
+
+void
+Track::cb_button ( Fl_Widget *w )
+{
+
+    printf( "FIXME: inform mixer here\n" );
+    if ( w == record_button )
+    {
+            /* FIXME: wrong place for this! */
+        if ( record_button->value() )
+            record_ds->start( transport.frame );
+        else
+            record_ds->stop( transport.frame );
+    }
+    else
+        if ( w == take_menu )
+        {
+            int v = take_menu->value();
+
+            switch ( v )
+            {
+                case 0:                                         /* show all takes */
+                    show_all_takes( take_menu->menu()[ v ].value() );
+                    return;
+                case 1:                                         /* new */
+                    track( track()->clone_empty() );
+                    return;
+            }
+
+            const char *s = take_menu->menu()[ v ].text;
+
+            for ( int i = takes->children(); i--; )
+            {
+                Sequence *t = (Sequence*)takes->child( i );
+                if ( ! strcmp( s, t->name() ) )
+                {
+                    track( t );
+                    redraw();
+                    break;
+                }
+            }
+        }
+}
+
+Track::Track ( int X, int Y, int W, int H, const char *L ) :
+    Fl_Group ( X, Y, W, H, L )
+{
+
+    _track = NULL;
+    _name = NULL;
+    _selected = false;
+    _show_all_takes = false;
+    _size = 1;
+
+    {
+        char pname[40];
+        static int no = 0, ni = 0;
+
+        snprintf( pname, sizeof( pname ), "out-%d", no++ );
+
+        output.push_back( Port( strdup( pname ), Port::Output ) );
+
+        snprintf( pname, sizeof( pname ), "in-%d", ni++ );
+
+        input.push_back( Port( strdup( pname ), Port::Input ) );
+
+        snprintf( pname, sizeof( pname ), "in-%d", ni++ );
+
+        input.push_back( Port( strdup( pname ), Port::Input ) );
+
+    }
+
+    playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), 1 );
+    record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), 2 );
+
+    Fl_Group::size( w(), height() );
+
+    Track *o = this;
+    o->box( FL_THIN_UP_BOX );
+    {
+        Fl_Group *o = new Fl_Group( 2, 2, 149, 70 );
+        o->color( ( Fl_Color ) 53 );
+        {
+            Fl_Input *o = name_field = new Fl_Input( 2, 2, 144, 24 );
+            o->color( ( Fl_Color ) 33 );
+            o->labeltype( FL_NO_LABEL );
+            o->labelcolor( FL_GRAY0 );
+            o->textcolor( 32 );
+
+            o->callback( cb_input_field, (void*)this );
+        }
+
+        {
+            Fl_Group *o = controls = new Fl_Group( 2, 28, 149, 24 );
+
+            {
+                Fl_Button *o = record_button =
+                    new Fl_Button( 6, 28, 26, 24, "@circle" );
+                o->type( 1 );
+                o->box( FL_THIN_UP_BOX );
+                o->color( FL_LIGHT1 );
+                o->selection_color( FL_RED );
+                o->labelsize( 8 );
+                o->callback( cb_button, this );
+            }
+            {
+                Fl_Button *o = mute_button =
+                    new Fl_Button( 35, 28, 26, 24, "m" );
+                o->type( 1 );
+                o->box( FL_THIN_UP_BOX );
+                o->color( FL_LIGHT1 );
+                o->labelsize( 11 );
+                o->callback( cb_button, this );
+            }
+            {
+                Fl_Button *o = solo_button =
+                    new Fl_Button( 66, 28, 26, 24, "s" );
+                o->type( 1 );
+                o->box( FL_THIN_UP_BOX );
+                o->color( FL_LIGHT1 );
+                o->labelsize( 11 );
+                o->callback( cb_button, this );
+            }
+            {
+                Fl_Menu_Button *o = take_menu =
+                    new Fl_Menu_Button( 97, 28, 47, 24, "T" );
+                o->box( FL_THIN_UP_BOX );
+                o->color( FL_LIGHT1 );
+                o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
+                o->callback( cb_button, this );
+
+                o->add( "Show all takes", 0, 0, 0, FL_MENU_TOGGLE );
+                o->add( "New", 0, 0, 0, FL_MENU_DIVIDER );
+
+            }
+            o->end();
+        }
+
+        {
+            Fl_Box *o = new Fl_Box( 0, 76, 149, 38 );
+            o->box( FL_FLAT_BOX );
+            Fl_Group::current()->resizable( o );
+        }
+
+        o->size( Track::width(), h() );
+        o->end();
+    }
+    {
+        Fl_Pack *o = pack = new Fl_Pack( width(), 0, 1006, 115 );
+        o->labeltype( FL_NO_LABEL );
+        o->resize( x() + width(), y(), w() - width(), h() );
+        Fl_Group::current()->resizable( o );
+
+        {
+            Fl_Pack *o = control = new Fl_Pack( width(), 0, pack->w(), 115 );
+            o->end();
+        }
+
+        {
+            Fl_Pack *o = takes = new Fl_Pack( width(), 0, pack->w(), 115 );
+            o->end();
+            o->hide();
+        }
+
+        o->end();
+    }
+    end();
+
+    log_create();
+}
+
+Track::~Track ( )
+{
+    log_destroy();
+}
+
+
+static int pack_visible( Fl_Pack *p )
+{
+    int v = 0;
+    for ( int i = p->children(); i--; )
+        if ( p->child( i )->visible() )
+            v++;
+
+    return v;
+}
+
+/* adjust size of widget and children */
+void
+Track::resize ( void )
+{
+    for ( int i = takes->children(); i--; )
+        takes->child( i )->size( w(), height()  );
+
+    for ( int i = control->children(); i--; )
+        control->child( i )->size( w(), height()  );
+
+    if ( _show_all_takes )
+    {
+        takes->show();
+        Fl_Group::size( w(), height() * ( 1 + takes->children() + pack_visible( control ) ) );
+    }
+    else
+    {
+        takes->hide();
+        Fl_Group::size( w(), height() * ( 1 + pack_visible( control ) ) );
+    }
+
+    if ( track() )
+        track()->size( w(), height() );
+
+
+    if ( controls->y() + controls->h() > y() + h() )
+        controls->hide();
+    else
+        controls->show();
+
+    parent()->redraw();
+}
+
+void
+Track::size ( int v )
+{
+    if ( v < 0 || v > 3 )
+        return;
+
+    _size = v;
+
+    resize();
+}
+
+
+
+void
+Track::track( Sequence * t )
+{
+//    t->size( 1, h() );
+    if ( track() )
+        add( track() );
+
+//        takes->insert( *track(), 0 );
+
+    _track = t;
+    pack->insert( *t, 0 );
+
+    resize();
+}
+
+void
+Track::add_control( Sequence *t )
+{
+    control->add( t );
+
+    resize();
+}
+
+
+/**********/
+/* Engine */
+/**********/
+
+/* THREAD: RT */
+nframes_t
+Track::process ( nframes_t nframes )
+{
+    if ( playback_ds )
+    {
+        record_ds->process( nframes );
+        return playback_ds->process( nframes );
+    }
+    else
+        return 0;
+}
+
+/* THREAD: RT */
+void
+Track::seek ( nframes_t frame )
+{
+    if ( playback_ds )
+        return playback_ds->seek( frame );
+}
+
+
+
+/* FIXME: what about theading issues with this region/audiofile being
+ accessible from the UI thread? Need locking? */
 
 #include "Region.H"
 
-#include <FL/fl_draw.H>
-
-
-queue <Track_Widget *> Track::_delete_queue;
-
-Track::Track ( int X, int Y, int W, int H ) : Fl_Widget( X, Y, W, H )
-{
-    _name = NULL;
-
-    box( FL_DOWN_BOX );
-    color( fl_darker( FL_GRAY ) );
-    align( FL_ALIGN_LEFT );
-
-//    log_create();
-}
-
-Track::~Track (  )
-{
-    /* FIXME: what to do with regions? */
-    parent()->redraw();
-    parent()->remove( this );
-//    log_destroy();
-}
-
+/* THREAD: IO */
+/** create capture region and prepare to record */
 void
-Track::sort ( void )
+Track::record ( nframes_t frame )
 {
-    _widgets.sort( Track_Widget::sort_func );
+    assert( _capture == NULL );
+
+    /* FIXME: hack */
+    Audio_File *af = Audio_File_SF::create( "testing.wav", 48000, input.size(), "Wav/24" );
+
+    _capture = new Region( af, track(), frame );
+
+    /* FIXME: wrong place for this */
+    _capture->_r->end = 0;
 }
 
-/** return a pointer to the widget that /r/ overlaps, or NULL if none. */
-Track_Widget *
-Track::overlaps ( Track_Widget *r )
-{
-    for ( list <Track_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
-    {
-        if ( *i == r ) continue;
-        if ( ! ( (*i)->offset() > r->offset() + r->length() || (*i)->offset() + (*i)->length() < r->offset() ) )
-            return *i;
-    }
-
-    return NULL;
-}
-
-
-#include "Waveform.H"
-
+/* THREAD: IO */
+/** write a block to the (already opened) capture file */
 void
-Track::draw ( void )
+Track::write ( sample_t *buf, nframes_t nframes )
 {
-
-    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
-        return;
-
-    fl_push_clip( x(), y(), w(), h() );
-
-    draw_box();
-
-    int X, Y, W, H;
-
-    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
-
-
-    if ( Track_Widget::pushed() && Track_Widget::pushed()->track() == this )
-    {
-        /* make sure the Track_Widget::pushed widget is above all others */
-        remove( Track_Widget::pushed() );
-        add( Track_Widget::pushed() );
-    }
-
-    int xfades = 0;
-
-//    printf( "track::draw %d,%d %dx%d\n", X,Y,W,H );
-
-    timeline->draw_measure_lines( x(), y(), w(), h(), color() );
-
-    for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-        (*r)->draw_box();
-
-
-    for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-        (*r)->draw();
-
-
-    /* draw crossfades */
-    for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-    {
-        Track_Widget *o = overlaps( *r );
-
-        if ( o )
-        {
-            if ( *o <= **r )
-            {
-
-/*                 if ( o->x() == (*r)->x() && o->w() == (*r)->w() ) */
-/*                     printf( "complete superposition\n" ); */
-
-                if ( (*r)->x() >= o->x() && (*r)->x() + (*r)->w() <= o->x() + o->w() )
-                    /* completely inside */
-                    continue;
-
-                ++xfades;
-
-                Rectangle b( (*r)->x(),
-                               o->y(),
-                               (o->x() + o->w()) - (*r)->x(),
-                               o->h() );
-
-                Fl_Color c = fl_color_average( o->box_color(), (*r)->box_color(), 0.50f );
-                c = fl_color_average( c, FL_YELLOW, 0.30f );
-
-                fl_push_clip( b.x, b.y, b.w, b.h );
-
-                draw_box( FL_FLAT_BOX, b.x - 100, b.y, b.w + 200, b.h, c );
-                draw_box( FL_UP_FRAME, b.x - 100, b.y, b.w + 200, b.h, c );
-
-
-                fl_pop_clip();
-
-            }
-        }
-
-    }
-
-//    printf( "There are %d xfades\n", xfades );
-
-    for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-    {
-        Track_Widget *o = overlaps( *r );
-
-        if ( o )
-        {
-            if ( *o <= **r )
-            {
-
-                if ( (*r)->x() >= o->x() && (*r)->x() + (*r)->w() <= o->x() + o->w() )
-                    /* completely inside */
-                    continue;
-
-                Rectangle b( (*r)->x(), o->y(), (o->x() + o->w()) - (*r)->x(), o->h() );
-
-                /* draw overlapping waveforms in X-ray style. */
-                Waveform::fill = false;
-
-/*                 Fl_Color oc = o->color(); */
-/*                 Fl_Color rc = (*r)->color(); */
-
-/*                 /\* give each region a different color *\/ */
-/*                 o->color( FL_RED ); */
-/*                 (*r)->color( FL_GREEN ); */
-
-                fl_push_clip( b.x, b.y, b.w, b.h );
-
-                o->draw();
-                (*r)->draw();
-
-                fl_pop_clip();
-
-                Waveform::fill = true;
-
-
-/*                 o->color( oc ); */
-/*                 (*r)->color( rc ); */
-
-/*                 fl_color( FL_BLACK ); */
-/*                 fl_line_style( FL_DOT, 4 ); */
-
-/*                 b.x = (*r)->line_x(); */
-/*                 b.w = min( 32767, (*r)->abs_w() ); */
-
-/*                 fl_line( b.x, b.y, b.x + b.w, b.y + b.h ); */
-
-/*                 fl_line( b.x, b.y + b.h, b.x + b.w, b.y ); */
-
-/*                 fl_line_style( FL_SOLID, 0 ); */
-
-//                fl_pop_clip();
-
-            }
-        }
-    }
-
-
-    fl_pop_clip();
+    _capture->write( buf, nframes );
 }
 
+/* THREAD: IO */
 void
-Track::remove ( Track_Widget *r )
+Track::stop ( nframes_t nframes )
 {
-//    Logger _log( this );
-
-    _widgets.remove( r );
-}
-
-
-void
-Track::remove_selected ( void )
-{
-    Loggable::block_start();
-
-    for ( list <Track_Widget *>::iterator r = _widgets.begin(); r != _widgets.end(); )
-        if ( (*r)->selected() )
-        {
-            Track_Widget *t = *r;
-            _widgets.erase( r++ );
-            delete t;
-        }
-        else
-            ++r;
-
-    Loggable::block_end();
-}
-
-
-Track_Widget *
-Track::event_widget ( void )
-{
-    nframes_t ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() );
-    for ( list <Track_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
-        if ( ets > (*r)->offset() && ets < (*r)->offset() + (*r)->length() )
-            return (*r);
-
-    return NULL;
-}
-
-void
-Track::select_range ( int X, int W )
-{
-    nframes_t sts = timeline->xoffset + timeline->x_to_ts( X - x() );
-    nframes_t ets = sts + timeline->x_to_ts( W );
-
-    for ( list <Track_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
-        if ( ! ( (*r)->offset() > ets || (*r)->offset() + (*r)->length() < sts ) )
-            (*r)->select();
-}
-
-void
-Track::add ( Track_Widget *r )
-{
-//    Logger _log( this );
-
-    if ( r->track() )
-    {
-        r->redraw();
-        r->track()->remove( r );
-//        r->track()->redraw();
-    }
-
-    r->track( this );
-    _widgets.push_back( r );
-
-    sort();
-}
-
-/* snap /r/ to nearest edge */
-void
-Track::snap ( Track_Widget *r )
-{
-    const int snap_pixels = 10;
-
-    const int rx1 = r->x();
-    const int rx2 = r->x() + r->w();
-
-
-    for ( list <Track_Widget*>::iterator i = _widgets.begin(); i != _widgets.end(); i++ )
-    {
-        const Track_Widget *w = (*i);
-
-        if ( w == r )
-            continue;
-
-        const int wx1 = w->x();
-        const int wx2 = w->x() + w->w();
-
-        if ( abs( rx1 - wx2 ) < snap_pixels )
-        {
-            r->offset( w->offset() + w->length() + 1 );
-
-//            printf( "snap: %lu | %lu\n", w->offset() + w->length(), r->offset() );
-
-            goto done;
-        }
-
-        if ( abs( rx2 - wx1 ) < snap_pixels )
-        {
-            r->offset( ( w->offset() - r->length() ) - 1 );
-
-//            printf( "snap: %lu | %lu\n", r->offset() + r->length(), w->offset() );
-
-            goto done;
-        }
-    }
-
-    {
-        int nx = timeline->nearest_line( r->abs_x() );
-
-        if ( nx >= 0 )
-        {
-            r->offset( timeline->x_to_ts( nx ) );
-            return;
-        }
-    }
-//    r->offset( timeline->x_to_ts( r->x() ) );
-
-done:
-
-    return;
-//    r->resize();
-//            r->position( rx1, y() );
-}
-
-int
-Track::handle ( int m )
-{
-
-    switch ( m )
-    {
-        case FL_FOCUS:
-            return 1;
-        case FL_UNFOCUS:
-            return 1;
-        case FL_DND_ENTER:
-            printf( "enter\n" );
-            if ( Track_Widget::pushed() && Track_Widget::pushed()->track()->class_name() == class_name() )
-            {
-                add( Track_Widget::pushed() );
-                redraw();
-            }
-        case FL_DND_LEAVE:
-            return 1;
-        case FL_MOVE:
-        {
-            Track_Widget *r = event_widget();
-
-            if ( r != Track_Widget::belowmouse() )
-            {
-                if ( Track_Widget::belowmouse() )
-                    Track_Widget::belowmouse()->handle( FL_LEAVE );
-                Track_Widget::belowmouse( r );
-
-                if ( r )
-                    r->handle( FL_ENTER );
-            }
-
-            return 0;
-        }
-        default:
-        {
-            Track_Widget *r = Track_Widget::pushed() ? Track_Widget::pushed() : event_widget();
-
-            if ( r )
-            {
-                int retval = r->dispatch( m );
-
-                if ( retval && m == FL_PUSH )
-                {
-                    take_focus();
-
-                    Track_Widget::pushed( r );
-                }
-
-                if ( retval && m == FL_RELEASE )
-                    Track_Widget::pushed( NULL );
-
-                Loggable::block_start();
-
-                while ( _delete_queue.size() )
-                {
-
-                    Track_Widget *t = _delete_queue.front();
-                    _delete_queue.pop();
-
-
-                    if ( Track_Widget::pushed() == t )
-                        Track_Widget::pushed( NULL );
-                    if ( Track_Widget::belowmouse() == t )
-                    {
-                        Track_Widget::belowmouse()->handle( FL_LEAVE );
-                        Track_Widget::belowmouse( NULL );
-                    }
-
-                    delete t;
-                }
-
-                Loggable::block_end();
-
-                return retval;
-            }
-            else
-                return Fl_Widget::handle( m );
-        }
-    }
+    _capture = NULL;
 }

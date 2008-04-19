@@ -27,7 +27,7 @@ class Playback_DS : public Disk_Stream
 
 public:
 
-    Playback_DS ( Track_Header *th, float frame_rate, nframes_t nframes, int channels ) :
+    Playback_DS ( Track *th, float frame_rate, nframes_t nframes, int channels ) :
         Disk_Stream( th, frame_rate, nframes, channels )
         {
             run();

@@ -37,7 +37,7 @@ class Record_DS : public Disk_Stream
 
 public:
 
-    Record_DS ( Track_Header *th, float frame_rate, nframes_t nframes, int channels ) :
+    Record_DS ( Track *th, float frame_rate, nframes_t nframes, int channels ) :
         Disk_Stream( th, frame_rate, nframes, channels )
         {
             sem_destroy( &_blocks );

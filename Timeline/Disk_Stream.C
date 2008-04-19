@@ -18,8 +18,8 @@
 /*******************************************************************************/
 
 #include "Disk_Stream.H"
-#include "Track_Header.H"
-#include "Audio_Track.H"
+#include "Track.H"
+#include "Audio_Sequence.H"
 #include "Port.H"
 #include "Engine.H" // for locking.
 
@@ -53,7 +53,7 @@
 float Disk_Stream::seconds_to_buffer = 5.0f;
 // size_t Disk_Stream::disk_block_frames = 2048;
 
-Disk_Stream::Disk_Stream ( Track_Header *th, float frame_rate, nframes_t nframes, int channels ) : _th( th )
+Disk_Stream::Disk_Stream ( Track *th, float frame_rate, nframes_t nframes, int channels ) : _th( th )
 {
     _frame = 0;
     _thread = 0;
@@ -99,10 +99,10 @@ Disk_Stream::shutdown ( void )
     pthread_join( _thread, NULL );
 }
 
-Audio_Track *
+Audio_Sequence *
 Disk_Stream::track ( void )
 {
-    return (Audio_Track*)_th->track();
+    return (Audio_Sequence*)_th->track();
 }
 
 /** start Disk_Stream thread */

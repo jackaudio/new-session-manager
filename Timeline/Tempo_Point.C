@@ -19,7 +19,7 @@
 
 
 #include "Tempo_Point.H"
-#include "Tempo_Track.H"
+#include "Tempo_Sequence.H"
 #include "Timeline.H" // for timeline->tempo_track
 
 char **
@@ -101,7 +101,7 @@ Tempo_Point::~Tempo_Point ( )
 int
 Tempo_Point::handle ( int m )
 {
-    int r = Track_Widget::handle( m );
+    int r = Sequence_Widget::handle( m );
 
     if ( m == FL_RELEASE )
     {

@@ -19,39 +19,40 @@
 
 #pragma once
 
-#include "Track.H"
-#include "Time_Point.H"
+#include "Sequence.H"
+#include "Tempo_Point.H"
 
 #include <list>
-using std::list;
 
-class Time_Track : public Track
+class Tempo_Sequence : public Sequence
 {
 
 public:
 
-    Time_Track ( int X, int Y, int W, int H ) : Track ( X, Y, W, H )
+    Tempo_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
         {
             box( FL_UP_BOX );
         }
 
-    time_sig
-    time ( nframes_t when )
+    float
+    beats_per_minute ( nframes_t when )
         {
-            for ( list <Track_Widget *>::const_reverse_iterator i = _widgets.rbegin();
+//            sort();
+
+            for ( std::list <Sequence_Widget *>::const_reverse_iterator i = _widgets.rbegin();
                   i != _widgets.rend(); i++ )
             {
                 if ( (*i)->offset() < when )
-                    return ((Time_Point*)(*i))->time();
+                    return ((Tempo_Point*)(*i))->tempo();
             }
 
-            return time_sig( 4, 4 );
+            return 120.0;
         }
 
     void
-    time ( nframes_t when, int bpb, int note )
+    beats_per_minute ( nframes_t when, float bpm )
         {
-            add( new Time_Point( when, bpb, note ) );
+            add( new Tempo_Point( when, bpm ) );
         }
 
 };

@@ -19,36 +19,36 @@
 
 #pragma once
 
-#include "Track.H"
+#include "Sequence.H"
 #include "Region.H"
 
 
 #include <FL/Fl_Input.H>
 
-class Audio_Track : public Track
+class Audio_Sequence : public Sequence
 {
 
 public:
 
-    Audio_Track ( int X, int Y, int W, int H ) : Track( X, Y, W, H )
+    Audio_Sequence ( int X, int Y, int W, int H ) : Sequence( X, Y, W, H )
         {
             log_create();
         }
 
-    ~Audio_Track ( )
+    ~Audio_Sequence ( )
         {
             log_destroy();
         }
 
 
-    Track * clone_empty ( void )
+    Sequence * clone_empty ( void )
         {
-            Audio_Track *t = new Audio_Track( x(), y(), w(), h() );
+            Audio_Sequence *t = new Audio_Sequence( x(), y(), w(), h() );
 
             return t;
         }
 
-    const char *class_name ( void ) { return "Audio_Track"; }
+    const char *class_name ( void ) { return "Audio_Sequence"; }
 
     int handle ( int m );
     void dump ( void );

@@ -17,7 +17,7 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Audio_Track.H"
+#include "Audio_Sequence.H"
 
 #include "dsp.h"
 
@@ -54,13 +54,13 @@ deurlify ( char *url )
 
 /** event handler that supports DND of audio clips */
 int
-Audio_Track::handle ( int m )
+Audio_Sequence::handle ( int m )
 {
     switch ( m )
     {
 
        case FL_DND_DRAG:
-           return Track::handle( m ) | 1;
+           return Sequence::handle( m ) | 1;
 
 /*         case FL_DND_ENTER: */
 /*         case FL_DND_LEAVE: */
@@ -110,7 +110,7 @@ Audio_Track::handle ( int m )
             return 1;
         }
         default:
-            return Track::handle( m );
+            return Sequence::handle( m );
     }
 }
 
@@ -123,14 +123,14 @@ Audio_Track::handle ( int m )
 /** determine region coverage and fill /buf/ with interleaved samples
  * from /frame/ to /nframes/ for exactly /channels/ channels. */
 nframes_t
-Audio_Track::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels )
+Audio_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels )
 {
     sample_t *cbuf = new sample_t[ nframes ];
 
     memset( cbuf, 0, nframes * sizeof( sample_t ) );
 
     /* quick and dirty--let the regions figure out coverage for themselves */
-    for ( list <Track_Widget *>::const_iterator i = _widgets.begin();
+    for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin();
           i != _widgets.end(); i++ )
     {
         const Region *r = (Region*)(*i);
@@ -158,7 +158,7 @@ Audio_Track::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int chann
 
 /* /\* THREAD: RT *\/ */
 /* nframes_t */
-/* Audio_Track::process ( nframes_t nframes ) */
+/* Audio_Sequence::process ( nframes_t nframes ) */
 /* { */
 /*     return disktream->process( nframes ); */
 /* } */

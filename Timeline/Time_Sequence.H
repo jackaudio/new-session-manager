@@ -19,40 +19,39 @@
 
 #pragma once
 
-#include "Track_Widget.H"
+#include "Sequence.H"
+#include "Time_Point.H"
 
-class Track_Point : public Track_Widget
+#include <list>
+using std::list;
+
+class Time_Sequence : public Sequence
 {
-
-protected:
-
-    char *_label;
-
-/*     void set ( char **a ) */
-/*         { */
-/*         } */
 
 public:
 
-    Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
-    int abs_w ( void ) const { return 10; }
-    nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
-
-    Track_Point ( )
+    Time_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
         {
-            _label = NULL;
+            box( FL_UP_BOX );
         }
 
-
-    virtual ~Track_Point ( )
+    time_sig
+    time ( nframes_t when )
         {
+            for ( list <Sequence_Widget *>::const_reverse_iterator i = _widgets.rbegin();
+                  i != _widgets.rend(); i++ )
+            {
+                if ( (*i)->offset() < when )
+                    return ((Time_Point*)(*i))->time();
+            }
+
+            return time_sig( 4, 4 );
         }
 
-    virtual void
-    draw ( void )
+    void
+    time ( nframes_t when, int bpb, int note )
         {
-            Track_Widget::draw();
-
-            draw_label( _label, align() );
+            add( new Time_Point( when, bpb, note ) );
         }
+
 };

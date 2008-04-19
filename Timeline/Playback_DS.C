@@ -23,8 +23,8 @@
 /* FIXME: we shouldn't depend on these */
 #include "Timeline.H"
 #include "Engine.H"
-#include "Audio_Track.H"
-#include "Track_Header.H"
+#include "Audio_Sequence.H"
+#include "Track.H"
 #include "Port.H"
 #include "Playback_DS.H"
 

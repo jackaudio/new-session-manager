@@ -19,18 +19,18 @@
 #pragma once
 
 #include "Audio_File.H"
-#include "Track.H"
+#include "Sequence.H"
 #include "Timeline.H"
 
 /* Regions are "virtual" FLTK widgets; this is necessary because the
  * dimensions of real FLTK widgets are limited to 16-bits, which is
  * far too little for our purposes */
 
-#include "Track_Widget.H"
+#include "Sequence_Widget.H"
 #include "Loggable.H"
 
 
-class Region : public Track_Widget
+class Region : public Sequence_Widget
 {
 
 public:
@@ -98,7 +98,7 @@ private:
     Fade _fade_in;
     Fade _fade_out;
 
-    friend class Track_Header;                                  /* for _clip */
+    friend class Track;                                  /* for _clip */
 protected:
 
     const char *class_name ( void ) { return "Region"; }
@@ -166,7 +166,7 @@ protected:
                 {
                     int i;
                     sscanf( v, "%X", &i );
-                    Track *t = (Track*)Loggable::find( i );
+                    Sequence *t = (Sequence*)Loggable::find( i );
 
                     assert( t );
 
@@ -200,7 +200,7 @@ public:
 
     bool current ( void ) const { return this == belowmouse(); }
 
-    friend class Track_Header; /* for _clip in Track_Header::write()  */
+    friend class Track; /* for _clip in Track::write()  */
 
 public:
 
@@ -216,7 +216,7 @@ public:
         }
 
 
-    Track_Widget *clone ( const Track_Widget *r );
+    Sequence_Widget *clone ( const Sequence_Widget *r );
 
     ~Region ( )
         {
@@ -228,7 +228,7 @@ public:
 
     Region ( const Region & rhs );
     Region ( Audio_File *c );
-    Region ( Audio_File *c, Track *t, nframes_t o );
+    Region ( Audio_File *c, Sequence *t, nframes_t o );
 
     int handle ( int m );
     void draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool filled, int X, int W );

@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "Track_Point.H"
+#include "Sequence_Point.H"
 #include "Loggable.H"
 
 struct time_sig
@@ -43,7 +43,7 @@ struct time_sig
 
 #define __CLASS__ "Time_Point"
 
-class Time_Point : public Track_Point
+class Time_Point : public Sequence_Point
 {
     time_sig _time;
 
@@ -96,7 +96,7 @@ public:
             _time = rhs._time;
         }
 
-    Track_Widget *clone ( const Track_Widget *r )
+    Sequence_Widget *clone ( const Sequence_Widget *r )
         {
             return new Time_Point( *(Time_Point*)r );
         }
@@ -116,7 +116,7 @@ public:
     int
     handle ( int m )
         {
-            int r = Track_Widget::handle( m );
+            int r = Sequence_Widget::handle( m );
 
             if ( m == FL_RELEASE )
             {

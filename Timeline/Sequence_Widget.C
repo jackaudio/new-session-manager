@@ -25,15 +25,15 @@
    the original?
 
  */
-#include "Track_Widget.H"
+#include "Sequence_Widget.H"
 
-list <Track_Widget *> Track_Widget::_selection;
-Track_Widget * Track_Widget::_current = NULL;
-Track_Widget * Track_Widget::_pushed = NULL;
-Track_Widget * Track_Widget::_belowmouse = NULL;
+list <Sequence_Widget *> Sequence_Widget::_selection;
+Sequence_Widget * Sequence_Widget::_current = NULL;
+Sequence_Widget * Sequence_Widget::_pushed = NULL;
+Sequence_Widget * Sequence_Widget::_belowmouse = NULL;
 
 void
-Track_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )
+Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )
 {
     int X, Y;
 
@@ -109,9 +109,9 @@ Track_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )
 }
 
 int
-Track_Widget::dispatch ( int m )
+Sequence_Widget::dispatch ( int m )
 {
-    Track_Widget::_current = this;
+    Sequence_Widget::_current = this;
 
     if ( selected() )
     {
@@ -120,7 +120,7 @@ Track_Widget::dispatch ( int m )
         int r = 0;
 
 
-        for ( list <Track_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
+        for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
             if ( *i != this )
                 r |= (*i)->handle( m );
 
@@ -136,7 +136,7 @@ Track_Widget::dispatch ( int m )
 
 /* base hanlde just does basic dragging */
 int
-Track_Widget::handle ( int m )
+Sequence_Widget::handle ( int m )
 {
     int X = Fl::event_x();
     int Y = Fl::event_y();
@@ -199,7 +199,7 @@ Track_Widget::handle ( int m )
                 // _r->offset = timeline->x_to_ts( nx ) + timeline->xoffset;
                 offset( timeline->x_to_ts( nx ) + timeline->xoffset );
 
-                if ( Track_Widget::_current == this )
+                if ( Sequence_Widget::_current == this )
                     _track->snap( this );
             }
 

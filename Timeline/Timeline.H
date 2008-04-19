@@ -40,12 +40,12 @@
 class Timeline;
 extern Timeline *timeline;
 
-#include "Track.H"
+#include "Sequence.H"
 
-class Tempo_Track;
-class Time_Track;
-class Ruler_Track;
-class Track_Header;
+class Tempo_Sequence;
+class Time_Sequence;
+class Ruler_Sequence;
+class Track;
 
 // disables double-buffering to make unnecessary redrawing more apparent
 // #define DEBUG_TIMELINE_DRAWING
@@ -113,9 +113,9 @@ class Timeline : public Fl_Overlay_Window, public RWLock
 
 public:
 
-    Tempo_Track *tempo_track;
-    Time_Track  *time_track;
-    Ruler_Track *ruler_track;
+    Tempo_Sequence *tempo_track;
+    Time_Sequence  *time_track;
+    Ruler_Sequence *ruler_track;
 
 
     nframes_t xoffset;
@@ -150,8 +150,8 @@ public:
 
     void select( const Rectangle &r );
 
-    void add_track ( Track_Header *track );
-    void remove_track ( Track_Header *track );
+    void add_track ( Track *track );
+    void remove_track ( Track *track );
 
 private:
 

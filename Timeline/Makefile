@@ -3,11 +3,11 @@ SRCS= \
       Waveform.C \
       Region.C \
       main.C \
-      Track.C \
-      Audio_Track.C \
+      Sequence.C \
+      Audio_Sequence.C \
       Timeline.C \
-      Track_Header.C \
-      Track_Widget.C \
+      Track.C \
+      Sequence_Widget.C \
       Tempo_Point.C \
       Time_Point.C \
       Peaks.C \

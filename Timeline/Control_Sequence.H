@@ -19,28 +19,28 @@
 
 #pragma once
 
-#include "Track.H"
+#include "Sequence.H"
 #include "Control_Point.H"
 
-class Control_Track : public Track
+class Control_Sequence : public Sequence
 {
 
 public:
 
 
-    Control_Track ( int X, int Y, int W, int H ) : Track( X, Y, W, H )
+    Control_Sequence ( int X, int Y, int W, int H ) : Sequence( X, Y, W, H )
         {
             color( fl_darker( FL_GREEN ) );
 
             log_create();
         }
 
-    ~Control_Track ( )
+    ~Control_Sequence ( )
         {
             log_destroy();
         }
 
-    const char *class_name ( void ) { return "Control_Track"; }
+    const char *class_name ( void ) { return "Control_Sequence"; }
 
     void
     draw ( void )
@@ -63,11 +63,11 @@ public:
 
             fl_begin_complex_polygon();
 
-            list <Track_Widget *>::const_iterator e = _widgets.end();
+            list <Sequence_Widget *>::const_iterator e = _widgets.end();
             e--;
 
             if ( _widgets.size() )
-                for ( list <Track_Widget *>::const_iterator r = _widgets.begin(); ; r++ )
+                for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin(); ; r++ )
                 {
                     if ( r == _widgets.begin() )
                     {
@@ -92,7 +92,7 @@ public:
 
             timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 
-            for ( list <Track_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
+            for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
                 (*r)->draw_box();
 
             fl_pop_clip();
@@ -101,7 +101,7 @@ public:
     int
     handle ( int m )
         {
-            int r = Track::handle( m );
+            int r = Sequence::handle( m );
 
             if ( r )
                 return r;

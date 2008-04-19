@@ -32,8 +32,8 @@
 #include <vector>
 using std::vector;
 
-class Track_Header;
-class Audio_Track;
+class Track;
+class Audio_Sequence;
 
 class Disk_Stream : public Mutex
 {
@@ -42,7 +42,7 @@ protected:
 
     pthread_t _thread;                                 /* io thread */
 
-    Track_Header *_th;                 /* Track_Header we belong to */
+    Track *_th;                 /* Track we belong to */
 
     nframes_t _nframes;                              /* buffer size */
 
@@ -59,7 +59,7 @@ protected:
 
     int channels ( void ) const { return _rb.size(); }
 
-    Audio_Track * track ( void );
+    Audio_Sequence * track ( void );
 
     static void *disk_thread ( void *arg );
 
@@ -84,7 +84,7 @@ public:
     /* must be set before any Disk_Streams are created */
     static float seconds_to_buffer;
 
-    Disk_Stream ( Track_Header *th, float frame_rate, nframes_t nframes, int channels );
+    Disk_Stream ( Track *th, float frame_rate, nframes_t nframes, int channels );
 
     virtual ~Disk_Stream ( );
 

@@ -40,15 +40,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Track.H"
-#include "Audio_Track.H"
+#include "Sequence.H"
+#include "Audio_Sequence.H"
 #include "Timeline.H"
-#include "Tempo_Track.H"
-#include "Time_Track.H"
-#include "Control_Track.H"
+#include "Tempo_Sequence.H"
+#include "Time_Sequence.H"
+#include "Control_Sequence.H"
 
 #include "Loggable.H"
-#include "Track_Header.H"
+#include "Track.H"
 // #include "const.h"
 
 #include "Engine.H"
@@ -77,7 +77,7 @@ main ( int argc, char **argv )
     Loggable::register_create( "Tempo_Point",   &Tempo_Point::create   );
     Loggable::register_create( "Time_Point",    &Time_Point::create    );
     Loggable::register_create( "Control_Point", &Control_Point::create );
-    Loggable::register_create( "Track_Header",  &Track_Header::create  );
+    Loggable::register_create( "Track",  &Track::create  );
 
     /* TODO: change to seesion dir */
 

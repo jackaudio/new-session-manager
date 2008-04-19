@@ -17,7 +17,7 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Track.H"
+#include "Sequence.H"
 #include "Region.H"
 #include "Timeline.H"
 #include "Waveform.H"
@@ -103,7 +103,7 @@ Region::init ( void )
 /* copy constructor */
 Region::Region ( const Region & rhs )
 {
-    *((Track_Widget*)this) = (Track_Widget &)rhs;
+    *((Sequence_Widget*)this) = (Sequence_Widget &)rhs;
 
     _clip      = rhs._clip;
     _scale     = rhs._scale;
@@ -114,8 +114,8 @@ Region::Region ( const Region & rhs )
     log_create();
 }
 
-Track_Widget *
-Region::clone ( const Track_Widget *r )
+Sequence_Widget *
+Region::clone ( const Sequence_Widget *r )
 {
     return new Region( *(Region*)r );
 }
@@ -132,7 +132,7 @@ Region::Region ( Audio_File *c )
 
 
 /* used when DND importing */
-Region::Region ( Audio_File *c, Track *t, nframes_t o )
+Region::Region ( Audio_File *c, Sequence *t, nframes_t o )
 {
     init();
     _clip = c;
@@ -242,11 +242,11 @@ Region::handle ( int m )
     switch ( m )
     {
         case FL_ENTER:
-            Track_Widget::handle( m );
+            Sequence_Widget::handle( m );
             redraw();
             break;
         case FL_LEAVE:
-            Track_Widget::handle( m );
+            Sequence_Widget::handle( m );
             redraw();
             break;
         case FL_KEYBOARD:
@@ -335,7 +335,7 @@ Region::handle ( int m )
                         normalize();
                     else
                     {
-                        if ( Track_Widget::current() == this )
+                        if ( Sequence_Widget::current() == this )
                         {
                             if ( selected() )
                                 deselect();
@@ -390,14 +390,14 @@ Region::handle ( int m )
 
                 }
                 else
-                    return Track_Widget::handle( m );
+                    return Sequence_Widget::handle( m );
             }
             break;
         }
         case FL_RELEASE:
 
         {
-            Track_Widget::handle( m );
+            Sequence_Widget::handle( m );
 
             copied = false;
             if ( trimming != NO )
@@ -470,10 +470,10 @@ Region::handle ( int m )
                     }
             }
 
-            ret = Track_Widget::handle( m );
+            ret = Sequence_Widget::handle( m );
             return ret | 1;
         default:
-            return Track_Widget::handle( m );
+            return Sequence_Widget::handle( m );
             break;
     }
 

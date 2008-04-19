@@ -20,9 +20,9 @@
 #pragma once
 
 #include "Loggable.H"
-#include "Track_Point.H"
+#include "Sequence_Point.H"
 
-class Ruler_Point : public Track_Point
+class Ruler_Point : public Sequence_Point
 {
 
 public:
@@ -73,7 +73,7 @@ protected:
                 {
                     int i;
                     sscanf( v, "%X", &i );
-                    Track *t = (Track*)Loggable::find( i );
+                    Sequence *t = (Sequence*)Loggable::find( i );
 
                     assert( t );
 
@@ -123,7 +123,7 @@ public:
             _label = strdup( rhs._label );
         }
 
-    Track_Widget *clone ( const Track_Widget *r )
+    Sequence_Widget *clone ( const Sequence_Widget *r )
         {
             return new Ruler_Point( *(Ruler_Point*)r );
         }
@@ -138,7 +138,7 @@ public:
     int
     handle ( int m )
         {
-            int r = Track_Widget::handle( m );
+            int r = Sequence_Widget::handle( m );
 
             if ( m == FL_RELEASE )
             {

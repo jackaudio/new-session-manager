@@ -128,6 +128,9 @@ public:
 
             _id = id;
 
+            /* make sure it'll fit */
+            _loggables.reserve( _id );
+
             assert( ! _loggables[ _id - 1 ] );
 
             _loggables[ _id - 1 ] = this;

@@ -178,18 +178,18 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->type( Fl_Pack::VERTICAL );
             o->spacing( 0 );
 
-            for ( int i = 1; i--;  )
-            {
-//                Track_Header *t = new Track_Header( 0, 0, W, 75 );
-                Track_Header *t = new Track_Header( 0, 0, W, 30 );
-                Track *o = new Audio_Track( 0, 0, 1, 100 );
+/*             for ( int i = 1; i--;  ) */
+/*             { */
+/* //                Track_Header *t = new Track_Header( 0, 0, W, 75 ); */
+/*                 Track_Header *t = new Track_Header( 0, 0, W, 30 ); */
+/*                 Track *o = new Audio_Track( 0, 0, 1, 100 ); */
 
-                t->track( o );
-                t->add( new Audio_Track( 0, 0, 1, 100 ) );
-                t->add( new Audio_Track( 0, 0, 1, 100 ) );
-                t->add_control( new Control_Track( 0, 0, 1, 100 ) );
-                t->color( (Fl_Color)rand() );
-            }
+/*                 t->track( o ); */
+/*                 t->add( new Audio_Track( 0, 0, 1, 100 ) ); */
+/*                 t->add( new Audio_Track( 0, 0, 1, 100 ) ); */
+/*                 t->add_control( new Control_Track( 0, 0, 1, 100 ) ); */
+/*                 t->color( (Fl_Color)rand() ); */
+/*             } */
 
             tracks = o;
             o->end();
@@ -443,12 +443,20 @@ Timeline::draw ( void )
 {
     int X, Y, W, H;
 
-    X = tracks->x() + Fl::box_dx( tracks->child( 0 )->box() ) + 1;
+    int bdx = 0;
+    int bdw = 0;
+
+    /* FIXME: hack to avoid clobbering the box corners of tracks. */
+    if ( tracks->children() )
+    {
+        bdx = Fl::box_dx( tracks->child( 0 )->box() );
+        bdw = Fl::box_dw( tracks->child( 0 )->box() );
+    }
+
+    X = tracks->x() + bdx + 1;
     Y = tracks->y();
-    W = tracks->w() - Fl::box_dw( tracks->child( 0 )->box() ) - 1;
+    W = tracks->w() - bdw - 1;
     H = tracks->h();
-
-
 
 /*     if ( damage() & FL_DAMAGE_USER1 ) */
 /*     { */

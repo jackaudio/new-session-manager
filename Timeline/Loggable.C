@@ -44,6 +44,21 @@ Loggable::open ( const char *filename )
         return false;
     }
 
+    /* TODO: replay log here */
+
+
+    /* FIXME: handle transactions!!! */
+
+    {
+        char buf[BUFSIZ];
+
+        while ( fscanf( _fp, "%[^\n]\n", buf ) == 1 )
+        {
+            do_this( buf, false );
+        }
+    }
+
+
     return true;
 }
 
@@ -116,7 +131,9 @@ bool
 Loggable::do_this ( const char *s, bool reverse )
 {
     int id;
-    sscanf( s, "%*s %X ", &id );
+    if ( ! ( sscanf( s, "%*s %X ", &id ) > 0 ) )
+        return false;
+
     Loggable *l = find( id );
 //    assert( l );
 
@@ -328,6 +345,19 @@ Loggable::log ( const char *fmt, ... )
 void
 Loggable::flush ( void )
 {
+    if ( ! _fp )
+    {
+        printf( "error: no log file open!\n" );
+
+        while ( ! _transaction.empty() )
+        {
+            free( _transaction.front() );
+            _transaction.pop();
+        }
+
+        return;
+    }
+
     int n = _transaction.size();
 
     if ( n > 1 )

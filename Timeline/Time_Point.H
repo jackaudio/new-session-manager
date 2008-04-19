@@ -65,63 +65,8 @@ protected:
 
     const char *class_name ( void ) { return "Time_Point"; }
 
-    char ** get ( void )
-        {
-            char **sa = (char**)malloc( sizeof( char* ) * 5 );
-
-            int i = 0;
-
-            asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
-            asprintf( &sa[i++], ":x %lu", _r->offset );
-            asprintf( &sa[i++], ":beats_per_bar %d", _time.beats_per_bar );
-            asprintf( &sa[i++], ":beat_type %d", _time.beat_type );
-
-            sa[i] = NULL;
-
-            return sa;
-        }
-
-    void
-    set ( char **sa )
-        {
-            for ( int i = 0; sa[i]; ++i )
-            {
-                char *s = sa[i];
-
-                strtok( s, " " );
-
-                char *v = s + strlen( s ) + 1;
-
-                if ( ! strcmp( s, ":x" ) )
-                    _r->offset = atol( v );
-                else
-                    if ( ! strcmp( s, ":beats_per_bar" ) )
-                        _time.beats_per_bar = atoi( v );
-                    else
-                        if ( ! strcmp( s, ":beat_type" ) )
-                            _time.beat_type = atoi( v );
-                        else
-                            if ( ! strcmp( s, ":track" ) )
-                            {
-                                int i;
-                                sscanf( v, "%X", &i );
-                                Track *t = (Track*)Loggable::find( i );
-
-                                assert( t );
-
-                                t->add( this );
-                            }
-
-
-                free( s );
-            }
-
-            free( sa );
-
-            timeline->redraw();
-
-            _make_label();
-        }
+    char ** get ( void );
+    void set ( char **sa );
 
 
 public:

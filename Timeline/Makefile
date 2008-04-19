@@ -8,6 +8,8 @@ SRCS= \
       Timeline.C \
       Track_Header.C \
       Track_Widget.C \
+      Tempo_Point.C \
+      Time_Point.C \
       Peaks.C \
       Audio_File.C \
       Audio_File_SF.C \

@@ -17,42 +17,96 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
 
-#include "Track.H"
 #include "Tempo_Point.H"
+#include "Tempo_Track.H"
+#include "Timeline.H" // for timeline->tempo_track
 
-#include <list>
-
-class Tempo_Track : public Track
+char **
+Tempo_Point::get ( void )
 {
+    char **sa = (char**)malloc( sizeof( char* ) * 4 );
 
-public:
+    int i = 0;
 
-    Tempo_Track ( int X, int Y, int W, int H ) : Track ( X, Y, W, H )
-        {
-            box( FL_UP_BOX );
-        }
+    asprintf( &sa[i++], ":x %lu", _r->offset );
+    asprintf( &sa[i++], ":tempo %.2f", _tempo );
 
-    float
-    beats_per_minute ( nframes_t when )
-        {
-//            sort();
+    sa[i] = NULL;
 
-            for ( std::list <Track_Widget *>::const_reverse_iterator i = _widgets.rbegin();
-                  i != _widgets.rend(); i++ )
-            {
-                if ( (*i)->offset() < when )
-                    return ((Tempo_Point*)(*i))->tempo();
-            }
+    return sa;
+}
 
-            return 120.0;
-        }
+void
+Tempo_Point::set ( char **sa )
+{
+    for ( int i = 0; sa[i]; ++i )
+    {
+        char *s = sa[i];
 
-    void
-    beats_per_minute ( nframes_t when, float bpm )
-        {
-            add( new Tempo_Point( when, bpm ) );
-        }
+        strtok( s, " " );
 
-};
+        char *v = s + strlen( s ) + 1;
+
+        if ( ! strcmp( s, ":x" ) )
+            _r->offset = atol( v );
+        else if ( ! strcmp( s, ":tempo" ) )
+            _tempo = atof( v );
+
+        /* FIXME: we need to add this to the time track on creation!!! */
+        timeline->tempo_track->add( this );
+
+        free( s );
+    }
+
+    free( sa );
+
+    timeline->redraw();
+
+    _make_label();
+}
+
+
+/* for loggable */
+Loggable *
+Tempo_Point::create ( char **sa )
+{
+    Tempo_Point *r = new Tempo_Point;
+
+    r->set( sa );
+
+    return (Loggable *)r;
+}
+
+
+Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
+{
+    _tempo = bpm;
+    _r->offset = when;
+
+    _make_label();
+
+    log_create();
+}
+
+
+
+Tempo_Point::~Tempo_Point ( )
+{
+    if ( _label ) delete[] _label;
+    log_destroy();
+}
+
+
+int
+Tempo_Point::handle ( int m )
+{
+    int r = Track_Widget::handle( m );
+
+    if ( m == FL_RELEASE )
+    {
+        _track->sort();
+        timeline->redraw();
+    }
+    return r;
+}

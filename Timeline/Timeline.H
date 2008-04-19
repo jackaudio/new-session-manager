@@ -46,8 +46,8 @@ class Tempo_Track;
 class Time_Track;
 class Ruler_Track;
 
-#include <list>
-using std::list;
+/* #include <list> */
+/* using std::list; */
 
 
 // disables double-buffering to make unnecessary redrawing more apparent
@@ -105,10 +105,6 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     Scalebar     *hscroll;
     Fl_Scrollbar *vscroll;
 
-    Tempo_Track *tempo_track;
-    Time_Track  *time_track;
-    Ruler_Track *ruler_track;
-
 
     static void cb_scroll ( Fl_Widget *w, void *v );
     void cb_scroll ( Fl_Widget *w );
@@ -119,6 +115,11 @@ class Timeline : public Fl_Overlay_Window, public RWLock
 
 
 public:
+
+    Tempo_Track *tempo_track;
+    Time_Track  *time_track;
+    Ruler_Track *ruler_track;
+
 
     nframes_t xoffset;
 

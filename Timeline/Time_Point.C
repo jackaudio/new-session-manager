@@ -17,59 +17,53 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
+#include "Time_Point.H"
+#include "Time_Track.H"
+#include "Timeline.H" // for timeline->time_track
 
-#include "Track_Point.H"
-// #include "Tempo_Track.H"
-
-class Tempo_Point : public Track_Point
+char **
+Time_Point::get ( void )
 {
-    float _tempo;
+    char **sa = (char**)malloc( sizeof( char* ) * 5 );
 
-    void
-    _make_label ( void )
-        {
-            if ( ! _label )
-                _label = new char[40];
+    int i = 0;
 
-            snprintf( _label, 40, "%.1f", _tempo );
-        }
+    asprintf( &sa[i++], ":x %lu", _r->offset );
+    asprintf( &sa[i++], ":beats_per_bar %d", _time.beats_per_bar );
+    asprintf( &sa[i++], ":beat_type %d", _time.beat_type );
 
-protected:
+    sa[i] = NULL;
 
-    const char *class_name ( void ) { return "Tempo_Point"; }
+    return sa;
+}
 
-    char ** get ( void );
-    void set ( char **sa );
+void
+Time_Point::set ( char **sa )
+{
+    for ( int i = 0; sa[i]; ++i )
+    {
+        char *s = sa[i];
 
-    Tempo_Point ( )
-        {
-        }
+        strtok( s, " " );
 
-public:
+        char *v = s + strlen( s ) + 1;
 
-    static Loggable * create ( char **sa );
+        if ( ! strcmp( s, ":x" ) )
+            _r->offset = atol( v );
+        else if ( ! strcmp( s, ":beats_per_bar" ) )
+            _time.beats_per_bar = atoi( v );
+        else if ( ! strcmp( s, ":beat_type" ) )
+            _time.beat_type = atoi( v );
 
-    Tempo_Point ( nframes_t when, float bpm );
+        /* FIXME: we need to add this to the time track on creation!!! */
+        timeline->time_track->add( this );
 
-    ~Tempo_Point ( );
+        free( s );
+    }
 
-    Tempo_Point ( const Tempo_Point &rhs )
-        {
-            _r->offset = rhs._r->offset;
-            _tempo = rhs._tempo;
-        }
+    free( sa );
 
-    Track_Widget *clone ( const Track_Widget *r )
-        {
-            return new Tempo_Point( *(Tempo_Point*)r );
-        }
+    timeline->redraw();
 
-
-    float tempo ( void ) const
-        { return _tempo; }
-    void  tempo ( float v )
-        { _tempo = v; }
-
-    int handle ( int m );
-};
+    _make_label();
+}

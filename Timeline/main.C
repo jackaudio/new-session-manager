@@ -72,7 +72,6 @@ main ( int argc, char **argv )
     Fl::scheme( "plastic" );
 //    Fl::scheme( "gtk+" );
 
-    Loggable::open( "history" );
     /* welcome to C++ */
     Loggable::register_create( "Region",        &Region::create        );
     Loggable::register_create( "Tempo_Point",   &Tempo_Point::create   );
@@ -80,11 +79,15 @@ main ( int argc, char **argv )
     Loggable::register_create( "Control_Point", &Control_Point::create );
     Loggable::register_create( "Track_Header",  &Track_Header::create  );
 
+    /* TODO: change to seesion dir */
+
     /* we don't really need a pointer for this */
     engine = new Engine;
     engine->init();
 
     timeline = new Timeline( 0, 24, main_window->w(), main_window->h() - 24, "Timeline" );
+
+    Loggable::open( "history" );
 
     Fl_Button *o = new Fl_Button( 0, 0, 50, 24, "undo" );
     o->shortcut( FL_CTRL + 'z' );

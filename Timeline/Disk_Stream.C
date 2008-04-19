@@ -97,6 +97,7 @@ Disk_Stream::shutdown ( void )
 {
     _terminate = true;
     pthread_join( _thread, NULL );
+    _terminate = false;
 }
 
 Audio_Sequence *

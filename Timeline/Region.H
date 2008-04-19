@@ -200,8 +200,6 @@ public:
 
     bool current ( void ) const { return this == belowmouse(); }
 
-    friend class Track; /* for _clip in Track::write()  */
-
 public:
 
 

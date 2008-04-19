@@ -27,6 +27,7 @@
 #include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Box.H>
+#include <FL/fl_draw.H>
 
 #include "Loggable.H"
 
@@ -188,6 +189,13 @@ public:
             }
             else
                 Fl_Group::draw();
+
+            if ( ! name_field->visible() )
+            {
+                fl_color( FL_WHITE );
+                fl_font( FL_HELVETICA, 14 );
+                fl_draw( name_field->value(), name_field->x(), name_field->y(), name_field->w(), name_field->h(), FL_ALIGN_CENTER );
+            }
         }
 
     void add_control( Sequence *t );
@@ -208,6 +216,13 @@ public:
         {
             _show_all_takes = b;
             resize();
+        }
+
+    void name ( const char *name )
+        {
+            if ( _name ) free( _name );
+            _name = strdup( name );
+            name_field->value( _name );
         }
 
     const char * name ( void ) const { return _name; }
@@ -272,7 +287,6 @@ public:
 
             }
         }
-
 
     /* Engine */
     nframes_t process ( nframes_t nframes );

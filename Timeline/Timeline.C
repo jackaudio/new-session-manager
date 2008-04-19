@@ -740,7 +740,9 @@ Timeline::handle ( int m )
                             /* FIXME: prompt for I/O config? */
 
                             /* add audio track */
-                            Track *t = new Track( 0, 0, tracks->w(), 30 );
+                            char *name = get_unique_track_name( "Audio" );
+
+                            Track *t = new Track( 0, 0, tracks->w(), 30, name );
 
                             add_track( t );
 
@@ -796,6 +798,34 @@ Timeline::handle ( int m )
 
 }
 
+
+
+bool
+Timeline::track_name_exists ( const char *name )
+{
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        if ( ! strcmp( name, t->name() ) )
+            return true;
+    }
+
+    return false;
+}
+
+char *
+Timeline::get_unique_track_name ( const char *name )
+{
+    char pat[256];
+
+    strcpy( pat, name );
+
+    for ( int i = 1; track_name_exists( pat ); ++i )
+        snprintf( pat, sizeof( pat ), "%s.%d", name, i );
+
+    return strdup( pat );
+}
 
 void
 Timeline::add_track ( Track *track )

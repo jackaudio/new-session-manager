@@ -106,6 +106,8 @@ Track::Track ( int X, int Y, int W, int H, const char *L ) :
     _show_all_takes = false;
     _size = 1;
 
+    labeltype( FL_NO_LABEL );
+
     {
         char pname[40];
         static int no = 0, ni = 0;
@@ -142,6 +144,8 @@ Track::Track ( int X, int Y, int W, int H, const char *L ) :
             o->textcolor( 32 );
 
             o->callback( cb_input_field, (void*)this );
+
+            o->hide();
         }
 
         {
@@ -220,6 +224,9 @@ Track::Track ( int X, int Y, int W, int H, const char *L ) :
     }
     end();
 
+    if ( L )
+        name( L );
+
     log_create();
 }
 
@@ -282,8 +289,6 @@ Track::size ( int v )
 
     resize();
 }
-
-
 
 void
 Track::track( Sequence * t )

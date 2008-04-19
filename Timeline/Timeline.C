@@ -574,6 +574,15 @@ Timeline::draw_playhead ( void )
     fl_rectf( x - 2, y, 5, 2 );
 
     fl_line( x, y, x, h );
+
+    fl_color( fl_darker( FL_RED ) );
+
+    fl_line( x - 1, y, x - 1, h );
+
+    fl_color( FL_BLACK );
+
+    fl_line( x + 1, y, x + 1, h );
+
 }
 
 void

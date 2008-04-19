@@ -715,14 +715,49 @@ Timeline::handle ( int m )
                 {
                     take_focus();
 
-                    if ( ! Fl::event_button1() )
+                    if ( Fl::event_button1() )
+                    {
+                        assert( ! drag );
+
+                        drag = new Drag( X - x(), Y - y() );
+                        _selection.x = drag->x;
+                        _selection.y = drag->y;
+                    }
+                    else if ( Fl::event_button3() )
+                    {
+                        Fl_Menu_Item menu[] =
+                            {
+                                { "Add Track",        0, 0, 0, FL_SUBMENU    },
+                                { "Audio",           0, 0, 0 },
+                                { 0 },
+                                { 0 },
+                            };
+
+                        const Fl_Menu_Item *r = menu->popup( X, Y, "Timeline" );
+
+                        if ( r == &menu[1] )
+                        {
+                            /* FIXME: prompt for I/O config? */
+
+                            /* add audio track */
+                            Track_Header *t = new Track_Header( 0, 0, tracks->w(), 30 );
+
+                            add_track( t );
+
+                            Track *o = new Audio_Track( 0, 0, 1, 100 );
+
+                            t->track( o );
+//                            t->add( new Audio_Track( 0, 0, 1, 100 ) );
+//                            t->add( new Audio_Track( 0, 0, 1, 100 ) );
+                            t->add_control( new Control_Track( 0, 0, 1, 100 ) );
+                            t->color( (Fl_Color)rand() );
+
+                        }
+
+                    }
+                    else
                         return 0;
 
-                    assert( ! drag );
-
-                    drag = new Drag( X - x(), Y - y() );
-                    _selection.x = drag->x;
-                    _selection.y = drag->y;
                     break;
                 }
                 case FL_DRAG:
@@ -761,6 +796,32 @@ Timeline::handle ( int m )
 
 }
 
+
+void
+Timeline::add_track ( Track_Header *track )
+{
+    printf( "added new track to the timeline\n" );
+    /* FIXME: do locking */
+    tracks->add( track );
+
+    /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
+    redraw();
+
+}
+
+void
+Timeline::remove_track ( Track_Header *track )
+{
+    printf( "removed track from the timeline\n" );
+
+    /* FIXME: do locking */
+
+    /* FIXME: what to do about track contents? */
+    tracks->remove( track );
+
+    /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
+    redraw();
+}
 
 /**********/
 /* Engine */

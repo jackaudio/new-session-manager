@@ -45,10 +45,7 @@ extern Timeline *timeline;
 class Tempo_Track;
 class Time_Track;
 class Ruler_Track;
-
-/* #include <list> */
-/* using std::list; */
-
+class Track_Header;
 
 // disables double-buffering to make unnecessary redrawing more apparent
 // #define DEBUG_TIMELINE_DRAWING
@@ -152,6 +149,9 @@ public:
     static void update_cb ( void *arg );
 
     void select( const Rectangle &r );
+
+    void add_track ( Track_Header *track );
+    void remove_track ( Track_Header *track );
 
 private:
 

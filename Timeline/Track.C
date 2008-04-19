@@ -99,7 +99,7 @@ Track::cb_button ( Fl_Widget *w )
 Track::Track ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group ( X, Y, W, H, L )
 {
-
+    _capture = NULL;
     _track = NULL;
     _name = NULL;
     _selected = false;
@@ -366,6 +366,19 @@ Track::seek ( nframes_t frame )
 
 #include "Region.H"
 
+
+#include <time.h>
+
+/** very cheap UUID generator... */
+unsigned long long
+uuid ( void )
+{
+    time_t t = time( NULL );
+
+    return (unsigned long long) t;
+}
+
+
 /* THREAD: IO */
 /** create capture region and prepare to record */
 void
@@ -373,8 +386,12 @@ Track::record ( nframes_t frame )
 {
     assert( _capture == NULL );
 
+    char pat[256];
+
+    snprintf( pat, sizeof( pat ), "%s-%llu.wav", name(), uuid() );
+
     /* FIXME: hack */
-    Audio_File *af = Audio_File_SF::create( "testing.wav", 48000, input.size(), "Wav/24" );
+    Audio_File *af = Audio_File_SF::create( pat, 48000, input.size(), "Wav/24" );
 
     _capture = new Region( af, track(), frame );
 
@@ -390,9 +407,13 @@ Track::write ( sample_t *buf, nframes_t nframes )
     _capture->write( buf, nframes );
 }
 
+#include <stdio.h>
+
 /* THREAD: IO */
 void
 Track::stop ( nframes_t nframes )
 {
+    _capture->finalize();
+
     _capture = NULL;
 }

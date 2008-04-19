@@ -931,3 +931,14 @@ Region::write ( sample_t *buf, nframes_t nframes )
 
     return l;
 }
+
+/** finalize region capture. Assumes that this *is* a captured region
+ and that no other regions refer to the same source */
+bool
+Region::finalize ( void )
+{
+    _clip->close();
+    _clip->open();
+
+    return true;
+}

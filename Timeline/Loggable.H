@@ -38,12 +38,6 @@ class Log_Entry;
 class Loggable;
 typedef Loggable *(create_func)(Log_Entry &);
 
-/* struct Pair */
-/* { */
-/*     const char *name; */
-/*     const char *value; */
-/* }; */
-
 
 
 #define LOG_CREATE_FUNC( class )  \
@@ -236,6 +230,12 @@ class Log_Entry
 
 public:
 
+    struct Pair
+    {
+        const char *name;
+        const char *value;
+    };
+
     Log_Entry ( )
         {
             _sa = (char**)malloc( sizeof( char * ) );
@@ -245,14 +245,15 @@ public:
 
     Log_Entry ( char **sa )
         {
-            _sa = _sa;
+            _sa = sa;
+            _i = 0;
 
-            for ( _i = 0; _sa[ _i ]; ++_i );
+            if ( _sa )
+                while ( _sa[ _i ] ) ++_i;
         }
 
     ~Log_Entry ( )
         {
-
             if ( ! _sa )
                 return;
 
@@ -271,16 +272,16 @@ public:
     void grow (  )
         {
             _sa = (char**)realloc( _sa, sizeof( char * ) * (_i + 2) );
-            _sa[ _i ] = NULL;
+            _sa[ _i + 1 ] = NULL;
         }
 
-#define ADD( type, format, exp ) \
+#define ADD( type, format, exp )                                        \
     void add ( const char *name, type v )                               \
         {                                                               \
             grow();                                                     \
-            asprintf( &_sa[ _i++ ], "%s " format, name, (exp) );      \
+            asprintf( &_sa[ _i ], "%s " format, name, (exp) );          \
+            strtok( _sa[ _i++ ], " " );                                 \
         }                                                               \
-
 
 /***************/
 /* Examination */
@@ -319,7 +320,7 @@ public:
 /*         } \ */
 
     ADD( int, "%d", v );
-    ADD( nframes_t, "%lu", v );
+    ADD( nframes_t, "%lu", (unsigned long)v );
     ADD( const char *, "\"%s\"", v ? v : "" );
     ADD( Loggable *, "0x%X", v ? v->id() : 0 );
     ADD( float, "%f", v );

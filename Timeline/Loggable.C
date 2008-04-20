@@ -160,7 +160,7 @@ Loggable::do_this ( const char *s, bool reverse )
 
     if ( reverse )
     {
-        sscanf( s, "%s %*X %s %*[^\n<] %a[^\n]", classname, command, &arguments );
+        sscanf( s, "%s %*X %s %*[^\n<]<< %a[^\n]", classname, command, &arguments );
         create = "destroy";
         destroy = "create";
     }
@@ -179,7 +179,7 @@ Loggable::do_this ( const char *s, bool reverse )
     }
     else if ( ! strcmp( command, "set" ) )
     {
-        printf( "got set command.\n" );
+        printf( "got set command (%s).\n", arguments );
 
         char **sa  = parse_alist( arguments );
 
@@ -407,13 +407,13 @@ Loggable::log_print(  char **o, char **n )
 {
     if ( n )
         for ( ; *n; n++ )
-            log( "%s%s", *n, *(n + 1) ? " " : ""  );
+            log( "%s %s%s", *n, *n + strlen( *n ) + 1, *(n + 1) ? " " : ""  );
 
     if ( o && *o )
     {
         if ( n ) log( " << " );
         for ( ; *o; o++ )
-            log( "%s%s", *o, *(o + 1) ? " " : ""  );
+            log( "%s %s%s", *o, *o + strlen( *o ) + 1, *(o + 1) ? " " : ""  );
     }
 
     log( "\n" );
@@ -431,7 +431,10 @@ log_diff (  char **sa1, char **sa2 )
     int w = 0;
     for ( int i = 0; sa1[ i ]; ++i )
     {
-        if ( ! strcmp( sa1[ i ], sa2[ i ] ) )
+        const char *v1 = sa1[ i ] + strlen( sa1[ i ] ) + 1;
+        const char *v2 = sa2[ i ] + strlen( sa2[ i ] ) + 1;
+
+        if ( ! strcmp( sa1[ i ], sa2[ i ] ) && ! strcmp( v1, v2 ) )
         {
             free( sa2[ i ] );
             free( sa1[ i ] );

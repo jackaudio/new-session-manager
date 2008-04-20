@@ -30,58 +30,6 @@ class Audio_Sequence : public Sequence
 
 protected:
 
-
-/*     void set ( char **sa ) */
-/*         { */
-/*             for ( int i = 0; sa[i]; ++i ) */
-/*             { */
-/*                 char *s = sa[i]; */
-/*                 char *v = s + strlen( s ) + 1; */
-
-/*                 else if ( ! strcmp( s, ":name" ) ) */
-/*                 { */
-/*                     if ( _name ) */
-/*                         free( _name ); */
-
-/*                     _name = strdup( v ); */
-/*                 } */
-/*                 else if ( ! strcmp( s, ":track" ) ) */
-/*                 { */
-/*                     int i; */
-/*                     sscanf( v, "%X", &i ); */
-
-/*                     if ( i ) */
-/*                     { */
-/*                         Sequence *t = (Sequence*)Loggable::find( i ); */
-
-/*                         assert( t ); */
-
-/*                         track( t ); */
-/*                     } */
-/*                 } */
-
-/*                 free( s ); */
-/*             } */
-
-/*             free( sa ); */
-
-/*         } */
-
-/*     char ** get ( void ) */
-/*         { */
-/*             char **sa = (char**)malloc( sizeof( char* ) * (1 + 1) ); */
-
-/*             int i = 0; */
-
-/*             asprintf( &sa[ i++ ], ":name \"%s\"", _name ? _name : ""  ); */
-/* //            asprintf( &sa[ i++ ], ":track 0x%X", track() ? track()->id() : 0 ); */
-
-/*             sa[ i ] = NULL; */
-
-/*             return sa; */
-/*         } */
-
-
     Audio_Sequence ( ) : Sequence( 0, 0, 0, 0 )
         {
         }

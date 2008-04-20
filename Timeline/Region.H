@@ -103,57 +103,25 @@ protected:
 
     const char *class_name ( void ) { return "Region"; }
 
-    char ** get ( void )
+    void
+    get ( Log_Entry &e )
         {
-            //          char *r;
-            char **sa = (char**)malloc( sizeof( char* ) * 8 );
+            e.add( ":source", _clip ? _clip->name() : "" );
+            e.add( ":gain %f", _scale );
 
-            int i = 0;
-
-            asprintf( &sa[ i++ ], ":source \"%s\"", _clip ? _clip->name() : "" );
-            asprintf( &sa[ i++ ], ":track 0x%X", _track ? _track->id() : 0 );
-            asprintf( &sa[ i++ ], ":x %lu", _r->offset );
-            asprintf( &sa[ i++ ], ":l %lu", _r->start );
-            asprintf( &sa[ i++ ], ":r %lu", _r->end );
-            asprintf( &sa[ i++ ], ":selected %d", selected() );
-            asprintf( &sa[ i++ ], ":gain %f", _scale );
-
-            sa[ i ] = NULL;
-
-            return sa;
+            Sequence_Widget::get( e );
         }
 
     void
-    set ( char **sa )
+    set ( Log_Entry &e )
         {
-            for ( int i = 0; sa[i]; ++i )
+            for ( int i = 0; i < e.size(); ++i )
             {
-                char *s = sa[i];
+                const char *s, *v;
 
-                strtok( s, " " );
+                e.get( i, &s, &v );
 
-                char *v = s + strlen( s ) + 1;
-
-                if  ( *v == '"' )
-                {
-                    v++;
-                    v[ strlen( v ) - 2 ] = '\0';
-                }
-
-                if ( ! strcmp( s, ":x" ) )
-                    _r->offset = atol( v );
-                else if ( ! strcmp( s, ":l" ) )
-                    _r->start = atol( v );
-                else if ( ! strcmp( s, ":r" ) )
-                    _r->end = atol( v );
-                else if ( ! strcmp( s, ":selected" ) )
-                {
-                    if ( atoi( v ) )
-                        select();
-                    else
-                        deselect();
-                }
-                else if ( ! strcmp( s, ":gain" ) )
+                if ( ! strcmp( s, ":gain" ) )
                     _scale = atof( v );
                 else if ( ! strcmp( s, ":source" ) )
                 {
@@ -162,24 +130,9 @@ protected:
                         printf( "Grave error: could not open source \"%s\"\n", v );
                     }
                 }
-                else if ( ! strcmp( s, ":track" ) )
-                {
-                    int i;
-                    sscanf( v, "%X", &i );
-                    Sequence *t = (Sequence*)Loggable::find( i );
-
-                    assert( t );
-
-                    t->add( this );
-                }
-
-                free( s );
             }
 
-            free( sa );
-
-            if ( _track )
-                _track->redraw();
+            Sequence_Widget::set( e );
         }
 
 public:
@@ -205,16 +158,7 @@ public:
 
     const char *source_name ( void ) const { return _clip->name(); }
 
-    static Loggable *
-    create ( char **sa )
-        {
-            Region *r = new Region;
-
-            r->set( sa );
-
-            return (Loggable *)r;
-        }
-
+    LOG_CREATE_FUNC( Region );
 
     Sequence_Widget *clone ( const Sequence_Widget *r );
 

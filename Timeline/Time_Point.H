@@ -65,22 +65,13 @@ protected:
 
     const char *class_name ( void ) { return "Time_Point"; }
 
-    char ** get ( void );
-    void set ( char **sa );
+    void get ( Log_Entry &e );
+    void set ( Log_Entry &e );
 
 
 public:
 
-    /* for loggable */
-    static Loggable *
-    create ( char **sa )
-        {
-            Time_Point *r = new Time_Point;
-
-            r->set( sa );
-
-            return (Loggable *)r;
-        }
+    LOG_CREATE_FUNC( Time_Point );
 
     Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
         {

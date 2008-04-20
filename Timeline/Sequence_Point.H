@@ -28,9 +28,16 @@ protected:
 
     char *_label;
 
-/*     void set ( char **a ) */
-/*         { */
-/*         } */
+    virtual void get ( Log_Entry &e )
+        {
+            e.add( ":x", _r->offset );
+            e.add( ":t", _track );
+        }
+
+    virtual void set ( Log_Entry &e )
+        {
+            Sequence_Widget::set( e );
+        }
 
 public:
 

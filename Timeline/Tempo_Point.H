@@ -39,8 +39,8 @@ protected:
 
     const char *class_name ( void ) { return "Tempo_Point"; }
 
-    char ** get ( void );
-    void set ( char **sa );
+    void get ( Log_Entry &e );
+    void set ( Log_Entry &e );
 
     Tempo_Point ( )
         {
@@ -48,7 +48,7 @@ protected:
 
 public:
 
-    static Loggable * create ( char **sa );
+    LOG_CREATE_FUNC( Tempo_Point );
 
     Tempo_Point ( nframes_t when, float bpm );
 

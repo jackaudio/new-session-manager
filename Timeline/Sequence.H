@@ -22,7 +22,6 @@
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl.H>
-// #include "Region.H"
 
 #include <stdio.h>
 
@@ -34,9 +33,8 @@
 
 // using namespace std;
 
-class Region;
+class Track;
 class Sequence_Widget;
-
 
 #include "types.h"
 
@@ -44,6 +42,8 @@ class Sequence_Widget;
 
 class Sequence : public Fl_Widget, public Loggable
 {
+
+    Track *_track;                                              /* track this sequence belongs to */
 
     char *_name;
 
@@ -57,19 +57,10 @@ protected:
     virtual const char *class_name ( void ) { return "Sequence"; }
 
 
-    void set ( char ** ) { return; }
+    virtual void set ( Log_Entry &e ) { return; }
 
-    char ** get ( void )
+    virtual void get ( Log_Entry &e )
         {
-            //          char *r;
-
-            char **sa = (char**)malloc( sizeof( char* ) * 2);
-            sa[0] = (char*)malloc( (_widgets.size() * ((sizeof( int ) * 2) + 3)) + 1 );
-            sa[1] = NULL;
-
-            sa[0][0] = '\0';
-
-/*             char *s = sa[0]; */
 
 /*             s += sprintf( s, ":items " ); */
 /*             for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ ) */
@@ -81,14 +72,12 @@ protected:
 /*                     s += sprintf( s, "," ); */
 /*             } */
 
-            return sa;
         }
-
 
 public:
 
+    Sequence ( int X, int Y, int W, int H, Track *track=0 );
 
-    Sequence ( int X, int Y, int W, int H );
     virtual ~Sequence (  );
 
     const char * name ( void ) const { return _name; }

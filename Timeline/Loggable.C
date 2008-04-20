@@ -38,7 +38,9 @@ queue <char *> Loggable::_transaction;
 bool
 Loggable::open ( const char *filename )
 {
-    if ( ! ( Loggable::_fp = fopen( filename, "a+" ) ) )
+    FILE *fp;
+
+    if ( ! ( fp = fopen( filename, "a+" ) ) )
     {
         printf( "Could not open log file for writing!" );
         return false;
@@ -46,18 +48,18 @@ Loggable::open ( const char *filename )
 
     /* TODO: replay log here */
 
-
     /* FIXME: handle transactions!!! */
-
     {
         char buf[BUFSIZ];
 
-        while ( fscanf( _fp, "%[^\n]\n", buf ) == 1 )
+        while ( fscanf( fp, "%[^\n]\n", buf ) == 1 )
         {
             do_this( buf, false );
         }
     }
 
+
+    Loggable::_fp = fp;
 
     return true;
 }
@@ -101,6 +103,19 @@ parse_alist( const char *s )
                 pair[ l ] = '\0';
 
                 r[ i++ ] = pair;
+
+                /* split */
+
+                strtok( pair, " " );
+
+                /* remove quotes */
+                char *v = pair + strlen( pair ) + 1;
+
+                if  ( *v == '"' )
+                {
+                    v++;
+                    v[ strlen( v ) - 2 ] = '\0';
+                }
             }
 
             c = s;
@@ -168,20 +183,24 @@ Loggable::do_this ( const char *s, bool reverse )
 
         char **sa  = parse_alist( arguments );
 
+        Log_Entry e( sa );
+
         l->log_start();
-        l->set( sa );
+        l->set( e );
         l->log_end();
     }
     else if ( ! strcmp( command, create ) )
     {
         char **sa = parse_alist( arguments );
 
+        Log_Entry e( sa );
+
         if ( ! _class_map[ string( classname ) ] )
             printf( "error class %s is unregistered!\n", classname );
         else
         {
             /* create */
-            Loggable *l = _class_map[ string( classname ) ]( sa );
+            Loggable *l = _class_map[ string( classname ) ]( e );
             l->update_id( id );
             l->log_create();
         }
@@ -436,8 +455,13 @@ void
 Loggable::log_start ( void )
 {
     if ( ! _old_state )
-        _old_state = get();
+    {
+        Log_Entry e;
 
+        get( e );
+
+        _old_state = e.sa();
+    }
     ++_nest;
 
     _undo_index = 1;
@@ -450,7 +474,15 @@ Loggable::log_end ( void )
     if ( --_nest > 0 )
         return;
 
-    char **_new_state = get();
+    char **_new_state;
+
+    {
+        Log_Entry e;
+
+        get( e );
+
+        _new_state = e.sa();
+    }
 
     if ( log_diff( _old_state, _new_state ) )
     {
@@ -478,7 +510,13 @@ Loggable::log_create ( void )
 //    indent();
     log( "%s 0x%X create ", class_name(), _id );
 
-    char **sa = get();
+    char **sa;
+
+    Log_Entry e;
+
+    get( e );
+
+    sa = e.sa();
 
     if ( sa )
     {
@@ -498,7 +536,13 @@ Loggable::log_destroy ( void )
 //    indent();
     log( "%s 0x%X destroy (nothing) << ", class_name(), _id );
 
-    char **sa = get();
+   char **sa;
+
+    Log_Entry e;
+
+    get( e );
+
+    sa = e.sa();
 
 //    log_print( sa, NULL );
     log_print( NULL, sa );

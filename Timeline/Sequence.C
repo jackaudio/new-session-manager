@@ -27,9 +27,10 @@
 
 queue <Sequence_Widget *> Sequence::_delete_queue;
 
-Sequence::Sequence ( int X, int Y, int W, int H ) : Fl_Widget( X, Y, W, H )
+Sequence::Sequence ( int X, int Y, int W, int H, Track *track ) : Fl_Widget( X, Y, W, H )
 {
     _name = NULL;
+    _track = track;
 
     box( FL_DOWN_BOX );
     color( fl_darker( FL_GRAY ) );

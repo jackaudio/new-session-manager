@@ -22,31 +22,21 @@
 #include "Tempo_Sequence.H"
 #include "Timeline.H" // for timeline->tempo_track
 
-char **
-Tempo_Point::get ( void )
+void
+Tempo_Point::get ( Log_Entry &e )
 {
-    char **sa = (char**)malloc( sizeof( char* ) * 4 );
-
-    int i = 0;
-
-    asprintf( &sa[i++], ":x %lu", _r->offset );
-    asprintf( &sa[i++], ":tempo %.2f", _tempo );
-
-    sa[i] = NULL;
-
-    return sa;
+    e.add( ":x", _r->offset );
+    e.add( ":tempo", _tempo );
 }
 
 void
-Tempo_Point::set ( char **sa )
+Tempo_Point::set ( Log_Entry &e )
 {
-    for ( int i = 0; sa[i]; ++i )
+    for ( int i = 0; i < e.size(); ++i )
     {
-        char *s = sa[i];
+        const char *s, *v;
 
-        strtok( s, " " );
-
-        char *v = s + strlen( s ) + 1;
+        e.get( i, &s, &v );
 
         if ( ! strcmp( s, ":x" ) )
             _r->offset = atol( v );
@@ -55,27 +45,11 @@ Tempo_Point::set ( char **sa )
 
         /* FIXME: we need to add this to the time track on creation!!! */
         timeline->tempo_track->add( this );
-
-        free( s );
     }
-
-    free( sa );
 
     timeline->redraw();
 
     _make_label();
-}
-
-
-/* for loggable */
-Loggable *
-Tempo_Point::create ( char **sa )
-{
-    Tempo_Point *r = new Tempo_Point;
-
-    r->set( sa );
-
-    return (Loggable *)r;
 }
 
 

@@ -32,9 +32,29 @@
 #include <queue>
 using namespace std;
 
+#include "types.h"
 
+class Log_Entry;
 class Loggable;
-typedef Loggable *(create_func)(char **);
+typedef Loggable *(create_func)(Log_Entry &);
+
+/* struct Pair */
+/* { */
+/*     const char *name; */
+/*     const char *value; */
+/* }; */
+
+
+
+#define LOG_CREATE_FUNC( class )  \
+    static Loggable *             \
+    create ( Log_Entry &e )       \
+    {                             \
+        class *r = new class;     \
+        r->set( e );              \
+        return (Loggable *)r;     \
+    }                             \
+
 
 class Logger;
 class Loggable
@@ -152,13 +172,8 @@ public:
 
     /* log messages for journal */
     virtual const char *class_name ( void ) = 0;
-    virtual char ** get ( void ) = 0;
-
-    /* this method must parse an array of name/value pair strings and make the appropriate changes too
-       the object state */
-    virtual void set ( char **sa ) = 0;
-//    void log ( const char *module, const char *action, const char *fmt, ... );
-
+    virtual void get ( Log_Entry &e ) = 0;
+    virtual void set ( Log_Entry &e ) = 0;
 
     static bool do_this ( const char *s, bool reverse );
 
@@ -212,9 +227,104 @@ public:
 };
 
 
-/* #ifndef _LOGGABLE_C */
-/* #define log( act, fmt, args... ) log( __CLASS__, act, fmt, ## args ) */
-/* #endif */
 
-/* #define LOG_START Logger _logger( this ) */
-/* #define LOG_END          _logger.print( this ) */
+class Log_Entry
+{
+//    vector <Pair> _sa;
+    char **_sa;
+    int _i;
+
+public:
+
+    Log_Entry ( )
+        {
+            _sa = (char**)malloc( sizeof( char * ) );
+            *_sa = NULL;
+            _i = 0;
+        }
+
+    Log_Entry ( char **sa )
+        {
+            _sa = _sa;
+
+            for ( _i = 0; _sa[ _i ]; ++_i );
+        }
+
+    ~Log_Entry ( )
+        {
+
+            if ( ! _sa )
+                return;
+
+            for ( _i = 0; _sa[ _i ]; ++_i )
+            {
+                free( _sa[ _i ] );
+            }
+
+            free( _sa );
+        }
+
+/****************/
+/* Construction */
+/****************/
+
+    void grow (  )
+        {
+            _sa = (char**)realloc( _sa, sizeof( char * ) * (_i + 2) );
+            _sa[ _i ] = NULL;
+        }
+
+#define ADD( type, format, exp ) \
+    void add ( const char *name, type v )                               \
+        {                                                               \
+            grow();                                                     \
+            asprintf( &_sa[ _i++ ], "%s " format, name, (exp) );      \
+        }                                                               \
+
+
+/***************/
+/* Examination */
+/***************/
+
+    int size ( void ) const
+        {
+            return _i;
+        }
+
+    void get ( int n, const char **name, const char **value )
+        {
+            *name = _sa[ n ];
+            *value = *name + strlen( *name ) + 1;
+        }
+
+
+    char **sa ( void )
+        {
+            char **sa = _sa;
+
+            _sa = NULL;
+
+            return sa;
+        }
+
+/* #define ADD ( type, format, exp )             \ */
+/*     void add ( const char *name, type v ) \ */
+/*         { \ */
+/*             char pat[ 256 ]; \ */
+/*             Pair p; \ */
+/*             p.name = strdup( name ); \ */
+/*             snprintf( pat, sizeof( pat ), format, exp ); \ */
+/*             p.value = strdup( pat ); \ */
+/*             _sa.push( p ); \ */
+/*         } \ */
+
+    ADD( int, "%d", v );
+    ADD( nframes_t, "%lu", v );
+    ADD( const char *, "\"%s\"", v ? v : "" );
+    ADD( Loggable *, "0x%X", v ? v->id() : 0 );
+    ADD( float, "%f", v );
+    ADD( double, "%f", v );
+
+#undef ADD
+
+};

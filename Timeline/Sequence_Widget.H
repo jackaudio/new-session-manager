@@ -76,6 +76,58 @@ protected:
 
     Drag *_drag;
 
+
+    virtual void
+    get ( Log_Entry &e )
+        {
+            e.add( ":x", _r->offset );
+            e.add( ":l", _r->start );
+            e.add( ":r", _r->end );
+            e.add( ":t", _track );
+            e.add( ":s", selected() );
+        }
+
+    virtual void
+    set ( Log_Entry &e )
+        {
+            for ( int i = 0; i < e.size(); ++i )
+            {
+                const char *s, *v;
+
+                e.get( i, &s, &v );
+
+                if ( ! strcmp( s, ":x" ) )
+                    _r->offset = atol( v );
+                else if ( ! strcmp( s, ":l" ) )
+                    _r->start = atol( v );
+                else if ( ! strcmp( s, ":r" ) )
+                    _r->end = atol( v );
+                else if ( ! strcmp( s, ":s" ) )
+                {
+                    if ( atoi( v ) )
+                        select();
+                    else
+                        deselect();
+                }
+                else if ( ! strcmp( s, ":track" ) )
+                {
+                    int i;
+                    sscanf( v, "%X", &i );
+                    Sequence *t = (Sequence*)Loggable::find( i );
+
+                    assert( t );
+
+                    t->add( this );
+                }
+//                else
+//                    e.erase( i );
+            }
+
+            if ( _track )
+                _track->redraw();
+
+        }
+
 public:
 
     Sequence_Widget ( )

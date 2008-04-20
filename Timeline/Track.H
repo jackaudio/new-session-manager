@@ -17,8 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#ifndef Track_H
-#define Track_H
+#pragma once
+
 #include <FL/Fl.H>
 #include "Sequence.H"
 #include <FL/Fl_Group.H>
@@ -31,17 +31,17 @@
 
 #include "Loggable.H"
 
-// #include "Port.H"
-
-/* TODO: rename this to Audio_Sequence_Header or something since it's clearly audio specific. */
+/* TODO: rename this to Audio_Track or something since it's clearly audio specific. */
 
 #include <vector>
 using std::vector;
 
+#include "Port.H"
+
 class Playback_DS;
 class Record_DS;
-
 class Port;
+class Region;
 
 class Track : public Fl_Group, public Loggable
 {
@@ -72,6 +72,12 @@ private:
     bool create_outputs ( int n );
     bool create_inputs ( int n );
 
+
+    Track ( ) : Fl_Group( 0, 0, 1, 1 )
+        {
+
+        }
+
 public:
 
     Fl_Input * name_field;
@@ -93,21 +99,14 @@ public:
 
     const char *class_name ( void ) { return "Track"; }
 
-    void set ( char **sa )
+    void
+    set ( Log_Entry &e )
         {
-            for ( int i = 0; sa[i]; ++i )
+            for ( int i = 0; e.size(); ++i )
             {
-                char *s = sa[i];
+                const char *s, *v;
 
-                strtok( s, " " );
-
-                char *v = s + strlen( s ) + 1;
-
-                if  ( *v == '"' )
-                {
-                    v++;
-                    v[ strlen( v ) - 2 ] = '\0';
-                }
+                e.get( i, &s, &v );
 
                 if ( ! strcmp( s, ":h" ) )
                 {
@@ -115,67 +114,43 @@ public:
 
                     Fl_Widget::size( w(), height() );
                 }
-                else if ( ! strcmp( s, ":selected" ) )
+                else if ( ! strcmp( s, ":s" ) )
                     _selected = atoi( v );
 //                else if ( ! strcmp( s, ":armed"
-                else if ( ! strcmp( s, ":name" ) )
+                else if ( ! strcmp( s, ":n" ) )
                 {
                     _name = strdup( v );
                     name_field->value( _name );
                 }
-                else if ( ! strcmp( s, ":track" ) )
+                else if ( ! strcmp( s, ":t" ) )
                 {
                     int i;
                     sscanf( v, "%X", &i );
-                    Sequence *t = (Sequence*)Loggable::find( i );
 
-                    assert( t );
+                    if ( i )
+                    {
+                        Sequence *t = (Sequence*)Loggable::find( i );
 
-                    track( t );
+                        assert( t );
+
+                        track( t );
+                    }
                 }
-
-
-                free( s );
             }
-
-            free( sa );
-
         }
 
-    char ** get ( void )
+
+    void
+    get ( Log_Entry &e )
         {
-            char **sa = (char**)malloc( sizeof( char* ) * (1 + 5) );
-
-            int i = 0;
-
-            asprintf( &sa[ i++ ], ":name \"%s\"", _name ? _name : ""  );
-            asprintf( &sa[ i++ ], ":track 0x%X", track() ? track()->id() : 0 );
-            asprintf( &sa[ i++ ], ":selected %d", _selected );
-//            asprintf( &sa[ i++ ], ":record %d", record_button->value() );
-
-/*             asprintf( &sa[ i++ ], ":solo %d", solo_button->value() ); */
-/*             asprintf( &sa[ i++ ], ":mute %d", mute_button->value() ); */
-            asprintf( &sa[ i++ ], ":h %d", size() );
-//            asprintf( &sa[ i++ ], ":gain %f", _scale );
-
-            sa[ i ] = NULL;
-
-            return sa;
+            e.add( ":n",        _name     );
+            e.add( ":t",        track()   );
+            e.add( ":s",        _selected );
+            e.add( ":h",        size()    );
         }
-
-
-
 
     /* for loggable */
-    static Loggable *
-    create ( char **sa )
-        {
-            Track *r = new Track( 0, 0, 1, 1 );
-
-            r->set( sa );
-
-            return (Loggable *)r;
-        }
+    LOG_CREATE_FUNC( Track );
 
     void
     draw ( void )
@@ -299,4 +274,3 @@ public:
     void stop ( nframes_t nframes );
 
 };
-#endif

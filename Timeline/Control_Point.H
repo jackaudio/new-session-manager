@@ -38,60 +38,29 @@ protected:
 
     const char *class_name ( void ) { return "Control_Point"; }
 
-    char ** get ( void )
+    void
+    get ( Log_Entry &e )
         {
-            char **sa = (char**)malloc( sizeof( char* ) * 4 );
-
-            int i = 0;
-
-            asprintf( &sa[i++], ":x %lu", _r->offset );
-            asprintf( &sa[i++], ":y %.2f", _y );
-            asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
-
-            sa[i] = NULL;
-
-            return sa;
+            e.add( ":y", _y );
         }
 
     void
-    set ( char **sa )
+    set ( Log_Entry &e )
         {
-            for ( int i = 0; sa[i]; ++i )
+            for ( int i = 0; i < e.size(); ++i )
             {
-                char *s = sa[i];
+                const char *s, *v;
 
-                strtok( s, " " );
+                e.get( i, &s, &v );
 
-                char *v = s + strlen( s ) + 1;
+                if ( ! strcmp( s, ":y" ) )
+                    _y = atof( v );
 
-                if ( ! strcmp( s, ":x" ) )
-                    _r->offset = atol( v );
-                else
-                    if ( ! strcmp( s, ":y" ) )
-                        _y = atof( v );
-                    else
-                        if ( ! strcmp( s, ":track" ) )
-                        {
-                            int i;
-                            sscanf( v, "%X", &i );
-                            Sequence *t = (Sequence*)Loggable::find( i );
+                timeline->redraw();
 
-                            assert( t );
-
-                            t->add( this );
-
-                            t->sort();
-                        }
-
-
-                free( s );
+                //          _make_label();
             }
 
-            free( sa );
-
-            timeline->redraw();
-
-            //          _make_label();
         }
 
     Control_Point ( )
@@ -101,17 +70,14 @@ protected:
 
 public:
 
+/*     Sequence_Widget * */
+/*     clone ( const Sequence_Widget *r ) */
+/*         { */
+/*             return new Control_Point( *(Control_Point*)r ); */
+/*         } */
+
     /* for loggable */
-    static Loggable *
-    create ( char **sa )
-        {
-            Control_Point *r = new Control_Point;
-
-            r->set( sa );
-
-            return (Loggable *)r;
-        }
-
+    LOG_CREATE_FUNC( Control_Point );
 
     Control_Point ( Sequence *t, nframes_t when, float y )
         {
@@ -183,7 +149,7 @@ public:
 /*         { */
 /*         } */
 
-     void
+    void
     draw ( int X, int Y, int W, int H )
         {
 

@@ -21,32 +21,22 @@
 #include "Time_Sequence.H"
 #include "Timeline.H" // for timeline->time_track
 
-char **
-Time_Point::get ( void )
+void
+Time_Point::get ( Log_Entry &e )
 {
-    char **sa = (char**)malloc( sizeof( char* ) * 5 );
-
-    int i = 0;
-
-    asprintf( &sa[i++], ":x %lu", _r->offset );
-    asprintf( &sa[i++], ":beats_per_bar %d", _time.beats_per_bar );
-    asprintf( &sa[i++], ":beat_type %d", _time.beat_type );
-
-    sa[i] = NULL;
-
-    return sa;
+    e.add( ":x",             _r->offset          );
+    e.add( ":beats_per_bar", _time.beats_per_bar );
+    e.add( ":beat_type",     _time.beat_type     );
 }
 
 void
-Time_Point::set ( char **sa )
+Time_Point::set ( Log_Entry &e )
 {
-    for ( int i = 0; sa[i]; ++i )
+    for ( int i = 0; i < e.size(); ++i )
     {
-        char *s = sa[i];
+        const char *s, *v;
 
-        strtok( s, " " );
-
-        char *v = s + strlen( s ) + 1;
+        e.get( i, &s, &v );
 
         if ( ! strcmp( s, ":x" ) )
             _r->offset = atol( v );
@@ -57,11 +47,7 @@ Time_Point::set ( char **sa )
 
         /* FIXME: we need to add this to the time track on creation!!! */
         timeline->time_track->add( this );
-
-        free( s );
     }
-
-    free( sa );
 
     timeline->redraw();
 

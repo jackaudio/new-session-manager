@@ -25,8 +25,14 @@
 class Control_Sequence : public Sequence
 {
 
+    Control_Sequence (  ) : Sequence( 0, 0, 1, 1 )
+        {
+
+        }
+
 public:
 
+    LOG_CREATE_FUNC( Control_Sequence );
 
     Control_Sequence ( int X, int Y, int W, int H ) : Sequence( X, Y, W, H )
         {

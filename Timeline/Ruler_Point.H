@@ -39,52 +39,28 @@ protected:
 
     const char *class_name ( void ) { return "Ruler_Point"; }
 
-    char ** get ( void )
+    void
+    get ( Log_Entry &e )
         {
-            char **sa = (char**)malloc( sizeof( char* ) * 4 );
+            Sequence_Point::get( e );
 
-            int i = 0;
-
-            asprintf( &sa[i++], ":track 0x%X", _track ? _track->id() : 0 );
-            asprintf( &sa[i++], ":x %lu", _r->offset );
-            asprintf( &sa[i++], ":label \"%s\"", _label );
-
-            sa[i] = NULL;
-
-            return sa;
+            e.add( ":label", _label );
         }
 
     void
-    set ( char **sa )
+    set ( Log_Entry &e )
         {
-            for ( int i = 0; sa[i]; ++i )
+            Sequence_Point::set( e );
+
+            for ( int i = 0; i < e.size(); ++i )
             {
-                char *s = sa[i];
+                const char *s, *v;
 
-                strtok( s, " " );
+                e.get( i, &s, &v );
 
-                char *v = s + strlen( s ) + 1;
-
-                if ( ! strcmp( s, ":x" ) )
-                    _r->offset = atol( v );
-                else if ( ! strcmp( s, ":label" ) )
+                if ( ! strcmp( s, ":label" ) )
                     name( v );
-                else if ( ! strcmp( s, ":track" ) )
-                {
-                    int i;
-                    sscanf( v, "%X", &i );
-                    Sequence *t = (Sequence*)Loggable::find( i );
-
-                    assert( t );
-
-                    t->add( this );
-                }
-
-
-                free( s );
             }
-
-            free( sa );
 
             timeline->redraw();
         }
@@ -97,16 +73,7 @@ protected:
 public:
 
     /* for loggable */
-    static Loggable *
-    create ( char **sa )
-        {
-            Ruler_Point *r = new Ruler_Point;
-
-            r->set( sa );
-
-            return (Loggable *)r;
-        }
-
+    LOG_CREATE_FUNC( Ruler_Point );
 
     Ruler_Point ( nframes_t when, const char *name )
         {

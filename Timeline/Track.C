@@ -96,8 +96,8 @@ Track::cb_button ( Fl_Widget *w )
         }
 }
 
-Track::Track ( int X, int Y, int W, int H, const char *L ) :
-    Fl_Group ( X, Y, W, H, L )
+void
+Track::init ( void )
 {
     _capture = NULL;
     _track = NULL;
@@ -108,8 +108,7 @@ Track::Track ( int X, int Y, int W, int H, const char *L ) :
 
     labeltype( FL_NO_LABEL );
 
-
-    Fl_Group::size( w(), height() );
+    Fl_Group::size( timeline->w(), height() );
 
     Track *o = this;
     o->box( FL_THIN_UP_BOX );
@@ -204,15 +203,23 @@ Track::Track ( int X, int Y, int W, int H, const char *L ) :
     }
     end();
 
-    if ( L )
-        name( L );
-
     /* FIXME: should be configurable, but where? */
     create_outputs( 2 );
     create_inputs( 2 );
 
     playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), output.size() );
     record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), input.size() );
+}
+
+
+Track::Track ( const char *L ) :
+    Fl_Group ( 0, 0, 0, 0, L )
+{
+
+    init();
+
+    if ( L )
+        name( L );
 
     log_create();
 }
@@ -278,13 +285,12 @@ Track::size ( int v )
 }
 
 void
-Track::track( Sequence * t )
+Track::track ( Sequence * t )
 {
-//    t->size( 1, h() );
+    t->track( this );
+
     if ( track() )
         add( track() );
-
-//        takes->insert( *track(), 0 );
 
     _track = t;
     pack->insert( *t, 0 );
@@ -293,11 +299,68 @@ Track::track( Sequence * t )
 }
 
 void
-Track::add_control( Sequence *t )
+Track::add ( Control_Sequence *t )
 {
+    t->track( this );
+
     control->add( t );
 
     resize();
+}
+
+
+void
+Track::draw ( void )
+{
+    if ( _selected )
+    {
+        Fl_Color c = color();
+
+        color( FL_RED );
+
+        Fl_Group::draw();
+
+        color( c );
+    }
+    else
+        Fl_Group::draw();
+
+    if ( ! name_field->visible() )
+    {
+        fl_color( FL_WHITE );
+        fl_font( FL_HELVETICA, 14 );
+        fl_draw( name_field->value(), name_field->x(), name_field->y(), name_field->w(), name_field->h(), FL_ALIGN_CENTER );
+    }
+}
+
+int
+Track::handle ( int m )
+{
+    Logger log( this );
+
+    switch ( m )
+    {
+        case FL_MOUSEWHEEL:
+        {
+
+            if ( ! Fl::event_shift() )
+                return 0;
+
+            int d = Fl::event_dy();
+
+            printf( "%d\n", d );
+
+            if ( d < 0 )
+                size( size() - 1 );
+            else
+                size( size() + 1 );
+
+            return 1;
+        }
+        default:
+            return Fl_Group::handle( m );
+
+    }
 }
 
 

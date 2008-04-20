@@ -136,9 +136,11 @@ public:
         {
             assert( _id == _log_id );
 
+            assert( _loggables[ _id - 1 ] == this );
+
             _loggables[ _id - 1 ]  = NULL;
 
-            --_log_id;
+//            --_log_id;
 
             _id = id;
 
@@ -250,6 +252,7 @@ public:
 
             if ( _sa )
                 while ( _sa[ _i ] ) ++_i;
+
         }
 
     ~Log_Entry ( )

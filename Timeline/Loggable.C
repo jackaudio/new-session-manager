@@ -46,15 +46,20 @@ Loggable::open ( const char *filename )
         return false;
     }
 
-    /* TODO: replay log here */
 
-    /* FIXME: handle transactions!!! */
+    /* replay log */
     {
         char buf[BUFSIZ];
 
         while ( fscanf( fp, "%[^\n]\n", buf ) == 1 )
         {
-            do_this( buf, false );
+            if ( ! ( ! strcmp( buf, "{" ) || ! strcmp( buf, "}" ) ) )
+            {
+                if ( *buf == '\t' )
+                    do_this( buf + 1, false );
+                else
+                    do_this( buf, false );
+            }
         }
     }
 
@@ -113,8 +118,10 @@ parse_alist( const char *s )
 
                 if  ( *v == '"' )
                 {
-                    v++;
+//                    v++;
                     v[ strlen( v ) - 2 ] = '\0';
+                    memmove( v, v + 1, strlen( v ) + 1 );
+
                 }
             }
 
@@ -191,13 +198,19 @@ Loggable::do_this ( const char *s, bool reverse )
     }
     else if ( ! strcmp( command, create ) )
     {
-        char **sa = parse_alist( arguments );
+        char **sa = NULL;
+
+        if ( arguments )
+            sa = parse_alist( arguments );
 
         Log_Entry e( sa );
 
-        if ( ! _class_map[ string( classname ) ] )
-            printf( "error class %s is unregistered!\n", classname );
-        else
+        assert( _class_map[ string( classname ) ] );
+
+/*         if ( ! _class_map[ string( classname ) ] ) */
+/*             printf( "error class %s is unregistered!\n", classname ); */
+/*         else */
+
         {
             /* create */
             Loggable *l = _class_map[ string( classname ) ]( e );

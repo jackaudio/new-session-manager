@@ -38,6 +38,9 @@ using std::vector;
 
 #include "Port.H"
 
+#include "Timeline.H"
+#include "Control_Sequence.H"
+
 class Playback_DS;
 class Record_DS;
 class Port;
@@ -48,7 +51,7 @@ class Track : public Fl_Group, public Loggable
 
 public:
 
-    Track ( int X, int Y, int W, int H, const char *L = 0 );
+    Track ( const char *L );
     ~Track ( );
 
 private:
@@ -75,34 +78,38 @@ private:
 
     Track ( ) : Fl_Group( 0, 0, 1, 1 )
         {
+            init();
 
+            timeline->add_track( this );
         }
+
+    void init ( void );
 
 public:
 
-    Fl_Input * name_field;
-    Fl_Button *record_button;
-    Fl_Button *mute_button;
-    Fl_Button *solo_button;
+    Fl_Input       *name_field;
+    Fl_Button      *record_button;
+    Fl_Button      *mute_button;
+    Fl_Button      *solo_button;
     Fl_Menu_Button *take_menu;
-    Fl_Group *controls;
+    Fl_Group       *controls;
 
-    Fl_Pack *pack;
-    Fl_Pack *control;
-    Fl_Pack *takes;
+    Fl_Pack        *pack;
+    Fl_Pack        *control;
+    Fl_Pack        *takes;
 
-    vector <Port> input;
-    vector <Port> output;                                       /* output ports... */
+    vector<Port>   input;                        /* input ports... */
+    vector<Port>   output;                       /* output ports... */
 
-    Playback_DS *playback_ds;
-    Record_DS *record_ds;
+    Playback_DS    *playback_ds;
+    Record_DS      *record_ds;
 
     const char *class_name ( void ) { return "Track"; }
 
     void
     set ( Log_Entry &e )
         {
-            for ( int i = 0; e.size(); ++i )
+            for ( int i = 0; i < e.size(); ++i )
             {
                 const char *s, *v;
 
@@ -120,7 +127,9 @@ public:
                 else if ( ! strcmp( s, ":n" ) )
                 {
                     _name = strdup( v );
-                    name_field->value( _name );
+                    /* FIXME: bogus */
+                    if ( name_field )
+                        name_field->value( _name );
                 }
                 else if ( ! strcmp( s, ":t" ) )
                 {
@@ -152,31 +161,7 @@ public:
     /* for loggable */
     LOG_CREATE_FUNC( Track );
 
-    void
-    draw ( void )
-        {
-            if ( _selected )
-            {
-                Fl_Color c = color();
-
-                color( FL_RED );
-
-                Fl_Group::draw();
-
-                color( c );
-            }
-            else
-                Fl_Group::draw();
-
-            if ( ! name_field->visible() )
-            {
-                fl_color( FL_WHITE );
-                fl_font( FL_HELVETICA, 14 );
-                fl_draw( name_field->value(), name_field->x(), name_field->y(), name_field->w(), name_field->h(), FL_ALIGN_CENTER );
-            }
-        }
-
-    void add_control( Sequence *t );
+    void add ( Control_Sequence *t );
 
     int size ( void ) const { return _size; }
 
@@ -239,32 +224,9 @@ public:
 //            take_menu->remove( t->name() );
         }
 
-    int handle ( int m )
-        {
-            switch ( m )
-            {
-                case FL_MOUSEWHEEL:
-                {
 
-                    if ( ! Fl::event_shift() )
-                        return 0;
-
-                    int d = Fl::event_dy();
-
-                    printf( "%d\n", d );
-
-                    if ( d < 0 )
-                        size( size() - 1 );
-                    else
-                        size( size() + 1 );
-
-                    return 1;
-                }
-                default:
-                    return Fl_Group::handle( m );
-
-            }
-        }
+    void draw ( void );
+    int handle ( int m );
 
     /* Engine */
     nframes_t process ( nframes_t nframes );

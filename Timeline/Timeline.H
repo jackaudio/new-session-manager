@@ -157,7 +157,7 @@ private:
 
     friend class Engine; // FIXME: only Engine::process() needs to be friended.x
 
-    bool track_name_exists ( const char *name );
+    Track * track_by_name ( const char *name );
     char * get_unique_track_name ( const char *name );
 
     /* Engine */

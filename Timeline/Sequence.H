@@ -43,13 +43,14 @@ class Sequence_Widget;
 class Sequence : public Fl_Widget, public Loggable
 {
 
-    Track *_track;                                              /* track this sequence belongs to */
-
-    char *_name;
 
     static queue <Sequence_Widget *> _delete_queue;
 
 protected:
+
+    Track *_track;                                              /* track this sequence belongs to */
+
+    char *_name;
 
     std::list <Sequence_Widget *> _widgets;
     Sequence_Widget *event_widget ( void );
@@ -57,10 +58,25 @@ protected:
     virtual const char *class_name ( void ) { return "Sequence"; }
 
 
-    virtual void set ( Log_Entry &e ) { return; }
+    virtual void set ( Log_Entry &e )
+        {
+            for ( int i = 0; i < e.size(); ++i )
+            {
+                const char *s, *v;
+
+                e.get( i, &s, &v );
+
+                if ( ! strcmp( ":n", s ) )
+                {
+                    name( strdup( v ) );
+                }
+            }
+        }
 
     virtual void get ( Log_Entry &e )
         {
+            e.add( ":n", name() );
+//            e.add( ":t", _track );
 
 /*             s += sprintf( s, ":items " ); */
 /*             for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ ) */
@@ -81,9 +97,17 @@ public:
     virtual ~Sequence (  );
 
     const char * name ( void ) const { return _name; }
-    void name ( char *s ) { if ( _name ) free( _name ); _name = s; label( _name ); }
+    void name ( const char *s )
+        {
+            if ( _name ) free( _name );
+            _name = strdup( s );
+            label( _name );
+        }
 
     void sort ( void );
+
+    Track *track ( void ) const { return _track; }
+    void track ( Track *t ) { _track = t; }
 
     void remove ( Sequence_Widget *r );
     void add ( Sequence_Widget *r );

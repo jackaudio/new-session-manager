@@ -24,6 +24,7 @@
 
 #include <FL/fl_draw.H>
 
+#include "Track.H"
 
 queue <Sequence_Widget *> Sequence::_delete_queue;
 
@@ -31,6 +32,9 @@ Sequence::Sequence ( int X, int Y, int W, int H, Track *track ) : Fl_Widget( X, 
 {
     _name = NULL;
     _track = track;
+
+    if ( track )
+        track->add( this );
 
     box( FL_DOWN_BOX );
     color( fl_darker( FL_GRAY ) );

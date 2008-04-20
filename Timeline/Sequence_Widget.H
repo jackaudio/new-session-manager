@@ -109,7 +109,7 @@ protected:
                     else
                         deselect();
                 }
-                else if ( ! strcmp( s, ":track" ) )
+                else if ( ! strcmp( s, ":t" ) )
                 {
                     int i;
                     sscanf( v, "%X", &i );

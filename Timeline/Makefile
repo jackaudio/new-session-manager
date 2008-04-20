@@ -5,6 +5,7 @@ SRCS= \
       main.C \
       Sequence.C \
       Audio_Sequence.C \
+      Control_Sequence.C \
       Timeline.C \
       Track.C \
       Sequence_Widget.C \

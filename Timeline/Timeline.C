@@ -115,8 +115,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
             o->color( FL_RED );
 
-            o->add( new Tempo_Point( 0, 120 ) );
-            o->add( new Tempo_Point( 56000, 250 ) );
+/*             o->add( new Tempo_Point( 0, 120 ) ); */
+/*             o->add( new Tempo_Point( 56000, 250 ) ); */
 
             o->label( "Tempo" );
             o->align( FL_ALIGN_LEFT );
@@ -131,8 +131,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
             o->color( fl_color_average( FL_RED, FL_WHITE, 0.50f ) );
 
-            o->add( new Time_Point( 0, 4, 4 ) );
-            o->add( new Time_Point( 345344, 6, 8 ) );
+/*             o->add( new Time_Point( 0, 4, 4 ) ); */
+/*             o->add( new Time_Point( 345344, 6, 8 ) ); */
 
             o->label( "Time" );
             o->align( FL_ALIGN_LEFT );
@@ -748,21 +748,25 @@ Timeline::handle ( int m )
                         {
                             /* FIXME: prompt for I/O config? */
 
+                            Loggable::block_start();
+
                             /* add audio track */
                             char *name = get_unique_track_name( "Audio" );
 
-                            Track *t = new Track( 0, 0, tracks->w(), 30, name );
+                            Track *t = new Track( name );
 
                             add_track( t );
 
-                            Sequence *o = new Audio_Sequence( 0, 0, 1, 100 );
+                            Sequence *o = new Audio_Sequence( t );
+                            new Control_Sequence( t );
 
                             t->track( o );
-//                            t->add( new Audio_Sequence( 0, 0, 1, 100 ) );
-//                            t->add( new Audio_Sequence( 0, 0, 1, 100 ) );
-                            t->add_control( new Control_Sequence( 0, 0, 1, 100 ) );
+
+/*                             t->add( new Control_Sequence( t  ); */
+
                             t->color( (Fl_Color)rand() );
 
+                            Loggable::block_end();
                         }
 
                     }
@@ -809,18 +813,18 @@ Timeline::handle ( int m )
 
 
 
-bool
-Timeline::track_name_exists ( const char *name )
+Track *
+Timeline::track_by_name ( const char *name )
 {
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
 
         if ( ! strcmp( name, t->name() ) )
-            return true;
+            return t;
     }
 
-    return false;
+    return NULL;
 }
 
 char *
@@ -830,7 +834,7 @@ Timeline::get_unique_track_name ( const char *name )
 
     strcpy( pat, name );
 
-    for ( int i = 1; track_name_exists( pat ); ++i )
+    for ( int i = 1; track_by_name( pat ); ++i )
         snprintf( pat, sizeof( pat ), "%s.%d", name, i );
 
     return strdup( pat );

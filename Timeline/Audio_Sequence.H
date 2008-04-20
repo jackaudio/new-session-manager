@@ -21,7 +21,7 @@
 
 #include "Sequence.H"
 #include "Region.H"
-
+#include "Track.H"
 
 #include <FL/Fl_Input.H>
 
@@ -30,15 +30,49 @@ class Audio_Sequence : public Sequence
 
 protected:
 
+    void
+    get ( Log_Entry &e )
+        {
+            Sequence::get( e );
+
+            e.add( ":t", _track );
+        }
+
+    void
+    set ( Log_Entry &e )
+        {
+            Sequence::set( e );
+
+            for ( int i = 0; i < e.size(); ++i )
+            {
+                const char *s, *v;
+
+                e.get( i, &s, &v );
+
+                if ( ! strcmp( ":t", s ) )
+                {
+                    int i;
+                    sscanf( v, "%X", &i );
+                    Track *t = (Track*)Loggable::find( i );
+
+                    assert( t );
+
+                    t->track( this );
+                }
+            }
+        }
+
     Audio_Sequence ( ) : Sequence( 0, 0, 0, 0 )
         {
         }
+
+
 
 public:
 
     LOG_CREATE_FUNC( Audio_Sequence );
 
-    Audio_Sequence ( int X, int Y, int W, int H ) : Sequence( X, Y, W, H )
+    Audio_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0, track )
         {
             log_create();
         }
@@ -51,7 +85,7 @@ public:
 
     Sequence * clone_empty ( void )
         {
-            Audio_Sequence *t = new Audio_Sequence( x(), y(), w(), h() );
+            Audio_Sequence *t = new Audio_Sequence( track() );
 
             return t;
         }

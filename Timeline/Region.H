@@ -107,7 +107,7 @@ protected:
     get ( Log_Entry &e )
         {
             e.add( ":source", _clip ? _clip->name() : "" );
-            e.add( ":gain %f", _scale );
+            e.add( ":gain", _scale );
 
             Sequence_Widget::get( e );
         }

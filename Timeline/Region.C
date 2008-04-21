@@ -700,7 +700,7 @@ Region::normalize ( void )
 /**********/
 
 
-/** Apply a (portion of) fade-out from /start/ to /end/ assuming a
+/** Apply a (portion of) fade from /start/ to /end/ assuming a
  * buffer size of /nframes/. /start/ and /end/ are relative to the
  * given buffer, and /start/ may be negative. */
 void
@@ -708,8 +708,13 @@ Region::Fade::apply ( sample_t *buf, Region::Fade::fade_dir_e dir, long start, n
 {
 //    printf( "apply fade %s: start=%ld end=%lu\n", dir == Fade::Out ? "out" : "in", start, end );
 
+    if ( ! nframes )
+        return;
+
     const nframes_t i = start > 0 ? start : 0;
     const nframes_t e = end > nframes ? nframes : end;
+
+    assert( i < nframes );
 
     const float inc = increment();
     float fi = ( i - start ) / (float)length;
@@ -902,7 +907,8 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
         fade = declick < _fade_out ? _fade_out : declick;
 
         /* do fade out if necessary */
-        if ( start + cnt + fade.length > r.end )
+//        if ( start + cnt + fade.length > r.end )
+        if ( start + fade.length > r.end )
         {
             const nframes_t d = r.end - start;
 

@@ -60,3 +60,22 @@ public:
         }
 
 };
+
+
+class Locker
+{
+
+    Mutex &_lock;
+
+public:
+
+    Locker ( Mutex & lock ) : _lock( lock )
+        {
+            _lock.lock();
+        }
+
+    ~Locker ( )
+        {
+            _lock.unlock();
+        }
+};

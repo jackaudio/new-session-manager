@@ -41,6 +41,8 @@ protected:
     void
     get ( Log_Entry &e )
         {
+            Sequence_Point::get( e );
+
             e.add( ":y", _y );
         }
 
@@ -61,6 +63,7 @@ protected:
                 //          _make_label();
             }
 
+            Sequence_Point::set( e );
         }
 
     Control_Point ( )

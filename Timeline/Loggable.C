@@ -341,7 +341,8 @@ Loggable::snapshot( const char *file )
 
     for ( int i = 0; i < _log_id; ++i )
     {
-        _loggables[ i ]->log_create();
+        if ( _class_map[ string( _loggables[ i ]->class_name() ) ] )
+            _loggables[ i ]->log_create();
     }
 
     fclose( _fp );

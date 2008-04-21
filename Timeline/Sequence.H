@@ -43,7 +43,6 @@ class Sequence_Widget;
 class Sequence : public Fl_Widget, public Loggable
 {
 
-
     static queue <Sequence_Widget *> _delete_queue;
 
 protected:

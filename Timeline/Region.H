@@ -107,9 +107,13 @@ protected:
     void
     get ( Log_Entry &e )
         {
-            e.add( ":source", _clip ? _clip->name() : "" );
-            e.add( ":gain", _scale );
-            e.add( ":color", (int)_box_color );
+            e.add( ":source",            _clip            ? _clip->name() : "" );
+            e.add( ":gain",              _scale           );
+            e.add( ":fade-in-type",      _fade_in.type    );
+            e.add( ":fade-in-duration",  _fade_in.length  );
+            e.add( ":fade-out-type",     _fade_out.type   );
+            e.add( ":fade-out-duration", _fade_out.length );
+            e.add( ":color",             (int)_box_color  );
 
             Sequence_Widget::get( e );
         }
@@ -125,8 +129,16 @@ protected:
 
                 if ( ! strcmp( s, ":gain" ) )
                     _scale = atof( v );
-                if ( ! strcmp( s, ":color" ) )
+                else if ( ! strcmp( s, ":color" ) )
                     _box_color = (Fl_Color)atoi( v );
+                else if ( ! strcmp( s, ":fade-in-type" ) )
+                    _fade_in.type = (Fade::fade_type_e)atoi( v );
+                else if ( ! strcmp( s, ":fade-in-duration" ) )
+                    _fade_in.length = atol( v );
+                else if ( ! strcmp( s, ":fade-out-type" ) )
+                    _fade_out.type = (Fade::fade_type_e)atoi( v );
+                else if ( ! strcmp( s, ":fade-out-duration" ) )
+                    _fade_out.length = atol( v );
                 else if ( ! strcmp( s, ":source" ) )
                 {
                     if ( ! ( _clip = Audio_File::from_file( v ) ) )

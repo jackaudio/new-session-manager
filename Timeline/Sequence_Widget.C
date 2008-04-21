@@ -159,7 +159,7 @@ Sequence_Widget::handle ( int m )
             {
                 redraw();
                 _track->queue_delete( this );
-                return 0;
+                return 1;
             }
             else
                 if ( Fl::event_button1() )

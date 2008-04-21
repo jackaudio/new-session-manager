@@ -352,7 +352,7 @@ Region::handle ( int m )
                     /* duplication */
                     return 1;
                 }
-                else if ( Fl::event_button3() )
+                else if ( Fl::event_button3() && ! Fl::event_ctrl() )
                 {
                     /* context menu */
 
@@ -387,6 +387,8 @@ Region::handle ( int m )
                         else if ( r > &menu[7] && r < &menu[12] )
                             _fade_out.type = (Fade::fade_type_e)(int)(r - &menu[8]);
                     }
+
+                    return 1;
 
                 }
                 else

@@ -47,10 +47,7 @@ Track::cb_input_field ( void )
 {
     log_start();
 
-    if ( _name )
-        free( _name );
-
-    _name = strdup( name_field->value() );
+    name( name_field->value() );
 
     log_end();
 }
@@ -125,8 +122,6 @@ Track::init ( void )
             o->textcolor( 32 );
 
             o->callback( cb_input_field, (void*)this );
-
-//            o->hide();
         }
 
         {
@@ -205,23 +200,25 @@ Track::init ( void )
     }
     end();
 
-    /* FIXME: should be configurable, but where? */
-    create_outputs( 2 );
-    create_inputs( 2 );
+/*     /\* FIXME: should be configurable, but where? *\/ */
+/*     create_outputs( 2 ); */
+/*     create_inputs( 2 ); */
 
     playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), output.size() );
     record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), input.size() );
 }
 
 
-Track::Track ( const char *L ) :
-    Fl_Group ( 0, 0, 0, 0, L )
+Track::Track ( const char *L, int channels ) :
+    Fl_Group ( 0, 0, 0, 0, 0 )
 {
-
     init();
 
     if ( L )
         name( L );
+
+    configure_inputs( channels );
+    configure_outputs( channels );
 
     log_create();
 }
@@ -361,14 +358,6 @@ Track::draw ( void )
     }
     else
         Fl_Group::draw();
-
-/*     if ( ! name_field->visible() ) */
-/*     { */
-/*         fl_color( FL_WHITE ); */
-/*         fl_font( FL_HELVETICA, 14 ); */
-/*         fl_draw( name_field->value(), name_field->x(), name_field->y(), name_field->w(), name_field->h(), FL_ALIGN_CENTER ); */
-/*     } */
-
 }
 
 int
@@ -406,15 +395,53 @@ Track::handle ( int m )
 /* Engine */
 /**********/
 
-bool
-Track::create_outputs ( int n )
+const char *
+Track::name_for_port ( Port::type_e type, int n )
 {
-    char pname[256];
+    static char pname[256];
 
-    for ( int i = 0; i < n; ++i )
+    snprintf( pname, sizeof( pname ), "%s/%s-%d",
+              name(),
+              type == Port::Output ? "out" : "in",
+              n + 1 );
+
+    return pname;
+}
+
+void
+Track::update_port_names ( void )
+{
+    for ( int i = 0; i < output.size(); ++i )
+        output[ i ].name( name_for_port( output[ i ].type(), i ) );
+
+    for ( int i = 0; i < input.size(); ++i )
+        input[ i ].name( name_for_port( input[ i ].type(), i ) );
+}
+
+bool
+Track::configure_outputs ( int n )
+{
+    int on = output.size();
+
+    if ( n > on )
     {
-        snprintf( pname, sizeof( pname ), "%s/out-%d", name(), i + 1 );
-        output.push_back( Port( strdup( pname ), Port::Output ) );
+        for ( int i = on; i < n; ++i )
+        {
+            Port p( strdup( name_for_port( Port::Output, i ) ), Port::Output );
+
+            if ( p.valid() )
+                output.push_back( p );
+            else
+                printf( "error: could not create output port!\n" );
+        }
+    }
+    else
+    {
+        for ( int i = on; i > n; --i )
+        {
+            output.back().shutdown();
+            output.pop_back();
+        }
     }
 
     /* FIXME: bogus */
@@ -422,22 +449,34 @@ Track::create_outputs ( int n )
 }
 
 bool
-Track::create_inputs ( int n )
+Track::configure_inputs ( int n )
 {
-    char pname[256];
+    int on = input.size();
 
-    for ( int i = 0; i < n; ++i )
+    if ( n > on )
     {
-        snprintf( pname, sizeof( pname ), "%s/in-%d", name(), i + 1 );
-        input.push_back( Port( strdup( pname ), Port::Input ) );
+        for ( int i = on; i < n; ++i )
+        {
+            Port p( strdup( name_for_port( Port::Input, i ) ), Port::Input );
+
+            if ( p.valid() )
+                input.push_back( p );
+            else
+                printf( "error: could not create input port!\n" );
+        }
+    }
+    else
+    {
+        for ( int i = on; i > n; --i )
+        {
+            input.back().shutdown();
+            input.pop_back();
+        }
     }
 
     /* FIXME: bogus */
     return true;
 }
-
-
-
 
 /* THREAD: RT */
 nframes_t

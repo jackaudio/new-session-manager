@@ -30,7 +30,7 @@ Port::Port ( jack_port_t *port )
     _name = jack_port_name( _port );
 }
 
-Port::Port ( const char *name, direction_e dir )
+Port::Port ( const char *name, type_e dir )
 {
     _name = name;
 
@@ -42,8 +42,26 @@ Port::Port ( const char *name, direction_e dir )
 
 Port::~Port ( )
 {
-    /* close port? */
-//    jack_port_unregister( engine->client(), _port );
+
+/*    if ( _port ) */
+/*         jack_port_unregister( engine->client(), _port ); */
+
+}
+
+void
+Port::shutdown ( void )
+{
+   if ( _port )
+        jack_port_unregister( engine->client(), _port );
+}
+
+/** rename port */
+bool
+Port::name ( const char *name )
+{
+    _name = name;
+
+    return 0 == jack_port_set_name( _port, name );
 }
 
 void

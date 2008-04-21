@@ -51,7 +51,7 @@ class Track : public Fl_Group, public Loggable
 
 public:
 
-    Track ( const char *L );
+    Track ( const char *L, int channels=1 );
     ~Track ( );
 
 private:
@@ -72,8 +72,11 @@ private:
 
     Region *_capture;                                           /* capture region */
 
-    bool create_outputs ( int n );
-    bool create_inputs ( int n );
+    bool configure_outputs ( int n );
+    bool configure_inputs ( int n );
+
+    void update_port_names ( void );
+    const char *name_for_port( Port::type_e type, int n );
 
 
     Track ( ) : Fl_Group( 0, 0, 1, 1 )
@@ -126,12 +129,11 @@ public:
                     _selected = atoi( v );
 //                else if ( ! strcmp( s, ":armed"
                 else if ( ! strcmp( s, ":n" ) )
-                {
-                    _name = strdup( v );
-                    /* FIXME: bogus */
-                    if ( name_field )
-                        name_field->value( _name );
-                }
+                    name( v );
+                else if ( ! strcmp( s, ":i" ) )
+                    configure_inputs( atoi( v ) );
+                else if ( ! strcmp( s, ":o" ) )
+                    configure_outputs( atoi( v ) );
                 else if ( ! strcmp( s, ":t" ) )
                 {
                     int i;
@@ -153,10 +155,12 @@ public:
     void
     get ( Log_Entry &e )
         {
-            e.add( ":n",        _name     );
-            e.add( ":t",        track()   );
-            e.add( ":s",        _selected );
-            e.add( ":h",        size()    );
+            e.add( ":n",        _name            );
+            e.add( ":t",        track()          );
+            e.add( ":s",        _selected        );
+            e.add( ":h",        size()           );
+            e.add( ":i",        input.size()     );
+            e.add( ":o",        output.size()    );
         }
 
     /* for loggable */
@@ -187,9 +191,15 @@ public:
 
     void name ( const char *name )
         {
-            if ( _name ) free( _name );
+            if ( _name )
+                free( _name );
+
             _name = strdup( name );
-            name_field->value( _name );
+
+            if ( name_field )
+                name_field->value( _name );
+
+            update_port_names();
         }
 
     const char * name ( void ) const { return _name; }

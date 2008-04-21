@@ -25,21 +25,34 @@
 
 class Port
 {
-
     jack_port_t *_port;
     const char *_name;
 
 public:
 
-    enum direction_e { Output, Input };
+    enum type_e { Output, Input };
 
     Port ( jack_port_t *port );
-    Port ( const char *name, direction_e dir );
+    Port ( const char *name, type_e dir );
     ~Port ( );
 
-    bool connected ( void ) const { return jack_port_connected( _port ); }
-    const char * name ( void ) const { return _name; }
+/*     Port ( const Port & rhs ) */
+/*         { */
+/*             _port = rhs.port; */
+/*             _name = rhs.name; */
+/*         } */
 
+
+    bool valid ( void ) const { return _port; }
+    bool connected ( void ) const { return jack_port_connected( _port ); }
+    type_e type ( void ) const
+        {
+            return jack_port_flags( _port ) == JackPortIsOutput ? Output : Input;
+        }
+    const char * name ( void ) const { return _name; }
+    bool name ( const char *name );
+
+    void shutdown ( void );
     void write ( sample_t *buf, nframes_t nframes );
     void read ( sample_t *buf, nframes_t nframes );
     void *buffer ( nframes_t nframes );

@@ -423,6 +423,17 @@ Track::configure_outputs ( int n )
 {
     int on = output.size();
 
+    if ( n == on )
+        return true;
+
+//    engine->lock();
+
+    Playback_DS *ds = playback_ds;
+    playback_ds = NULL;
+
+    ds->shutdown();
+    delete ds;
+
     if ( n > on )
     {
         for ( int i = on; i < n; ++i )
@@ -444,6 +455,10 @@ Track::configure_outputs ( int n )
         }
     }
 
+
+    playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), output.size() );
+
+//    engine->unlock();
     /* FIXME: bogus */
     return true;
 }
@@ -452,6 +467,17 @@ bool
 Track::configure_inputs ( int n )
 {
     int on = input.size();
+
+    if ( n == on )
+        return true;
+
+//    engine->lock();
+
+    Record_DS *ds = record_ds;
+    record_ds = NULL;
+
+    ds->shutdown();
+    delete ds;
 
     if ( n > on )
     {
@@ -473,6 +499,10 @@ Track::configure_inputs ( int n )
             input.pop_back();
         }
     }
+
+    record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), input.size() );
+
+//    engine->unlock();
 
     /* FIXME: bogus */
     return true;

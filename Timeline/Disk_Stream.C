@@ -96,7 +96,13 @@ void
 Disk_Stream::shutdown ( void )
 {
     _terminate = true;
-    pthread_join( _thread, NULL );
+
+    /* try to wake the thread so it'll see that it's time to die */
+    block_processed();
+
+    if ( _thread )
+        pthread_join( _thread, NULL );
+
     _terminate = false;
 }
 

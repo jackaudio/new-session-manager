@@ -42,7 +42,7 @@ protected:
 
     pthread_t _thread;                                 /* io thread */
 
-    Track *_th;                 /* Track we belong to */
+    Track *_th;                               /* Track we belong to */
 
     nframes_t _nframes;                              /* buffer size */
 

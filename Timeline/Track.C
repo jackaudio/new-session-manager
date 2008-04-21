@@ -28,6 +28,7 @@
 #include "Port.H"
 
 #include "../FL/Fl_Sometimes_Input.H"
+#include <FL/fl_ask.H>
 
 void
 Track::cb_input_field ( Fl_Widget *w, void *v )
@@ -384,6 +385,61 @@ Track::handle ( int m )
 
             return 1;
         }
+        case FL_PUSH:
+        {
+            int X = Fl::event_x();
+            int Y = Fl::event_y();
+
+            if ( Fl::event_button3() && X < Track::width() )
+            {
+                int c = output.size();
+
+                /* context menu */
+                Fl_Menu_Item menu[] =
+                    {
+                        { "Type",            0, 0, 0, FL_SUBMENU    },
+                        { "Mono",            0, 0, 0, FL_MENU_RADIO | ( c == 1 ? FL_MENU_VALUE : 0 ) },
+                        { "Stereo",          0, 0, 0, FL_MENU_RADIO | ( c == 2 ? FL_MENU_VALUE : 0 ) },
+                        { "Quad",            0, 0, 0, FL_MENU_RADIO | ( c == 4 ? FL_MENU_VALUE : 0 ) },
+                        { "...",             0, 0, 0, FL_MENU_RADIO | ( c == 3 || c > 4 ? FL_MENU_VALUE : 0 ) },
+                        { 0                  },
+                        { 0 },
+                    };
+
+                const Fl_Menu_Item *r = menu->popup( X, Y, "Track" );
+
+                if ( r )
+                {
+                    if ( r < &menu[ 4 ] )
+                    {
+                        int c = r - &menu[1];
+                        int ca[] = { 1, 2, 4 };
+
+                        configure_inputs( ca[ c ] );
+                        configure_outputs( ca[ c ] );
+                    }
+                    else
+                    {
+                        if ( r == &menu[ 4 ] )
+                        {
+                            const char *s = fl_input( "How many channels?", "3" );
+
+                            int c = atoi( s );
+
+                            if ( c <= 0 || c > 10 )
+                                fl_alert( "Invalid number of channels." );
+                            else
+                            {
+                                configure_inputs( c );
+                                configure_outputs( c );
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
         default:
             return Fl_Group::handle( m );
 

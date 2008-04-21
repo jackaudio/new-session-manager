@@ -20,7 +20,8 @@
 #include "Control_Sequence.H"
 #include "Track.H"
 
-
+bool Control_Sequence::use_gradient = true;
+bool Control_Sequence::use_polygon = true;
 
 Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 )
 {
@@ -95,11 +96,25 @@ Control_Sequence::draw ( void )
 
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
-    fl_line_style( FL_SOLID, 4 );
+    if ( use_gradient )
+    {
+        Fl_Color target = fl_color_average( color(), FL_WHITE, 0.50f );
+
+        for ( int gy = 0; gy < h(); gy++ )
+        {
+            fl_color( fl_color_average( target, selection_color(), gy / (float)h()) );
+            fl_line( x(), y() + gy, x() + w(), y() + gy );
+        }
+    }
 
     fl_color( fl_color_average( selection_color(), color(), 0.90f ) );
+    fl_line_style( FL_SOLID, 4 );
 
-    fl_begin_complex_polygon();
+    if ( use_polygon )
+        fl_begin_complex_polygon();
+    else
+        fl_begin_line();
+
 
     list <Sequence_Widget *>::const_iterator e = _widgets.end();
     e--;
@@ -107,24 +122,45 @@ Control_Sequence::draw ( void )
     if ( _widgets.size() )
         for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin(); ; r++ )
         {
+            const int ry = (*r)->y();
+
             if ( r == _widgets.begin() )
             {
-                fl_vertex( x(), y() + h() );
-                fl_vertex( x(), (*r)->y() );
+                if ( use_gradient )
+                {
+                    fl_vertex( x(), y() );
+                    fl_vertex( x(), ry );
+                }
+                else
+                {
+                    fl_vertex( x(), h() + y() );
+                    fl_vertex( x(), ry );
+                }
             }
 
-            fl_vertex( (*r)->x(), (*r)->y() );
+            fl_vertex( (*r)->x(), ry );
 
             if ( r == e )
             {
-                fl_vertex( x() + w(), (*r)->y() );
-                fl_vertex( x() + w(), y() + h() );
+                if ( use_gradient )
+                {
+                    fl_vertex( x() + w(), ry );
+                    fl_vertex( x() + w(), y() );
+                }
+                else
+                {
+                    fl_vertex( x() + w(), ry );
+                    fl_vertex( x() + w(), h() + y()  );
+                }
                 break;
             }
 
         }
 
-    fl_end_complex_polygon();
+    if ( use_polygon )
+        fl_end_complex_polygon();
+    else
+        fl_end_line();
 
     fl_line_style( FL_SOLID, 0 );
 

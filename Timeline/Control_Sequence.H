@@ -40,6 +40,9 @@ protected:
 
 public:
 
+    static bool use_gradient;
+    static bool use_polygon;
+
     LOG_CREATE_FUNC( Control_Sequence );
 
     Control_Sequence ( Track * );

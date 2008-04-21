@@ -39,6 +39,8 @@ class Loggable;
 typedef Loggable *(create_func)(Log_Entry &);
 
 
+#define LOG_REGISTER_CREATE( class ) \
+    Loggable::register_create( #class, & class ::create  );
 
 #define LOG_CREATE_FUNC( class )  \
     static Loggable *             \

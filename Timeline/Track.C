@@ -284,6 +284,34 @@ Track::size ( int v )
     resize();
 }
 
+
+void
+Track::add ( Sequence * t )
+{
+    takes->insert( *t, 0 );
+    if ( ! t->name() )
+    {
+        char pat[20];
+        snprintf( pat, sizeof( pat ), "%d", takes->children() );
+        t->name( strdup( pat ) );
+        take_menu->add( t->name() );
+    }
+
+}
+
+void
+Track::remove ( Sequence *t )
+{
+    takes->remove( t );
+//            take_menu->remove( t->name() );
+}
+
+void
+Track::remove ( Control_Sequence *t )
+{
+    control->remove( t );
+}
+
 void
 Track::track ( Sequence * t )
 {

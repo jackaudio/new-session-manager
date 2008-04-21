@@ -99,6 +99,7 @@ private:
     Fade _fade_out;
 
     friend class Track;                                  /* for _clip */
+
 protected:
 
     const char *class_name ( void ) { return "Region"; }

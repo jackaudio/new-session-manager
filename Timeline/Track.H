@@ -162,6 +162,9 @@ public:
     LOG_CREATE_FUNC( Track );
 
     void add ( Control_Sequence *t );
+    void add ( Sequence *t );
+    void remove ( Sequence *t );
+    void remove ( Control_Sequence *t );
 
     int size ( void ) const { return _size; }
 
@@ -204,26 +207,6 @@ public:
 
     void track( Sequence * t );
     Sequence * track ( void ) { return _track; }
-
-    void add ( Sequence * t )
-        {
-            takes->insert( *t, 0 );
-            if ( ! t->name() )
-            {
-                char pat[20];
-                snprintf( pat, sizeof( pat ), "%d", takes->children() );
-                t->name( strdup( pat ) );
-                take_menu->add( t->name() );
-            }
-
-        }
-
-    void remote ( Sequence *t )
-        {
-            takes->remove( t );
-//            take_menu->remove( t->name() );
-        }
-
 
     void draw ( void );
     int handle ( int m );

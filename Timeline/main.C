@@ -73,13 +73,13 @@ main ( int argc, char **argv )
 //    Fl::scheme( "gtk+" );
 
     /* welcome to C++ */
-    Loggable::register_create( "Region",           &Region::create           );
-    Loggable::register_create( "Tempo_Point",      &Tempo_Point::create      );
-    Loggable::register_create( "Time_Point",       &Time_Point::create       );
-    Loggable::register_create( "Control_Point",    &Control_Point::create    );
-    Loggable::register_create( "Track",            &Track::create            );
-    Loggable::register_create( "Audio_Sequence",   &Audio_Sequence::create   );
-    Loggable::register_create( "Control_Sequence", &Control_Sequence::create );
+    LOG_REGISTER_CREATE( Region );
+    LOG_REGISTER_CREATE( Time_Point );
+    LOG_REGISTER_CREATE( Tempo_Point );
+    LOG_REGISTER_CREATE( Control_Point );
+    LOG_REGISTER_CREATE( Track );
+    LOG_REGISTER_CREATE( Audio_Sequence );
+    LOG_REGISTER_CREATE( Control_Sequence );
 
     /* TODO: change to seesion dir */
 

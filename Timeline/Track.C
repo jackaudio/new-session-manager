@@ -27,6 +27,8 @@
 
 #include "Port.H"
 
+#include "../FL/Fl_Sometimes_Input.H"
+
 void
 Track::cb_input_field ( Fl_Widget *w, void *v )
 {
@@ -116,7 +118,7 @@ Track::init ( void )
         Fl_Group *o = new Fl_Group( 2, 2, 149, 70 );
         o->color( ( Fl_Color ) 53 );
         {
-            Fl_Input *o = name_field = new Fl_Input( 2, 2, 144, 24 );
+            Fl_Input *o = name_field = new Fl_Sometimes_Input( 2, 2, 144, 24 );
             o->color( ( Fl_Color ) 33 );
             o->labeltype( FL_NO_LABEL );
             o->labelcolor( FL_GRAY0 );
@@ -124,7 +126,7 @@ Track::init ( void )
 
             o->callback( cb_input_field, (void*)this );
 
-            o->hide();
+//            o->hide();
         }
 
         {
@@ -360,12 +362,13 @@ Track::draw ( void )
     else
         Fl_Group::draw();
 
-    if ( ! name_field->visible() )
-    {
-        fl_color( FL_WHITE );
-        fl_font( FL_HELVETICA, 14 );
-        fl_draw( name_field->value(), name_field->x(), name_field->y(), name_field->w(), name_field->h(), FL_ALIGN_CENTER );
-    }
+/*     if ( ! name_field->visible() ) */
+/*     { */
+/*         fl_color( FL_WHITE ); */
+/*         fl_font( FL_HELVETICA, 14 ); */
+/*         fl_draw( name_field->value(), name_field->x(), name_field->y(), name_field->w(), name_field->h(), FL_ALIGN_CENTER ); */
+/*     } */
+
 }
 
 int

@@ -119,7 +119,8 @@ public:
                 {
                     size( atoi( v ) );
 
-                    Fl_Widget::size( w(), height() );
+//                    Fl_Widget::size( w(), height() );
+                    resize();
                 }
                 else if ( ! strcmp( s, ":s" ) )
                     _selected = atoi( v );

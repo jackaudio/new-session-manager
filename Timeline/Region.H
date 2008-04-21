@@ -109,6 +109,7 @@ protected:
         {
             e.add( ":source", _clip ? _clip->name() : "" );
             e.add( ":gain", _scale );
+            e.add( ":color", (int)_box_color );
 
             Sequence_Widget::get( e );
         }
@@ -124,6 +125,8 @@ protected:
 
                 if ( ! strcmp( s, ":gain" ) )
                     _scale = atof( v );
+                if ( ! strcmp( s, ":color" ) )
+                    _box_color = (Fl_Color)atoi( v );
                 else if ( ! strcmp( s, ":source" ) )
                 {
                     if ( ! ( _clip = Audio_File::from_file( v ) ) )

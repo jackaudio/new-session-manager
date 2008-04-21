@@ -20,6 +20,34 @@
 #include "Control_Sequence.H"
 #include "Track.H"
 
+
+
+Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 )
+{
+    init();
+
+    _track = track;
+
+    if ( track )
+        track->add( this );
+
+    log_create();
+}
+
+
+Control_Sequence::~Control_Sequence ( )
+{
+    log_destroy();
+}
+
+void
+Control_Sequence::init ( void )
+{
+    _track = NULL;
+
+    color( fl_darker( FL_GREEN ) );
+}
+
 void
 Control_Sequence::get ( Log_Entry &e )
 {

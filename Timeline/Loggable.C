@@ -380,7 +380,7 @@ Loggable::flush ( void )
 {
     if ( ! _fp )
     {
-        printf( "error: no log file open!\n" );
+//        printf( "error: no log file open!\n" );
 
         while ( ! _transaction.empty() )
         {

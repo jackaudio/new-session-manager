@@ -74,6 +74,12 @@ public:
 
     Audio_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0, track )
         {
+
+            _track = track;
+
+            if ( track )
+                track->add( this );
+
             log_create();
         }
 

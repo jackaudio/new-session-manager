@@ -25,32 +25,25 @@
 class Control_Sequence : public Sequence
 {
 
+    void init ( void );
+
 protected:
 
 
     void get ( Log_Entry &e );
     void set ( Log_Entry &e );
 
-    Control_Sequence (  ) : Sequence( 0, 0, 1, 1 )
+    Control_Sequence (  ) : Sequence( 0, 0, 0, 1 )
         {
-
+            init();
         }
 
 public:
 
     LOG_CREATE_FUNC( Control_Sequence );
 
-    Control_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0, track )
-        {
-            color( fl_darker( FL_GREEN ) );
-
-            log_create();
-        }
-
-    ~Control_Sequence ( )
-        {
-            log_destroy();
-        }
+    Control_Sequence ( Track * );
+    ~Control_Sequence ( );
 
     const char *class_name ( void ) { return "Control_Sequence"; }
 

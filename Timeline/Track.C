@@ -303,6 +303,9 @@ void
 Track::remove ( Sequence *t )
 {
     takes->remove( t );
+
+    resize();
+
 //            take_menu->remove( t->name() );
 }
 
@@ -310,6 +313,8 @@ void
 Track::remove ( Control_Sequence *t )
 {
     control->remove( t );
+
+    resize();
 }
 
 void
@@ -329,6 +334,8 @@ Track::track ( Sequence * t )
 void
 Track::add ( Control_Sequence *t )
 {
+    printf( "adding control sequence\n" );
+
     t->track( this );
 
     control->add( t );

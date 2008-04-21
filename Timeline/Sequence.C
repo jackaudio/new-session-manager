@@ -33,8 +33,8 @@ Sequence::Sequence ( int X, int Y, int W, int H, Track *track ) : Fl_Widget( X, 
     _name = NULL;
     _track = track;
 
-    if ( track )
-        track->add( this );
+/*     if ( track ) */
+/*         track->add( this ); */
 
     box( FL_DOWN_BOX );
     color( fl_darker( FL_GRAY ) );

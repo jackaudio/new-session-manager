@@ -702,6 +702,12 @@ Timeline::handle ( int m )
 
                     return 1;
                 }
+                case FL_Home:
+                    transport.locate( 0 );
+                    return 1;
+                case ' ':
+                    transport.toggle();
+                    return 1;
                 case 'p':
                 {
                     int X = Fl::event_x() - Track::width();

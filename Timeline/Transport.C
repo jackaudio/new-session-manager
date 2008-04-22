@@ -22,12 +22,14 @@
 
 Transport transport;
 
+#define client engine->client()
+
 void
 Transport::poll ( void )
 {
     jack_transport_state_t ts;
 
-    ts = jack_transport_query( engine->client(), this );
+    ts = jack_transport_query( client, this );
 
     rolling = ts == JackTransportRolling;
 }
@@ -35,5 +37,29 @@ Transport::poll ( void )
 void
 Transport::locate ( nframes_t frame )
 {
-    jack_transport_locate( engine->client(), frame );
+    jack_transport_locate( client, frame );
+}
+
+
+void
+Transport::start ( void )
+{
+//    MESSAGE( "Starting transport" );
+    jack_transport_start( client );
+}
+
+void
+Transport::stop ( void )
+{
+//    MESSAGE( "Stopping transport" );
+    jack_transport_stop( client );
+}
+
+void
+Transport::toggle ( void )
+{
+    if ( rolling )
+        stop();
+    else
+        start();
 }

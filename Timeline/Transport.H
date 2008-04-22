@@ -28,6 +28,9 @@ struct Transport : public jack_position_t
 
     void poll ( void );
     void locate ( nframes_t frame );
+    void start ( void );
+    void stop ( void );
+    void toggle ( void );
 };
 
 extern Transport transport;

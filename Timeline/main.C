@@ -54,6 +54,9 @@
 
 #include "Engine.H"
 
+
+#include "Clock.H"
+
 Engine *engine;
 Timeline *timeline;
 Transport *transport;
@@ -61,6 +64,17 @@ Transport *transport;
 void cb_undo ( Fl_Widget *w, void *v )
 {
     Loggable::undo();
+}
+
+
+const float UPDATE_FREQ = 0.05f;
+
+static void
+clock_update_cb ( void *w )
+{
+    Fl::repeat_timeout( UPDATE_FREQ, clock_update_cb, w );
+
+    ((Clock *)w)->set( transport->frame );
 }
 
 int
@@ -86,21 +100,26 @@ main ( int argc, char **argv )
 
     /* TODO: change to seesion dir */
 
-
     transport = new Transport( 0, 0, 300, 24 );
-    main_window->add( transport );
 
     /* we don't really need a pointer for this */
     engine = new Engine;
     engine->init();
 
-    timeline = new Timeline( 0, 24, main_window->w(), main_window->h() - 24, "Timeline" );
+    timeline = new Timeline( 0, 100, main_window->w(), main_window->h() - 24, "Timeline" );
 
     Loggable::open( "history" );
 
     Fl_Button *o = new Fl_Button( 0, 0, 50, 24, "undo" );
     o->shortcut( FL_CTRL + 'z' );
     o->callback( cb_undo, 0 );
+
+    {
+        Clock *o = new Clock( 400, 0, 200, 50, "PLAYHEAD" );
+        o->color( fl_darker( FL_GRAY ) );
+
+        Fl::add_timeout( UPDATE_FREQ, clock_update_cb, o );
+    }
 
     main_window->end();
     main_window->show( argc, argv );

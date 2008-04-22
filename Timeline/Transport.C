@@ -31,3 +31,9 @@ Transport::poll ( void )
 
     rolling = ts == JackTransportRolling;
 }
+
+void
+Transport::locate ( nframes_t frame )
+{
+    jack_transport_locate( engine->client(), frame );
+}

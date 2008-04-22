@@ -702,6 +702,17 @@ Timeline::handle ( int m )
 
                     return 1;
                 }
+                case 'p':
+                {
+                    int X = Fl::event_x() - Track::width();
+
+                    if ( X > 0 )
+                    {
+                        transport.locate( xoffset + x_to_ts( X ) );
+                    }
+
+                    return 1;
+                }
                 default:
                     return Fl_Overlay_Window::handle( m );
             }

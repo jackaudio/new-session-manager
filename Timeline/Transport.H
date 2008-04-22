@@ -27,6 +27,7 @@ struct Transport : public jack_position_t
     bool rolling;
 
     void poll ( void );
+    void locate ( nframes_t frame );
 };
 
 extern Transport transport;

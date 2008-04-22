@@ -20,7 +20,7 @@
 #include "Transport.H"
 #include "Engine.H"
 
-Transport transport;
+// Transport transport;
 
 #define client engine->client()
 

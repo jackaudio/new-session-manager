@@ -47,14 +47,16 @@
 #include "Time_Sequence.H"
 #include "Control_Sequence.H"
 
+#include "Transport.H"
+
 #include "Loggable.H"
 #include "Track.H"
-// #include "const.h"
 
 #include "Engine.H"
 
 Engine *engine;
 Timeline *timeline;
+Transport *transport;
 
 void cb_undo ( Fl_Widget *w, void *v )
 {
@@ -67,6 +69,7 @@ main ( int argc, char **argv )
     Fl_Window *main_window = new Fl_Window( 0, 0, 1024, 768 );
 
     Fl::visual( FL_RGB8 );
+    Fl::visible_focus( 0 );
 
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
@@ -82,6 +85,10 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Control_Sequence );
 
     /* TODO: change to seesion dir */
+
+
+    transport = new Transport( 0, 0, 300, 24 );
+    main_window->add( transport );
 
     /* we don't really need a pointer for this */
     engine = new Engine;

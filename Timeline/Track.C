@@ -62,9 +62,9 @@ Track::cb_button ( Fl_Widget *w )
     {
         /* FIXME: wrong place for this! */
         if ( record_button->value() )
-            record_ds->start( transport.frame );
+            record_ds->start( transport->frame );
         else
-            record_ds->stop( transport.frame );
+            record_ds->stop( transport->frame );
     }
     else
         if ( w == take_menu )

@@ -92,7 +92,7 @@ Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
             /* FIXME: what's the right thing to do here? */
 //            request_locate( pos->frame );
             return 1;
-//            return transport.frame == pos->frame;
+//            return transport->frame == pos->frame;
             break;
         default:
             printf( "unknown transport state.\n" );
@@ -105,9 +105,9 @@ Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
 int
 Engine::process ( nframes_t nframes )
 {
-    transport.poll();
+    transport->poll();
 
-    if ( ! transport.rolling )
+    if ( ! transport->rolling )
         /* FIXME: fill all ports with silence */
         return 0;
 

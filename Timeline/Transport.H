@@ -22,8 +22,69 @@
 #include <jack/transport.h>
 #include "types.h"
 
-struct Transport : public jack_position_t
+#include <FL/Fl_Pack.H>
+#include <FL/Fl_Button.H>
+
+#include <stdio.h>
+
+struct Transport : public jack_position_t, public Fl_Pack
 {
+
+private:
+
+    Fl_Button *_home_button;
+    Fl_Button *_play_button;
+    Fl_Button *_record_button;
+
+    static
+    void
+    cb_button ( Fl_Widget *w, void *v )
+        {
+            ((Transport*)v)->cb_button( w );
+        }
+
+    void
+    cb_button ( Fl_Widget *w )
+        {
+            if ( w == _home_button )
+                locate( 0 );
+            else if ( w == _play_button )
+                toggle();
+            else if ( w == _record_button )
+                printf( "FIXME: record now\n" );
+        }
+
+public:
+
+    Transport ( int X, int Y, int W, int H, const char *L=0 )
+        : Fl_Pack( X, Y, W, H, L )
+        {
+            const int bw = W / 3;
+
+            type( HORIZONTAL );
+
+            Fl_Button *o;
+
+            _home_button = o = new Fl_Button( 0, 0, bw, 0, "@<|" );
+            o->labeltype( FL_EMBOSSED_LABEL );
+            o->callback( cb_button, this );
+            o->shortcut( FL_Home );
+            o->box( FL_UP_BOX );
+            _play_button = o = new Fl_Button( 0, 0, bw, 0, "@>" );
+            o->labeltype( FL_EMBOSSED_LABEL );
+            o->callback( cb_button, this );
+            o->shortcut( ' ' );
+            o->box( FL_UP_BOX );
+            _record_button = o = new Fl_Button( 0, 0, bw, 0, "@circle" );
+            o->labeltype( FL_EMBOSSED_LABEL );
+            o->labelcolor( FL_RED );
+            o->shortcut( 'R' );
+            o->callback( cb_button, this );
+            o->box( FL_UP_BOX );
+
+            end();
+        }
+
     bool rolling;
 
     void poll ( void );
@@ -33,4 +94,4 @@ struct Transport : public jack_position_t
     void toggle ( void );
 };
 
-extern Transport transport;
+extern Transport* transport;

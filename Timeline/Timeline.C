@@ -561,7 +561,7 @@ Timeline::draw ( void )
 void
 Timeline::draw_playhead ( void )
 {
-    int x = ( ts_to_x( transport.frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track::width();
+    int x = ( ts_to_x( transport->frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track::width();
 
     if ( x < tracks->x() + Track::width() || x > tracks->x() + tracks->w() )
         return;
@@ -590,10 +590,10 @@ Timeline::redraw_playhead ( void )
 {
     static nframes_t last_playhead = -1;
 
-    if ( last_playhead != transport.frame )
+    if ( last_playhead != transport->frame )
     {
         redraw_overlay();
-        last_playhead = transport.frame;
+        last_playhead = transport->frame;
     }
 }
 
@@ -702,19 +702,21 @@ Timeline::handle ( int m )
 
                     return 1;
                 }
-                case FL_Home:
-                    transport.locate( 0 );
-                    return 1;
-                case ' ':
-                    transport.toggle();
-                    return 1;
+
+/*                 case FL_Home: */
+/*                     transport->locate( 0 ); */
+/*                     return 1; */
+/*                 case ' ': */
+/*                     transport->toggle(); */
+/*                     return 1; */
+
                 case 'p':
                 {
                     int X = Fl::event_x() - Track::width();
 
                     if ( X > 0 )
                     {
-                        transport.locate( xoffset + x_to_ts( X ) );
+                        transport->locate( xoffset + x_to_ts( X ) );
                     }
 
                     return 1;

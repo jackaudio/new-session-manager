@@ -22,6 +22,8 @@
 #include <jack/transport.h>
 #include "types.h"
 
+#include "Timeline.H"
+
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Button.H>
 
@@ -33,6 +35,7 @@ struct Transport : public jack_position_t, public Fl_Pack
 private:
 
     Fl_Button *_home_button;
+    Fl_Button *_end_button;
     Fl_Button *_play_button;
     Fl_Button *_record_button;
 
@@ -48,6 +51,8 @@ private:
         {
             if ( w == _home_button )
                 locate( 0 );
+            if ( w == _end_button )
+                locate( timeline->length() );
             else if ( w == _play_button )
                 toggle();
             else if ( w == _record_button )
@@ -65,16 +70,23 @@ public:
 
             Fl_Button *o;
 
-            _home_button = o = new Fl_Button( 0, 0, bw, 0, "@<|" );
+            _home_button = o = new Fl_Button( 0, 0, bw, 0, "@|<" );
             o->labeltype( FL_EMBOSSED_LABEL );
             o->callback( cb_button, this );
             o->shortcut( FL_Home );
             o->box( FL_UP_BOX );
+
+            _end_button = o = new Fl_Button( 0, 0, bw, 0, "@>|" );
+            o->labeltype( FL_EMBOSSED_LABEL );
+            o->callback( cb_button, this );
+            o->shortcut( FL_End );
+
             _play_button = o = new Fl_Button( 0, 0, bw, 0, "@>" );
             o->labeltype( FL_EMBOSSED_LABEL );
             o->callback( cb_button, this );
             o->shortcut( ' ' );
             o->box( FL_UP_BOX );
+
             _record_button = o = new Fl_Button( 0, 0, bw, 0, "@circle" );
             o->labeltype( FL_EMBOSSED_LABEL );
             o->labelcolor( FL_RED );

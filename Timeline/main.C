@@ -100,7 +100,7 @@ main ( int argc, char **argv )
 
     /* TODO: change to seesion dir */
 
-    transport = new Transport( 0, 0, 300, 24 );
+    transport = new Transport( 0, 0, 120, 40 );
 
     /* we don't really need a pointer for this */
     engine = new Engine;

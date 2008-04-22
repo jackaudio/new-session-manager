@@ -53,6 +53,9 @@ public:
             _when = 0;
             box( FL_BORDER_BOX );
             type( HMS );
+
+            /* force size */
+            size( 170, 40 );
         }
 
     void set ( nframes_t frame )
@@ -95,7 +98,14 @@ public:
             const int dw = w() - Fl::box_dw( box() );
             const int dh = h() - Fl::box_dh( box() );
 
-            fl_draw( buf, dx, dy, dw, dh, FL_ALIGN_CENTER );
+            fl_draw( buf, dx, dy, dw, dh, (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_TOP) );
+
+            for ( int i = strlen( buf ); i--; )
+                if ( isdigit( buf[ i ] ) )
+                    buf[ i ] = ' ';
+
+            fl_color( fl_darker( c ) );
+            fl_draw( buf, dx, dy, dw, dh, (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_TOP) );
 
             fl_font( FL_HELVETICA, 9 );
             fl_color( FL_RED );

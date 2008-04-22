@@ -115,7 +115,7 @@ main ( int argc, char **argv )
     o->callback( cb_undo, 0 );
 
     {
-        Clock *o = new Clock( 400, 0, 200, 50, "PLAYHEAD" );
+        Clock *o = new Clock( 400, 0, 170, 40, "PLAYHEAD" );
         o->color( fl_darker( FL_GRAY ) );
 
         Fl::add_timeout( UPDATE_FREQ, clock_update_cb, o );

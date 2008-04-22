@@ -40,8 +40,9 @@ protected:
 
 public:
 
-    static bool use_gradient;
-    static bool use_polygon;
+    static bool draw_with_gradient;
+    static bool draw_with_polygon;
+    static bool draw_with_grid;
 
     LOG_CREATE_FUNC( Control_Sequence );
 

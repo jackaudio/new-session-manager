@@ -20,8 +20,9 @@
 #include "Control_Sequence.H"
 #include "Track.H"
 
-bool Control_Sequence::use_gradient = true;
-bool Control_Sequence::use_polygon = true;
+bool Control_Sequence::draw_with_gradient = true;
+bool Control_Sequence::draw_with_polygon = true;
+bool Control_Sequence::draw_with_grid = true;
 
 Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 )
 {
@@ -96,7 +97,7 @@ Control_Sequence::draw ( void )
 
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
-    if ( use_gradient )
+    if ( draw_with_gradient )
     {
         Fl_Color target = fl_color_average( color(), FL_WHITE, 0.50f );
 
@@ -107,10 +108,21 @@ Control_Sequence::draw ( void )
         }
     }
 
+    if ( draw_with_grid )
+    {
+        fl_color( fl_darker( color() ) );
+
+        const int inc = h() / 10;
+        if ( inc )
+            for ( int gy = 0; gy < h(); gy += inc )
+                fl_line( x(), y() + gy, x() + w(), y() + gy );
+
+    }
+
     fl_color( fl_color_average( selection_color(), color(), 0.90f ) );
     fl_line_style( FL_SOLID, 4 );
 
-    if ( use_polygon )
+    if ( draw_with_polygon )
         fl_begin_complex_polygon();
     else
         fl_begin_line();
@@ -126,7 +138,7 @@ Control_Sequence::draw ( void )
 
             if ( r == _widgets.begin() )
             {
-                if ( use_gradient )
+                if ( draw_with_gradient )
                 {
                     fl_vertex( x(), y() );
                     fl_vertex( x(), ry );
@@ -142,7 +154,7 @@ Control_Sequence::draw ( void )
 
             if ( r == e )
             {
-                if ( use_gradient )
+                if ( draw_with_gradient )
                 {
                     fl_vertex( x() + w(), ry );
                     fl_vertex( x() + w(), y() );
@@ -157,7 +169,7 @@ Control_Sequence::draw ( void )
 
         }
 
-    if ( use_polygon )
+    if ( draw_with_polygon )
         fl_end_complex_polygon();
     else
         fl_end_line();

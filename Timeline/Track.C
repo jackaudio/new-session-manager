@@ -295,9 +295,11 @@ Track::add ( Sequence * t )
         char pat[20];
         snprintf( pat, sizeof( pat ), "%d", takes->children() );
         t->name( strdup( pat ) );
-        take_menu->add( t->name() );
     }
 
+    take_menu->add( t->name() );
+
+    t->labeltype( FL_ENGRAVED_LABEL );
 }
 
 void
@@ -328,6 +330,8 @@ Track::track ( Sequence * t )
 
     _track = t;
     pack->insert( *t, 0 );
+
+    t->labeltype( FL_NO_LABEL );
 
     resize();
 }

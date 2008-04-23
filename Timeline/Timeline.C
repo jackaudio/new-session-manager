@@ -532,12 +532,15 @@ Timeline::draw_playhead ( void )
     if ( x < tracks->x() + Track::width() || x > tracks->x() + tracks->w() )
         return;
 
+
     fl_color( FL_RED );
 
     int y = rulers->y() + rulers->h();
     int h = this->h() - hscroll->h();
 
-    fl_rectf( x - 2, y, 5, 2 );
+    fl_push_clip( Track::width(), y, tracks->w(), h );
+
+//    fl_rectf( x - 2, y, 5, 2 );
 
     fl_line( x, y, x, h );
 
@@ -549,6 +552,28 @@ Timeline::draw_playhead ( void )
 
     fl_line( x + 1, y, x + 1, h );
 
+    /* draw cap */
+    fl_color( FL_RED );
+    fl_begin_polygon();
+
+    fl_vertex( x - 8, y );
+    fl_vertex( x, y + 8 );
+    fl_vertex( x + 8, y );
+
+    fl_end_polygon();
+
+
+    /* draw cap outline */
+    fl_color( FL_BLACK );
+    fl_begin_line();
+
+    fl_vertex( x - 8, y );
+    fl_vertex( x, y + 8 );
+    fl_vertex( x + 8, y );
+
+    fl_end_line();
+
+    fl_pop_clip();
 }
 
 void

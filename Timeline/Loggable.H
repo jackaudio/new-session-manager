@@ -95,6 +95,7 @@ public:
     static void undo ( void );
     static int undo_index ( void ) { return _undo_index; }
     static bool snapshot( const char *file );
+    static void compact( void );
 
     static
     void

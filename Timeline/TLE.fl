@@ -10,12 +10,16 @@ decl {\#include "Engine.H"} {}
 
 decl {\#include "Transport.H"} {} 
 
+decl {\#include "Loggable.H"} {} 
+
 decl {\#include "Clock.H"} {public
 } 
 
 decl {\#include "Waveform.H" // for options} {} 
 
 decl {\#include "Control_Sequence.H" // for options} {} 
+
+decl {\#include <FL/fl_ask.H>} {} 
 
 decl {\#include <FL/Fl.H>} {} 
 
@@ -44,7 +48,7 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
   } {
     Fl_Window main_window {
       label {Non-DAW - Timeline} open
-      xywh {483 100 1024 768} type Double resizable xclass {Non-DAW} visible
+      xywh {581 446 1024 768} type Double resizable xclass {Non-DAW} visible
     } {
       Fl_Group {} {open
         xywh {0 0 1024 25}
@@ -66,6 +70,12 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
           }
           MenuItem {} {
             label {&Compact}
+            callback {int n = fl_choice( "Compacting will replace the session history with a snapshot of the current state.\\n You will not be able to use Undo to go back beyond this point.\\n This operation is irreversible!", NULL, "Abort", "Procede with compaction" );
+
+if ( n != 2 )
+	return;
+	
+Loggable::compact();} selected
             xywh {20 20 40 25}
           }
           Submenu {} {
@@ -253,7 +263,7 @@ timeline->redraw();}
               }
             }
             Submenu {} {
-              label {C&olors} open selected
+              label {C&olors} open
               xywh {0 0 74 25}
             } {
               MenuItem {} {

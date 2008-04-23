@@ -143,9 +143,15 @@ public:
                     {
                         Sequence *t = (Sequence*)Loggable::find( i );
 
-                        assert( t );
+                        /* FIXME: our track might not have been
+                         * defined yet... what should we do about this
+                         * chicken/egg problem? */
+                        if ( t )
+                        {
+//                        assert( t );
 
-                        track( t );
+                            track( t );
+                        }
                     }
                 }
             }

@@ -766,10 +766,10 @@ Timeline::handle ( int m )
 
                             Track *t = new Track( name );
 
-                            add_track( t );
-
                             Sequence *o = new Audio_Sequence( t );
                             new Control_Sequence( t );
+
+                            add_track( t );
 
                             t->track( o );
 
@@ -966,12 +966,16 @@ Timeline::total_input_buffer_percent ( void )
         }
     }
 
+    if ( ! cnt )
+        return 0;
+
     return r / cnt;
 }
 
 int
 Timeline::total_output_buffer_percent ( void )
 {
+
     int r = 0;
 
     int cnt = 0;
@@ -986,6 +990,9 @@ Timeline::total_output_buffer_percent ( void )
             r += t->playback_ds->buffer_percent();
         }
     }
+
+    if ( ! cnt )
+        return 0;
 
     return r / cnt;
 }

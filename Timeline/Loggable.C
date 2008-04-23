@@ -333,7 +333,7 @@ Loggable::snapshot( const char *file )
 {
     FILE *ofp = _fp;
 
-    if ( ! ( _fp = fopen( file, "a" ) ) )
+    if ( ! ( _fp = fopen( file, "w" ) ) )
     {
         _fp = ofp;
         return false;
@@ -351,6 +351,24 @@ Loggable::snapshot( const char *file )
 
     return true;
 }
+
+void
+Loggable::compact ( void )
+{
+    fclose( _fp );
+    _fp = NULL;
+
+    /* FIXME: don't use name here */
+    snapshot( "history" );
+
+    if ( ! ( _fp = fopen( "history", "a+" ) ) )
+    {
+        printf( "Could not open log file for writing!" );
+//        return false;
+    }
+}
+
+
 
 void
 Loggable::log ( const char *fmt, ... )

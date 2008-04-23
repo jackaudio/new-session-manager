@@ -823,6 +823,29 @@ Timeline::handle ( int m )
 }
 
 
+void
+Timeline::zoom_in ( void )
+{
+    hscroll->zoom_in();
+}
+
+void
+Timeline::zoom_out ( void )
+{
+    hscroll->zoom_out();
+}
+
+/** zoom the display to show /secs/ seconds per screen */
+void
+Timeline::zoom ( float secs )
+{
+    const int sw = w() - vscroll->w() - Track::width();
+
+    /* FIXME: we actually need to set this in the scalebar */
+    _fpp = (int)((secs * _sample_rate) / sw);
+
+    redraw();
+}
 
 Track *
 Timeline::track_by_name ( const char *name )

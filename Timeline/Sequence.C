@@ -170,6 +170,8 @@ Sequence::draw ( void )
                 Rectangle b( (*r)->x(), o->y(), (o->x() + o->w()) - (*r)->x(), o->h() );
 
                 /* draw overlapping waveforms in X-ray style. */
+                bool t = Waveform::fill;
+
                 Waveform::fill = false;
 
 /*                 Fl_Color oc = o->color(); */
@@ -186,7 +188,7 @@ Sequence::draw ( void )
 
                 fl_pop_clip();
 
-                Waveform::fill = true;
+                Waveform::fill = t;
 
 
 /*                 o->color( oc ); */

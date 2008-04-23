@@ -6,18 +6,27 @@ decl {const float STATUS_UPDATE_FREQ = 0.5f;} {}
 
 decl {\#include "Timeline.H"} {} 
 
-decl {\#include "Engine.H"} {selected
-} 
+decl {\#include "Engine.H"} {} 
 
 decl {\#include "Transport.H"} {} 
 
 decl {\#include "Clock.H"} {public
 } 
 
+decl {\#include "Waveform.H" // for options} {} 
+
+decl {\#include "Control_Sequence.H" // for options} {} 
+
 decl {\#include <FL/Fl.H>} {} 
 
 class TLE {open
 } {
+  decl {static void menubar_cb ( void *v )} {}
+  decl {void menubar_cb ( void )} {}
+  Function {menu_picked_value( const Fl_Menu_ *m )} {open return_type {static int}
+  } {
+    code {return m->menu()[ m->value() ].flags & FL_MENU_VALUE;} {}
+  }
   Function {TLE()} {open
   } {
     code {make_window();
@@ -35,12 +44,12 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
   } {
     Fl_Window main_window {
       label {Non-DAW - Timeline} open
-      xywh {549 146 1024 768} type Double resizable xclass {Non-DAW} visible
+      xywh {483 100 1024 768} type Double resizable xclass {Non-DAW} visible
     } {
       Fl_Group {} {open
         xywh {0 0 1024 25}
       } {}
-      Fl_Menu_Bar {} {
+      Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -74,6 +83,7 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
           }
           MenuItem {} {
             label {&Quit}
+            callback {exit( 0 );}
             xywh {40 40 40 25} shortcut 0x40071
           }
         }
@@ -96,23 +106,27 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
         } {
           MenuItem {} {
             label Home
-            xywh {0 0 40 25}
+            callback {transport->locate( 0 );}
+            xywh {0 0 40 25} shortcut 0xff50
           }
           MenuItem {} {
             label End
-            xywh {10 10 40 25}
+            callback {transport->locate( timeline->length() );}
+            xywh {10 10 40 25} shortcut 0xff57
           }
           MenuItem {} {
             label Stop
-            xywh {20 20 40 25}
+            callback {transport->stop();}
+            xywh {20 20 40 25} shortcut 0x50073
           }
           MenuItem {} {
             label Play
-            xywh {30 30 40 25}
+            callback {transport->start();}
+            xywh {30 30 40 25} shortcut 0x50070
           }
           MenuItem {} {
             label Record
-            xywh {40 40 40 25}
+            xywh {40 40 40 25} shortcut 0x50072
           }
         }
         Submenu {} {
@@ -120,24 +134,37 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
           xywh {0 0 74 25}
         } {
           Submenu {} {
-            label Zoom open
+            label {&Zoom} open
             xywh {0 0 74 25}
           } {
             MenuItem {} {
-              label Fit
-              xywh {10 10 40 25}
-            }
-            MenuItem {} {
-              label {1 sec.}
-              xywh {10 10 40 25}
-            }
-            MenuItem {} {
-              label {1 min.}
+              label {&In}
+              callback {timeline->zoom_in();}
               xywh {20 20 40 25}
             }
             MenuItem {} {
-              label {1 hour.}
+              label {&Out}
+              callback {timeline->zoom_out();}
               xywh {30 30 40 25}
+            }
+            MenuItem {} {
+              label {&Fit}
+              xywh {10 10 40 25} divider
+            }
+            MenuItem {} {
+              label {1 sec.}
+              callback {timeline->zoom( 1 );}
+              xywh {10 10 40 25} shortcut 0x31
+            }
+            MenuItem {} {
+              label {1 min.}
+              callback {timeline->zoom( 60 );}
+              xywh {20 20 40 25} shortcut 0x32
+            }
+            MenuItem {} {
+              label {1 hour.}
+              callback {timeline->zoom( 60 * 60 );}
+              xywh {30 30 40 25} shortcut 0x33
             }
           }
         }
@@ -146,74 +173,112 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
           xywh {0 0 74 25} divider
         } {
           Submenu {} {
-            label Display open
+            label {&Display} open
             xywh {0 0 74 25}
           } {
-            MenuItem {} {
-              label item
-              xywh {0 0 40 25}
-            }
             Submenu {} {
-              label Region open
+              label {&Waveforms} open
               xywh {0 0 74 25}
             } {
               MenuItem {} {
-                label {Filled waveforms}
+                label Fill
+                callback {Waveform::fill = menu_picked_value( o );
+
+timeline->redraw();}
                 xywh {10 10 40 25} type Toggle value 1
               }
               MenuItem {} {
-                label {Colorful waveforms}
+                label Outline
+                callback {Waveform::outline = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {30 30 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label {Vary color}
+                callback {Waveform::vary_color = menu_picked_value( o );
+
+timeline->redraw();}
                 xywh {20 20 40 25} type Toggle value 1
               }
+            }
+            Submenu {} {
+              label {&Region} open
+              xywh {0 0 74 25}
+            } {
               MenuItem {} {
                 label {Filled fades}
                 xywh {30 30 40 25} type Toggle value 1
               }
             }
             Submenu {} {
-              label {Control Sequence} open
+              label {&Control Sequence} open
               xywh {0 0 74 25}
             } {
               MenuItem {} {
                 label Polygon
+                callback {Control_Sequence::draw_with_polygon = menu_picked_value( o );
+
+timeline->redraw();}
                 xywh {20 20 40 25} type Toggle value 1
               }
               MenuItem {} {
                 label Graded
+                callback {Control_Sequence::draw_with_gradient = menu_picked_value( o );
+
+timeline->redraw();}
                 xywh {30 30 40 25} type Toggle value 1
               }
               MenuItem {} {
                 label Ruled
+                callback {Control_Sequence::draw_with_grid = menu_picked_value( o );
+
+timeline->redraw();}
                 xywh {40 40 40 25} type Toggle value 1
               }
             }
             Submenu {} {
-              label Style open
+              label {&Style} open
               xywh {0 0 74 25}
             } {
               MenuItem {} {
                 label Default
+                callback {Fl::scheme( "plastic" );}
                 xywh {0 0 40 25} type Radio value 1
               }
               MenuItem {} {
                 label Flat
+                callback {Fl::scheme( "gtk+" );}
                 xywh {10 10 40 25} type Radio
               }
             }
             Submenu {} {
-              label Colors open
+              label {C&olors} open selected
               xywh {0 0 74 25}
             } {
               MenuItem {} {
                 label System
+                callback {Fl::get_system_colors();
+
+Fl::scheme( Fl::scheme() );}
                 xywh {0 0 40 25} type Radio
               }
               MenuItem {} {
                 label Dark
+                callback {Fl::background2( 100, 100, 100 );
+Fl::background( 50, 50, 50 );
+Fl::foreground( 255, 255, 255 );
+
+Fl::scheme( Fl::scheme() );}
                 xywh {10 10 40 25} type Radio value 1
               }
               MenuItem {} {
                 label Light
+                callback {Fl::background2( 255, 255, 255 );
+Fl::background( 172, 172, 172 );
+Fl::foreground( 0, 0, 0 );
+
+Fl::scheme( Fl::scheme() );}
                 xywh {20 20 40 25} type Radio
               }
             }

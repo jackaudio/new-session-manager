@@ -38,6 +38,10 @@ protected:
             init();
         }
 
+private:
+
+    void draw_curve ( bool flip, bool filled );
+
 public:
 
     static bool draw_with_gradient;

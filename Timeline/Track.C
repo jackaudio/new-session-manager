@@ -409,7 +409,7 @@ Track::handle ( int m )
 
                 const Fl_Menu_Item *r = menu->popup( X, Y, "Track" );
 
-                if ( r )
+                if ( r && r > &menu[ 0 ] )
                 {
                     if ( r < &menu[ 4 ] )
                     {

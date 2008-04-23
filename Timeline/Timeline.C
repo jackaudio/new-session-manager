@@ -418,13 +418,6 @@ Timeline::draw ( void )
     int bdx = 0;
     int bdw = 0;
 
-    /* FIXME: hack to avoid clobbering the box corners of tracks. */
-    if ( tracks->children() )
-    {
-        bdx = Fl::box_dx( tracks->child( 0 )->box() );
-        bdw = Fl::box_dw( tracks->child( 0 )->box() );
-    }
-
     X = tracks->x() + bdx + 1;
     Y = tracks->y();
     W = tracks->w() - bdw - 1;
@@ -513,7 +506,7 @@ Timeline::draw ( void )
         int dy = _old_yposition - _yposition;
 
         if ( ! dy )
-            fl_scroll( X + Track::width(), rulers->y(), rulers->w() - Fl::box_dw( rulers->child(0)->box() ), rulers->h(), dx, 0, draw_clip, this );
+            fl_scroll( X + Track::width(), rulers->y(), rulers->w(), rulers->h(), dx, 0, draw_clip, this );
 
         Y = rulers->y() + rulers->h();
         H = h() - rulers->h() - hscroll->h();

@@ -83,7 +83,8 @@ Sequence::draw ( void )
 
     fl_push_clip( x(), y(), w(), h() );
 
-    draw_box();
+    /* draw the box with the ends cut off. */
+    draw_box( box(), x() - Fl::box_dx( box() ), y(), w() + Fl::box_dw( box() ), h(), color() );
 
     int X, Y, W, H;
 

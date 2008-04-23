@@ -91,20 +91,27 @@ Control_Sequence::draw ( void )
 
     fl_push_clip( x(), y(), w(), h() );
 
-    draw_box();
+    /* draw the box with the ends cut off. */
+    draw_box( box(), x() - Fl::box_dx( box() ), y(), w() + Fl::box_dw( box() ), h(), color() );
+
+
+    const int bx = x();
+    const int by = y() + Fl::box_dy( box() );
+    const int bw = w();
+    const int bh = h() - Fl::box_dh( box() );
 
     int X, Y, W, H;
 
-    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
+    fl_clip_box( bx, by, bw, bh, X, Y, W, H );
 
     if ( draw_with_gradient )
     {
         Fl_Color target = fl_color_average( color(), FL_WHITE, 0.50f );
 
-        for ( int gy = 0; gy < h(); gy++ )
+        for ( int gy = 0; gy < bh; gy++ )
         {
-            fl_color( fl_color_average( target, selection_color(), gy / (float)h()) );
-            fl_line( x(), y() + gy, x() + w(), y() + gy );
+            fl_color( fl_color_average( target, selection_color(), gy / (float)bh) );
+            fl_line( X, by + gy, X + W, by + gy );
         }
     }
 
@@ -112,10 +119,10 @@ Control_Sequence::draw ( void )
     {
         fl_color( fl_darker( color() ) );
 
-        const int inc = h() / 10;
+        const int inc = bh / 10;
         if ( inc )
-            for ( int gy = 0; gy < h(); gy += inc )
-                fl_line( x(), y() + gy, x() + w(), y() + gy );
+            for ( int gy = 0; gy < bh; gy += inc )
+                fl_line( X, by + gy, X + W, by + gy );
 
     }
 
@@ -140,13 +147,13 @@ Control_Sequence::draw ( void )
             {
                 if ( draw_with_gradient )
                 {
-                    fl_vertex( x(), y() );
-                    fl_vertex( x(), ry );
+                    fl_vertex( bx, by );
+                    fl_vertex( bx, ry );
                 }
                 else
                 {
-                    fl_vertex( x(), h() + y() );
-                    fl_vertex( x(), ry );
+                    fl_vertex( bx, bh + by );
+                    fl_vertex( bx, ry );
                 }
             }
 
@@ -156,13 +163,13 @@ Control_Sequence::draw ( void )
             {
                 if ( draw_with_gradient )
                 {
-                    fl_vertex( x() + w(), ry );
-                    fl_vertex( x() + w(), y() );
+                    fl_vertex( bx + bw, ry );
+                    fl_vertex( bx + bw, by );
                 }
                 else
                 {
-                    fl_vertex( x() + w(), ry );
-                    fl_vertex( x() + w(), h() + y()  );
+                    fl_vertex( bx + bw, ry );
+                    fl_vertex( bx + bw, bh + by );
                 }
                 break;
             }

@@ -62,7 +62,7 @@ public:
             int M = S / 60; S -= M * 60;
             int H = M / 60; M -= H * 60;
 
-            snprintf( dst, n, "%02d:%02d:%02.1f", H, M, S );
+            snprintf( dst, n, "%02d:%02d:%04.1f", H, M, S );
         }
 
 

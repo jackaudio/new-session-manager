@@ -35,6 +35,7 @@ const float UPDATE_FREQ = 0.02f;
 
 
 #include "Playback_DS.H"
+#include "Record_DS.H"
 
 #include "Transport.H"
 
@@ -894,4 +895,48 @@ Timeline::seek_pending ( void )
         if ( t->playback_ds )
             r += t->playback_ds->buffer_percent() < 50;
     }
+}
+
+
+/* FIXME: shouldn't these belong to the engine? */
+int
+Timeline::total_input_buffer_percent ( void )
+{
+    int r = 0;
+
+    int cnt = 0;
+
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        if ( t->record_ds )
+        {
+            ++cnt;
+            r += t->record_ds->buffer_percent();
+        }
+    }
+
+    return r / cnt;
+}
+
+int
+Timeline::total_output_buffer_percent ( void )
+{
+    int r = 0;
+
+    int cnt = 0;
+
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        if ( t->playback_ds )
+        {
+            ++cnt;
+            r += t->playback_ds->buffer_percent();
+        }
+    }
+
+    return r / cnt;
 }

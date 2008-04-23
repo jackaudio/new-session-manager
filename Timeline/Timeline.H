@@ -155,6 +155,10 @@ public:
     void add_track ( Track *track );
     void remove_track ( Track *track );
 
+    int  total_input_buffer_percent ( void );
+    int  total_output_buffer_percent ( void );
+
+
 private:
 
     friend class Engine; // FIXME: only Engine::process() needs to be friended.x

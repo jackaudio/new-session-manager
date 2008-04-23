@@ -2,7 +2,12 @@
 version 1.0108 
 header_name {.H} 
 code_name {.C}
+decl {const float STATUS_UPDATE_FREQ = 0.5f;} {} 
+
 decl {\#include "Timeline.H"} {} 
+
+decl {\#include "Engine.H"} {selected
+} 
 
 decl {\#include "Transport.H"} {} 
 
@@ -21,7 +26,10 @@ class TLE {open
 Fl::visible_focus( 0 );
 
 Fl::get_system_colors();
-Fl::scheme( "plastic" );} {}
+Fl::scheme( "plastic" );
+
+
+Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
   }
   Function {make_window()} {open
   } {
@@ -32,7 +40,7 @@ Fl::scheme( "plastic" );} {}
       Fl_Group {} {open
         xywh {0 0 1024 25}
       } {}
-      Fl_Menu_Bar {} {open
+      Fl_Menu_Bar {} {
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -233,7 +241,7 @@ Fl::scheme( "plastic" );} {}
         xywh {139 25 285 46} type HORIZONTAL
       } {
         Fl_Box playhead_clock {
-          label PLAYHEAD selected
+          label PLAYHEAD
           xywh {139 29 137 40} box BORDER_BOX color 46
           code0 {o->type( Clock::HMS );}
           code1 {o->run( &transport->frame );}
@@ -247,15 +255,15 @@ Fl::scheme( "plastic" );} {}
         }
       }
       Fl_Progress capture_buffer_progress {
-        label {c:}
+        label {capture:}
         xywh {925 26 99 14} labelsize 10 align 4
       }
-      Fl_Progress dsp_usage_progress {
+      Fl_Progress cpu_load_progress {
         label {DSP:}
         xywh {925 55 99 16} labelsize 9 align 4
       }
       Fl_Progress playback_buffer_progress {
-        label {p:}
+        label {playback:}
         xywh {925 40 99 14} labelsize 10 align 4
       }
       Fl_Box {} {
@@ -265,4 +273,21 @@ Fl::scheme( "plastic" );} {}
       }
     }
   }
+  Function {update_status()} {open
+  } {
+    code {capture_buffer_progress->value( timeline->total_input_buffer_percent() );
+playback_buffer_progress->value( timeline->total_output_buffer_percent() );
+cpu_load_progress->value( engine->cpu_load() );
+
+// TODO: dsp} {}
+  }
+  Function {update_cb( void *v )} {open return_type {static void}
+  } {
+    code {Fl::repeat_timeout( STATUS_UPDATE_FREQ, update_cb, v );
+
+((TLE*)v)->update_status();} {}
+  }
 } 
+
+Function {make_window()} {open
+} {} 

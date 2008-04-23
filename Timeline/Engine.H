@@ -64,6 +64,7 @@ public:
     nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
     float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }
 
+    float cpu_load ( void ) const { return jack_cpu_load( _client ); }
 };
 
 

@@ -28,7 +28,7 @@ switched between Bar Beat Tick and Wallclock displays  */
 #include "Timeline.H"
 #include "types.h"
 
-const float CLOCK_UPDATE_FREQ = 0.05f;
+const float CLOCK_UPDATE_FREQ = 0.06f;
 
 class Clock : public Fl_Widget
 {
@@ -61,8 +61,9 @@ public:
 
             int M = S / 60; S -= M * 60;
             int H = M / 60; M -= H * 60;
+            int HS = ((int)(S * 100)) - (((int)S) * 100);
 
-            snprintf( dst, n, "%02d:%02d:%04.1f", H, M, S );
+            snprintf( dst, n, "%02d:%02d:%02.0f:%02d", H, M, S, HS );
         }
 
 

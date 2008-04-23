@@ -23,14 +23,32 @@ switched between Bar Beat Tick and Wallclock displays  */
 
 #include <FL/Fl_Widget.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl.H>
 
 #include "Timeline.H"
 #include "types.h"
 
+const float CLOCK_UPDATE_FREQ = 0.05f;
 
 class Clock : public Fl_Widget
 {
     nframes_t _when;
+    nframes_t *_v;
+
+    static void
+    update_cb ( void *v )
+        {
+            ((Clock*)v)->update_cb();
+        }
+
+    void
+    update_cb ( void )
+        {
+            Fl::repeat_timeout( CLOCK_UPDATE_FREQ, update_cb, this );
+
+            set( *_v );
+        }
+
 
 public:
 
@@ -47,15 +65,29 @@ public:
             snprintf( dst, n, "%02d:%02d:%02.1f", H, M, S );
         }
 
+
     Clock ( int X, int Y, int W, int H, const char *L=0 )
         : Fl_Widget( X, Y, W, H, L )
         {
             _when = 0;
+            _v = 0;
             box( FL_BORDER_BOX );
             type( HMS );
 
             /* force size */
             size( 170, 40 );
+        }
+
+    ~Clock ( )
+        {
+            Fl::remove_timeout( update_cb );
+        }
+
+    void run ( nframes_t *v )
+        {
+            _v = v;
+
+            Fl::add_timeout( CLOCK_UPDATE_FREQ, update_cb, this );
         }
 
     void set ( nframes_t frame )

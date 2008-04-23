@@ -236,10 +236,11 @@ Fl::scheme( "plastic" );} {}
           label PLAYHEAD selected
           xywh {139 29 137 40} box BORDER_BOX color 46
           code0 {o->type( Clock::HMS );}
+          code1 {o->run( &transport->frame );}
           class Clock
         }
         Fl_Box {} {
-          label PLAYHEAD selected
+          label PLAYHEAD
           xywh {278 29 142 40} box BORDER_BOX color 46
           code0 {o->type( Clock::BBT );}
           class Clock

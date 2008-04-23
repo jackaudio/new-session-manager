@@ -184,7 +184,8 @@ Track::init ( void )
         Fl_Pack *o = pack = new Fl_Pack( width(), 0, 1006, 115 );
         o->labeltype( FL_NO_LABEL );
         o->resize( x() + width(), y(), w() - width(), h() );
-        Fl_Group::current()->resizable( o );
+
+        resizable( o );
 
         {
             Fl_Pack *o = control = new Fl_Pack( width(), 0, pack->w(), 115 );

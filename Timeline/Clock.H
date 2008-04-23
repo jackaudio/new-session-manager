@@ -30,11 +30,11 @@ switched between Bar Beat Tick and Wallclock displays  */
 
 class Clock : public Fl_Widget
 {
-    enum { BBT, HMS };
-
     nframes_t _when;
 
 public:
+
+    enum { BBT, HMS };
 
     static void
     frame_to_HMS ( char *dst, int n, nframes_t frame )
@@ -44,7 +44,7 @@ public:
             int M = S / 60; S -= M * 60;
             int H = M / 60; M -= H * 60;
 
-            snprintf( dst, n, "%d:%d:%.1f", H, M, S );
+            snprintf( dst, n, "%02d:%02d:%02.1f", H, M, S );
         }
 
     Clock ( int X, int Y, int W, int H, const char *L=0 )
@@ -69,11 +69,10 @@ public:
 
     void draw ( void )
         {
-//            fl_rectf( x(), y(), w(), h(), color() );
-
             draw_box();
 
             char buf[15];
+            *buf = '\0';
 
             switch ( type() )
             {
@@ -98,14 +97,14 @@ public:
             const int dw = w() - Fl::box_dw( box() );
             const int dh = h() - Fl::box_dh( box() );
 
-            fl_draw( buf, dx, dy, dw, dh, (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_TOP) );
+            fl_draw( buf, dx, dy, dw, dh - 9, FL_ALIGN_CENTER );
 
             for ( int i = strlen( buf ); i--; )
                 if ( isdigit( buf[ i ] ) )
                     buf[ i ] = ' ';
 
             fl_color( fl_darker( c ) );
-            fl_draw( buf, dx, dy, dw, dh, (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_TOP) );
+            fl_draw( buf, dx, dy, dw, dh - 9, FL_ALIGN_CENTER );
 
             fl_font( FL_HELVETICA, 9 );
             fl_color( FL_RED );

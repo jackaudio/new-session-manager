@@ -54,40 +54,34 @@
 
 #include "Engine.H"
 
+// #include "Clock.H"
 
-#include "Clock.H"
+#include "TLE.H"
+
 
 Engine *engine;
 Timeline *timeline;
 Transport *transport;
 
-void cb_undo ( Fl_Widget *w, void *v )
-{
-    Loggable::undo();
-}
+/* void cb_undo ( Fl_Widget *w, void *v ) */
+/* { */
+/*     Loggable::undo(); */
+/* } */
 
 
-const float UPDATE_FREQ = 0.05f;
+/* const float UPDATE_FREQ = 0.05f; */
 
-static void
-clock_update_cb ( void *w )
-{
-    Fl::repeat_timeout( UPDATE_FREQ, clock_update_cb, w );
+/* static void */
+/* clock_update_cb ( void *w ) */
+/* { */
+/*     Fl::repeat_timeout( UPDATE_FREQ, clock_update_cb, w ); */
 
-    ((Clock *)w)->set( transport->frame );
-}
+/*     ((Clock *)w)->set( transport->frame ); */
+/* } */
 
 int
 main ( int argc, char **argv )
 {
-    Fl_Window *main_window = new Fl_Window( 0, 0, 1024, 768 );
-
-    Fl::visual( FL_RGB8 );
-    Fl::visible_focus( 0 );
-
-    Fl::get_system_colors();
-    Fl::scheme( "plastic" );
-//    Fl::scheme( "gtk+" );
 
     /* welcome to C++ */
     LOG_REGISTER_CREATE( Region );
@@ -100,29 +94,17 @@ main ( int argc, char **argv )
 
     /* TODO: change to seesion dir */
 
-    transport = new Transport( 0, 0, 120, 40 );
+    TLE tle;
 
     /* we don't really need a pointer for this */
     engine = new Engine;
     engine->init();
 
-    timeline = new Timeline( 0, 100, main_window->w(), main_window->h() - 24, "Timeline" );
-
     Loggable::open( "history" );
 
-    Fl_Button *o = new Fl_Button( 0, 0, 50, 24, "undo" );
-    o->shortcut( FL_CTRL + 'z' );
-    o->callback( cb_undo, 0 );
+//        Fl::add_timeout( UPDATE_FREQ, clock_update_cb, o );
 
-    {
-        Clock *o = new Clock( 400, 0, 170, 40, "PLAYHEAD" );
-        o->color( fl_darker( FL_GRAY ) );
-
-        Fl::add_timeout( UPDATE_FREQ, clock_update_cb, o );
-    }
-
-    main_window->end();
-    main_window->show( argc, argv );
+    tle.main_window->show( argc, argv );
 
     Fl::run();
 }

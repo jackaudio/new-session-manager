@@ -81,6 +81,10 @@ public:
                 track->add( this );
 
             log_create();
+
+                                                                 /* FIXME: temporary  */
+            labeltype( FL_NO_LABEL );
+
         }
 
     ~Audio_Sequence ( )

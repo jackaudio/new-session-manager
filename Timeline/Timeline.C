@@ -85,6 +85,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     _enable_measure_lines = true;
 
     X = Y = 0;
+
     {
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
 
@@ -101,7 +102,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         Fl_Scrollbar *o = new Fl_Scrollbar( X + W - 18, Y, 18, H - 18 );
 
         o->type( FL_VERTICAL );
-//        o->step( 10 );
         o->callback( cb_scroll, this );
         vscroll = o;
     }
@@ -115,15 +115,10 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
             o->color( FL_RED );
 
-/*             o->add( new Tempo_Point( 0, 120 ) ); */
-/*             o->add( new Tempo_Point( 56000, 250 ) ); */
-
             o->label( "Tempo" );
             o->align( FL_ALIGN_LEFT );
 
             tempo_track = o;
-//            o->end();
-
         }
 
         {
@@ -131,15 +126,10 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
             o->color( fl_color_average( FL_RED, FL_WHITE, 0.50f ) );
 
-/*             o->add( new Time_Point( 0, 4, 4 ) ); */
-/*             o->add( new Time_Point( 345344, 6, 8 ) ); */
-
             o->label( "Time" );
             o->align( FL_ALIGN_LEFT );
 
             time_track = o;
-            //          o->end();
-
         }
 
         {
@@ -147,15 +137,10 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
             o->color( FL_GREEN );
 
-/*             o->add( new Time_Point( 0, 4, 4 ) ); */
-/*             o->add( new Time_Point( 345344, 6, 8 ) ); */
-
             o->label( "Ruler" );
             o->align( FL_ALIGN_LEFT );
 
             ruler_track = o;
-            //          o->end();
-
         }
 
         o->size( o->w(), o->child( 0 )->h() * o->children() );
@@ -165,10 +150,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
 
     {
-
-/*         Fl_Scroll *o = new Fl_Scroll( 0, 24 * 2, 800, 600 - (24 * 3) ); */
-/*         o->type( Fl_Scroll::VERTICAL_ALWAYS ); */
-
         _sample_rate = 44100;
         _fpp = 256;
         _length = _sample_rate * 60 * 2;
@@ -178,26 +159,10 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->type( Fl_Pack::VERTICAL );
             o->spacing( 0 );
 
-/*             for ( int i = 1; i--;  ) */
-/*             { */
-/* //                Track *t = new Track( 0, 0, W, 75 ); */
-/*                 Track *t = new Track( 0, 0, W, 30 ); */
-/*                 Sequence *o = new Audio_Sequence( 0, 0, 1, 100 ); */
-
-/*                 t->track( o ); */
-/*                 t->add( new Audio_Sequence( 0, 0, 1, 100 ) ); */
-/*                 t->add( new Audio_Sequence( 0, 0, 1, 100 ) ); */
-/*                 t->add_control( new Control_Sequence( 0, 0, 1, 100 ) ); */
-/*                 t->color( (Fl_Color)rand() ); */
-/*             } */
-
             tracks = o;
             o->end();
+            resizable( o );
         }
-
-/*         scroll = o; */
-/*         o->end(); */
-
     }
 
 
@@ -434,9 +399,16 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
 }
 
 
-static unsigned char *rect_image;
+// static unsigned char *rect_image;
 
+void
+Timeline::resize ( int X, int Y, int W, int H )
+{
+    Fl_Overlay_Window::resize( X, Y, W, H );
 
+    /* why is this necessary? */
+    rulers->resize( Track::width(), 0, W, rulers->h() );
+}
 
 void
 Timeline::draw ( void )

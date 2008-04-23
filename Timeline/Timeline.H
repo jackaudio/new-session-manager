@@ -143,6 +143,8 @@ public:
     void yposition ( int Y );
     void draw_playhead ( void );
     void redraw_playhead ( void );
+    void resize ( int X, int Y, int W, int H );
+
     void draw ( void );
     void draw_overlay ( void );
     int handle ( int m );

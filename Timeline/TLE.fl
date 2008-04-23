@@ -1,0 +1,267 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0108 
+header_name {.H} 
+code_name {.C}
+decl {\#include "Timeline.H"} {} 
+
+decl {\#include "Transport.H"} {} 
+
+decl {\#include "Clock.H"} {public
+} 
+
+decl {\#include <FL/Fl.H>} {} 
+
+class TLE {open
+} {
+  Function {TLE()} {open
+  } {
+    code {make_window();
+
+// Fl::visual( RGB8 );
+Fl::visible_focus( 0 );
+
+Fl::get_system_colors();
+Fl::scheme( "plastic" );} {}
+  }
+  Function {make_window()} {open
+  } {
+    Fl_Window main_window {
+      label {Non-DAW - Timeline} open
+      xywh {549 146 1024 768} type Double resizable xclass {Non-DAW} visible
+    } {
+      Fl_Group {} {open
+        xywh {0 0 1024 25}
+      } {}
+      Fl_Menu_Bar {} {open
+        xywh {0 0 1024 25}
+      } {
+        Submenu {} {
+          label {&Session} open
+          xywh {0 0 74 25}
+        } {
+          MenuItem {} {
+            label {&New}
+            xywh {0 0 40 25}
+          }
+          MenuItem {} {
+            label {&Open}
+            xywh {10 10 40 25}
+          }
+          MenuItem {} {
+            label {&Compact}
+            xywh {20 20 40 25}
+          }
+          Submenu {} {
+            label Export open
+            xywh {0 0 74 25}
+          } {
+            MenuItem {} {
+              label Session
+              xywh {0 0 40 25}
+            }
+            MenuItem {} {
+              label Range
+              xywh {10 10 40 25}
+            }
+          }
+          MenuItem {} {
+            label {&Quit}
+            xywh {40 40 40 25} shortcut 0x40071
+          }
+        }
+        Submenu {} {
+          label {&Edit} open
+          xywh {0 0 74 25}
+        } {
+          MenuItem {} {
+            label Preferences
+            xywh {0 0 40 25}
+          }
+          MenuItem {} {
+            label Undo
+            xywh {0 0 40 25} shortcut 0x4007a
+          }
+        }
+        Submenu {} {
+          label Transport open
+          xywh {0 0 74 25}
+        } {
+          MenuItem {} {
+            label Home
+            xywh {0 0 40 25}
+          }
+          MenuItem {} {
+            label End
+            xywh {10 10 40 25}
+          }
+          MenuItem {} {
+            label Stop
+            xywh {20 20 40 25}
+          }
+          MenuItem {} {
+            label Play
+            xywh {30 30 40 25}
+          }
+          MenuItem {} {
+            label Record
+            xywh {40 40 40 25}
+          }
+        }
+        Submenu {} {
+          label {&View} open
+          xywh {0 0 74 25}
+        } {
+          Submenu {} {
+            label Zoom open
+            xywh {0 0 74 25}
+          } {
+            MenuItem {} {
+              label Fit
+              xywh {10 10 40 25}
+            }
+            MenuItem {} {
+              label {1 sec.}
+              xywh {10 10 40 25}
+            }
+            MenuItem {} {
+              label {1 min.}
+              xywh {20 20 40 25}
+            }
+            MenuItem {} {
+              label {1 hour.}
+              xywh {30 30 40 25}
+            }
+          }
+        }
+        Submenu {} {
+          label {&Options} open
+          xywh {0 0 74 25} divider
+        } {
+          Submenu {} {
+            label Display open
+            xywh {0 0 74 25}
+          } {
+            MenuItem {} {
+              label item
+              xywh {0 0 40 25}
+            }
+            Submenu {} {
+              label Region open
+              xywh {0 0 74 25}
+            } {
+              MenuItem {} {
+                label {Filled waveforms}
+                xywh {10 10 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label {Colorful waveforms}
+                xywh {20 20 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label {Filled fades}
+                xywh {30 30 40 25} type Toggle value 1
+              }
+            }
+            Submenu {} {
+              label {Control Sequence} open
+              xywh {0 0 74 25}
+            } {
+              MenuItem {} {
+                label Polygon
+                xywh {20 20 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label Graded
+                xywh {30 30 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label Ruled
+                xywh {40 40 40 25} type Toggle value 1
+              }
+            }
+            Submenu {} {
+              label Style open
+              xywh {0 0 74 25}
+            } {
+              MenuItem {} {
+                label Default
+                xywh {0 0 40 25} type Radio value 1
+              }
+              MenuItem {} {
+                label Flat
+                xywh {10 10 40 25} type Radio
+              }
+            }
+            Submenu {} {
+              label Colors open
+              xywh {0 0 74 25}
+            } {
+              MenuItem {} {
+                label System
+                xywh {0 0 40 25} type Radio
+              }
+              MenuItem {} {
+                label Dark
+                xywh {10 10 40 25} type Radio value 1
+              }
+              MenuItem {} {
+                label Light
+                xywh {20 20 40 25} type Radio
+              }
+            }
+          }
+        }
+        MenuItem {} {
+          label {&Help}
+          xywh {0 0 40 25}
+        }
+      }
+      Fl_Box {} {
+        label {<Timeline>}
+        xywh {0 74 1024 695} box FLAT_BOX color 47 labelsize 100
+        code0 {timeline = o;}
+        class Timeline
+      }
+      Fl_Box {} {
+        label {<Transport>}
+        xywh {0 25 137 46} color 30
+        code0 {transport = o;}
+        code1 {o->labeltype( FL_NO_LABEL );}
+        class Transport
+      }
+      Fl_Pack clocks_pack {open
+        xywh {139 25 285 46} type HORIZONTAL
+      } {
+        Fl_Box playhead_clock {
+          label PLAYHEAD selected
+          xywh {139 29 137 40} box BORDER_BOX color 46
+          code0 {o->type( Clock::HMS );}
+          class Clock
+        }
+        Fl_Box {} {
+          label PLAYHEAD selected
+          xywh {278 29 142 40} box BORDER_BOX color 46
+          code0 {o->type( Clock::BBT );}
+          class Clock
+        }
+      }
+      Fl_Progress capture_buffer_progress {
+        label {c:}
+        xywh {925 26 99 14} labelsize 10 align 4
+      }
+      Fl_Progress dsp_usage_progress {
+        label {DSP:}
+        xywh {925 55 99 16} labelsize 9 align 4
+      }
+      Fl_Progress playback_buffer_progress {
+        label {p:}
+        xywh {925 40 99 14} labelsize 10 align 4
+      }
+      Fl_Box {} {
+        label {<empty>}
+        xywh {427 29 469 42}
+        code0 {o->labeltype( FL_NO_LABEL );}
+      }
+    }
+  }
+} 

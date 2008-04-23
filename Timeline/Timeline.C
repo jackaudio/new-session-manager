@@ -408,7 +408,7 @@ Timeline::resize ( int X, int Y, int W, int H )
     Fl_Overlay_Window::resize( X, Y, W, H );
 
     /* why is this necessary? */
-    rulers->resize( Track::width(), 0, W, rulers->h() );
+    rulers->resize( Track::width(), 0, W - Track::width() - vscroll->w(), rulers->h() );
 }
 
 void
@@ -488,7 +488,8 @@ Timeline::draw ( void )
     {
 //        draw_box( box(), 0, 0, w(), h(), color() );
 
-        fl_push_clip( rulers->x(), rulers->y(), rulers->w() - vscroll->w(), rulers->h() );
+//        fl_push_clip( rulers->x(), rulers->y(), rulers->w() - vscroll->w(), rulers->h() );
+        fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
         update_child( *rulers );
         fl_pop_clip();
 
@@ -507,7 +508,7 @@ Timeline::draw ( void )
         int dy = _old_yposition - _yposition;
 
         if ( ! dy )
-            fl_scroll( X + Track::width(), rulers->y(), rulers->w(), rulers->h(), dx, 0, draw_clip, this );
+            fl_scroll( rulers->x(), rulers->y(), rulers->w(), rulers->h(), dx, 0, draw_clip, this );
 
         Y = rulers->y() + rulers->h();
         H = h() - rulers->h() - hscroll->h();

@@ -111,6 +111,9 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     nframes_t _length;
 
 
+    nframes_t p1, p2;                                           /* cursors */
+
+
 public:
 
     Tempo_Sequence *tempo_track;
@@ -141,6 +144,7 @@ public:
 
     void xposition ( int X );
     void yposition ( int Y );
+    void draw_cursor ( nframes_t frame, Fl_Color color );
     void draw_playhead ( void );
     void redraw_playhead ( void );
     void resize ( int X, int Y, int W, int H );

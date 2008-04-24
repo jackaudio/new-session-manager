@@ -526,26 +526,23 @@ Timeline::draw ( void )
 }
 
 void
-Timeline::draw_playhead ( void )
+Timeline::draw_cursor ( nframes_t frame, Fl_Color color )
 {
-    int x = ( ts_to_x( transport->frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track::width();
+    int x = ( ts_to_x( frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track::width();
 
     if ( x < tracks->x() + Track::width() || x > tracks->x() + tracks->w() )
         return;
 
-
-    fl_color( FL_RED );
+    fl_color( color );
 
     int y = rulers->y() + rulers->h();
     int h = this->h() - hscroll->h();
 
     fl_push_clip( Track::width(), y, tracks->w(), h );
 
-//    fl_rectf( x - 2, y, 5, 2 );
-
     fl_line( x, y, x, h );
 
-    fl_color( fl_darker( FL_RED ) );
+    fl_color( fl_darker( color ) );
 
     fl_line( x - 1, y, x - 1, h );
 
@@ -554,7 +551,7 @@ Timeline::draw_playhead ( void )
     fl_line( x + 1, y, x + 1, h );
 
     /* draw cap */
-    fl_color( FL_RED );
+    fl_color( color );
     fl_begin_polygon();
 
     fl_vertex( x - 8, y );
@@ -575,6 +572,16 @@ Timeline::draw_playhead ( void )
     fl_end_line();
 
     fl_pop_clip();
+
+}
+
+void
+Timeline::draw_playhead ( void )
+{
+    draw_cursor( p1, FL_BLUE );
+    draw_cursor( p2, FL_GREEN );
+
+    draw_cursor( transport->frame, FL_RED );
 }
 
 void
@@ -709,6 +716,28 @@ Timeline::handle ( int m )
                     if ( X > 0 )
                     {
                         transport->locate( xoffset + x_to_ts( X ) );
+                    }
+
+                    return 1;
+                }
+                case '[':
+                {
+                    int X = Fl::event_x() - Track::width();
+
+                    if ( X > 0 )
+                    {
+                        p1 = xoffset + x_to_ts( X );
+                    }
+
+                    return 1;
+                }
+                case ']':
+                {
+                    int X = Fl::event_x() - Track::width();
+
+                    if ( X > 0 )
+                    {
+                        p2 = xoffset + x_to_ts( X );
                     }
 
                     return 1;

@@ -48,12 +48,10 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
   } {
     Fl_Window main_window {
       label {Non-DAW - Timeline} open
-      xywh {581 446 1024 768} type Double resizable xclass {Non-DAW} visible
+      xywh {522 141 1024 768} type Double resizable xclass {Non-DAW} visible
     } {
-      Fl_Group {} {open
-        xywh {0 0 1024 25}
-      } {}
-      Fl_Menu_Bar menubar {open
+      Fl_Menu_Bar menubar {
+        label {capture:\\nfoo}
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -75,7 +73,7 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
 if ( n != 2 )
 	return;
 	
-Loggable::compact();} selected
+Loggable::compact();}
             xywh {20 20 40 25}
           }
           Submenu {} {
@@ -299,62 +297,96 @@ Fl::scheme( Fl::scheme() );}
           xywh {0 0 40 25}
         }
       }
+      Fl_Group {} {open
+        xywh {0 23 1024 48}
+      } {
+        Fl_Pack {} {open selected
+          xywh {0 23 473 46} type HORIZONTAL
+          code0 {o->spacing( 10 );}
+        } {
+          Fl_Box {} {
+            label {<Transport>}
+            xywh {0 23 184 46} color 30
+            code0 {transport = o;}
+            code1 {o->labeltype( FL_NO_LABEL );}
+            class Transport
+          }
+          Fl_Pack clocks_pack {
+            xywh {185 23 288 46} type HORIZONTAL
+            code0 {o->spacing( 2 );}
+          } {
+            Fl_Box playhead_clock {
+              label PLAYHEAD
+              xywh {185 29 137 40} box BORDER_BOX color 46
+              code0 {o->type( Clock::HMS );}
+              code1 {o->run( &transport->frame );}
+              class Clock
+            }
+            Fl_Box {} {
+              label PLAYHEAD
+              xywh {325 29 142 40} box BORDER_BOX color 46
+              code0 {o->type( Clock::BBT );}
+              class Clock
+            }
+          }
+        }
+        Fl_Box {} {
+          label {<empty>}
+          xywh {477 27 387 42} resizable
+          code0 {o->labeltype( FL_NO_LABEL );}
+        }
+        Fl_Group {} {
+          xywh {869 25 155 44}
+        } {
+          Fl_Box {} {
+            label {capture:}
+            xywh {869 25 56 14} labelsize 10 align 24
+          }
+          Fl_Box {} {
+            label {playback:}
+            xywh {869 41 56 14} labelsize 10 align 24
+          }
+          Fl_Box {} {
+            label {DSP:}
+            xywh {869 55 56 14} labelsize 10 align 24
+          }
+          Fl_Progress capture_buffer_progress {
+            label {50%}
+            xywh {925 25 99 14} labelsize 10
+          }
+          Fl_Progress cpu_load_progress {
+            label {50%}
+            xywh {925 55 99 14} labelsize 9
+          }
+          Fl_Progress playback_buffer_progress {
+            label {50%}
+            xywh {925 40 99 14} labelsize 10
+          }
+        }
+      }
       Fl_Box {} {
         label {<Timeline>}
-        xywh {0 74 1024 695} box FLAT_BOX color 47 labelsize 100
+        xywh {0 72 1024 695} box FLAT_BOX color 47 labelsize 100 resizable
         code0 {timeline = o;}
         class Timeline
       }
-      Fl_Box {} {
-        label {<Transport>}
-        xywh {0 25 137 46} color 30
-        code0 {transport = o;}
-        code1 {o->labeltype( FL_NO_LABEL );}
-        class Transport
-      }
-      Fl_Pack clocks_pack {open
-        xywh {139 25 285 46} type HORIZONTAL
-      } {
-        Fl_Box playhead_clock {
-          label PLAYHEAD
-          xywh {139 29 137 40} box BORDER_BOX color 46
-          code0 {o->type( Clock::HMS );}
-          code1 {o->run( &transport->frame );}
-          class Clock
-        }
-        Fl_Box {} {
-          label PLAYHEAD
-          xywh {278 29 142 40} box BORDER_BOX color 46
-          code0 {o->type( Clock::BBT );}
-          class Clock
-        }
-      }
-      Fl_Progress capture_buffer_progress {
-        label {capture:}
-        xywh {925 26 99 14} labelsize 10 align 4
-      }
-      Fl_Progress cpu_load_progress {
-        label {DSP:}
-        xywh {925 55 99 16} labelsize 9 align 4
-      }
-      Fl_Progress playback_buffer_progress {
-        label {playback:}
-        xywh {925 40 99 14} labelsize 10 align 4
-      }
-      Fl_Box {} {
-        label {<empty>}
-        xywh {427 29 469 42}
-        code0 {o->labeltype( FL_NO_LABEL );}
-      }
     }
+  }
+  Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
+  } {
+    code {p->value( v );
+
+snprintf( s, 5, "%d%%", (int)v );
+
+p->label( s );} {}
   }
   Function {update_status()} {open
   } {
-    code {capture_buffer_progress->value( timeline->total_input_buffer_percent() );
-playback_buffer_progress->value( timeline->total_output_buffer_percent() );
-cpu_load_progress->value( engine->cpu_load() );
+    code {static char cbp[5], pbp[5], clp[5];
 
-// TODO: dsp} {}
+update_progress( capture_buffer_progress, cbp, timeline->total_input_buffer_percent() );
+update_progress( playback_buffer_progress, pbp, timeline->total_output_buffer_percent() );
+update_progress( cpu_load_progress, clp, engine->cpu_load() );} {}
   }
   Function {update_cb( void *v )} {open return_type {static void}
   } {

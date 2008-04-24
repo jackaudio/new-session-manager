@@ -4,6 +4,8 @@ header_name {.H}
 code_name {.C}
 decl {const float STATUS_UPDATE_FREQ = 0.5f;} {} 
 
+decl {\#include "settings.H"} {} 
+
 decl {\#include "Timeline.H"} {} 
 
 decl {\#include "Engine.H"} {} 
@@ -51,7 +53,7 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
       xywh {522 141 1024 768} type Double resizable xclass {Non-DAW} visible
     } {
       Fl_Menu_Bar menubar {
-        label {capture:\\nfoo}
+        label {capture:\\nfoo} open
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -93,6 +95,11 @@ Loggable::compact();}
             label {&Quit}
             callback {exit( 0 );}
             xywh {40 40 40 25} shortcut 0x40071
+          }
+          MenuItem {} {
+            label Dump
+            callback {dump_to_file( menubar, options_menu, "foo.state" );} selected
+            xywh {0 0 40 25}
           }
         }
         Submenu {} {
@@ -176,7 +183,7 @@ Loggable::compact();}
             }
           }
         }
-        Submenu {} {
+        Submenu options_menu {
           label {&Options} open
           xywh {0 0 74 25} divider
         } {
@@ -300,7 +307,7 @@ Fl::scheme( Fl::scheme() );}
       Fl_Group {} {open
         xywh {0 23 1024 48}
       } {
-        Fl_Pack {} {open selected
+        Fl_Pack {} {open
           xywh {0 23 473 46} type HORIZONTAL
           code0 {o->spacing( 10 );}
         } {

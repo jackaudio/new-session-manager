@@ -30,6 +30,9 @@ switched between Bar Beat Tick and Wallclock displays  */
 
 const float CLOCK_UPDATE_FREQ = 0.06f;
 
+/* TODO: frames per second? */
+
+
 class Clock : public Fl_Widget
 {
     nframes_t _when;
@@ -52,10 +55,10 @@ class Clock : public Fl_Widget
 
 public:
 
-    enum { BBT, HMS };
+    enum { HMS = 0, BBT, Timecode, Sample, TYPE_MAX };
 
     static void
-    frame_to_HMS ( char *dst, int n, nframes_t frame )
+    frame_to_Timecode ( char *dst, int n, nframes_t frame )
         {
             float S = (double)frame / timeline->sample_rate();
 
@@ -65,6 +68,30 @@ public:
 
             snprintf( dst, n, "%02d:%02d:%02.0f:%02d", H, M, S, HS );
         }
+
+    static void
+    frame_to_HMS ( char *dst, int n, nframes_t frame )
+        {
+            float S = (double)frame / timeline->sample_rate();
+
+            int M = S / 60; S -= M * 60;
+            int H = M / 60; M -= H * 60;
+
+            snprintf( dst, n, "%02d:%02d:%05.3f", H, M, S );
+        }
+
+    static void
+    frame_to_Sample ( char *dst, int n, nframes_t frame )
+        {
+            snprintf( dst, n, "%lu", (unsigned long)frame );
+        }
+
+    static void
+    frame_to_BBT ( char *dst, int n, nframes_t frame )
+        {
+            snprintf( dst, n, "unimplemented" );
+        }
+
 
 
     Clock ( int X, int Y, int W, int H, const char *L=0 )
@@ -104,6 +131,8 @@ public:
         {
             draw_box();
 
+            fl_push_clip( x(), y(), w(), h() );
+
             char buf[15];
             *buf = '\0';
 
@@ -113,7 +142,13 @@ public:
                     frame_to_HMS( buf, sizeof( buf ), _when );
                     break;
                 case BBT:
-//                    frame_to_BBT( _buf, sizeof( buf ), frame );
+                    frame_to_BBT( buf, sizeof( buf ), _when );
+                    break;
+                case Timecode:
+                    frame_to_Timecode( buf, sizeof( buf ), _when );
+                    break;
+                case Sample:
+                    frame_to_Sample( buf, sizeof( buf ), _when );
                     break;
                 default:
                     printf( "error: invalid clock type\n" );
@@ -140,14 +175,50 @@ public:
             fl_draw( buf, dx, dy, dw, dh - 9, FL_ALIGN_CENTER );
 
             fl_font( FL_HELVETICA, 9 );
-            fl_color( FL_RED );
 
-            const char *s = type() == HMS ? "HMS" : "BBT";
+            const char *types[] = { "HMS", "BBT", "Timecode", "Sample" };
+
+            fl_color( FL_CYAN );
+
+            switch ( type() )
+            {
+                case Timecode:
+                    snprintf( buf, sizeof( buf ), "%.1f", 30.0 );
+                    fl_draw( buf, dx, dy, dw, dh, FL_ALIGN_BOTTOM );
+                    break;
+                case Sample:
+                    snprintf( buf, sizeof( buf ), "%lu", (unsigned long)timeline->sample_rate() );
+                    fl_draw( buf, dx, dy, dw, dh, FL_ALIGN_BOTTOM );
+                    break;
+                default:
+                    break;
+            }
+
+            const char *s = types[ type() ];
+
+            fl_color( FL_RED );
 
             fl_draw( s, dx + 4, dy, dw, dh, (Fl_Align)( FL_ALIGN_LEFT | FL_ALIGN_BOTTOM ) );
 
             if ( label() )
                 fl_draw( label(), dx, dy, dw, dh, (Fl_Align)( FL_ALIGN_RIGHT | FL_ALIGN_BOTTOM ) );
 
+            fl_pop_clip();
+        }
+
+
+    int handle ( int m )
+        {
+            if ( m == FL_PUSH )
+            {
+                int t = type() + 1;
+
+                if ( t >= TYPE_MAX )
+                    t = 0;
+
+                type( t );
+
+                redraw();
+            }
         }
 };

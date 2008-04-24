@@ -271,7 +271,8 @@ Track::resize ( void )
     else
         controls->show();
 
-    parent()->redraw();
+    if ( parent() )
+        parent()->redraw();
 }
 
 void

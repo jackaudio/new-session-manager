@@ -327,13 +327,13 @@ Loggable::undo ( void )
 }
 
 /** write a snapshot of the state of all loggable objects, sufficient
- * for later reconstruction, to /file/ */
+ * for later reconstruction, to /fp/ */
 bool
-Loggable::snapshot( const char *file )
+Loggable::snapshot( FILE *fp )
 {
     FILE *ofp = _fp;
 
-    if ( ! ( _fp = fopen( file, "w" ) ) )
+    if ( ! ( _fp = fp ) )
     {
         _fp = ofp;
         return false;
@@ -345,8 +345,6 @@ Loggable::snapshot( const char *file )
             _loggables[ i ]->log_create();
     }
 
-    fclose( _fp );
-
     _fp = ofp;
 
     return true;
@@ -355,19 +353,14 @@ Loggable::snapshot( const char *file )
 void
 Loggable::compact ( void )
 {
-    fclose( _fp );
-    _fp = NULL;
 
-    /* FIXME: don't use name here */
-    snapshot( "history" );
+    fseek( _fp, 0, SEEK_SET );
+    ftruncate( fileno( _fp ), 0 );
 
-    if ( ! ( _fp = fopen( "history", "a+" ) ) )
-    {
-        printf( "Could not open log file for writing!" );
-//        return false;
-    }
+    snapshot( _fp );
+
+    _undo_index = 0;
 }
-
 
 
 void

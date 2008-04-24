@@ -68,6 +68,7 @@ class Loggable
     static queue <char *> _transaction;
 
 private:
+
     int _id;
 
     char **_old_state;
@@ -88,14 +89,14 @@ private:
                 log( "\t" );
         }
 
+    static bool snapshot( FILE * fp );
 
 public:
 
     static bool open ( const char *filename );
     static void undo ( void );
     static int undo_index ( void ) { return _undo_index; }
-    static bool snapshot( const char *file );
-    static void compact( void );
+    static void compact ( void );
 
     static
     void

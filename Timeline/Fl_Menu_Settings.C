@@ -17,14 +17,14 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "settings.H"
+#include "Fl_Menu_Settings.H"
 
 #include <string.h>
 
 /* code to dump and restore (portions of) an Fl_Menu_ */
 
 void
-remove_ampersands ( char *str, int n )
+Fl_Menu_Settings::remove_ampersands ( char *str, int n )
 {
     char *d = str;
     char *s = str;
@@ -43,24 +43,24 @@ remove_ampersands ( char *str, int n )
     *d = '\0';
 }
 
-int
-item_pathname_x ( Fl_Menu_ *menu, char *path, int n, Fl_Menu_Item *item )
-{
-    menu->item_pathname( path, n, item );
-
-    remove_ampersands( path, n );
-}
-
 void
-indent ( FILE *fp, int n )
+Fl_Menu_Settings::indent ( FILE *fp, int n )
 {
     while ( n-- )
         fprintf( fp, "\t" );
 }
 
+int
+Fl_Menu_Settings::item_pathname_x ( char *path, int n, Fl_Menu_Item *item )
+{
+    Fl_Menu_::item_pathname( path, n, item );
+
+    remove_ampersands( path, n );
+}
+
 /** dump options from submenu /menu/ of menubar /bar/ to file /fp/ */
 Fl_Menu_Item *
-dump ( Fl_Menu_Bar *bar, Fl_Menu_Item *menu, FILE *fp, int depth )
+Fl_Menu_Settings::dump ( Fl_Menu_ *bar, Fl_Menu_Item *menu, FILE *fp, int depth )
 {
     static char path[256];
     Fl_Menu_Item *m = menu;
@@ -86,7 +86,7 @@ dump ( Fl_Menu_Bar *bar, Fl_Menu_Item *menu, FILE *fp, int depth )
             is_radio = true;
 
 //        bar->item_pathname( path, sizeof( path ) - 1, m );
-        item_pathname_x( bar, path, sizeof( path ) - 1, m );
+        item_pathname_x( path, sizeof( path ) - 1, m );
 
 
         if ( m->flags & FL_MENU_TOGGLE || m->flags & FL_MENU_RADIO )
@@ -119,13 +119,18 @@ dump ( Fl_Menu_Bar *bar, Fl_Menu_Item *menu, FILE *fp, int depth )
     return m;
 }
 
-void
-dump_to_file ( Fl_Menu_Bar *bar, Fl_Menu_Item *menu, const char *name )
+int
+Fl_Menu_Settings::dump ( Fl_Menu_Item *item, const char *name )
 {
     FILE *fp = fopen( name, "w" );
 
-    dump( bar, menu, fp, 0 );
+    if ( ! fp )
+        return false;
+
+    dump( this, item, fp, 0 );
 
     fclose( fp );
 
+
+    return true;
 }

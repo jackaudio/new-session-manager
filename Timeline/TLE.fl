@@ -4,7 +4,7 @@ header_name {.H}
 code_name {.C}
 decl {const float STATUS_UPDATE_FREQ = 0.5f;} {} 
 
-decl {\#include "settings.H"} {} 
+decl {\#include "Fl_Menu_Settings.H"} {} 
 
 decl {\#include "Timeline.H"} {} 
 
@@ -98,7 +98,7 @@ Loggable::compact();}
           }
           MenuItem {} {
             label Dump
-            callback {dump_to_file( menubar, options_menu, "foo.state" );} selected
+            callback {((Fl_Menu_Settings*)menubar)->dump( options_menu, "foo.state" );} selected
             xywh {0 0 40 25}
           }
         }

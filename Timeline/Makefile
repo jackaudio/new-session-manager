@@ -3,7 +3,7 @@ SRCS= \
       Waveform.C \
       Region.C \
       main.C \
-      settings.C \
+      Fl_Menu_Settings.C \
       TLE.C \
       Sequence.C \
       Audio_Sequence.C \

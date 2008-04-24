@@ -18,10 +18,19 @@
 /*******************************************************************************/
 
 
-#include <FL/Fl_Menu.H>
-#include <FL/Fl_Menu_Bar.H>
+#include <FL/Fl_Menu_.H>
 #include <stdio.h>
 
-Fl_Menu_Item * dump ( Fl_Menu_Bar *bar, Fl_Menu_Item *menu, FILE *fp );
+class Fl_Menu_Settings : public Fl_Menu_
+{
 
-void dump_to_file ( Fl_Menu_Bar *bar, Fl_Menu_Item *menu, const char *name );
+    void remove_ampersands ( char *str, int n );
+    void indent ( FILE *fp, int n );
+    Fl_Menu_Item * dump ( Fl_Menu_ *bar, Fl_Menu_Item *menu, FILE *fp, int depth );
+
+public:
+
+    int item_pathname_x ( char *path, int n, Fl_Menu_Item *item );
+    int dump ( Fl_Menu_Item *item, const char *name );
+
+};

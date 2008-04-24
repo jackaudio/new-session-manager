@@ -98,8 +98,13 @@ Loggable::compact();}
           }
           MenuItem {} {
             label Dump
-            callback {((Fl_Menu_Settings*)menubar)->dump( options_menu, "foo.state" );} selected
+            callback {((Fl_Menu_Settings*)menubar)->dump( options_menu, "foo.state" );}
             xywh {0 0 40 25}
+          }
+          MenuItem {} {
+            label Load
+            callback {((Fl_Menu_Settings*)menubar)->load( options_menu, "foo.state" );} selected
+            xywh {10 10 40 25}
           }
         }
         Submenu {} {

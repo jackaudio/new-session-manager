@@ -119,6 +119,7 @@ Fl_Menu_Settings::dump ( Fl_Menu_ *bar, Fl_Menu_Item *menu, FILE *fp, int depth 
     return m;
 }
 
+/** dump menu to file /name/ starting at /item. */
 int
 Fl_Menu_Settings::dump ( Fl_Menu_Item *item, const char *name )
 {
@@ -133,4 +134,100 @@ Fl_Menu_Settings::dump ( Fl_Menu_Item *item, const char *name )
 
 
     return true;
+}
+
+static void
+path_push ( char *path, const char *s )
+{
+    strcat( path, s );
+    strcat( path, "/" );
+}
+
+static void
+path_pop ( char *path )
+{
+    char *s;
+
+    int l = strlen( path );
+
+    if ( path[ l - 1 ] == '/' )
+        path[ l - 1 ] = '\0';
+
+    s = rindex( path, '/' );
+
+    s = s ? s : path;
+
+    *(s + 1) = '\0';
+}
+
+void
+Fl_Menu_Settings::load ( Fl_Menu_ *bar, Fl_Menu_Item *item, FILE *fp, int depth, char *path, int pmax )
+{
+    char line[256];
+
+    /* FIXME: overflow */
+    while ( ! feof( fp ) )
+    {
+        *line = '\0';
+
+        fgets( line, sizeof( line ), fp );
+
+        if ( *line == '#' )
+            continue;
+
+        line[ strlen( line ) - 1 ] = '\0';
+
+        int ld = strspn( line, "\t" );
+
+        if ( ld > depth )
+        {
+            path_push( path, line + ld );
+
+            ++depth;
+
+//            load( bar, item, fp, depth + 1, path, pmax );
+            /*  */;
+        }
+        else if ( ld < depth )
+        {
+            /* we should know the path and the value now */
+
+            // path_pop( path );
+            *rindex( path, '/' ) = '\0';
+            *rindex( path, '/' ) = '\0';
+
+            printf( "%s = %s\n", path, path + strlen( path ) + 1 );
+
+            while ( ld < depth )
+            {
+                path_pop( path );
+                depth--;
+            }
+
+            path_push( path, line + ld );
+
+            /* FIXME: still need to process the current line */
+        }
+        else                                          /* d == depth */
+        {
+            /* doesn't apply? */
+        }
+    }
+}
+
+/** load settings from file /name/ into menu starting at /item */
+int
+Fl_Menu_Settings::load ( Fl_Menu_Item *item, const char *name )
+{
+    FILE *fp = fopen( name, "r" );
+
+    if ( ! fp )
+        return false;
+
+    char path[256];
+    path[0] = '\0';
+
+    load( this, item, fp, 0, path, sizeof( path ) );
+
+    fclose( fp );
 }

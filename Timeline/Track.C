@@ -30,6 +30,8 @@
 #include "../FL/Fl_Sometimes_Input.H"
 #include <FL/fl_ask.H>
 
+int Track::_soloing = 0;
+
 void
 Track::cb_input_field ( Fl_Widget *w, void *v )
 {
@@ -57,14 +59,26 @@ void
 Track::cb_button ( Fl_Widget *w )
 {
 
-    printf( "FIXME: inform mixer here\n" );
     if ( w == record_button )
     {
-        /* FIXME: wrong place for this! */
-        if ( record_button->value() )
-            record_ds->start( transport->frame );
+
+/*         /\* FIXME: wrong place for this! *\/ */
+/*         if ( record_button->value() ) */
+/*             record_ds->start( transport->frame ); */
+/*         else */
+/*             record_ds->stop( transport->frame ); */
+
+    }
+    if ( w == mute_button )
+    {
+
+    }
+    if ( w == solo_button )
+    {
+        if ( solo_button->value() )
+            ++_soloing;
         else
-            record_ds->stop( transport->frame );
+            --_soloing;
     }
     else
         if ( w == take_menu )

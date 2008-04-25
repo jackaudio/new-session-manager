@@ -54,9 +54,11 @@ public:
     Track ( const char *L, int channels=1 );
     ~Track ( );
 
+    static bool soloing ( void ) { return _soloing; }
+
 private:
 
-//    Sequence * _track;
+    static int _soloing;
 
     char *_name;
 

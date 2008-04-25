@@ -20,6 +20,7 @@
 /* General DSP related functions. */
 
 #include "dsp.h"
+#include "string.h" // for memset.
 
 /* TODO: these functions are all targets for optimization (SSE?) */
 
@@ -86,4 +87,11 @@ buffer_deinterleave_one_channel ( sample_t *dst, sample_t *src, int channel, int
         *(dst++) = *src;
         src += channels;
     }
+}
+
+
+void
+buffer_fill_with_silence ( sample_t *buf, nframes_t nframes )
+{
+    memset( buf, 0, nframes * sizeof( sample_t ) );
 }

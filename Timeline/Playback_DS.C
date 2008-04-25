@@ -213,11 +213,9 @@ Playback_DS::process ( nframes_t nframes )
             /* FIXME: we need to resync somehow */
         }
 
-/*             /\* testing. *\/ */
-/*         FILE *fp = fopen( "testing.au", "a" ); */
-/*         fwrite( buf, block_size, 1, fp ); */
-/*         fclose( fp ); */
-
+        /* TODO: figure out a way to stop IO while muted without losing sync */
+        if ( _th->mute() || ( Track::soloing() && ! _th->solo() ) )
+            buffer_fill_with_silence( (sample_t*)buf, nframes );
     }
 
     block_processed();

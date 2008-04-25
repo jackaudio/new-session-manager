@@ -31,7 +31,10 @@ class Fl_Menu_Settings : public Fl_Menu_
 
 public:
 
+
     int item_pathname_x ( char *path, int n, Fl_Menu_Item *item );
+    const Fl_Menu_Item * find_item_x ( const char *name, const Fl_Menu_Item *item );
+
     int dump ( Fl_Menu_Item *item, const char *name );
 
 

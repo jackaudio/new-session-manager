@@ -23,6 +23,8 @@
 
 /* code to dump and restore (portions of) an Fl_Menu_ */
 
+#define MAX_PATH 1024
+
 void
 Fl_Menu_Settings::remove_ampersands ( char *str, int n )
 {
@@ -72,7 +74,7 @@ Fl_Menu_Settings::dump ( Fl_Menu_ *bar, Fl_Menu_Item *menu, FILE *fp, int depth 
         if ( m->flags & FL_SUBMENU )
         {
             strcpy( path, m->text );
-            remove_ampersands( path, sizeof( path ) - 1 );
+            remove_ampersands( path, strlen( path ) );
 
             indent( fp, depth );
             fprintf( fp, "%s\n", path );
@@ -136,6 +138,77 @@ Fl_Menu_Settings::dump ( Fl_Menu_Item *item, const char *name )
     return true;
 }
 
+#define strlcat strncat
+
+/* taken from Fl_Menu_.cxx and modified to ignore hotkeys and case */
+const Fl_Menu_Item *
+Fl_Menu_Settings::find_item_x ( const char *name, const Fl_Menu_Item *item )
+{
+    char menupath [ MAX_PATH ] = "";			// File/Export
+
+    const Fl_Menu_Item *m = item ? item : menu();
+
+    int depth = 0;
+
+    while ( depth >= 0 )
+        for ( ;m ; ++m )
+        {
+            if ( m->flags & FL_SUBMENU )
+            {
+                // IT'S A SUBMENU
+                // we do not support searches through FL_SUBMENU_POINTER links
+                if ( menupath[0] )
+                    strlcat( menupath, "/", sizeof( menupath ) );
+
+                strlcat( menupath, m->label(), sizeof( menupath ) );
+
+                remove_ampersands( menupath, strlen( menupath ) );
+
+                if ( ! strcasecmp( menupath, name ) )
+                    return m;
+                else
+                {
+                    ++depth;
+                    continue;
+                }
+            }
+            else
+            {
+                if ( ! m->label() )
+                {
+                    // END OF SUBMENU? Pop back one level.
+                    char *ss = strrchr( menupath, '/' );
+                    if ( ss )
+                        *ss = 0;
+                    else
+                        menupath[0] = '\0';
+
+                    --depth;
+                    ++m;
+
+                    break;
+                }
+
+                // IT'S A MENU ITEM
+                char itempath[ MAX_PATH ];                // eg. Edit/Copy
+                strcpy( itempath, menupath );
+
+                if ( itempath[0] )
+                    strlcat( itempath, "/", sizeof( itempath ) );
+
+                strlcat( itempath, m->label(), sizeof( itempath ) );
+
+                remove_ampersands( itempath, strlen( itempath ) );
+
+                if ( !strcasecmp( itempath, name ) )
+                    return m;
+            }
+        }
+
+    return ( Fl_Menu_Item * )0;
+}
+
+
 static void
 path_push ( char *path, const char *s )
 {
@@ -165,7 +238,6 @@ Fl_Menu_Settings::load ( Fl_Menu_ *bar, Fl_Menu_Item *item, FILE *fp, int depth,
 {
     char line[256];
 
-    /* FIXME: overflow */
     while ( ! feof( fp ) )
     {
         *line = '\0';
@@ -198,6 +270,16 @@ Fl_Menu_Settings::load ( Fl_Menu_ *bar, Fl_Menu_Item *item, FILE *fp, int depth,
 
             printf( "%s = %s\n", path, path + strlen( path ) + 1 );
 
+            const Fl_Menu_Item *it = find_item_x( path, item + 1 );
+
+            if ( it )
+            {
+                int v = 0 == strcasecmp( "true", (path + strlen( path ) + 1 ) );
+
+                if ( v != ( it->value() != 0 ) )
+                    bar->picked( it );
+            }
+
             while ( ld < depth )
             {
                 path_pop( path );
@@ -205,8 +287,6 @@ Fl_Menu_Settings::load ( Fl_Menu_ *bar, Fl_Menu_Item *item, FILE *fp, int depth,
             }
 
             path_push( path, line + ld );
-
-            /* FIXME: still need to process the current line */
         }
         else                                          /* d == depth */
         {
@@ -224,7 +304,7 @@ Fl_Menu_Settings::load ( Fl_Menu_Item *item, const char *name )
     if ( ! fp )
         return false;
 
-    char path[256];
+    char path[ MAX_PATH ];
     path[0] = '\0';
 
     load( this, item, fp, 0, path, sizeof( path ) );

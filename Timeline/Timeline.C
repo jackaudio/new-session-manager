@@ -933,6 +933,8 @@ Timeline::remove_track ( Track *track )
 bool
 Timeline::record ( void )
 {
+    Loggable::block_start();
+
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
@@ -957,6 +959,8 @@ Timeline::stop ( void )
         if ( t->armed() && t->record_ds )
             t->record_ds->stop( transport->frame );
     }
+
+    Loggable::block_end();
 
     activate();
 }

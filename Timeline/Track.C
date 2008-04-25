@@ -635,8 +635,7 @@ Track::record ( nframes_t frame )
 
     _capture = new Region( af, track(), frame );
 
-    /* FIXME: wrong place for this */
-    _capture->_r->end = 0;
+    _capture->prepare();
 }
 
 /* THREAD: IO */

@@ -538,6 +538,15 @@ void
 Loggable::log_create ( void ) const
 {
 //    indent();
+
+/*     if ( Loggable::_level ) */
+/*     { */
+/*         /\* defer until the block ends--this is really only required for capturing... *\/ */
+
+
+
+/*     } */
+
     log( "%s 0x%X create ", class_name(), _id );
 
     char **sa;

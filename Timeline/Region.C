@@ -232,6 +232,10 @@ Region::handle ( int m )
     static bool copied = false;
     static nframes_t os;
 
+
+    if ( ! active_r() )
+        return 0;
+
 //    int X = Fl::event_x() - _track->x();
     int X = Fl::event_x();
     int Y = Fl::event_y();
@@ -543,6 +547,7 @@ Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int X, in
     fl_pop_matrix();
 }
 
+
 void
 Region::draw_box( void )
 {
@@ -552,6 +557,7 @@ Region::draw_box( void )
 
     Fl_Color selection_color = _selection_color;
     Fl_Color color = _box_color;
+
 
     if ( this == ((Audio_Sequence*)track())->capture() )
     {
@@ -954,11 +960,22 @@ Region::write ( sample_t *buf, nframes_t nframes )
     return l;
 }
 
+
+/** prepare for capturing */
+void
+Region::prepare ( void )
+{
+    log_start();
+}
+
+
 /** finalize region capture. Assumes that this *is* a captured region
  and that no other regions refer to the same source */
 bool
 Region::finalize ( void )
 {
+    log_end();
+
     _clip->close();
     _clip->open();
 

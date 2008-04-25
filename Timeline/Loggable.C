@@ -361,7 +361,7 @@ Loggable::compact ( void )
 
     snapshot( _fp );
 
-    _undo_index = 0;
+    _undo_index = 1;
 }
 
 

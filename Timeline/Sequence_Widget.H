@@ -308,6 +308,8 @@ public:
     void start ( nframes_t v ) { _r->start = v; }
     nframes_t start ( void ) const { return _r->start; }
 
+
+    int active_r ( void ) const { return _track->active_r(); }
     virtual nframes_t length ( void ) const { return _r->end - _r->start; }
 
     virtual Fl_Boxtype box ( void ) const { return FL_UP_BOX; }

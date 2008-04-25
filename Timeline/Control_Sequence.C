@@ -159,12 +159,16 @@ Control_Sequence::draw ( void )
 
     fl_clip_box( bx, by, bw, bh, X, Y, W, H );
 
+    const Fl_Color color = active_r() ? this->color() : fl_inactive( this->color() );
+    const Fl_Color selection_color = active_r() ? this->selection_color() : fl_inactive( this->selection_color() );
+
+
     if ( draw_with_gradient )
     {
-//        Fl_Color target = fl_color_average( color(), FL_WHITE, 0.50f );
+//        Fl_Color target = fl_color_average( color, FL_WHITE, 0.50f );
 
-        const Fl_Color c2 = fl_color_average( selection_color(), FL_WHITE, 0.75f );
-        const Fl_Color c1 = fl_color_average( color(), c2, 0.60f );
+        const Fl_Color c2 = fl_color_average( selection_color, FL_WHITE, 0.75f );
+        const Fl_Color c1 = fl_color_average( color, c2, 0.60f );
 
         for ( int gy = 0; gy < bh; gy++ )
         {
@@ -175,7 +179,7 @@ Control_Sequence::draw ( void )
 
     if ( draw_with_grid )
     {
-        fl_color( fl_darker( color() ) );
+        fl_color( fl_darker( color ) );
 
         const int inc = bh / 10;
         if ( inc )
@@ -191,7 +195,7 @@ Control_Sequence::draw ( void )
         draw_curve( draw_with_gradient, true );
         fl_end_complex_polygon();
 
-        fl_color( selection_color() );
+        fl_color( selection_color );
         fl_line_style( FL_SOLID, 2 );
 
         fl_begin_line();
@@ -200,8 +204,8 @@ Control_Sequence::draw ( void )
     }
     else
     {
-//        fl_color( fl_color_average( selection_color(), color(), 0.70f ) );
-        fl_color( selection_color() );
+//        fl_color( fl_color_average( selection_color, color, 0.70f ) );
+        fl_color( selection_color );
         fl_line_style( FL_SOLID, 2 );
 
         fl_begin_line();
@@ -211,7 +215,7 @@ Control_Sequence::draw ( void )
 
     fl_line_style( FL_SOLID, 0 );
 
-    timeline->draw_measure_lines( x(), y(), w(), h(), color() );
+    timeline->draw_measure_lines( x(), y(), w(), h(), color );
 
     if ( _highlighted )
         for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )

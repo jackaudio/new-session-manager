@@ -105,6 +105,8 @@ public:
     void dump ( void );
     void remove_selected ( void );
 
+    const Region *capture ( void ) const { return track()->capture(); }
+
     nframes_t play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels );
 
 };

@@ -229,6 +229,9 @@ public:
     void draw ( void );
     int handle ( int m );
 
+
+    const Region *capture ( void ) const { return _capture; }
+
     /* Engine */
     nframes_t process ( nframes_t nframes );
     void seek ( nframes_t frame );

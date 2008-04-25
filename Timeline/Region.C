@@ -22,6 +22,8 @@
 #include "Timeline.H"
 #include "Waveform.H"
 
+#include "Audio_Sequence.H"
+
 #include "dsp.h"
 
 #include <FL/fl_draw.H>
@@ -548,12 +550,14 @@ Region::draw_box( void )
 
     fl_push_clip( x(), y(), w(), h() );
 
-    int active = active_r();
-
     Fl_Color selection_color = _selection_color;
     Fl_Color color = _box_color;
 
-    if ( ! active_r() )
+    if ( this == ((Audio_Sequence*)track())->capture() )
+    {
+        color = FL_RED;
+    }
+    else if ( ! active_r() )
     {
         color = fl_inactive( color );
         selection_color = fl_inactive( selection_color );
@@ -561,7 +565,6 @@ Region::draw_box( void )
 
     if ( selected() )
         fl_draw_box( fl_down( box() ), x() - 10, y(), w() + 50, h(), selection_color );
-//        fl_draw_box( fl_down( box() ), x() - 10, Y, w() + 50, H, fl_invert_color( _box_color ) );
     else
         fl_draw_box( box(), x() - 10, y(), w() + 50, h(), color );
 

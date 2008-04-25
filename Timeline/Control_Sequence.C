@@ -46,6 +46,7 @@ void
 Control_Sequence::init ( void )
 {
     _track = NULL;
+    _highlighted = false;
 
     color( fl_darker( FL_YELLOW ) );
 }
@@ -136,6 +137,7 @@ Control_Sequence::draw_curve ( bool flip, bool filled )
 
         }
 }
+
 void
 Control_Sequence::draw ( void )
 {
@@ -211,8 +213,9 @@ Control_Sequence::draw ( void )
 
     timeline->draw_measure_lines( x(), y(), w(), h(), color() );
 
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-        (*r)->draw_box();
+    if ( _highlighted )
+        for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
+            (*r)->draw_box();
 
     fl_pop_clip();
 }
@@ -220,6 +223,20 @@ Control_Sequence::draw ( void )
 int
 Control_Sequence::handle ( int m )
 {
+    switch ( m )
+    {
+        case FL_ENTER:
+            _highlighted = true;
+            redraw();
+            return 1;
+        case FL_LEAVE:
+            _highlighted = false;
+            redraw();
+            return 1;
+        default:
+            break;
+    }
+
     int r = Sequence::handle( m );
 
     if ( r )

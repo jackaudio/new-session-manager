@@ -25,6 +25,8 @@
 class Control_Sequence : public Sequence
 {
 
+    bool _highlighted;
+
     void init ( void );
 
 protected:

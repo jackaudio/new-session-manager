@@ -351,6 +351,9 @@ Sequence::handle ( int m )
             return 1;
         case FL_UNFOCUS:
             return 1;
+        case FL_ENTER:
+        case FL_LEAVE:
+            return 1;
         case FL_DND_ENTER:
             printf( "enter\n" );
             if ( Sequence_Widget::pushed() && Sequence_Widget::pushed()->track()->class_name() == class_name() )

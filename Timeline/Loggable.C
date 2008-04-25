@@ -180,9 +180,18 @@ Loggable::do_this ( const char *s, bool reverse )
 
     if ( ! strcmp( command, destroy ) )
     {
-        int id = l->id();
-        delete l;
-        _loggables[ id ] = NULL;
+        /* deleting eg. a track, which contains a list of other
+         widgets, causes destroy messages to be emitted for all those
+         widgets, but when replaying the journal the destroy message
+         causes the children to be deleted also... This is a temporary
+         hack. Would it be better to queue up objects for deletion
+         (when?) */
+        if ( l )
+        {
+            int id = l->id();
+            delete l;
+            _loggables[ id ] = NULL;
+        }
     }
     else if ( ! strcmp( command, "set" ) )
     {

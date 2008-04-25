@@ -105,6 +105,10 @@ main ( int argc, char **argv )
     engine = new Engine;
     engine->init();
 
+    /* always start stopped (please imagine for me a realistic
+     * scenario requiring otherwise */
+    transport->stop();
+
     Loggable::open( "history" );
 
 //        Fl::add_timeout( UPDATE_FREQ, clock_update_cb, o );

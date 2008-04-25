@@ -105,13 +105,9 @@ Fl_Menu_Settings::dump ( Fl_Menu_ *bar, Fl_Menu_Item *menu, FILE *fp, int depth 
             }
             else if ( m->flags & FL_MENU_VALUE )
             {
-                indent( fp, depth );
-
                 *rindex( path, '/' ) = '\0';
 
-                fprintf( fp, "%s\n", rindex( path, '/' ) + 1 );
-
-                indent( fp, depth + 1 );
+                indent( fp, depth );
 
                 fprintf( fp, "%s\n", path + strlen( path ) + 1  );
             }
@@ -266,18 +262,29 @@ Fl_Menu_Settings::load ( Fl_Menu_ *bar, Fl_Menu_Item *item, FILE *fp, int depth,
 
             // path_pop( path );
             *rindex( path, '/' ) = '\0';
-            *rindex( path, '/' ) = '\0';
 
-            printf( "%s = %s\n", path, path + strlen( path ) + 1 );
+//            printf( "%s = %s\n", path, path + strlen( path ) + 1 );
 
             const Fl_Menu_Item *it = find_item_x( path, item + 1 );
 
-            if ( it )
+            if ( it && it->radio() )                            /* radio button */
             {
-                int v = 0 == strcasecmp( "true", (path + strlen( path ) + 1 ) );
+                bar->picked( it );
 
-                if ( v != ( it->value() != 0 ) )
-                    bar->picked( it );
+                path_pop( path );
+            }
+            else                                                /* toggle */
+            {
+                *rindex( path, '/' ) = '\0';
+
+                if ( ( it = find_item_x( path, item + 1 ) ) && it->checkbox() )
+                {
+                    int v = 0 == strcasecmp( "true", (path + strlen( path ) + 1 ) );
+
+                    if ( v != ( it->value() != 0 ) /* grr, FLTK */ )
+                        bar->picked( it );
+                }
+
             }
 
             while ( ld < depth )

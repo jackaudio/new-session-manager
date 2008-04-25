@@ -955,7 +955,9 @@ Region::write ( sample_t *buf, nframes_t nframes )
 
     /* FIXME: too much? */
 //    _track->damage( FL_DAMAGE_EXPOSE, x() + w(), y(), 10/* FIXME: guess */, h() );
-    redraw();
+
+    if ( 0 == ( timeline->ts_to_x( _range.end ) % 20 ) )
+        redraw();
 
     return l;
 }

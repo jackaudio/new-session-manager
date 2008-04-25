@@ -59,6 +59,9 @@
 #include "TLE.H"
 
 
+#include <stdlib.h>
+#include <sys/stat.h>
+
 Engine *engine;
 Timeline *timeline;
 Transport *transport;
@@ -68,21 +71,19 @@ Transport *transport;
 /*     Loggable::undo(); */
 /* } */
 
+char *user_config_dir;
 
-/* const float UPDATE_FREQ = 0.05f; */
+static int
+ensure_dirs ( void )
+{
+    asprintf( &user_config_dir, "%s/.non-daw", getenv( "HOME" ) );
 
-/* static void */
-/* clock_update_cb ( void *w ) */
-/* { */
-/*     Fl::repeat_timeout( UPDATE_FREQ, clock_update_cb, w ); */
-
-/*     ((Clock *)w)->set( transport->frame ); */
-/* } */
+    return 0 == mkdir( user_config_dir, 0777 );
+}
 
 int
 main ( int argc, char **argv )
 {
-
     /* welcome to C++ */
     LOG_REGISTER_CREATE( Region );
     LOG_REGISTER_CREATE( Time_Point );
@@ -91,6 +92,10 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Track );
     LOG_REGISTER_CREATE( Audio_Sequence );
     LOG_REGISTER_CREATE( Control_Sequence );
+
+
+    if ( ! ensure_dirs() )
+        /* error */;
 
     /* TODO: change to seesion dir */
 

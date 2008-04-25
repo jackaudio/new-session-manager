@@ -25,6 +25,9 @@ decl {\#include <FL/fl_ask.H>} {}
 
 decl {\#include <FL/Fl.H>} {} 
 
+decl {extern char *user_config_dir;} {selected global
+} 
+
 class TLE {open
 } {
   decl {static void menubar_cb ( void *v )} {}
@@ -44,7 +47,12 @@ Fl::get_system_colors();
 Fl::scheme( "plastic" );
 
 
-Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );} {}
+Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );
+
+char *path;
+asprintf( &path, "%s/options", user_config_dir );
+((Fl_Menu_Settings*)menubar)->load( options_menu, path );
+free( path );} {}
   }
   Function {make_window()} {open
   } {
@@ -93,18 +101,13 @@ Loggable::compact();}
           }
           MenuItem {} {
             label {&Quit}
-            callback {exit( 0 );}
+            callback {char *path;
+asprintf( &path, "%s/options", user_config_dir );
+((Fl_Menu_Settings*)menubar)->dump( options_menu, path );
+free( path );
+
+exit( 0 );}
             xywh {40 40 40 25} shortcut 0x40071
-          }
-          MenuItem {} {
-            label Dump
-            callback {((Fl_Menu_Settings*)menubar)->dump( options_menu, "foo.state" );}
-            xywh {0 0 40 25}
-          }
-          MenuItem {} {
-            label Load
-            callback {((Fl_Menu_Settings*)menubar)->load( options_menu, "foo.state" );}
-            xywh {10 10 40 25}
           }
         }
         Submenu {} {
@@ -204,7 +207,7 @@ Loggable::compact();}
                 label {&Measure lines}
                 callback {Timeline::draw_with_measure_lines = menu_picked_value( o );
 
-timeline->redraw();} selected
+timeline->redraw();}
                 xywh {0 0 40 25} type Toggle value 1
               }
             }

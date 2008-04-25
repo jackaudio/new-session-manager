@@ -219,6 +219,10 @@ public:
                 type( t );
 
                 redraw();
+
+                return 0;
             }
+
+            return 0;
         }
 };

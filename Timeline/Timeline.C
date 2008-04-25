@@ -31,6 +31,8 @@
 
 #include "Track.H"
 
+bool Timeline::draw_with_measure_lines = true;
+
 const float UPDATE_FREQ = 0.02f;
 
 
@@ -82,8 +84,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
     box( FL_FLAT_BOX );
     xoffset = 0;
-
-    _enable_measure_lines = true;
 
     X = Y = 0;
 
@@ -256,7 +256,7 @@ Timeline::nearest_line ( int ix )
 void
 Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
 {
-    if ( ! _enable_measure_lines )
+    if ( ! draw_with_measure_lines )
         return;
 
 //    fl_line_style( FL_DASH, 2 );

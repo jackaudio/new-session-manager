@@ -103,7 +103,7 @@ Loggable::compact();}
           }
           MenuItem {} {
             label Load
-            callback {((Fl_Menu_Settings*)menubar)->load( options_menu, "foo.state" );} selected
+            callback {((Fl_Menu_Settings*)menubar)->load( options_menu, "foo.state" );}
             xywh {10 10 40 25}
           }
         }
@@ -196,6 +196,18 @@ Loggable::compact();}
             label {&Display} open
             xywh {0 0 74 25}
           } {
+            Submenu {} {
+              label {&Timeline} open
+              xywh {0 0 74 25}
+            } {
+              MenuItem {} {
+                label {&Measure lines}
+                callback {Timeline::draw_with_measure_lines = menu_picked_value( o );
+
+timeline->redraw();} selected
+                xywh {0 0 40 25} type Toggle value 1
+              }
+            }
             Submenu {} {
               label {&Waveforms} open
               xywh {0 0 74 25}

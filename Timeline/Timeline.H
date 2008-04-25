@@ -61,8 +61,6 @@ class Track;
 #define redraw_overlay()
 #endif
 
-
-
 struct Rectangle
 {
     int x;
@@ -87,8 +85,6 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     int _old_yposition;
 
     Rectangle _selection;
-
-    bool _enable_measure_lines;
 
     enum snap_flags_e {
         SNAP_TO_REGION,
@@ -115,6 +111,8 @@ class Timeline : public Fl_Overlay_Window, public RWLock
 
 
 public:
+
+    static bool draw_with_measure_lines;
 
     Tempo_Sequence *tempo_track;
     Time_Sequence  *time_track;

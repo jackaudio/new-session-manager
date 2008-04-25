@@ -102,10 +102,9 @@ private:
 
 protected:
 
-    const char *class_name ( void ) { return "Region"; }
+//    const char *class_name ( void ) { return "Region"; }
 
-    void
-    get ( Log_Entry &e )
+    virtual void get ( Log_Entry &e ) const
         {
             e.add( ":source",            _clip            ? _clip->name() : "" );
             e.add( ":gain",              _scale           );

@@ -46,6 +46,10 @@ Transport::start ( void )
 {
 //    MESSAGE( "Starting transport" );
     jack_transport_start( client );
+
+    if ( _record_button->value() )
+        timeline->record();
+
 }
 
 void
@@ -53,6 +57,9 @@ Transport::stop ( void )
 {
 //    MESSAGE( "Stopping transport" );
     jack_transport_stop( client );
+
+    if ( _record_button->value() )
+        timeline->stop();
 }
 
 void

@@ -37,10 +37,9 @@ public:
 
 protected:
 
-    const char *class_name ( void ) { return "Ruler_Point"; }
+//    const char *class_name ( void ) { return "Ruler_Point"; }
 
-    void
-    get ( Log_Entry &e )
+    virtual void  get ( Log_Entry &e ) const
         {
             Sequence_Point::get( e );
 

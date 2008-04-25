@@ -23,7 +23,7 @@
 #include "Timeline.H" // for timeline->tempo_track
 
 void
-Tempo_Point::get ( Log_Entry &e )
+Tempo_Point::get ( Log_Entry &e ) const
 {
     e.add( ":x", _r->offset );
     e.add( ":tempo", _tempo );

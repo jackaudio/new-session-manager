@@ -28,7 +28,7 @@ protected:
 
     char *_label;
 
-    virtual void get ( Log_Entry &e )
+    virtual void get ( Log_Entry &e ) const
         {
             e.add( ":x", _r->offset );
             e.add( ":t", _track );

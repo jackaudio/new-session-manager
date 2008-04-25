@@ -77,8 +77,7 @@ protected:
     Drag *_drag;
 
 
-    virtual void
-    get ( Log_Entry &e )
+    virtual void get ( Log_Entry &e ) const
         {
             e.add( ":x", _r->offset );
             e.add( ":l", _r->start );
@@ -139,6 +138,9 @@ public:
             _r->offset = _r->start = _r->end = 0;
 
             _drag = NULL;
+
+            _box_color = FL_BACKGROUND_COLOR;
+            _color     = FL_FOREGROUND_COLOR;
         }
 
     virtual ~Sequence_Widget ( )
@@ -173,7 +175,7 @@ public:
 
     virtual Sequence_Widget *clone ( const Sequence_Widget *r ) = 0;
 
-    bool selected ( void )
+    bool selected ( void ) const
         {
             return ::find( _selection.begin(), _selection.end(), this ) != _selection.end();
         }

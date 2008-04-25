@@ -160,6 +160,10 @@ public:
     int  total_input_buffer_percent ( void );
     int  total_output_buffer_percent ( void );
 
+
+    bool record ( void );
+    void stop ( void );
+
     void zoom ( float secs );
     void zoom_in ( void );
     void zoom_out ( void );

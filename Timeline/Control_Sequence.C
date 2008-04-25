@@ -52,7 +52,7 @@ Control_Sequence::init ( void )
 }
 
 void
-Control_Sequence::get ( Log_Entry &e )
+Control_Sequence::get ( Log_Entry &e ) const
 {
     Sequence::get( e );
 

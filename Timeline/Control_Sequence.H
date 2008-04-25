@@ -32,7 +32,7 @@ class Control_Sequence : public Sequence
 protected:
 
 
-    void get ( Log_Entry &e );
+    virtual void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
     Control_Sequence (  ) : Sequence( 0, 0, 0, 1 )
@@ -55,7 +55,7 @@ public:
     Control_Sequence ( Track * );
     ~Control_Sequence ( );
 
-    const char *class_name ( void ) { return "Control_Sequence"; }
+//    const char *class_name ( void ) { return "Control_Sequence"; }
 
     void draw ( void );
     int handle ( int m );

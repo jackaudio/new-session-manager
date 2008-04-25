@@ -30,8 +30,7 @@ class Audio_Sequence : public Sequence
 
 protected:
 
-    void
-    get ( Log_Entry &e )
+    virtual void get ( Log_Entry &e ) const
         {
             Sequence::get( e );
 
@@ -100,7 +99,7 @@ public:
             return t;
         }
 
-    const char *class_name ( void ) { return "Audio_Sequence"; }
+//    const char *class_name ( void ) { return "Audio_Sequence"; }
 
     int handle ( int m );
     void dump ( void );

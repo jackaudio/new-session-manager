@@ -63,9 +63,9 @@ class Time_Point : public Sequence_Point
 
 protected:
 
-    const char *class_name ( void ) { return "Time_Point"; }
+//    const char *class_name ( void ) { return "Time_Point"; }
 
-    void get ( Log_Entry &e );
+    virtual void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
 

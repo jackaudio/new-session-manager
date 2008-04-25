@@ -42,14 +42,18 @@ typedef Loggable *(create_func)(Log_Entry &);
 #define LOG_REGISTER_CREATE( class ) \
     Loggable::register_create( #class, & class ::create  );
 
-#define LOG_CREATE_FUNC( class )  \
-    static Loggable *             \
-    create ( Log_Entry &e )       \
-    {                             \
-        class *r = new class;     \
-        r->set( e );              \
-        return (Loggable *)r;     \
-    }                             \
+#define LOG_NAME_FUNC( class ) \
+    virtual const char *class_name ( void ) const { return #class ; }
+
+#define LOG_CREATE_FUNC( class )                                        \
+    static Loggable *                                                   \
+    create ( Log_Entry &e )                                             \
+    {                                                                   \
+        class *r = new class;                                           \
+        r->set( e );                                                    \
+        return (Loggable *)r;                                           \
+    }                                                                   \
+    LOG_NAME_FUNC( class );                                             \
 
 
 class Logger;
@@ -76,7 +80,7 @@ private:
 
     int _nest;
 
-    void log_print(  char **o, char **n );
+    void log_print(  char **o, char **n ) const;
     static void log ( const char *fmt, ... );
 
     static void flush ( void );
@@ -171,8 +175,7 @@ public:
         }
 
     /* log messages for journal */
-    virtual const char *class_name ( void ) = 0;
-    virtual void get ( Log_Entry &e ) = 0;
+    virtual void get ( Log_Entry &e ) const = 0;
     virtual void set ( Log_Entry &e ) = 0;
 
     static bool do_this ( const char *s, bool reverse );
@@ -181,10 +184,12 @@ protected:
 
     void log_start ( void );
     void log_end ( void );
-    void log_create ( void );
-    void log_destroy ( void );
+    void log_create  ( void ) const;
+    void log_destroy ( void ) const;
 
 public:
+
+    virtual const char *class_name ( void ) const = 0;
 
     int id ( void ) { return _id; }
 

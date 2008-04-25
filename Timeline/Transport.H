@@ -56,7 +56,13 @@ private:
             else if ( w == _play_button )
                 toggle();
             else if ( w == _record_button )
-                printf( "FIXME: record now\n" );
+            {
+                if ( rolling )
+                    if ( _record_button->value() )
+                        timeline->record();
+                    else
+                        timeline->stop();
+            }
         }
 
 public:
@@ -88,6 +94,7 @@ public:
             o->box( FL_UP_BOX );
 
             _record_button = o = new Fl_Button( 0, 0, bw, 0, "@circle" );
+            o->type( FL_TOGGLE_BUTTON );
             o->labeltype( FL_EMBOSSED_LABEL );
             o->labelcolor( FL_RED );
             o->shortcut( 'R' );

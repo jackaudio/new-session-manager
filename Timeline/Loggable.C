@@ -341,8 +341,10 @@ Loggable::snapshot( FILE *fp )
 
     for ( int i = 0; i < _log_id; ++i )
     {
-        if ( _class_map[ string( _loggables[ i ]->class_name() ) ] )
-            _loggables[ i ]->log_create();
+        const Loggable * l = _loggables[ i ];
+
+        if ( l && _class_map[ string( l->class_name() ) ] )
+            l->log_create();
     }
 
     _fp = ofp;
@@ -428,7 +430,7 @@ Loggable::flush ( void )
 }
 
 void
-Loggable::log_print(  char **o, char **n )
+Loggable::log_print(  char **o, char **n ) const
 {
     if ( n )
         for ( ; *n; n++ )
@@ -533,7 +535,7 @@ Loggable::log_end ( void )
 }
 
 void
-Loggable::log_create ( void )
+Loggable::log_create ( void ) const
 {
 //    indent();
     log( "%s 0x%X create ", class_name(), _id );
@@ -559,7 +561,7 @@ Loggable::log_create ( void )
 }
 
 void
-Loggable::log_destroy ( void )
+Loggable::log_destroy ( void ) const
 {
 //    indent();
     log( "%s 0x%X destroy (nothing) << ", class_name(), _id );

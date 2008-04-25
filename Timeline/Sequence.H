@@ -54,7 +54,7 @@ protected:
     std::list <Sequence_Widget *> _widgets;
     Sequence_Widget *event_widget ( void );
 
-    virtual const char *class_name ( void ) { return "Sequence"; }
+//    virtual const char *class_name ( void ) { return "Sequence"; }
 
 
     virtual void set ( Log_Entry &e )
@@ -72,7 +72,7 @@ protected:
             }
         }
 
-    virtual void get ( Log_Entry &e )
+    virtual void get ( Log_Entry &e ) const
         {
             e.add( ":n", name() );
 //            e.add( ":t", _track );
@@ -90,6 +90,8 @@ protected:
         }
 
 public:
+
+    LOG_NAME_FUNC( Sequence );
 
     Sequence ( int X, int Y, int W, int H, Track *track=0 );
 

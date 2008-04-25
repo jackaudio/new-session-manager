@@ -120,6 +120,7 @@ exit( 0 );}
           }
           MenuItem {} {
             label Undo
+            callback {Loggable::undo();} selected
             xywh {0 0 40 25} shortcut 0x4007a
           }
         }
@@ -191,8 +192,30 @@ exit( 0 );}
             }
           }
         }
+        Submenu timeline_menu {
+          label {&Timeline} open
+          xywh {0 0 74 25}
+        } {
+          Submenu {} {
+            label {&Snap} open
+            xywh {0 0 74 25}
+          } {
+            MenuItem {} {
+              label Bars
+              xywh {0 0 40 25} type Radio value 1
+            }
+            MenuItem {} {
+              label Beats
+              xywh {10 10 40 25} type Radio
+            }
+            MenuItem {} {
+              label Off
+              xywh {20 20 40 25} type Radio
+            }
+          }
+        }
         Submenu options_menu {
-          label {&Options} open
+          label {&Options}
           xywh {0 0 74 25} divider
         } {
           Submenu {} {
@@ -350,7 +373,7 @@ Fl::scheme( Fl::scheme() );}
               class Clock
             }
             Fl_Box {} {
-              label PLAYHEAD selected
+              label PLAYHEAD
               xywh {325 29 142 40} box BORDER_BOX color 46
               code0 {o->type( Clock::BBT );}
               code1 {o->run( &transport->frame );}

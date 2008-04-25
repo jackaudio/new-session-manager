@@ -22,7 +22,7 @@
 #include "Timeline.H" // for timeline->time_track
 
 void
-Time_Point::get ( Log_Entry &e )
+Time_Point::get ( Log_Entry &e ) const
 {
     e.add( ":x",             _r->offset          );
     e.add( ":beats_per_bar", _time.beats_per_bar );

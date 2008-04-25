@@ -929,6 +929,39 @@ Timeline::remove_track ( Track *track )
     redraw();
 }
 
+/** Initiate recording for all armed tracks */
+bool
+Timeline::record ( void )
+{
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        if ( t->armed() && t->record_ds )
+            t->record_ds->start( transport->frame );
+    }
+
+    deactivate();
+
+    return true;
+}
+
+/** stop recording for all armed tracks */
+void
+Timeline::stop ( void )
+{
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        if ( t->armed() && t->record_ds )
+            t->record_ds->stop( transport->frame );
+    }
+
+    activate();
+}
+
+
 /**********/
 /* Engine */
 /**********/

@@ -62,12 +62,6 @@ Track::cb_button ( Fl_Widget *w )
     if ( w == record_button )
     {
 
-/*         /\* FIXME: wrong place for this! *\/ */
-/*         if ( record_button->value() ) */
-/*             record_ds->start( transport->frame ); */
-/*         else */
-/*             record_ds->stop( transport->frame ); */
-
     }
     if ( w == mute_button )
     {

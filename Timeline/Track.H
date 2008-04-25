@@ -109,7 +109,7 @@ public:
     Playback_DS    *playback_ds;
     Record_DS      *record_ds;
 
-    const char *class_name ( void ) { return "Track"; }
+//    const char *class_name ( void ) { return "Track"; }
 
     void
     set ( Log_Entry &e )
@@ -160,8 +160,7 @@ public:
         }
 
 
-    void
-    get ( Log_Entry &e )
+    virtual void get ( Log_Entry &e ) const
         {
             e.add( ":n",        _name            );
             e.add( ":t",        track()          );
@@ -225,7 +224,7 @@ public:
     static int width ( void ) { return 150; }
 
     void track( Sequence * t );
-    Sequence * track ( void ) { return _track; }
+    Sequence * track ( void ) const { return _track; }
 
     void draw ( void );
     int handle ( int m );

@@ -36,10 +36,9 @@ class Control_Point : public Sequence_Point
 
 protected:
 
-    const char *class_name ( void ) { return "Control_Point"; }
+//    const char *class_name ( void ) { return "Control_Point"; }
 
-    void
-    get ( Log_Entry &e )
+    virtual void get ( Log_Entry &e ) const
         {
             Sequence_Point::get( e );
 
@@ -68,7 +67,7 @@ protected:
 
     Control_Point ( )
         {
-
+            _box_color = FL_WHITE;
         }
 
 public:
@@ -87,8 +86,7 @@ public:
             _track = t;
             _y = y;
             _r->offset = when;
-
-//            _make_label();
+            _box_color = FL_WHITE;
 
             log_create();
         }

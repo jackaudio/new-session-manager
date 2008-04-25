@@ -25,7 +25,7 @@ decl {\#include <FL/fl_ask.H>} {}
 
 decl {\#include <FL/Fl.H>} {} 
 
-decl {extern char *user_config_dir;} {selected global
+decl {extern char *user_config_dir;} {global
 } 
 
 class TLE {open
@@ -338,7 +338,7 @@ Fl::scheme( Fl::scheme() );}
             code1 {o->labeltype( FL_NO_LABEL );}
             class Transport
           }
-          Fl_Pack clocks_pack {
+          Fl_Pack clocks_pack {open
             xywh {185 23 288 46} type HORIZONTAL
             code0 {o->spacing( 2 );}
           } {
@@ -350,9 +350,10 @@ Fl::scheme( Fl::scheme() );}
               class Clock
             }
             Fl_Box {} {
-              label PLAYHEAD
+              label PLAYHEAD selected
               xywh {325 29 142 40} box BORDER_BOX color 46
               code0 {o->type( Clock::BBT );}
+              code1 {o->run( &transport->frame );}
               class Clock
             }
           }

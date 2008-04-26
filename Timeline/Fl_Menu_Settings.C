@@ -53,7 +53,7 @@ Fl_Menu_Settings::indent ( FILE *fp, int n )
 }
 
 int
-Fl_Menu_Settings::item_pathname_x ( char *path, int n, Fl_Menu_Item *item )
+Fl_Menu_Settings::item_pathname_x ( char *path, int n, const Fl_Menu_Item *item )
 {
     Fl_Menu_::item_pathname( path, n, item );
 
@@ -61,11 +61,11 @@ Fl_Menu_Settings::item_pathname_x ( char *path, int n, Fl_Menu_Item *item )
 }
 
 /** dump options from submenu /menu/ of menubar /bar/ to file /fp/ */
-Fl_Menu_Item *
-Fl_Menu_Settings::dump ( Fl_Menu_ *bar, Fl_Menu_Item *menu, FILE *fp, int depth )
+const Fl_Menu_Item *
+Fl_Menu_Settings::dump ( Fl_Menu_ *bar, const Fl_Menu_Item *menu, FILE *fp, int depth )
 {
     static char path[256];
-    Fl_Menu_Item *m = menu;
+    const Fl_Menu_Item *m = menu;
 
     for ( ; m->text; ++m )
     {
@@ -119,7 +119,7 @@ Fl_Menu_Settings::dump ( Fl_Menu_ *bar, Fl_Menu_Item *menu, FILE *fp, int depth 
 
 /** dump menu to file /name/ starting at /item. */
 int
-Fl_Menu_Settings::dump ( Fl_Menu_Item *item, const char *name )
+Fl_Menu_Settings::dump ( const Fl_Menu_Item *item, const char *name )
 {
     FILE *fp = fopen( name, "w" );
 
@@ -230,7 +230,7 @@ path_pop ( char *path )
 }
 
 void
-Fl_Menu_Settings::load ( Fl_Menu_ *bar, Fl_Menu_Item *item, FILE *fp, int depth, char *path, int pmax )
+Fl_Menu_Settings::load ( Fl_Menu_ *bar, const Fl_Menu_Item *item, FILE *fp, int depth, char *path, int pmax )
 {
     char line[256];
 
@@ -304,7 +304,7 @@ Fl_Menu_Settings::load ( Fl_Menu_ *bar, Fl_Menu_Item *item, FILE *fp, int depth,
 
 /** load settings from file /name/ into menu starting at /item */
 int
-Fl_Menu_Settings::load ( Fl_Menu_Item *item, const char *name )
+Fl_Menu_Settings::load ( const Fl_Menu_Item *item, const char *name )
 {
     FILE *fp = fopen( name, "r" );
 

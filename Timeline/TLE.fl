@@ -17,8 +17,7 @@ decl {\#include "Loggable.H"} {}
 decl {\#include "Clock.H"} {public
 } 
 
-decl {\#include "Track.H" // for capture_format} {selected
-} 
+decl {\#include "Track.H" // for capture_format} {} 
 
 decl {\#include "Audio_File.H" // for supported formats} {} 
 
@@ -44,18 +43,19 @@ class TLE {open
   Function {save()} {open
   } {
     code {const char options_filename[] = "options";
-const char state_filename[] = "state";
+// const char state_filename[] = "state";
 
 // save options
 
 char *path;
 asprintf( &path, "%s/%s", user_config_dir, options_filename );
-((Fl_Menu_Settings*)menubar)->dump( options_menu, path );
+((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Options" ), path );
 free( path );
 
 // save unjournaled state
 
-// Loggable::save_unjournaled( state_filename );} {}
+// Loggable::save_unjournaled( state_filename );} {selected
+    }
   }
   Function {capture_format_cb( Fl_Widget *w, void *v )} {open private return_type {static void}
   } {
@@ -80,10 +80,6 @@ Fl::scheme( "plastic" );
 
 Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );
 
-char *path;
-asprintf( &path, "%s/options", user_config_dir );
-((Fl_Menu_Settings*)menubar)->load( options_menu, path );
-free( path );
 
 
 std::list <const char *> formats;
@@ -98,7 +94,13 @@ for ( std::list <const char *>::const_iterator f = formats.begin(); f != formats
 	snprintf( pat, sizeof( pat ), "Timeline/Capture Format/%s", *f );	
 
 	menubar->add( pat, 0, &TLE::capture_format_cb, this, FL_MENU_RADIO );
-}} {}
+}
+
+
+char *path;
+asprintf( &path, "%s/options", user_config_dir );
+((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options" ), path );
+free( path );} {}
   }
   Function {make_window()} {open
   } {
@@ -260,7 +262,7 @@ exit( 0 );}
             xywh {0 0 74 25}
           } {}
         }
-        Submenu options_menu {
+        Submenu {} {
           label {&Options}
           xywh {0 0 74 25} divider
         } {

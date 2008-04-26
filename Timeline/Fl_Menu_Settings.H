@@ -26,19 +26,17 @@ class Fl_Menu_Settings : public Fl_Menu_
 
     void remove_ampersands ( char *str, int n );
     void indent ( FILE *fp, int n );
-    Fl_Menu_Item * dump ( Fl_Menu_ *bar, Fl_Menu_Item *menu, FILE *fp, int depth );
-    void load ( Fl_Menu_ *bar, Fl_Menu_Item *item, FILE *fp, int depth, char *path, int pmax );
+    const Fl_Menu_Item * dump ( Fl_Menu_ *bar, const Fl_Menu_Item *menu, FILE *fp, int depth );
+    void load ( Fl_Menu_ *bar, const Fl_Menu_Item *item, FILE *fp, int depth, char *path, int pmax );
 
 public:
 
 
-    int item_pathname_x ( char *path, int n, Fl_Menu_Item *item );
+    int item_pathname_x ( char *path, int n, const Fl_Menu_Item *item );
     const Fl_Menu_Item * find_item_x ( const char *name, const Fl_Menu_Item *item );
 
-    int dump ( Fl_Menu_Item *item, const char *name );
-
-
-    int load ( Fl_Menu_Item *item, const char *name );
+    int dump ( const Fl_Menu_Item *item, const char *name );
+    int load ( const Fl_Menu_Item *item, const char *name );
 
 
 };

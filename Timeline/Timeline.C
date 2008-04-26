@@ -411,6 +411,10 @@ Timeline::resize ( int X, int Y, int W, int H )
 
     /* why is this necessary? */
     rulers->resize( Track::width(), 0, W - Track::width() - vscroll->w(), rulers->h() );
+
+    /* why is THIS necessary? */
+    hscroll->resize( 0, H - 18, hscroll->w(), 18 );
+    vscroll->size( vscroll->w(), H - 18 );
 }
 
 void

@@ -135,7 +135,7 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
 
             const Peak *pb = pbuf + j;
 
-            for ( int k = len * channels; k--; pb += channels )
+            for ( int k = len; k--; pb += channels )
             {
                 if ( pb->max > p->max )
                     p->max = pb->max;

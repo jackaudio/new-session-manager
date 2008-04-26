@@ -808,10 +808,6 @@ Timeline::handle ( int m )
 
                             t->track( o );
 
-/*                             t->add( new Control_Sequence( t  ); */
-
-                            t->color( (Fl_Color)rand() );
-
                             Loggable::block_end();
                         }
 

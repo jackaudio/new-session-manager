@@ -232,6 +232,8 @@ Track::Track ( const char *L, int channels ) :
     if ( L )
         name( L );
 
+    color( (Fl_Color)rand() );
+
     configure_inputs( channels );
     configure_outputs( channels );
 

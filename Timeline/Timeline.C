@@ -1019,6 +1019,8 @@ Timeline::seek_pending ( void )
         if ( t->playback_ds )
             r += t->playback_ds->buffer_percent() < 50;
     }
+
+    return r;
 }
 
 

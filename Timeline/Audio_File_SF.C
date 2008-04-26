@@ -69,6 +69,7 @@ Audio_File_SF::from_file ( const char *filename )
 
     c = new Audio_File_SF;
 
+    c->_peak_writer  = NULL;
     c->_current_read = 0;
     c->_filename     = strdup( filename );
     c->_length       = si.frames;
@@ -124,7 +125,7 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
     c->_in         = out;
 
     /* FIXME: 256 ? */
-    c->_peak_writer = new Peak_Writer( filename, 256, channels );
+    c->_peak_writer = new Peak_Writer( name, 256, channels );
 
     return c;
 }

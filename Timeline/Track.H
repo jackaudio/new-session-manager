@@ -45,6 +45,7 @@ class Playback_DS;
 class Record_DS;
 class Port;
 class Region;
+class Audio_File;
 
 class Track : public Fl_Group, public Loggable
 {
@@ -75,6 +76,7 @@ private:
     Sequence *_track;
 
     Region *_capture;                                           /* capture region */
+    Audio_File *_capture_af;                                    /* capture write source */
 
     bool configure_outputs ( int n );
     bool configure_inputs ( int n );

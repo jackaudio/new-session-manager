@@ -643,8 +643,16 @@ Track::record ( nframes_t frame )
 
     snprintf( pat, sizeof( pat ), "%s-%llu", name(), uuid() );
 
-    /* FIXME: hack */
-    Audio_File *af = Audio_File_SF::create( pat, 48000, input.size(), Track::capture_format );
+    _capture_af = Audio_File_SF::create( pat, 48000, input.size(), Track::capture_format );
+
+    if ( ! _capture_af )
+    {
+        /* ERROR */
+
+    }
+
+    /* open it again for reading in the GUI thread */
+    Audio_File *af = Audio_File::from_file( _capture_af->name() );
 
     _capture = new Region( af, track(), frame );
 
@@ -656,7 +664,9 @@ Track::record ( nframes_t frame )
 void
 Track::write ( sample_t *buf, nframes_t nframes )
 {
-    _capture->write( buf, nframes );
+    nframes_t l = _capture_af->write( buf, nframes );
+
+    _capture->write( l );
 }
 
 #include <stdio.h>

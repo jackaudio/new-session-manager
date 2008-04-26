@@ -893,10 +893,6 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
 
     /* now that we know how much and where to read, get on with it */
 
-    /* FIXME: seeking can be very expensive. Esp. with compressed
-     * formats. We should attempt to avoid it. But here or in the
-     * Audio_File class? */
-
     //    printf( "reading region ofs = %lu, sofs = %lu, %lu-%lu\n", ofs, sofs, start, end  );
 
     cnt = _clip->read( buf + ofs, channel, start, end );
@@ -947,19 +943,23 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
 /** write /nframes/ from /buf/ to source. /buf/ is interleaved and
     must match the channel layout of the write source!  */
 nframes_t
-Region::write ( sample_t *buf, nframes_t nframes )
+Region::write ( nframes_t nframes )
 {
-    nframes_t l = _clip->write( buf, nframes );
-
-    _range.end += l;
+    _range.end += nframes;
 
     /* FIXME: too much? */
 //    _track->damage( FL_DAMAGE_EXPOSE, x() + w(), y(), 10/* FIXME: guess */, h() );
 
     if ( 0 == ( timeline->ts_to_x( _range.end ) % 20 ) )
-        redraw();
+    {
+        /* FIXME: hack to get new size */
+        _clip->close();
+        _clip->open();
 
-    return l;
+        redraw();
+    }
+
+    return nframes;
 }
 
 

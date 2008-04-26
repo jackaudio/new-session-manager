@@ -168,6 +168,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         }
     }
 
+    /* rulers go above tracks... */
+    add( rulers );
 
     /* make sure scrollbars are on top */
     add( vscroll );

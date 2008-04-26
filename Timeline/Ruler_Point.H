@@ -22,6 +22,8 @@
 #include "Loggable.H"
 #include "Sequence_Point.H"
 
+#include <FL/fl_ask.H>
+
 class Ruler_Point : public Sequence_Point
 {
 
@@ -33,6 +35,7 @@ public:
             if ( _label )
                 free( _label );
             _label = strdup( s );
+            redraw();
         }
 
 protected:
@@ -61,7 +64,7 @@ protected:
                     name( v );
             }
 
-            timeline->redraw();
+//            timeline->redraw();
         }
 
     Ruler_Point ( )
@@ -105,6 +108,18 @@ public:
     int
     handle ( int m )
         {
+            Logger _log( this );
+
+            if ( m == FL_PUSH && Fl::event_button3() && ! Fl::event_ctrl() )
+            {
+                const char *s = fl_input( "New name for mark:", name() );
+
+                if ( s )
+                    name( s );
+
+                return 1;
+            }
+
             int r = Sequence_Widget::handle( m );
 
             if ( m == FL_RELEASE )

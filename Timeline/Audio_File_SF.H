@@ -33,6 +33,8 @@ class Audio_File_SF : public Audio_File
 
 public:
 
+    static const Audio_File::format_desc supported_formats[];
+
     static Audio_File_SF *from_file ( const char *filename );
     static Audio_File_SF *create ( const char *filename, nframes_t samplerate, int channels, const char *format );
 

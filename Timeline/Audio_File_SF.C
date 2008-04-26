@@ -29,6 +29,22 @@
 
 #include "Peaks.H"
 
+// #define HAS_SF_FORMAT_VORBIS
+
+const Audio_File::format_desc Audio_File_SF::supported_formats[] =
+{
+    {      "Wav 24",       "wav",   SF_FORMAT_WAV    | SF_FORMAT_PCM_24    | SF_ENDIAN_FILE },
+    {      "Wav 16",       "wav",   SF_FORMAT_WAV    | SF_FORMAT_PCM_16    | SF_ENDIAN_FILE },
+    {      "Wav f32",      "wav",   SF_FORMAT_WAV    | SF_FORMAT_FLOAT     | SF_ENDIAN_FILE },
+    {      "Au 24",       "au",     SF_FORMAT_AU     | SF_FORMAT_PCM_24    | SF_ENDIAN_FILE },
+    {      "Au 16",       "au",     SF_FORMAT_AU     | SF_FORMAT_PCM_16    | SF_ENDIAN_FILE },
+    {      "FLAC",       "flac",    SF_FORMAT_FLAC   | SF_FORMAT_PCM_24 },
+#ifdef HAS_SF_FORMAT_VORBIS
+    {      "Ogg Vorbis", "ogg",     SF_FORMAT_OGG    | SF_FORMAT_VORBIS | SF_FORMAT_PCM_16 },
+#endif
+    {      0,            0          }
+};
+
 Audio_File_SF *
 Audio_File_SF::from_file ( const char *filename )
 {
@@ -78,21 +94,29 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
 
     memset( &si, 0, sizeof( si ) );
 
+    const Audio_File::format_desc *fd = Audio_File::find_format( Audio_File_SF::supported_formats, format );
+
+    if ( ! fd )
+        return (Audio_File_SF *)1;
+
     si.samplerate =  samplerate;
     si.channels   =  channels;
+    si.format = fd->id;
 
-    /* FIXME: bogus */
-    si.format = SF_FORMAT_WAV | SF_FORMAT_PCM_24 | SF_ENDIAN_CPU;
+    char *name;
+    asprintf( &name, "%s.%s", filename, fd->extension );
 
-    if ( ! ( out = sf_open( filename, SFM_RDWR, &si ) ) )
+//    if ( ! ( out = sf_open( name, SFM_RDWR, &si ) ) )
+    if ( ! ( out = sf_open( name, SFM_WRITE, &si ) ) )
     {
         printf( "couldn't create soundfile.\n" );
+        free( name );
         return NULL;
     }
 
     Audio_File_SF *c = new Audio_File_SF;
 
-    c->_filename   = strdup( filename );
+    c->_filename   = name;
     c->_length     = 0;
     c->_samplerate = samplerate;
     c->_channels   = channels;

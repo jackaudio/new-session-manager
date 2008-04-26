@@ -17,6 +17,11 @@ decl {\#include "Loggable.H"} {}
 decl {\#include "Clock.H"} {public
 } 
 
+decl {\#include "Track.H" // for capture_format} {selected
+} 
+
+decl {\#include "Audio_File.H" // for supported formats} {} 
+
 decl {\#include "Waveform.H" // for options} {} 
 
 decl {\#include "Control_Sequence.H" // for options} {} 
@@ -36,6 +41,32 @@ class TLE {open
   } {
     code {return m->menu()[ m->value() ].flags & FL_MENU_VALUE;} {}
   }
+  Function {save()} {open
+  } {
+    code {const char options_filename[] = "options";
+const char state_filename[] = "state";
+
+// save options
+
+char *path;
+asprintf( &path, "%s/%s", user_config_dir, options_filename );
+((Fl_Menu_Settings*)menubar)->dump( options_menu, path );
+free( path );
+
+// save unjournaled state
+
+// Loggable::save_unjournaled( state_filename );} {}
+  }
+  Function {capture_format_cb( Fl_Widget *w, void *v )} {open private return_type {static void}
+  } {
+    code {((TLE*)v)->capture_format_cb();} {}
+  }
+  Function {capture_format_cb()} {open private return_type void
+  } {
+    code {Fl_Menu_ *o = menubar;
+
+Track::capture_format = o->menu()[ o->value() ].label();} {}
+  }
   Function {TLE()} {open
   } {
     code {make_window();
@@ -52,7 +83,22 @@ Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );
 char *path;
 asprintf( &path, "%s/options", user_config_dir );
 ((Fl_Menu_Settings*)menubar)->load( options_menu, path );
-free( path );} {}
+free( path );
+
+
+std::list <const char *> formats;
+
+Audio_File::all_supported_formats( formats );
+
+for ( std::list <const char *>::const_iterator f = formats.begin(); f != formats.end(); ++f )
+{
+//	capture_format_menu->add( *f, FL_MENU_RADIO, 0, 0, 0 );
+//;
+	char pat[256];
+	snprintf( pat, sizeof( pat ), "Timeline/Capture Format/%s", *f );	
+
+	menubar->add( pat, 0, &TLE::capture_format_cb, this, FL_MENU_RADIO );
+}} {}
   }
   Function {make_window()} {open
   } {
@@ -60,8 +106,7 @@ free( path );} {}
       label {Non-DAW - Timeline} open
       xywh {522 141 1024 768} type Double resizable xclass {Non-DAW} visible
     } {
-      Fl_Menu_Bar menubar {
-        label {capture:\\nfoo} open
+      Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -101,10 +146,7 @@ Loggable::compact();}
           }
           MenuItem {} {
             label {&Quit}
-            callback {char *path;
-asprintf( &path, "%s/options", user_config_dir );
-((Fl_Menu_Settings*)menubar)->dump( options_menu, path );
-free( path );
+            callback {save();
 
 exit( 0 );}
             xywh {40 40 40 25} shortcut 0x40071
@@ -120,7 +162,7 @@ exit( 0 );}
           }
           MenuItem {} {
             label Undo
-            callback {Loggable::undo();} selected
+            callback {Loggable::undo();}
             xywh {0 0 40 25} shortcut 0x4007a
           }
         }
@@ -213,6 +255,10 @@ exit( 0 );}
               xywh {20 20 40 25} type Radio
             }
           }
+          Submenu {} {
+            label {Capture Format} open
+            xywh {0 0 74 25}
+          } {}
         }
         Submenu options_menu {
           label {&Options}
@@ -446,6 +492,3 @@ update_progress( cpu_load_progress, clp, engine->cpu_load() );} {}
 ((TLE*)v)->update_status();} {}
   }
 } 
-
-Function {make_window()} {open
-} {} 

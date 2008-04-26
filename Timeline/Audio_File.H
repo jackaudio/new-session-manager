@@ -25,9 +25,9 @@
 #include "types.h"
 
 #include "Peaks.H"
-
 #include <string>
 #include <map>
+#include <list>
 
 class Peak_Writer;
 
@@ -37,6 +37,12 @@ class Audio_File
 
 protected:
 
+    struct format_desc
+    {
+        const char *name;
+        const char *extension;
+        unsigned long id;
+    };
 
     const char *_filename;
     nframes_t _length;                 /* length of file in samples */
@@ -47,6 +53,17 @@ protected:
 
     Peak_Writer *_peak_writer;
 
+    static const format_desc *
+    find_format ( const format_desc *fd, const char *name )
+        {
+            for ( ; fd->name; ++fd )
+                if ( ! strcmp( fd->name, name ) )
+                    return fd;
+
+            return NULL;
+        }
+
+
 public:
 
     Audio_File ( )
@@ -56,6 +73,8 @@ public:
         }
 
     virtual ~Audio_File ( );
+
+    static void all_supported_formats ( std::list <const char *> &formats );
 
     static Audio_File *from_file ( const char *filename );
 

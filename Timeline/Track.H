@@ -56,6 +56,8 @@ public:
 
     static bool soloing ( void ) { return _soloing; }
 
+    static const char *capture_format;
+
 private:
 
     static int _soloing;

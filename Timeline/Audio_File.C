@@ -27,6 +27,18 @@ Audio_File::~Audio_File ( )
     _open_files[ std::string( _filename ) ] = NULL;
 }
 
+void
+Audio_File::all_supported_formats ( std::list <const char *> &formats )
+{
+    const format_desc *fd;
+
+    fd = Audio_File_SF::supported_formats;
+
+    for ( ; fd->name; ++fd )
+        formats.push_back( fd->name );
+}
+
+
 /** attmpet to open any supported filetype */
 Audio_File *
 Audio_File::from_file ( const char * filename )

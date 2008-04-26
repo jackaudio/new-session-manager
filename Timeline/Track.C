@@ -32,6 +32,8 @@
 
 int Track::_soloing = 0;
 
+const char *Track::capture_format = "Wav 24";
+
 void
 Track::cb_input_field ( Fl_Widget *w, void *v )
 {
@@ -639,10 +641,10 @@ Track::record ( nframes_t frame )
 
     char pat[256];
 
-    snprintf( pat, sizeof( pat ), "%s-%llu.wav", name(), uuid() );
+    snprintf( pat, sizeof( pat ), "%s-%llu", name(), uuid() );
 
     /* FIXME: hack */
-    Audio_File *af = Audio_File_SF::create( pat, 48000, input.size(), "Wav/24" );
+    Audio_File *af = Audio_File_SF::create( pat, 48000, input.size(), Track::capture_format );
 
     _capture = new Region( af, track(), frame );
 

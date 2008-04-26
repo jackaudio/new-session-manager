@@ -29,6 +29,9 @@
 
 #include "../FL/Fl_Sometimes_Input.H"
 #include <FL/fl_ask.H>
+#include <FL/Fl_Color_Chooser.H>
+// #include <FL/fl_draw.H>
+#include <FL/Fl.H>
 
 int Track::_soloing = 0;
 
@@ -419,6 +422,7 @@ Track::handle ( int m )
                         { "Quad",            0, 0, 0, FL_MENU_RADIO | ( c == 4 ? FL_MENU_VALUE : 0 ) },
                         { "...",             0, 0, 0, FL_MENU_RADIO | ( c == 3 || c > 4 ? FL_MENU_VALUE : 0 ) },
                         { 0                  },
+                        { "Color"            },
                         { "Remove",          0, 0, 0, transport->rolling ? FL_MENU_INACTIVE : 0 },
                         { 0 },
                     };
@@ -453,6 +457,20 @@ Track::handle ( int m )
                         }
                         else if ( r == &menu[ 6 ] )
                         {
+                            unsigned char r, g, b;
+
+                            Fl::get_color( color(), r, g, b );
+
+                            if ( fl_color_chooser( "Track Color", r, g, b ) )
+                            {
+                                color( fl_rgb_color( r, g, b ) );
+                            }
+
+//                            color( fl_show_colormap( color() ) );
+                            redraw();
+                        }
+                        else if ( r == &menu[ 7 ] )
+                        {
                             int r = fl_choice( "Are you certain you want to remove track \"%s\"?", "Cancel", NULL, "Remove", name() );
 
                             if ( r == 2 )
@@ -465,12 +483,16 @@ Track::handle ( int m )
                         }
                     }
                 }
+
+                return 1;
             }
         }
         default:
             return Fl_Group::handle( m );
 
     }
+
+    return 0;
 }
 
 

@@ -140,6 +140,11 @@ public:
                     configure_inputs( atoi( v ) );
                 else if ( ! strcmp( s, ":o" ) )
                     configure_outputs( atoi( v ) );
+                else if ( ! strcmp( s, ":c" ) )
+                {
+                    color( (Fl_Color)atol( v ) );
+                    redraw();
+                }
                 else if ( ! strcmp( s, ":t" ) )
                 {
                     int i;
@@ -172,6 +177,7 @@ public:
             e.add( ":h",        size()           );
             e.add( ":i",        input.size()     );
             e.add( ":o",        output.size()    );
+            e.add( ":c",        color()          );
         }
 
     /* for loggable */

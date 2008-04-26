@@ -87,6 +87,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
     X = Y = 0;
 
+    p1 = p2 = 0;
+
     {
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
 
@@ -578,8 +580,11 @@ Timeline::draw_cursor ( nframes_t frame, Fl_Color color )
 void
 Timeline::draw_playhead ( void )
 {
-    draw_cursor( p1, FL_BLUE );
-    draw_cursor( p2, FL_GREEN );
+    if ( p1 != p2 )
+    {
+        draw_cursor( p1, FL_BLUE );
+        draw_cursor( p2, FL_GREEN );
+    }
 
     draw_cursor( transport->frame, FL_RED );
 }

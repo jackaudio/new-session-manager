@@ -221,9 +221,6 @@ Region::trim ( enum trim_e t, int X )
     }
 }
 
-/* convert a screen x coord into an offset into the region */
-#define x_to_offset( X ) ( timeline->x_to_ts( scroll_x() + ( (X) - _track->x() ) ) - _r->offset )
-
 int
 Region::handle ( int m )
 {

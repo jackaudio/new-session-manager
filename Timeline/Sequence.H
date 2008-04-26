@@ -31,8 +31,6 @@
 
 #include <list>
 
-// using namespace std;
-
 class Track;
 class Sequence_Widget;
 
@@ -96,6 +94,8 @@ public:
     Sequence ( int X, int Y, int W, int H, Track *track=0 );
 
     virtual ~Sequence (  );
+
+    nframes_t x_to_offset ( int X );
 
     const char * name ( void ) const { return _name; }
     void name ( const char *s )

@@ -103,6 +103,9 @@ parse_alist( const char *s )
 
                 char *pair = (char*)malloc( l + 1 );
 
+                if ( c[ strlen( c ) - 1 ] == ' ' )
+                    --l;
+
                 strncpy( pair, c, l );
 
                 pair[ l ] = '\0';
@@ -119,9 +122,8 @@ parse_alist( const char *s )
                 if  ( *v == '"' )
                 {
 //                    v++;
-                    v[ strlen( v ) - 2 ] = '\0';
+                    v[ strlen( v ) - 1 ] = '\0';
                     memmove( v, v + 1, strlen( v ) + 1 );
-
                 }
             }
 

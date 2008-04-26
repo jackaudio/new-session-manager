@@ -66,7 +66,6 @@ protected:
 
     Ruler_Point ( )
         {
-
         }
 
 public:
@@ -74,8 +73,10 @@ public:
     /* for loggable */
     LOG_CREATE_FUNC( Ruler_Point );
 
-    Ruler_Point ( nframes_t when, const char *name )
+    Ruler_Point ( Sequence *track, nframes_t when, const char *name )
         {
+            _track = track;
+
             _r->offset = when;
 
             _label = strdup( name );

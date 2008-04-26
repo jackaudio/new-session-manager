@@ -492,9 +492,6 @@ Timeline::draw ( void )
 
     if ( damage() & FL_DAMAGE_CHILD )
     {
-//        draw_box( box(), 0, 0, w(), h(), color() );
-
-//        fl_push_clip( rulers->x(), rulers->y(), rulers->w() - vscroll->w(), rulers->h() );
         fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
         update_child( *rulers );
         fl_pop_clip();

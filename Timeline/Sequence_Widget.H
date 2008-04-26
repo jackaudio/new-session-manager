@@ -308,6 +308,11 @@ public:
     void start ( nframes_t v ) { _r->start = v; }
     nframes_t start ( void ) const { return _r->start; }
 
+    /** convert a screen x coord into an offset into the region */
+    nframes_t x_to_offset ( int X )
+        {
+            return timeline->x_to_ts( scroll_x() + ( X - _track->x() ) ) - _r->offset;
+        }
 
     int active_r ( void ) const { return _track->active_r(); }
     virtual nframes_t length ( void ) const { return _r->end - _r->start; }

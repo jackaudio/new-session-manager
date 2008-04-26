@@ -38,6 +38,30 @@ public:
         {
             Sequence::draw();
             timeline->draw_measure_BBT( x(), y(), w(), h(), FL_WHITE );
+        }
 
+    int handle ( int m )
+        {
+
+            if ( Sequence::handle( m ) )
+                return 1;
+
+            switch ( m )
+            {
+                case FL_PUSH:
+                {
+                    if ( Fl::event_button1() )
+                    {
+                        add( new Ruler_Point( this, x_to_offset( Fl::event_x() ), "mark" ) );
+                        redraw();
+                    }
+                    break;
+                }
+                default:
+                    break;
+
+            }
+
+            return 0;
         }
 };

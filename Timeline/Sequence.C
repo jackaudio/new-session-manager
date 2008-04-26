@@ -51,6 +51,12 @@ Sequence::~Sequence (  )
 //    log_destroy();
 }
 
+nframes_t
+Sequence::x_to_offset ( int X )
+{
+    return timeline->xoffset + timeline->x_to_ts( X - x() );
+}
+
 void
 Sequence::sort ( void )
 {

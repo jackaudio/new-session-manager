@@ -1,0 +1,69 @@
+#!/bin/sh
+
+## remove-unused-sources
+#
+# April 2008, Jonathan Moore Liles
+#
+# Simple script to scan a compacted Non-DAW session and remove all
+# unused sources from disk.
+#
+# USAGE:
+#
+#     $ remove-unused-sources ~/audio/'The Best Song Ever'
+#
+# NOTES:
+#
+#     This script will not ask for comfirmation! It will ruthlessly
+#     delete all unused sources! You have been warned.
+#
+
+SESSION="$1"
+
+fatal ()
+{
+    echo Error: "$1"
+    echo 'Aborting!'
+    cleanup
+    exit 1
+}
+
+set_diff ()
+{
+	diff --new-line-format '' --old-line-format '%L' --unchanged-line-format '' "$1" "$2"
+}
+
+remove_sources ()
+{
+    local FILE
+    while read FILE
+    do
+        echo "Removing source \"${FILE}\"..."
+
+        rm -f ./"${FILE}" ./"${FILE}-"*.peak
+    done
+}
+
+cleanup ()
+{
+    rm -f "${TEMP}/all-sources" "${TEMP}/used-sources"
+}
+
+cd "$SESSION" || fatal "No such session"
+
+[ -f history ] || fatal "Not a Non-DAW session?"
+
+grep -qv 'create' history && fatal "Not a compacted session"
+
+echo "Scanning \"${SESSION}\"..."
+
+sed -n 's/^Region.* :source "\([^"]\+\)".*$/\1/p' history | sort | uniq > "${TEMP}/used-sources"
+
+cd sources || fatal "Can't change to source directory"
+
+ls -1 | grep -v '\.peak$' | sort > "${TEMP}/all-sources"
+
+set_diff "${TEMP}/all-sources" "${TEMP}/used-sources" | remove_sources
+
+cleanup
+
+echo "Done."

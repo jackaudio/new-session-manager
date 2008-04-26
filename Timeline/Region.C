@@ -42,6 +42,7 @@ using namespace std;
 extern Timeline *timeline;
 
 
+bool Region::inherit_track_color = true;
 
 Fl_Boxtype Region::_box = FL_UP_BOX;
 
@@ -556,7 +557,9 @@ Region::draw_box( void )
     fl_push_clip( x(), y(), w(), h() );
 
     Fl_Color selection_color = _selection_color;
-    Fl_Color color = _box_color;
+
+
+    Fl_Color color = Region::inherit_track_color ? track()->track()->color() :  _box_color;
 
 
     if ( this == ((Audio_Sequence*)track())->capture() )

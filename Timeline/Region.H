@@ -35,6 +35,7 @@ class Region : public Sequence_Widget
 
 public:
 
+    static bool inherit_track_color;
 
     struct Fade
     {

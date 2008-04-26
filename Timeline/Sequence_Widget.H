@@ -96,11 +96,11 @@ protected:
                 e.get( i, &s, &v );
 
                 if ( ! strcmp( s, ":x" ) )
-                    _r->offset = atol( v );
+                    _r->offset = atoll( v );
                 else if ( ! strcmp( s, ":l" ) )
-                    _r->start = atol( v );
+                    _r->start = atoll( v );
                 else if ( ! strcmp( s, ":r" ) )
-                    _r->end = atol( v );
+                    _r->end = atoll( v );
                 else if ( ! strcmp( s, ":s" ) )
                 {
                     if ( atoi( v ) )

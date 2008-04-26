@@ -333,6 +333,7 @@ public:
 
     ADD( int, "%d", v );
     ADD( nframes_t, "%lu", (unsigned long)v );
+    ADD( unsigned long, "%lu", v );
     ADD( const char *, "\"%s\"", v ? v : "" );
     ADD( Loggable *, "0x%X", v ? v->id() : 0 );
     ADD( float, "%f", v );

@@ -142,7 +142,7 @@ public:
                     configure_outputs( atoi( v ) );
                 else if ( ! strcmp( s, ":c" ) )
                 {
-                    color( (Fl_Color)atol( v ) );
+                    color( (Fl_Color)atoll( v ) );
                     redraw();
                 }
                 else if ( ! strcmp( s, ":t" ) )
@@ -177,7 +177,7 @@ public:
             e.add( ":h",        size()           );
             e.add( ":i",        input.size()     );
             e.add( ":o",        output.size()    );
-            e.add( ":c",        color()          );
+            e.add( ":c",        (unsigned long)color());
         }
 
     /* for loggable */

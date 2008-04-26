@@ -86,12 +86,6 @@ class Timeline : public Fl_Overlay_Window, public RWLock
 
     Rectangle _selection;
 
-    enum snap_flags_e {
-        SNAP_TO_REGION,
-        SNAP_TO_BAR,
-        SNAP_TO_BEAT
-    } snap_to;
-
     Fl_Scroll    *scroll;
     Fl_Pack      *tracks;
     Fl_Pack      *rulers;
@@ -112,7 +106,14 @@ class Timeline : public Fl_Overlay_Window, public RWLock
 
 public:
 
+    enum snap_e {
+        Bars,
+        Beats,
+        None
+    };
+
     static bool draw_with_measure_lines;
+    static snap_e snap_to;
 
     Tempo_Sequence *tempo_track;
     Time_Sequence  *time_track;

@@ -32,6 +32,7 @@
 #include "Track.H"
 
 bool Timeline::draw_with_measure_lines = true;
+Timeline::snap_e Timeline::snap_to = Bars;
 
 const float UPDATE_FREQ = 0.02f;
 
@@ -240,14 +241,31 @@ Timeline::bbt ( nframes_t when )
 int
 Timeline::nearest_line ( int ix )
 {
+    if ( snap_to == None )
+        return -1;
+
     for ( int x = ix - 10; x < ix + 10; ++x )
     {
         const int measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ));
 
-//        const int abs_x = ts_to_x( xoffset ) + x;
+//        const int abs_x = ts_to_x( xoffset ) + x - Track::width();
+
+        const int abs_x = ts_to_x( xoffset ) + x;
+
+        int bpb = beats_per_bar( x_to_ts( x -Track::width() ) + xoffset );
 
         if ( 0 == x % measure )
-            return x;
+        {
+            if ( snap_to == Bars )
+            {
+                if ( 0 == (abs_x / measure) % bpb )
+                    return x;
+            }
+            else if ( snap_to == Beats )
+            {
+                return x;
+            }
+        }
     }
 
     return -1;

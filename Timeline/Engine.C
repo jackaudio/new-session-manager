@@ -148,6 +148,8 @@ Engine::init ( void )
 
     jack_activate( _client );
 
+    _sample_rate = frame_rate();
+
     /* we don't need to create any ports until tracks are created */
     return 1;
 }

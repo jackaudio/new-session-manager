@@ -53,6 +53,8 @@ private:
     friend class Transport;
     jack_client_t * client ( void ) { return _client; }
 
+    nframes_t _sample_rate;
+
 public:
 
     Engine ( );
@@ -63,6 +65,7 @@ public:
 
     nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
     float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }
+    nframes_t sample_rate ( void ) const { return _sample_rate; }
 
     float cpu_load ( void ) const { return jack_cpu_load( _client ); }
 };

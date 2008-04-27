@@ -154,9 +154,11 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
 
     {
-        _sample_rate = 44100;
+//        sample_rate() = engine->sample_rate();
         _fpp = 256;
-        _length = _sample_rate * 60 * 2;
+//        _length = sample_rate() * 60 * 2;
+        /* FIXME: hack */
+        _length = -1;
 
         {
             Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W - vscroll->w(), 5000 );
@@ -246,7 +248,7 @@ Timeline::nearest_line ( int ix )
 
     for ( int x = ix - 10; x < ix + 10; ++x )
     {
-        const int measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ));
+        const int measure = ts_to_x( (double)(sample_rate() * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ));
 
 //        const int abs_x = ts_to_x( xoffset ) + x - Track::width();
 
@@ -292,7 +294,7 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
     for ( int x = X; x < X + W; ++x )
     {
 
-        measure = ts_to_x( (double)(_sample_rate * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
+        measure = ts_to_x( (double)(sample_rate() * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
 
         const int abs_x = ts_to_x( xoffset ) + x - Track::width();
 
@@ -318,7 +320,7 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
 //                    if ( draw_hms )
                     {
 
-                        const double seconds = (double)ts / _sample_rate;
+                        const double seconds = (double)ts / sample_rate();
 
                         int S = (int)seconds;
                         int M = S / 60; S -= M * 60;
@@ -901,7 +903,7 @@ Timeline::zoom ( float secs )
     const int sw = w() - vscroll->w() - Track::width();
 
     /* FIXME: we actually need to set this in the scalebar */
-    _fpp = (int)((secs * _sample_rate) / sw);
+    _fpp = (int)((secs * sample_rate()) / sw);
 
     redraw();
 }

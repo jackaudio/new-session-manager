@@ -117,7 +117,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         {
             Tempo_Sequence *o = new Tempo_Sequence( 0, 0, 800, 24 );
 
-            o->color( FL_RED );
+            o->color( fl_gray_ramp( 18 ) );
 
             o->label( "Tempo" );
             o->align( FL_ALIGN_LEFT );
@@ -128,7 +128,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         {
             Time_Sequence *o = new Time_Sequence( 0, 24, 800, 24 );
 
-            o->color( fl_color_average( FL_RED, FL_WHITE, 0.50f ) );
+            o->color( fl_gray_ramp( 16 ) );
 
             o->label( "Time" );
             o->align( FL_ALIGN_LEFT );
@@ -139,7 +139,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         {
             Ruler_Sequence *o = new Ruler_Sequence( 0, 24, 800, 24 );
 
-            o->color( FL_GREEN );
+            o->color( fl_gray_ramp( 'F' ) );
 
             o->label( "Ruler" );
             o->align( FL_ALIGN_LEFT );

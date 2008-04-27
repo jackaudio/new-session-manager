@@ -38,8 +38,7 @@ Sequence::Sequence ( int X, int Y, int W, int H, Track *track ) : Fl_Widget( X, 
 /*     if ( track ) */
 /*         track->add( this ); */
 
-//    box( FL_DOWN_BOX );
-    box( FL_CRYSTAL_DOWN_BOX );
+    box( FL_DOWN_BOX );
     color( fl_darker( FL_GRAY ) );
     align( FL_ALIGN_LEFT );
 

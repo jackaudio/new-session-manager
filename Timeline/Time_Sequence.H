@@ -32,7 +32,7 @@ public:
 
     Time_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
         {
-            box( FL_UP_BOX );
+//            box( FL_UP_BOX );
         }
 
     time_sig

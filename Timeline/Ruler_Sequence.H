@@ -30,7 +30,7 @@ public:
 
     Ruler_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
         {
-            box( FL_UP_BOX );
+//            box( FL_UP_BOX );
         }
 
     void

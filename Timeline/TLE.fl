@@ -367,7 +367,7 @@ timeline->redraw();}
               }
               MenuItem {} {
                 label Flat
-                callback {Fl::scheme( "gtk+" );} selected
+                callback {Fl::scheme( "gtk+" );}
                 xywh {10 10 40 25} type Radio
               }
             }
@@ -407,11 +407,11 @@ Fl::scheme( Fl::scheme() );}
               }
               MenuItem {} {
                 label Light
-                callback {Fl::background2( 255, 255, 255 );
-Fl::background( 192, 192, 192 );
+                callback {Fl::background2( 192, 192, 192 );
+Fl::background( 220, 220, 220 );
 Fl::foreground( 0, 0, 0 );
 
-Fl::scheme( Fl::scheme() );}
+Fl::scheme( Fl::scheme() );} selected
                 xywh {20 20 40 25} type Radio
               }
             }
@@ -455,14 +455,14 @@ delete win;}
           } {
             Fl_Box playhead_clock {
               label PLAYHEAD
-              xywh {185 29 137 40} box BORDER_BOX color 46
+              xywh {185 29 137 40} box BORDER_BOX color 40
               code0 {o->type( Clock::HMS );}
               code1 {o->run( &transport->frame );}
               class Clock
             }
             Fl_Box {} {
               label PLAYHEAD
-              xywh {325 29 142 40} box BORDER_BOX color 46
+              xywh {325 29 142 40} box BORDER_BOX color 40
               code0 {o->type( Clock::BBT );}
               code1 {o->run( &transport->frame );}
               class Clock

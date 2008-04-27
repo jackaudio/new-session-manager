@@ -291,6 +291,8 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
     if ( ! draw_with_measure_lines )
         return;
 
+    fl_push_clip( X, Y, W, H );
+
 //    fl_line_style( FL_DASH, 2 );
     fl_line_style( FL_DASH, 0 );
 
@@ -298,6 +300,13 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
     const Fl_Color bar  = fl_color_average( FL_RED, color, 0.65f );
 
     const nframes_t samples_per_minute = sample_rate() * 60;
+
+    /* we need to back up a bit in order to catch all the numbers */
+    if ( BBT )
+    {
+        X -= 40;
+        W += 40;
+    }
 
     for ( int x = X; x < X + W; ++x )
     {
@@ -372,6 +381,7 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
 
     fl_line_style( FL_SOLID, 0 );
 
+    fl_pop_clip();
 }
 
 void
@@ -479,11 +489,10 @@ Timeline::draw ( void )
 /*         return; */
 /*     } */
 
-    if ( ( damage() & FL_DAMAGE_CHILD && damage() & FL_DAMAGE_SCROLL ) ||
-         ( (damage() & FL_DAMAGE_ALL)
-           ||
-           damage() & FL_DAMAGE_EXPOSE ) )
+    if ( damage() & FL_DAMAGE_ALL || damage() & FL_DAMAGE_EXPOSE )
     {
+        printf( "complete redraw\n" );
+
         draw_box( box(), 0, 0, w(), h(), color() );
 
         fl_push_clip( 0, rulers->y(), w(), rulers->h() );
@@ -738,7 +747,7 @@ Timeline::handle ( int m )
     {
         case FL_FOCUS:
         case FL_UNFOCUS:
-            redraw();
+//            redraw();
             return 1;
         case FL_KEYBOARD:
         case FL_SHORTCUT:

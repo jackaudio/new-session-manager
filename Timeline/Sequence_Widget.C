@@ -224,7 +224,10 @@ Sequence_Widget::handle ( int m )
                     pos += d;
 
                 timeline->xposition( timeline->ts_to_x(  pos ) );
-                _track->redraw();
+
+                /* FIXME: why isn't this enough? */
+//                _track->redraw();
+                timeline->redraw();
             }
 
             return 1;

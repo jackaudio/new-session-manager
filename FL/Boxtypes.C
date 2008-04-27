@@ -358,7 +358,7 @@ up_box ( int x, int y, int w, int h, Fl_Color c )
           /* stipple */
         fl_color( fl_color_average( FL_GRAY, c, 0.10f ) );
         for ( int i = y + 1; i < y + h - 8; i += 5 )
-            fl_line( x, i, x + w, i );
+            fl_line( x + 1, i, x + w - 2, i );
 
         frame_rect( x, y, w, h - 1, "IJLM", c );
     }

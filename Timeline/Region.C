@@ -41,10 +41,13 @@ using namespace std;
 
 extern Timeline *timeline;
 
+#include "../FL/Boxtypes.H"
 
 bool Region::inherit_track_color = true;
 
-Fl_Boxtype Region::_box = FL_UP_BOX;
+// Fl_Boxtype Region::_box = FL_UP_BOX;
+
+Fl_Boxtype Region::_box = FL_CRYSTAL_UP_BOX;
 
 Fl_Color Region::_selection_color = FL_MAGENTA;
 

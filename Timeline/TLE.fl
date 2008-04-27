@@ -161,7 +161,7 @@ exit( 0 );}
           }
         }
         Submenu {} {
-          label {&Edit} open selected
+          label {&Edit} open
           xywh {0 0 74 25}
         } {
           MenuItem {} {
@@ -367,7 +367,7 @@ timeline->redraw();}
               }
               MenuItem {} {
                 label Flat
-                callback {Fl::scheme( "gtk+" );}
+                callback {Fl::scheme( "gtk+" );} selected
                 xywh {10 10 40 25} type Radio
               }
             }
@@ -408,7 +408,7 @@ Fl::scheme( Fl::scheme() );}
               MenuItem {} {
                 label Light
                 callback {Fl::background2( 255, 255, 255 );
-Fl::background( 172, 172, 172 );
+Fl::background( 192, 192, 192 );
 Fl::foreground( 0, 0, 0 );
 
 Fl::scheme( Fl::scheme() );}

@@ -59,6 +59,7 @@
 
 #include "TLE.H"
 
+#include "../FL/Boxtypes.H"
 
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -95,6 +96,8 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Audio_Sequence );
     LOG_REGISTER_CREATE( Control_Sequence );
 
+
+    init_boxtypes();
 
     if ( ! ensure_dirs() )
         /* error */;

@@ -558,6 +558,7 @@ Region::draw_box( void )
 
     Fl_Color color = Region::inherit_track_color ? track()->track()->color() :  _box_color;
 
+    color = fl_color_average( color, track()->color(), 0.75f );
 
     if ( this == ((Audio_Sequence*)track())->capture() )
     {

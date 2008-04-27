@@ -299,36 +299,40 @@ Sequence::snap ( Sequence_Widget *r )
 {
     const int snap_pixels = 10;
 
-    const int rx1 = r->x();
-    const int rx2 = r->x() + r->w();
-
-
-    for ( list <Sequence_Widget*>::iterator i = _widgets.begin(); i != _widgets.end(); i++ )
+    if ( Timeline::snap_magnetic )
     {
-        const Sequence_Widget *w = (*i);
 
-        if ( w == r )
-            continue;
+        const int rx1 = r->x();
+        const int rx2 = r->x() + r->w();
 
-        const int wx1 = w->x();
-        const int wx2 = w->x() + w->w();
 
-        if ( abs( rx1 - wx2 ) < snap_pixels )
+        for ( list <Sequence_Widget*>::iterator i = _widgets.begin(); i != _widgets.end(); i++ )
         {
-            r->offset( w->offset() + w->length() + 1 );
+            const Sequence_Widget *w = (*i);
+
+            if ( w == r )
+                continue;
+
+            const int wx1 = w->x();
+            const int wx2 = w->x() + w->w();
+
+            if ( abs( rx1 - wx2 ) < snap_pixels )
+            {
+                r->offset( w->offset() + w->length() + 1 );
 
 //            printf( "snap: %lu | %lu\n", w->offset() + w->length(), r->offset() );
 
-            goto done;
-        }
+                goto done;
+            }
 
-        if ( abs( rx2 - wx1 ) < snap_pixels )
-        {
-            r->offset( ( w->offset() - r->length() ) - 1 );
+            if ( abs( rx2 - wx1 ) < snap_pixels )
+            {
+                r->offset( ( w->offset() - r->length() ) - 1 );
 
 //            printf( "snap: %lu | %lu\n", r->offset() + r->length(), w->offset() );
 
-            goto done;
+                goto done;
+            }
         }
     }
 

@@ -33,6 +33,7 @@
 
 bool Timeline::draw_with_measure_lines = true;
 Timeline::snap_e Timeline::snap_to = Bars;
+bool Timeline::snap_magnetic = true;
 
 const float UPDATE_FREQ = 0.02f;
 

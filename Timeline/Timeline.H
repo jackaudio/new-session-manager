@@ -115,6 +115,7 @@ public:
 
     static bool draw_with_measure_lines;
     static snap_e snap_to;
+    static bool snap_magnetic;
 
     Tempo_Sequence *tempo_track;
     Time_Sequence  *time_track;

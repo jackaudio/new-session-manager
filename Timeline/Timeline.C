@@ -249,9 +249,11 @@ Timeline::nearest_line ( int ix )
     if ( snap_to == None )
         return -1;
 
+    const nframes_t samples_per_minute = sample_rate() * 60;
+
     for ( int x = ix - 10; x < ix + 10; ++x )
     {
-        const int measure = ts_to_x( (double)(sample_rate() * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ));
+        const int measure = ts_to_x( samples_per_minute / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
 
         if ( measure == 0 )
             break;
@@ -292,14 +294,16 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
 //    fl_line_style( FL_DASH, 2 );
     fl_line_style( FL_DASH, 0 );
 
-    Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
-    Fl_Color bar  = fl_color_average( FL_RED, color, 0.65f );
+    const Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
+    const Fl_Color bar  = fl_color_average( FL_RED, color, 0.65f );
 
-    int measure;
+    const nframes_t samples_per_minute = sample_rate() * 60;
 
     for ( int x = X; x < X + W; ++x )
     {
-        measure = ts_to_x( (double)(sample_rate() * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
+//        measure = ts_to_x( (double)(sample_rate() * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
+
+        const int measure = ts_to_x( samples_per_minute / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
 
         if ( measure == 0 )
             break;

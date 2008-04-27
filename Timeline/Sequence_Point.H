@@ -55,6 +55,10 @@ protected:
 public:
 
     Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
+
+    /* FIXME: hack */
+    virtual int x ( void ) const { const int x = Sequence_Widget::x(); if ( x == _track->x() ) return x - 3; else return x; }
+
     virtual int abs_w ( void ) const { return 10; }
     nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
 

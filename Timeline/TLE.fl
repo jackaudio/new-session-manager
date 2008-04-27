@@ -200,7 +200,7 @@ exit( 0 );}
           }
           MenuItem {} {
             label Record
-            callback {transport->toggle_record();} selected
+            callback {transport->toggle_record();}
             xywh {40 40 40 25} shortcut 0x50072
           }
         }
@@ -421,9 +421,22 @@ Fl::scheme( Fl::scheme() );}
             }
           }
         }
-        MenuItem {} {
-          label {&Help}
-          xywh {0 0 40 25}
+        Submenu {} {
+          label {&Help} open
+          xywh {0 0 74 25}
+        } {
+          MenuItem {} {
+            label {&About}
+            callback {Fl_Window *win = make_about_dialog();
+
+win->show();
+
+while ( win->shown() )
+	Fl::wait();
+	
+delete win;}
+            xywh {0 0 40 25}
+          }
         }
       }
       Fl_Group {} {open
@@ -523,5 +536,49 @@ update_progress( cpu_load_progress, clp, engine->cpu_load() );} {}
     code {Fl::repeat_timeout( STATUS_UPDATE_FREQ, update_cb, v );
 
 ((TLE*)v)->update_status();} {}
+  }
+  Function {make_about_dialog()} {open
+  } {
+    Fl_Window {} {
+      label About open
+      xywh {1082 94 498 529} type Double visible
+    } {
+      Fl_Tabs {} {open
+        xywh {-4 122 507 419}
+      } {
+        Fl_Group {} {
+          label Credits open selected
+          xywh {-4 147 507 394}
+        } {
+          Fl_Box {} {
+            label {Non-DAW was written from scratch by
+ Jonathan Moore Liles for his own use
+ (see the manual).
+
+Nobody planned. Nobody helped.
+ You can help now by donating time, money,
+and/or replacing the rest of Linux Audio
+with fast, light, reliable alternatives.}
+            xywh {42 203 416 260} labelsize 17
+          }
+        }
+        Fl_Group {} {
+          label License open
+          xywh {-1 157 504 384} hide
+        } {
+          Fl_Box {} {
+            label {Copyright (C) 2008 Jonathan Moore Liles
+
+ This software is released under version 3
+ of the GNU General Public License (GPLv3).}
+            xywh {45 213 403 83} labelsize 17
+          }
+        }
+      }
+      Fl_Box {} {
+        label {the Non-DAW (Digital Audio Workstation)}
+        image {../logo-small.png} xywh {-1 1 499 115} align 16
+      }
+    }
   }
 } 

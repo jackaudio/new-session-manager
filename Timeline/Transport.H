@@ -67,6 +67,17 @@ private:
 
 public:
 
+    void toggle_record ( void )
+        {
+            if ( _record_button->value() )
+                _record_button->value( 0 );
+            else
+                _record_button->value( 1 );
+
+            _record_button->do_callback();
+        }
+
+
     Transport ( int X, int Y, int W, int H, const char *L=0 )
         : Fl_Pack( X, Y, W, H, L )
         {
@@ -102,6 +113,18 @@ public:
             o->box( FL_UP_BOX );
 
             end();
+        }
+
+    int
+    handle ( int m )
+        {
+            /* FIXME: hack to avoid stealing focus */
+
+            if ( m == FL_FOCUS  )
+                return 0;
+            else
+                return Fl_Pack::handle( m );
+
         }
 
     bool rolling;

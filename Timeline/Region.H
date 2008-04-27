@@ -134,11 +134,11 @@ protected:
                 else if ( ! strcmp( s, ":fade-in-type" ) )
                     _fade_in.type = (Fade::fade_type_e)atoi( v );
                 else if ( ! strcmp( s, ":fade-in-duration" ) )
-                    _fade_in.length = atol( v );
+                    _fade_in.length = atoll( v );
                 else if ( ! strcmp( s, ":fade-out-type" ) )
                     _fade_out.type = (Fade::fade_type_e)atoi( v );
                 else if ( ! strcmp( s, ":fade-out-duration" ) )
-                    _fade_out.length = atol( v );
+                    _fade_out.length = atoll( v );
                 else if ( ! strcmp( s, ":source" ) )
                 {
                     if ( ! ( _clip = Audio_File::from_file( v ) ) )

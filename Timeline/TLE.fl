@@ -179,7 +179,7 @@ exit( 0 );}
           xywh {0 0 74 25}
         } {
           MenuItem {} {
-            label Home
+            label Start
             callback {transport->locate( 0 );}
             xywh {0 0 40 25} shortcut 0xff50
           }
@@ -200,6 +200,7 @@ exit( 0 );}
           }
           MenuItem {} {
             label Record
+            callback {transport->toggle_record();} selected
             xywh {40 40 40 25} shortcut 0x50072
           }
         }
@@ -252,7 +253,7 @@ exit( 0 );}
           } {
             MenuItem {} {
               label Bars
-              callback {Timeline::snap_to = Timeline::Bars;} selected
+              callback {Timeline::snap_to = Timeline::Bars;}
               xywh {0 0 40 25} type Radio value 1
             }
             MenuItem {} {

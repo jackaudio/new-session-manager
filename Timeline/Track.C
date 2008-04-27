@@ -130,10 +130,10 @@ Track::init ( void )
         o->color( ( Fl_Color ) 53 );
         {
             Fl_Input *o = name_field = new Fl_Sometimes_Input( 2, 2, 144, 24 );
-            o->color( ( Fl_Color ) 33 );
+            o->color( FL_BACKGROUND_COLOR );
             o->labeltype( FL_NO_LABEL );
             o->labelcolor( FL_GRAY0 );
-            o->textcolor( 32 );
+            o->textcolor( FL_FOREGROUND_COLOR );
 
             o->callback( cb_input_field, (void*)this );
         }

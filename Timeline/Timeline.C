@@ -465,7 +465,7 @@ Timeline::draw ( void )
          ||
          damage() & FL_DAMAGE_EXPOSE )
     {
-        draw_box( box(), 0, 0, w(), h(), color() );
+        draw_box( box(), 0, 0, w(), h(), this == Fl::focus() ? color() : fl_darker( color() ) );
 
         fl_push_clip( 0, rulers->y(), w(), rulers->h() );
         draw_child( *rulers );
@@ -717,8 +717,17 @@ Timeline::handle ( int m )
 
     switch ( m )
     {
+        case FL_FOCUS:
+        case FL_UNFOCUS:
+            redraw();
+            return 1;
         case FL_KEYBOARD:
+        case FL_SHORTCUT:
         {
+            if ( Fl::event_state() & ( FL_ALT || FL_CTRL || FL_SHIFT ) )
+                /* we don't want any keys with modifiers... */
+                return 0;
+
             switch ( Fl::event_key() )
             {
                 case FL_Delete:
@@ -727,14 +736,10 @@ Timeline::handle ( int m )
 
                     return 1;
                 }
-
-/*                 case FL_Home: */
-/*                     transport->locate( 0 ); */
-/*                     return 1; */
-/*                 case ' ': */
-/*                     transport->toggle(); */
-/*                     return 1; */
-
+                case FL_Home:
+                case FL_End:
+                    /* keep scrollbar from eating these. */
+                    return 0;
                 case 'p':
                 {
                     int X = Fl::event_x() - Track::width();
@@ -776,6 +781,10 @@ Timeline::handle ( int m )
         }
         default:
         {
+
+            if ( m == FL_PUSH )
+                Fl::focus( this );
+
             int r = Fl_Overlay_Window::handle( m );
 
             if ( m != FL_RELEASE && r )
@@ -788,7 +797,7 @@ Timeline::handle ( int m )
             {
                 case FL_PUSH:
                 {
-                    take_focus();
+//                    take_focus();
 
                     if ( Fl::event_button1() )
                     {

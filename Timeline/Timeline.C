@@ -67,15 +67,14 @@ Timeline::cb_scroll ( Fl_Widget *w )
         {
             _fpp = hscroll->zoom() * 1;
 
-            int maxx = ts_to_x( _length );
-            hscroll->range( 0, maxx );
+//            hscroll->range( 0, ts_to_x( _length ) - tracks->w() - Track::width() );
+            const int tw = tracks->w() - Track::width() - vscroll->w();
+            hscroll->value( ts_to_x( xoffset ), tw, 0, ts_to_x( _length ) - ( tw << 1 ) );
 
             redraw();
         }
-        else
-        {
-            xposition( hscroll->value() );
-        }
+
+        xposition( hscroll->value() );
     }
 }
 
@@ -94,7 +93,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
 
         o->range( 0, 48000 * 300 );
-        o->zoom_range( 2, 8192 );
+//        o->zoom_range( 1, 16384 );
+        o->zoom_range( 1, 65536 << 4 );
         o->zoom( 256 );
         o->type( FL_HORIZONTAL );
         o->callback( cb_scroll, this );
@@ -250,6 +250,9 @@ Timeline::nearest_line ( int ix )
     {
         const int measure = ts_to_x( (double)(sample_rate() * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ));
 
+        if ( measure == 0 )
+            break;
+
 //        const int abs_x = ts_to_x( xoffset ) + x - Track::width();
 
         const int abs_x = ts_to_x( xoffset ) + x;
@@ -293,8 +296,10 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
 
     for ( int x = X; x < X + W; ++x )
     {
-
         measure = ts_to_x( (double)(sample_rate() * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
+
+        if ( measure == 0 )
+            break;
 
         const int abs_x = ts_to_x( xoffset ) + x - Track::width();
 
@@ -357,6 +362,7 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
         }
 
     }
+
     fl_line_style( FL_SOLID, 0 );
 
 }
@@ -378,6 +384,9 @@ void
 Timeline::xposition ( int X )
 {
 //    _old_xposition = xoffset;
+
+    /* FIXME: shouldn't have to do this... */
+    X = min( X, ts_to_x( _length ) - tracks->w() - Track::width() );
 
     xoffset = x_to_ts( X );
 

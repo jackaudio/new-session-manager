@@ -71,7 +71,7 @@ public:
     bool zoom_changed ( void ) const { return _zoom_changed; }
     double zoom ( void ) const { return _zoom; }
     void zoom ( double v ) { _zoom = v;  }
-    double value ( void ) const { return Fl_Slider::value(); }
+//    double value ( void ) const { return Fl_Slider::value(); }
     void zoom_range ( double zmin, double zmax ) { _zoom_min = zmin; _zoom_max = zmax; }
 
     void zoom_out ( void ) { int z = _zoom; _zoom *= 2; constrain(); maybe_do_callback( z ); }

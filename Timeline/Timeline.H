@@ -98,7 +98,7 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     static void cb_scroll ( Fl_Widget *w, void *v );
     void cb_scroll ( Fl_Widget *w );
 
-    float _fpp;                                                  /* frames per pixel */
+    int _fpp;                                                 /* frames per pixel, power of two */
     nframes_t _length;
 
 
@@ -127,11 +127,11 @@ public:
 
     Timeline ( int X, int Y, int W, int H, const char *L=0 );
 
-    float fpp ( void ) const { return _fpp; }
+    nframes_t fpp ( void ) const { return 1 << _fpp; }
     nframes_t length ( void ) const { return _length; }
     nframes_t sample_rate ( void ) const { return engine->sample_rate(); }
-    int ts_to_x( nframes_t ts ) const { return  ts / _fpp; }
-    nframes_t x_to_ts ( int x ) const { return x * _fpp; }
+    int ts_to_x( nframes_t ts ) const { return  ts >> _fpp; }
+    nframes_t x_to_ts ( int x ) const { return x << _fpp; }
 
     float beats_per_minute ( nframes_t when ) const;
     int beats_per_bar ( nframes_t when ) const;

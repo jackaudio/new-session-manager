@@ -65,7 +65,7 @@ Timeline::cb_scroll ( Fl_Widget *w )
     {
         if ( hscroll->zoom_changed() )
         {
-            _fpp = hscroll->zoom() * 1;
+            _fpp = hscroll->zoom();
 
 //            hscroll->range( 0, ts_to_x( _length ) - tracks->w() - Track::width() );
             const int tw = tracks->w() - Track::width() - vscroll->w();
@@ -94,8 +94,11 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
         o->range( 0, 48000 * 300 );
 //        o->zoom_range( 1, 16384 );
-        o->zoom_range( 1, 65536 << 4 );
-        o->zoom( 256 );
+//        o->zoom_range( 1, 65536 << 4 );
+        o->zoom_range( 1, 20 );
+
+        o->zoom( 8 );
+
         o->type( FL_HORIZONTAL );
         o->callback( cb_scroll, this );
 
@@ -155,7 +158,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
     {
 //        sample_rate() = engine->sample_rate();
-        _fpp = 256;
+        _fpp = 8;
 //        _length = sample_rate() * 60 * 2;
         /* FIXME: hack */
         _length = -1;
@@ -914,7 +917,7 @@ Timeline::zoom ( float secs )
     const int sw = w() - vscroll->w() - Track::width();
 
     /* FIXME: we actually need to set this in the scalebar */
-    _fpp = (int)((secs * sample_rate()) / sw);
+//    _fpp = (int)((secs * sample_rate()) / sw);
 
     redraw();
 }

@@ -27,12 +27,12 @@
 
 class Scalebar : public Fl_Scrollbar
 {
-    double _zoom;
+    int _zoom;
 
     bool _zoom_changed;
 
-    double _zoom_min;
-    double _zoom_max;
+    int _zoom_min;
+    int _zoom_max;
 
     void constrain ( void )
         {
@@ -60,9 +60,9 @@ public:
 
     Scalebar ( int X, int Y, int W, int H ) : Fl_Scrollbar ( X, Y, W, H )
         {
-            _zoom = 1.0f;
+            _zoom = 1;
             _zoom_min = 0;
-            _zoom_max = 256;
+            _zoom_max = 4;
             _zoom_changed = false;
 
             step( 1 );
@@ -70,12 +70,12 @@ public:
 
     bool zoom_changed ( void ) const { return _zoom_changed; }
     double zoom ( void ) const { return _zoom; }
-    void zoom ( double v ) { _zoom = v;  }
+    void zoom ( int v ) { _zoom = v;  }
 //    double value ( void ) const { return Fl_Slider::value(); }
-    void zoom_range ( double zmin, double zmax ) { _zoom_min = zmin; _zoom_max = zmax; }
+    void zoom_range ( int zmin, int zmax ) { _zoom_min = zmin; _zoom_max = zmax; }
 
-    void zoom_out ( void ) { int z = _zoom; _zoom *= 2; constrain(); maybe_do_callback( z ); }
-    void zoom_in ( void ) {int z = _zoom; _zoom /= 2; constrain(); maybe_do_callback( z ); }
+    void zoom_out ( void ) { int z = _zoom; ++_zoom; constrain(); maybe_do_callback( z ); }
+    void zoom_in ( void ) {int z = _zoom; --_zoom; constrain(); maybe_do_callback( z ); }
 
     int
     handle ( int m )
@@ -91,12 +91,7 @@ public:
 
                     double z = _zoom;
 
-                    if ( d < 0 )
-                        while ( d++ )
-                            _zoom /= 2;
-                    else
-                        while ( d-- )
-                            _zoom *= 2;
+                    _zoom += d;
 
                     constrain();
 

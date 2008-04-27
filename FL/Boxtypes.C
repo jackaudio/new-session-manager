@@ -102,6 +102,9 @@ frame_round ( int x, int y, int w, int h, const char *c, Fl_Color bc )
     uchar *g = fl_gray_ramp();
     int b = strlen( c ) / 4 + 1;
 
+    if ( ! Fl::draw_box_active() )
+        bc = fl_inactive( bc );
+
     if ( w == h )
     {
         for ( ; b > 1; b--, x++, y++, w -= 2, h -= 2 )
@@ -165,6 +168,9 @@ shade_rect ( int x, int y, int w, int h, const char *c, Fl_Color bc )
     int clen = strlen( c ) - 1;
     int chalf = clen / 2;
     int cstep = 1;
+
+    if ( ! Fl::draw_box_active() )
+        bc = fl_inactive( bc );
 
     if ( h < ( w * 2 ) )
     {

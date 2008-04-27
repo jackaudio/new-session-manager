@@ -123,11 +123,11 @@ free( path );} {}
         } {
           MenuItem {} {
             label {&New}
-            xywh {0 0 40 25}
+            xywh {0 0 40 25} deactivate
           }
           MenuItem {} {
             label {&Open}
-            xywh {10 10 40 25}
+            xywh {10 10 40 25} deactivate
           }
           MenuItem {} {
             label {&Compact}
@@ -141,7 +141,7 @@ Loggable::compact();}
           }
           Submenu {} {
             label Export open
-            xywh {0 0 74 25}
+            xywh {0 0 74 25} deactivate
           } {
             MenuItem {} {
               label Session
@@ -161,13 +161,9 @@ exit( 0 );}
           }
         }
         Submenu {} {
-          label {&Edit} open
+          label {&Edit} open selected
           xywh {0 0 74 25}
         } {
-          MenuItem {} {
-            label Preferences
-            xywh {0 0 40 25}
-          }
           MenuItem {} {
             label Undo
             callback {Loggable::undo();}
@@ -547,7 +543,7 @@ update_progress( cpu_load_progress, clp, engine->cpu_load() );} {}
         xywh {-4 122 507 419}
       } {
         Fl_Group {} {
-          label Credits open selected
+          label Credits open
           xywh {-4 147 507 394}
         } {
           Fl_Box {} {

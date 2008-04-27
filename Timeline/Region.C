@@ -390,10 +390,11 @@ Region::handle ( int m )
                             _fade_in.type = (Fade::fade_type_e)(int)(r - &menu[2]);
                         else if ( r > &menu[7] && r < &menu[12] )
                             _fade_out.type = (Fade::fade_type_e)(int)(r - &menu[8]);
+
+                        redraw();
                     }
 
                     return 1;
-
                 }
                 else
                     return Sequence_Widget::handle( m );

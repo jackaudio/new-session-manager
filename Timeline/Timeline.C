@@ -510,21 +510,6 @@ Timeline::draw ( void )
         return;
     }
 
-    if ( damage() & FL_DAMAGE_CHILD )
-    {
-        fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
-        update_child( *rulers );
-        fl_pop_clip();
-
-        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), hscroll->y() - (rulers->y() + rulers->h()) );
-        update_child( *tracks );
-        fl_pop_clip();
-
-        update_child( *hscroll );
-        update_child( *vscroll );
-    }
-
-
     if ( damage() & FL_DAMAGE_SCROLL )
     {
         int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
@@ -544,6 +529,20 @@ Timeline::draw ( void )
         _old_xposition = xoffset;
         _old_yposition = _yposition;
 
+    }
+
+    if ( damage() & FL_DAMAGE_CHILD )
+    {
+        fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
+        update_child( *rulers );
+        fl_pop_clip();
+
+        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), hscroll->y() - (rulers->y() + rulers->h()) );
+        update_child( *tracks );
+        fl_pop_clip();
+
+        update_child( *hscroll );
+        update_child( *vscroll );
     }
 
 }

@@ -159,16 +159,18 @@ Control_Sequence::draw ( void )
 
     fl_clip_box( bx, by, bw, bh, X, Y, W, H );
 
-    const Fl_Color color = active_r() ? this->color() : fl_inactive( this->color() );
-    const Fl_Color selection_color = active_r() ? this->selection_color() : fl_inactive( this->selection_color() );
+    bool active = active_r();
 
+    const Fl_Color color = active ? this->color() : fl_inactive( this->color() );
+    const Fl_Color selection_color = active ? this->selection_color() : fl_inactive( this->selection_color() );
 
     if ( draw_with_gradient )
     {
-//        Fl_Color target = fl_color_average( color, FL_WHITE, 0.50f );
+/*         const Fl_Color c2 = fl_color_average( selection_color, FL_WHITE, 0.90f ); */
+/*         const Fl_Color c1 = fl_color_average( color, c2, 0.60f ); */
 
-        const Fl_Color c2 = fl_color_average( selection_color, FL_WHITE, 0.75f );
-        const Fl_Color c1 = fl_color_average( color, c2, 0.60f );
+        const Fl_Color c1 = fl_color_average( selection_color, FL_WHITE, 0.90f );
+        const Fl_Color c2 = fl_color_average( color, c1, 0.60f );
 
         for ( int gy = 0; gy < bh; gy++ )
         {
@@ -191,6 +193,8 @@ Control_Sequence::draw ( void )
 
     if ( draw_with_polygon )
     {
+        fl_color( draw_with_gradient ? color : fl_color_average( color, selection_color, 0.45f ) );
+
         fl_begin_complex_polygon();
         draw_curve( draw_with_gradient, true );
         fl_end_complex_polygon();

@@ -203,7 +203,7 @@ Loggable::do_this ( const char *s, bool reverse )
     }
     else if ( ! strcmp( command, "set" ) )
     {
-        printf( "got set command (%s).\n", arguments );
+//        printf( "got set command (%s).\n", arguments );
 
         char **sa  = parse_alist( arguments );
 

@@ -114,7 +114,7 @@ free( path );} {}
       label {Non-DAW - Timeline} open
       xywh {577 50 1024 768} type Double resizable xclass {Non-DAW} visible
     } {
-      Fl_Menu_Bar menubar {open
+      Fl_Menu_Bar menubar {open selected
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -185,19 +185,14 @@ exit( 0 );}
             xywh {10 10 40 25} shortcut 0xff57
           }
           MenuItem {} {
-            label Stop
-            callback {transport->stop();}
-            xywh {20 20 40 25} shortcut 0x50073
-          }
-          MenuItem {} {
-            label Play
-            callback {transport->start();}
-            xywh {30 30 40 25} shortcut 0x50070
+            label {Play/Stop}
+            callback {transport->toggle();}
+            xywh {20 20 40 25} shortcut 0x20
           }
           MenuItem {} {
             label Record
             callback {transport->toggle_record();}
-            xywh {40 40 40 25} shortcut 0x50072
+            xywh {40 40 40 25} shortcut 0x10072
           }
         }
         Submenu {} {
@@ -265,7 +260,7 @@ exit( 0 );}
           }
           MenuItem {} {
             label {Magnetic snap}
-            callback {Timeline::snap_magnetic = menu_picked_value( o );} selected
+            callback {Timeline::snap_magnetic = menu_picked_value( o );}
             xywh {10 10 40 25} type Toggle value 1
           }
           Submenu {} {

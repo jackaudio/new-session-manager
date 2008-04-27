@@ -57,6 +57,13 @@ private:
                 toggle();
             else if ( w == _record_button )
             {
+                if ( _record_button->value() )
+                    w->labelcolor( FL_RED );
+                else
+                    w->labelcolor( fl_color_average( FL_RED, FL_WHITE, 0.25f ) );
+
+                redraw();
+
                 if ( rolling )
                     if ( _record_button->value() )
                         timeline->record();
@@ -107,9 +114,10 @@ public:
             _record_button = o = new Fl_Button( 0, 0, bw, 0, "@circle" );
             o->type( FL_TOGGLE_BUTTON );
             o->labeltype( FL_EMBOSSED_LABEL );
-            o->labelcolor( FL_RED );
+            o->labelcolor( fl_color_average( FL_RED, FL_WHITE, 0.25f ) );
             o->shortcut( 'R' );
             o->callback( cb_button, this );
+            o->when( FL_WHEN_CHANGED );
             o->box( FL_UP_BOX );
 
             end();

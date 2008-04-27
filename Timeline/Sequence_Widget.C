@@ -45,7 +45,7 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color 
     {
         if ( align & FL_ALIGN_RIGHT )
         {
-            X += w();
+            X += abs_w();
             align = (Fl_Align)((align & ~FL_ALIGN_RIGHT) | FL_ALIGN_LEFT);
         }
         if ( align & FL_ALIGN_BOTTOM  )
@@ -85,6 +85,7 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color 
 
     int dx = 0;
 
+    /* adjust for scrolling */
     if ( abs_x() < scroll_x() )
         dx = min( 32767, scroll_x() - abs_x() );
 

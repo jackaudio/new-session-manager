@@ -39,7 +39,8 @@ Sequence::Sequence ( int X, int Y, int W, int H, Track *track ) : Fl_Widget( X, 
 /*         track->add( this ); */
 
     box( FL_DOWN_BOX );
-    color( fl_darker( FL_GRAY ) );
+//    color( fl_darker( FL_GRAY ) );
+    color(  FL_BACKGROUND_COLOR );
     align( FL_ALIGN_LEFT );
 
 //    log_create();

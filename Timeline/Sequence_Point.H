@@ -55,7 +55,7 @@ protected:
 public:
 
     Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
-    int abs_w ( void ) const { return 10; }
+    virtual int abs_w ( void ) const { return 10; }
     nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
 
     Sequence_Point ( )

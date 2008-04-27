@@ -269,7 +269,10 @@ public:
     virtual int h ( void ) const { return _track->h(); }
 
     /* used by regions */
-    virtual int x ( void ) const { return _r->offset < timeline->xoffset ? _track->x() - 1 : min( 32767, _track->x() + timeline->ts_to_x( _r->offset - timeline->xoffset ) ); }
+    virtual int x ( void ) const
+        {
+            return  _r->offset < timeline->xoffset ? _track->x() : min( _track->x() + _track->w(), _track->x() + timeline->ts_to_x( _r->offset - timeline->xoffset ) );
+        }
 
     /* use this as x() when you need to draw lines between widgets */
     int line_x ( void ) const

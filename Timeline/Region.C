@@ -556,7 +556,6 @@ Region::draw_box( void )
 
     Fl_Color selection_color = _selection_color;
 
-
     Fl_Color color = Region::inherit_track_color ? track()->track()->color() :  _box_color;
 
 
@@ -681,11 +680,12 @@ Region::draw ( void )
         }
     }
 
+    /* FIXME: only draw as many as are necessary! */
     timeline->draw_measure_lines( rx, Y, rw, H, _box_color );
 
-    fl_color( FL_BLACK );
-    fl_line( rx, Y, rx, Y + H );
-    fl_line( rx + rw - 1, Y, rx + rw - 1, Y + H );
+/*     fl_color( FL_BLACK ); */
+/*     fl_line( rx, Y, rx, Y + H ); */
+/*     fl_line( rx + rw - 1, Y, rx + rw - 1, Y + H ); */
 
     draw_label( _clip->name(), align() );
 

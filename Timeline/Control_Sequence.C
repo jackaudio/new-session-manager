@@ -116,7 +116,7 @@ Control_Sequence::draw_curve ( bool flip, bool filled )
                 }
             }
 
-            fl_vertex( (*r)->x(), ry );
+            fl_vertex( (*r)->line_x(), ry );
 
             if ( r == e )
             {

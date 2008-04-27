@@ -140,22 +140,18 @@ public:
             return r;
         }
 
-    int x ( void ) const { return line_x(); }
-    int y ( void ) const { return parent()->y() + ((float)parent()->h() * _y); }
-    int w ( void ) const { return 6; }
-    int h ( void ) const { return 6; }
+/*     int x ( void ) const { return line_x(); } */
 
-/*     void */
-/*     draw_box ( int X, int Y, int W, int H ) */
-/*         { */
-/*         } */
+    int abs_w ( void ) const { return 6; }
+
+//    int w ( void ) const { return 6; }
+
+    int y ( void ) const { return parent()->y() + ((float)parent()->h() * _y); }
+    int h ( void ) const { return 6; }
 
     void
     draw ( int X, int Y, int W, int H )
         {
-
-//            fl_draw_box( box(), x(), y(), w(), h(), box_color() );
-            return;
         }
 
 };

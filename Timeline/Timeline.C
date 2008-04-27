@@ -463,11 +463,12 @@ Timeline::draw ( void )
 /*         return; */
 /*     } */
 
-    if ( (damage() & FL_DAMAGE_ALL)
-         ||
-         damage() & FL_DAMAGE_EXPOSE )
+    if ( ( damage() & FL_DAMAGE_CHILD && damage() & FL_DAMAGE_SCROLL ) ||
+         ( (damage() & FL_DAMAGE_ALL)
+           ||
+           damage() & FL_DAMAGE_EXPOSE ) )
     {
-        draw_box( box(), 0, 0, w(), h(), this == Fl::focus() ? color() : fl_darker( color() ) );
+        draw_box( box(), 0, 0, w(), h(), color() );
 
         fl_push_clip( 0, rulers->y(), w(), rulers->h() );
         draw_child( *rulers );
@@ -535,6 +536,7 @@ Timeline::draw ( void )
 
     if ( damage() & FL_DAMAGE_CHILD )
     {
+
         fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
         update_child( *rulers );
         fl_pop_clip();

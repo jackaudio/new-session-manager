@@ -900,7 +900,7 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
 
     /* apply gain */
 
-    buffer_apply_gain( buf, cnt, _scale );
+    buffer_apply_gain( buf + ofs, cnt, _scale );
 
     /* perform declicking if necessary */
 
@@ -920,7 +920,9 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
         {
             const long d = 0 - sofs;
 
-            fade.apply( buf + ofs, Fade::In, d, d + fade.length, cnt - ofs );
+            assert( cnt <= nframes );
+
+            fade.apply( buf + ofs, Fade::In, d, d + fade.length, cnt );
         }
 
         fade = declick < _fade_out ? _fade_out : declick;
@@ -930,6 +932,8 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
         if ( start + fade.length > r.end )
         {
             const nframes_t d = r.end - start;
+
+            assert( cnt <= nframes );
 
             fade.apply( buf, Fade::Out, cnt + (long)d - fade.length, cnt + d, cnt );
         }

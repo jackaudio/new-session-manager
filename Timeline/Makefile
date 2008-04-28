@@ -47,6 +47,6 @@ clean:
 	rm -f $(OBJS) timeline makedepend
 
 valgrind:
-	valgrind ./test
+	valgrind ./timeline
 
 include makedepend

@@ -343,7 +343,7 @@ Loggable::undo ( void )
 
     _undo_index = ui + 2;
 
-    delete buf;
+    delete[] buf;
 }
 
 /** write a snapshot of the state of all loggable objects, sufficient

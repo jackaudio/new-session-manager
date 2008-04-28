@@ -51,7 +51,8 @@ pack_visible_height ( const Fl_Pack *p )
 {
     int th = 0;
 
-    for ( const Fl_Widget* const *w = p->array(); *w; ++w )
+    const Fl_Widget* const *w = p->array();
+    for ( int i = p->children(); i--; ++w )
         if ( (*w)->visible() )
             th += (*w)->h() + p->spacing();
 
@@ -104,6 +105,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
     box( FL_FLAT_BOX );
     xoffset = 0;
+    _yposition = 0;
+    _old_yposition = 0;
+    _old_xposition = 0;
 
     X = Y = 0;
 

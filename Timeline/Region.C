@@ -689,16 +689,16 @@ Region::draw ( void )
 
     draw_label( _clip->name(), align() );
 
-    if ( current() )
-    {
-        /* draw length bubble */
+/*     if ( current() ) */
+/*     { */
+/*         /\* draw length bubble *\/ */
 
-        char pat[40];
+/*         char pat[40]; */
 
-        snprintf( pat, sizeof( pat ), "%dm:%.1fs", (int)(length() / timeline->sample_rate()) / 60, (double)length() / timeline->sample_rate() );
+/*         snprintf( pat, sizeof( pat ), "%dm:%.1fs", (int)(length() / timeline->sample_rate()) / 60, (double)length() / timeline->sample_rate() ); */
 
-        draw_label( pat, (Fl_Align)(FL_ALIGN_INSIDE | FL_ALIGN_CENTER), FL_GREEN );
-    }
+/*         draw_label( pat, (Fl_Align)(FL_ALIGN_INSIDE | FL_ALIGN_CENTER), FL_GREEN ); */
+/*     } */
 
     fl_pop_clip();
 

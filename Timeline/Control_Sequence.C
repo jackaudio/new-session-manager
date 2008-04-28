@@ -17,6 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include <FL/fl_ask.H>
+
 #include "Control_Sequence.H"
 #include "Track.H"
 
@@ -259,11 +261,45 @@ Control_Sequence::handle ( int m )
     {
         case FL_PUSH:
         {
+            Logger log( this );
+
             if ( Fl::event_button1() )
             {
                 Control_Point *r = new Control_Point( this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ), (float)(Fl::event_y() - y()) / h() );
 
                 add( r );
+            }
+            else if ( Fl::event_button3() && ! ( Fl::event_state() & ( FL_ALT | FL_SHIFT | FL_CTRL ) ) )
+            {
+
+                Fl_Menu_Item menu[] =
+                    {
+                        { "Rename" },
+                        { "Remove" },
+                        { 0 }
+                    };
+
+                const Fl_Menu_Item *r = menu->popup( Fl::event_x(), Fl::event_y(), "Control Sequence" );
+
+                if ( r )
+                {
+                    if ( r == &menu[ 0 ] )
+                    {
+                        const char *s = fl_input( "Input new name for control sequence:", name() );
+
+                        if ( s )
+                            name( s );
+
+                        redraw();
+                    }
+                    else if ( r == &menu[ 1 ] )
+                    {
+                        /* TODO: remove */
+                    }
+
+                }
+
+                return 1;
             }
 
             return 1;

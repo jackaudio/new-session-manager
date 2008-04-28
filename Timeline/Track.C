@@ -424,6 +424,7 @@ Track::handle ( int m )
                         { "Quad",            0, 0, 0, FL_MENU_RADIO | ( c == 4 ? FL_MENU_VALUE : 0 ) },
                         { "...",             0, 0, 0, FL_MENU_RADIO | ( c == 3 || c > 4 ? FL_MENU_VALUE : 0 ) },
                         { 0                  },
+                        { "Add Control"      },
                         { "Color"            },
                         { "Remove",          0, 0, 0, transport->rolling ? FL_MENU_INACTIVE : 0 },
                         { 0 },
@@ -459,6 +460,10 @@ Track::handle ( int m )
                         }
                         else if ( r == &menu[ 6 ] )
                         {
+                            new Control_Sequence( this );
+                        }
+                        else if ( r == &menu[ 7 ] )
+                        {
                             unsigned char r, g, b;
 
                             Fl::get_color( color(), r, g, b );
@@ -471,7 +476,7 @@ Track::handle ( int m )
 //                            color( fl_show_colormap( color() ) );
                             redraw();
                         }
-                        else if ( r == &menu[ 7 ] )
+                        else if ( r == &menu[ 8 ] )
                         {
                             int r = fl_choice( "Are you certain you want to remove track \"%s\"?", "Cancel", NULL, "Remove", name() );
 

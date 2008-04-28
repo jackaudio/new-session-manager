@@ -165,9 +165,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         _length = -1;
 
         {
-            Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W - vscroll->w(), 5000 );
+            Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W - vscroll->w(), 1 );
             o->type( Fl_Pack::VERTICAL );
-            o->spacing( 0 );
+            o->spacing( 1 );
 
             tracks = o;
             o->end();
@@ -426,26 +426,16 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
 {
     Timeline *tl = (Timeline *)v;
 
-//            printf( "draw_clip: %d,%d %dx%d\n", X, Y, W, H );
     fl_push_clip( X, Y, W, H );
 
-    fl_color( rand() );
-    fl_rectf( X, Y, X + W, Y + H );
+/*     fl_color( rand() ); */
+/*     fl_rectf( X, Y, X + W, Y + H ); */
 
+    tl->draw_box();
 
     tl->draw_child( *tl->rulers );
 
-    /* headers */
-    fl_push_clip( tl->tracks->x(), tl->rulers->y() + tl->rulers->h(), Track::width(), tl->h() - tl->rulers->h()  - tl->hscroll->h() );
     tl->draw_child( *tl->tracks );
-    fl_pop_clip();
-
-    /* track bodies */
-    fl_push_clip( tl->tracks->x() + Track::width(), tl->rulers->y() + tl->rulers->h(), tl->tracks->w() - Track::width(), tl->h() - tl->rulers->h()  - tl->hscroll->h() );
-    tl->draw_child( *tl->tracks );
-    fl_pop_clip();
-
-//    tl->draw_child( *tl->tracks );
 
     fl_pop_clip();
 }
@@ -562,12 +552,11 @@ Timeline::draw ( void )
 
     if ( damage() & FL_DAMAGE_CHILD )
     {
-
         fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
         update_child( *rulers );
         fl_pop_clip();
 
-        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), hscroll->y() - (rulers->y() + rulers->h()) );
+        fl_push_clip( tracks->x(), tracks->y(), tracks->w(), h() - rulers->h() - hscroll->h() );
         update_child( *tracks );
         fl_pop_clip();
 

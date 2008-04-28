@@ -41,8 +41,6 @@ include ../make.inc
 #LIBS:=$(LIBS) -ljack -lpthread
 
 timeline: $(OBJS)
-	echo $(SRCS) >/dev/stderr
-	echo $(OBJS) >/dev/stderr
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LIBS) -ljack -lpthread $(OBJS) -o $@ -L../FL -lfl_widgets
 
 clean:

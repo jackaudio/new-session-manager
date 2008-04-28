@@ -179,14 +179,13 @@ Track::init ( void )
 
                 o->add( "Show all takes", 0, 0, 0, FL_MENU_TOGGLE );
                 o->add( "New", 0, 0, 0, FL_MENU_DIVIDER );
-
             }
             o->end();
         }
 
         {
             Fl_Box *o = new Fl_Box( 0, 76, 149, 38 );
-            o->box( FL_FLAT_BOX );
+            o->box( FL_NO_BOX );
             Fl_Group::current()->resizable( o );
         }
 
@@ -214,10 +213,6 @@ Track::init ( void )
         o->end();
     }
     end();
-
-/*     /\* FIXME: should be configurable, but where? *\/ */
-/*     create_outputs( 2 ); */
-/*     create_inputs( 2 ); */
 
     playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), output.size() );
     record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), input.size() );
@@ -286,8 +281,9 @@ Track::resize ( void )
     else
         controls->show();
 
+    /* FIXME: why is this necessary? */
     if ( parent() )
-        parent()->redraw();
+        parent()->parent()->redraw();
 }
 
 void

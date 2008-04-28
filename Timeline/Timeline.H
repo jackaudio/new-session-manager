@@ -95,6 +95,7 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     Fl_Scrollbar *vscroll;
 
 
+    void adjust_vscroll ( void );
     static void cb_scroll ( Fl_Widget *w, void *v );
     void cb_scroll ( Fl_Widget *w );
 

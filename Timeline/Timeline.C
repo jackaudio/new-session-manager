@@ -43,6 +43,28 @@ const float UPDATE_FREQ = 0.02f;
 
 #include "Transport.H"
 
+/** return the combined height of all visible children of (veritcal)
+ pack, /p/. This is necessary because pack sizes are adjusted only
+ when the relevant areas are exposes. */
+static int
+pack_visible_height ( const Fl_Pack *p )
+{
+    int th = 0;
+
+    for ( const Fl_Widget* const *w = p->array(); *w; ++w )
+        if ( (*w)->visible() )
+            th += (*w)->h() + p->spacing();
+
+    return th;
+}
+
+/** recalculate the size of vertical scrolling area and inform scrollbar */
+void
+Timeline::adjust_vscroll ( void )
+{
+    vscroll->value( _yposition, h() - rulers->h() - hscroll->h(), 0, pack_visible_height( tracks ) );
+}
+
 void
 Timeline::cb_scroll ( Fl_Widget *w, void *v )
 {
@@ -58,9 +80,7 @@ Timeline::cb_scroll ( Fl_Widget *w )
 
         yposition( vscroll->value() );
 
-        int rh = h() - rulers->h();
-
-        vscroll->value( vscroll->value(), 30, 0, max( tracks->h() - rh, rh) );
+        adjust_vscroll();
     }
     else
     {
@@ -68,9 +88,8 @@ Timeline::cb_scroll ( Fl_Widget *w )
         {
             _fpp = hscroll->zoom();
 
-//            hscroll->range( 0, ts_to_x( _length ) - tracks->w() - Track::width() );
             const int tw = tracks->w() - Track::width() - vscroll->w();
-            hscroll->value( ts_to_x( xoffset ), tw, 0, ts_to_x( _length ) - ( tw << 1 ) );
+            hscroll->value( ts_to_x( xoffset ), tw, 0, ts_to_x( _length ) );
 
             redraw();
         }
@@ -435,7 +454,9 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
 
     tl->draw_child( *tl->rulers );
 
+    fl_push_clip( tl->tracks->x(), tl->rulers->y() + tl->rulers->h(), tl->tracks->w(), tl->h() - tl->rulers->h() - tl->hscroll->h() );
     tl->draw_child( *tl->tracks );
+    fl_pop_clip();
 
     fl_pop_clip();
 }
@@ -468,6 +489,8 @@ Timeline::draw ( void )
     Y = tracks->y();
     W = tracks->w() - bdw - 1;
     H = tracks->h();
+
+    adjust_vscroll();
 
 /*     if ( damage() & FL_DAMAGE_USER1 ) */
 /*     { */
@@ -556,7 +579,7 @@ Timeline::draw ( void )
         update_child( *rulers );
         fl_pop_clip();
 
-        fl_push_clip( tracks->x(), tracks->y(), tracks->w(), h() - rulers->h() - hscroll->h() );
+        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h() - hscroll->h() );
         update_child( *tracks );
         fl_pop_clip();
 

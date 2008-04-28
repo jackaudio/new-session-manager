@@ -27,7 +27,7 @@ bool Control_Sequence::draw_with_gradient = true;
 bool Control_Sequence::draw_with_polygon = true;
 bool Control_Sequence::draw_with_grid = true;
 
-Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 ), output( "foo", Port::Output )
+Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 )
 {
     init();
 
@@ -35,6 +35,8 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 ), ou
 
     if ( track )
         track->add( this );
+
+//    output.activate( track->name(),
 
     log_create();
 }
@@ -335,7 +337,7 @@ Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
 nframes_t
 Control_Sequence::process ( nframes_t nframes )
 {
-    void *buf = output.buffer( nframes );
+    void *buf = _output->buffer( nframes );
 
     return play( (sample_t*)buf, transport->frame, nframes );
 }

@@ -357,6 +357,10 @@ Track::add ( Control_Sequence *t )
 
     control->add( t );
 
+    control_out.push_back( Port( Port::Output, name(), control_out.size(), "cv" ) );
+
+    t->output( &control_out.back() );
+
     resize();
 }
 
@@ -498,27 +502,23 @@ Track::handle ( int m )
 /* Engine */
 /**********/
 
-const char *
-Track::name_for_port ( Port::type_e type, int n )
-{
-    static char pname[256];
-
-    snprintf( pname, sizeof( pname ), "%s/%s-%d",
-              name(),
-              type == Port::Output ? "out" : "in",
-              n + 1 );
-
-    return pname;
-}
-
 void
 Track::update_port_names ( void )
 {
     for ( int i = 0; i < output.size(); ++i )
-        output[ i ].name( name_for_port( output[ i ].type(), i ) );
+        output[ i ].name( name(), i );
 
     for ( int i = 0; i < input.size(); ++i )
-        input[ i ].name( name_for_port( input[ i ].type(), i ) );
+        input[ i ].name( name(), i );
+
+    for ( int i = 0; i < control_out.size(); ++i )
+        control_out[ i ].name( name(), i, "cv" );
+
+
+/*     /\* tell any attached control sequences to do the same *\/ */
+/*     for ( int i = control->children(); i-- ) */
+/*         ((Control_Sequence*)control->child( i ))->update_port_names(); */
+
 }
 
 bool
@@ -541,7 +541,7 @@ Track::configure_outputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            Port p( strdup( name_for_port( Port::Output, i ) ), Port::Output );
+            Port p( Port::Output, name(), i );
 
             if ( p.valid() )
                 output.push_back( p );
@@ -586,7 +586,7 @@ Track::configure_inputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            Port p( strdup( name_for_port( Port::Input, i ) ), Port::Input );
+            Port p( Port::Input, name(), i );
 
             if ( p.valid() )
                 input.push_back( p );

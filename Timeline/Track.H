@@ -109,6 +109,8 @@ public:
 
     vector<Port>   input;                        /* input ports... */
     vector<Port>   output;                       /* output ports... */
+    vector<Port>   control_out;                  /* control ports... */
+
 
     Playback_DS    *playback_ds;
     Record_DS      *record_ds;

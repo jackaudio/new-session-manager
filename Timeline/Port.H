@@ -34,6 +34,9 @@ public:
 
     Port ( jack_port_t *port );
     Port ( const char *name, type_e dir );
+    Port ( type_e dir, const char *base, int n, const char *type=0 );
+
+//    Port ( );
     ~Port ( );
 
 /*     Port ( const Port & rhs ) */
@@ -51,7 +54,10 @@ public:
         }
     const char * name ( void ) const { return _name; }
     bool name ( const char *name );
+    bool name ( const char *base, int n, const char *type=0 );
 
+
+    void activate ( const char *name, type_e dir );
     void shutdown ( void );
     void write ( sample_t *buf, nframes_t nframes );
     void read ( sample_t *buf, nframes_t nframes );

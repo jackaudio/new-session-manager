@@ -23,6 +23,8 @@
 
 #include "Engine.H"
 
+#include <stdio.h> // sprintf
+
 /* nframes is the number of frames to buffer */
 Port::Port ( jack_port_t *port )
 {
@@ -32,13 +34,36 @@ Port::Port ( jack_port_t *port )
 
 Port::Port ( const char *name, type_e dir )
 {
-    _name = name;
-
-    _port = jack_port_register( engine->client(), _name,
-                                JACK_DEFAULT_AUDIO_TYPE,
-                                dir == Output ? JackPortIsOutput : JackPortIsInput,
-                                0 );
+    activate( name, dir );
 }
+
+static const char *
+name_for_port ( Port::type_e dir, const char *base, int n, const char *type )
+{
+    static char pname[256];
+
+    const char *dir_s = dir == Port::Output ? "out" : "in";
+
+    if ( type )
+        snprintf( pname, sizeof( pname ), "%s/%s-%s-%d", base, type, dir_s, n + 1 );
+    else
+        snprintf( pname, sizeof( pname ), "%s/%s-%d", base, dir_s, n + 1 );
+
+    return pname;
+}
+
+Port::Port ( type_e dir, const char *base, int n, const char *type )
+{
+    const char *name = name_for_port( dir, base, n, type );
+
+    activate( name, dir );
+}
+
+/* Port::Port ( ) */
+/* { */
+/*     _name = NULL; */
+/*     _port = NULL; */
+/* } */
 
 Port::~Port ( )
 {
@@ -46,6 +71,16 @@ Port::~Port ( )
 /*    if ( _port ) */
 /*         jack_port_unregister( engine->client(), _port ); */
 
+}
+
+void
+Port::activate ( const char *name, type_e dir )
+{
+    _name = name;
+    _port = jack_port_register( engine->client(), _name,
+                                JACK_DEFAULT_AUDIO_TYPE,
+                                dir == Output ? JackPortIsOutput : JackPortIsInput,
+                                0 );
 }
 
 void
@@ -62,6 +97,12 @@ Port::name ( const char *name )
     _name = name;
 
     return 0 == jack_port_set_name( _port, name );
+}
+
+bool
+Port::name ( const char *base, int n, const char *type )
+{
+    return name( name_for_port( this->type(), base, n, type ) );
 }
 
 void

@@ -26,11 +26,12 @@
 class Control_Sequence : public Sequence
 {
 
+    Port *_output;
+
     bool _highlighted;
 
     void init ( void );
 
-    Port output;
 
 protected:
 
@@ -38,7 +39,7 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
-    Control_Sequence (  ) : Sequence( 0, 0, 0, 1 ), output( "foo", Port::Output )
+    Control_Sequence (  ) : Sequence( 0, 0, 0, 1 )
         {
             init();
         }
@@ -65,6 +66,7 @@ public:
 
 
     /* Engine */
+    void output ( Port *p ) { _output = p; }
     nframes_t play ( sample_t *buf, nframes_t frame, nframes_t nframes );
     nframes_t process ( nframes_t nframes );
 

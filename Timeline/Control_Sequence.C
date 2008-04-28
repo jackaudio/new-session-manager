@@ -54,6 +54,7 @@ Control_Sequence::init ( void )
 {
     _track = NULL;
     _highlighted = false;
+    _output = NULL;
 
     color( fl_darker( FL_YELLOW ) );
 }

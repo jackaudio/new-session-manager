@@ -357,9 +357,9 @@ Track::add ( Control_Sequence *t )
 
     control->add( t );
 
-    control_out.push_back( Port( Port::Output, name(), control_out.size(), "cv" ) );
+    control_out.push_back( new Port( Port::Output, name(), control_out.size(), "cv" ) );
 
-    t->output( &control_out.back() );
+    t->output( control_out.back() );
 
     resize();
 }
@@ -517,7 +517,7 @@ Track::update_port_names ( void )
         input[ i ].name( name(), i );
 
     for ( int i = 0; i < control_out.size(); ++i )
-        control_out[ i ].name( name(), i, "cv" );
+        control_out[ i ]->name( name(), i, "cv" );
 
 
 /*     /\* tell any attached control sequences to do the same *\/ */

@@ -262,21 +262,27 @@ Region::handle ( int m )
                     _fade_in.length = offset;
 
                 printf( "setting fade in length to %lu\n", _fade_in.length );
+
+                redraw();
+
+                return 1;
             }
-            else
-                if ( Fl::event_key() == FL_F + 4 )
-                {
-                    long offset = length() - x_to_offset( X );
+            else if ( Fl::event_key() == FL_F + 4 )
+            {
+                long offset = length() - x_to_offset( X );
 
-                    if ( offset > 0 )
-                        _fade_out.length = offset;
+                if ( offset > 0 )
+                    _fade_out.length = offset;
 
-                    printf( "setting fade out length to %lu\n", _fade_in.length );
-                }
+                printf( "setting fade out length to %lu\n", _fade_in.length );
 
+                redraw();
 
-            redraw();
-            return 1;
+                return 1;
+            }
+
+            return 0;
+
         }
         case FL_PUSH:
         {

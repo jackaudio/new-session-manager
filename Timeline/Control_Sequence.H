@@ -21,6 +21,7 @@
 
 #include "Sequence.H"
 #include "Control_Point.H"
+#include "Port.H"
 
 class Control_Sequence : public Sequence
 {
@@ -29,13 +30,15 @@ class Control_Sequence : public Sequence
 
     void init ( void );
 
+    Port output;
+
 protected:
 
 
     virtual void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
-    Control_Sequence (  ) : Sequence( 0, 0, 0, 1 )
+    Control_Sequence (  ) : Sequence( 0, 0, 0, 1 ), output( "foo", Port::Output )
         {
             init();
         }
@@ -59,5 +62,10 @@ public:
 
     void draw ( void );
     int handle ( int m );
+
+
+    /* Engine */
+    nframes_t play ( sample_t *buf, nframes_t frame, nframes_t nframes );
+    nframes_t process ( nframes_t nframes );
 
 };

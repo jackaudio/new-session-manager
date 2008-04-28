@@ -615,6 +615,9 @@ Track::configure_inputs ( int n )
 nframes_t
 Track::process ( nframes_t nframes )
 {
+    for ( int i = control->children(); i--; )
+        ((Control_Sequence*)control->child( i ))->process( nframes );
+
     if ( playback_ds )
     {
         record_ds->process( nframes );

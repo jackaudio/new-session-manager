@@ -20,11 +20,14 @@
 #include "Control_Sequence.H"
 #include "Track.H"
 
+
+#include "Transport.H" // for transport->frame
+
 bool Control_Sequence::draw_with_gradient = true;
 bool Control_Sequence::draw_with_polygon = true;
 bool Control_Sequence::draw_with_grid = true;
 
-Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 )
+Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 ), output( "foo", Port::Output )
 {
     init();
 
@@ -266,4 +269,73 @@ Control_Sequence::handle ( int m )
         default:
             return 0;
     }
+}
+
+
+/**********/
+/* Engine */
+/**********/
+
+
+static inline float
+linear_interpolate ( float y1, float y2, float mu )
+{
+    return y1 * (1 - mu) + y2 * mu;
+}
+
+static inline float
+sigmoid_interpolate ( float y1, float y2, float mu )
+{
+    return linear_interpolate( y1, y2, ( 1 - cos( mu * M_PI ) ) / 2 );
+}
+
+/* static inline float */
+/* exponential_interpolate ( float y1, float y2, float mu ) */
+/* { */
+
+
+/* } */
+
+/* THREAD: ?? */
+/** fill buf with /nframes/ of interpolated control curve values
+ * starting at /frame/  */
+nframes_t
+Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
+{
+    Control_Point *p2, *p1 = (Control_Point*)&_widgets.front();
+
+    nframes_t n = nframes;
+
+    for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin();
+          i != _widgets.end(); ++i, p1 = p2 )
+    {
+        p2 = (Control_Point*)(*i);
+
+        if ( p2->when() < frame )
+            continue;
+
+        nframes_t d = p2->when() - p1->when();
+
+        for ( nframes_t i = frame - p1->when(); i < d; ++i )
+        {
+            *(buf++) = 1.0f - ( 2 * sigmoid_interpolate( p1->control(), p2->control(), i / (float)d ) );
+
+            if ( ! n-- )
+                return nframes;
+
+            frame++;
+        }
+    }
+
+    return frame;
+}
+
+
+/* THREAD: RT */
+nframes_t
+Control_Sequence::process ( nframes_t nframes )
+{
+    void *buf = output.buffer( nframes );
+
+    return play( (sample_t*)buf, transport->frame, nframes );
 }

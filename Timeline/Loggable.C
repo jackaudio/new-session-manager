@@ -222,6 +222,10 @@ Loggable::do_this ( const char *s, bool reverse )
 
         Log_Entry e( sa );
 
+
+
+
+
         assert( _class_map[ string( classname ) ] );
 
 /*         if ( ! _class_map[ string( classname ) ] ) */
@@ -236,6 +240,8 @@ Loggable::do_this ( const char *s, bool reverse )
         }
 
     }
+
+    return true;
 }
 
 void
@@ -244,6 +250,8 @@ Loggable::undo ( void )
     char *buf = new char[ BUFSIZ ];
 
 //    fflush( _fp );
+
+    /* FIXME: handle more than the first block!!! */
 
     fseek( _fp, 0, SEEK_END );
     size_t len = ftell( _fp );
@@ -254,7 +262,6 @@ Loggable::undo ( void )
 
     char *s = buf + len - 1;
 
-// FIXME: handle blocks
     int i = 1;
 
     /* move back _undo_index items from the end */
@@ -334,11 +341,7 @@ Loggable::undo ( void )
 
     block_end();
 
-// FIXME: bogus... needs to account for multiple events.
-    _undo_index = ui + 1;
-
-    ++_undo_index;
-
+    _undo_index = ui + 2;
 
     delete buf;
 }
@@ -408,6 +411,8 @@ Loggable::log ( const char *fmt, ... )
 void
 Loggable::flush ( void )
 {
+
+
     if ( ! _fp )
     {
 //        printf( "error: no log file open!\n" );
@@ -422,6 +427,10 @@ Loggable::flush ( void )
     }
 
     int n = _transaction.size();
+
+    if ( n )
+        /* something done, reset undo index */
+        _undo_index = 1;
 
     if ( n > 1 )
         fprintf( _fp, "{\n" );
@@ -442,6 +451,7 @@ Loggable::flush ( void )
 
     if ( n > 1 )
         fprintf( _fp, "}\n" );
+
 
     fflush( _fp );
 }
@@ -510,8 +520,6 @@ Loggable::log_start ( void )
         _old_state = e.sa();
     }
     ++_nest;
-
-    _undo_index = 1;
 }
 
 void

@@ -387,7 +387,6 @@ Track::handle ( int m )
     {
         case FL_MOUSEWHEEL:
         {
-
             if ( ! Fl::event_shift() )
                 return 0;
 
@@ -404,6 +403,7 @@ Track::handle ( int m )
         }
         case FL_PUSH:
         {
+
             int X = Fl::event_x();
             int Y = Fl::event_y();
 

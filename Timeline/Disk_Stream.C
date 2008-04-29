@@ -50,7 +50,7 @@
 /* TODO: read/write data from/to disk in larger chunks to avoid
  * excessive seeking. 256k is supposedly the sweetspot. */
 
-//float Disk_Stream::seconds_to_buffer = 5.0f;
+// float Disk_Stream::seconds_to_buffer = 5.0f;
 float Disk_Stream::seconds_to_buffer = 2.0f;
 // size_t Disk_Stream::disk_block_frames = 2048;
 

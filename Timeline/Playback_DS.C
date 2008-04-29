@@ -142,12 +142,13 @@ Playback_DS::disk_thread ( void )
 
         for ( int i = channels(); i--; )
         {
-            while ( jack_ringbuffer_write_space( _rb[ i ] ) < block_size )
-            {
-                printf( "IO: disk buffer overrun!\n" );
-                /* FIXME: is this *really* the right thing to do?  */
-                usleep( 2000 );
-            }
+
+/*             while ( jack_ringbuffer_write_space( _rb[ i ] ) < block_size ) */
+/*             { */
+/*                 printf( "IO: disk buffer overrun!\n" ); */
+/*                 /\* FIXME: is this *really* the right thing to do?  *\/ */
+/*                 usleep( 2000 ); */
+/*             } */
 
             /* deinterleave direcectly into the ringbuffer to avoid
              * unnecessary copying */

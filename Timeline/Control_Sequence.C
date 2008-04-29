@@ -319,7 +319,8 @@ Control_Sequence::handle ( int m )
 static inline float
 linear_interpolate ( float y1, float y2, float mu )
 {
-    return y1 + mu * ( y2 - y1 );
+//    return y1 + mu * ( y2 - y1 );
+    return y1 * ( 1.0f - mu ) + y2 * mu;
 }
 
 static inline float
@@ -327,23 +328,6 @@ sigmoid_interpolate ( float y1, float y2, float mu )
 {
     return linear_interpolate( y1, y2, ( 1 - cos( mu * M_PI ) ) / 2 );
 }
-
-static inline float
-quadratic_interpolate ( float y1, float y2, float mu )
-{
-    return ( y1 * y1 ) * ( mu * mu ) + ( 2.0f * y1 * y2 ) * mu * ( y1 * y1 );
-}
-
-/* static inline float */
-/* quadratic_interpolate ( float y1, float y2, float mu ) */
-/* { */
-/* } */
-
-/* static inline float */
-/* exponential_interpolate ( float y1, float y2, float mu ) */
-/* { */
-/* //    return y1 * pow( y2 / y1, mu ); */
-/* } */
 
 /* THREAD: ?? */
 /** fill buf with /nframes/ of interpolated control curve values
@@ -363,22 +347,25 @@ Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
         if ( p2->when() < frame )
             continue;
 
-        nframes_t d = p2->when() - p1->when();
+        /* do incremental linear interpolation */
 
-        for ( nframes_t i = frame - p1->when(); i < d; ++i )
-        {
-//            *(buf++) = 1.0f - ( 2 * sigmoid_interpolate( p1->control(), p2->control(), i / (float)d ) );
-            *(buf++) = 1.0f - ( 2 * linear_interpolate( p1->control(), p2->control(), i / (float)d ) );
-//            *(buf++) = 1.0f - ( 2 * quadratic_interpolate( p1->control(), p2->control(), i / (float)d ) );
+        const nframes_t len = p2->when() - p1->when();
 
-            if ( ! n-- )
-                return nframes;
+        /* scale to -1.0 to 1.0 */
+        const float y1 = 1.0f - ( 2.0f * p1->control() );
+        const float y2 = 1.0f - ( 2.0f * p2->control() );
 
-            frame++;
-        }
+        const nframes_t start = frame - p1->when();
+        const float incr = ( y2 - y1 ) / (float)len;
+
+        float v = y1 + start * incr;
+
+        for ( nframes_t i = start; i < len && n--; ++i, v += incr )
+            *(buf++) = v;
+
     }
 
-    return frame;
+    return nframes - n;
 }
 
 

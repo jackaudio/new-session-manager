@@ -52,7 +52,7 @@ Engine::sync ( jack_transport_state_t state, jack_position_t *pos, void *arg )
 int
 Engine::xrun ( void *arg )
 {
-    return ((Engine*)arg)->xrun( arg );
+    return ((Engine*)arg)->xrun();
 }
 
 

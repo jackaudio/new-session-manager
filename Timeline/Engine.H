@@ -41,11 +41,15 @@ class Engine : public Mutex
        blocking operations. */
 
     int _buffers_dropped;                                       /* buffers dropped because of locking */
+    nframes_t _sample_rate;
+    volatile int _xruns;
 
     static int process ( nframes_t nframes, void *arg );
     int process ( nframes_t nframes );
     static int sync ( jack_transport_state_t state, jack_position_t *pos, void *arg );
     int sync ( jack_transport_state_t state, jack_position_t *pos );
+    static int xrun ( void *arg );
+    int xrun ( void );
 
 private:
 
@@ -53,7 +57,6 @@ private:
     friend class Transport;
     jack_client_t * client ( void ) { return _client; }
 
-    nframes_t _sample_rate;
 
 public:
 
@@ -66,6 +69,7 @@ public:
     nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
     float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }
     nframes_t sample_rate ( void ) const { return _sample_rate; }
+    int xruns ( void ) const { return _xruns; };
 
     float cpu_load ( void ) const { return jack_cpu_load( _client ); }
 };

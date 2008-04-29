@@ -33,26 +33,45 @@ Engine::Engine ( )
     _buffers_dropped = 0;
 }
 
+/*******************/
+/* Static Wrappers */
+/*******************/
 
-/* static wrapper */
 int
 Engine::process ( nframes_t nframes, void *arg )
 {
     return ((Engine*)arg)->process( nframes );
 }
 
-/* static wrapper */
 int
 Engine::sync ( jack_transport_state_t state, jack_position_t *pos, void *arg )
 {
     return ((Engine*)arg)->sync( state, pos );
 }
 
+int
+Engine::xrun ( void *arg )
+{
+    return ((Engine*)arg)->xrun( arg );
+}
+
+
+
 void
 Engine::request_locate ( nframes_t frame )
 {
     if ( timeline )
         timeline->seek( frame );
+}
+
+/* THREAD: RT */
+/** This is the jack xrun callback */
+int
+Engine::xrun ( void )
+{
+    ++_xruns;
+
+    return 0;
 }
 
 /* THREAD: RT */
@@ -140,11 +159,13 @@ Engine::init ( void )
     if (( _client = jack_client_open ( APP_NAME, (jack_options_t)0, NULL )) == 0 )
         return 0;
 
-    jack_set_process_callback( _client, &Engine::process, this );
+#define set_callback( name ) jack_set_ ## name ## _callback( _client, &Engine:: name , this )
 
+    set_callback( process );
+    set_callback( xrun );
     /* FIXME: should we wait to register this until after the session
      has been loaded (and we have disk threads running)? */
-    jack_set_sync_callback( _client, &Engine::sync, this );
+    set_callback( sync );
 
     jack_activate( _client );
 

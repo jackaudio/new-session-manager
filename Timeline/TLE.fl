@@ -112,9 +112,9 @@ free( path );} {}
   } {
     Fl_Window main_window {
       label {Non-DAW - Timeline} open
-      xywh {577 50 1024 768} type Double resizable xclass {Non-DAW} visible
+      xywh {577 94 1024 768} type Double resizable xclass {Non-DAW} visible
     } {
-      Fl_Menu_Bar menubar {open selected
+      Fl_Menu_Bar menubar {
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -509,6 +509,10 @@ delete win;}
         code0 {timeline = o;}
         class Timeline
       }
+      Fl_Value_Output xruns_output {
+        label {xruns:} selected
+        xywh {980 2 44 20} maximum 40000 step 1
+      }
     }
   }
   Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
@@ -525,7 +529,10 @@ p->label( s );} {}
 
 update_progress( capture_buffer_progress, cbp, timeline->total_input_buffer_percent() );
 update_progress( playback_buffer_progress, pbp, timeline->total_output_buffer_percent() );
-update_progress( cpu_load_progress, clp, engine->cpu_load() );} {}
+update_progress( cpu_load_progress, clp, engine->cpu_load() );
+
+
+xruns_output->value( engine->xruns() );} {}
   }
   Function {update_cb( void *v )} {open return_type {static void}
   } {

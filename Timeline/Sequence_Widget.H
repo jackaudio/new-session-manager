@@ -205,6 +205,16 @@ public:
                 delete _selection.front();
         }
 
+    static void
+    select_none ( void )
+        {
+            while ( _selection.size() )
+            {
+                _selection.front()->redraw();
+                _selection.pop_front();
+            }
+        }
+
     static Sequence_Widget *current    ( void ) { return Sequence_Widget::_current; }
 
     static Sequence_Widget *pushed     ( void ) { return Sequence_Widget::_pushed; }

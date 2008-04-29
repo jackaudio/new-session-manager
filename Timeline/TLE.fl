@@ -114,7 +114,7 @@ free( path );} {}
       label {Non-DAW - Timeline} open
       xywh {577 94 1024 768} type Double resizable xclass {Non-DAW} visible
     } {
-      Fl_Menu_Bar menubar {
+      Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -167,7 +167,17 @@ exit( 0 );}
           MenuItem {} {
             label Undo
             callback {Loggable::undo();}
-            xywh {0 0 40 25} shortcut 0x4007a
+            xywh {0 0 40 25} shortcut 0x4007a divider
+          }
+          MenuItem {} {
+            label {Select None}
+            callback {timeline->select_none();}
+            xywh {10 10 40 25} shortcut 0x50061
+          }
+          MenuItem {} {
+            label {Delete  Selected}
+            callback {timeline->delete_selected();} selected
+            xywh {20 20 40 25} shortcut 0xffff
           }
         }
         Submenu {} {
@@ -510,7 +520,7 @@ delete win;}
         class Timeline
       }
       Fl_Value_Output xruns_output {
-        label {xruns:} selected
+        label {xruns:}
         xywh {980 2 44 20} maximum 40000 step 1
       }
     }

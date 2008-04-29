@@ -742,7 +742,7 @@ Timeline::draw_overlay ( void )
 
 /** select all widgets in inside rectangle /r/ */
 void
-Timeline::select( const Rectangle &r )
+Timeline::select ( const Rectangle &r )
 {
     const int Y = r.y;
 
@@ -753,6 +753,18 @@ Timeline::select( const Rectangle &r )
         if ( ! ( t->y() > Y + r.h || t->y() + t->h() < Y ) )
             t->select( r.x, r.y, r.w, r.h, true, true );
     }
+}
+
+void
+Timeline::delete_selected ( void )
+{
+    Sequence_Widget::delete_selected();
+}
+
+void
+Timeline::select_none ( void )
+{
+    Sequence_Widget::select_none();
 }
 
 int
@@ -776,11 +788,6 @@ Timeline::handle ( int m )
             switch ( Fl::event_key() )
             {
                 case FL_Delete:
-                {
-                    Sequence_Widget::delete_selected();
-
-                    return 1;
-                }
                 case FL_Home:
                 case FL_End:
                     /* keep scrollbar from eating these. */

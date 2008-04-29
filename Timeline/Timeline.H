@@ -158,6 +158,10 @@ public:
 
     void select( const Rectangle &r );
 
+
+    void delete_selected ( void );
+    void select_none ( void );
+
     void add_track ( Track *track );
     void remove_track ( Track *track );
 
@@ -171,6 +175,8 @@ public:
     void zoom ( float secs );
     void zoom_in ( void );
     void zoom_out ( void );
+
+
 
 private:
 

@@ -365,6 +365,30 @@ Track::add ( Control_Sequence *t )
     resize();
 }
 
+/** add all widget on this track falling within the given rectangle to
+    the selection.  */
+void
+Track::select ( int X, int Y, int W, int H,
+                bool include_control, bool merge_control )
+{
+
+    Sequence *t = track();
+
+    if ( ! ( t->y() > Y + H || t->y() + t->h() < Y ) )
+        t->select_range( X, W );
+    else
+        include_control = true;
+
+    if ( include_control )
+        for ( int i = control->children(); i--; )
+        {
+            Control_Sequence *c = (Control_Sequence*)control->child( i );
+
+            if ( merge_control ||
+                 ( c->y() >= Y && c->y() + c->h() <= Y + H  ) )
+                c->select_range( X, W );
+        }
+}
 
 void
 Track::draw ( void )

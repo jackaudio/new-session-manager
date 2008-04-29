@@ -751,7 +751,7 @@ Timeline::select( const Rectangle &r )
         Track *t = (Track*)tracks->child( i );
 
         if ( ! ( t->y() > Y + r.h || t->y() + t->h() < Y ) )
-            t->track()->select_range( r.x, r.w );
+            t->select( r.x, r.y, r.w, r.h, true, true );
     }
 }
 

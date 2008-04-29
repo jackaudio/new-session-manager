@@ -190,6 +190,8 @@ public:
     void remove ( Sequence *t );
     void remove ( Control_Sequence *t );
 
+    void select ( int X, int Y, int W, int H, bool include_control, bool merge_control );
+
     int size ( void ) const { return _size; }
 
     void resize ( void );

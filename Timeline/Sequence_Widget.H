@@ -339,7 +339,7 @@ public:
     virtual void
     draw_box ( void )
         {
-            fl_draw_box( box(), x(), y(), w(), h(), _box_color );
+            fl_draw_box( box(), x(), y(), w(), h(), selected() ? FL_MAGENTA : _box_color );
         }
 
     virtual void

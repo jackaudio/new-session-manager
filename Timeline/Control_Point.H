@@ -157,9 +157,4 @@ public:
     int y ( void ) const { return parent()->y() + ((float)parent()->h() * _y); }
     int h ( void ) const { return 6; }
 
-    void
-    draw ( int X, int Y, int W, int H )
-        {
-        }
-
 };

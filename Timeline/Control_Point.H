@@ -128,6 +128,11 @@ public:
                     break;
                 case FL_DRAG:
                 {
+                    track()->sort();
+
+                    if ( selected() )
+                        break;
+
                     int Y = Fl::event_y() - parent()->y();
 
                     if ( Y >= 0 && Y < parent()->h() )
@@ -135,7 +140,7 @@ public:
                         _y = (float)Y / parent()->h();
                         redraw();
                     }
-                    track()->sort();
+
                     break;
                 }
             }

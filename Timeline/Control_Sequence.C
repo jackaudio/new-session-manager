@@ -373,7 +373,12 @@ Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
 nframes_t
 Control_Sequence::process ( nframes_t nframes )
 {
-    void *buf = _output->buffer( nframes );
+    if ( _output->connected() )                                 /* don't waste CPU on disconnected ports */
+    {
+        void *buf = _output->buffer( nframes );
 
-    return play( (sample_t*)buf, transport->frame, nframes );
+        return play( (sample_t*)buf, transport->frame, nframes );
+    }
+    else
+        return nframes;
 }

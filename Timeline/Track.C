@@ -126,8 +126,9 @@ Track::init ( void )
     Track *o = this;
     o->box( FL_THIN_UP_BOX );
     {
-        Fl_Group *o = new Fl_Group( 2, 2, 149, 70 );
+        Fl_Group *o = new Fl_Group( 0, 0, 149, 70 );
         o->color( ( Fl_Color ) 53 );
+
         {
             Fl_Input *o = name_field = new Fl_Sometimes_Input( 2, 2, 144, 24 );
             o->color( FL_BACKGROUND_COLOR );
@@ -184,7 +185,7 @@ Track::init ( void )
         }
 
         {
-            Fl_Box *o = new Fl_Box( 0, 76, 149, 38 );
+            Fl_Box *o = new Fl_Box( 0, 72, 149, 38 );
             o->box( FL_NO_BOX );
             Fl_Group::current()->resizable( o );
         }

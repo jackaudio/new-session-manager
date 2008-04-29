@@ -319,7 +319,7 @@ Control_Sequence::handle ( int m )
 static inline float
 linear_interpolate ( float y1, float y2, float mu )
 {
-    return y1 * (1 - mu) + y2 * mu;
+    return y1 + mu * ( y2 - y1 );
 }
 
 static inline float
@@ -328,11 +328,21 @@ sigmoid_interpolate ( float y1, float y2, float mu )
     return linear_interpolate( y1, y2, ( 1 - cos( mu * M_PI ) ) / 2 );
 }
 
+static inline float
+quadratic_interpolate ( float y1, float y2, float mu )
+{
+    return ( y1 * y1 ) * ( mu * mu ) + ( 2.0f * y1 * y2 ) * mu * ( y1 * y1 );
+}
+
+/* static inline float */
+/* quadratic_interpolate ( float y1, float y2, float mu ) */
+/* { */
+/* } */
+
 /* static inline float */
 /* exponential_interpolate ( float y1, float y2, float mu ) */
 /* { */
-
-
+/* //    return y1 * pow( y2 / y1, mu ); */
 /* } */
 
 /* THREAD: ?? */
@@ -357,7 +367,9 @@ Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
 
         for ( nframes_t i = frame - p1->when(); i < d; ++i )
         {
-            *(buf++) = 1.0f - ( 2 * sigmoid_interpolate( p1->control(), p2->control(), i / (float)d ) );
+//            *(buf++) = 1.0f - ( 2 * sigmoid_interpolate( p1->control(), p2->control(), i / (float)d ) );
+            *(buf++) = 1.0f - ( 2 * linear_interpolate( p1->control(), p2->control(), i / (float)d ) );
+//            *(buf++) = 1.0f - ( 2 * quadratic_interpolate( p1->control(), p2->control(), i / (float)d ) );
 
             if ( ! n-- )
                 return nframes;

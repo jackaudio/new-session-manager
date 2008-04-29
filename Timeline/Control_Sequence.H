@@ -25,10 +25,17 @@
 
 class Control_Sequence : public Sequence
 {
+public:
+
+    enum curve_type_e { Linear, Quadratic };
+
+private:
 
     Port *_output;
 
     bool _highlighted;
+
+    curve_type_e _type;
 
     void init ( void );
 

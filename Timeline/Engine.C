@@ -31,6 +31,7 @@ Engine::Engine ( )
 {
     _client = NULL;
     _buffers_dropped = 0;
+    _xruns = 0;
 }
 
 /*******************/

@@ -67,12 +67,13 @@ Record_DS::disk_thread ( void )
 
         for ( int i = channels(); i--; )
         {
-            while ( jack_ringbuffer_read_space( _rb[ i ] ) < block_size )
-            {
-                printf( "IO: disk buffer underrun!\n" );
-                /* FIXME: is this *really* the right thing to do?  */
-                usleep( 2000 );
-            }
+
+/*             while ( jack_ringbuffer_read_space( _rb[ i ] ) < block_size ) */
+/*             { */
+/*                 printf( "IO: disk buffer underrun!\n" ); */
+/*                 /\* FIXME: is this *really* the right thing to do?  *\/ */
+/*                 usleep( 2000 ); */
+/*             } */
 
             /* FIXME: avoid this copy */
 

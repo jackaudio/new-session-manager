@@ -883,11 +883,21 @@ Region::write ( nframes_t nframes )
 
     if ( 0 == ( timeline->ts_to_x( _range.end ) % 20 ) )
     {
-        /* FIXME: hack to get new size */
+        nframes_t oldl = _clip->length();
+
+        /* FIXME: hack */
         _clip->close();
         _clip->open();
 
-        redraw();
+        int W = timeline->ts_to_x( _clip->length() - oldl );
+
+        /* why - 1? */
+
+        if ( W )
+        {
+            ++W;
+            track()->damage( FL_DAMAGE_EXPOSE, x() + w() - W, y(), W, h() );
+        }
     }
 
     return nframes;
@@ -911,6 +921,8 @@ Region::finalize ( void )
 
     _clip->close();
     _clip->open();
+
+    _range.end = _clip->length();
 
     return true;
 }

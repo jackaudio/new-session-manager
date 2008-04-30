@@ -68,9 +68,10 @@ Disk_Stream::Disk_Stream ( Track *th, float frame_rate, nframes_t nframes, int c
 
     size_t bufsize = _total_blocks * nframes * sizeof( sample_t );
 
-    _disk_io_blocks = ( bufsize * channels ) / ( disk_io_kbytes * 1024 );
-
-    assert( _disk_io_blocks );
+    if ( disk_io_kbytes )
+        _disk_io_blocks = ( bufsize * channels ) / ( disk_io_kbytes * 1024 );
+    else
+        _disk_io_blocks = 1;
 
     for ( int i = channels; i--; )
         _rb.push_back( jack_ringbuffer_create( bufsize ) );

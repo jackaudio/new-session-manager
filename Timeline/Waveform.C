@@ -46,7 +46,7 @@ Waveform::draw ( int X, int Y, int W, int H,
                  Peak *pbuf, int peaks, int skip,
                  Fl_Color color )
 {
-    fl_push_clip( X, Y, W, H );
+//    fl_push_clip( X, Y, W, H );
 
     int j;
 
@@ -86,12 +86,12 @@ Waveform::draw ( int X, int Y, int W, int H,
             const int by = mid + ( halfheight * p.max );
             fl_line( x, ty, x, by );
 
-/*         if ( outline ) */
-/*         { */
-/*             fl_color( fl_darker( fl_darker( color ) ) ); */
-/*             fl_line( x, ty - 2, x, ty ); */
-/*             fl_line( x, by + 2, x, by ); */
-/*         } */
+/*             if ( outline ) */
+/*             { */
+/*                 fl_color( fl_darker( fl_darker( color ) ) ); */
+/*                 fl_line( x, ty - 2, x, ty ); */
+/*                 fl_line( x, by + 2, x, by ); */
+/*             } */
 
         }
     }
@@ -103,11 +103,13 @@ Waveform::draw ( int X, int Y, int W, int H,
 
         fl_color( fl_darker( fl_darker( color ) ) );
 
-        fl_line_style( FL_SOLID, 2 );
+        fl_line_style( FL_SOLID | FL_CAP_FLAT, 2 );
+//        fl_line_style( FL_SOLID, 0 );
 
         fl_begin_line();
 
         j = start;
+
         for ( int x = X; x < X + W; ++x, j += skip )
             fl_vertex( x, ty + ( halfheight * pbuf[ j ].min ) );
 
@@ -116,6 +118,7 @@ Waveform::draw ( int X, int Y, int W, int H,
         fl_begin_line();
 
         j = start;
+
         for ( int x = X; x < X + W; ++x, j += skip )
             fl_vertex( x, ty + ( halfheight * pbuf[ j ].max ) );
 
@@ -125,5 +128,5 @@ Waveform::draw ( int X, int Y, int W, int H,
 
     }
 
-    fl_pop_clip();
+//    fl_pop_clip();
 }

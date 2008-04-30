@@ -610,6 +610,10 @@ Region::draw ( void )
         /* no coverage */
         return;
 
+    /* account for waveform outlines... */
+    X -= 2;
+    W += 4;
+
     int OX = scroll_x();
     int ox = timeline->ts_to_x( _r->offset );
 
@@ -915,7 +919,7 @@ Region::write ( nframes_t nframes )
         if ( W )
         {
             ++W;
-            track()->damage( FL_DAMAGE_EXPOSE, x() + w() - W, y(), W, h() );
+            track()->damage( FL_DAMAGE_ALL, x() + w() - W, y(), W, h() );
         }
     }
 

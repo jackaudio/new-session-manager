@@ -572,11 +572,10 @@ Timeline::draw ( void )
             fl_scroll( X + Track::width(), Y, W - Track::width(), H, dx, dy, draw_clip, this );
         else
             fl_scroll( X, Y, W, H, dx, dy, draw_clip, this );
-
-        _old_xposition = xoffset;
-        _old_yposition = _yposition;
-
     }
+
+    _old_xposition = xoffset;
+    _old_yposition = _yposition;
 
     if ( damage() & FL_DAMAGE_CHILD )
     {

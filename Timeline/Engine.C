@@ -127,10 +127,6 @@ Engine::process ( nframes_t nframes )
 {
     transport->poll();
 
-    if ( ! transport->rolling )
-        /* FIXME: fill all ports with silence */
-        return 0;
-
     if ( ! trylock() )
     {
         /* the data structures we need to access here (tracks and
@@ -140,6 +136,11 @@ Engine::process ( nframes_t nframes )
         ++_buffers_dropped;
         return 0;
     }
+
+/*     if ( ! transport->rolling ) */
+/*         timeline->silence( nframes ); */
+/*         return 0; */
+
 
     /* handle chicken/egg problem */
     if ( timeline )

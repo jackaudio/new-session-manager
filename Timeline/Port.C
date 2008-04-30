@@ -122,3 +122,9 @@ Port::buffer ( nframes_t nframes )
 {
     return jack_port_get_buffer( _port, nframes );
 }
+
+void
+Port::silence ( nframes_t nframes )
+{
+    memset( buffer( nframes ), 0, nframes * sizeof( sample_t ) );
+}

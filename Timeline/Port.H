@@ -62,5 +62,5 @@ public:
     void write ( sample_t *buf, nframes_t nframes );
     void read ( sample_t *buf, nframes_t nframes );
     void *buffer ( nframes_t nframes );
-
+    void silence ( nframes_t nframes );
 };

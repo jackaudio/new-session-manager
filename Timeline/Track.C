@@ -645,6 +645,22 @@ Track::configure_inputs ( int n )
 nframes_t
 Track::process ( nframes_t nframes )
 {
+
+    if ( ! transport->rolling )
+    {
+        for ( int i = output.size(); i--; )
+            output[ i ].silence( nframes );
+
+        for ( int i = input.size(); i--; )
+            input[ i ].silence( nframes );
+
+        /* FIXME: is this really the right thing to do for control ports? */
+        for ( int i = control_out.size(); i--; )
+            control_out[ i ]->silence( nframes );
+
+        return 0;
+    }
+
     for ( int i = control->children(); i--; )
         ((Control_Sequence*)control->child( i ))->process( nframes );
 

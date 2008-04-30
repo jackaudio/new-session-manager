@@ -719,7 +719,7 @@ Track::record ( nframes_t frame )
 
     snprintf( pat, sizeof( pat ), "%s-%llu", name(), uuid() );
 
-    _capture_af = Audio_File_SF::create( pat, 48000, input.size(), Track::capture_format );
+    _capture_af = Audio_File_SF::create( pat, engine->sample_rate(), input.size(), Track::capture_format );
 
     if ( ! _capture_af )
     {

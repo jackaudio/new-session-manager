@@ -55,16 +55,29 @@ Record_DS::disk_thread ( void )
 
     printf( "IO thread running...\n" );
 
-    /* buffer to hold the interleaved data returned by the track reader */
-    sample_t *buf = new sample_t[ _nframes * channels() ];
-    sample_t *cbuf = new sample_t[ _nframes ];
+    const nframes_t nframes = _nframes * _disk_io_blocks;
 
-    const size_t block_size = _nframes * sizeof( sample_t );
+    /* buffer to hold the interleaved data returned by the track reader */
+    sample_t *buf = new sample_t[ nframes * channels() ];
+    sample_t *cbuf = new sample_t[ nframes  ];
+
+    const size_t block_size = nframes * sizeof( sample_t );
+
+    int blocks_ready = 1;
 
     while ( wait_for_block() )
     {
-        /* pull data from the per-channel ringbuffers and interlace it */
 
+        if ( blocks_ready < _disk_io_blocks )
+        {
+            ++blocks_ready;
+            continue;
+        }
+
+        blocks_ready = 1;
+
+
+        /* pull data from the per-channel ringbuffers and interlace it */
         for ( int i = channels(); i--; )
         {
 
@@ -79,7 +92,7 @@ Record_DS::disk_thread ( void )
 
             jack_ringbuffer_read( _rb[ i ], (char*)cbuf, block_size );
 
-            buffer_interleave_one_channel( buf, cbuf, i, channels(), _nframes );
+            buffer_interleave_one_channel( buf, cbuf, i, channels(), nframes );
 
 
 /*             /\* deinterleave direcectly into the ringbuffer to avoid */
@@ -118,7 +131,7 @@ Record_DS::disk_thread ( void )
 
         }
 
-        write_block( buf, _nframes );
+        write_block( buf, nframes );
 
     }
 

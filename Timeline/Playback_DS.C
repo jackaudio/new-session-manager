@@ -109,9 +109,10 @@ Playback_DS::disk_thread ( void )
     printf( "IO thread running...\n" );
 
     /* buffer to hold the interleaved data returned by the track reader */
-    sample_t *buf = new sample_t[ _nframes * channels() ];
+    sample_t *buf = new sample_t[ _nframes * channels() * _disk_io_blocks ];
 
-    const size_t block_size = _nframes * sizeof( sample_t );
+//    const size_t block_size = _nframes * sizeof( sample_t );
+    int blocks_ready = 1;
 
     while ( wait_for_block() )
     {
@@ -126,6 +127,7 @@ Playback_DS::disk_thread ( void )
             printf( "performing seek\n" );
             _frame = _pending_seek;
             _pending_seek = -1;
+            blocks_ready = 1;
             /* finish flushing the buffer */
 
 /*             for ( int i = channels(); i-- ) */
@@ -133,8 +135,20 @@ Playback_DS::disk_thread ( void )
 
         }
 
+        if ( blocks_ready < _disk_io_blocks )
+        {
+            ++blocks_ready;
+            /* wait for more space */
+            continue;
+        }
+
+        /* reset */
+        blocks_ready = 1;
+
+        const nframes_t nframes = _nframes * _disk_io_blocks;
+
         /* FIXME: should we not read from disk in larger-than-JACK-buffer blocks? */
-        read_block( buf, _nframes );
+        read_block( buf, nframes );
 
 //        unlock(); // for seeking
 
@@ -157,22 +171,22 @@ Playback_DS::disk_thread ( void )
 
             jack_ringbuffer_get_write_vector( _rb[ i ], rbd );
 
-            if ( rbd[ 0 ].len >= _nframes )
+            if ( rbd[ 0 ].len >= nframes )
                 /* it'll all fit in one go */
-                buffer_deinterleave_one_channel( (sample_t*)rbd[ 0 ].buf, buf, i, channels(), _nframes );
+                buffer_deinterleave_one_channel( (sample_t*)rbd[ 0 ].buf, buf, i, channels(), nframes );
             else if ( rbd[ 1 ].len )
             {
                 /* there's enough space in the ringbuffer, but it's not contiguous */
 
                 /* do the first half */
-                const nframes_t f = rbd[ 1 ].len / sizeof( sample_t );
+                const nframes_t f = rbd[ 0 ].len / sizeof( sample_t );
 
                 buffer_deinterleave_one_channel( (sample_t*)rbd[ 0 ].buf, buf, i, channels(), f );
 
-                assert( rbd[ 1 ].len >= (_nframes - f) * sizeof( sample_t ) );
+                assert( rbd[ 1 ].len >= (nframes - f) * sizeof( sample_t ) );
 
                 /* do the second half */
-                buffer_deinterleave_one_channel( (sample_t*)rbd[ 1 ].buf, buf + f, i, channels(), _nframes - f );
+                buffer_deinterleave_one_channel( (sample_t*)rbd[ 1 ].buf, buf + f, i, channels(), nframes - f );
             }
             else
                 printf( "programming error: expected more space in ringbuffer\n" );
@@ -180,7 +194,7 @@ Playback_DS::disk_thread ( void )
 /*             buffer_deinterleave_one_channel( (sample_t*)rbd.buf, buf, i, channels(), _nframes ); */
 /*             jack_ringbuffer_write( _rb[ i ], (char*)cbuf, block_size ); */
 
-            jack_ringbuffer_write_advance( _rb[ i ], _nframes * sizeof( sample_t ) );
+            jack_ringbuffer_write_advance( _rb[ i ], nframes * sizeof( sample_t ) );
 
 
 

@@ -53,6 +53,7 @@ protected:
     sem_t _blocks;          /* semaphore to wake the IO thread with */
 
     int _total_blocks; /* total number of blocks that we can  buffer */
+    int _disk_io_blocks; /* the number of blocks to read/write to/from disk at once */
 
     volatile nframes_t _pending_seek; /* absolute transport position to seek to */
     volatile int _terminate;
@@ -83,6 +84,7 @@ public:
 
     /* must be set before any Disk_Streams are created */
     static float seconds_to_buffer;
+    static size_t disk_io_kbytes;
 
     Disk_Stream ( Track *th, float frame_rate, nframes_t nframes, int channels );
 

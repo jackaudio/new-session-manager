@@ -37,25 +37,24 @@
    that is, at startup time. The default is 5 seconds, which may or
    may not be excessive depending on various external factors. */
 
-/* FIXME: handle termination of IO thread in destructor */
 /* FIXME: deal with (jack) buffer size changes */
 /* FIXME: needs error handling everywhere! */
-/* TODO: handle capture too. For this to work with some kind of
- * punch-in/out system, I believe we'll have to always keep at least
- * one buffer's worth of input. We would need this anyway in order to
- * pass input through to output (software monitoring). What about
- * looped recording? */
-/* TODO: latency compensation? Does this really apply to us? (we're
- * not hosting plugins here) */
 /* TODO: read/write data from/to disk in larger chunks to avoid
  * excessive seeking. 256k is supposedly the sweetspot. */
 
-// float Disk_Stream::seconds_to_buffer = 5.0f;
-float Disk_Stream::seconds_to_buffer = 2.0f;
-// size_t Disk_Stream::disk_block_frames = 2048;
+float Disk_Stream::seconds_to_buffer = 5.0f;
+//float Disk_Stream::seconds_to_buffer = 2.0f;
+/* this is really only a rough estimate. The actual amount of data
+ read depends on many factors.  Overlapping regions, for example, will
+ require more data to be read from disk, as will varying channel
+ counts.*/
+size_t Disk_Stream::disk_io_kbytes = 256;
 
 Disk_Stream::Disk_Stream ( Track *th, float frame_rate, nframes_t nframes, int channels ) : _th( th )
 {
+
+    assert( channels );
+
     _frame = 0;
     _thread = 0;
     _terminate = false;
@@ -68,6 +67,10 @@ Disk_Stream::Disk_Stream ( Track *th, float frame_rate, nframes_t nframes, int c
     _nframes = nframes;
 
     size_t bufsize = _total_blocks * nframes * sizeof( sample_t );
+
+    _disk_io_blocks = ( bufsize * channels ) / ( disk_io_kbytes * 1024 );
+
+    assert( _disk_io_blocks );
 
     for ( int i = channels; i--; )
         _rb.push_back( jack_ringbuffer_create( bufsize ) );

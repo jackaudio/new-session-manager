@@ -119,6 +119,9 @@ Track::init ( void )
     _show_all_takes = false;
     _size = 1;
 
+    record_ds = NULL;
+    playback_ds = NULL;
+
     labeltype( FL_NO_LABEL );
 
     Fl_Group::size( timeline->w(), height() );
@@ -215,8 +218,6 @@ Track::init ( void )
     }
     end();
 
-    playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), output.size() );
-    record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), input.size() );
 }
 
 
@@ -561,11 +562,14 @@ Track::configure_outputs ( int n )
 
 //    engine->lock();
 
-    Playback_DS *ds = playback_ds;
-    playback_ds = NULL;
+    if ( playback_ds )
+    {
+        Playback_DS *ds = playback_ds;
+        playback_ds = NULL;
 
-    ds->shutdown();
-    delete ds;
+        ds->shutdown();
+        delete ds;
+    }
 
     if ( n > on )
     {
@@ -606,11 +610,14 @@ Track::configure_inputs ( int n )
 
 //    engine->lock();
 
-    Record_DS *ds = record_ds;
-    record_ds = NULL;
+    if ( record_ds )
+    {
+        Record_DS *ds = record_ds;
+        record_ds = NULL;
 
-    ds->shutdown();
-    delete ds;
+        ds->shutdown();
+        delete ds;
+    }
 
     if ( n > on )
     {

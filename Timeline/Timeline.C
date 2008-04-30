@@ -507,7 +507,7 @@ Timeline::draw ( void )
 /*         return; */
 /*     } */
 
-    if ( damage() & FL_DAMAGE_ALL || damage() & FL_DAMAGE_EXPOSE )
+    if ( ( damage() & FL_DAMAGE_ALL ) || ( damage() & FL_DAMAGE_EXPOSE ) )
     {
         printf( "complete redraw\n" );
 

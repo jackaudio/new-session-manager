@@ -246,11 +246,11 @@ Region::handle ( int m )
     {
         case FL_ENTER:
             Sequence_Widget::handle( m );
-            redraw();
+//            redraw();
             break;
         case FL_LEAVE:
             Sequence_Widget::handle( m );
-            redraw();
+//            redraw();
             break;
         case FL_KEYBOARD:
         {
@@ -551,6 +551,15 @@ Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int X, in
     fl_pop_matrix();
 }
 
+static void
+damager ( void *v )
+{
+    Rectangle *r = (Rectangle*)v;
+
+    timeline->damage( FL_DAMAGE_ALL, r->x, r->y, r->w, r->h );
+
+    delete r;
+}
 
 void
 Region::draw_box( void )
@@ -642,8 +651,9 @@ Region::draw ( void )
 
     if ( _clip->read_peaks( timeline->fpp(),
                             start,
-                            start + timeline->x_to_ts( W ),
-                            &peaks, &pbuf, &channels ) )
+                            min( _clip->length(), start + timeline->x_to_ts( W ) ),
+                            &peaks, &pbuf, &channels ) &&
+         peaks )
     {
 
         assert( pbuf );
@@ -684,6 +694,15 @@ Region::draw ( void )
                             pbuf + i, peaks, channels,
                             selected() ? fl_invert_color( _color ) : _color );
         }
+    }
+
+    /* FIXME: this is also sometimes true at the end of regions. */
+    if ( peaks < timeline->x_to_ts( W ) / timeline->fpp() )
+    {
+        /* couldn't read peaks--perhaps they're being generated. Try again later. */
+
+        Fl::add_timeout( 0.1f, damager, new Rectangle( X, y(), W, h() ) );
+
     }
 
     /* FIXME: only draw as many as are necessary! */

@@ -556,6 +556,7 @@ damager ( void *v )
 {
     Rectangle *r = (Rectangle*)v;
 
+    printf( "damaging from timeout\n" );
     timeline->damage( FL_DAMAGE_ALL, r->x, r->y, r->w, r->h );
 
     delete r;
@@ -653,9 +654,11 @@ Region::draw ( void )
     if ( X - rx > 0 )
         start += timeline->x_to_ts( X - rx );
 
+    const int peaks_needed = min( timeline->ts_to_x( _clip->length() - start ), W );
+
     if ( _clip->read_peaks( timeline->fpp(),
                             start,
-                            min( _clip->length(), start + timeline->x_to_ts( W ) ),
+                            start + timeline->x_to_ts( peaks_needed ),
                             &peaks, &pbuf, &channels ) &&
          peaks )
     {
@@ -700,8 +703,7 @@ Region::draw ( void )
         }
     }
 
-    /* FIXME: this is also sometimes true at the end of regions. */
-    if ( peaks < timeline->x_to_ts( W ) / timeline->fpp() )
+    if ( peaks < peaks_needed )
     {
         /* couldn't read peaks--perhaps they're being generated. Try again later. */
 

@@ -34,6 +34,7 @@
 bool Timeline::draw_with_measure_lines = true;
 Timeline::snap_e Timeline::snap_to = Bars;
 bool Timeline::snap_magnetic = true;
+bool Timeline::follow_playhead = true;
 
 const float UPDATE_FREQ = 0.02f;
 
@@ -664,6 +665,9 @@ Timeline::redraw_playhead ( void )
     {
         redraw_overlay();
         last_playhead = transport->frame;
+
+        if ( follow_playhead )
+            xposition( max( 0, ts_to_x( transport->frame ) - ( ( tracks->w() - Track::width() ) >> 1 ) ) );
     }
 }
 

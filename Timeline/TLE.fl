@@ -176,7 +176,7 @@ exit( 0 );}
           }
           MenuItem {} {
             label {Delete  Selected}
-            callback {timeline->delete_selected();} selected
+            callback {timeline->delete_selected();}
             xywh {20 20 40 25} shortcut 0xffff
           }
         }
@@ -248,6 +248,11 @@ exit( 0 );}
           label {&Timeline} open
           xywh {0 0 74 25}
         } {
+          MenuItem {} {
+            label {&Follow Playhead}
+            callback {Timeline::follow_playhead = menu_picked_value( o );} selected
+            xywh {20 20 40 25} type Toggle value 1
+          }
           Submenu {} {
             label {&Snap to} open
             xywh {0 0 74 25}

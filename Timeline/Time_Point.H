@@ -104,18 +104,29 @@ public:
     void time ( int bpb, int note ) { _time.beats_per_bar = bpb; _time.beat_type = note; }
     time_sig time ( void ) const { return _time; }
 
-    int
-    handle ( int m )
-        {
-            int r = Sequence_Widget::handle( m );
+/*     Time_Point * */
+/*     at ( nframes_t when ) */
+/*         { */
+/*             for ( std::list <Sequence_Widget *>::const_reverse_iterator i = _widgets.rbegin(); */
+/*                   i != _widgets.rend(); i++ ) */
+/*                 if ( (*i)->offset() < when ) */
+/*                     return ((Time_Point*)(*i)); */
 
-            if ( m == FL_RELEASE )
-            {
-                _track->sort();
-                timeline->redraw();
-            }
-            return r;
-        }
+/*             return NULL; */
+/*         } */
+
+/*     int */
+/*     handle ( int m ) */
+/*         { */
+/*             int r = Sequence_Widget::handle( m ); */
+
+/*             if ( m == FL_RELEASE ) */
+/*             { */
+/*                 _track->sort(); */
+/*                 timeline->redraw(); */
+/*             } */
+/*             return r; */
+/*         } */
 
 };
 

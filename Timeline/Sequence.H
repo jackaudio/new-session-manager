@@ -49,6 +49,7 @@ protected:
 
     char *_name;
 
+    friend class Timeline; // for draw_measure
     std::list <Sequence_Widget *> _widgets;
     Sequence_Widget *event_widget ( void );
 

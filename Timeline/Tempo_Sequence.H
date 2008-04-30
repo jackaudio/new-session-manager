@@ -34,25 +34,37 @@ public:
 //            box( FL_DOWN_BOX );
         }
 
+
+    /** return a pointer to the closest tempo point *before* /when/ */
+    Tempo_Point *
+    at ( nframes_t when )
+        {
+            for ( std::list <Sequence_Widget *>::const_reverse_iterator i = _widgets.rbegin();
+                  i != _widgets.rend(); i++ )
+                if ( (*i)->offset() < when )
+                    return ((Tempo_Point*)(*i));
+
+            return NULL;
+        }
+
     float
     beats_per_minute ( nframes_t when )
         {
 //            sort();
 
-            for ( std::list <Sequence_Widget *>::const_reverse_iterator i = _widgets.rbegin();
-                  i != _widgets.rend(); i++ )
-            {
-                if ( (*i)->offset() < when )
-                    return ((Tempo_Point*)(*i))->tempo();
-            }
+            Tempo_Point *p = at( when );
 
-            return 120.0;
+            if ( p )
+                return p->tempo();
+            else
+                return 120.0;
         }
 
     void
     beats_per_minute ( nframes_t when, float bpm )
         {
             add( new Tempo_Point( when, bpm ) );
+            sort();
         }
 
 };

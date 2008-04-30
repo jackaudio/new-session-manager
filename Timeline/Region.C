@@ -712,7 +712,7 @@ Region::draw ( void )
     }
 
     /* FIXME: only draw as many as are necessary! */
-    timeline->draw_measure_lines( rx, Y, rw, H, _box_color );
+    timeline->draw_measure_lines( X, Y, W, H, _box_color );
 
 /*     fl_color( FL_BLACK ); */
 /*     fl_line( rx, Y, rx, Y + H ); */

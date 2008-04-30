@@ -151,6 +151,12 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->align( FL_ALIGN_LEFT );
 
             tempo_track = o;
+
+            o->beats_per_minute( 0, 120 );
+
+            o->beats_per_minute( 48000 * 50, 250 );
+
+            o->beats_per_minute( 48000 * 120, 60 );
         }
 
         {
@@ -162,6 +168,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->align( FL_ALIGN_LEFT );
 
             time_track = o;
+
+            o->time( 0, 4, 4 );
         }
 
         {
@@ -306,6 +314,12 @@ Timeline::nearest_line ( int ix )
     return -1;
 }
 
+nframes_t
+Timeline::x_to_offset ( int x ) const
+{
+    return x_to_ts( max( 0, x - Track::width() ) ) + xoffset;
+}
+
 /** draw appropriate measure lines inside the given bounding box */
 /* FIXME: this function *really* needs to be optimized. Currently it
    searched both the time and tempo lists once for every horiontal
@@ -316,23 +330,83 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
     if ( ! draw_with_measure_lines )
         return;
 
-    fl_push_clip( X, Y, W, H );
+//    fl_push_clip( X, Y, W, H );
 
 //    fl_line_style( FL_DASH, 2 );
     fl_line_style( FL_DASH, 0 );
 
     const Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
-    const Fl_Color bar  = fl_color_average( FL_RED, color, 0.65f );
+    const Fl_Color bar  = fl_color_average( FL_RED, beat, 0.65f );
 
     const nframes_t samples_per_minute = sample_rate() * 60;
 
     /* we need to back up a bit in order to catch all the numbers */
-    if ( BBT )
+
+/*     if ( BBT ) */
+/*     { */
+/*         X -= 40; */
+/*         W += 40; */
+/*     } */
+
+    nframes_t when = x_to_offset( X );
+
+    list <Sequence_Widget*>::const_iterator tpi;
+    list <Sequence_Widget*>::const_iterator mpi;
+
+    /* find the first points before our range */
+
+    for ( list <Sequence_Widget *>::const_reverse_iterator i = tempo_track->_widgets.rbegin();
+          i != tempo_track->_widgets.rend(); i++ )
+        if ( (*i)->offset() <= when )
+        {
+            tpi = i.base();
+            break;
+        }
+
+    for ( list <Sequence_Widget *>::const_reverse_iterator i = time_track->_widgets.rbegin();
+          i != time_track->_widgets.rend(); i++ )
+        if ( (*i)->offset() <= when )
+        {
+            mpi = i.base();
+            break;
+        }
+
+    --tpi;
+
+    /* start on the next beat */
+    const Tempo_Point *tp = (Tempo_Point*)(*tpi);
+    nframes_t beat_inc = samples_per_minute / tp->tempo();
+
+    nframes_t f = when - ( ( when - tp->offset() ) % beat_inc );
+
+    for ( ; tpi != tempo_track->_widgets.end(); ++tpi )
     {
-        X -= 40;
-        W += 40;
+        list <Sequence_Widget*>::const_iterator ntpi = tpi;
+        ++ntpi;
+
+        tp = (Tempo_Point*)(*tpi);
+        const Tempo_Point *ntp = (Tempo_Point*)(*ntpi);
+
+        const nframes_t ntpo = ntp ? ntp->offset() : when + x_to_ts( W + 1 );
+
+        beat_inc = samples_per_minute / tp->tempo();
+
+        const int incx = ts_to_x( beat_inc );
+
+        if ( incx < 8 )
+            continue;
+
+        for ( ; f < ntpo; f += beat_inc )
+        {
+            const int x = ts_to_x( f - xoffset ) + Track::width();
+
+            fl_color( beat );
+
+            fl_line( x, Y, x, Y + H );
+         }
     }
 
+#if 0
     for ( int x = X; x < X + W; ++x )
     {
 //        measure = ts_to_x( (double)(sample_rate() * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
@@ -404,9 +478,11 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
 
     }
 
+#endif
+
     fl_line_style( FL_SOLID, 0 );
 
-    fl_pop_clip();
+//    fl_pop_clip();
 }
 
 void

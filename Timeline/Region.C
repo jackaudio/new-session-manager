@@ -407,7 +407,6 @@ Region::handle ( int m )
             break;
         }
         case FL_RELEASE:
-
         {
             Sequence_Widget::handle( m );
 
@@ -466,20 +465,23 @@ Region::handle ( int m )
                 }
             }
 
+
             /* track jumping */
             if ( ! selected() )
             {
-                if ( Y > y() + h() )
+                if ( Y > y() + h() || Y < y() )
                 {
-                    Fl::copy( class_name(), strlen( class_name() ), 0 );
-                    Fl::dnd();
+                    printf( "wants to jump tracks\n" );
+
+                    Track *t = timeline->track_under( Y );
+
+                    fl_cursor( (Fl_Cursor)1 );
+
+                    if ( t )
+                        t->handle( FL_ENTER );
+
+                    return 0;
                 }
-                else
-                    if ( Y < y() )
-                    {
-                        Fl::copy( class_name(), strlen( class_name() ), 0 );
-                        Fl::dnd();
-                    }
             }
 
             ret = Sequence_Widget::handle( m );

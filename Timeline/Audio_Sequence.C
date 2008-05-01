@@ -142,20 +142,9 @@ Audio_Sequence::handle ( int m )
 {
     switch ( m )
     {
-
-       case FL_DND_DRAG:
-           return Sequence::handle( m ) | 1;
-
-/*         case FL_DND_ENTER: */
-/*         case FL_DND_LEAVE: */
-
-        case FL_DND_RELEASE:
-            return 1;
-
         case FL_PASTE:
         {
             const char *text = Fl::event_text();
-
 
             if ( ! strcmp( text, "Region" ) )
                 return 1;

@@ -854,6 +854,22 @@ Timeline::select_none ( void )
     Sequence_Widget::select_none();
 }
 
+
+/** An unfortunate necessity for implementing our own DND aside from
+ * the (bogus) native FLTK system */
+Track *
+Timeline::track_under ( int Y )
+{
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        if ( ! ( t->y() > Y  || t->y() + t->h() < Y ) )
+            return t;
+    }
+}
+
+
 int
 Timeline::handle ( int m )
 {

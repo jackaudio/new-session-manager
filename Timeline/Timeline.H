@@ -160,6 +160,7 @@ public:
     static void update_cb ( void *arg );
 
     void select( const Rectangle &r );
+    Track * track_under ( int Y );
 
 
     void delete_selected ( void );

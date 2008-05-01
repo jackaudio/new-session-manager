@@ -17,6 +17,7 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+
 #pragma once
 
 #include "Sequence_Point.H"
@@ -25,86 +26,33 @@ class Control_Point : public Sequence_Point
 {
     float _y;
 
-/*     void */
-/*     _make_label ( void ) */
-/*         { */
-/*             if ( ! _label ) */
-/*                 _label = new char[40]; */
-
-/*             snprintf( _label, 40, "%.1f", _y ); */
-/*         } */
-
 protected:
-
-//    const char *class_name ( void ) { return "Control_Point"; }
-
-    virtual void get ( Log_Entry &e ) const
-        {
-            Sequence_Point::get( e );
-
-            e.add( ":y", _y );
-        }
-
-    void
-    set ( Log_Entry &e )
-        {
-            for ( int i = 0; i < e.size(); ++i )
-            {
-                const char *s, *v;
-
-                e.get( i, &s, &v );
-
-                if ( ! strcmp( s, ":y" ) )
-                    _y = atof( v );
-
-                timeline->redraw();
-
-                //          _make_label();
-            }
-
-            Sequence_Point::set( e );
-        }
 
     Control_Point ( )
         {
             _box_color = FL_WHITE;
         }
 
+    virtual void get ( Log_Entry &e ) const;
+    virtual void set ( Log_Entry &e );
+
 public:
 
-/*     Sequence_Widget * */
-/*     clone ( const Sequence_Widget *r ) */
-/*         { */
-/*             return new Control_Point( *(Control_Point*)r ); */
-/*         } */
 
     /* for loggable */
     LOG_CREATE_FUNC( Control_Point );
 
-    Control_Point ( Sequence *t, nframes_t when, float y )
-        {
-            _track = t;
-            _y = y;
-            _r->offset = when;
-            _box_color = FL_WHITE;
-
-            log_create();
-        }
-
-    Control_Point ( const Control_Point &rhs )
-        {
-            _r->offset = rhs._r->offset;
-            _y = rhs._y;
-        }
 
     Sequence_Widget *clone ( const Sequence_Widget *r )
         {
             return new Control_Point( *(Control_Point*)r );
         }
 
+    Control_Point ( Sequence *t, nframes_t when, float y );
+    Control_Point ( const Control_Point &rhs );
+
     ~Control_Point ( )
         {
-//            if ( _label ) delete[] _label;
             log_destroy();
         }
 
@@ -113,48 +61,12 @@ public:
     /* only for playback thread */
     nframes_t when ( void ) const { return _range.offset; }
 
-
-    int
-    handle ( int m )
-        {
-            int r = Sequence_Widget::handle( m );
-
-            switch ( m )
-            {
-
-                case FL_RELEASE:
-                    _track->sort();
-                    redraw();
-                    break;
-                case FL_DRAG:
-                {
-                    track()->sort();
-
-                    if ( selected() )
-                        break;
-
-                    int Y = Fl::event_y() - parent()->y();
-
-                    if ( Y >= 0 && Y < parent()->h() )
-                    {
-                        _y = (float)Y / parent()->h();
-                        redraw();
-                    }
-
-                    break;
-                }
-            }
-
-            return r;
-        }
-
-/*     int x ( void ) const { return line_x(); } */
-
     int abs_w ( void ) const { return 6; }
-
-//    int w ( void ) const { return 6; }
 
     int y ( void ) const { return parent()->y() + ((float)parent()->h() * _y); }
     int h ( void ) const { return 6; }
+
+    virtual void draw_box ( void );
+    virtual int handle ( int m );
 
 };

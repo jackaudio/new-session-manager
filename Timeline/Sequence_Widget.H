@@ -61,6 +61,9 @@ class Sequence_Widget : public Loggable
     static Sequence_Widget * _original;                            /* the original of the /pushed/ widget */
     static Sequence_Widget * _belowmouse;                          /* the widget below the mouse cursor */
 
+
+    static Fl_Color _selection_color;
+
     /* can't have this */
     Sequence_Widget ( const Sequence_Widget &rhs );
 
@@ -306,9 +309,11 @@ public:
     int abs_x ( void ) const { return timeline->ts_to_x( _r->offset ); }
     virtual int abs_w ( void ) const { return timeline->ts_to_x( _r->end - _r->start ); }
 
-    Fl_Color color ( void ) { return _color; }
+    Fl_Color color ( void ) const { return _color; }
     void color ( Fl_Color v ) { _color = v; }
-    Fl_Color box_color ( void ) { return _box_color; }
+    Fl_Color box_color ( void ) const { return _box_color; }
+    virtual Fl_Color selection_color ( void ) const { return _selection_color; }
+    virtual void selection_color ( Fl_Color v ) { _selection_color = v; }
 
     Sequence * track ( void ) const { return _track; }
     void track ( Sequence *t ) {  _track = t; }

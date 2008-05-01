@@ -155,8 +155,8 @@ public:
 
     static Fl_Boxtype _box;
     static Fl_Color _selection_color;
-    static Fl_Color selection_color ( void ) { return _selection_color; }
-    static void selection_color ( Fl_Color v ) { _selection_color = v; }
+    Fl_Color selection_color ( void ) const { return _selection_color; }
+    void selection_color ( Fl_Color v ) { _selection_color = v; }
 
     enum trim_e { NO, LEFT, RIGHT };
     void trim ( enum trim_e t, int X );

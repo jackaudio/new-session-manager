@@ -12,6 +12,7 @@ SRCS= \
       Track.C \
       Sequence_Widget.C \
       Sequence_Point.C \
+      Control_Point.C \
       Tempo_Point.C \
       Time_Point.C \
       Peaks.C \

@@ -31,6 +31,7 @@ list <Sequence_Widget *> Sequence_Widget::_selection;
 Sequence_Widget * Sequence_Widget::_current = NULL;
 Sequence_Widget * Sequence_Widget::_pushed = NULL;
 Sequence_Widget * Sequence_Widget::_belowmouse = NULL;
+Fl_Color Sequence_Widget::_selection_color = FL_MAGENTA;
 
 void
 Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )

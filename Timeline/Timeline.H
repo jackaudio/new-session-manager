@@ -118,6 +118,7 @@ public:
     static snap_e snap_to;
     static bool snap_magnetic;
     static bool follow_playhead;
+    static bool center_playhead;
 
     Tempo_Sequence *tempo_track;
     Time_Sequence  *time_track;

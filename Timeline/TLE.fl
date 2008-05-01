@@ -250,8 +250,13 @@ exit( 0 );}
         } {
           MenuItem {} {
             label {&Follow Playhead}
-            callback {Timeline::follow_playhead = menu_picked_value( o );} selected
+            callback {Timeline::follow_playhead = menu_picked_value( o );}
             xywh {20 20 40 25} type Toggle value 1
+          }
+          MenuItem {} {
+            label {&Center Playhead}
+            callback {Timeline::center_playhead = menu_picked_value( o );} selected
+            xywh {30 30 40 25} type Toggle value 1
           }
           Submenu {} {
             label {&Snap to} open

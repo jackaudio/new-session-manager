@@ -156,7 +156,9 @@ Loggable::compact();}
             label {&Quit}
             callback {save();
 
-exit( 0 );}
+printf( "dropped %d buffers\\n", engine->dropped() );
+
+exit( 0 );} selected
             xywh {40 40 40 25} shortcut 0x40071
           }
         }
@@ -245,7 +247,7 @@ exit( 0 );}
           }
         }
         Submenu timeline_menu {
-          label {&Timeline} open
+          label {&Timeline}
           xywh {0 0 74 25}
         } {
           MenuItem {} {
@@ -255,7 +257,7 @@ exit( 0 );}
           }
           MenuItem {} {
             label {&Center Playhead}
-            callback {Timeline::center_playhead = menu_picked_value( o );} selected
+            callback {Timeline::center_playhead = menu_picked_value( o );}
             xywh {30 30 40 25} type Toggle value 1
           }
           Submenu {} {
@@ -550,6 +552,14 @@ p->label( s );} {}
 update_progress( capture_buffer_progress, cbp, timeline->total_input_buffer_percent() );
 update_progress( playback_buffer_progress, pbp, timeline->total_output_buffer_percent() );
 update_progress( cpu_load_progress, clp, engine->cpu_load() );
+
+
+if ( timeline->total_capture_xruns() )
+	capture_buffer_progress->selection_color( FL_RED );
+
+if ( timeline->total_playback_xruns() )
+	playback_buffer_progress->selection_color( FL_RED );
+
 
 
 xruns_output->value( engine->xruns() );} {}

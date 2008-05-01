@@ -1251,3 +1251,35 @@ Timeline::total_output_buffer_percent ( void )
 
     return r / cnt;
 }
+
+int
+Timeline::total_playback_xruns ( void )
+{
+    int r = 0;
+
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        if ( t->playback_ds )
+            r += t->playback_ds->xruns();
+    }
+
+    return r;
+}
+
+int
+Timeline::total_capture_xruns ( void )
+{
+    int r = 0;
+
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        if ( t->record_ds )
+             r += t->record_ds->xruns();
+     }
+
+    return r;
+}

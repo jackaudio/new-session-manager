@@ -189,8 +189,12 @@ Playback_DS::disk_thread ( void )
                 buffer_deinterleave_one_channel( (sample_t*)rbd[ 1 ].buf, buf + f, i, channels(), nframes - f );
             }
             else
+            {
+                ++_xruns;
+
                 printf( "programming error: expected more space in ringbuffer\n" );
 
+            }
 /*             buffer_deinterleave_one_channel( (sample_t*)rbd.buf, buf, i, channels(), _nframes ); */
 /*             jack_ringbuffer_write( _rb[ i ], (char*)cbuf, block_size ); */
 
@@ -223,6 +227,7 @@ Playback_DS::process ( nframes_t nframes )
 
         if ( jack_ringbuffer_read( _rb[ i ], (char*)buf, block_size ) < block_size )
         {
+            ++_xruns;
             printf( "RT: buffer underrun (disk can't keep up).\n" );
             memset( buf, 0, block_size );
             /* FIXME: we need to resync somehow */

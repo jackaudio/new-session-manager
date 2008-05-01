@@ -172,6 +172,8 @@ public:
     int  total_input_buffer_percent ( void );
     int  total_output_buffer_percent ( void );
 
+    int total_playback_xruns ( void );
+    int total_capture_xruns ( void );
 
     bool record ( void );
     void stop ( void );

@@ -70,6 +70,7 @@ public:
     float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }
     nframes_t sample_rate ( void ) const { return _sample_rate; }
     int xruns ( void ) const { return _xruns; };
+    int dropped ( void ) const { return _buffers_dropped; }
 
     float cpu_load ( void ) const { return jack_cpu_load( _client ); }
 };

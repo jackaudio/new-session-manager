@@ -59,7 +59,7 @@ Record_DS::disk_thread ( void )
 
     /* buffer to hold the interleaved data returned by the track reader */
     sample_t *buf = new sample_t[ nframes * channels() ];
-    sample_t *cbuf = new sample_t[ nframes  ];
+    sample_t *cbuf = new sample_t[ nframes ];
 
     const size_t block_size = nframes * sizeof( sample_t );
 
@@ -80,17 +80,14 @@ Record_DS::disk_thread ( void )
         /* pull data from the per-channel ringbuffers and interlace it */
         for ( int i = channels(); i--; )
         {
-
-/*             while ( jack_ringbuffer_read_space( _rb[ i ] ) < block_size ) */
-/*             { */
-/*                 printf( "IO: disk buffer underrun!\n" ); */
-/*                 /\* FIXME: is this *really* the right thing to do?  *\/ */
-/*                 usleep( 2000 ); */
-/*             } */
-
             /* FIXME: avoid this copy */
+            if ( jack_ringbuffer_read( _rb[ i ], (char*)cbuf, block_size ) < block_size )
+            {
+                ++_xruns;
 
-            jack_ringbuffer_read( _rb[ i ], (char*)cbuf, block_size );
+                /* FIXME: what now? */
+                printf( "Record_DS: underrun!\n" );
+            }
 
             buffer_interleave_one_channel( buf, cbuf, i, channels(), nframes );
 
@@ -221,6 +218,7 @@ Record_DS::process ( nframes_t nframes )
 
         if ( jack_ringbuffer_write( _rb[ i ], (char*)buf, block_size ) < block_size )
         {
+            ++_xruns;
             printf( "RT: buffer overrun (disk can't keep up).\n" );
             memset( buf, 0, block_size );
             /* FIXME: we need to resync somehow */

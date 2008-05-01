@@ -17,55 +17,93 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
+#include "Sequence_Point.H"
 
-#include "Sequence_Widget.H"
-
-class Sequence_Point : public Sequence_Widget
+void
+Sequence_Point::get ( Log_Entry &e ) const
 {
+    e.add( ":x", _r->offset );
+    e.add( ":t", _track );
+}
 
-protected:
+void
+Sequence_Point::set ( Log_Entry &e )
+{
+    Sequence_Widget::set( e );
 
-    char *_label;
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
 
-    void get ( Log_Entry &e ) const;
-    void set ( Log_Entry &e );
+        e.get( i, &s, &v );
 
-public:
-
-    Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
-    virtual int abs_w ( void ) const { return 8; }
-
-//    virtual int abs_x ( void ) const { return Sequence_Widget::abs_x() - ( abs_w() >> 1 ); }
-//    virtual int x ( void ) const { return Sequence_Widget::line_x() - ( abs_w() >> 1 ); }
-
-    virtual int x ( void ) const
+        if ( ! strcmp( ":x", s ) )
         {
-            const int x = Sequence_Widget::x();
-
-            if ( x >= _track->x() + _track->w() )
-                return _track->x() + _track->w() + abs_w();
-            else
-                return x;
-
-
+            _track->sort();
         }
 
-    nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
+    }
+}
 
-    Sequence_Point ( )
-        {
-            _label = NULL;
+static void
+draw_marker ( Fl_Color c )
+{
+    fl_color( c );
 
-            color( FL_CYAN );
-        }
+    fl_begin_polygon();
 
+#define vv(x,y) fl_vertex( x, y );
 
-    virtual ~Sequence_Point ( )
-        {
-        }
+    vv( 0.0, 0.0 );
+    vv( 0.0, 0.6 );
+    vv( 0.5, 1.0 );
+    vv( 1.0, 0.6 );
+    vv( 1.0, 0.0 );
+    vv( 0.0, 0.0 );
 
-    virtual void draw_box ( void );
-    virtual void draw ( void );
+    fl_end_polygon();
 
-};
+    fl_color( fl_darker( c ) );
+
+    fl_begin_line();
+
+    vv( 0.0, 0.0 );
+    vv( 0.0, 0.6 );
+    vv( 0.5, 1.0 );
+    vv( 1.0, 0.6 );
+    vv( 1.0, 0.0 );
+    vv( 0.0, 0.0 );
+
+    fl_end_line();
+}
+
+void
+Sequence_Point::draw_box ( void )
+{
+//    Sequence_Widget::draw_box();
+
+    const int X = x() - (abs_w() >> 1);
+//    const int Y = y() + Fl::box_dy( box() );
+
+    const int Y = y();
+
+    fl_color( color() );
+
+    fl_push_matrix();
+    fl_translate( X, Y + ( h() >> 3 ) );
+    fl_scale( w(), h() - ( h() >> 3 ) );
+
+    draw_marker( color() );
+
+    fl_pop_matrix();
+
+//    fl_line( X, Y, X, Y + h() - Fl::box_dh( box() ) );
+}
+
+void
+Sequence_Point::draw ( void )
+{
+//            Sequence_Widget::draw();
+
+    draw_label( _label, align() );
+}

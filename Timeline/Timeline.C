@@ -638,6 +638,8 @@ Timeline::draw ( void )
         int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
         int dy = _old_yposition - _yposition;
 
+/*         draw_child( *rulers ); */
+
         if ( ! dy )
             fl_scroll( rulers->x(), rulers->y(), rulers->w(), rulers->h(), dx, 0, draw_clip, this );
 

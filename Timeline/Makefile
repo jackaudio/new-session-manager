@@ -11,6 +11,7 @@ SRCS= \
       Timeline.C \
       Track.C \
       Sequence_Widget.C \
+      Sequence_Point.C \
       Tempo_Point.C \
       Time_Point.C \
       Peaks.C \

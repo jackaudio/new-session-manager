@@ -331,27 +331,19 @@ Peaks::make_peaks ( int chunksize )
 /** return normalization factor for range of samples from /start/ to
     /end/ (uses known peak data if possible */
 
-/* float */
-/* Peaks::normalization_factor( float fpp, nframes_t start, nframes_t end ) const */
-/* { */
-/*     float s; */
+float
+//Peaks::normalization_factor( float fpp, nframes_t start, nframes_t end ) const
+Peak::normalization_factor( void ) const
+{
+    float s;
 
-/* //    fill_buffer( fpp, start, end ); */
+    s = 1.0f / fabs( this->max );
 
-/* /\*     if ( end - start < _peaks->chunksize * 4 ) *\/ */
-/* /\*         fill_buffer( _clip->length() / 4, start, end ); *\/ */
-/* /\*     else *\/ */
-/* /\*         fill_buffer( _clip->length(), start, end ); *\/ */
+    if ( s * this->min < -1.0 )
+        s = 1.0f / fabs( this->min );
 
-/*     Peak p = peak( start, end ); */
-
-/*     s = 1.0f / fabs( p.max ); */
-
-/*     if ( s * p.min < -1.0 ) */
-/*         s = 1.0f / fabs( p.min ); */
-
-/*     return s; */
-/* } */
+    return s;
+}
 
 
 

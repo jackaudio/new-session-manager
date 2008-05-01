@@ -742,8 +742,13 @@ Region::normalize ( void )
     printf( "normalize: start=%lu end=%lu\n", _r->start, _r->end );
 
     /* FIXME: figure out a way to do this via the peak server */
-/*     _scale = _clip->peaks( 0 )->normalization_factor( timeline->fpp(), _r->start, _r->end );  */
 
+    int peaks, channels;
+    Peak *pbuf;
+
+    if ( _clip->read_peaks( length(), _r->start, _r->end, &peaks, &pbuf, &channels ) &&
+         peaks )
+        _scale = pbuf->normalization_factor();
 }
 
 

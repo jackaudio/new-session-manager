@@ -26,6 +26,9 @@
 struct Peak {
     float min;
     float max;
+
+    float normalization_factor ( void ) const;
+
 };
 
 class Audio_File;
@@ -94,7 +97,7 @@ public:
     void downsample ( Peak *peaks, int s, int e, float *mhi, float *mlo ) const;
     void read ( int X, float *hi, float *lo ) const;
     bool open ( void );
-    float normalization_factor( float fpp, nframes_t start, nframes_t end ) const;
+//    float normalization_factor( float fpp, nframes_t start, nframes_t end ) ;
 
     bool current ( void ) const;
     bool make_peaks ( int chunksize );

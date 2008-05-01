@@ -81,8 +81,6 @@ Sequence::overlaps ( Sequence_Widget *r )
 }
 
 
-#include "Waveform.H"
-
 void
 Sequence::draw ( void )
 {
@@ -99,15 +97,12 @@ Sequence::draw ( void )
 
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
-
     if ( Sequence_Widget::pushed() && Sequence_Widget::pushed()->track() == this )
     {
         /* make sure the Sequence_Widget::pushed widget is above all others */
         remove( Sequence_Widget::pushed() );
         add( Sequence_Widget::pushed() );
     }
-
-    int xfades = 0;
 
 //    printf( "track::draw %d,%d %dx%d\n", X,Y,W,H );
 
@@ -120,109 +115,8 @@ Sequence::draw ( void )
     for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
         (*r)->draw();
 
-
-    /* draw crossfades */
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-    {
-        Sequence_Widget *o = overlaps( *r );
-
-        if ( o )
-        {
-            if ( *o <= **r )
-            {
-
-/*                 if ( o->x() == (*r)->x() && o->w() == (*r)->w() ) */
-/*                     printf( "complete superposition\n" ); */
-
-                if ( (*r)->x() >= o->x() && (*r)->x() + (*r)->w() <= o->x() + o->w() )
-                    /* completely inside */
-                    continue;
-
-                ++xfades;
-
-                Rectangle b( (*r)->x(),
-                               o->y(),
-                               (o->x() + o->w()) - (*r)->x(),
-                               o->h() );
-
-                Fl_Color c = fl_color_average( o->box_color(), (*r)->box_color(), 0.50f );
-                c = fl_color_average( c, FL_YELLOW, 0.30f );
-
-                fl_push_clip( b.x, b.y, b.w, b.h );
-
-                draw_box( FL_FLAT_BOX, b.x - 100, b.y, b.w + 200, b.h, c );
-                draw_box( FL_UP_FRAME, b.x - 100, b.y, b.w + 200, b.h, c );
-
-
-                fl_pop_clip();
-
-            }
-        }
-
-    }
-
-//    printf( "There are %d xfades\n", xfades );
-
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-    {
-        Sequence_Widget *o = overlaps( *r );
-
-        if ( o )
-        {
-            if ( *o <= **r )
-            {
-
-                if ( (*r)->x() >= o->x() && (*r)->x() + (*r)->w() <= o->x() + o->w() )
-                    /* completely inside */
-                    continue;
-
-                Rectangle b( (*r)->x(), o->y(), (o->x() + o->w()) - (*r)->x(), o->h() );
-
-                /* draw overlapping waveforms in X-ray style. */
-                bool t = Waveform::fill;
-
-                Waveform::fill = false;
-
-/*                 Fl_Color oc = o->color(); */
-/*                 Fl_Color rc = (*r)->color(); */
-
-/*                 /\* give each region a different color *\/ */
-/*                 o->color( FL_RED ); */
-/*                 (*r)->color( FL_GREEN ); */
-
-                fl_push_clip( b.x, b.y, b.w, b.h );
-
-                o->draw();
-                (*r)->draw();
-
-                fl_pop_clip();
-
-                Waveform::fill = t;
-
-
-/*                 o->color( oc ); */
-/*                 (*r)->color( rc ); */
-
-/*                 fl_color( FL_BLACK ); */
-/*                 fl_line_style( FL_DOT, 4 ); */
-
-/*                 b.x = (*r)->line_x(); */
-/*                 b.w = min( 32767, (*r)->abs_w() ); */
-
-/*                 fl_line( b.x, b.y, b.x + b.w, b.y + b.h ); */
-
-/*                 fl_line( b.x, b.y + b.h, b.x + b.w, b.y ); */
-
-/*                 fl_line_style( FL_SOLID, 0 ); */
-
-//                fl_pop_clip();
-
-            }
-        }
-    }
-
-
     fl_pop_clip();
+
 }
 
 void

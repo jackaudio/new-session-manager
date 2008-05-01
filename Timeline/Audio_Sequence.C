@@ -18,6 +18,7 @@
 /*******************************************************************************/
 
 #include "Audio_Sequence.H"
+#include "Waveform.H"
 
 #include "dsp.h"
 
@@ -50,6 +51,89 @@ deurlify ( char *url )
     }
 
     *w = NULL;
+}
+
+
+void
+Audio_Sequence::draw ( void )
+{
+
+    Sequence::draw();
+
+    int xfades = 0;
+
+    /* draw crossfades */
+    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
+    {
+        Sequence_Widget *o = overlaps( *r );
+
+        if ( o )
+        {
+            if ( *o <= **r )
+            {
+
+/*                 if ( o->x() == (*r)->x() && o->w() == (*r)->w() ) */
+/*                     printf( "complete superposition\n" ); */
+
+                if ( (*r)->x() >= o->x() && (*r)->x() + (*r)->w() <= o->x() + o->w() )
+                    /* completely inside */
+                    continue;
+
+                ++xfades;
+
+                Rectangle b( (*r)->x(),
+                               o->y(),
+                               (o->x() + o->w()) - (*r)->x(),
+                               o->h() );
+
+                Fl_Color c = fl_color_average( o->box_color(), (*r)->box_color(), 0.50f );
+                c = fl_color_average( c, FL_YELLOW, 0.30f );
+
+                fl_push_clip( b.x, b.y, b.w, b.h );
+
+                draw_box( FL_FLAT_BOX, b.x - 100, b.y, b.w + 200, b.h, c );
+                draw_box( FL_UP_FRAME, b.x - 100, b.y, b.w + 200, b.h, c );
+
+
+                fl_pop_clip();
+
+            }
+        }
+
+    }
+
+    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
+    {
+        Sequence_Widget *o = overlaps( *r );
+
+        if ( o )
+        {
+            if ( *o <= **r )
+            {
+
+                if ( (*r)->x() >= o->x() && (*r)->x() + (*r)->w() <= o->x() + o->w() )
+                    /* completely inside */
+                    continue;
+
+                Rectangle b( (*r)->x(), o->y(), (o->x() + o->w()) - (*r)->x(), o->h() );
+
+                /* draw overlapping waveforms in X-ray style. */
+                bool t = Waveform::fill;
+
+                Waveform::fill = false;
+
+                fl_push_clip( b.x, b.y, b.w, b.h );
+
+                o->draw();
+                (*r)->draw();
+
+                fl_pop_clip();
+
+                Waveform::fill = t;
+
+            }
+        }
+    }
 }
 
 /** event handler that supports DND of audio clips */

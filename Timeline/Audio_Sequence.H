@@ -101,6 +101,7 @@ public:
 
 //    const char *class_name ( void ) { return "Audio_Sequence"; }
 
+    void draw ( void );
     int handle ( int m );
     void dump ( void );
     void remove_selected ( void );

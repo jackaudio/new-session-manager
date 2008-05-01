@@ -71,7 +71,7 @@ protected:
     void block_processed ( void ) { sem_post( &_blocks ); }
     bool wait_for_block ( void )
         {
-            while ( sem_wait( &_blocks ) == EINTR );
+            while ( ! sem_wait( &_blocks ) && errno == EINTR );
 
             if ( _terminate )
                 return false;
@@ -80,6 +80,8 @@ protected:
         }
 
     virtual void disk_thread ( void ) = 0;
+
+    void flush ( bool is_output );
 
 public:
 

@@ -204,6 +204,6 @@ public:
     nframes_t read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const;
     nframes_t write ( nframes_t nframes );
     void prepare ( void );
-    bool finalize ( void );
+    bool finalize ( nframes_t frame );
 
 };

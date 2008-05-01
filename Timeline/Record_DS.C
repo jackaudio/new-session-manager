@@ -43,7 +43,7 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
 
     _th->write( buf, nframes );
 
-//    track()->record( buf, _frame, nframes, channels() );
+    _frames_written += nframes;
 
 //    timeline->unlock();
 }
@@ -52,7 +52,6 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
 void
 Record_DS::disk_thread ( void )
 {
-
     printf( "IO thread running...\n" );
 
     const nframes_t nframes = _nframes * _disk_io_blocks;
@@ -134,17 +133,47 @@ Record_DS::disk_thread ( void )
 
     printf( "IO thread terminating.\n" );
 
+
+    /* flush what remains in the buffer out to disk */
+
+    {
+        /* use JACk sized blocks for this last bit */
+        const nframes_t nframes = _nframes;
+        const size_t block_size = _nframes * sizeof( sample_t );
+
+
+        while ( blocks_ready-- > 0 || ! sem_trywait( &_blocks ) && errno != EAGAIN )
+        {
+
+                for ( int i = channels(); i--; )
+                {
+                    jack_ringbuffer_read( _rb[ i ], (char*)cbuf, block_size );
+
+                    buffer_interleave_one_channel( buf, cbuf, i, channels(), nframes );
+                }
+
+                const nframes_t frames_remaining = (_stop_frame - _frame ) - _frames_written;
+
+                if ( frames_remaining < nframes )
+                {
+                    /* this is the last block, might be partial  */
+                    write_block( buf, frames_remaining );
+                    break;
+                }
+                else
+                    write_block( buf, nframes );
+        }
+    }
+
     delete[] cbuf;
     delete[] buf;
 }
 
 
 /** begin recording */
-/* FIXME: we need to make note of the exact frame we were on when recording began */
 void
 Record_DS::start ( nframes_t frame )
 {
-    /* FIXME: flush buffers here? */
 
     if ( _recording )
     {
@@ -152,6 +181,8 @@ Record_DS::start ( nframes_t frame )
         return;
     }
 
+    /* FIXME: safe to do this here? */
+    flush( false );
 
     _frame = frame;
 
@@ -174,24 +205,16 @@ Record_DS::stop ( nframes_t frame )
         return;
     }
 
+    _recording = false;
+
+    /* FIXME: we may still have data in the buffers waiting to be
+     * written to disk... We should flush it out before stopping... */
+
+    _stop_frame = frame;
+
     shutdown();
 
     /* FIXME: flush buffers here? */
-
-/*     char *name = strdup( _af->name() ); */
-/*     delete _af; */
-/*     _af = NULL; */
-
-/*     Audio_File *af = Audio_File::from_file( name ); */
-
-/*     if ( ! af ) */
-/*         printf( "impossible!\n" ); */
-
-/*     new Region( af, track(), _frame ); */
-
-/*     track()->redraw(); */
-
-    _recording = false;
 
     _th->stop( frame );
 

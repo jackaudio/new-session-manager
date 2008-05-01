@@ -28,6 +28,9 @@ class Peak_Writer;
 class Record_DS : public Disk_Stream
 {
 
+    nframes_t _frames_written;
+    volatile nframes_t _stop_frame;
+
     volatile bool _recording;
 
     Audio_File_SF *_af;                             /* capture file */
@@ -44,6 +47,8 @@ public:
             sem_init( &_blocks, 0, 0 );
 
             _recording = false;
+            _stop_frame = -1;
+            _frames_written = 0;
         }
 
 /*     bool seek_pending ( void ); */

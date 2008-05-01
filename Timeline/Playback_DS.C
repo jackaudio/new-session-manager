@@ -52,23 +52,7 @@ Playback_DS::seek ( nframes_t frame )
 
     _pending_seek = frame;
 
-    /* flush buffers */
-    for ( int i = channels(); i--; )
-        jack_ringbuffer_read_advance( _rb[ i ], jack_ringbuffer_read_space( _rb[ i ] ) );
-
-    /* dirty hack... reset the semaphore. Should we just call sem_init
-     * again instead? */
-
-/*     sem_init( &_blocks, 0, _total_blocks ); */
-
-    int n;
-    sem_getvalue( &_blocks, &n );
-
-    n = _total_blocks - n;
-
-    while ( n-- )
-        sem_post( &_blocks );
-
+    flush( true );
 }
 
 /* THREAD: IO */

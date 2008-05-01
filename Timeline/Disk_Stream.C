@@ -96,6 +96,46 @@ Disk_Stream::~Disk_Stream ( )
     engine->unlock();
 }
 
+
+/* THREAD: RT */
+/** flush buffers and reset. Must only be called from the RT thread. */
+void
+Disk_Stream::flush ( bool is_output )
+{
+
+    /* flush buffers */
+    for ( int i = channels(); i--; )
+        jack_ringbuffer_read_advance( _rb[ i ], jack_ringbuffer_read_space( _rb[ i ] ) );
+
+
+/*  sem_destroy( &_blocks ); */
+
+/*     if ( is_output ) */
+/*         sem_init( &_blocks, 0, _total_blocks ); */
+/*     else */
+/*         sem_init( &_blocks, 0, 0 ); */
+
+    if ( is_output )
+    {
+
+        int n;
+        sem_getvalue( &_blocks, &n );
+
+        n = _total_blocks - n;
+
+        while ( n-- )
+            sem_post( &_blocks );
+    }
+    else
+    {
+        sem_destroy( &_blocks );
+
+        sem_init( &_blocks, 0, 0 );
+    }
+
+
+}
+
 /** stop the IO thread, block until it finishes. */
 void
 Disk_Stream::shutdown ( void )

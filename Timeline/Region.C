@@ -947,14 +947,18 @@ Region::prepare ( void )
 /** finalize region capture. Assumes that this *is* a captured region
  and that no other regions refer to the same source */
 bool
-Region::finalize ( void )
+Region::finalize ( nframes_t frame )
 {
     log_end();
 
     _clip->close();
     _clip->open();
 
-    _range.end = _clip->length();
+    /* FIXME: should we attempt to truncate the file? */
+
+    _range.end = frame - _range.offset;
+
+    redraw();
 
     return true;
 }

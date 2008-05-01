@@ -749,9 +749,9 @@ Track::write ( sample_t *buf, nframes_t nframes )
 
 /* THREAD: IO */
 void
-Track::stop ( nframes_t nframes )
+Track::stop ( nframes_t frame )
 {
-    _capture->finalize();
+    _capture->finalize( frame );
 
     _capture = NULL;
 }

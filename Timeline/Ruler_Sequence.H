@@ -33,12 +33,12 @@ public:
 //            box( FL_UP_BOX );
         }
 
-    void
-    draw ( void )
-        {
-            Sequence::draw();
-            timeline->draw_measure_BBT( x(), y(), w(), h(), FL_WHITE );
-        }
+/*     void */
+/*     draw ( void ) */
+/*         { */
+/* //            timeline->draw_measure_BBT( x(), y(), w(), h(), FL_WHITE ); */
+/*             Sequence::draw(); */
+/*         } */
 
     int handle ( int m )
         {

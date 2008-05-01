@@ -56,10 +56,12 @@ public:
 
     Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
 
-    /* FIXME: hack */
-    virtual int x ( void ) const { const int x = Sequence_Widget::x(); if ( x == _track->x() ) return x - 3; else return x; }
 
     virtual int abs_w ( void ) const { return 10; }
+
+    /* FIXME: hack */
+    virtual int x ( void ) const { const int x = Sequence_Widget::x() - ( abs_w() >> 1 ); if ( x == _track->x() ) return x - 3; else return x; }
+
     nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
 
     Sequence_Point ( )
@@ -76,6 +78,14 @@ public:
     draw ( void )
         {
             Sequence_Widget::draw();
+
+            const int x = Sequence_Widget::x();
+
+            const int y = this->y() + Fl::box_dy( box() );
+
+            fl_color( FL_WHITE );
+
+            fl_line( x, y, x, y + h() - Fl::box_dh( box() ) );
 
             draw_label( _label, align() );
         }

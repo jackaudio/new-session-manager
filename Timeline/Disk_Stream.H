@@ -58,6 +58,8 @@ protected:
     volatile nframes_t _pending_seek; /* absolute transport position to seek to */
     volatile int _terminate;
 
+    volatile int _xruns;
+
     int channels ( void ) const { return _rb.size(); }
 
     Audio_Sequence * track ( void );
@@ -69,13 +71,12 @@ protected:
     void block_processed ( void ) { sem_post( &_blocks ); }
     bool wait_for_block ( void )
         {
+            while ( sem_wait( &_blocks ) == EINTR );
+
             if ( _terminate )
                 return false;
             else
-            {
-                while ( sem_wait( &_blocks ) == EINTR );
                 return true;
-            }
         }
 
     virtual void disk_thread ( void ) = 0;
@@ -85,6 +86,8 @@ public:
     /* must be set before any Disk_Streams are created */
     static float seconds_to_buffer;
     static size_t disk_io_kbytes;
+
+    int xruns ( void ) { return _xruns; }
 
     Disk_Stream ( Track *th, float frame_rate, nframes_t nframes, int channels );
 

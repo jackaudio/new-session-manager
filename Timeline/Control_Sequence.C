@@ -232,6 +232,10 @@ Control_Sequence::draw ( void )
     if ( _highlighted )
         for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
             (*r)->draw_box();
+    else
+        for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
+            if ( (*r)->selected() )
+                (*r)->draw_box();
 
     fl_pop_clip();
 }

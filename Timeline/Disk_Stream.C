@@ -42,8 +42,8 @@
 /* TODO: read/write data from/to disk in larger chunks to avoid
  * excessive seeking. 256k is supposedly the sweetspot. */
 
-float Disk_Stream::seconds_to_buffer = 5.0f;
-//float Disk_Stream::seconds_to_buffer = 2.0f;
+//float Disk_Stream::seconds_to_buffer = 5.0f;
+float Disk_Stream::seconds_to_buffer = 2.0f;
 /* this is really only a rough estimate. The actual amount of data
  read depends on many factors.  Overlapping regions, for example, will
  require more data to be read from disk, as will varying channel
@@ -59,8 +59,7 @@ Disk_Stream::Disk_Stream ( Track *th, float frame_rate, nframes_t nframes, int c
     _thread = 0;
     _terminate = false;
     _pending_seek = -1;
-
-    printf( "nframes %lu\n", nframes );
+    _xruns = 0;
 
     _total_blocks = frame_rate * seconds_to_buffer / nframes;
 
@@ -77,8 +76,6 @@ Disk_Stream::Disk_Stream ( Track *th, float frame_rate, nframes_t nframes, int c
         _rb.push_back( jack_ringbuffer_create( bufsize ) );
 
     sem_init( &_blocks, 0, _total_blocks );
-
-//    run();
 }
 
 Disk_Stream::~Disk_Stream ( )

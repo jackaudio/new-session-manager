@@ -176,17 +176,14 @@ Playback_DS::disk_thread ( void )
                 buffer_deinterleave_one_channel( (sample_t*)rbd[ 1 ].buf, buf + f, i, channels(), nframes - f );
             }
             else
-            {
                 ++_xruns;
-            }
-
 
             jack_ringbuffer_write_advance( _rb[ i ], block_size );
-
 #else
-
             buffer_deinterleave_one_channel( cbuf, buf, i, channels(), nframes );
-            jack_ringbuffer_write( _rb[ i ], (char*)cbuf, block_size );
+
+            if ( jack_ringbuffer_write( _rb[ i ], (char*)cbuf, block_size ) < block_size )
+                ++_xruns;
 #endif
         }
 

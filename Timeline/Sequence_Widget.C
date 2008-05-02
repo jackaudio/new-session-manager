@@ -180,29 +180,29 @@ Sequence_Widget::handle ( int m )
 
             return 1;
         case FL_DRAG:
-        case FL_DND_DRAG:
         {
             if ( ! _drag )
             {
-                begin_drag ( Drag( x() - X, y() - Y ) );
+                begin_drag ( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
                 _log.hold();
             }
 
             fl_cursor( FL_CURSOR_MOVE );
 
-            const int ox = _drag->x;
-
             redraw();
 
-            if ( timeline->ts_to_x( timeline->xoffset ) + ox + X > _track->x() )
             {
-                int nx = (ox + X) - _track->x();
+                const nframes_t of = timeline->x_to_offset( X );
 
-                // _r->offset = timeline->x_to_ts( nx ) + timeline->xoffset;
-                offset( timeline->x_to_ts( nx ) + timeline->xoffset );
+                if ( of >= _drag->offset )
+                {
+                    _r->offset = of - _drag->offset;
 
-                if ( Sequence_Widget::_current == this )
-                    _track->snap( this );
+                    if ( Sequence_Widget::_current == this )
+                        _track->snap( this );
+                }
+                else
+                    _r->offset = 0;
             }
 
             if ( X >= _track->x() + _track->w() ||

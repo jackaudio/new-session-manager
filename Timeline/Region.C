@@ -420,7 +420,7 @@ Region::handle ( int m )
 
             if ( ! _drag )
             {
-                begin_drag( Drag( x() - X, y() - Y ) );
+                begin_drag( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
                 _log.hold();
             }
 

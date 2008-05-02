@@ -35,9 +35,9 @@ struct Drag
     int y;
     int state;
 
-    Sequence_Widget *original;
+    nframes_t offset;
 
-    Drag( int X, int Y ) : x( X ), y( Y ) { state = 0; }
+    Drag( int X, int Y, nframes_t offset=0 ) : x( X ), y( Y ), offset( offset ) { state = 0; }
 };
 
 struct Range

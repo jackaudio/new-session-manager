@@ -957,6 +957,9 @@ Timeline::handle ( int m )
                 {
 //                    take_focus();
 
+                    if ( Fl::event_state() & ( FL_ALT | FL_CTRL | FL_SHIFT ) )
+                        return 0;
+
                     if ( Fl::event_button1() )
                     {
                         assert( ! drag );

@@ -72,9 +72,18 @@ Tempo_Point::~Tempo_Point ( )
 }
 
 
+
 int
 Tempo_Point::handle ( int m )
 {
+    if ( m == FL_PUSH && Fl::event_button3() && ! ( Fl::event_state() & ( FL_ALT | FL_CTRL | FL_SHIFT ) ) )
+    {
+        float t = _tempo;
+        edit( &t );
+        tempo( t );
+        return 0;
+    }
+
     int r = Sequence_Widget::handle( m );
 
     if ( m == FL_RELEASE )
@@ -83,4 +92,74 @@ Tempo_Point::handle ( int m )
         timeline->redraw();
     }
     return r;
+}
+
+
+#include <FL/Fl_Float_Input.H>
+#include <FL/Fl_Menu_Window.H>
+
+
+class Tempo_Point_Editor : public Fl_Menu_Window
+{
+
+    float *_tempo;
+    Fl_Float_Input *_fi;
+
+    bool _sucess;
+
+public:
+
+    Tempo_Point_Editor ( int X, int Y, float *tempo ) : Fl_Menu_Window( X, Y, 75, 58, "Edit Tempo" )
+        {
+            _sucess = false;
+            _tempo = tempo;
+
+            set_modal();
+
+            Fl_Float_Input *fi = _fi = new Fl_Float_Input( 12, 0 + 24, 50, 24, "Tempo:" );
+            fi->align( FL_ALIGN_TOP );
+            fi->when( FL_WHEN_ENTER_KEY );
+            fi->callback( &Tempo_Point_Editor::enter_cb, (void*)this );
+
+            char pat[10];
+            snprintf( pat, sizeof( pat ), "%.1f", *tempo );
+
+            fi->value( pat );
+
+            end();
+
+            show();
+
+            while ( shown() )
+                Fl::wait();
+        }
+
+    static void
+    enter_cb ( Fl_Widget *w, void *v )
+        {
+            ((Tempo_Point_Editor*)v)->enter_cb();
+        }
+
+    void
+    enter_cb ( void )
+        {
+            sscanf( _fi->value(), "%f", _tempo );
+            _sucess = true;
+            hide();
+        }
+
+    bool
+    sucess ( void )
+        {
+            return _sucess;
+        }
+};
+
+
+bool
+Tempo_Point::edit ( float *tempo )
+{
+    Tempo_Point_Editor ti( Fl::event_x(), Fl::event_y(), tempo );
+
+    return ti.sucess();
 }

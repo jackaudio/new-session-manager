@@ -69,4 +69,33 @@ public:
             sort();
         }
 
+    int
+    handle ( int m )
+        {
+            int r = Sequence::handle( m );
+
+            if ( r )
+                return r;
+
+            switch ( m )
+            {
+                case FL_PUSH:
+                    if ( Fl::event_button1() )
+                    {
+                        static float t = 120.0f;
+
+                        if ( Tempo_Point::edit( &t ) )
+                        {
+                            add( new Tempo_Point( timeline->x_to_offset( Fl::event_x() ), t ) );
+
+                            timeline->redraw();
+                        }
+                        return 0;
+                    }
+                default:
+                    return 0;
+
+            }
+
+        }
 };

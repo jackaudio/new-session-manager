@@ -48,6 +48,8 @@ protected:
 
 public:
 
+    static bool edit ( float *tempo );
+
     LOG_CREATE_FUNC( Tempo_Point );
 
     Tempo_Point ( nframes_t when, float bpm );
@@ -69,7 +71,7 @@ public:
     float tempo ( void ) const
         { return _tempo; }
     void  tempo ( float v )
-        { _tempo = v; }
+        { if ( v != _tempo ) { _tempo = v; _make_label(); timeline->redraw(); } }
 
     int handle ( int m );
 };

@@ -71,6 +71,8 @@ public:
 
     LOG_CREATE_FUNC( Audio_Sequence );
 
+    Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }
+
     Audio_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0, track )
         {
 

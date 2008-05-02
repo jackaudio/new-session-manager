@@ -247,6 +247,7 @@ Control_Sequence::handle ( int m )
     {
         case FL_ENTER:
             _highlighted = true;
+            fl_cursor( cursor() );
             redraw();
             return 1;
         case FL_LEAVE:

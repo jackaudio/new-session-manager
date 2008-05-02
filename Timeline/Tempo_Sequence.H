@@ -29,6 +29,8 @@ class Tempo_Sequence : public Sequence
 
 public:
 
+    Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }
+
     Tempo_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
         {
 //            box( FL_DOWN_BOX );

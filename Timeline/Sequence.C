@@ -257,6 +257,8 @@ Sequence::handle ( int m )
         case FL_FOCUS:
         case FL_UNFOCUS:
         case FL_LEAVE:
+            fl_cursor( FL_CURSOR_DEFAULT );
+            return 1;
         case FL_DND_DRAG:
             return 1;
         case FL_ENTER:
@@ -274,6 +276,10 @@ Sequence::handle ( int m )
                 else
                     fl_cursor( (Fl_Cursor)1 );
             }
+            else
+                fl_cursor( cursor() );
+
+            return 1;
         case FL_DND_ENTER:
         case FL_DND_LEAVE:
         case FL_DND_RELEASE:

@@ -96,6 +96,9 @@ public:
 
     virtual ~Sequence (  );
 
+    /* override this to provide cursor  */
+    virtual Fl_Cursor cursor ( void ) const = 0;
+
     nframes_t x_to_offset ( int X );
 
     const char * name ( void ) const { return _name; }

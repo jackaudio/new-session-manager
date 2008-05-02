@@ -66,6 +66,8 @@ public:
     Control_Sequence ( Track * );
     ~Control_Sequence ( );
 
+    Fl_Cursor cursor ( void ) const { return FL_CURSOR_CROSS; }
+
 //    const char *class_name ( void ) { return "Control_Sequence"; }
 
     void draw ( void );

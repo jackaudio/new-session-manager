@@ -151,7 +151,7 @@ Sequence_Widget::handle ( int m )
             fl_cursor( FL_CURSOR_HAND );
             return 1;
         case FL_LEAVE:
-            fl_cursor( FL_CURSOR_DEFAULT );
+            fl_cursor( _track->cursor() );
             return 1;
         case FL_PUSH:
         {
@@ -203,6 +203,7 @@ Sequence_Widget::handle ( int m )
                 }
                 else
                     _r->offset = 0;
+
             }
 
             if ( X >= _track->x() + _track->w() ||

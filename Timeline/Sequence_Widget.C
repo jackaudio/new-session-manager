@@ -66,7 +66,7 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color 
     lab.font = FL_HELVETICA;
     lab.size = 14;
 
-    int lw, lh;
+    int lw = 0, lh = 0;
 
     fl_font( lab.font, lab.size );
     fl_measure( lab.value, lw, lh );

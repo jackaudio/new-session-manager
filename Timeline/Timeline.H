@@ -181,7 +181,7 @@ public:
     void zoom ( float secs );
     void zoom_in ( void );
     void zoom_out ( void );
-
+    void zoom_fit ( void );
 
 
 private:

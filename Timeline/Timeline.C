@@ -1073,6 +1073,12 @@ Timeline::zoom ( float secs )
     redraw();
 }
 
+void
+Timeline::zoom_fit ( void )
+{
+    zoom( _length / (float)sample_rate() );
+}
+
 Track *
 Timeline::track_by_name ( const char *name )
 {

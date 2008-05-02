@@ -70,7 +70,7 @@ public:
 
     bool zoom_changed ( void ) const { return _zoom_changed; }
     double zoom ( void ) const { return _zoom; }
-    void zoom ( int v ) { _zoom = v;  }
+    void zoom ( int v ) { int z = _zoom ; _zoom = v; constrain(); maybe_do_callback( z ); }
 //    double value ( void ) const { return Fl_Slider::value(); }
     void zoom_range ( int zmin, int zmax ) { _zoom_min = zmin; _zoom_max = zmax; }
 

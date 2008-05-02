@@ -1061,10 +1061,14 @@ Timeline::zoom_out ( void )
 void
 Timeline::zoom ( float secs )
 {
-    const int sw = w() - vscroll->w() - Track::width();
+    const int sw = tracks->w() - Track::width();
 
-    /* FIXME: we actually need to set this in the scalebar */
-//    _fpp = (int)((secs * sample_rate()) / sw);
+    int fpp = (int)((secs * sample_rate()) / sw);
+
+    int p = 0;
+    while ( 1 << p < fpp ) p++;
+
+    hscroll->zoom( p );
 
     redraw();
 }

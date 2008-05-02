@@ -386,7 +386,7 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
         ++ntpi;
 
         tp = (Tempo_Point*)(*tpi);
-        const Tempo_Point *ntp = (Tempo_Point*)(*ntpi);
+        const Tempo_Point *ntp = ntpi == tempo_track->_widgets.end() ? NULL : (Tempo_Point*)(*ntpi);
 
         const nframes_t ntpo = ntp ? ntp->offset() : when + x_to_ts( W + 1 );
 

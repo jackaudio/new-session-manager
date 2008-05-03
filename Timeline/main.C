@@ -17,22 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-
 #include <FL/Fl.H>
-#include <FL/Fl_Window.H>
-#include <FL/Fl_Double_Window.H>
-#include <FL/Fl_Overlay_Window.H>
-#include <FL/Fl_Scroll.H>
-// #include <FL/Fl_Scrollbar.H>
-#include <FL/Fl_Pack.H>
-#include <FL/Fl_Group.H>
-#include <FL/Fl_Slider.H>
-#include <FL/Fl_Button.H>
 
-#include "Scalebar.H"
-
-// #include "Waveform.H"
-#include "Region.H"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -40,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "Region.H"
 #include "Sequence.H"
 #include "Audio_Sequence.H"
 #include "Timeline.H"
@@ -55,8 +42,6 @@
 
 #include "Engine.H"
 
-// #include "Clock.H"
-
 #include "TLE.H"
 
 #include "../FL/Boxtypes.H"
@@ -64,28 +49,94 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
+
 Engine *engine;
 Timeline *timeline;
 Transport *transport;
 
-/* void cb_undo ( Fl_Widget *w, void *v ) */
-/* { */
-/*     Loggable::undo(); */
-/* } */
+#define VERSION "0.5.0"
+
+/* TODO: put these in a header */
+#define USER_CONFIG_DIR ".non-daw/"
+
+const char APP_NAME[]   = "Non-DAW";
+const char APP_TITLE[]  = "The Non-DAW (Digital Audio Workstation)";
+const char COPYRIGHT[]  = "Copyright (C) 2008 Jonathan Moore Liles";
+
+#define PACKAGE "non"
+
+
+#include "debug.h"
 
 char *user_config_dir;
+char session_display_name[256];
+
+void
+set_display_name ( const char *name )
+{
+    char *s = rindex( name, '/' );
+
+    strcpy( session_display_name, s ? s : name );
+
+    for ( s = session_display_name; *s; ++s )
+        if ( *s == '_' || *s == '-' )
+            *s = ' ';
+}
+
+static int
+exists ( const char *name )
+{
+    struct stat st;
+
+    return 0 == stat( name, &st );
+}
+
+#include <errno.h>
 
 static int
 ensure_dirs ( void )
 {
-    asprintf( &user_config_dir, "%s/.non-daw", getenv( "HOME" ) );
+    asprintf( &user_config_dir, "%s/%s", getenv( "HOME" ), USER_CONFIG_DIR );
 
-    return 0 == mkdir( user_config_dir, 0777 );
+    int r = mkdir( user_config_dir, 0777 );
+
+    return r == 0 || errno == EEXIST;
+}
+
+bool
+create_session ( const char *name )
+{
+    if ( exists( name ) )
+    {
+        WARNING( "Session already exists" );
+        return false;
+    }
+
+    if ( mkdir( name, 0777 ) )
+    {
+        WARNING( "Cannot create session directory" );
+        return false;
+    }
+
+    if ( chdir( name ) )
+        FATAL( "WTF? Cannot change to new session directory" );
+
+    mkdir( "sources", 0777 );
+
+    set_display_name( name );
+
+    /* TODO: load template */
+
+
+    return true;
 }
 
 int
 main ( int argc, char **argv )
 {
+
+    *session_display_name = '\0';
+
     /* welcome to C++ */
     LOG_REGISTER_CREATE( Region );
     LOG_REGISTER_CREATE( Time_Point );
@@ -96,15 +147,36 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Audio_Sequence );
     LOG_REGISTER_CREATE( Control_Sequence );
 
-
     init_boxtypes();
 
     if ( ! ensure_dirs() )
-        /* error */;
+        FATAL( "Cannot create required directories" );
 
-    /* TODO: change to seesion dir */
+    printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
+
+    const char *pwd = getenv( "PWD" );
+
+    if ( argc > 1 )
+    {
+        /* FIXME: what about FLTK arguments? */
+
+        /* change to session dir */
+        if ( chdir( argv[ 1 ] ) )
+            FATAL( "Cannot change to session dir \"%s\"", argv[ 1 ] );
+        else
+            pwd = argv[ 1 ];
+    }
+
+    if ( ! exists( "history" ) ||
+         ! exists( "sources" ) )
+//         ! exists( "options" ) )
+        FATAL( "Not a Non-DAW session: \"%s\"", pwd );
+
+    set_display_name( pwd );
 
     TLE tle;
+
+    MESSAGE( "Initializing JACK" );
 
     /* we don't really need a pointer for this */
     engine = new Engine;
@@ -114,11 +186,12 @@ main ( int argc, char **argv )
      * scenario requiring otherwise */
     transport->stop();
 
+    MESSAGE( "Opening session" );
     Loggable::open( "history" );
 
-//        Fl::add_timeout( UPDATE_FREQ, clock_update_cb, o );
-
-    tle.main_window->show( argc, argv );
+    MESSAGE( "Starting GUI" );
+//    tle.main_window->show( argc, argv );
+    tle.main_window->show();
 
     Fl::run();
 }

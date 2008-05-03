@@ -29,6 +29,8 @@
 
 #include "dsp.h"
 
+#include "debug.h"
+
 /* THREAD: IO */
 /** write /nframes/ from buf to the capture file of the attached track */
 void
@@ -54,7 +56,7 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
 void
 Record_DS::disk_thread ( void )
 {
-    printf( "IO thread running...\n" );
+    DMESSAGE( "capture thread running..." );
 
     const nframes_t nframes = _nframes * _disk_io_blocks;
 
@@ -134,8 +136,7 @@ Record_DS::disk_thread ( void )
 
     }
 
-    printf( "IO thread terminating.\n" );
-
+    DMESSAGE( "capture thread terminating" );
 
     /* flush what remains in the buffer out to disk */
 
@@ -232,7 +233,7 @@ Record_DS::stop ( nframes_t frame )
 
     _th->stop( frame );
 
-    printf( "recording finished\n" );
+    DMESSAGE( "recording finished" );
 }
 
 

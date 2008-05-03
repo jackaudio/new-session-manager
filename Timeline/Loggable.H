@@ -169,7 +169,7 @@ public:
     void
     register_create ( const char *name, create_func *func )
         {
-            printf( "registering %s to %p\n", name, func );
+//            printf( "registering %s to %p\n", name, func );
 
             _class_map[ string( name ) ] = func;
         }

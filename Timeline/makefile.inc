@@ -1,4 +1,6 @@
 
+Timeline_VERSION := 0.5.0
+
 Timeline_SRCS= \
 Timeline/Audio_File.C \
 Timeline/Audio_File_SF.C \
@@ -26,11 +28,11 @@ Timeline/Transport.C \
 Timeline/Waveform.C \
 Timeline/dsp.C \
 Timeline/main.C \
+debug.C \
 
 Timeline_OBJS:=$(Timeline_SRCS:.C=.o)
 
 $(Timeline_OBJS): Makefile
-
 
 Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS)
 

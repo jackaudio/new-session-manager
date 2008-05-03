@@ -31,6 +31,9 @@ decl {\#include <FL/fl_ask.H>} {}
 
 decl {\#include <FL/Fl.H>} {} 
 
+decl {extern char session_display_name[256];} {global
+} 
+
 decl {extern char *user_config_dir;} {global
 } 
 
@@ -227,7 +230,7 @@ exit( 0 );}
             }
             MenuItem {} {
               label {&Fit}
-              callback {timeline->zoom_fit();} selected
+              callback {timeline->zoom_fit();}
               xywh {10 10 40 25} divider
             }
             MenuItem {} {
@@ -531,6 +534,11 @@ delete win;}
         xywh {0 72 1024 695} box FLAT_BOX color 47 labelsize 100 resizable
         code0 {timeline = o;}
         class Timeline
+      }
+      Fl_Box {} {
+        label {<session name>} selected
+        xywh {450 0 475 22} labeltype SHADOW_LABEL labelfont 2
+        code0 {o->label( session_display_name );}
       }
       Fl_Value_Output xruns_output {
         label {xruns:}

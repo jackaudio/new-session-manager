@@ -31,6 +31,8 @@
 
 #include "dsp.h"
 
+#include "debug.h"
+
 bool
 Playback_DS::seek_pending ( void )
 {
@@ -45,7 +47,7 @@ Playback_DS::seek_pending ( void )
 void
 Playback_DS::seek ( nframes_t frame )
 {
-    printf( "requesting seek\n" );
+    DMESSAGE( "requesting seek" );
 
     if ( seek_pending() )
         printf( "seek error, attempt to seek while seek is pending\n" );
@@ -92,7 +94,7 @@ void
 Playback_DS::disk_thread ( void )
 {
 
-    printf( "IO thread running...\n" );
+    DMESSAGE( "playback thread running" );
 
     /* buffer to hold the interleaved data returned by the track reader */
     sample_t *buf = new sample_t[ _nframes * channels() * _disk_io_blocks ];
@@ -111,7 +113,8 @@ Playback_DS::disk_thread ( void )
 
         if ( seek_pending() )
         {
-            printf( "performing seek\n" );
+            DMESSAGE( "performing seek" );
+
             _frame = _pending_seek;
             _pending_seek = -1;
             blocks_ready = 1;
@@ -189,7 +192,7 @@ Playback_DS::disk_thread ( void )
 
     }
 
-    printf( "IO thread terminating.\n" );
+    DMESSAGE( "playback thread terminating" );
 
     delete[] buf;
 #ifndef AVOID_UNNECESSARY_COPYING

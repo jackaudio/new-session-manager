@@ -42,7 +42,7 @@ Loggable::open ( const char *filename )
 
     if ( ! ( fp = fopen( filename, "a+" ) ) )
     {
-        printf( "Could not open log file for writing!" );
+        WARNING( "Could not open log file for writing!" );
         return false;
     }
 
@@ -72,8 +72,7 @@ Loggable::open ( const char *filename )
 /** sigh. parse a string of ":name value :name value" pairs into an
  * array of strings, one per pair */
 // FIXME: doesn't handle the case of :name ":foo bar", nested quotes
-// or other things it should. Also, quotes should be removed here, not
-// in client code.
+// or other things it should.
 static
 char **
 parse_alist( const char *s )
@@ -84,7 +83,7 @@ parse_alist( const char *s )
     int tl = strlen( s );
     char **r = (char**)malloc( sizeof( char* ) * tl );
 
-    const char *e = s + tl;
+//    const char *e = s + tl;
 
     const char *c = NULL;
     int i = 0;
@@ -124,7 +123,7 @@ parse_alist( const char *s )
                 {
 //                    v++;
                     if ( v[ strlen( v ) - 1 ] != '"' )
-                        printf( "error: invalid quoting in log entry!\n" );
+                        WARNING( "invalid quoting in log entry!" );
                     else
                     {
                         v[ strlen( v ) - 1 ] = '\0';
@@ -288,7 +287,7 @@ Loggable::undo ( void )
 
     if ( ! strlen( s ) )
     {
-        printf( "corrupt undo file or no undo entries.\n" );
+        WARNING( "corrupt undo file or no undo entries." );
         return;
     }
 
@@ -297,10 +296,7 @@ Loggable::undo ( void )
     s += strlen( s ) - 1;
 
     if ( strtok( b, "\n" ) == NULL )
-    {
-        printf( "error, empty undo transaction!\n" );
-        abort();
-    }
+        FATAL( "empty undo transaction!\n" );
 
     int n = 1;
     while ( strtok( NULL, "\n" ) )
@@ -332,7 +328,7 @@ Loggable::undo ( void )
         if ( *s == '\t' )
             s++;
 
-        printf( "undoing \"%s\"\n", s );
+        DMESSAGE( "undoing \"%s\"\n", s );
 
         do_this( s, true );
 

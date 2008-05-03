@@ -34,6 +34,8 @@ using namespace std;
 
 #include "types.h"
 
+#include "debug.h"
+
 class Log_Entry;
 class Loggable;
 typedef Loggable *(create_func)(Log_Entry &);
@@ -155,7 +157,9 @@ public:
             /* make sure it'll fit */
             _loggables.reserve( _id );
 
-            assert( ! _loggables[ _id - 1 ] );
+//            assert( ! _loggables[ _id - 1 ] );
+
+            ASSERT( ! _loggables[ _id - 1 ], "Attempt to create object with an ID (0x%X) that already exists. The existing object is of type \"%s\", the new one is \"%s\". Corrupt journal?", _id, _loggables[ _id -1 ]->class_name(), class_name() );
 
             _loggables[ _id - 1 ] = this;
         }

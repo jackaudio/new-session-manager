@@ -301,7 +301,7 @@ Timeline::nearest_line ( nframes_t when, nframes_t *frame ) const
     /* FIXME: handle snap to bar */
     draw_measure( when - x_to_ts( 10 ), 0, 20, 0, (Fl_Color)0, nearest_line_cb, frame, false );
 
-    return *frame != -1;
+    return *frame != (nframes_t)-1;
 }
 
 nframes_t
@@ -514,7 +514,7 @@ Timeline::draw ( void )
 
     if ( ( damage() & FL_DAMAGE_ALL ) || ( damage() & FL_DAMAGE_EXPOSE ) )
     {
-        printf( "complete redraw\n" );
+        DMESSAGE( "complete redraw" );
 
         draw_box( box(), 0, 0, w(), h(), color() );
 
@@ -794,6 +794,8 @@ Timeline::track_under ( int Y )
         if ( ! ( t->y() > Y  || t->y() + t->h() < Y ) )
             return t;
     }
+
+    return NULL;
 }
 
 
@@ -1033,7 +1035,8 @@ Timeline::get_unique_track_name ( const char *name )
 void
 Timeline::add_track ( Track *track )
 {
-    printf( "added new track to the timeline\n" );
+    DMESSAGE( "added new track to the timeline" );
+
     /* FIXME: do locking */
     tracks->add( track );
 
@@ -1045,7 +1048,7 @@ Timeline::add_track ( Track *track )
 void
 Timeline::remove_track ( Track *track )
 {
-    printf( "removed track from the timeline\n" );
+    DMESSAGE( "removed track from the timeline" );
 
     /* FIXME: do locking */
 

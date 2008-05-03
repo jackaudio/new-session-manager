@@ -155,9 +155,10 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
             o->beats_per_minute( 0, 120 );
 
-            o->beats_per_minute( 48000 * 50, 250 );
+/*             o->beats_per_minute( 48000 * 50, 250 ); */
 
-            o->beats_per_minute( 48000 * 120, 60 );
+/*             o->beats_per_minute( 48000 * 120, 60 ); */
+
         }
 
         {
@@ -276,43 +277,26 @@ Timeline::bbt ( nframes_t when )
 };
 #endif
 
+
+void
+nearest_line_cb ( nframes_t frame, int X, int Y, int H, void *arg )
+{
+    *((nframes_t*)arg) = frame;
+}
+
 /** return the absolute pixel of the nearest measure line to /x/ */
-int
-Timeline::nearest_line ( int ix )
+bool
+Timeline::nearest_line ( nframes_t when, nframes_t *frame ) const
 {
     if ( snap_to == None )
-        return -1;
+        return false;
 
-    const nframes_t samples_per_minute = sample_rate() * 60;
+    *frame = -1;
 
-    for ( int x = ix - 10; x < ix + 10; ++x )
-    {
-        const int measure = ts_to_x( samples_per_minute / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
+    /* FIXME: handle snap to bar */
+    draw_measure( when - x_to_ts( 10 ), 0, 20, 0, (Fl_Color)0, nearest_line_cb, frame, false );
 
-        if ( measure == 0 )
-            break;
-
-//        const int abs_x = ts_to_x( xoffset ) + x - Track::width();
-
-        const int abs_x = ts_to_x( xoffset ) + x;
-
-        int bpb = beats_per_bar( x_to_ts( x -Track::width() ) + xoffset );
-
-        if ( 0 == x % measure )
-        {
-            if ( snap_to == Bars )
-            {
-                if ( 0 == (abs_x / measure) % bpb )
-                    return x;
-            }
-            else if ( snap_to == Beats )
-            {
-                return x;
-            }
-        }
-    }
-
-    return -1;
+    return *frame != -1;
 }
 
 nframes_t
@@ -321,19 +305,27 @@ Timeline::x_to_offset ( int x ) const
     return x_to_ts( max( 0, x - Track::width() ) ) + xoffset;
 }
 
-/** draw appropriate measure lines inside the given bounding box */
-/* FIXME: this function *really* needs to be optimized. Currently it
-   searched both the time and tempo lists once for every horiontal
-   pixel and performs a number of calculations--this is slow. */
+
+
+
+
 void
-Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
+static
+draw_measure_cb ( nframes_t frame, int X, int Y, int H, void *arg )
+{
+
+    fl_color( FL_BLACK );
+
+    fl_line( X, Y, X, Y + H );
+}
+
+/** draw appropriate measure lines inside the given bounding box */
+void
+Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, measure_line_callback * cb, void *arg, bool BBT ) const
 {
     if ( ! draw_with_measure_lines )
         return;
 
-//    fl_push_clip( X, Y, W, H );
-
-//    fl_line_style( FL_DASH, 2 );
     fl_line_style( FL_DASH, 0 );
 
     const Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
@@ -348,8 +340,6 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
 /*         X -= 40; */
 /*         W += 40; */
 /*     } */
-
-    nframes_t when = x_to_offset( X );
 
     list <Sequence_Widget*>::const_iterator tpi;
     list <Sequence_Widget*>::const_iterator mpi;
@@ -401,102 +391,24 @@ Timeline::draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT )
         {
             const int x = ts_to_x( f - xoffset ) + Track::width();
 
-            fl_color( beat );
-
-            fl_line( x, Y, x, Y + H );
-         }
-    }
-
-#if 0
-    for ( int x = X; x < X + W; ++x )
-    {
-//        measure = ts_to_x( (double)(sample_rate() * 60) / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
-
-        const int measure = ts_to_x( samples_per_minute / beats_per_minute( x_to_ts( x - Track::width() ) + xoffset ) );
-
-        if ( measure == 0 )
-            break;
-
-        const int abs_x = ts_to_x( xoffset ) + x - Track::width();
-
-        if ( 0 == abs_x % measure )
-        {
-            int bpb = beats_per_bar( x_to_ts( x -Track::width() ) + xoffset );
-
-            if ( 0 == (abs_x / measure) % bpb )
-            {
-                if ( measure * bpb < 8 )
-                    break;
-
-                if ( BBT )
-                {
-                    fl_font( FL_HELVETICA, 14 );
-
-                    fl_color( fl_lighter( color ) );
-
-                    char pat[40];
-
-                    const nframes_t ts = x_to_ts( abs_x );
-
-//                    if ( draw_hms )
-                    {
-
-                        const double seconds = (double)ts / sample_rate();
-
-                        int S = (int)seconds;
-                        int M = S / 60; S -= M * 60;
-                        int H = M / 60; M -= H * 60;
-
-                        snprintf( pat, sizeof( pat ), "%d:%d:%d", H, M, S );
-                    }
-//                    else if ( draw_bbt )
-                    {
-
-/*                         const int bar = */
-/*                         const int beat; */
-/*                         const int tick = 0; */
-
-/*                         snprintf( pat, sizeof( pat ), "%d:%d:%d", bar, beat, tick ); */
-                    }
-
-
-                    fl_draw( pat, x, Y + 14 );
-                }
-
-                fl_color( bar );
-            }
-            else
-            {
-                if ( measure < 8 )
-                    continue;
-
-                fl_color( beat );
-            }
-
-
-            fl_line( x, Y, x, Y + H );
+            cb( f, x, Y, H, arg );
         }
-
     }
-
-#endif
 
     fl_line_style( FL_SOLID, 0 );
-
-//    fl_pop_clip();
 }
 
 void
 Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 {
-    draw_measure( X, Y, W, H, color, false );
+    draw_measure( x_to_offset( X ), Y, W, H, color, draw_measure_cb, 0, false );
 }
 
 /** just like draw mesure lines except that it also draws the BBT values.  */
 void
 Timeline::draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color )
 {
-    draw_measure( X, Y, W, H, color, true );
+//    draw_measure( X, Y, W, H, color, true );
 }
 
 void

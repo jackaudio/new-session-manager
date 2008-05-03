@@ -141,11 +141,13 @@ public:
     float beats_per_minute ( nframes_t when ) const;
     int beats_per_bar ( nframes_t when ) const;
     void beats_per_minute ( nframes_t when, float bpm );
-    int nearest_line ( int ix );
+    bool nearest_line ( nframes_t when, nframes_t *f ) const;
+
+    typedef void (measure_line_callback)( nframes_t frame, int X, int Y, int H, void *arg );
 
     void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
     void draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color );
-    void draw_measure ( int X, int Y, int W, int H, Fl_Color color, bool BBT );
+    void draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, measure_line_callback *cb, void *arg, bool BBT ) const;
 
     void xposition ( int X );
     void yposition ( int Y );

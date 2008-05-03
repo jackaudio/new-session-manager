@@ -214,38 +214,25 @@ Sequence::snap ( Sequence_Widget *r )
             {
                 r->offset( w->offset() + w->length() + 1 );
 
-//            printf( "snap: %lu | %lu\n", w->offset() + w->length(), r->offset() );
-
-                goto done;
+                return;
             }
 
             if ( abs( rx2 - wx1 ) < snap_pixels )
             {
                 r->offset( ( w->offset() - r->length() ) - 1 );
 
-//            printf( "snap: %lu | %lu\n", r->offset() + r->length(), w->offset() );
-
-                goto done;
+                return;
             }
         }
     }
 
+    nframes_t f;
+
+    if ( timeline->nearest_line( r->offset(), &f ) )
     {
-        int nx = timeline->nearest_line( r->abs_x() );
-
-        if ( nx >= 0 )
-        {
-            r->offset( timeline->x_to_ts( nx ) );
-            return;
-        }
+        printf( "snap frame is %lu\n", f );
+        r->offset( f );
     }
-//    r->offset( timeline->x_to_ts( r->x() ) );
-
-done:
-
-    return;
-//    r->resize();
-//            r->position( rx1, y() );
 }
 
 int

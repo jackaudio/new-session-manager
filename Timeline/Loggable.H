@@ -100,6 +100,7 @@ private:
 public:
 
     static bool open ( const char *filename );
+    static bool close ( void );
     static void undo ( void );
     static int undo_index ( void ) { return _undo_index; }
     static void compact ( void );

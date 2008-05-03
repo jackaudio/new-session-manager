@@ -53,7 +53,7 @@ class Track : public Fl_Group, public Loggable
 public:
 
     Track ( const char *L, int channels=1 );
-    ~Track ( );
+    virtual ~Track ( );
 
     static bool soloing ( void ) { return _soloing; }
 

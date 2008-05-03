@@ -239,6 +239,9 @@ Track::Track ( const char *L, int channels ) :
 
 Track::~Track ( )
 {
+    /* FIXME: why is this necessary? */
+    timeline->remove_track( this );
+
     log_destroy();
 }
 

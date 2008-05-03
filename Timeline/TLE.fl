@@ -126,7 +126,10 @@ free( path );} {}
         } {
           MenuItem {} {
             label {&New}
-            xywh {0 0 40 25} deactivate
+            callback {Loggable::close();
+// timeline->reset();
+main_window->redraw();} selected
+            xywh {0 0 40 25}
           }
           MenuItem {} {
             label {&Open}
@@ -536,7 +539,7 @@ delete win;}
         class Timeline
       }
       Fl_Box {} {
-        label {<session name>} selected
+        label {<session name>}
         xywh {450 0 475 22} labeltype SHADOW_LABEL labelfont 2
         code0 {o->label( session_display_name );}
       }

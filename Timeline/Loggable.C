@@ -69,6 +69,30 @@ Loggable::open ( const char *filename )
     return true;
 }
 
+/** close journal and delete all loggable objects */
+bool
+Loggable::close ( void )
+{
+
+    DMESSAGE( "closing journal and destroying all journaled objects" );
+
+    fclose( _fp );
+
+    _fp = NULL;
+
+    for ( int i = _log_id; i--; )
+    {
+        Loggable ** l = &_loggables[ i ];
+
+        if ( *l )
+            delete *l;
+
+        *l = NULL;
+    }
+
+    return true;
+}
+
 /** sigh. parse a string of ":name value :name value" pairs into an
  * array of strings, one per pair */
 // FIXME: doesn't handle the case of :name ":foo bar", nested quotes

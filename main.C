@@ -100,13 +100,16 @@ load_song ( const char *name )
 {
     MESSAGE( "loading song \"%s\"", name );
 
+    Grid *pattern_grid = pattern_c->grid();
+    Grid *phrase_grid = phrase_c->grid();
+
     pattern_c->grid( NULL );
     phrase_c->grid( NULL );
 
     if ( ! playlist->load( name ) )
     {
         WARNING( "failed to load song file" );
-        return false;
+        goto failed;
     }
 
     pattern_c->grid( pattern::pattern_by_number( 1 ) );
@@ -117,6 +120,13 @@ load_song ( const char *name )
     song.dirty( false );
 
     return true;
+
+failed:
+
+    pattern_c->grid( pattern_grid );
+    phrase_c->grid( phrase_grid );
+
+    return false;
 }
 
 bool
@@ -163,7 +173,8 @@ main ( int argc, char **argv )
     if ( argc > 1 )
     {
         /* maybe a filename on the commandline */
-        load_song( argv[1] );
+        if ( ! load_song( argv[ 1 ] ) )
+            ASSERTION( "Could not load song \"%s\" specified on command line", argv[ 1 ] );
     }
 
     if ( ! midi_init() )

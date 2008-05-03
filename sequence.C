@@ -24,6 +24,8 @@
 
 #include "non.H"
 
+#include <errno.h>
+
 /* #include <string> */
 
 /* using std::string; */
@@ -281,7 +283,11 @@ sequence::load ( const char *name )
 {
     smf f;
 
-    f.open( name, smf::READ );
+    if ( ! f.open( name, smf::READ ) )
+    {
+        WARNING( "error opening file: %s", strerror( errno ) );
+        return false;
+    }
 
     f.read_header();
 

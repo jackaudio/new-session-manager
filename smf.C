@@ -64,7 +64,7 @@ smf::open ( const char *name, int mode )
 
     _fp = fopen( _name, mode == smf::WRITE ? "w" : "r" );
 
-    return _fp > 0;
+    return _fp != NULL;
 }
 
 /*************************/

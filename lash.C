@@ -85,7 +85,8 @@ Lash::process ( void )
             {
                 MESSAGE( "LASH wants us to load \"%s\"", name );
 
-                load_song( name );
+                if ( ! load_song( name ) )
+                    /* FIXME: should we tell lash that we couldn't load the song? */;
 
                 lash_send_event( _client, lash_event_new_with_type( LASH_Restore_File ) );
 

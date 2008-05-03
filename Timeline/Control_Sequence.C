@@ -62,16 +62,13 @@ Control_Sequence::init ( void )
 void
 Control_Sequence::get ( Log_Entry &e ) const
 {
-    Sequence::get( e );
-
     e.add( ":t", _track );
+    e.add( ":n", name() );
 }
 
 void
 Control_Sequence::set ( Log_Entry &e )
 {
-    Sequence::set( e );
-
     for ( int i = 0; i < e.size(); ++i )
     {
         const char *s, *v;
@@ -88,6 +85,9 @@ Control_Sequence::set ( Log_Entry &e )
 
             t->add( this );
         }
+        else if ( ! strcmp( ":n", s ) )
+            name( strdup( v ) );
+
     }
 }
 

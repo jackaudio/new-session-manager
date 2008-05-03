@@ -36,6 +36,25 @@ using namespace std;
 
 #include "debug.h"
 
+/* welcome to C++ */
+class Loggable_ID
+{
+
+protected:
+
+    int _id;
+
+public:
+
+    Loggable_ID ( ) : _id( 0 ) { }
+    virtual ~Loggable_ID ( ) { }
+
+    int id ( void ) { return _id; }
+
+    virtual const char *class_name ( void ) const = 0;
+
+};
+
 class Log_Entry;
 class Loggable;
 typedef Loggable *(create_func)(Log_Entry &);
@@ -59,7 +78,7 @@ typedef Loggable *(create_func)(Log_Entry &);
 
 
 class Logger;
-class Loggable
+class Loggable : public Loggable_ID
 {
 
     static FILE *_fp;
@@ -75,7 +94,6 @@ class Loggable
 
 private:
 
-    int _id;
 
     char **_old_state;
     char **_new_state;
@@ -194,9 +212,7 @@ protected:
 
 public:
 
-    virtual const char *class_name ( void ) const = 0;
-
-    int id ( void ) { return _id; }
+//    virtual const char *class_name ( void ) const = 0;
 
 
     friend class Logger;
@@ -340,7 +356,7 @@ public:
     ADD( nframes_t, "%lu", (unsigned long)v );
     ADD( unsigned long, "%lu", v );
     ADD( const char *, "\"%s\"", v ? v : "" );
-    ADD( Loggable *, "0x%X", v ? v->id() : 0 );
+    ADD( Loggable_ID *, "0x%X", v ? v->id() : 0 );
     ADD( float, "%f", v );
     ADD( double, "%f", v );
 

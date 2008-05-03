@@ -25,23 +25,20 @@
 
 #include <FL/Fl_Input.H>
 
-class Audio_Sequence : public Sequence
+class Audio_Sequence : public Sequence, public Loggable
 {
 
 protected:
 
     virtual void get ( Log_Entry &e ) const
         {
-            Sequence::get( e );
-
             e.add( ":t", _track );
+            e.add( ":n", name() );
         }
 
     void
     set ( Log_Entry &e )
         {
-            Sequence::set( e );
-
             for ( int i = 0; i < e.size(); ++i )
             {
                 const char *s, *v;
@@ -58,6 +55,8 @@ protected:
 
                     t->track( this );
                 }
+                else if ( ! strcmp( ":n", s ) )
+                    name( strdup( v ) );
             }
         }
 

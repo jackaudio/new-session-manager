@@ -23,7 +23,7 @@
 #include "Control_Point.H"
 #include "Port.H"
 
-class Control_Sequence : public Sequence
+class Control_Sequence : public Sequence, public Loggable
 {
 public:
 

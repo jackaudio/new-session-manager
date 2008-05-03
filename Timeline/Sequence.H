@@ -38,7 +38,7 @@ class Sequence_Widget;
 
 /* This is the base class for all track types. */
 
-class Sequence : public Fl_Widget, public Loggable
+class Sequence : public Fl_Widget, public Loggable_ID
 {
 
     static queue <Sequence_Widget *> _delete_queue;
@@ -53,43 +53,9 @@ protected:
     std::list <Sequence_Widget *> _widgets;
     Sequence_Widget *event_widget ( void );
 
-//    virtual const char *class_name ( void ) { return "Sequence"; }
-
-
-    virtual void set ( Log_Entry &e )
-        {
-            for ( int i = 0; i < e.size(); ++i )
-            {
-                const char *s, *v;
-
-                e.get( i, &s, &v );
-
-                if ( ! strcmp( ":n", s ) )
-                {
-                    name( strdup( v ) );
-                }
-            }
-        }
-
-    virtual void get ( Log_Entry &e ) const
-        {
-            e.add( ":n", name() );
-//            e.add( ":t", _track );
-
-/*             s += sprintf( s, ":items " ); */
-/*             for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ ) */
-/*             { */
-/*                 s += sprintf( s, "0x%X", ((Loggable*)(*i))->id() ); */
-
-/*                 list <Sequence_Widget *>::const_iterator e = i; */
-/*                 if ( ++e != _widgets.end() ) */
-/*                     s += sprintf( s, "," ); */
-/*             } */
-
-        }
-
 public:
 
+    /* welcome to C++ */
     LOG_NAME_FUNC( Sequence );
 
     Sequence ( int X, int Y, int W, int H, Track *track=0 );

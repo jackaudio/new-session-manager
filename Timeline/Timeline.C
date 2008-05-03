@@ -331,6 +331,12 @@ Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, me
     if ( ! draw_with_measure_lines )
         return;
 
+    if ( ! tempo_track->_widgets.size() || ! time_track->_widgets.size() )
+    {
+        DWARNING( "No tempo/time points" );
+        return;
+    }
+
     fl_line_style( FL_DASH, 0 );
 
     const Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
@@ -366,6 +372,7 @@ Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, me
             mpi = i.base();
             break;
         }
+
 
     --tpi;
 

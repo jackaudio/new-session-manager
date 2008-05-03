@@ -89,10 +89,15 @@ Timeline::cb_scroll ( Fl_Widget *w )
     {
         if ( hscroll->zoom_changed() )
         {
+
+            nframes_t under_mouse = x_to_offset( Fl::event_x() );
+
             _fpp = hscroll->zoom();
 
-            const int tw = tracks->w() - Track::width() - vscroll->w();
-            hscroll->value( ts_to_x( xoffset ), tw, 0, ts_to_x( _length ) );
+            const int tw = tracks->w() - Track::width();
+//            hscroll->value( ts_to_x( xoffset ), tw, 0, ts_to_x( _length ) );
+            hscroll->value( max( 0, ts_to_x( under_mouse ) - ( Fl::event_x() - tracks->x() - Track::width() ) ),
+                tw, 0, ts_to_x( _length ) );
 
             redraw();
         }

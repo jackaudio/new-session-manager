@@ -29,6 +29,8 @@ decl {\#include "Control_Sequence.H" // for options} {}
 
 decl {\#include <FL/fl_ask.H>} {} 
 
+decl {\#include <FL/Fl_File_Chooser.H>} {} 
+
 decl {\#include <FL/Fl.H>} {} 
 
 decl {extern char session_display_name[256];} {global
@@ -115,7 +117,7 @@ free( path );} {}
   } {
     Fl_Window main_window {
       label {Non-DAW - Timeline} open
-      xywh {577 94 1024 768} type Double resizable xclass {Non-DAW} visible
+      xywh {129 104 1020 765} type Double resizable xclass {Non-DAW} visible
     } {
       Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
@@ -126,9 +128,14 @@ free( path );} {}
         } {
           MenuItem {} {
             label {&New}
-            callback {Loggable::close();
+            callback {const char *name = new_session_chooser();
+
+if ( ! name )
+	return;
+	
+Loggable::close();
 // timeline->reset();
-main_window->redraw();} selected
+main_window->redraw();}
             xywh {0 0 40 25}
           }
           MenuItem {} {
@@ -576,7 +583,7 @@ if ( timeline->total_playback_xruns() )
 
 xruns_output->value( engine->xruns() );} {}
   }
-  Function {update_cb( void *v )} {open return_type {static void}
+  Function {update_cb( void *v )} {return_type {static void}
   } {
     code {Fl::repeat_timeout( STATUS_UPDATE_FREQ, update_cb, v );
 
@@ -586,7 +593,7 @@ xruns_output->value( engine->xruns() );} {}
   } {
     Fl_Window {} {
       label About open
-      xywh {1082 94 498 529} type Double visible
+      xywh {1082 94 495 525} type Double visible
     } {
       Fl_Tabs {} {open
         xywh {-4 122 507 419}
@@ -626,4 +633,83 @@ with fast, light, reliable alternatives.}
       }
     }
   }
+} 
+
+decl {char new_session_pathname[512];} {} 
+
+class New_Session_Dialog {open
+} {
+  Function {New_Session_Dialog()} {open
+  } {
+    code {make_window();} {}
+  }
+  Function {run()} {open return_type {const char *}
+  } {
+    code {_window->show();
+
+while ( _window->shown() )
+	Fl::wait();
+
+if ( strlen( _directory->value() ) && strlen( _name->value() ) )
+{
+	snprintf( new_session_pathname, sizeof( new_session_pathname ), "%s/%s", _directory->value(), _name->value() );
+
+	return new_session_pathname;
+}
+else
+	return NULL;} {}
+  }
+  Function {make_window()} {open
+  } {
+    Fl_Window _window {
+      label {New Session}
+      callback {if ( Fl::event_key() == FL_Escape )
+{
+	_directory->value( "" );
+	_name->value( "" );
+}
+
+o->hide();} open
+      xywh {464 344 550 195} type Double modal visible
+    } {
+      Fl_File_Input _name {
+        label {Named:}
+        xywh {75 140 375 35}
+      }
+      Fl_Button {} {
+        label Browse
+        callback {_directory->value( fl_dir_chooser( "Session Directory", NULL, 0 ) );}
+        xywh {455 110 80 25}
+      }
+      Fl_Return_Button {} {
+        label Create
+        callback {_window->hide();}
+        xywh {455 140 80 35}
+      }
+      Fl_Output _directory {
+        label {Where:}
+        private xywh {75 110 375 25} labeltype EMBOSSED_LABEL
+      }
+      Fl_Box {} {
+        label {New Session} selected
+        xywh {15 8 520 33} box RSHADOW_BOX color 133 labelsize 20 labelcolor 32
+      }
+      Fl_Choice _template {
+        label {Template:}
+        private xywh {310 70 225 25} down_box BORDER_BOX
+      } {
+        MenuItem {} {
+          label Default
+          xywh {0 0 40 25}
+        }
+      }
+    }
+  }
+} 
+
+Function {new_session_chooser()} {open C return_type {const char *}
+} {
+  code {New_Session_Dialog nsd;
+
+return nsd.run();} {}
 } 

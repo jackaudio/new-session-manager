@@ -382,6 +382,8 @@ Loggable::snapshot( FILE *fp )
         return false;
     }
 
+    block_start();
+
     for ( int i = 0; i < _log_id; ++i )
     {
         const Loggable * l = _loggables[ i ];
@@ -389,6 +391,8 @@ Loggable::snapshot( FILE *fp )
         if ( l && _class_map[ string( l->class_name() ) ] )
             l->log_create();
     }
+
+    block_end();
 
     _fp = ofp;
 

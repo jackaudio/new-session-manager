@@ -25,6 +25,8 @@ session state belongs to Timeline and other classes. */
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
 
 #include "Loggable.H"
 #include "Session.H"
@@ -37,7 +39,7 @@ Session::set_name ( const char *name )
 {
     char *s = rindex( name, '/' );
 
-    strcpy( Session::_name, s ? s : name );
+    strcpy( Session::_name, s ? s + 1 : name );
 
     for ( s = Session::_name; *s; ++s )
         if ( *s == '_' || *s == '-' )
@@ -81,6 +83,8 @@ Session::open ( const char *name )
         FATAL( "error opening journal" );
 
     set_name( name );
+
+    return true;
 }
 
 bool
@@ -103,7 +107,7 @@ Session::create ( const char *name, const char *template_name )
 
     mkdir( "sources", 0777 );
 
-    set_name( name );
+    creat( "history", 0666 );
 
     /* TODO: copy template */
 

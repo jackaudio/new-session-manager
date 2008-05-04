@@ -104,12 +104,6 @@ main ( int argc, char **argv )
 
     printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
 
-    if ( argc > 1 )
-        if ( ! Session::open( argv[ 1 ] ) )
-            FATAL( "Could not open session specified on command line" );
-
-    /* FIXME: open session in /tmp if none is given? */
-
     TLE tle;
 
     MESSAGE( "Initializing JACK" );
@@ -121,6 +115,12 @@ main ( int argc, char **argv )
     /* always start stopped (please imagine for me a realistic
      * scenario requiring otherwise */
     transport->stop();
+
+    if ( argc > 1 )
+        if ( ! Session::open( argv[ 1 ] ) )
+            FATAL( "Could not open session specified on command line" );
+
+    /* FIXME: open session in /tmp if none is given? */
 
     MESSAGE( "Starting GUI" );
 //    tle.main_window->show( argc, argv );

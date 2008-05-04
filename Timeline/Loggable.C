@@ -76,6 +76,9 @@ Loggable::close ( void )
 
     DMESSAGE( "closing journal and destroying all journaled objects" );
 
+    if ( ! _fp )
+        return true;
+
     fclose( _fp );
 
     _fp = NULL;

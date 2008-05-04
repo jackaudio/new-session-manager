@@ -135,7 +135,7 @@ free( path );} {}
 if ( ! name )
 	return;
 	
-Loggable::close();
+// Loggable::close();
 // timeline->reset();
 main_window->redraw();}
             xywh {0 0 40 25}
@@ -548,7 +548,7 @@ delete win;}
         class Timeline
       }
       Fl_Box {} {
-        label {<session name>} selected
+        label {<session name>}
         xywh {450 0 475 22} labeltype SHADOW_LABEL labelfont 2
         code0 {o->label( Session::name() );}
       }
@@ -637,8 +637,6 @@ with fast, light, reliable alternatives.}
   }
 } 
 
-decl {char new_session_pathname[512];} {} 
-
 class New_Session_Dialog {open
 } {
   Function {New_Session_Dialog()} {open
@@ -650,28 +648,12 @@ class New_Session_Dialog {open
     code {_window->show();
 
 while ( _window->shown() )
-	Fl::wait();
-
-if ( strlen( _directory->value() ) && strlen( _name->value() ) )
-{
-	snprintf( new_session_pathname, sizeof( new_session_pathname ), "%s/%s", _directory->value(), _name->value() );
-
-	return new_session_pathname;
-}
-else
-	return NULL;} {}
+	Fl::wait();} {}
   }
   Function {make_window()} {open
   } {
     Fl_Window _window {
-      label {New Session}
-      callback {if ( Fl::event_key() == FL_Escape )
-{
-	_directory->value( "" );
-	_name->value( "" );
-}
-
-o->hide();} open
+      label {New Session} open
       xywh {464 344 550 195} type Double modal visible
     } {
       Fl_File_Input _name {
@@ -680,12 +662,23 @@ o->hide();} open
       }
       Fl_Button {} {
         label Browse
-        callback {_directory->value( fl_dir_chooser( "Session Directory", NULL, 0 ) );}
+        callback {_directory->value( fl_dir_chooser( "Directory for new session", NULL, 0 ) );} selected
         xywh {455 110 80 25}
       }
       Fl_Return_Button {} {
         label Create
-        callback {_window->hide();}
+        callback {if ( strlen( _directory->value() ) && strlen( _name->value() ) )
+{
+	char pat[512];
+	
+	snprintf( pat, sizeof( pat ), "%s/%s", _directory->value(), _name->value() );
+
+
+	if ( ! Session::create( pat,  _template->text( _template->value() ) ) )
+		fl_alert( "Error opening session!" );
+
+	_window->hide();
+}}
         xywh {455 140 80 35}
       }
       Fl_Output _directory {

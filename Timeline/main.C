@@ -49,6 +49,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
+#include "Session.H"
 
 Engine *engine;
 Timeline *timeline;
@@ -69,27 +70,6 @@ const char COPYRIGHT[]  = "Copyright (C) 2008 Jonathan Moore Liles";
 #include "debug.h"
 
 char *user_config_dir;
-char session_display_name[256];
-
-void
-set_display_name ( const char *name )
-{
-    char *s = rindex( name, '/' );
-
-    strcpy( session_display_name, s ? s : name );
-
-    for ( s = session_display_name; *s; ++s )
-        if ( *s == '_' || *s == '-' )
-            *s = ' ';
-}
-
-static int
-exists ( const char *name )
-{
-    struct stat st;
-
-    return 0 == stat( name, &st );
-}
 
 #include <errno.h>
 
@@ -103,40 +83,10 @@ ensure_dirs ( void )
     return r == 0 || errno == EEXIST;
 }
 
-bool
-create_session ( const char *name )
-{
-    if ( exists( name ) )
-    {
-        WARNING( "Session already exists" );
-        return false;
-    }
-
-    if ( mkdir( name, 0777 ) )
-    {
-        WARNING( "Cannot create session directory" );
-        return false;
-    }
-
-    if ( chdir( name ) )
-        FATAL( "WTF? Cannot change to new session directory" );
-
-    mkdir( "sources", 0777 );
-
-    set_display_name( name );
-
-    /* TODO: load template */
-
-
-    return true;
-}
 
 int
 main ( int argc, char **argv )
 {
-
-    *session_display_name = '\0';
-
     /* welcome to C++ */
     LOG_REGISTER_CREATE( Region );
     LOG_REGISTER_CREATE( Time_Point );
@@ -154,25 +104,11 @@ main ( int argc, char **argv )
 
     printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
 
-    const char *pwd = getenv( "PWD" );
-
     if ( argc > 1 )
-    {
-        /* FIXME: what about FLTK arguments? */
+        if ( ! Session::open( argv[ 1 ] ) )
+            FATAL( "Could not open session specified on command line" );
 
-        /* change to session dir */
-        if ( chdir( argv[ 1 ] ) )
-            FATAL( "Cannot change to session dir \"%s\"", argv[ 1 ] );
-        else
-            pwd = argv[ 1 ];
-    }
-
-    if ( ! exists( "history" ) ||
-         ! exists( "sources" ) )
-//         ! exists( "options" ) )
-        FATAL( "Not a Non-DAW session: \"%s\"", pwd );
-
-    set_display_name( pwd );
+    /* FIXME: open session in /tmp if none is given? */
 
     TLE tle;
 
@@ -185,9 +121,6 @@ main ( int argc, char **argv )
     /* always start stopped (please imagine for me a realistic
      * scenario requiring otherwise */
     transport->stop();
-
-    MESSAGE( "Opening session" );
-    Loggable::open( "history" );
 
     MESSAGE( "Starting GUI" );
 //    tle.main_window->show( argc, argv );

@@ -28,6 +28,7 @@ Timeline/Transport.C \
 Timeline/Waveform.C \
 Timeline/dsp.C \
 Timeline/main.C \
+Timeline/Session.C \
 debug.C \
 
 Timeline_OBJS:=$(Timeline_SRCS:.C=.o)

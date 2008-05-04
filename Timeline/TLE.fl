@@ -14,6 +14,8 @@ decl {\#include "Transport.H"} {}
 
 decl {\#include "Loggable.H"} {} 
 
+decl {\#include "Session.H"} {} 
+
 decl {\#include "Clock.H"} {public
 } 
 
@@ -117,7 +119,7 @@ free( path );} {}
   } {
     Fl_Window main_window {
       label {Non-DAW - Timeline} open
-      xywh {129 104 1020 765} type Double resizable xclass {Non-DAW} visible
+      xywh {174 178 1020 765} type Double resizable xclass {Non-DAW} visible
     } {
       Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
@@ -546,9 +548,9 @@ delete win;}
         class Timeline
       }
       Fl_Box {} {
-        label {<session name>}
+        label {<session name>} selected
         xywh {450 0 475 22} labeltype SHADOW_LABEL labelfont 2
-        code0 {o->label( session_display_name );}
+        code0 {o->label( Session::name() );}
       }
       Fl_Value_Output xruns_output {
         label {xruns:}
@@ -593,7 +595,7 @@ xruns_output->value( engine->xruns() );} {}
   } {
     Fl_Window {} {
       label About open
-      xywh {1082 94 495 525} type Double visible
+      xywh {677 145 495 525} type Double visible
     } {
       Fl_Tabs {} {open
         xywh {-4 122 507 419}
@@ -691,7 +693,7 @@ o->hide();} open
         private xywh {75 110 375 25} labeltype EMBOSSED_LABEL
       }
       Fl_Box {} {
-        label {New Session} selected
+        label {New Session}
         xywh {15 8 520 33} box RSHADOW_BOX color 133 labelsize 20 labelcolor 32
       }
       Fl_Choice _template {

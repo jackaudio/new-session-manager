@@ -55,8 +55,6 @@ Engine *engine;
 Timeline *timeline;
 Transport *transport;
 
-#define VERSION "0.5.0"
-
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-daw/"
 

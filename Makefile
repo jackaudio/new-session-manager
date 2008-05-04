@@ -1,10 +1,12 @@
 
 
+VERSION := 0.5.0
+
 FLTK_LIBS := `fltk-config --ldflags`
 JACK_LIBS := `pkg-config --libs jack`
 SNDFILE_LIBS := `pkg-config --libs sndfile`
 
-CXXFLAGS := -ggdb -Wall -O0 -fno-rtti -fno-exceptions
+CXXFLAGS := -DVERSION=\"$(VERSION)\" -ggdb -Wall -O0 -fno-rtti -fno-exceptions
 
 all: makedepend FL Timeline Mixer
 

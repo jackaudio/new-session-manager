@@ -129,6 +129,10 @@ free( path );} {}
           xywh {0 0 74 25}
         } {
           MenuItem {} {
+            label {&Info}
+            xywh {0 0 40 25} deactivate
+          }
+          MenuItem {} {
             label {&New}
             callback {const char *name = new_session_chooser();
 
@@ -654,7 +658,7 @@ while ( _window->shown() )
   } {
     Fl_Window _window {
       label {New Session} open
-      xywh {464 344 550 195} type Double modal visible
+      xywh {576 340 550 195} type Double modal visible
     } {
       Fl_File_Input _name {
         label {Named:}
@@ -662,8 +666,8 @@ while ( _window->shown() )
       }
       Fl_Button {} {
         label Browse
-        callback {_directory->value( fl_dir_chooser( "Directory for new session", NULL, 0 ) );} selected
-        xywh {455 110 80 25}
+        callback {_directory->value( fl_dir_chooser( "Directory for new session", NULL, 0 ) );}
+        xywh {455 100 80 35}
       }
       Fl_Return_Button {} {
         label Create
@@ -673,17 +677,31 @@ while ( _window->shown() )
 	
 	snprintf( pat, sizeof( pat ), "%s/%s", _directory->value(), _name->value() );
 
+//	if ( ! fl_filename_exists( pat ) )
+	{
 
-	if ( ! Session::create( pat,  _template->text( _template->value() ) ) )
-		fl_alert( "Error opening session!" );
+		if ( ! Session::create( pat,  _template->text( _template->value() ) ) )
+			fl_alert( "Error opening session!" );
 
-	_window->hide();
-}}
+		_window->hide();
+	}
+//	else
+//	{
+//		fl_alert( "A file already exists at that location. Choose a differnt name." );
+//		
+//	}
+}} selected
         xywh {455 140 80 35}
       }
-      Fl_Output _directory {
+      Fl_File_Input _directory {
         label {Where:}
-        private xywh {75 110 375 25} labeltype EMBOSSED_LABEL
+        callback {if ( ! fl_filename_isdir( o->value() ) )
+{
+	fl_alert( "Must be a directory" );
+	o->value( "" );
+}}
+        xywh {75 100 375 35}
+        code0 {\#include <FL/filename.H>}
       }
       Fl_Box {} {
         label {New Session}
@@ -691,7 +709,7 @@ while ( _window->shown() )
       }
       Fl_Choice _template {
         label {Template:}
-        private xywh {310 70 225 25} down_box BORDER_BOX
+        private xywh {310 60 225 25} down_box BORDER_BOX
       } {
         MenuItem {} {
           label Default

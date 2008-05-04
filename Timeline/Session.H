@@ -17,6 +17,9 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+const char template_dir[] = "share/non-daw/templates";
+const char user_template_dir[] = "~/.non-daw/templates";
+
 class Session
 {
 

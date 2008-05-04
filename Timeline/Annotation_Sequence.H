@@ -23,16 +23,68 @@
 #include "Annotation_Point.H"
 #include "Timeline.H"
 
-class Annotation_Sequence : public Sequence
+class Annotation_Sequence : public Sequence, public Loggable
 {
+
+protected:
+
+    virtual void get ( Log_Entry &e ) const
+        {
+            e.add( ":t", _track );
+        }
+
+    void
+    set ( Log_Entry &e )
+        {
+            for ( int i = 0; i < e.size(); ++i )
+            {
+                const char *s, *v;
+
+                e.get( i, &s, &v );
+
+                if ( ! strcmp( ":t", s ) )
+                {
+                    int i;
+                    sscanf( v, "%X", &i );
+                    Track *t = (Track*)Loggable::find( i );
+
+                    assert( t );
+
+                    t->track( this );
+                }
+            }
+        }
+
+    Annotation_Sequence ( ) : Sequence ( 0, 0, 0, 0 )
+        {
+        }
 
 public:
 
+
+    LOG_CREATE_FUNC( Annotation_Sequence );
+
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_INSERT; }
+
+    Annotation_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 )
+        {
+            _track = track;
+
+            color( fl_darker(  FL_GREEN ) );
+
+            log_create();
+
+//            labeltype( FL_NO_LABEL );
+        }
 
     Annotation_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
         {
 //            box( FL_UP_BOX );
+        }
+
+    ~Annotation_Sequence ( )
+        {
+            log_destroy();
         }
 
 /*     void */

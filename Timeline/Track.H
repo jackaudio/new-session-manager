@@ -39,8 +39,9 @@ using std::vector;
 #include "Port.H"
 
 #include "Timeline.H"
-#include "Control_Sequence.H"
 
+class Control_Sequence;
+class Annotation_Sequence;
 class Playback_DS;
 class Record_DS;
 class Port;
@@ -104,8 +105,10 @@ public:
     Fl_Group       *controls;
 
     Fl_Pack        *pack;
+    Fl_Pack        *annotation;
     Fl_Pack        *control;
     Fl_Pack        *takes;
+
 
     vector<Port>   input;                        /* input ports... */
     vector<Port>   output;                       /* output ports... */
@@ -184,6 +187,9 @@ public:
 
     /* for loggable */
     LOG_CREATE_FUNC( Track );
+
+    void add ( Annotation_Sequence *t );
+    void remove ( Annotation_Sequence *t );
 
     void add ( Control_Sequence *t );
     void add ( Sequence *t );

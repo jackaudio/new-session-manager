@@ -33,6 +33,9 @@
 // #include <FL/fl_draw.H>
 #include <FL/Fl.H>
 
+#include "Control_Sequence.H"
+#include "Annotation_Sequence.H"
+
 int Track::_soloing = 0;
 
 const char *Track::capture_format = "Wav 24";
@@ -204,6 +207,11 @@ Track::init ( void )
         resizable( o );
 
         {
+            Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 115 );
+            o->end();
+        }
+
+        {
             Fl_Pack *o = control = new Fl_Pack( width(), 0, pack->w(), 115 );
             o->end();
         }
@@ -260,8 +268,13 @@ static int pack_visible( Fl_Pack *p )
 void
 Track::resize ( void )
 {
+
+
     for ( int i = takes->children(); i--; )
         takes->child( i )->size( w(), height()  );
+
+    for ( int i = annotation->children(); i--; )
+        annotation->child( i )->size( w(), 24 );
 
     for ( int i = control->children(); i--; )
         control->child( i )->size( w(), height()  );
@@ -276,6 +289,8 @@ Track::resize ( void )
         takes->hide();
         Fl_Group::size( w(), height() * ( 1 + pack_visible( control ) ) );
     }
+
+    Fl_Group::size( w(), h() + ( ( 24 ) * pack_visible( annotation ) ) );
 
     if ( track() )
         track()->size( w(), height() );
@@ -346,7 +361,7 @@ Track::track ( Sequence * t )
         add( track() );
 
     _track = t;
-    pack->insert( *t, 0 );
+    pack->insert( *t, 1 );
 
     t->labeltype( FL_NO_LABEL );
 
@@ -356,7 +371,7 @@ Track::track ( Sequence * t )
 void
 Track::add ( Control_Sequence *t )
 {
-    printf( "adding control sequence\n" );
+    DMESSAGE( "adding control sequence\n" );
 
     t->track( this );
 
@@ -365,6 +380,18 @@ Track::add ( Control_Sequence *t )
     control_out.push_back( new Port( Port::Output, name(), control_out.size(), "cv" ) );
 
     t->output( control_out.back() );
+
+    resize();
+}
+
+void
+Track::add ( Annotation_Sequence *t )
+{
+    DMESSAGE( "adding annotation sequence\n" );
+
+    t->track( this );
+
+    annotation->add( t );
 
     resize();
 }
@@ -494,7 +521,7 @@ Track::handle ( int m )
                         }
                         else if ( r == &menu[ 7 ] )
                         {
-//                            new Annotation_Sequence;
+                            add( new Annotation_Sequence( this ) );
                         }
                         else if ( r == &menu[ 8 ] )
                         {

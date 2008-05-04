@@ -94,6 +94,7 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Track );
     LOG_REGISTER_CREATE( Audio_Sequence );
     LOG_REGISTER_CREATE( Control_Sequence );
+    LOG_REGISTER_CREATE( Annotation_Sequence );
 
     init_boxtypes();
 

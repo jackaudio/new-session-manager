@@ -179,16 +179,17 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->time( 0, 4, 4 );
         }
 
-        {
-            Annotation_Sequence *o = new Annotation_Sequence( 0, 24, 800, 24 );
 
-            o->color( fl_gray_ramp( 'F' ) );
+/*         { */
+/*             Annotation_Sequence *o = new Annotation_Sequence( 0, 24, 800, 24 ); */
 
-            o->label( "Ruler" );
-            o->align( FL_ALIGN_LEFT );
+/*             o->color( fl_gray_ramp( 'F' ) ); */
 
-            ruler_track = o;
-        }
+/*             o->label( "Ruler" ); */
+/*             o->align( FL_ALIGN_LEFT ); */
+
+/*             ruler_track = o; */
+/*         } */
 
         o->size( o->w(), o->child( 0 )->h() * o->children() );
         rulers = o;

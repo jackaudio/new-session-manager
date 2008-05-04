@@ -20,17 +20,17 @@
 #pragma once
 
 #include "Sequence.H"
-#include "Ruler_Point.H"
+#include "Annotation_Point.H"
 #include "Timeline.H"
 
-class Ruler_Sequence : public Sequence
+class Annotation_Sequence : public Sequence
 {
 
 public:
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_INSERT; }
 
-    Ruler_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
+    Annotation_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
         {
 //            box( FL_UP_BOX );
         }
@@ -54,7 +54,7 @@ public:
                 {
                     if ( Fl::event_button1() )
                     {
-                        add( new Ruler_Point( this, x_to_offset( Fl::event_x() ), "mark" ) );
+                        add( new Annotation_Point( this, x_to_offset( Fl::event_x() ), "mark" ) );
                         redraw();
                     }
                     break;

@@ -44,7 +44,7 @@ extern Timeline *timeline;
 
 class Tempo_Sequence;
 class Time_Sequence;
-class Ruler_Sequence;
+class Annotation_Sequence;
 class Track;
 
 // disables double-buffering to make unnecessary redrawing more apparent
@@ -122,7 +122,7 @@ public:
 
     Tempo_Sequence *tempo_track;
     Time_Sequence  *time_track;
-    Ruler_Sequence *ruler_track;
+    Annotation_Sequence *ruler_track;
 
 
     nframes_t xoffset;

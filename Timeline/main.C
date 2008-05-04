@@ -32,7 +32,7 @@
 #include "Timeline.H"
 #include "Tempo_Sequence.H"
 #include "Time_Sequence.H"
-#include "Ruler_Sequence.H"
+#include "Annotation_Sequence.H"
 #include "Control_Sequence.H"
 
 #include "Transport.H"
@@ -89,7 +89,7 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Region );
     LOG_REGISTER_CREATE( Time_Point );
     LOG_REGISTER_CREATE( Tempo_Point );
-    LOG_REGISTER_CREATE( Ruler_Point );
+    LOG_REGISTER_CREATE( Annotation_Point );
     LOG_REGISTER_CREATE( Control_Point );
     LOG_REGISTER_CREATE( Track );
     LOG_REGISTER_CREATE( Audio_Sequence );

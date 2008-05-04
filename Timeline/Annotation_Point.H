@@ -24,7 +24,7 @@
 
 #include <FL/fl_ask.H>
 
-class Ruler_Point : public Sequence_Point
+class Annotation_Point : public Sequence_Point
 {
 
 public:
@@ -40,7 +40,7 @@ public:
 
 protected:
 
-//    const char *class_name ( void ) { return "Ruler_Point"; }
+//    const char *class_name ( void ) { return "Annotation_Point"; }
 
     virtual void  get ( Log_Entry &e ) const
         {
@@ -67,16 +67,16 @@ protected:
 //            timeline->redraw();
         }
 
-    Ruler_Point ( )
+    Annotation_Point ( )
         {
         }
 
 public:
 
     /* for loggable */
-    LOG_CREATE_FUNC( Ruler_Point );
+    LOG_CREATE_FUNC( Annotation_Point );
 
-    Ruler_Point ( Sequence *track, nframes_t when, const char *name )
+    Annotation_Point ( Sequence *track, nframes_t when, const char *name )
         {
             _track = track;
 
@@ -87,7 +87,7 @@ public:
             log_create();
         }
 
-    Ruler_Point ( const Ruler_Point &rhs )
+    Annotation_Point ( const Annotation_Point &rhs )
         {
             _r->offset = rhs._r->offset;
             _label = strdup( rhs._label );
@@ -95,10 +95,10 @@ public:
 
     Sequence_Widget *clone ( const Sequence_Widget *r )
         {
-            return new Ruler_Point( *(Ruler_Point*)r );
+            return new Annotation_Point( *(Annotation_Point*)r );
         }
 
-    ~Ruler_Point ( )
+    ~Annotation_Point ( )
         {
             if ( _label ) free( _label );
             log_destroy();

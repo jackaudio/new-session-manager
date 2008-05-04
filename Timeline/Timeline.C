@@ -24,7 +24,7 @@
 #include "Control_Sequence.H"
 #include <FL/Fl_Scrollbar.H>
 
-#include "Ruler_Sequence.H"
+#include "Annotation_Sequence.H"
 
 // #include <FL/Fl_Image.H>
 // #include <FL/Fl_RGB_Image.H> // needed for alpha blending
@@ -180,7 +180,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
         }
 
         {
-            Ruler_Sequence *o = new Ruler_Sequence( 0, 24, 800, 24 );
+            Annotation_Sequence *o = new Annotation_Sequence( 0, 24, 800, 24 );
 
             o->color( fl_gray_ramp( 'F' ) );
 

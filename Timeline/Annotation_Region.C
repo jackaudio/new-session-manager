@@ -86,7 +86,7 @@ Annotation_Region::draw_box ( void )
 void
 Annotation_Region::draw ( void )
 {
-    draw_label( _label, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP ) );
+    draw_label( _label, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_CLIP ) );
 }
 
 #include "FL/Fl_Text_Edit_Window.H"

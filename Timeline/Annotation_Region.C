@@ -71,11 +71,9 @@ Annotation_Region::Annotation_Region ( const Annotation_Region &rhs )
 
 Annotation_Region::~Annotation_Region ( )
 {
-    if ( _label ) free( _label );
     log_destroy();
+    if ( _label ) free( _label );
 }
-
-
 
 void
 Annotation_Region::draw_box ( void )

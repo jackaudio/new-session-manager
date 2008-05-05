@@ -100,8 +100,8 @@ public:
 
     ~Annotation_Point ( )
         {
-            if ( _label ) free( _label );
             log_destroy();
+            if ( _label ) free( _label );
         }
 
 

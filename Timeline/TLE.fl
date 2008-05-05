@@ -605,7 +605,7 @@ xruns_output->value( engine->xruns() );} {}
         xywh {-4 122 507 419}
       } {
         Fl_Group {} {
-          label Credits open
+          label Credits open selected
           xywh {-4 147 507 394}
         } {
           Fl_Box {} {
@@ -690,7 +690,7 @@ while ( _window->shown() )
 //		fl_alert( "A file already exists at that location. Choose a differnt name." );
 //		
 //	}
-}} selected
+}}
         xywh {455 140 80 35}
       }
       Fl_File_Input _directory {

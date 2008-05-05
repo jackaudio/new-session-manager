@@ -15,7 +15,7 @@ all: makedepend FL Timeline Mixer
 	@ $(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 %.C : %.fl
-	@ fluid -c $<
+	@ cd `dirname $<` && fluid -c ../$<
 
 
 include FL/makefile.inc
@@ -27,7 +27,7 @@ SRCS:=$(FL_SRCS) $(Timeline_SRCS) $(Mixer_SRCS)
 TAGS: $(SRCS)
 	etags $(SRCS)
 
-makedepend: $(SRCS)
+makedepend: $(SRCS) Makefile
 	@ echo -n Checking dependencies...
 	@ makedepend -f- -- $(CXXFLAGS) -- $(SRCS) > makedepend 2>/dev/null && echo done.
 

@@ -728,7 +728,7 @@ Track::seek ( nframes_t frame )
 /* FIXME: what about theading issues with this region/audiofile being
    accessible from the UI thread? Need locking? */
 
-#include "Region.H"
+#include "Audio_Region.H"
 
 
 #include <time.h>
@@ -765,7 +765,7 @@ Track::record ( nframes_t frame )
     /* open it again for reading in the GUI thread */
     Audio_File *af = Audio_File::from_file( _capture_af->name() );
 
-    _capture = new Region( af, track(), frame );
+    _capture = new Audio_Region( af, track(), frame );
 
     _capture->prepare();
 }

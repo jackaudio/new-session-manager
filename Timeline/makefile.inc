@@ -15,7 +15,7 @@ Timeline/Peaks.C \
 Timeline/Playback_DS.C \
 Timeline/Port.C \
 Timeline/Record_DS.C \
-Timeline/Region.C \
+Timeline/Audio_Region.C \
 Timeline/Sequence.C \
 Timeline/Sequence_Point.C \
 Timeline/Sequence_Widget.C \

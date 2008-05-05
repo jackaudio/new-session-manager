@@ -45,7 +45,7 @@ class Annotation_Sequence;
 class Playback_DS;
 class Record_DS;
 class Port;
-class Region;
+class Audio_Region;
 class Audio_File;
 
 class Track : public Fl_Group, public Loggable
@@ -76,7 +76,7 @@ private:
 
     Sequence *_track;
 
-    Region *_capture;                                           /* capture region */
+    Audio_Region *_capture;                                           /* capture region */
     Audio_File *_capture_af;                                    /* capture write source */
 
     bool configure_outputs ( int n );
@@ -250,7 +250,7 @@ public:
     int handle ( int m );
 
 
-    const Region *capture ( void ) const { return _capture; }
+    const Audio_Region *capture ( void ) const { return _capture; }
 
     /* Engine */
     nframes_t process ( nframes_t nframes );

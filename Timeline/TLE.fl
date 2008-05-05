@@ -25,7 +25,7 @@ decl {\#include "Audio_File.H" // for supported formats} {}
 
 decl {\#include "Waveform.H" // for options} {} 
 
-decl {\#include "Region.H" // for options} {} 
+decl {\#include "Audio_Region.H" // for options} {} 
 
 decl {\#include "Control_Sequence.H" // for options} {} 
 
@@ -357,7 +357,7 @@ timeline->redraw();}
               }
             }
             Submenu {} {
-              label {&Region} open
+              label {&Audio_Region} open
               xywh {0 0 74 25}
             } {
               MenuItem {} {
@@ -366,7 +366,7 @@ timeline->redraw();}
               }
               MenuItem {} {
                 label {Inherit track color}
-                callback {Region::inherit_track_color = menu_picked_value( o );
+                callback {Audio_Region::inherit_track_color = menu_picked_value( o );
 
 timeline->redraw();}
                 xywh {40 40 40 25} type Toggle value 1

@@ -20,7 +20,7 @@
 #include "Sequence.H"
 #include "Timeline.H"
 
-#include "Region.H"
+#include "Audio_Region.H"
 
 #include <FL/fl_draw.H>
 

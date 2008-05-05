@@ -22,7 +22,7 @@
 #include "Sequence.H"
 #include "Timeline.H"
 
-/* Regions are "virtual" FLTK widgets; this is necessary because the
+/* Audio_Regions are "virtual" FLTK widgets; this is necessary because the
  * dimensions of real FLTK widgets are limited to 16-bits, which is
  * far too little for our purposes */
 
@@ -30,7 +30,7 @@
 #include "Loggable.H"
 
 
-class Region : public Sequence_Widget
+class Audio_Region : public Sequence_Widget
 {
 
 public:
@@ -103,7 +103,7 @@ private:
 
 protected:
 
-//    const char *class_name ( void ) { return "Region"; }
+//    const char *class_name ( void ) { return "Audio_Region"; }
 
     virtual void get ( Log_Entry &e ) const
         {
@@ -162,7 +162,7 @@ public:
     void trim ( enum trim_e t, int X );
     void init ( void );
 
-    Region ( )
+    Audio_Region ( )
         {
             init();
         }
@@ -174,21 +174,21 @@ public:
 
     const char *source_name ( void ) const { return _clip->name(); }
 
-    LOG_CREATE_FUNC( Region );
+    LOG_CREATE_FUNC( Audio_Region );
 
     Sequence_Widget *clone ( const Sequence_Widget *r );
 
-    ~Region ( )
+    ~Audio_Region ( )
         {
             log_destroy();
         }
 
-    Fl_Boxtype box ( void ) const { return Region::_box; }
+    Fl_Boxtype box ( void ) const { return Audio_Region::_box; }
     Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE); }
 
-    Region ( const Region & rhs );
-    Region ( Audio_File *c );
-    Region ( Audio_File *c, Sequence *t, nframes_t o );
+    Audio_Region ( const Audio_Region & rhs );
+    Audio_Region ( Audio_File *c );
+    Audio_Region ( Audio_File *c, Sequence *t, nframes_t o );
 
     int handle ( int m );
     void draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool filled, int X, int W );

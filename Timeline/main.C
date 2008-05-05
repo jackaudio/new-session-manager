@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Region.H"
+#include "Audio_Region.H"
 #include "Sequence.H"
 #include "Audio_Sequence.H"
 #include "Timeline.H"
@@ -86,7 +86,7 @@ int
 main ( int argc, char **argv )
 {
     /* welcome to C++ */
-    LOG_REGISTER_CREATE( Region );
+    LOG_REGISTER_CREATE( Audio_Region );
     LOG_REGISTER_CREATE( Time_Point );
     LOG_REGISTER_CREATE( Tempo_Point );
     LOG_REGISTER_CREATE( Annotation_Point );

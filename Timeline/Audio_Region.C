@@ -18,7 +18,7 @@
 /*******************************************************************************/
 
 #include "Sequence.H"
-#include "Region.H"
+#include "Audio_Region.H"
 #include "Timeline.H"
 #include "Waveform.H"
 
@@ -41,11 +41,11 @@ using namespace std;
 
 extern Timeline *timeline;
 
-bool Region::inherit_track_color = true;
+bool Audio_Region::inherit_track_color = true;
 
-Fl_Boxtype Region::_box = FL_UP_BOX;
+Fl_Boxtype Audio_Region::_box = FL_UP_BOX;
 
-Fl_Color Region::_selection_color = FL_MAGENTA;
+Fl_Color Audio_Region::_selection_color = FL_MAGENTA;
 
 static Fl_Color fl_invert_color ( Fl_Color c )
 {
@@ -83,7 +83,7 @@ map_PRIM ( set )
 
 
 void
-Region::init ( void )
+Audio_Region::init ( void )
 {
 
     _track = NULL;
@@ -103,7 +103,7 @@ Region::init ( void )
 }
 
 /* copy constructor */
-Region::Region ( const Region & rhs )
+Audio_Region::Audio_Region ( const Audio_Region & rhs )
 {
     *((Sequence_Widget*)this) = (Sequence_Widget &)rhs;
 
@@ -117,13 +117,13 @@ Region::Region ( const Region & rhs )
 }
 
 Sequence_Widget *
-Region::clone ( const Sequence_Widget *r )
+Audio_Region::clone ( const Sequence_Widget *r )
 {
-    return new Region( *(Region*)r );
+    return new Audio_Region( *(Audio_Region*)r );
 }
 
 /*  */
-Region::Region ( Audio_File *c )
+Audio_Region::Audio_Region ( Audio_File *c )
 {
     init();
     _clip = c;
@@ -134,7 +134,7 @@ Region::Region ( Audio_File *c )
 
 
 /* used when DND importing */
-Region::Region ( Audio_File *c, Sequence *t, nframes_t o )
+Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
 {
     init();
     _clip = c;
@@ -167,7 +167,7 @@ Region::Region ( Audio_File *c, Sequence *t, nframes_t o )
 }
 
 void
-Region::trim ( enum trim_e t, int X )
+Audio_Region::trim ( enum trim_e t, int X )
 {
 
     X -= _track->x();
@@ -221,7 +221,7 @@ Region::trim ( enum trim_e t, int X )
 }
 
 int
-Region::handle ( int m )
+Audio_Region::handle ( int m )
 {
     static int ox, oy;
     static enum trim_e trimming;
@@ -309,7 +309,7 @@ Region::handle ( int m )
                         {
                             Loggable::block_start();
 
-                            Region *copy = new Region( *this );
+                            Audio_Region *copy = new Audio_Region( *this );
 
                             trim( RIGHT, X );
                             copy->trim( LEFT, X );
@@ -387,7 +387,7 @@ Region::handle ( int m )
                             { 0 },
                         };
 
-                    const Fl_Menu_Item *r = menu->popup( X, Y, "Region" );
+                    const Fl_Menu_Item *r = menu->popup( X, Y, "Audio_Region" );
 
                     if ( r )
                     {
@@ -459,7 +459,7 @@ Region::handle ( int m )
             {
                 if ( _drag->state == 0 )
                 {
-                    _track->add( new Region( *this ) );
+                    _track->add( new Audio_Region( *this ) );
                     _drag->state = 1;
                     return 1;
                 }
@@ -502,7 +502,7 @@ changed:
     portion of the region covered by this draw, which may or may not
     cover the fade in question. */
 void
-Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int X, int W )
+Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int X, int W )
 {
     const int dy = y() + Fl::box_dy( box() );
     const int dh = h() - Fl::box_dh( box() );
@@ -565,7 +565,7 @@ damager ( void *v )
 }
 
 void
-Region::draw_box( void )
+Audio_Region::draw_box( void )
 {
     /* dirty hack to keep the box from flipping to vertical at small sizes */
 
@@ -573,7 +573,7 @@ Region::draw_box( void )
 
     Fl_Color selection_color = _selection_color;
 
-    Fl_Color color = Region::inherit_track_color ? track()->track()->color() :  _box_color;
+    Fl_Color color = Audio_Region::inherit_track_color ? track()->track()->color() :  _box_color;
 
     color = fl_color_average( color, track()->color(), 0.75f );
 
@@ -601,7 +601,7 @@ Region::draw_box( void )
 
 /** Draw (part of) region. X, Y, W and H are the rectangle we're clipped to. */
 void
-Region::draw ( void )
+Audio_Region::draw ( void )
 {
     /* intersect clip with region */
 
@@ -739,7 +739,7 @@ Region::draw ( void )
 
 
 void
-Region::normalize ( void )
+Audio_Region::normalize ( void )
 {
     printf( "normalize: start=%lu end=%lu\n", _r->start, _r->end );
 
@@ -765,7 +765,7 @@ Region::normalize ( void )
  * buffer size of /nframes/. /start/ and /end/ are relative to the
  * given buffer, and /start/ may be negative. */
 void
-Region::Fade::apply ( sample_t *buf, Region::Fade::fade_dir_e dir, long start, nframes_t end, nframes_t nframes ) const
+Audio_Region::Fade::apply ( sample_t *buf, Audio_Region::Fade::fade_dir_e dir, long start, nframes_t end, nframes_t nframes ) const
 {
 //    printf( "apply fade %s: start=%ld end=%lu\n", dir == Fade::Out ? "out" : "in", start, end );
 
@@ -811,7 +811,7 @@ Region::Fade::apply ( sample_t *buf, Region::Fade::fade_dir_e dir, long start, n
    for different channels at the same position avoid hitting the disk
    again? */
 nframes_t
-Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const
+Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const
 {
     const Range r = _range;
 
@@ -906,7 +906,7 @@ Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) co
 /** write /nframes/ from /buf/ to source. /buf/ is interleaved and
     must match the channel layout of the write source!  */
 nframes_t
-Region::write ( nframes_t nframes )
+Audio_Region::write ( nframes_t nframes )
 {
     _range.end += nframes;
 
@@ -938,7 +938,7 @@ Region::write ( nframes_t nframes )
 
 /** prepare for capturing */
 void
-Region::prepare ( void )
+Audio_Region::prepare ( void )
 {
     log_start();
 }
@@ -947,7 +947,7 @@ Region::prepare ( void )
 /** finalize region capture. Assumes that this *is* a captured region
  and that no other regions refer to the same source */
 bool
-Region::finalize ( nframes_t frame )
+Audio_Region::finalize ( nframes_t frame )
 {
     log_end();
 

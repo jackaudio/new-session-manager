@@ -182,7 +182,7 @@ void free_sa ( char **sa )
     free( sa );
 }
 
-/** 'do' a message like "Region 0xF1 set :r 123" */
+/** 'do' a message like "Audio_Region 0xF1 set :r 123" */
 bool
 Loggable::do_this ( const char *s, bool reverse )
 {

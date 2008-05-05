@@ -146,7 +146,7 @@ Audio_Sequence::handle ( int m )
         {
             const char *text = Fl::event_text();
 
-            if ( ! strcmp( text, "Region" ) )
+            if ( ! strcmp( text, "Audio_Region" ) )
                 return 1;
 
             char *file;
@@ -176,8 +176,8 @@ Audio_Sequence::handle ( int m )
                 return 0;
             }
 
-//            Region *r =
-            new Region( c, this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ) );
+//            Audio_Region *r =
+            new Audio_Region( c, this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ) );
 
             redraw();
             return 1;
@@ -206,7 +206,7 @@ Audio_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int ch
     for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin();
           i != _widgets.end(); ++i )
     {
-        const Region *r = (Region*)(*i);
+        const Audio_Region *r = (Audio_Region*)(*i);
 
         for ( int i = channels; i--;  )
         {

@@ -96,6 +96,96 @@ Loggable::close ( void )
     return true;
 }
 
+/* /\** return a new copy of string /s/ with all newlines escaped *\/ */
+/* static char * */
+/* escape ( const char *s ) */
+/* { */
+/*     size_t l = strlen( s ) + 20; */
+
+/*     char *result = (char*)malloc( l ); */
+
+/*     char *r = result; */
+
+/*     int ri = 0; */
+
+/*     int i = strlen( s ); */
+
+/* again: */
+
+/*     for ( ; i-- && ri < l; ++s, ri++ ) */
+/*     { */
+/*         if ( '\n' == *s ) */
+/*         { */
+/*             r[ ri++ ] = '\\'; */
+/*             r[ ri ] = 'n'; */
+/*         } */
+/*         else */
+/*             r[ ri ] = *s; */
+/*     } */
+
+/*     if ( ri == l ) */
+/*     { */
+/*         result = (char*) realloc( result, l += 20 ); */
+/*         goto again; */
+/*     } */
+
+/*     return result; */
+/* } */
+
+
+/** return a pointer to a static copy of /s/ with all special characters escaped */
+const char *
+Loggable::escape ( const char *s )
+{
+    static char r[512];
+
+    for ( int i = 0; i < sizeof( r ); ++i, ++s )
+    {
+        if ( '\n' == *s )
+        {
+            r[ i++ ] = '\\';
+            r[ i ] = 'n';
+        }
+        else if ( '"' == *s )
+        {
+            r[ i++ ] = '\\';
+            r[ i ] = '"';
+        }
+        else
+            r[ i ] = *s;
+    }
+
+    return r;
+}
+
+/** remove escapes from string /s/ in-place */
+static void
+unescape ( char *s )
+{
+    char *r = s;
+    for ( ; *s; s++, r++ )
+    {
+        if ( '\\' == *s )
+        {
+            switch ( *(++s) )
+            {
+                case 'n':
+                    *r = '\n';
+                    break;
+                case '"':
+                    *r = '"';
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+            *r = *s;
+    }
+
+    *r = '\0';
+}
+
 /** sigh. parse a string of ":name value :name value" pairs into an
  * array of strings, one per pair */
 // FIXME: doesn't handle the case of :name ":foo bar", nested quotes
@@ -145,6 +235,8 @@ parse_alist( const char *s )
 
                 /* remove quotes */
                 char *v = pair + strlen( pair ) + 1;
+
+                unescape( v );
 
                 if  ( *v == '"' )
                 {

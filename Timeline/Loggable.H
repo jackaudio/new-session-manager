@@ -103,6 +103,7 @@ private:
 
     int _nest;
 
+
     void log_print(  char **o, char **n ) const;
     static void log ( const char *fmt, ... );
 
@@ -119,6 +120,8 @@ private:
     static bool snapshot( FILE * fp );
 
 public:
+
+    static const char *escape ( const char *s );
 
     int id ( void ) const { return _id; }
 
@@ -369,7 +372,7 @@ public:
     ADD( int, "%d", v );
     ADD( nframes_t, "%lu", (unsigned long)v );
     ADD( unsigned long, "%lu", v );
-    ADD( const char *, "\"%s\"", v ? v : "" );
+    ADD( const char *, "\"%s\"", v ? Loggable::escape( v ) : "" );
     ADD( Loggable * , "0x%X", v ? v->id() : 0 );
     ADD( float, "%f", v );
     ADD( double, "%f", v );

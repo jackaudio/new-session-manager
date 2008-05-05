@@ -88,7 +88,8 @@ class Loggable
     static int _level;
     static int _undo_index;
 
-    static vector <Loggable *> _loggables;
+    static size_t _loggables_size;
+    static Loggable ** _loggables;
 
     static map <string, create_func*> _class_map;
 
@@ -103,6 +104,21 @@ private:
 
     int _nest;
 
+    static void ensure_size ( size_t n )
+        {
+            if ( n > _loggables_size )
+            {
+                size_t p = 0;
+                while ( ( (unsigned)1 << p ) < n ) ++p;
+
+                size_t os = _loggables_size;
+                _loggables_size = 1 << p ;
+
+                _loggables = (Loggable**) realloc( _loggables, sizeof( Loggable ** ) * _loggables_size );
+
+                memset( _loggables + os, 0, _loggables_size - os );
+            }
+        }
 
     void log_print(  char **o, char **n ) const;
     static void log ( const char *fmt, ... );
@@ -166,36 +182,16 @@ public:
                 _old_state = NULL;
                 _nest = 0;
 
-                _loggables.push_back( this );
+                ensure_size( _id );
+
+                _loggables[ _id - 1 ] = this;
             }
             else
                 _id = 0;
 
         }
 
-    /** must be called after construction in create() methods */
-    void
-    update_id ( int id )
-        {
-            assert( _id == _log_id );
-
-            assert( _loggables[ _id - 1 ] == this );
-
-            _loggables[ _id - 1 ]  = NULL;
-
-//            --_log_id;
-
-            _id = id;
-
-            /* make sure it'll fit */
-            _loggables.reserve( _id );
-
-//            assert( ! _loggables[ _id - 1 ] );
-
-            ASSERT( ! _loggables[ _id - 1 ], "Attempt to create object with an ID (0x%X) that already exists. The existing object is of type \"%s\", the new one is \"%s\". Corrupt journal?", _id, _loggables[ _id -1 ]->class_name(), class_name() );
-
-            _loggables[ _id - 1 ] = this;
-        }
+    void update_id ( int id );
 
     virtual ~Loggable (  )
         {

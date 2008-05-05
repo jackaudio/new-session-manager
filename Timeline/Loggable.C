@@ -31,7 +31,8 @@ int Loggable::_log_id = 0;
 int Loggable::_level = 0;
 int Loggable::_undo_index = 1;
 
-vector <Loggable *> Loggable::_loggables;
+size_t Loggable::_loggables_size = 0;
+Loggable ** Loggable::_loggables;
 map <string, create_func*> Loggable::_class_map;
 queue <char *> Loggable::_transaction;
 
@@ -96,42 +97,31 @@ Loggable::close ( void )
     return true;
 }
 
-/* /\** return a new copy of string /s/ with all newlines escaped *\/ */
-/* static char * */
-/* escape ( const char *s ) */
-/* { */
-/*     size_t l = strlen( s ) + 20; */
 
-/*     char *result = (char*)malloc( l ); */
+    /** must be called after construction in create() methods */
+void
+Loggable::update_id ( int id )
+{
+    /* make sure we're the last one */
+    assert( _id == _log_id );
+    assert( _loggables[ _id - 1 ] == this );
 
-/*     char *r = result; */
+    _loggables[ _id - 1 ]  = NULL;
 
-/*     int ri = 0; */
+    _log_id = max( _log_id, id );
 
-/*     int i = strlen( s ); */
+    /* return this id number to the system */
+//            --_log_id;
 
-/* again: */
+    _id = id;
 
-/*     for ( ; i-- && ri < l; ++s, ri++ ) */
-/*     { */
-/*         if ( '\n' == *s ) */
-/*         { */
-/*             r[ ri++ ] = '\\'; */
-/*             r[ ri ] = 'n'; */
-/*         } */
-/*         else */
-/*             r[ ri ] = *s; */
-/*     } */
+    /* make sure it'll fit */
+    ensure_size( _id );
 
-/*     if ( ri == l ) */
-/*     { */
-/*         result = (char*) realloc( result, l += 20 ); */
-/*         goto again; */
-/*     } */
+    ASSERT( ! _loggables[ _id - 1 ], "Attempt to create object with an ID (0x%X) that already exists. The existing object is of type \"%s\", the new one is \"%s\". Corrupt journal?", _id, _loggables[ _id - 1 ]->class_name(), class_name() );
 
-/*     return result; */
-/* } */
-
+    _loggables[ _id - 1 ] = this;
+}
 
 /** return a pointer to a static copy of /s/ with all special characters escaped */
 const char *
@@ -139,7 +129,7 @@ Loggable::escape ( const char *s )
 {
     static char r[512];
 
-    for ( int i = 0; i < sizeof( r ); ++i, ++s )
+    for ( size_t i = 0; i < sizeof( r ); ++i, ++s )
     {
         if ( '\n' == *s )
         {
@@ -466,6 +456,23 @@ Loggable::snapshot( FILE *fp )
         _fp = ofp;
         return false;
     }
+
+    /* first, make all ids consecutive */
+    int id = 0;
+    for ( int i = 0; i < _log_id; ++i )
+        if ( _loggables[ i ] )
+        {
+            ++id;
+
+            if ( _loggables[ id - 1 ] )
+                continue;
+
+            _loggables[ id - 1 ] = _loggables[ i ];
+            _loggables[ i ] = NULL;
+            _loggables[ id - 1 ]->_id = id;
+        }
+
+    _log_id = id;
 
     block_start();
 

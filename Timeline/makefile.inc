@@ -1,3 +1,4 @@
+# -*- mode: makefile; -*-
 
 Timeline_VERSION := 0.5.0
 
@@ -19,6 +20,7 @@ Timeline/Audio_Region.C \
 Timeline/Sequence.C \
 Timeline/Sequence_Point.C \
 Timeline/Sequence_Widget.C \
+Timeline/Sequence_Region.C \
 Timeline/TLE.C \
 Timeline/Tempo_Point.C \
 Timeline/Time_Point.C \

@@ -16,21 +16,20 @@
 /* with This program; see the file COPYING.  If not,write to the Free Software */
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
+
 #pragma once
 
 #include "Audio_File.H"
-#include "Sequence.H"
 #include "Timeline.H"
 
 /* Audio_Regions are "virtual" FLTK widgets; this is necessary because the
  * dimensions of real FLTK widgets are limited to 16-bits, which is
  * far too little for our purposes */
 
-#include "Sequence_Widget.H"
-#include "Loggable.H"
+#include "Sequence_Region.H"
 
 
-class Audio_Region : public Sequence_Widget
+class Audio_Region : public Sequence_Region
 {
 
 public:
@@ -158,8 +157,6 @@ public:
     Fl_Color selection_color ( void ) const { return _selection_color; }
     void selection_color ( Fl_Color v ) { _selection_color = v; }
 
-    enum trim_e { NO, LEFT, RIGHT };
-    void trim ( enum trim_e t, int X );
     void init ( void );
 
     Audio_Region ( )
@@ -170,7 +167,6 @@ public:
     bool current ( void ) const { return this == belowmouse(); }
 
 public:
-
 
     const char *source_name ( void ) const { return _clip->name(); }
 
@@ -190,9 +186,10 @@ public:
     Audio_Region ( Audio_File *c );
     Audio_Region ( Audio_File *c, Sequence *t, nframes_t o );
 
-    int handle ( int m );
     void draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool filled, int X, int W );
 
+
+    int handle ( int m );
     void draw_box( void );
     void draw ( void );
     void resize ( void );

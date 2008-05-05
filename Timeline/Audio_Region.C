@@ -105,7 +105,7 @@ Audio_Region::init ( void )
 /* copy constructor */
 Audio_Region::Audio_Region ( const Audio_Region & rhs )
 {
-    *((Sequence_Widget*)this) = (Sequence_Widget &)rhs;
+    *((Sequence_Region*)this) = (Sequence_Region &)rhs;
 
     _clip      = rhs._clip;
     _scale     = rhs._scale;
@@ -166,59 +166,6 @@ Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
     log_create();
 }
 
-void
-Audio_Region::trim ( enum trim_e t, int X )
-{
-
-    X -= _track->x();
-    redraw();
-
-    switch ( t )
-    {
-        case LEFT:
-        {
-/*             if ( d < 0 ) */
-/* //                _track->damage( FL_DAMAGE_EXPOSE, x() + d, y(), 1 - d, h() ); */
-/*                 _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() ); */
-/*             else */
-/*                 _track->damage( FL_DAMAGE_EXPOSE, x(), y(), d, h() ); */
-
-            int d = X - ( abs_x() - scroll_x() );
-
-            long td = timeline->x_to_ts( d );
-
-            if ( td < 0 && _r->start < 0 - td )
-                td = 0 - _r->start;
-
-            if ( _r->start + td >= _r->end )
-                td = (_r->end - _r->start) - timeline->x_to_ts( 1 );
-
-            _r->start += td;
-            _r->offset += td;
-            break;
-        }
-        case RIGHT:
-        {
-            int d = (( abs_x() - scroll_x() ) + abs_w() ) - X;
-
-/*             _track->damage( FL_DAMAGE_EXPOSE, x() + w(), y(), d, h() ); */
-
-            long td = timeline->x_to_ts( d );
-
-//            printf( "%li %li\n", td, _r->end - _r->start );
-
-            if ( td >= 0 && _r->end - _r->start < td )
-                _r->end = _r->start + timeline->x_to_ts( 1 );
-            else
-                _r->end -= td;
-
-            break;
-        }
-        default:
-            return;
-
-    }
-}
 
 int
 Audio_Region::handle ( int m )
@@ -239,19 +186,14 @@ Audio_Region::handle ( int m )
 
     int ret;
 
+    if ( Sequence_Region::handle( m ) )
+        return 1;
+
     Logger _log( this );
 //log_r->start();
 
     switch ( m )
     {
-        case FL_ENTER:
-            Sequence_Widget::handle( m );
-//            redraw();
-            break;
-        case FL_LEAVE:
-            Sequence_Widget::handle( m );
-//            redraw();
-            break;
         case FL_KEYBOARD:
         {
             if ( Fl::event_key() == FL_F + 3 )
@@ -286,22 +228,11 @@ Audio_Region::handle ( int m )
         }
         case FL_PUSH:
         {
-
-            /* trimming / splitting  */
+            /* splitting  */
             if ( Fl::event_shift() && ! Fl::event_ctrl() )
             {
                 switch ( Fl::event_button() )
                 {
-                    case 1:
-                        trim( trimming = LEFT, X );
-                        begin_drag( Drag( x() - X, y() - Y ) );
-                        _log.hold();
-                        break;
-                    case 3:
-                        trim( trimming = RIGHT, X );
-                        begin_drag( Drag( x() - X, y() - Y ) );
-                        _log.hold();
-                        break;
                     case 2:
                     {
                         /* split */
@@ -327,7 +258,6 @@ Audio_Region::handle ( int m )
                         break;
                 }
 
-                fl_cursor( FL_CURSOR_WE );
                 return 1;
             }
             else
@@ -354,7 +284,7 @@ Audio_Region::handle ( int m )
                     }
 
                     redraw();
-                    goto changed;
+                    return 1;
                 }
                 else if ( Fl::event_button1() && Fl::event_ctrl() )
                 {
@@ -411,10 +341,8 @@ Audio_Region::handle ( int m )
             Sequence_Widget::handle( m );
 
             copied = false;
-            if ( trimming != NO )
-                trimming = NO;
 
-            goto changed;
+            return 1;
         }
         case FL_DRAG:
 
@@ -444,16 +372,6 @@ Audio_Region::handle ( int m )
                 return 1;
             }
 
-            /* trimming */
-            if ( Fl::event_state() & FL_SHIFT )
-                if ( trimming )
-                {
-                    trim( trimming, X );
-                    return 1;
-                }
-                else
-                    return 0;
-
             /* duplication */
             if ( Fl::event_state() & FL_CTRL )
             {
@@ -465,36 +383,12 @@ Audio_Region::handle ( int m )
                 }
             }
 
-
-            /* track jumping */
-            if ( ! selected() )
-            {
-                if ( Y > y() + h() || Y < y() )
-                {
-                    printf( "wants to jump tracks\n" );
-
-                    Track *t = timeline->track_under( Y );
-
-                    fl_cursor( (Fl_Cursor)1 );
-
-                    if ( t )
-                        t->handle( FL_ENTER );
-
-                    return 0;
-                }
-            }
-
             ret = Sequence_Widget::handle( m );
             return ret | 1;
         default:
             return Sequence_Widget::handle( m );
             break;
     }
-
-changed:
-
-    return 1;
-
 }
 
 

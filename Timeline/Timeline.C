@@ -918,7 +918,7 @@ Timeline::handle ( int m )
 
                             Track *t = new Track( name );
 
-                            Sequence *o = new Audio_Sequence( t );
+                            Audio_Sequence *o = new Audio_Sequence( t );
 
 //                            new Control_Sequence( t );
 

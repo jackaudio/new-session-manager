@@ -29,7 +29,7 @@ bool Control_Sequence::draw_with_gradient = true;
 bool Control_Sequence::draw_with_polygon = true;
 bool Control_Sequence::draw_with_grid = true;
 
-Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 )
+Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 {
     init();
 

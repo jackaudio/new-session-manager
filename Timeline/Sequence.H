@@ -38,10 +38,12 @@ class Sequence_Widget;
 
 /* This is the base class for all track types. */
 
-class Sequence : public Fl_Widget, public Loggable_ID
+class Sequence : public Fl_Widget, public Loggable
 {
 
     static queue <Sequence_Widget *> _delete_queue;
+
+    void init ( void );
 
 protected:
 
@@ -58,7 +60,8 @@ public:
     /* welcome to C++ */
     LOG_NAME_FUNC( Sequence );
 
-    Sequence ( int X, int Y, int W, int H, Track *track=0 );
+    Sequence ( Track *track=0 );
+    Sequence ( int X, int Y, int W, int H );
 
     virtual ~Sequence (  );
 

@@ -48,6 +48,11 @@ class Port;
 class Audio_Region;
 class Audio_File;
 
+
+//class Audio_Sequence;
+
+#include "Audio_Sequence.H"
+
 class Track : public Fl_Group, public Loggable
 {
 
@@ -74,7 +79,7 @@ private:
 
     enum { AUDIO } _type;
 
-    Sequence *_track;
+    Audio_Sequence *_track;
 
     Audio_Region *_capture;                                           /* capture region */
     Audio_File *_capture_af;                                    /* capture write source */
@@ -157,7 +162,7 @@ public:
 
                     if ( i )
                     {
-                        Sequence *t = (Sequence*)Loggable::find( i );
+                        Audio_Sequence *t = (Audio_Sequence*)Loggable::find( i );
 
                         /* FIXME: our track might not have been
                          * defined yet... what should we do about this
@@ -192,8 +197,8 @@ public:
     void remove ( Annotation_Sequence *t );
 
     void add ( Control_Sequence *t );
-    void add ( Sequence *t );
-    void remove ( Sequence *t );
+    void add ( Audio_Sequence *t );
+    void remove ( Audio_Sequence *t );
     void remove ( Control_Sequence *t );
 
     void select ( int X, int Y, int W, int H, bool include_control, bool merge_control );
@@ -243,8 +248,8 @@ public:
 
     static int width ( void ) { return 150; }
 
-    void track( Sequence * t );
-    Sequence * track ( void ) const { return _track; }
+    void track ( Audio_Sequence * t );
+    Audio_Sequence * track ( void ) const { return _track; }
 
     void draw ( void );
     int handle ( int m );

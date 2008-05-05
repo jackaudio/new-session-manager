@@ -21,49 +21,21 @@
 
 #include "Sequence.H"
 #include "Audio_Region.H"
-#include "Track.H"
 
 #include <FL/Fl_Input.H>
 
-class Audio_Sequence : public Sequence, public Loggable
+class Audio_Sequence : public Sequence
 {
 
 protected:
 
-    virtual void get ( Log_Entry &e ) const
-        {
-            e.add( ":t", _track );
-            e.add( ":n", name() );
-        }
+    void get ( Log_Entry &e ) const;
 
-    void
-    set ( Log_Entry &e )
-        {
-            for ( int i = 0; i < e.size(); ++i )
-            {
-                const char *s, *v;
+    void set ( Log_Entry &e );
 
-                e.get( i, &s, &v );
-
-                if ( ! strcmp( ":t", s ) )
-                {
-                    int i;
-                    sscanf( v, "%X", &i );
-                    Track *t = (Track*)Loggable::find( i );
-
-                    assert( t );
-
-                    t->track( this );
-                }
-                else if ( ! strcmp( ":n", s ) )
-                    name( strdup( v ) );
-            }
-        }
-
-    Audio_Sequence ( ) : Sequence( 0, 0, 0, 0 )
+    Audio_Sequence ( ) : Sequence( 0 )
         {
         }
-
 
 
 public:
@@ -72,25 +44,9 @@ public:
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }
 
-    Audio_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0, track )
-        {
 
-            _track = track;
-
-            if ( track )
-                track->add( this );
-
-            log_create();
-
-                                                                 /* FIXME: temporary  */
-            labeltype( FL_NO_LABEL );
-
-        }
-
-    ~Audio_Sequence ( )
-        {
-            log_destroy();
-        }
+    Audio_Sequence ( Track *track );
+    ~Audio_Sequence ( );
 
 
     Sequence * clone_empty ( void )
@@ -107,7 +63,7 @@ public:
     void dump ( void );
     void remove_selected ( void );
 
-    const Audio_Region *capture ( void ) const { return track()->capture(); }
+    const Audio_Region *capture ( void ) const;
 
     nframes_t play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels );
 

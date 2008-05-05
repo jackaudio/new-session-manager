@@ -93,7 +93,7 @@ Track::cb_button ( Fl_Widget *w )
                     show_all_takes( take_menu->menu()[ v ].value() );
                     return;
                 case 1:                                         /* new */
-                    track( track()->clone_empty() );
+                    track( (Audio_Sequence*)track()->clone_empty() );
                     return;
             }
 
@@ -101,7 +101,7 @@ Track::cb_button ( Fl_Widget *w )
 
             for ( int i = takes->children(); i--; )
             {
-                Sequence *t = (Sequence*)takes->child( i );
+                Audio_Sequence *t = (Audio_Sequence*)takes->child( i );
                 if ( ! strcmp( s, t->name() ) )
                 {
                     track( t );
@@ -319,7 +319,7 @@ Track::size ( int v )
 
 
 void
-Track::add ( Sequence * t )
+Track::add ( Audio_Sequence * t )
 {
     takes->insert( *t, 0 );
     if ( ! t->name() )
@@ -335,7 +335,7 @@ Track::add ( Sequence * t )
 }
 
 void
-Track::remove ( Sequence *t )
+Track::remove ( Audio_Sequence *t )
 {
     takes->remove( t );
 
@@ -353,7 +353,7 @@ Track::remove ( Control_Sequence *t )
 }
 
 void
-Track::track ( Sequence * t )
+Track::track ( Audio_Sequence * t )
 {
     t->track( this );
 
@@ -441,12 +441,13 @@ Track::draw ( void )
 int
 Track::handle ( int m )
 {
-    Logger log( this );
 
     switch ( m )
     {
         case FL_MOUSEWHEEL:
         {
+            Logger log( this );
+
             if ( ! Fl::event_shift() )
                 return 0;
 
@@ -463,6 +464,7 @@ Track::handle ( int m )
         }
         case FL_PUSH:
         {
+            Logger log( this );
 
             int X = Fl::event_x();
             int Y = Fl::event_y();

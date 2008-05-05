@@ -24,7 +24,9 @@
 #include "Annotation_Region.H"
 #include "Timeline.H"
 
-class Annotation_Sequence : public Sequence, public Loggable
+#include "Track.H"
+
+class Annotation_Sequence : public Sequence
 {
 
 protected:
@@ -51,13 +53,14 @@ protected:
 
                     assert( t );
 
-                    t->track( this );
+                    t->add( this );
                 }
             }
         }
 
-    Annotation_Sequence ( ) : Sequence ( 0, 0, 0, 0 )
+    Annotation_Sequence ( ) : Sequence ( 0 )
         {
+            color( fl_darker( FL_GREEN ) );
         }
 
 public:
@@ -67,33 +70,21 @@ public:
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_INSERT; }
 
-    Annotation_Sequence ( Track *track ) : Sequence( 0, 0, 0, 0 )
+    Annotation_Sequence ( Track *track ) : Sequence( track )
         {
-            _track = track;
-
             color( fl_darker(  FL_GREEN ) );
 
             log_create();
-
-//            labeltype( FL_NO_LABEL );
         }
 
-    Annotation_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
+    Annotation_Sequence ( int X, int Y, int W, int H ) : Sequence ( 0 )
         {
-//            box( FL_UP_BOX );
         }
 
     ~Annotation_Sequence ( )
         {
             log_destroy();
         }
-
-/*     void */
-/*     draw ( void ) */
-/*         { */
-/* //            timeline->draw_measure_BBT( x(), y(), w(), h(), FL_WHITE ); */
-/*             Sequence::draw(); */
-/*         } */
 
     int handle ( int m )
         {

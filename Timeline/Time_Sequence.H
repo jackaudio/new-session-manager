@@ -28,6 +28,12 @@ using std::list;
 class Time_Sequence : public Sequence
 {
 
+protected:
+
+    /* not used */
+    void get ( Log_Entry &e ) const { }
+    void set ( Log_Entry &e ) { }
+
 public:
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }

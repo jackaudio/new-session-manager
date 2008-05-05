@@ -37,23 +37,22 @@ using namespace std;
 #include "debug.h"
 
 /* welcome to C++ */
-class Loggable_ID
-{
+/* This class is just a dummy to allow base classes with null ids but
+ * whose children are really loggable. */
 
-protected:
+/* class Loggable_ID */
+/* { */
 
-    int _id;
+/* public: */
 
-public:
+/*     Loggable_ID ( )  { } */
+/*     virtual ~Loggable_ID ( ) { } */
 
-    Loggable_ID ( ) : _id( 0 ) { }
-    virtual ~Loggable_ID ( ) { }
+/*     virtual int id ( void ) const = 0; */
 
-    int id ( void ) { return _id; }
+/*     virtual const char *class_name ( void ) const = 0; */
 
-    virtual const char *class_name ( void ) const = 0;
-
-};
+/* }; */
 
 class Log_Entry;
 class Loggable;
@@ -77,8 +76,11 @@ typedef Loggable *(create_func)(Log_Entry &);
     LOG_NAME_FUNC( class );                                             \
 
 
+#define LOG_NOT_LOGGABLE_FUNC( class ) \
+    virtual const char *class_name ( void ) const { return #class ; } \
+
 class Logger;
-class Loggable : public Loggable_ID
+class Loggable
 {
 
     static FILE *_fp;
@@ -94,6 +96,7 @@ class Loggable : public Loggable_ID
 
 private:
 
+    int _id;
 
     char **_old_state;
     char **_new_state;
@@ -116,6 +119,8 @@ private:
     static bool snapshot( FILE * fp );
 
 public:
+
+    int id ( void ) const { return _id; }
 
     static bool open ( const char *filename );
     static bool close ( void );
@@ -150,13 +155,19 @@ public:
             return _loggables[ id - 1 ];
         }
 
-    Loggable ( )
+    Loggable ( bool loggable=true )
         {
-            _id = ++_log_id;
-            _old_state = NULL;
-            _nest = 0;
+            if ( loggable )
+            {
+                _id = ++_log_id;
+                _old_state = NULL;
+                _nest = 0;
 
-            _loggables.push_back( this );
+                _loggables.push_back( this );
+            }
+            else
+                _id = 0;
+
         }
 
     /** must be called after construction in create() methods */
@@ -200,6 +211,9 @@ public:
     /* log messages for journal */
     virtual void get ( Log_Entry &e ) const = 0;
     virtual void set ( Log_Entry &e ) = 0;
+
+    virtual const char *class_name ( void ) const = 0;
+
 
     static bool do_this ( const char *s, bool reverse );
 
@@ -356,7 +370,7 @@ public:
     ADD( nframes_t, "%lu", (unsigned long)v );
     ADD( unsigned long, "%lu", v );
     ADD( const char *, "\"%s\"", v ? v : "" );
-    ADD( Loggable_ID *, "0x%X", v ? v->id() : 0 );
+    ADD( Loggable * , "0x%X", v ? v->id() : 0 );
     ADD( float, "%f", v );
     ADD( double, "%f", v );
 

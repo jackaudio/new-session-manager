@@ -56,7 +56,7 @@ protected:
 
     Sequence_Region ( )
         {
-
+            color( FL_CYAN );
         }
 
     virtual ~Sequence_Region ( )

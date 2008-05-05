@@ -24,6 +24,68 @@
 
 #include <Fl/fl_ask.H>
 
+#include "Track.H"
+
+Audio_Sequence::Audio_Sequence ( Track *track ) : Sequence( track )
+{
+
+    _track = track;
+
+    if ( track )
+        track->add( this );
+
+    log_create();
+
+    /* FIXME: temporary  */
+    labeltype( FL_NO_LABEL );
+
+}
+
+
+Audio_Sequence::~Audio_Sequence ( )
+{
+    log_destroy();
+}
+
+
+const Audio_Region *
+Audio_Sequence::capture ( void ) const
+{
+    return track()->capture();
+}
+
+void
+Audio_Sequence::get ( Log_Entry &e ) const
+        {
+            e.add( ":t", _track );
+            e.add( ":n", name() );
+        }
+
+void
+Audio_Sequence::set ( Log_Entry &e )
+{
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! strcmp( ":t", s ) )
+        {
+            int i;
+            sscanf( v, "%X", &i );
+            Track *t = (Track*)Loggable::find( i );
+
+            assert( t );
+
+            t->track( this );
+        }
+        else if ( ! strcmp( ":n", s ) )
+            name( strdup( v ) );
+    }
+}
+
+
 static
 void
 deurlify ( char *url )

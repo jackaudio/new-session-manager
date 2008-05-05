@@ -23,7 +23,7 @@
 #include "Control_Point.H"
 #include "Port.H"
 
-class Control_Sequence : public Sequence, public Loggable
+class Control_Sequence : public Sequence
 {
 public:
 
@@ -46,7 +46,7 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
-    Control_Sequence (  ) : Sequence( 0, 0, 0, 1 )
+    Control_Sequence (  ) : Sequence( 0 )
         {
             init();
         }

@@ -23,6 +23,7 @@
 #include "Waveform.H"
 
 #include "Audio_Sequence.H"
+#include "Track.H"
 
 #include "dsp.h"
 

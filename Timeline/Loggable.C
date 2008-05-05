@@ -249,14 +249,7 @@ Loggable::do_this ( const char *s, bool reverse )
         Log_Entry e( sa );
 
 
-
-
-
-        assert( _class_map[ string( classname ) ] );
-
-/*         if ( ! _class_map[ string( classname ) ] ) */
-/*             printf( "error class %s is unregistered!\n", classname ); */
-/*         else */
+        ASSERT( _class_map[ string( classname ) ], "Journal contains an object of class \"%s\", but I don't know how to create such objects.", classname );
 
         {
             /* create */

@@ -30,20 +30,30 @@
 
 queue <Sequence_Widget *> Sequence::_delete_queue;
 
-Sequence::Sequence ( int X, int Y, int W, int H, Track *track ) : Fl_Widget( X, Y, W, H )
+Sequence::Sequence ( Track *track ) : Fl_Widget( 0, 0, 0, 0 ), Loggable( true  )
 {
-    _name = NULL;
+    init();
+
     _track = track;
 
-/*     if ( track ) */
-/*         track->add( this ); */
+//    log_create();
+}
+
+Sequence::Sequence ( int X, int Y, int W, int H ) : Fl_Widget( X, Y, W, H ), Loggable( false )
+{
+    init();
+}
+
+void
+Sequence::init ( void )
+{
+    _track = NULL;
+
+    _name = NULL;
 
     box( FL_DOWN_BOX );
-//    color( fl_darker( FL_GRAY ) );
     color(  FL_BACKGROUND_COLOR );
     align( FL_ALIGN_LEFT );
-
-//    log_create();
 }
 
 Sequence::~Sequence (  )

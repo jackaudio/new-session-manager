@@ -90,6 +90,7 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Time_Point );
     LOG_REGISTER_CREATE( Tempo_Point );
     LOG_REGISTER_CREATE( Annotation_Point );
+    LOG_REGISTER_CREATE( Annotation_Region );
     LOG_REGISTER_CREATE( Control_Point );
     LOG_REGISTER_CREATE( Track );
     LOG_REGISTER_CREATE( Audio_Sequence );

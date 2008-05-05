@@ -2,6 +2,7 @@
 FL_SRCS= \
    FL/Fl_Scalepack.C \
    FL/Fl_Arc_Dial.C \
+   FL/Fl_Text_Edit_Window.C \
    FL/Boxtypes.C \
 
 FL_OBJS := $(FL_SRCS:.C=.o)

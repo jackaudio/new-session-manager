@@ -21,6 +21,7 @@
 
 #include "Sequence.H"
 #include "Annotation_Point.H"
+#include "Annotation_Region.H"
 #include "Timeline.H"
 
 class Annotation_Sequence : public Sequence, public Loggable
@@ -109,11 +110,25 @@ public:
                         add( new Annotation_Point( this, x_to_offset( Fl::event_x() ), "mark" ) );
                         redraw();
                     }
+                    if ( Fl::event_button3() && Fl::event_shift() )
+                    {
+                        Annotation_Region *r = new Annotation_Region( this, x_to_offset( Fl::event_x() ), "mark" );
+
+                        add( r );
+
+                        Sequence_Widget::pushed( r );
+
+                        r->handle( m );
+
+                        redraw();
+
+                        return 1;
+
+                    }
                     break;
                 }
                 default:
                     break;
-
             }
 
             return 0;

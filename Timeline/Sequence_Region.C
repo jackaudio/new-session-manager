@@ -24,14 +24,12 @@
 void
 Sequence_Region::draw_box ( void )
 {
-    fl_draw_box( box(), x(), y(), w(), h(), color() );
+    fl_draw_box( box(), x(), y(), w(), h(), box_color() );
 }
 
 void
 Sequence_Region::draw ( void )
 {
-
-
 }
 
 void

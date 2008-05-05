@@ -39,7 +39,7 @@ protected:
 
 
     void
-    set ( Log_Entry &e )
+    virtual set ( Log_Entry &e )
         {
             for ( int i = 0; i < e.size(); ++i )
             {
@@ -71,8 +71,8 @@ public:
     enum trim_e { NO, LEFT, RIGHT };
     void trim ( enum trim_e t, int X );
 
-    int handle ( int m );
-    void draw_box( void );
-    void draw ( void );
+    virtual int handle ( int m );
+    virtual void draw_box( void );
+    virtual void draw ( void );
 
 };

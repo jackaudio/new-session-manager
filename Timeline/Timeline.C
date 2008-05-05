@@ -513,6 +513,7 @@ Timeline::draw ( void )
 /*         return; */
 /*     } */
 
+
     if ( ( damage() & FL_DAMAGE_ALL ) || ( damage() & FL_DAMAGE_EXPOSE ) )
     {
         DMESSAGE( "complete redraw" );
@@ -559,7 +560,7 @@ Timeline::draw ( void )
 /*     delete bi2; */
 /*     } */
 
-        return;
+        goto done;
     }
 
     if ( damage() & FL_DAMAGE_SCROLL )
@@ -581,9 +582,6 @@ Timeline::draw ( void )
             fl_scroll( X, Y, W, H, dx, dy, draw_clip, this );
     }
 
-    _old_xposition = xoffset;
-    _old_yposition = _yposition;
-
     if ( damage() & FL_DAMAGE_CHILD )
     {
         fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
@@ -598,20 +596,30 @@ Timeline::draw ( void )
         update_child( *vscroll );
     }
 
+done:
+
+    _old_xposition = xoffset;
+    _old_yposition = _yposition;
+
 }
 
 void
 Timeline::draw_cursor ( nframes_t frame, Fl_Color color )
 {
-    int x = ( ts_to_x( frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track::width();
+//    int x = ( ts_to_x( frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track::width();
 
-    if ( x < tracks->x() + Track::width() || x > tracks->x() + tracks->w() )
+    if ( frame < xoffset )
+        return;
+
+    const int x = ts_to_x( frame - xoffset ) + tracks->x() + Track::width();
+
+    if ( x > tracks->x() + tracks->w() )
         return;
 
     fl_color( color );
 
-    int y = rulers->y() + rulers->h();
-    int h = this->h() - hscroll->h();
+    const int y = rulers->y() + rulers->h();
+    const int h = this->h() - hscroll->h();
 
     fl_push_clip( Track::width(), y, tracks->w(), h );
 

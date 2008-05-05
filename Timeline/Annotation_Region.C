@@ -89,6 +89,7 @@ Annotation_Region::draw ( void )
     draw_label( _label, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP ) );
 }
 
+#include "FL/Fl_Text_Edit_Window.H"
 
 int
 Annotation_Region::handle ( int m )
@@ -97,10 +98,12 @@ Annotation_Region::handle ( int m )
 
     if ( m == FL_PUSH && Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
     {
-        const char *s = fl_input( "New name for mark:", name() );
+        char *s = fl_text_edit( "Annotation text:", "Save", name() );
 
         if ( s )
             name( s );
+
+        free( s );
 
         return 1;
     }

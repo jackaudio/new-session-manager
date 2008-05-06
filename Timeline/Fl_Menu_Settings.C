@@ -81,7 +81,11 @@ Fl_Menu_Settings::dump ( Fl_Menu_ *bar, const Fl_Menu_Item *menu, FILE *fp, int 
 
             /* recurse */
             m = dump( bar, ++m, fp, depth + 1 );
-            continue;
+
+            if ( ! depth )
+                break;
+            else
+                continue;
         }
 
         if ( m->flags & FL_MENU_RADIO )
@@ -112,6 +116,7 @@ Fl_Menu_Settings::dump ( Fl_Menu_ *bar, const Fl_Menu_Item *menu, FILE *fp, int 
                 fprintf( fp, "%s\n", path + strlen( path ) + 1  );
             }
         }
+
     }
 
     return m;

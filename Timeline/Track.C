@@ -250,6 +250,10 @@ Track::~Track ( )
     /* FIXME: why is this necessary? */
     timeline->remove_track( this );
 
+    /* give up our ports */
+    configure_inputs( 0 );
+    configure_outputs( 0 );
+
     log_destroy();
 }
 
@@ -623,7 +627,7 @@ Track::configure_outputs ( int n )
             if ( p.valid() )
                 output.push_back( p );
             else
-                printf( "error: could not create output port!\n" );
+                WARNING( "could not create output port!" );
         }
     }
     else
@@ -635,8 +639,8 @@ Track::configure_outputs ( int n )
         }
     }
 
-
-    playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), output.size() );
+    if ( output.size() )
+        playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), output.size() );
 
 //    engine->unlock();
     /* FIXME: bogus */
@@ -671,7 +675,7 @@ Track::configure_inputs ( int n )
             if ( p.valid() )
                 input.push_back( p );
             else
-                printf( "error: could not create input port!\n" );
+                WARNING( "could not create input port!" );
         }
     }
     else
@@ -683,7 +687,8 @@ Track::configure_inputs ( int n )
         }
     }
 
-    record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), input.size() );
+    if ( input.size() )
+        record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), input.size() );
 
 //    engine->unlock();
 

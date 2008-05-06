@@ -65,7 +65,14 @@ free( path );
 
 // save unjournaled state
 
-// Loggable::save_unjournaled( state_filename );} {}
+// Loggable::save_unjournaled( state_filename );
+
+
+if ( Session::open() )
+{
+	// save session local options (Timeline menu)
+	((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Timeline" ), options_filename );
+}} {}
   }
   Function {capture_format_cb( Fl_Widget *w, void *v )} {open private return_type {static void}
   } {
@@ -112,22 +119,26 @@ for ( std::list <const char *>::const_iterator f = formats.begin(); f != formats
 //	capture_format_menu->add( *f, FL_MENU_RADIO, 0, 0, 0 );
 //;
 	char pat[256];
-	snprintf( pat, sizeof( pat ), "Timeline/Capture Format/%s", *f );	
+	snprintf( pat, sizeof( pat ), "&Timeline/Capture Format/%s", *f );	
 
 	menubar->add( pat, 0, &TLE::capture_format_cb, this, FL_MENU_RADIO );
 }
+
+menubar->picked( menubar->find_item( "&Timeline/Capture Format/Wav 24" ) );
+
 
 
 char *path;
 asprintf( &path, "%s/options", user_config_dir );
 ((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options" ), path );
-free( path );} {}
+free( path );} {selected
+    }
   }
   Function {make_window()} {open
   } {
     Fl_Window main_window {
       label {Non-DAW - Timeline} open
-      xywh {353 133 1020 765} type Double resizable xclass {Non-DAW} visible
+      xywh {236 77 1020 765} type Double resizable xclass {Non-DAW} visible
     } {
       Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
@@ -142,7 +153,11 @@ free( path );} {}
           }
           MenuItem {} {
             label {&New}
-            callback {new_session_chooser();
+            callback {save_timeline_settings();
+
+new_session_chooser();
+
+load_timeline_settings();
 
 update_menu();
 
@@ -151,7 +166,9 @@ main_window->redraw();}
           }
           MenuItem {} {
             label {&Open}
-            callback {const char *name = fl_dir_chooser( "Open Session", NULL, NULL );
+            callback {save_timeline_settings();
+
+const char *name = fl_dir_chooser( "Open Session", NULL, NULL );
 
 Session::close();
 
@@ -160,6 +177,10 @@ if ( ! Session::open( name ) )
 	fl_alert( "Could not open \\"%s\\" as a Non-DAW session!", name );
 	
 	// we are in a somewhar ambiguous state now with no session open.
+}
+else
+{
+	load_timeline_settings();
 }
 
 update_menu();}
@@ -191,6 +212,8 @@ Loggable::compact();}
           MenuItem {} {
             label {&Quit}
             callback {save();
+
+save_timeline_settings();
 
 printf( "dropped %d buffers\\n", engine->dropped() );
 
@@ -284,7 +307,7 @@ exit( 0 );}
           }
         }
         Submenu timeline_menu {
-          label {&Timeline}
+          label {&Timeline} open
           xywh {0 0 74 25}
         } {
           MenuItem {} {
@@ -608,8 +631,9 @@ else
 	
 	timeline->activate();
 	transport->activate();	
-}} {selected
-    }
+}
+
+m->redraw();} {}
   }
   Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
   } {
@@ -687,6 +711,21 @@ with fast, light, reliable alternatives.}
         image {../logo-small.png} xywh {-1 1 499 115} align 16
       }
     }
+  }
+  Function {save_timeline_settings()} {open
+  } {
+    code {if ( Session::open() )
+{
+	// save session local options (Timeline menu)
+	((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Timeline" ), "options" );
+}} {}
+  }
+  Function {load_timeline_settings()} {open
+  } {
+    code {if ( Session::open() )
+{
+	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Timeline" ), "options" );
+}} {}
   }
 } 
 

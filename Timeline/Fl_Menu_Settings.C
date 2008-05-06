@@ -72,6 +72,7 @@ Fl_Menu_Settings::dump ( Fl_Menu_ *bar, const Fl_Menu_Item *menu, FILE *fp, int 
         bool is_radio = false;
 
         if ( m->flags & FL_SUBMENU )
+//      if ( m->submenu() )
         {
             strcpy( path, m->text );
             remove_ampersands( path, strlen( path ) );
@@ -82,13 +83,17 @@ Fl_Menu_Settings::dump ( Fl_Menu_ *bar, const Fl_Menu_Item *menu, FILE *fp, int 
             /* recurse */
             m = dump( bar, ++m, fp, depth + 1 );
 
+//            ++m;
+
+//            m = dump( bar, m->flags & FL_SUBMENU_POINTER ? (Fl_Menu_Item*) m->user_data() : m, fp, depth + 1 );
+
             if ( ! depth )
                 break;
             else
                 continue;
         }
 
-        if ( m->flags & FL_MENU_RADIO )
+        if ( m->radio() )
             is_radio = true;
 
 //        bar->item_pathname( path, sizeof( path ) - 1, m );

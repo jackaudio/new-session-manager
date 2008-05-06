@@ -119,7 +119,7 @@ free( path );} {}
   } {
     Fl_Window main_window {
       label {Non-DAW - Timeline} open
-      xywh {174 178 1020 765} type Double resizable xclass {Non-DAW} visible
+      xywh {257 179 1020 765} type Double resizable xclass {Non-DAW} visible
     } {
       Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
@@ -134,19 +134,35 @@ free( path );} {}
           }
           MenuItem {} {
             label {&New}
-            callback {const char *name = new_session_chooser();
+            callback {if ( new_session_chooser() )
+{
+	transport->activate();
+	timeline->activate();
+}
 
-if ( ! name )
-	return;
-	
-// Loggable::close();
-// timeline->reset();
-main_window->redraw();}
+main_window->redraw();} selected
             xywh {0 0 40 25}
           }
           MenuItem {} {
             label {&Open}
-            xywh {10 10 40 25} deactivate
+            callback {const char *name = fl_dir_chooser( "Open Session", NULL, NULL );
+
+Session::close();
+timeline->deactivate();
+transport->deactivate();
+
+if ( ! Session::open( name ) )
+{
+	fl_alert( "Could not open \\"%s\\" as a Non-DAW session!", name );
+	
+	// we are in a somewhar ambiguous state now with no session open.
+	
+	return;
+}
+
+timeline->activate();
+transport->activate();}
+            xywh {10 10 40 25}
           }
           MenuItem {} {
             label {&Compact}
@@ -605,7 +621,7 @@ xruns_output->value( engine->xruns() );} {}
         xywh {-4 122 507 419}
       } {
         Fl_Group {} {
-          label Credits open selected
+          label Credits open
           xywh {-4 147 507 394}
         } {
           Fl_Box {} {

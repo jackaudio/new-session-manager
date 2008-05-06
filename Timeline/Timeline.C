@@ -819,7 +819,7 @@ Timeline::handle ( int m )
         case FL_KEYBOARD:
         case FL_SHORTCUT:
         {
-            if ( Fl::event_state() & ( FL_ALT || FL_CTRL || FL_SHIFT ) )
+            if ( Fl::event_state() & ( FL_ALT | FL_CTRL | FL_SHIFT ) )
                 /* we don't want any keys with modifiers... */
                 return 0;
 

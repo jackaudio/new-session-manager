@@ -110,7 +110,7 @@ public:
         {
             Logger _log( this );
 
-            if ( m == FL_PUSH && Fl::test_shortcur( FL_BUTTON3 ) && ! Fl::event_shift() )
+            if ( m == FL_PUSH && Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
             {
                 const char *s = fl_input( "New name for mark:", name() );
 

@@ -4,8 +4,8 @@ header_name {.H}
 code_name {.C}
 decl {\#include <string.h>} {} 
 
-widget_class Fl_Text_Edit_Window {open
-  xywh {787 474 355 410} type Double resizable
+widget_class Fl_Text_Edit_Window {open selected
+  xywh {375 272 355 410} type Double resizable
   code0 {this->size_range( 0, 0, 400, 400 );}
   class Fl_Window modal visible
 } {
@@ -33,9 +33,9 @@ widget_class Fl_Text_Edit_Window {open
   }
 } 
 
-Function {fl_text_edit( const char *title, const char *button_text, const char *initial_text )} {open selected C return_type {char *}
+Function {fl_text_edit( const char *title, const char *button_text, const char *initial_text )} {open C return_type {char *}
 } {
-  code {Fl_Text_Edit_Window tew( 0, 0, 355, 410, title );
+  code {Fl_Text_Edit_Window tew( 355, 410, title );
 
 tew.return_button->label( button_text );
 tew.title_box->label( title );

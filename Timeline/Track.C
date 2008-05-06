@@ -381,7 +381,7 @@ Track::track ( Audio_Sequence * t )
 void
 Track::add ( Control_Sequence *t )
 {
-    DMESSAGE( "adding control sequence\n" );
+    DMESSAGE( "adding control sequence" );
 
     t->track( this );
 
@@ -397,7 +397,7 @@ Track::add ( Control_Sequence *t )
 void
 Track::add ( Annotation_Sequence *t )
 {
-    DMESSAGE( "adding annotation sequence\n" );
+    DMESSAGE( "adding annotation sequence" );
 
     t->track( this );
 
@@ -462,8 +462,6 @@ Track::handle ( int m )
                 return 0;
 
             int d = Fl::event_dy();
-
-            printf( "%d\n", d );
 
             if ( d < 0 )
                 size( size() - 1 );

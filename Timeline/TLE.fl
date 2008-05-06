@@ -579,7 +579,7 @@ delete win;}
       }
     }
   }
-  Function {find_item( Fl_Menu_ *menu, const char *path )} {open selected return_type {static Fl_Menu_Item *}
+  Function {find_item( Fl_Menu_ *menu, const char *path )} {open return_type {static Fl_Menu_Item *}
   } {
     code {return const_cast<Fl_Menu_Item*>(menu->find_item( path ));} {}
   }
@@ -593,6 +593,8 @@ if ( ! Session::open() )
 	find_item( m, "&Session/&Compact" )->deactivate();
 	find_item( m, "&Session/&Info" )->deactivate();
 	
+	find_item( m, "&Timeline" )->deactivate();
+
 	timeline->deactivate();
 	transport->deactivate();
 }
@@ -601,10 +603,13 @@ else
 	find_item( m, "&Session/&Export" )->activate();
 	find_item( m, "&Session/&Compact" )->activate();
 	find_item( m, "&Session/&Info" )->activate();
+
+	find_item( m, "&Timeline" )->activate();
 	
 	timeline->activate();
 	transport->activate();	
-}} {}
+}} {selected
+    }
   }
   Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
   } {

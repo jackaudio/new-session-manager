@@ -129,7 +129,7 @@ Loggable::escape ( const char *s )
 {
     static char r[512];
 
-    for ( size_t i = 0; i < sizeof( r ); ++i, ++s )
+    for ( size_t i = 0; *s && i < sizeof( r ); ++i, ++s )
     {
         if ( '\n' == *s )
         {

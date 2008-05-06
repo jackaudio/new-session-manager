@@ -23,6 +23,7 @@ const char user_template_dir[] = "~/.non-daw/templates";
 class Session
 {
 
+    static bool _is_open;
     static char _name[256];
 
 public:
@@ -32,6 +33,7 @@ public:
     static void set_name ( const char *name );
     static bool close ( void );
     static bool open ( const char *name );
+    static bool open ( void ) { return _is_open; }
     static bool create ( const char *name, const char *template_name );
 
 };

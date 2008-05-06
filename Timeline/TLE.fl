@@ -77,6 +77,14 @@ free( path );
 
 Track::capture_format = o->menu()[ o->value() ].label();} {}
   }
+  Function {run()} {open
+  } {
+    code {update_menu();
+
+main_window->show();
+
+Fl::run();} {}
+  }
   Function {TLE()} {open
   } {
     code {make_window();
@@ -119,7 +127,7 @@ free( path );} {}
   } {
     Fl_Window main_window {
       label {Non-DAW - Timeline} open
-      xywh {257 179 1020 765} type Double resizable xclass {Non-DAW} visible
+      xywh {353 133 1020 765} type Double resizable xclass {Non-DAW} visible
     } {
       Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
@@ -134,13 +142,11 @@ free( path );} {}
           }
           MenuItem {} {
             label {&New}
-            callback {if ( new_session_chooser() )
-{
-	transport->activate();
-	timeline->activate();
-}
+            callback {new_session_chooser();
 
-main_window->redraw();} selected
+update_menu();
+
+main_window->redraw();}
             xywh {0 0 40 25}
           }
           MenuItem {} {
@@ -148,20 +154,15 @@ main_window->redraw();} selected
             callback {const char *name = fl_dir_chooser( "Open Session", NULL, NULL );
 
 Session::close();
-timeline->deactivate();
-transport->deactivate();
 
 if ( ! Session::open( name ) )
 {
 	fl_alert( "Could not open \\"%s\\" as a Non-DAW session!", name );
 	
 	// we are in a somewhar ambiguous state now with no session open.
-	
-	return;
 }
 
-timeline->activate();
-transport->activate();}
+update_menu();}
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -175,7 +176,7 @@ Loggable::compact();}
             xywh {20 20 40 25}
           }
           Submenu {} {
-            label Export open
+            label {&Export} open
             xywh {0 0 74 25} deactivate
           } {
             MenuItem {} {
@@ -578,6 +579,33 @@ delete win;}
       }
     }
   }
+  Function {find_item( Fl_Menu_ *menu, const char *path )} {open selected return_type {static Fl_Menu_Item *}
+  } {
+    code {return const_cast<Fl_Menu_Item*>(menu->find_item( path ));} {}
+  }
+  Function {update_menu()} {open
+  } {
+    code {Fl_Menu_Bar *m = menubar;
+
+if ( ! Session::open() )
+{
+	find_item( m, "&Session/&Export" )->deactivate();
+	find_item( m, "&Session/&Compact" )->deactivate();
+	find_item( m, "&Session/&Info" )->deactivate();
+	
+	timeline->deactivate();
+	transport->deactivate();
+}
+else
+{
+	find_item( m, "&Session/&Export" )->activate();
+	find_item( m, "&Session/&Compact" )->activate();
+	find_item( m, "&Session/&Info" )->activate();
+	
+	timeline->activate();
+	transport->activate();	
+}} {}
+  }
   Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
   } {
     code {p->value( v );
@@ -663,7 +691,7 @@ class New_Session_Dialog {open
   } {
     code {make_window();} {}
   }
-  Function {run()} {open return_type {const char *}
+  Function {run()} {open return_type void
   } {
     code {_window->show();
 
@@ -736,9 +764,9 @@ while ( _window->shown() )
   }
 } 
 
-Function {new_session_chooser()} {open C return_type {const char *}
+Function {new_session_chooser()} {open C return_type void
 } {
   code {New_Session_Dialog nsd;
 
-return nsd.run();} {}
+nsd.run();} {}
 } 

@@ -86,16 +86,16 @@ int
 main ( int argc, char **argv )
 {
     /* welcome to C++ */
-    LOG_REGISTER_CREATE( Audio_Region );
-    LOG_REGISTER_CREATE( Time_Point );
-    LOG_REGISTER_CREATE( Tempo_Point );
-    LOG_REGISTER_CREATE( Annotation_Point );
-    LOG_REGISTER_CREATE( Annotation_Region );
-    LOG_REGISTER_CREATE( Control_Point );
-    LOG_REGISTER_CREATE( Track );
-    LOG_REGISTER_CREATE( Audio_Sequence );
-    LOG_REGISTER_CREATE( Control_Sequence );
+    LOG_REGISTER_CREATE( Annotation_Point    );
+    LOG_REGISTER_CREATE( Annotation_Region   );
     LOG_REGISTER_CREATE( Annotation_Sequence );
+    LOG_REGISTER_CREATE( Audio_Region        );
+    LOG_REGISTER_CREATE( Audio_Sequence      );
+    LOG_REGISTER_CREATE( Control_Point       );
+    LOG_REGISTER_CREATE( Control_Sequence    );
+    LOG_REGISTER_CREATE( Tempo_Point         );
+    LOG_REGISTER_CREATE( Time_Point          );
+    LOG_REGISTER_CREATE( Track               );
 
     init_boxtypes();
 
@@ -124,7 +124,5 @@ main ( int argc, char **argv )
 
     MESSAGE( "Starting GUI" );
 //    tle.main_window->show( argc, argv );
-    tle.main_window->show();
-
-    Fl::run();
+    tle.run();
 }

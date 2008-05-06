@@ -33,6 +33,7 @@ session state belongs to Timeline and other classes. */
 
 #include "debug.h"
 char Session::_name[256];
+bool Session::_is_open = false;
 
 void
 Session::set_name ( const char *name )
@@ -60,6 +61,8 @@ bool
 Session::close ( void )
 {
     Loggable::close();
+
+    _is_open = false;
 }
 
 bool
@@ -83,6 +86,8 @@ Session::open ( const char *name )
         FATAL( "error opening journal" );
 
     set_name( name );
+
+    _is_open = true;
 
     return true;
 }

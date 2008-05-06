@@ -234,9 +234,10 @@ path_pop ( char *path )
 
     s = rindex( path, '/' );
 
-    s = s ? s : path;
-
-    *(s + 1) = '\0';
+    if ( s )
+        *(s + 1) = '\0';
+    else
+        *path = '\0';
 }
 
 void

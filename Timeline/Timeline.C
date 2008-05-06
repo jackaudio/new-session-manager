@@ -900,7 +900,7 @@ Timeline::handle ( int m )
                         _selection.x = drag->x;
                         _selection.y = drag->y;
                     }
-                    else if ( Fl::event_button3() )
+                    else if ( Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
                     {
                         Fl_Menu_Item menu[] =
                             {

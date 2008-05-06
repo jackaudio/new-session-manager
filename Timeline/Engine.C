@@ -165,7 +165,7 @@ Engine::init ( void )
 
     set_callback( process );
     set_callback( xrun );
-    /* FIXME: should we wait to register this until after the session
+    /* FIXME: should we wait to register this until after the project
      has been loaded (and we have disk threads running)? */
     set_callback( sync );
 

@@ -17,8 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-/* Routings for opening/closing/creation of sessions. All the actual
-session state belongs to Timeline and other classes. */
+/* Routings for opening/closing/creation of projects. All the actual
+project state belongs to Timeline and other classes. */
 
 
 #include <stdio.h>
@@ -29,20 +29,20 @@ session state belongs to Timeline and other classes. */
 #include <fcntl.h>
 
 #include "Loggable.H"
-#include "Session.H"
+#include "Project.H"
 
 #include "debug.h"
-char Session::_name[256];
-bool Session::_is_open = false;
+char Project::_name[256];
+bool Project::_is_open = false;
 
 void
-Session::set_name ( const char *name )
+Project::set_name ( const char *name )
 {
     char *s = rindex( name, '/' );
 
-    strcpy( Session::_name, s ? s + 1 : name );
+    strcpy( Project::_name, s ? s + 1 : name );
 
-    for ( s = Session::_name; *s; ++s )
+    for ( s = Project::_name; *s; ++s )
         if ( *s == '_' || *s == '-' )
             *s = ' ';
 }
@@ -58,7 +58,7 @@ exists ( const char *name )
 #include <errno.h>
 
 bool
-Session::close ( void )
+Project::close ( void )
 {
     Loggable::close();
 
@@ -66,11 +66,11 @@ Session::close ( void )
 }
 
 bool
-Session::open ( const char *name )
+Project::open ( const char *name )
 {
     if ( chdir( name ) )
     {
-        WARNING( "Cannot change to session dir \"%s\"", name );
+        WARNING( "Cannot change to project dir \"%s\"", name );
         return false;
     }
 
@@ -78,7 +78,7 @@ Session::open ( const char *name )
          ! exists( "sources" ) )
 //         ! exists( "options" ) )
     {
-        WARNING( "Not a Non-DAW session: \"%s\"", name );
+        WARNING( "Not a Non-DAW project: \"%s\"", name );
         return false;
     }
 
@@ -93,22 +93,22 @@ Session::open ( const char *name )
 }
 
 bool
-Session::create ( const char *name, const char *template_name )
+Project::create ( const char *name, const char *template_name )
 {
     if ( exists( name ) )
     {
-        WARNING( "Session already exists" );
+        WARNING( "Project already exists" );
         return false;
     }
 
     if ( mkdir( name, 0777 ) )
     {
-        WARNING( "Cannot create session directory" );
+        WARNING( "Cannot create project directory" );
         return false;
     }
 
     if ( chdir( name ) )
-        FATAL( "WTF? Cannot change to new session directory" );
+        FATAL( "WTF? Cannot change to new project directory" );
 
     mkdir( "sources", 0777 );
 

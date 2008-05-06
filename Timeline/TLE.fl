@@ -14,7 +14,7 @@ decl {\#include "Transport.H"} {}
 
 decl {\#include "Loggable.H"} {} 
 
-decl {\#include "Session.H"} {} 
+decl {\#include "Project.H"} {} 
 
 decl {\#include "Clock.H"} {public
 } 
@@ -35,7 +35,7 @@ decl {\#include <FL/Fl_File_Chooser.H>} {}
 
 decl {\#include <FL/Fl.H>} {} 
 
-decl {extern char session_display_name[256];} {global
+decl {extern char project_display_name[256];} {global
 } 
 
 decl {extern char *user_config_dir;} {global
@@ -68,9 +68,9 @@ free( path );
 // Loggable::save_unjournaled( state_filename );
 
 
-if ( Session::open() )
+if ( Project::open() )
 {
-	// save session local options (Timeline menu)
+	// save project local options (Timeline menu)
 	((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Timeline" ), options_filename );
 }} {}
   }
@@ -144,7 +144,7 @@ free( path );} {selected
         xywh {0 0 1024 25}
       } {
         Submenu {} {
-          label {&Session} open
+          label {&Project} open
           xywh {0 0 74 25}
         } {
           MenuItem {} {
@@ -155,7 +155,7 @@ free( path );} {selected
             label {&New}
             callback {save_timeline_settings();
 
-new_session_chooser();
+new_project_chooser();
 
 load_timeline_settings();
 
@@ -168,15 +168,15 @@ main_window->redraw();}
             label {&Open}
             callback {save_timeline_settings();
 
-const char *name = fl_dir_chooser( "Open Session", NULL, NULL );
+const char *name = fl_dir_chooser( "Open Project", NULL, NULL );
 
-Session::close();
+Project::close();
 
-if ( ! Session::open( name ) )
+if ( ! Project::open( name ) )
 {
-	fl_alert( "Could not open \\"%s\\" as a Non-DAW session!", name );
+	fl_alert( "Could not open \\"%s\\" as a Non-DAW project!", name );
 	
-	// we are in a somewhar ambiguous state now with no session open.
+	// we are in a somewhar ambiguous state now with no project open.
 }
 else
 {
@@ -188,7 +188,7 @@ update_menu();}
           }
           MenuItem {} {
             label {&Compact}
-            callback {int n = fl_choice( "Compacting will replace the session history with a snapshot of the current state.\\n You will not be able to use Undo to go back beyond this point.\\n This operation is irreversible!", NULL, "Abort", "Procede with compaction" );
+            callback {int n = fl_choice( "Compacting will replace the project history with a snapshot of the current state.\\n You will not be able to use Undo to go back beyond this point.\\n This operation is irreversible!", NULL, "Abort", "Procede with compaction" );
 
 if ( n != 2 )
 	return;
@@ -201,7 +201,7 @@ Loggable::compact();}
             xywh {0 0 74 25} deactivate
           } {
             MenuItem {} {
-              label Session
+              label Project
               xywh {0 0 40 25}
             }
             MenuItem {} {
@@ -592,9 +592,9 @@ delete win;}
         class Timeline
       }
       Fl_Box {} {
-        label {<session name>}
+        label {<project name>}
         xywh {450 0 475 22} labeltype SHADOW_LABEL labelfont 2
-        code0 {o->label( Session::name() );}
+        code0 {o->label( Project::name() );}
       }
       Fl_Value_Output xruns_output {
         label {xruns:}
@@ -610,11 +610,11 @@ delete win;}
   } {
     code {Fl_Menu_Bar *m = menubar;
 
-if ( ! Session::open() )
+if ( ! Project::open() )
 {
-	find_item( m, "&Session/&Export" )->deactivate();
-	find_item( m, "&Session/&Compact" )->deactivate();
-	find_item( m, "&Session/&Info" )->deactivate();
+	find_item( m, "&Project/&Export" )->deactivate();
+	find_item( m, "&Project/&Compact" )->deactivate();
+	find_item( m, "&Project/&Info" )->deactivate();
 	
 	find_item( m, "&Timeline" )->deactivate();
 
@@ -623,9 +623,9 @@ if ( ! Session::open() )
 }
 else
 {
-	find_item( m, "&Session/&Export" )->activate();
-	find_item( m, "&Session/&Compact" )->activate();
-	find_item( m, "&Session/&Info" )->activate();
+	find_item( m, "&Project/&Export" )->activate();
+	find_item( m, "&Project/&Compact" )->activate();
+	find_item( m, "&Project/&Info" )->activate();
 
 	find_item( m, "&Timeline" )->activate();
 	
@@ -714,24 +714,24 @@ with fast, light, reliable alternatives.}
   }
   Function {save_timeline_settings()} {open
   } {
-    code {if ( Session::open() )
+    code {if ( Project::open() )
 {
-	// save session local options (Timeline menu)
+	// save project local options (Timeline menu)
 	((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Timeline" ), "options" );
 }} {}
   }
   Function {load_timeline_settings()} {open
   } {
-    code {if ( Session::open() )
+    code {if ( Project::open() )
 {
 	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Timeline" ), "options" );
 }} {}
   }
 } 
 
-class New_Session_Dialog {open
+class New_Project_Dialog {open
 } {
-  Function {New_Session_Dialog()} {open
+  Function {New_Project_Dialog()} {open
   } {
     code {make_window();} {}
   }
@@ -745,7 +745,7 @@ while ( _window->shown() )
   Function {make_window()} {open
   } {
     Fl_Window _window {
-      label {New Session} open
+      label {New Project} open
       xywh {576 340 550 195} type Double modal visible
     } {
       Fl_File_Input _name {
@@ -754,7 +754,7 @@ while ( _window->shown() )
       }
       Fl_Button {} {
         label Browse
-        callback {_directory->value( fl_dir_chooser( "Directory for new session", NULL, 0 ) );}
+        callback {_directory->value( fl_dir_chooser( "Directory for new project", NULL, 0 ) );}
         xywh {455 100 80 35}
       }
       Fl_Return_Button {} {
@@ -768,8 +768,8 @@ while ( _window->shown() )
 //	if ( ! fl_filename_exists( pat ) )
 	{
 
-		if ( ! Session::create( pat,  _template->text( _template->value() ) ) )
-			fl_alert( "Error opening session!" );
+		if ( ! Project::create( pat,  _template->text( _template->value() ) ) )
+			fl_alert( "Error opening project!" );
 
 		_window->hide();
 	}
@@ -792,7 +792,7 @@ while ( _window->shown() )
         code0 {\#include <FL/filename.H>}
       }
       Fl_Box {} {
-        label {New Session}
+        label {New Project}
         xywh {15 8 520 33} box RSHADOW_BOX color 133 labelsize 20 labelcolor 32
       }
       Fl_Choice _template {
@@ -808,9 +808,9 @@ while ( _window->shown() )
   }
 } 
 
-Function {new_session_chooser()} {open C return_type void
+Function {new_project_chooser()} {open C return_type void
 } {
-  code {New_Session_Dialog nsd;
+  code {New_Project_Dialog nsd;
 
 nsd.run();} {}
 } 

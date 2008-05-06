@@ -49,7 +49,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
-#include "Session.H"
+#include "Project.H"
 
 Engine *engine;
 Timeline *timeline;
@@ -117,10 +117,10 @@ main ( int argc, char **argv )
     transport->stop();
 
     if ( argc > 1 )
-        if ( ! Session::open( argv[ 1 ] ) )
-            FATAL( "Could not open session specified on command line" );
+        if ( ! Project::open( argv[ 1 ] ) )
+            FATAL( "Could not open project specified on command line" );
 
-    /* FIXME: open session in /tmp if none is given? */
+    /* FIXME: open project in /tmp if none is given? */
 
     MESSAGE( "Starting GUI" );
 //    tle.main_window->show( argc, argv );

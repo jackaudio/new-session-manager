@@ -20,7 +20,7 @@
 const char template_dir[] = "share/non-daw/templates";
 const char user_template_dir[] = "~/.non-daw/templates";
 
-class Session
+class Project
 {
 
     static bool _is_open;
@@ -29,7 +29,7 @@ class Session
 public:
 
 
-    static const char *name ( void ) { return Session::_name; }
+    static const char *name ( void ) { return Project::_name; }
     static void set_name ( const char *name );
     static bool close ( void );
     static bool open ( const char *name );

@@ -487,9 +487,6 @@ Timeline::resize ( int X, int Y, int W, int H )
 void
 Timeline::draw ( void )
 {
-    if ( ! visible_r() )
-        return;
-
     int X, Y, W, H;
 
     int bdx = 0;

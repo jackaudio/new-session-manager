@@ -207,17 +207,17 @@ Track::init ( void )
         resizable( o );
 
         {
-            Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 115 );
+            Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 0 );
             o->end();
         }
 
         {
-            Fl_Pack *o = control = new Fl_Pack( width(), 0, pack->w(), 115 );
+            Fl_Pack *o = control = new Fl_Pack( width(), 0, pack->w(), 0 );
             o->end();
         }
 
         {
-            Fl_Pack *o = takes = new Fl_Pack( width(), 0, pack->w(), 115 );
+            Fl_Pack *o = takes = new Fl_Pack( width(), 0, pack->w(), 0 );
             o->end();
             o->hide();
         }
@@ -278,6 +278,12 @@ Track::resize ( void )
 
     for ( int i = control->children(); i--; )
         control->child( i )->size( w(), height()  );
+
+    /* FIXME: hack! */
+    if ( annotation->children() )
+        annotation->show();
+    else
+        annotation->hide();
 
     if ( _show_all_takes )
     {

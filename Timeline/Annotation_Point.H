@@ -110,14 +110,14 @@ public:
         {
             Logger _log( this );
 
-            if ( m == FL_PUSH && Fl::event_button3() && ! Fl::event_ctrl() )
+            if ( m == FL_PUSH && Fl::test_shortcur( FL_BUTTON3 ) && ! Fl::event_shift() )
             {
                 const char *s = fl_input( "New name for mark:", name() );
 
                 if ( s )
                     name( s );
 
-                return 1;
+                return 0;
             }
 
             int r = Sequence_Widget::handle( m );

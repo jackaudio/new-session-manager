@@ -103,7 +103,7 @@ Annotation_Region::handle ( int m )
 
         free( s );
 
-        return 1;
+        return 0;
     }
 
     int r = Sequence_Region::handle( m );

@@ -56,8 +56,6 @@ public:
                 return sequence()->x() + sequence()->w() + abs_w();
             else
                 return x;
-
-
         }
 
     nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }

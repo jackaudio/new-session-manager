@@ -23,36 +23,15 @@
 #include "Sequence_Widget.H"
 
 /* Base class representing a /region/ of time on a /sequence/, with
-   controls for the start and end points. */
+   controls for the offset and length points. */
 
 class Sequence_Region : public Sequence_Widget
 {
 
 protected:
 
-    virtual void get ( Log_Entry &e ) const
-        {
-            e.add( ":color",             (int)_box_color  );
-
-            Sequence_Widget::get( e );
-        }
-
-
-    void
-    virtual set ( Log_Entry &e )
-        {
-            for ( int i = 0; i < e.size(); ++i )
-            {
-                const char *s, *v;
-
-                e.get( i, &s, &v );
-
-                if ( ! strcmp( s, ":color" ) )
-                    _box_color = (Fl_Color)atoll( v );
-            }
-
-            Sequence_Widget::set( e );
-        }
+    virtual void get ( Log_Entry &e ) const;
+    virtual void set ( Log_Entry &e );
 
     Sequence_Region ( )
         {

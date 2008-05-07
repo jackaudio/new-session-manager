@@ -25,7 +25,7 @@
 void
 Tempo_Point::get ( Log_Entry &e ) const
 {
-    e.add( ":x", _r->offset );
+    e.add( ":start", _r->offset );
     e.add( ":tempo", _tempo );
 }
 
@@ -38,7 +38,7 @@ Tempo_Point::set ( Log_Entry &e )
 
         e.get( i, &s, &v );
 
-        if ( ! strcmp( s, ":x" ) )
+        if ( ! strcmp( s, ":start" ) )
             _r->offset = atol( v );
         else if ( ! strcmp( s, ":tempo" ) )
             _tempo = atof( v );

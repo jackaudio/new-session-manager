@@ -102,53 +102,8 @@ private:
 
 protected:
 
-//    const char *class_name ( void ) { return "Audio_Region"; }
-
-    virtual void get ( Log_Entry &e ) const
-        {
-            e.add( ":source",            _clip            ? _clip->name() : "" );
-            e.add( ":gain",              _scale           );
-            e.add( ":fade-in-type",      _fade_in.type    );
-            e.add( ":fade-in-duration",  _fade_in.length  );
-            e.add( ":fade-out-type",     _fade_out.type   );
-            e.add( ":fade-out-duration", _fade_out.length );
-            e.add( ":color",             (int)_box_color  );
-
-            Sequence_Widget::get( e );
-        }
-
-    void
-    set ( Log_Entry &e )
-        {
-            for ( int i = 0; i < e.size(); ++i )
-            {
-                const char *s, *v;
-
-                e.get( i, &s, &v );
-
-                if ( ! strcmp( s, ":gain" ) )
-                    _scale = atof( v );
-                else if ( ! strcmp( s, ":color" ) )
-                    _box_color = (Fl_Color)atoi( v );
-                else if ( ! strcmp( s, ":fade-in-type" ) )
-                    _fade_in.type = (Fade::fade_type_e)atoi( v );
-                else if ( ! strcmp( s, ":fade-in-duration" ) )
-                    _fade_in.length = atoll( v );
-                else if ( ! strcmp( s, ":fade-out-type" ) )
-                    _fade_out.type = (Fade::fade_type_e)atoi( v );
-                else if ( ! strcmp( s, ":fade-out-duration" ) )
-                    _fade_out.length = atoll( v );
-                else if ( ! strcmp( s, ":source" ) )
-                {
-                    if ( ! ( _clip = Audio_File::from_file( v ) ) )
-                    {
-                        printf( "Grave error: could not open source \"%s\"\n", v );
-                    }
-                }
-            }
-
-            Sequence_Widget::set( e );
-        }
+    virtual void get ( Log_Entry &e ) const;
+    virtual void set ( Log_Entry &e );
 
 public:
 

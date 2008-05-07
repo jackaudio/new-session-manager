@@ -20,6 +20,35 @@
 #include "Sequence_Region.H"
 #include "Track.H"
 
+void
+Sequence_Region::get ( Log_Entry &e ) const
+{
+    e.add( ":color",  (int)_box_color  );
+    e.add( ":length", _r->length );
+
+    Sequence_Widget::get( e );
+}
+
+
+void
+Sequence_Region::set ( Log_Entry &e )
+{
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! strcmp( s, ":color" ) )
+            _box_color = (Fl_Color)atoll( v );
+        else if ( ! strcmp( s, ":length" ) )
+            _r->length = atoll( v );
+
+    }
+
+    Sequence_Widget::set( e );
+}
+
 
 void
 Sequence_Region::draw_box ( void )
@@ -53,14 +82,17 @@ Sequence_Region::trim ( enum trim_e t, int X )
 
             long td = timeline->x_to_ts( d );
 
-            if ( td < 0 && _r->start < 0 - td )
-                td = 0 - _r->start;
+            if ( td < 0 && _r->offset < 0 - td )
+                td = 0 - _r->offset;
 
-            if ( _r->start + td >= _r->end )
-                td = (_r->end - _r->start) - timeline->x_to_ts( 1 );
+            if ( td > 0 && td >= _r->length )
+                td = _r->length - timeline->x_to_ts( 1 );
 
-            _r->start += td;
+//                td = _r->length - timeline->x_to_ts( 1 );
+
             _r->offset += td;
+            _r->start  += td;
+            _r->length -= td;
             break;
         }
         case RIGHT:
@@ -71,12 +103,12 @@ Sequence_Region::trim ( enum trim_e t, int X )
 
             long td = timeline->x_to_ts( d );
 
-//            printf( "%li %li\n", td, _r->end - _r->start );
+//            printf( "%li %li\n", td, _r->length - _r->offset );
 
-            if ( td >= 0 && _r->end - _r->start < td )
-                _r->end = _r->start + timeline->x_to_ts( 1 );
+            if ( td >= 0 && _r->length < td )
+                _r->length = timeline->x_to_ts( 1 );
             else
-                _r->end -= td;
+                _r->length -= td;
 
             break;
         }
@@ -105,7 +137,7 @@ Sequence_Region::handle ( int m )
     int ret;
 
     Logger _log( this );
-//log_r->start();
+//log_r->offset();
 
     switch ( m )
     {

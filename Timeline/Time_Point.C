@@ -24,7 +24,7 @@
 void
 Time_Point::get ( Log_Entry &e ) const
 {
-    e.add( ":x",             _r->offset          );
+    e.add( ":start",             _r->offset          );
     e.add( ":beats_per_bar", _time.beats_per_bar );
     e.add( ":beat_type",     _time.beat_type     );
 }
@@ -38,7 +38,7 @@ Time_Point::set ( Log_Entry &e )
 
         e.get( i, &s, &v );
 
-        if ( ! strcmp( s, ":x" ) )
+        if ( ! strcmp( s, ":start" ) )
             _r->offset = atol( v );
         else if ( ! strcmp( s, ":beats_per_bar" ) )
             _time.beats_per_bar = atoi( v );

@@ -97,7 +97,7 @@ Sequence::overlaps ( Sequence_Widget *r )
     for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
     {
         if ( *i == r ) continue;
-        if ( ! ( (*i)->offset() > r->offset() + r->length() || (*i)->offset() + (*i)->length() < r->offset() ) )
+        if ( ! ( (*i)->start() > r->start() + r->length() || (*i)->start() + (*i)->length() < r->start() ) )
             return *i;
     }
 
@@ -176,7 +176,7 @@ Sequence::event_widget ( void )
 {
     nframes_t ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() );
     for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
-        if ( ets > (*r)->offset() && ets < (*r)->offset() + (*r)->length() )
+        if ( ets > (*r)->start() && ets < (*r)->start() + (*r)->length() )
             return (*r);
 
     return NULL;
@@ -189,7 +189,7 @@ Sequence::select_range ( int X, int W )
     nframes_t ets = sts + timeline->x_to_ts( W );
 
     for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
-        if ( ! ( (*r)->offset() > ets || (*r)->offset() + (*r)->length() < sts ) )
+        if ( ! ( (*r)->start() > ets || (*r)->start() + (*r)->length() < sts ) )
             (*r)->select();
 }
 
@@ -236,14 +236,14 @@ Sequence::snap ( Sequence_Widget *r )
 
             if ( abs( rx1 - wx2 ) < snap_pixels )
             {
-                r->offset( w->offset() + w->length() + 1 );
+                r->start( w->start() + w->length() + 1 );
 
                 return;
             }
 
             if ( abs( rx2 - wx1 ) < snap_pixels )
             {
-                r->offset( ( w->offset() - r->length() ) - 1 );
+                r->start( ( w->start() - r->length() ) - 1 );
 
                 return;
             }
@@ -252,10 +252,10 @@ Sequence::snap ( Sequence_Widget *r )
 
     nframes_t f;
 
-    if ( timeline->nearest_line( r->offset(), &f ) )
+    if ( timeline->nearest_line( r->start(), &f ) )
     {
 //        printf( "snap frame is %lu\n", f );
-        r->offset( f );
+        r->start( f );
     }
 }
 

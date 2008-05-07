@@ -30,21 +30,21 @@ class Sequence_Widget;
 
 struct Drag
 {
-    /* mouse coords at start of drag */
+    /* mouse coords at offset of drag */
     int x;
     int y;
     int state;
 
-    nframes_t offset;
+    nframes_t start;
 
-    Drag( int X, int Y, nframes_t offset=0 ) : x( X ), y( Y ), offset( offset ) { state = 0; }
+    Drag( int X, int Y, nframes_t start=0 ) : x( X ), y( Y ), start( start ) { state = 0; }
 };
 
 struct Range
 {
-    nframes_t offset;                      /* where on the timeline */
-    nframes_t start;                      /* first sample from clip */
-    nframes_t end;                         /* last sample from clip */
+    nframes_t start;                       /* where on the timeline */
+    nframes_t offset;                      /* first sample from clip */
+    nframes_t length;                      /* total number of samples */
 };
 
 /* Base class for virtual widget on a track */
@@ -79,56 +79,8 @@ protected:
 
     Drag *_drag;
 
-
-    virtual void get ( Log_Entry &e ) const
-        {
-            e.add( ":x", _r->offset );
-            e.add( ":l", _r->start );
-            e.add( ":r", _r->end );
-            e.add( ":sequence", _sequence );
-            e.add( ":selected", selected() );
-        }
-
-    virtual void
-    set ( Log_Entry &e )
-        {
-            for ( int i = 0; i < e.size(); ++i )
-            {
-                const char *s, *v;
-
-                e.get( i, &s, &v );
-
-                if ( ! strcmp( s, ":x" ) )
-                    _r->offset = atoll( v );
-                else if ( ! strcmp( s, ":l" ) )
-                    _r->start = atoll( v );
-                else if ( ! strcmp( s, ":r" ) )
-                    _r->end = atoll( v );
-                else if ( ! strcmp( s, ":selected" ) )
-                {
-                    if ( atoi( v ) )
-                        select();
-                    else
-                        deselect();
-                }
-                else if ( ! strcmp( s, ":sequence" ) )
-                {
-                    int i;
-                    sscanf( v, "%X", &i );
-                    Sequence *t = (Sequence*)Loggable::find( i );
-
-                    assert( t );
-
-                    t->add( this );
-                }
-//                else
-//                    e.erase( i );
-            }
-
-            if ( _sequence )
-                _sequence->redraw();
-
-        }
+    virtual void get ( Log_Entry &e ) const;
+    virtual void set ( Log_Entry &e );
 
 public:
 
@@ -138,7 +90,7 @@ public:
 
             _r = &_range;
 
-            _r->offset = _r->start = _r->end = 0;
+            _r->start = _r->offset = _r->length = 0;
 
             _drag = NULL;
 
@@ -234,7 +186,7 @@ public:
             _r = new Range( _range );
         }
 
-    void end_drag ( void )
+    void length_drag ( void )
         {
             _range = *_r;
             delete _r;
@@ -245,26 +197,26 @@ public:
         }
 
     void
-    offset ( nframes_t where )
+    start ( nframes_t where )
         {
 
             if  ( ! selected() )
             {
                 redraw();
-                _r->offset = where;
+                _r->start = where;
             }
             else
             {
-                long d = where - _r->offset;
+                long d = where - _r->start;
 
                 for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
                 {
                     (*i)->redraw();
 
                     if ( d < 0 )
-                        (*i)->_r->offset -= 0 - d;
+                        (*i)->_r->start -= 0 - d;
                     else
-                        (*i)->_r->offset += d;
+                        (*i)->_r->start += d;
 
                 }
             }
@@ -284,18 +236,18 @@ public:
     /* used by regions */
     virtual int x ( void ) const
         {
-            return  _r->offset < timeline->xoffset ? _sequence->x() : min( _sequence->x() + _sequence->w(), _sequence->x() + timeline->ts_to_x( _r->offset - timeline->xoffset ) );
+            return  _r->start < timeline->xoffset ? _sequence->x() : min( _sequence->x() + _sequence->w(), _sequence->x() + timeline->ts_to_x( _r->start - timeline->xoffset ) );
         }
 
     /* use this as x() when you need to draw lines between widgets */
     int line_x ( void ) const
         {
-            return _r->offset < timeline->xoffset ? max( -32768, _sequence->x() -  timeline->ts_to_x( timeline->xoffset - _r->offset )) : min( 32767, _sequence->x() + timeline->ts_to_x( _r->offset - timeline->xoffset ) );
+            return _r->start < timeline->xoffset ? max( -32768, _sequence->x() -  timeline->ts_to_x( timeline->xoffset - _r->start )) : min( 32767, _sequence->x() + timeline->ts_to_x( _r->start - timeline->xoffset ) );
         }
 
     virtual int w ( void ) const
         {
-            int tx = timeline->ts_to_x( _r->offset );
+            int tx = timeline->ts_to_x( _r->start );
 
             int rw;
             if ( tx < scroll_x() )
@@ -306,8 +258,8 @@ public:
             return min( rw, _sequence->w() );
         }
 
-    int abs_x ( void ) const { return timeline->ts_to_x( _r->offset ); }
-    virtual int abs_w ( void ) const { return timeline->ts_to_x( _r->end - _r->start ); }
+    int abs_x ( void ) const { return timeline->ts_to_x( _r->start ); }
+    virtual int abs_w ( void ) const { return timeline->ts_to_x( _r->length ); }
 
     Fl_Color color ( void ) const { return _color; }
     void color ( Fl_Color v ) { _color = v; }
@@ -318,22 +270,21 @@ public:
     Sequence * sequence ( void ) const { return _sequence; }
     void sequence ( Sequence *t ) { _sequence = t; }
 
-    nframes_t offset ( void ) const { return _r->offset; }
-//    void offset ( nframes_t o ) { _r->offset = o; }
-
-    void end ( nframes_t v ) { _r->end = v; }
-    nframes_t end ( void ) const { return _r->end; }
-    void start ( nframes_t v ) { _r->start = v; }
     nframes_t start ( void ) const { return _r->start; }
+//    void start ( nframes_t o ) { _r->start = o; }
 
-    /** convert a screen x coord into an offset into the region */
+    void length ( nframes_t v ) { _r->length = v; }
+    virtual nframes_t length ( void ) const { return _r->length; }
+    void offset ( nframes_t v ) { _r->offset = v; }
+    nframes_t offset ( void ) const { return _r->offset; }
+
+    /** convert a screen x coord into an start into the region */
     nframes_t x_to_offset ( int X )
         {
-            return timeline->x_to_ts( scroll_x() + ( X - _sequence->x() ) ) - _r->offset;
+            return timeline->x_to_ts( scroll_x() + ( X - _sequence->x() ) ) - _r->start;
         }
 
     int active_r ( void ) const { return _sequence->active_r(); }
-    virtual nframes_t length ( void ) const { return _r->end - _r->start; }
 
     virtual Fl_Boxtype box ( void ) const { return FL_UP_BOX; }
     virtual Fl_Align align ( void ) const { return (Fl_Align)0; }
@@ -366,13 +317,13 @@ public:
     bool
     operator< ( const Sequence_Widget & rhs )
         {
-            return _r->offset < rhs._r->offset;
+            return _r->start < rhs._r->start;
         }
 
     bool
     operator<=( const Sequence_Widget & rhs )
         {
-            return _r->offset <= rhs._r->offset;
+            return _r->start <= rhs._r->start;
         }
 
     virtual void draw_label ( const char *label, Fl_Align align, Fl_Color color=(Fl_Color)0 );

@@ -58,39 +58,62 @@ static Fl_Color fl_invert_color ( Fl_Color c )
 }
 
 
-#if 0
-/* perhaps use map? */
-map_PRIM ( set )
+void
+Audio_Region::get ( Log_Entry &e ) const
 {
-/*     if ( narg % 2 != 0 ) */
-/*         printf( "invalid number of arguments\n" ); */
+    e.add( ":source",            _clip            ? _clip->name() : "" );
+    e.add( ":gain",              _scale           );
+    e.add( ":fade-in-type",      _fade_in.type    );
+    e.add( ":fade-in-duration",  _fade_in.length  );
+    e.add( ":fade-out-type",     _fade_out.type   );
+    e.add( ":fade-out-duration", _fade_out.length );
+    e.add( ":color",             (int)_box_color  );
 
-    int id = atoi( arg );
+    Sequence_Region::get( e );
 
-    map_ARG_NEXT( arg, end );
-
-    Logable *l = Loggable::find( id );
-
-    char **sa = malloc( sizeof( char * ) * narg + 1 );
-
-    for ( int i = 0; i < narg; ++i )
-        sa[ i ] = strdup( map_ARG_NEXT( arg, end ) );
-
-    l->set( sa );
-
-    map_RESULT( "" );
+    e.add( ":offset", _r->offset );
 }
-#endif
+
+void
+Audio_Region::set ( Log_Entry &e )
+{
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! strcmp( s, ":gain" ) )
+            _scale = atof( v );
+        else if ( ! strcmp( s, ":color" ) )
+            _box_color = (Fl_Color)atoi( v );
+        else if ( ! strcmp( s, ":fade-in-type" ) )
+            _fade_in.type = (Fade::fade_type_e)atoi( v );
+        else if ( ! strcmp( s, ":fade-in-duration" ) )
+            _fade_in.length = atoll( v );
+        else if ( ! strcmp( s, ":fade-out-type" ) )
+            _fade_out.type = (Fade::fade_type_e)atoi( v );
+        else if ( ! strcmp( s, ":fade-out-duration" ) )
+            _fade_out.length = atoll( v );
+        else if ( ! strcmp( s, ":offset" ) )
+            _r->offset = atoll( v );
+        else if ( ! strcmp( s, ":source" ) )
+        {
+            if ( ! ( _clip = Audio_File::from_file( v ) ) )
+            {
+                printf( "Grave error: could not open source \"%s\"\n", v );
+            }
+        }
+    }
+
+    Sequence_Region::set( e );
+}
 
 
 void
 Audio_Region::init ( void )
 {
-
     _sequence = NULL;
-    _r->offset = 0;
-    _r->start = 0;
-    _r->end = 0;
     _scale = 1.0f;
     _clip = NULL;
 
@@ -128,7 +151,7 @@ Audio_Region::Audio_Region ( Audio_File *c )
 {
     init();
     _clip = c;
-    _r->end = _clip->length();
+    _r->length = _clip->length();
 
     log_create();
 }
@@ -139,9 +162,10 @@ Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
 {
     init();
     _clip = c;
-    _r->end = _clip->length();
     _sequence = t;
-    _r->offset = o;
+    _r->offset = 0;
+    _r->start = o;
+    _r->length = _clip->length();
 
     sequence()->add( this );
 
@@ -172,7 +196,6 @@ int
 Audio_Region::handle ( int m )
 {
     static int ox, oy;
-    static enum trim_e trimming;
 
     static bool copied = false;
     static nframes_t os;
@@ -266,7 +289,7 @@ Audio_Region::handle ( int m )
                 ox = x() - X;
                 oy = y() - Y;
                 /* for panning */
-                os = _r->start;
+                os = _r->offset;
 
                 /* normalization and selection */
                 if ( Fl::event_button2() )
@@ -360,14 +383,10 @@ Audio_Region::handle ( int m )
                 int d = (ox + X) - x();
                 long td = timeline->x_to_ts( d );
 
-                nframes_t W = _r->end - _r->start;
-
                 if ( td > 0 && os < td )
-                    _r->start = 0;
+                    _r->offset = 0;
                 else
-                    _r->start = os - td;
-
-                _r->end = _r->start + W;
+                    _r->offset = os - td;
 
                 sequence()->redraw();
                 return 1;
@@ -390,6 +409,8 @@ Audio_Region::handle ( int m )
             return Sequence_Widget::handle( m );
             break;
     }
+
+    return 0;
 }
 
 
@@ -513,15 +534,14 @@ Audio_Region::draw ( void )
     W += 4;
 
     int OX = scroll_x();
-    int ox = timeline->ts_to_x( _r->offset );
+    int ox = timeline->ts_to_x( _r->start );
 
     if ( ox > OX + sequence()->w() ||
          ox < OX && ox + abs_w() < OX )
         /* not in viewport */
         return;
 
-    int rw = timeline->ts_to_x( _r->end - _r->start );
-//    nframes_t end = _r->offset + ( _r->end - _r->start );
+    int rw = timeline->ts_to_x( _r->length );
 
     /* calculate waveform offset due to scrolling */
     nframes_t offset = 0;
@@ -545,7 +565,8 @@ Audio_Region::draw ( void )
 
 
 //    const nframes_t start = _r->start + offset + timeline->x_to_ts( X - rx );
-    nframes_t start = _r->start + offset;
+//    nframes_t start = _r->start + offset;
+    nframes_t start = _r->offset + offset;
 
     /* compensate for ??? */
     if ( X - rx > 0 )
@@ -636,14 +657,10 @@ Audio_Region::draw ( void )
 void
 Audio_Region::normalize ( void )
 {
-    printf( "normalize: start=%lu end=%lu\n", _r->start, _r->end );
-
-    /* FIXME: figure out a way to do this via the peak server */
-
     int peaks, channels;
     Peak *pbuf;
 
-    if ( _clip->read_peaks( length(), _r->start, _r->end, &peaks, &pbuf, &channels ) &&
+    if ( _clip->read_peaks( length(), offset(), offset() + length(), &peaks, &pbuf, &channels ) &&
          peaks )
         _scale = pbuf->normalization_factor();
 }
@@ -710,10 +727,8 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 {
     const Range r = _range;
 
-    const nframes_t length = r.end - r.start;
-
     /* do nothing if we aren't covered by this frame range */
-    if ( pos > r.offset + length || pos + nframes < r.offset )
+    if ( pos > r.start + r.length || pos + nframes < r.start )
         return 0;
 
     /* calculate offsets into file and sample buffer */
@@ -722,23 +737,23 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
     cnt = nframes;
 
-    if ( pos < r.offset )
+    if ( pos < r.start )
     {
         sofs = 0;
-        ofs = r.offset - pos;
+        ofs = r.start - pos;
         cnt -= ofs;
     }
     else
     {
         ofs = 0;
-        sofs = pos - r.offset;
+        sofs = pos - r.start;
     }
 
     if ( ofs >= nframes )
         return 0;
 
 //    const nframes_t start = ofs + r.start + sofs;
-    const nframes_t start =  r.start + sofs;
+    const nframes_t start =  r.offset + sofs;
     const nframes_t len = min( cnt, nframes - ofs );
     const nframes_t end = start + len;
 
@@ -782,9 +797,9 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
         /* do fade out if necessary */
 //        if ( start + cnt + fade.length > r.end )
-        if ( start + fade.length > r.end )
+        if ( start + fade.length > ( r.offset + r.length ) )
         {
-            const nframes_t d = r.end - start;
+            const nframes_t d = ( r.offset + r.length )  - start;
 
             assert( cnt <= nframes );
 
@@ -803,12 +818,12 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 nframes_t
 Audio_Region::write ( nframes_t nframes )
 {
-    _range.end += nframes;
+    _range.length += nframes;
 
     /* FIXME: too much? */
 //    _track->damage( FL_DAMAGE_EXPOSE, x() + w(), y(), 10/* FIXME: guess */, h() );
 
-    if ( 0 == ( timeline->ts_to_x( _range.end ) % 20 ) )
+    if ( 0 == ( timeline->ts_to_x( _range.length ) % 20 ) )
     {
         nframes_t oldl = _clip->length();
 
@@ -851,7 +866,7 @@ Audio_Region::finalize ( nframes_t frame )
 
     /* FIXME: should we attempt to truncate the file? */
 
-    _range.end = frame - _range.offset;
+    _range.length = frame - _range.start - _range.offset;
 
     redraw();
 

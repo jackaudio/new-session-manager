@@ -69,7 +69,7 @@ public:
         {
             _sequence = sequence;
 
-            _r->offset = when;
+            _r->start = when;
 
             _label = strdup( name );
 
@@ -78,7 +78,7 @@ public:
 
     Annotation_Point ( const Annotation_Point &rhs )
         {
-            _r->offset = rhs._r->offset;
+            _r->start = rhs._r->start;
             _label = strdup( rhs._label );
         }
 

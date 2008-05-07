@@ -22,8 +22,7 @@
 void
 Sequence_Point::get ( Log_Entry &e ) const
 {
-    e.add( ":x", _r->offset );
-    e.add( ":sequence", _sequence );
+    Sequence_Widget::get( e );
 }
 
 void
@@ -37,7 +36,7 @@ Sequence_Point::set ( Log_Entry &e )
 
         e.get( i, &s, &v );
 
-        if ( ! strcmp( ":x", s ) )
+        if ( ! strcmp( ":start", s ) )
         {
             sequence()->sort();
         }

@@ -34,6 +34,58 @@ Sequence_Widget * Sequence_Widget::_belowmouse = NULL;
 Fl_Color Sequence_Widget::_selection_color = FL_MAGENTA;
 
 void
+Sequence_Widget::get ( Log_Entry &e ) const
+{
+    e.add( ":start", _r->start );
+//    e.add( ":offset", _r->offset );
+//    e.add( ":length", _r->length );
+    e.add( ":sequence", _sequence );
+    e.add( ":selected", selected() );
+}
+
+void
+Sequence_Widget::set ( Log_Entry &e )
+{
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! strcmp( s, ":start" ) )
+            _r->start = atoll( v );
+//        else if ( ! strcmp( s, ":offset" ) )
+//            _r->offset = atoll( v );
+//        else if ( ! strcmp( s, ":length" ) )
+//            _r->length = atoll( v );
+        else if ( ! strcmp( s, ":selected" ) )
+        {
+            if ( atoi( v ) )
+                select();
+            else
+                deselect();
+        }
+        else if ( ! strcmp( s, ":sequence" ) )
+        {
+            int i;
+            sscanf( v, "%X", &i );
+            Sequence *t = (Sequence*)Loggable::find( i );
+
+            assert( t );
+
+            t->add( this );
+        }
+//                else
+//                    e.erase( i );
+    }
+
+    if ( _sequence )
+        _sequence->redraw();
+
+}
+
+
+void
 Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )
 {
     int X, Y;
@@ -172,7 +224,7 @@ Sequence_Widget::handle ( int m )
         case FL_RELEASE:
             if ( _drag )
             {
-                end_drag();
+                length_drag();
                 _log.release();
             }
 
@@ -194,15 +246,15 @@ Sequence_Widget::handle ( int m )
             {
                 const nframes_t of = timeline->x_to_offset( X );
 
-                if ( of >= _drag->offset )
+                if ( of >= _drag->start )
                 {
-                    _r->offset = of - _drag->offset;
+                    _r->start = of - _drag->start;
 
                     if ( Sequence_Widget::_current == this )
                         sequence()->snap( this );
                 }
                 else
-                    _r->offset = 0;
+                    _r->start = 0;
 
             }
 

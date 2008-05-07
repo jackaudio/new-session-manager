@@ -23,7 +23,7 @@ Control_Point::Control_Point ( Sequence *t, nframes_t when, float y )
 {
     _sequence = t;
     _y = y;
-    _r->offset = when;
+    _r->start = when;
     _box_color = FL_WHITE;
 
     log_create();
@@ -31,7 +31,7 @@ Control_Point::Control_Point ( Sequence *t, nframes_t when, float y )
 
 Control_Point::Control_Point ( const Control_Point &rhs )
 {
-    _r->offset = rhs._r->offset;
+    _r->start = rhs._r->start;
     _y = rhs._y;
 }
 

@@ -52,10 +52,10 @@ Annotation_Region::Annotation_Region ( Sequence *sequence, nframes_t when, const
 {
     _sequence = sequence;
 
-    _r->offset = when;
+    _r->start = when;
 
     /* FIXME: hack */
-    _r->end = 400;
+    _r->length = 400;
 
     _label = strdup( name );
 
@@ -64,7 +64,9 @@ Annotation_Region::Annotation_Region ( Sequence *sequence, nframes_t when, const
 
 Annotation_Region::Annotation_Region ( const Annotation_Region &rhs )
 {
-    _r->offset = rhs._r->offset;
+    _r->start = rhs._r->start;
+    _r->length = rhs._r->length;
+
     _label = strdup( rhs._label );
 }
 

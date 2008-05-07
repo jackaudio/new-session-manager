@@ -81,7 +81,7 @@ Audio_Sequence::set ( Log_Entry &e )
             t->track( this );
         }
         else if ( ! strcmp( ":n", s ) )
-            name( strdup( v ) );
+            name( v );
     }
 }
 
@@ -237,6 +237,8 @@ Audio_Sequence::handle ( int m )
                 free( file );
                 return 0;
             }
+
+            free( file );
 
 //            Audio_Region *r =
             new Audio_Region( c, this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ) );

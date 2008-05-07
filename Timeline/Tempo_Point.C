@@ -67,7 +67,6 @@ Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
 
 Tempo_Point::~Tempo_Point ( )
 {
-    if ( _label ) delete[] _label;
     log_destroy();
 }
 

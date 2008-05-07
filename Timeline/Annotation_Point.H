@@ -27,17 +27,6 @@
 class Annotation_Point : public Sequence_Point
 {
 
-public:
-
-    const char *name ( void ) const { return _label; }
-    void name ( const char *s )
-        {
-            if ( _label )
-                free( _label );
-            _label = strdup( s );
-            redraw();
-        }
-
 protected:
 
 //    const char *class_name ( void ) { return "Annotation_Point"; }
@@ -101,7 +90,6 @@ public:
     ~Annotation_Point ( )
         {
             log_destroy();
-            if ( _label ) free( _label );
         }
 
 

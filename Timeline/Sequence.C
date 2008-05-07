@@ -58,7 +58,8 @@ Sequence::init ( void )
 
 Sequence::~Sequence (  )
 {
-    /* FIXME: what to do with regions? */
+    if ( _name )
+        free( _name );
 
     for ( std::list <Sequence_Widget*>::iterator i = _widgets.begin();
           i != _widgets.end(); ++i )

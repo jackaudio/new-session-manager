@@ -348,6 +348,9 @@ Loggable::do_this ( const char *s, bool reverse )
 
     }
 
+    if ( arguments )
+        free( arguments );
+
     return true;
 }
 

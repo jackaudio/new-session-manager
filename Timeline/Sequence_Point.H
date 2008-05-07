@@ -33,6 +33,15 @@ protected:
 
 public:
 
+    const char *name ( void ) const { return _label; }
+    void name ( const char *s )
+        {
+            if ( _label )
+                free( _label );
+            _label = strdup( s );
+            redraw();
+        }
+
     Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
     virtual int abs_w ( void ) const { return 8; }
 
@@ -63,6 +72,8 @@ public:
 
     virtual ~Sequence_Point ( )
         {
+            if ( _label )
+                free( _label );
         }
 
     virtual void draw_box ( void );

@@ -51,7 +51,7 @@ class Time_Point : public Sequence_Point
     _make_label ( void )
         {
             if ( ! _label )
-                _label = new char[40];
+                _label = (char*)malloc( 40 );
 
             snprintf( _label, 40, "%d/%d", _time.beats_per_bar, _time.beat_type );
         }
@@ -94,7 +94,6 @@ public:
 
     ~Time_Point ( )
         {
-            if ( _label ) delete[] _label;
             log_destroy();
         }
 

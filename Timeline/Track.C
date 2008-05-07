@@ -259,10 +259,14 @@ Track::~Track ( )
     for ( int i = control_out.size(); i--; )
     {
             control_out.back()->shutdown();
+            delete control_out.back();
             control_out.pop_back();
     }
 
     log_destroy();
+
+    if ( _name )
+        free( _name );
 }
 
 

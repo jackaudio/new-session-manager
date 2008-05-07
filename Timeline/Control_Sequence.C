@@ -86,7 +86,7 @@ Control_Sequence::set ( Log_Entry &e )
             t->add( this );
         }
         else if ( ! strcmp( ":n", s ) )
-            name( strdup( v ) );
+            name( v );
 
     }
 }

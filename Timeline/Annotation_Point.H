@@ -64,6 +64,7 @@ public:
 
     /* for loggable */
     LOG_CREATE_FUNC( Annotation_Point );
+    SEQUENCE_WIDGET_CLONE_FUNC( Annotation_Point );
 
     Annotation_Point ( Sequence *sequence, nframes_t when, const char *name )
         {
@@ -80,11 +81,6 @@ public:
         {
             _r->start = rhs._r->start;
             _label = strdup( rhs._label );
-        }
-
-    Sequence_Widget *clone ( const Sequence_Widget *r )
-        {
-            return new Annotation_Point( *(Annotation_Point*)r );
         }
 
     ~Annotation_Point ( )

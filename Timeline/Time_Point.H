@@ -69,6 +69,7 @@ protected:
 public:
 
     LOG_CREATE_FUNC( Time_Point );
+    SEQUENCE_WIDGET_CLONE_FUNC( Time_Point );
 
     Time_Point ( nframes_t when, int bpb, int note );
     Time_Point ( const Time_Point &rhs );
@@ -78,10 +79,6 @@ public:
             log_destroy();
         }
 
-    Sequence_Widget *clone ( const Sequence_Widget *r )
-        {
-            return new Time_Point( *(Time_Point*)r );
-        }
 
     void time ( int bpb, int note ) { _time.beats_per_bar = bpb; _time.beat_type = note; }
     time_sig time ( void ) const { return _time; }

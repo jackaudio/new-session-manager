@@ -127,7 +127,7 @@ public:
 
     LOG_CREATE_FUNC( Audio_Region );
 
-    Sequence_Widget *clone ( const Sequence_Widget *r );
+    SEQUENCE_WIDGET_CLONE_FUNC( Audio_Region );
 
     ~Audio_Region ( )
         {

@@ -128,7 +128,14 @@ public:
 /*             *this = rhs; */
 /*         } */
 
-    virtual Sequence_Widget *clone ( const Sequence_Widget *r ) = 0;
+#define SEQUENCE_WIDGET_CLONE_FUNC(class)                               \
+    virtual Sequence_Widget *clone ( void ) const                       \
+        {                                                               \
+            return new class ( *this );                                 \
+        }                                                               \
+                                                                        \
+//    virtual Sequence_Widget *clone ( const Sequence_Widget *r ) = 0;
+    virtual Sequence_Widget *clone ( void ) const = 0;
 
     bool selected ( void ) const
         {

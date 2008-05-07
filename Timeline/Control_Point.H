@@ -41,12 +41,7 @@ public:
 
     /* for loggable */
     LOG_CREATE_FUNC( Control_Point );
-
-
-    Sequence_Widget *clone ( const Sequence_Widget *r )
-        {
-            return new Control_Point( *(Control_Point*)r );
-        }
+    SEQUENCE_WIDGET_CLONE_FUNC( Control_Point );
 
     Control_Point ( Sequence *t, nframes_t when, float y );
     Control_Point ( const Control_Point &rhs );

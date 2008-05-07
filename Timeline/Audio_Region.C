@@ -140,12 +140,6 @@ Audio_Region::Audio_Region ( const Audio_Region & rhs )
     log_create();
 }
 
-Sequence_Widget *
-Audio_Region::clone ( const Sequence_Widget *r )
-{
-    return new Audio_Region( *(Audio_Region*)r );
-}
-
 /*  */
 Audio_Region::Audio_Region ( Audio_File *c )
 {
@@ -383,7 +377,7 @@ Audio_Region::handle ( int m )
                 int d = (ox + X) - x();
                 long td = timeline->x_to_ts( d );
 
-                if ( td > 0 && os < td )
+                if ( td > 0 && os < (nframes_t)td )
                     _r->offset = 0;
                 else
                     _r->offset = os - td;

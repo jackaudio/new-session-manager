@@ -46,9 +46,10 @@ protected:
 
 public:
 
-    static bool edit ( float *tempo );
-
     LOG_CREATE_FUNC( Tempo_Point );
+    SEQUENCE_WIDGET_CLONE_FUNC( Tempo_Point );
+
+    static bool edit ( float *tempo );
 
     Tempo_Point ( nframes_t when, float bpm );
 
@@ -58,11 +59,6 @@ public:
         {
             _r->offset = rhs._r->offset;
             _tempo = rhs._tempo;
-        }
-
-    Sequence_Widget *clone ( const Sequence_Widget *r )
-        {
-            return new Tempo_Point( *(Tempo_Point*)r );
         }
 
 

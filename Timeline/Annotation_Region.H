@@ -53,6 +53,7 @@ public:
 
     /* for loggable */
     LOG_CREATE_FUNC( Annotation_Region );
+    SEQUENCE_WIDGET_CLONE_FUNC( Annotation_Region );
 
     Annotation_Region ( Sequence *track, nframes_t when, const char *name );
     Annotation_Region ( const Annotation_Region &rhs );
@@ -61,10 +62,5 @@ public:
     void draw_box ( void );
     void draw ( void );
     int handle ( int m );
-
-    Sequence_Widget *clone ( const Sequence_Widget *r )
-        {
-            return new Annotation_Region( *(Annotation_Region*)r );
-        }
 
 };

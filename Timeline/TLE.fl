@@ -187,12 +187,12 @@ update_menu();}
           }
           MenuItem {} {
             label {&Compact}
-            callback {int n = fl_choice( "Compacting will replace the project history with a snapshot of the current state.\\n You will not be able to use Undo to go back beyond this point.\\n This operation is irreversible!", NULL, "Abort", "Procede with compaction" );
+            callback {int n = fl_choice( "Compacting will replace the project history with a snapshot of the current state.\\nYou will not be able to use Undo to go back beyond this point.\\n\\nThis operation is irreversible!", NULL, "&Cancel", "Pr&ocede with compaction" );
 
 if ( n != 2 )
 	return;
 	
-Loggable::compact();}
+Loggable::compact();} selected
             xywh {20 20 40 25}
           }
           Submenu {} {
@@ -218,7 +218,7 @@ Project::close();
 
 printf( "dropped %d buffers\\n", engine->dropped() );
 
-exit( 0 );} selected
+exit( 0 );}
             xywh {40 40 40 25} shortcut 0x40071
           }
         }

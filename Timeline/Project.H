@@ -28,7 +28,8 @@ class Project
 
 public:
 
-
+    static bool write_info ( void );
+    static bool read_info ( void );
     static const char *name ( void ) { return Project::_name; }
     static void set_name ( const char *name );
     static bool close ( void );

@@ -31,6 +31,10 @@ project state belongs to Timeline and other classes. */
 #include "Loggable.H"
 #include "Project.H"
 
+#include "Timeline.H" // for sample_rate();
+
+#define APP_TITLE "Non-DAW"
+
 #include "debug.h"
 char Project::_name[256];
 bool Project::_is_open = false;
@@ -62,8 +66,51 @@ Project::close ( void )
 {
     Loggable::close();
 
+    write_info();
+
     _is_open = false;
 }
+
+bool
+Project::write_info ( void )
+{
+
+    if ( ! open() )
+        return true;
+
+    FILE *fp;
+
+    if ( ! ( fp = fopen( "info", "w" ) ) )
+    {
+        WARNING( "could not open project info file for writing." );
+        return false;
+    }
+
+    fprintf( fp, "version\n\t%s\nsample rate\n\t%lu\n", APP_TITLE " " VERSION, timeline->sample_rate() );
+
+    fclose( fp );
+
+    return true;
+}
+
+bool
+Project::read_info ( void )
+{
+    FILE *fp;
+
+    if ( ! ( fp = fopen( "info", "r" ) ) )
+    {
+        WARNING( "could not open project info file for reading." );
+        return false;
+    }
+
+    /* TODO: something */
+
+    fclose( fp );
+
+    return true;
+}
+
 
 bool
 Project::open ( const char *name )
@@ -86,6 +133,8 @@ Project::open ( const char *name )
         FATAL( "error opening journal" );
 
     set_name( name );
+
+    read_info();
 
     _is_open = true;
 

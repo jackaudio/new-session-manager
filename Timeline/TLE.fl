@@ -131,8 +131,7 @@ menubar->picked( menubar->find_item( "&Timeline/Capture Format/Wav 24" ) );
 char *path;
 asprintf( &path, "%s/options", user_config_dir );
 ((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options" ), path );
-free( path );} {selected
-    }
+free( path );} {}
   }
   Function {make_window()} {open
   } {
@@ -215,9 +214,11 @@ Loggable::compact();}
 
 save_timeline_settings();
 
+Project::close();
+
 printf( "dropped %d buffers\\n", engine->dropped() );
 
-exit( 0 );}
+exit( 0 );} selected
             xywh {40 40 40 25} shortcut 0x40071
           }
         }

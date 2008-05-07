@@ -98,7 +98,7 @@ Annotation_Region::handle ( int m )
 
     if ( m == FL_PUSH && Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
     {
-        char *s = fl_text_edit( "Annotation text:", "Save", name() );
+        char *s = fl_text_edit( "Annotation text:", "&Save", name() );
 
         if ( s )
             name( s );

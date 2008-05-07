@@ -56,10 +56,6 @@ class Time_Point : public Sequence_Point
             snprintf( _label, 40, "%d/%d", _time.beats_per_bar, _time.beat_type );
         }
 
-    Time_Point ( ) : _time( 4, 4 )
-        {
-
-        }
 
 protected:
 
@@ -68,23 +64,18 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
+    Time_Point ( );
 
 public:
 
     LOG_CREATE_FUNC( Time_Point );
 
-    Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
-        {
-            _r->offset = when;
-            _make_label();
+    Time_Point ( nframes_t when, int bpb, int note );
+    Time_Point ( const Time_Point &rhs );
 
-            log_create();
-        }
-
-    Time_Point ( const Time_Point &rhs )
+    ~Time_Point ( )
         {
-            _r->offset = rhs._r->offset;
-            _time = rhs._time;
+            log_destroy();
         }
 
     Sequence_Widget *clone ( const Sequence_Widget *r )
@@ -92,40 +83,8 @@ public:
             return new Time_Point( *(Time_Point*)r );
         }
 
-    ~Time_Point ( )
-        {
-            log_destroy();
-        }
-
-/*     beats_per_bar ( void ) const { return _time.beats_per_bar; } */
-/*     beat_type ( void ) const { return _beat_type; } */
-
     void time ( int bpb, int note ) { _time.beats_per_bar = bpb; _time.beat_type = note; }
     time_sig time ( void ) const { return _time; }
-
-/*     Time_Point * */
-/*     at ( nframes_t when ) */
-/*         { */
-/*             for ( std::list <Sequence_Widget *>::const_reverse_iterator i = _widgets.rbegin(); */
-/*                   i != _widgets.rend(); i++ ) */
-/*                 if ( (*i)->offset() < when ) */
-/*                     return ((Time_Point*)(*i)); */
-
-/*             return NULL; */
-/*         } */
-
-/*     int */
-/*     handle ( int m ) */
-/*         { */
-/*             int r = Sequence_Widget::handle( m ); */
-
-/*             if ( m == FL_RELEASE ) */
-/*             { */
-/*                 _track->sort(); */
-/*                 timeline->redraw(); */
-/*             } */
-/*             return r; */
-/*         } */
 
 };
 

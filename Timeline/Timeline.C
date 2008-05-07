@@ -157,13 +157,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->align( FL_ALIGN_LEFT );
 
             tempo_track = o;
-
-            o->beats_per_minute( 0, 120 );
-
-/*             o->beats_per_minute( 48000 * 50, 250 ); */
-
-/*             o->beats_per_minute( 48000 * 120, 60 ); */
-
         }
 
         {
@@ -175,8 +168,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
             o->align( FL_ALIGN_LEFT );
 
             time_track = o;
-
-            o->time( 0, 4, 4 );
         }
 
 
@@ -251,6 +242,12 @@ void
 Timeline::beats_per_minute ( nframes_t when, float bpm )
 {
     tempo_track->add( new Tempo_Point( when, bpm ) );
+}
+
+void
+Timeline::time ( nframes_t when, int bpb, int note_type )
+{
+    time_track->add( new Time_Point( when, bpb, note_type ) );
 }
 
 #if 0

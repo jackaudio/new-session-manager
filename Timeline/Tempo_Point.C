@@ -25,26 +25,29 @@
 void
 Tempo_Point::get ( Log_Entry &e ) const
 {
-    e.add( ":start", _r->offset );
+    Sequence_Point::get( e );
+
     e.add( ":tempo", _tempo );
 }
 
 void
 Tempo_Point::set ( Log_Entry &e )
 {
+
+    Sequence_Point::set( e );
+
     for ( int i = 0; i < e.size(); ++i )
     {
         const char *s, *v;
 
         e.get( i, &s, &v );
 
-        if ( ! strcmp( s, ":start" ) )
-            _r->offset = atol( v );
-        else if ( ! strcmp( s, ":tempo" ) )
+        if ( ! strcmp( s, ":tempo" ) )
             _tempo = atof( v );
 
-        /* FIXME: we need to add this to the time track on creation!!! */
-        timeline->tempo_track->add( this );
+/*         /\* FIXME: we need to add this to the time track on creation!!! *\/ */
+/*         timeline->tempo_track->add( this ); */
+
     }
 
     timeline->redraw();
@@ -53,12 +56,19 @@ Tempo_Point::set ( Log_Entry &e )
 }
 
 
+Tempo_Point::Tempo_Point ( )
+{
+    timeline->tempo_track->add( this );
+}
+
 Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
 {
     _tempo = bpm;
-    _r->offset = when;
+    _r->start = when;
 
     _make_label();
+
+    timeline->tempo_track->add( this );
 
     log_create();
 }

@@ -173,5 +173,14 @@ Project::create ( const char *name, const char *template_name )
 
     /* TODO: copy template */
 
-    return open( name );
+    if ( open( name ) )
+    {
+        /* add the bare essentials */
+        timeline->beats_per_minute( 0, 120 );
+        timeline->time( 0, 4, 4 );
+
+        return true;
+    }
+    else
+        return false;
 }

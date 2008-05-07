@@ -42,9 +42,7 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
-    Tempo_Point ( )
-        {
-        }
+    Tempo_Point ( );
 
 public:
 

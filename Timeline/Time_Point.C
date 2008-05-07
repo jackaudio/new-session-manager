@@ -24,7 +24,9 @@
 void
 Time_Point::get ( Log_Entry &e ) const
 {
-    e.add( ":start",             _r->offset          );
+
+    Sequence_Point::get( e );
+
     e.add( ":beats_per_bar", _time.beats_per_bar );
     e.add( ":beat_type",     _time.beat_type     );
 }
@@ -32,24 +34,48 @@ Time_Point::get ( Log_Entry &e ) const
 void
 Time_Point::set ( Log_Entry &e )
 {
+
+    Sequence_Point::set( e );
+
     for ( int i = 0; i < e.size(); ++i )
     {
         const char *s, *v;
 
         e.get( i, &s, &v );
 
-        if ( ! strcmp( s, ":start" ) )
-            _r->offset = atol( v );
-        else if ( ! strcmp( s, ":beats_per_bar" ) )
+        if ( ! strcmp( s, ":beats_per_bar" ) )
             _time.beats_per_bar = atoi( v );
         else if ( ! strcmp( s, ":beat_type" ) )
             _time.beat_type = atoi( v );
 
-        /* FIXME: we need to add this to the time track on creation!!! */
-        timeline->time_track->add( this );
+/*         /\* FIXME: we need to add this to the time track on creation!!! *\/ */
+/*         timeline->time_track->add( this ); */
+
     }
 
     timeline->redraw();
 
     _make_label();
+}
+
+
+Time_Point::Time_Point ( ) : _time( 4, 4 )
+{
+    timeline->time_track->add( this );
+}
+
+Time_Point::Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
+{
+    _r->offset = when;
+    _make_label();
+
+    timeline->time_track->add( this );
+
+    log_create();
+}
+
+Time_Point::Time_Point ( const Time_Point &rhs )
+{
+    _r->offset = rhs._r->offset;
+    _time = rhs._time;
 }

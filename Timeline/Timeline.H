@@ -141,6 +141,7 @@ public:
     float beats_per_minute ( nframes_t when ) const;
     int beats_per_bar ( nframes_t when ) const;
     void beats_per_minute ( nframes_t when, float bpm );
+    void time ( nframes_t when, int bpb, int beat_type );
     bool nearest_line ( nframes_t when, nframes_t *f ) const;
 
     typedef void (measure_line_callback)( nframes_t frame, int X, int Y, int H, void *arg );

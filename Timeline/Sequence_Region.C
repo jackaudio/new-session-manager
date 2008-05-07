@@ -91,12 +91,9 @@ Sequence_Region::trim ( enum trim_e t, int X )
 int
 Sequence_Region::handle ( int m )
 {
-    static int ox, oy;
     static enum trim_e trimming;
 
     static bool copied = false;
-    static nframes_t os;
-
 
 /*     if ( ! active_r() ) */
 /*         return 0; */
@@ -137,7 +134,7 @@ Sequence_Region::handle ( int m )
                 fl_cursor( FL_CURSOR_WE );
                 return 1;
             }
-            else if ( Fl::test_shortcut( FL_BUTTON3 ) )
+            else if ( Fl::test_shortcut( FL_BUTTON2 ) && ! Fl::event_shift() )
             {
                 if ( Sequence_Widget::current() == this )
                 {
@@ -212,4 +209,7 @@ Sequence_Region::handle ( int m )
             return Sequence_Widget::handle( m );
             break;
     }
+
+    return 0;
+
 }

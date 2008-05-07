@@ -292,7 +292,7 @@ Audio_Region::handle ( int m )
                     /* duplication */
                     return 1;
                 }
-                else if ( Fl::event_button3() && ! Fl::event_ctrl() )
+                else if ( Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
                 {
                     /* context menu */
 
@@ -330,7 +330,7 @@ Audio_Region::handle ( int m )
                         redraw();
                     }
 
-                    return 1;
+                    return 0;
                 }
                 else
                     return Sequence_Widget::handle( m );

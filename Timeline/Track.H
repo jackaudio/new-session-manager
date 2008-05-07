@@ -79,7 +79,7 @@ private:
 
     enum { AUDIO } _type;
 
-    Audio_Sequence *_track;
+    Audio_Sequence *_sequence;
 
     Audio_Region *_capture;                                           /* capture region */
     Audio_File *_capture_af;                                    /* capture write source */
@@ -171,7 +171,7 @@ public:
                         {
 //                        assert( t );
 
-                            track( t );
+                            sequence( t );
                         }
 
                     }
@@ -185,7 +185,7 @@ public:
     virtual void get ( Log_Entry &e ) const
         {
             e.add( ":name",            _name            );
-            e.add( ":sequence",        track()          );
+            e.add( ":sequence",        sequence()          );
             e.add( ":selected",        _selected        );
             e.add( ":height",          size()           );
             e.add( ":inputs",          input.size()     );
@@ -251,8 +251,8 @@ public:
 
     static int width ( void ) { return 150; }
 
-    void track ( Audio_Sequence * t );
-    Audio_Sequence * track ( void ) const { return _track; }
+    void sequence ( Audio_Sequence * t );
+    Audio_Sequence * sequence ( void ) const { return _sequence; }
 
     void draw ( void );
     int handle ( int m );

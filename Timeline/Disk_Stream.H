@@ -42,7 +42,7 @@ protected:
 
     pthread_t _thread;                                 /* io thread */
 
-    Track *_th;                               /* Track we belong to */
+    Track *_track;                               /* Track we belong to */
 
     nframes_t _nframes;                              /* buffer size */
 
@@ -62,7 +62,8 @@ protected:
 
     int channels ( void ) const { return _rb.size(); }
 
-    Audio_Sequence * track ( void );
+    Audio_Sequence * sequence ( void ) const;
+    Track * track ( void ) const;
 
     static void *disk_thread ( void *arg );
 

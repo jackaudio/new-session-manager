@@ -50,7 +50,7 @@ float Disk_Stream::seconds_to_buffer = 2.0f;
  counts.*/
 size_t Disk_Stream::disk_io_kbytes = 256;
 
-Disk_Stream::Disk_Stream ( Track *th, float frame_rate, nframes_t nframes, int channels ) : _th( th )
+Disk_Stream::Disk_Stream ( Track *track, float frame_rate, nframes_t nframes, int channels ) : _track( track )
 {
 
     assert( channels );
@@ -83,7 +83,7 @@ Disk_Stream::~Disk_Stream ( )
     /* it isn't safe to do all this with the RT thread running */
     engine->lock();
 
-    _th = NULL;
+    _track = NULL;
 
     sem_destroy( &_blocks );
 
@@ -148,10 +148,16 @@ Disk_Stream::shutdown ( void )
     _terminate = false;
 }
 
-Audio_Sequence *
-Disk_Stream::track ( void )
+Track *
+Disk_Stream::track ( void ) const
 {
-    return (Audio_Sequence*)_th->track();
+    return _track;
+}
+
+Audio_Sequence *
+Disk_Stream::sequence ( void ) const
+{
+    return (Audio_Sequence*)_track->sequence();
 }
 
 /** start Disk_Stream thread */

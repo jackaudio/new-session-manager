@@ -929,7 +929,7 @@ Timeline::handle ( int m )
 
                             add_track( t );
 
-                            t->track( o );
+                            t->sequence( o );
 
                             Loggable::block_end();
                         }

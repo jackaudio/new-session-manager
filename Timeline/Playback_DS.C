@@ -71,7 +71,7 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
 
 //    printf( "IO: attempting to read block @ %lu\n", _frame );
 
-    if ( ! track() )
+    if ( ! sequence() )
     {
 //        _frame += _nframes;
         return;
@@ -79,7 +79,7 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
 
     timeline->rdlock();
 
-    if ( track()->play( buf, _frame, nframes, channels() ) )
+    if ( sequence()->play( buf, _frame, nframes, channels() ) )
         _frame += nframes;
     else
         /* error */;
@@ -213,7 +213,7 @@ Playback_DS::process ( nframes_t nframes )
     for ( int i = channels(); i--;  )
     {
 
-        void *buf = _th->output[ i ].buffer( nframes );
+        void *buf = track()->output[ i ].buffer( nframes );
 
         if ( jack_ringbuffer_read( _rb[ i ], (char*)buf, block_size ) < block_size )
         {
@@ -223,7 +223,7 @@ Playback_DS::process ( nframes_t nframes )
         }
 
         /* TODO: figure out a way to stop IO while muted without losing sync */
-        if ( _th->mute() || ( Track::soloing() && ! _th->solo() ) )
+        if ( track()->mute() || ( Track::soloing() && ! track()->solo() ) )
             buffer_fill_with_silence( (sample_t*)buf, nframes );
     }
 

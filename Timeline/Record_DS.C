@@ -38,12 +38,12 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
 {
 
     /* stupid chicken/egg */
-    if ( ! ( timeline && track() ) )
+    if ( ! ( timeline && sequence() ) )
         return;
 
 //    timeline->wrlock();
 
-    _th->write( buf, nframes );
+    track()->write( buf, nframes );
 
     _frames_written += nframes;
 
@@ -201,7 +201,7 @@ Record_DS::start ( nframes_t frame )
 
     _frame = frame;
 
-    _th->record( frame );
+    track()->record( frame );
 
     run();
 
@@ -231,7 +231,7 @@ Record_DS::stop ( nframes_t frame )
 
     /* FIXME: flush buffers here? */
 
-    _th->stop( frame );
+    track()->stop( frame );
 
     DMESSAGE( "recording finished" );
 }
@@ -252,7 +252,7 @@ Record_DS::process ( nframes_t nframes )
 
     for ( int i = channels(); i--;  )
     {
-        void *buf = _th->input[ i ].buffer( nframes );
+        void *buf = track()->input[ i ].buffer( nframes );
 
         if ( jack_ringbuffer_write( _rb[ i ], (char*)buf, block_size ) < block_size )
         {

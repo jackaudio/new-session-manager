@@ -78,7 +78,7 @@ Audio_Sequence::set ( Log_Entry &e )
 
             assert( t );
 
-            t->track( this );
+            t->sequence( this );
         }
         else if ( ! strcmp( ":name", s ) )
             name( v );

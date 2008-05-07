@@ -93,7 +93,7 @@ Track::cb_button ( Fl_Widget *w )
                     show_all_takes( take_menu->menu()[ v ].value() );
                     return;
                 case 1:                                         /* new */
-                    track( (Audio_Sequence*)track()->clone_empty() );
+                    sequence( (Audio_Sequence*)sequence()->clone_empty() );
                     return;
             }
 
@@ -104,7 +104,7 @@ Track::cb_button ( Fl_Widget *w )
                 Audio_Sequence *t = (Audio_Sequence*)takes->child( i );
                 if ( ! strcmp( s, t->name() ) )
                 {
-                    track( t );
+                    sequence( t );
                     redraw();
                     break;
                 }
@@ -116,7 +116,7 @@ void
 Track::init ( void )
 {
     _capture = NULL;
-    _track = NULL;
+    _sequence = NULL;
     _name = NULL;
     _selected = false;
     _show_all_takes = false;
@@ -312,8 +312,8 @@ Track::resize ( void )
 
     Fl_Group::size( w(), h() + ( ( 24 ) * pack_visible( annotation ) ) );
 
-    if ( track() )
-        track()->size( w(), height() );
+    if ( sequence() )
+        sequence()->size( w(), height() );
 
 
     if ( controls->y() + controls->h() > y() + h() )
@@ -373,14 +373,14 @@ Track::remove ( Control_Sequence *t )
 }
 
 void
-Track::track ( Audio_Sequence * t )
+Track::sequence ( Audio_Sequence * t )
 {
     t->track( this );
 
-    if ( track() )
-        add( track() );
+    if ( sequence() )
+        add( sequence() );
 
-    _track = t;
+    _sequence = t;
     pack->insert( *t, 1 );
 
     t->labeltype( FL_NO_LABEL );
@@ -423,7 +423,7 @@ Track::select ( int X, int Y, int W, int H,
                 bool include_control, bool merge_control )
 {
 
-    Sequence *t = track();
+    Sequence *t = sequence();
 
     if ( ! ( t->y() > Y + H || t->y() + t->h() < Y ) )
         t->select_range( X, W );
@@ -786,7 +786,7 @@ Track::record ( nframes_t frame )
     /* open it again for reading in the GUI thread */
     Audio_File *af = Audio_File::from_file( _capture_af->name() );
 
-    _capture = new Audio_Region( af, track(), frame );
+    _capture = new Audio_Region( af, sequence(), frame );
 
     _capture->prepare();
 }

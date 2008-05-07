@@ -144,6 +144,8 @@ Project::open ( const char *name )
 bool
 Project::create ( const char *name, const char *template_name )
 {
+    close();
+
     if ( exists( name ) )
     {
         WARNING( "Project already exists" );
@@ -164,8 +166,6 @@ Project::create ( const char *name, const char *template_name )
     creat( "history", 0666 );
 
     /* TODO: copy template */
-
-    close();
 
     return open( name );
 }

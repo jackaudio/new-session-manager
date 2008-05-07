@@ -84,15 +84,18 @@ Loggable::close ( void )
 
     _fp = NULL;
 
-    for ( int i = _log_id; i--; )
+    for ( int i = 0; i < _log_id - 1; ++i )
     {
         Loggable ** l = &_loggables[ i ];
 
         if ( *l )
+        {
             delete *l;
-
-        *l = NULL;
+            *l = NULL;
+        }
     }
+
+    _log_id = 0;
 
     return true;
 }
@@ -719,10 +722,13 @@ Loggable::log_create ( void ) const
 void
 Loggable::log_destroy ( void ) const
 {
-//    indent();
+    if ( ! _fp )
+        /* tearing down... don't bother */
+        return;
+
     log( "%s 0x%X destroy (nothing) << ", class_name(), _id );
 
-   char **sa;
+    char **sa;
 
     Log_Entry e;
 

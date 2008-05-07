@@ -59,6 +59,19 @@ Sequence::init ( void )
 Sequence::~Sequence (  )
 {
     /* FIXME: what to do with regions? */
+
+    for ( std::list <Sequence_Widget*>::iterator i = _widgets.begin();
+          i != _widgets.end(); ++i )
+    {
+        Sequence_Widget *w = *i;
+
+        *i = NULL;
+
+        delete w;
+    }
+
+    _widgets.clear();
+
     parent()->redraw();
     parent()->remove( this );
 //    log_destroy();

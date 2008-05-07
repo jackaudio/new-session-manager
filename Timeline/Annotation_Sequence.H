@@ -33,7 +33,7 @@ protected:
 
     virtual void get ( Log_Entry &e ) const
         {
-            e.add( ":t", _track );
+            e.add( ":track", _track );
         }
 
     void
@@ -45,7 +45,7 @@ protected:
 
                 e.get( i, &s, &v );
 
-                if ( ! strcmp( ":t", s ) )
+                if ( ! strcmp( ":track", s ) )
                 {
                     int i;
                     sscanf( v, "%X", &i );

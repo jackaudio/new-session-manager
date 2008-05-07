@@ -134,28 +134,28 @@ public:
 
                 e.get( i, &s, &v );
 
-                if ( ! strcmp( s, ":h" ) )
+                if ( ! strcmp( s, ":height" ) )
                 {
                     size( atoi( v ) );
 
 //                    Fl_Widget::size( w(), height() );
                     resize();
                 }
-                else if ( ! strcmp( s, ":s" ) )
+                else if ( ! strcmp( s, ":selected" ) )
                     _selected = atoi( v );
 //                else if ( ! strcmp( s, ":armed"
-                else if ( ! strcmp( s, ":n" ) )
+                else if ( ! strcmp( s, ":name" ) )
                     name( v );
-                else if ( ! strcmp( s, ":i" ) )
+                else if ( ! strcmp( s, ":inputs" ) )
                     configure_inputs( atoi( v ) );
-                else if ( ! strcmp( s, ":o" ) )
+                else if ( ! strcmp( s, ":outputs" ) )
                     configure_outputs( atoi( v ) );
-                else if ( ! strcmp( s, ":c" ) )
+                else if ( ! strcmp( s, ":color" ) )
                 {
                     color( (Fl_Color)atoll( v ) );
                     redraw();
                 }
-                else if ( ! strcmp( s, ":t" ) )
+                else if ( ! strcmp( s, ":sequence" ) )
                 {
                     int i;
                     sscanf( v, "%X", &i );
@@ -184,13 +184,13 @@ public:
 
     virtual void get ( Log_Entry &e ) const
         {
-            e.add( ":n",        _name            );
-            e.add( ":t",        track()          );
-            e.add( ":s",        _selected        );
-            e.add( ":h",        size()           );
-            e.add( ":i",        input.size()     );
-            e.add( ":o",        output.size()    );
-            e.add( ":c",        (unsigned long)color());
+            e.add( ":name",            _name            );
+            e.add( ":sequence",        track()          );
+            e.add( ":selected",        _selected        );
+            e.add( ":height",          size()           );
+            e.add( ":inputs",          input.size()     );
+            e.add( ":outputs",         output.size()    );
+            e.add( ":color",           (unsigned long)color());
         }
 
     /* for loggable */

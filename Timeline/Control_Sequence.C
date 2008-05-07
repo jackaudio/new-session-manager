@@ -62,8 +62,8 @@ Control_Sequence::init ( void )
 void
 Control_Sequence::get ( Log_Entry &e ) const
 {
-    e.add( ":t", _track );
-    e.add( ":n", name() );
+    e.add( ":track", _track );
+    e.add( ":name", name() );
 }
 
 void
@@ -75,7 +75,7 @@ Control_Sequence::set ( Log_Entry &e )
 
         e.get( i, &s, &v );
 
-        if ( ! strcmp( ":t", s ) )
+        if ( ! strcmp( ":track", s ) )
         {
             int i;
             sscanf( v, "%X", &i );
@@ -85,7 +85,7 @@ Control_Sequence::set ( Log_Entry &e )
 
             t->add( this );
         }
-        else if ( ! strcmp( ":n", s ) )
+        else if ( ! strcmp( ":name", s ) )
             name( v );
 
     }

@@ -85,8 +85,8 @@ protected:
             e.add( ":x", _r->offset );
             e.add( ":l", _r->start );
             e.add( ":r", _r->end );
-            e.add( ":t", _track );
-            e.add( ":s", selected() );
+            e.add( ":sequence", _track );
+            e.add( ":selected", selected() );
         }
 
     virtual void
@@ -104,14 +104,14 @@ protected:
                     _r->start = atoll( v );
                 else if ( ! strcmp( s, ":r" ) )
                     _r->end = atoll( v );
-                else if ( ! strcmp( s, ":s" ) )
+                else if ( ! strcmp( s, ":selected" ) )
                 {
                     if ( atoi( v ) )
                         select();
                     else
                         deselect();
                 }
-                else if ( ! strcmp( s, ":t" ) )
+                else if ( ! strcmp( s, ":sequence" ) )
                 {
                     int i;
                     sscanf( v, "%X", &i );

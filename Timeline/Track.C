@@ -207,7 +207,8 @@ Track::init ( void )
         resizable( o );
 
         {
-            Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 0 );
+//            Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 0 );
+            Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 1 );
             o->end();
         }
 
@@ -279,8 +280,6 @@ static int pack_visible( Fl_Pack *p )
 void
 Track::resize ( void )
 {
-
-
     for ( int i = takes->children(); i--; )
         takes->child( i )->size( w(), height()  );
 

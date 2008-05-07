@@ -82,10 +82,10 @@ Sequence_Region::trim ( enum trim_e t, int X )
 
             long td = timeline->x_to_ts( d );
 
-            if ( td < 0 && _r->offset < 0 - td )
+            if ( td < 0 && _r->offset < (nframes_t)( 0 - td ) )
                 td = 0 - _r->offset;
 
-            if ( td > 0 && td >= _r->length )
+            if ( td > 0 && (nframes_t)td >= _r->length )
                 td = _r->length - timeline->x_to_ts( 1 );
 
 //                td = _r->length - timeline->x_to_ts( 1 );
@@ -105,7 +105,7 @@ Sequence_Region::trim ( enum trim_e t, int X )
 
 //            printf( "%li %li\n", td, _r->length - _r->offset );
 
-            if ( td >= 0 && _r->length < td )
+            if ( td >= 0 && _r->length < (nframes_t)td )
                 _r->length = timeline->x_to_ts( 1 );
             else
                 _r->length -= td;

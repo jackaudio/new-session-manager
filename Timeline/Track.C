@@ -591,13 +591,13 @@ Track::handle ( int m )
 void
 Track::update_port_names ( void )
 {
-    for ( int i = 0; i < output.size(); ++i )
+    for ( unsigned int i = 0; i < output.size(); ++i )
         output[ i ].name( name(), i );
 
-    for ( int i = 0; i < input.size(); ++i )
+    for ( unsigned int i = 0; i < input.size(); ++i )
         input[ i ].name( name(), i );
 
-    for ( int i = 0; i < control_out.size(); ++i )
+    for ( unsigned int i = 0; i < control_out.size(); ++i )
         control_out[ i ]->name( name(), i, "cv" );
 
 

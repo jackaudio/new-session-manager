@@ -99,7 +99,7 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize
     }
 
     int channels = _clip->channels();
-    const int ratio = chunksize / pfchunksize;
+    const unsigned int ratio = chunksize / pfchunksize;
 
     /* locate to start position */
     if ( fseek( fp, (s * channels / pfchunksize) * sizeof( Peak ), SEEK_CUR ) )
@@ -181,7 +181,7 @@ Peaks::read_source_peaks ( Peak *peaks, int npeaks, int chunksize ) const
             p.min = 0;
             p.max = 0;
 
-            for ( int k = j; k < len * channels; k += channels )
+            for ( nframes_t k = j; k < len * channels; k += channels )
             {
                 if ( fbuf[ k ] > p.max )
                     p.max = fbuf[ k ];
@@ -191,7 +191,7 @@ Peaks::read_source_peaks ( Peak *peaks, int npeaks, int chunksize ) const
 
         }
 
-        if ( len < chunksize )
+        if ( len < (nframes_t)chunksize )
             break;
     }
 
@@ -218,7 +218,7 @@ Peaks::read_peaks ( nframes_t s, nframes_t e, int npeaks, int chunksize ) const
 {
     printf( "reading peaks %d @ %d\n", npeaks, chunksize );
 
-    if ( _peakbuf.size < npeaks * _clip->channels() )
+    if ( _peakbuf.size < (nframes_t)( npeaks * _clip->channels() ) )
     {
         _peakbuf.size = npeaks * _clip->channels();
 //        printf( "reallocating peak buffer %li\n", _peakbuf.size );

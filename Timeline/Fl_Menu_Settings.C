@@ -55,9 +55,11 @@ Fl_Menu_Settings::indent ( FILE *fp, int n )
 int
 Fl_Menu_Settings::item_pathname_x ( char *path, int n, const Fl_Menu_Item *item )
 {
-    Fl_Menu_::item_pathname( path, n, item );
+    int r = Fl_Menu_::item_pathname( path, n, item );
 
     remove_ampersands( path, n );
+
+    return r;
 }
 
 /** dump options from submenu /menu/ of menubar /bar/ to file /fp/ */
@@ -331,4 +333,6 @@ Fl_Menu_Settings::load ( const Fl_Menu_Item *item, const char *name )
     load( this, item, fp, 0, path, sizeof( path ) );
 
     fclose( fp );
+
+    return true;
 }

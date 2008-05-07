@@ -72,6 +72,8 @@ Project::close ( void )
     write_info();
 
     _is_open = false;
+
+    return true;
 }
 
 bool
@@ -92,7 +94,7 @@ Project::write_info ( void )
     fprintf( fp, "created by\n\t%s\nversion\n\t%s\nsample rate\n\t%lu\n",
              APP_TITLE " " VERSION,
              PROJECT_VERSION,
-             timeline->sample_rate() );
+             (unsigned long)timeline->sample_rate() );
 
     fclose( fp );
 

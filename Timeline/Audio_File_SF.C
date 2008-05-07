@@ -31,6 +31,8 @@
 
 // #define HAS_SF_FORMAT_VORBIS
 
+#include "debug.h"
+
 const Audio_File::format_desc Audio_File_SF::supported_formats[] =
 {
     {      "Wav 24",       "wav",   SF_FORMAT_WAV    | SF_FORMAT_PCM_24    | SF_ENDIAN_FILE },
@@ -178,7 +180,7 @@ nframes_t
 Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
 {
     if ( len > 256 * 100 )
-        printf( "warning: attempt to read an insane number of frames (%lu) from soundfile\n", len );
+        WARNING( "warning: attempt to read an insane number of frames (%lu) from soundfile\n", (unsigned long)len );
 
 //    printf( "len = %lu, channels = %d\n", len, _channels );
 
@@ -193,7 +195,7 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
         rlen = sf_readf_float( _in, tmp, len );
 
         /* extract the requested channel */
-        for ( int i = channel; i < rlen * _channels; i += _channels )
+        for ( unsigned int i = channel; i < rlen * _channels; i += _channels )
             *(buf++) = tmp[ i ];
 
         delete[] tmp;

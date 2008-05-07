@@ -229,6 +229,9 @@ path_pop ( char *path )
 
     int l = strlen( path );
 
+    if ( ! l )
+        return;
+
     if ( path[ l - 1 ] == '/' )
         path[ l - 1 ] = '\0';
 

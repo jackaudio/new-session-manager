@@ -33,7 +33,10 @@ project state belongs to Timeline and other classes. */
 
 #include "Timeline.H" // for sample_rate();
 
+/* FIXME: wrong place for this */
 #define APP_TITLE "Non-DAW"
+
+#define PROJECT_VERSION "0.28.0"
 
 #include "debug.h"
 char Project::_name[256];
@@ -86,7 +89,10 @@ Project::write_info ( void )
         return false;
     }
 
-    fprintf( fp, "version\n\t%s\nsample rate\n\t%lu\n", APP_TITLE " " VERSION, timeline->sample_rate() );
+    fprintf( fp, "created by\n\t%s\nversion\n\t%s\nsample rate\n\t%lu\n",
+             APP_TITLE " " VERSION,
+             PROJECT_VERSION,
+             timeline->sample_rate() );
 
     fclose( fp );
 

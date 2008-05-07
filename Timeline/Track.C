@@ -254,6 +254,13 @@ Track::~Track ( )
     configure_inputs( 0 );
     configure_outputs( 0 );
 
+    /* controls too */
+    for ( int i = control_out.size(); i--; )
+    {
+            control_out.back()->shutdown();
+            control_out.pop_back();
+    }
+
     log_destroy();
 }
 

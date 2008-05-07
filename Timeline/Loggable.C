@@ -283,13 +283,14 @@ Loggable::do_this ( const char *s, bool reverse )
 
     char classname[40];
     char command[40];
-    char *arguments;
+    char *arguments = NULL;
 
     const char *create, *destroy;
 
     if ( reverse )
     {
-        sscanf( s, "%s %*X %s %*[^\n<]<< %a[^\n]", classname, command, &arguments );
+//        sscanf( s, "%s %*X %s %*[^\n<]<< %a[^\n]", classname, command, &arguments );
+        sscanf( s, "%s %*X %s%*[^\n<]<< %a[^\n]", classname, command, &arguments );
         create = "destroy";
         destroy = "create";
     }
@@ -309,11 +310,7 @@ Loggable::do_this ( const char *s, bool reverse )
          hack. Would it be better to queue up objects for deletion
          (when?) */
         if ( l )
-        {
-            int id = l->id();
             delete l;
-            _loggables[ id ] = NULL;
-        }
     }
     else if ( ! strcmp( command, "set" ) )
     {
@@ -439,7 +436,7 @@ Loggable::undo ( void )
         if ( *s == '\t' )
             s++;
 
-        DMESSAGE( "undoing \"%s\"\n", s );
+        DMESSAGE( "undoing \"%s\"", s );
 
         do_this( s, true );
 
@@ -729,7 +726,7 @@ Loggable::log_destroy ( void ) const
         /* tearing down... don't bother */
         return;
 
-    log( "%s 0x%X destroy (nothing) << ", class_name(), _id );
+    log( "%s 0x%X destroy << ", class_name(), _id );
 
     char **sa;
 

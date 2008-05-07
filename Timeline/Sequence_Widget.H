@@ -69,7 +69,7 @@ class Sequence_Widget : public Loggable
 
 protected:
 
-    Sequence *_track;                                              /* track this region belongs to */
+    Sequence *_sequence;                                              /* track this region belongs to */
 
     Range _range;                                               /* range for playback */
     Range *_r;                                                  /* range for editing / display (points to the same thing as above, except for when dragging etc) */
@@ -85,7 +85,7 @@ protected:
             e.add( ":x", _r->offset );
             e.add( ":l", _r->start );
             e.add( ":r", _r->end );
-            e.add( ":sequence", _track );
+            e.add( ":sequence", _sequence );
             e.add( ":selected", selected() );
         }
 
@@ -125,8 +125,8 @@ protected:
 //                    e.erase( i );
             }
 
-            if ( _track )
-                _track->redraw();
+            if ( _sequence )
+                _sequence->redraw();
 
         }
 
@@ -134,7 +134,7 @@ public:
 
     Sequence_Widget ( )
         {
-            _track = NULL;
+            _sequence = NULL;
 
             _r = &_range;
 
@@ -150,7 +150,7 @@ public:
         {
             redraw();
 
-            _track->remove( this );
+            _sequence->remove( this );
 
             _selection.remove( this );
         }
@@ -163,7 +163,7 @@ public:
 
             _r         = &_range;
             _range     = rhs._range;
-            _track     = rhs._track;
+            _sequence     = rhs._sequence;
             _box_color = rhs._box_color;
             _color     = rhs._color;
 
@@ -273,24 +273,24 @@ public:
 
     int dispatch ( int m );
 
-    Fl_Widget * parent ( void ) const { return _track; }
+    Fl_Widget * parent ( void ) const { return _sequence; }
 
     int scroll_x ( void ) const { return timeline->ts_to_x( timeline->xoffset ); }
     nframes_t scroll_ts ( void ) const { return timeline->xoffset; }
 
-    virtual int y ( void ) const { return _track->y(); }
-    virtual int h ( void ) const { return _track->h(); }
+    virtual int y ( void ) const { return _sequence->y(); }
+    virtual int h ( void ) const { return _sequence->h(); }
 
     /* used by regions */
     virtual int x ( void ) const
         {
-            return  _r->offset < timeline->xoffset ? _track->x() : min( _track->x() + _track->w(), _track->x() + timeline->ts_to_x( _r->offset - timeline->xoffset ) );
+            return  _r->offset < timeline->xoffset ? _sequence->x() : min( _sequence->x() + _sequence->w(), _sequence->x() + timeline->ts_to_x( _r->offset - timeline->xoffset ) );
         }
 
     /* use this as x() when you need to draw lines between widgets */
     int line_x ( void ) const
         {
-            return _r->offset < timeline->xoffset ? max( -32768, _track->x() -  timeline->ts_to_x( timeline->xoffset - _r->offset )) : min( 32767, _track->x() + timeline->ts_to_x( _r->offset - timeline->xoffset ) );
+            return _r->offset < timeline->xoffset ? max( -32768, _sequence->x() -  timeline->ts_to_x( timeline->xoffset - _r->offset )) : min( 32767, _sequence->x() + timeline->ts_to_x( _r->offset - timeline->xoffset ) );
         }
 
     virtual int w ( void ) const
@@ -303,7 +303,7 @@ public:
             else
                 rw = abs_w();
 
-            return min( rw, _track->w() );
+            return min( rw, _sequence->w() );
         }
 
     int abs_x ( void ) const { return timeline->ts_to_x( _r->offset ); }
@@ -315,8 +315,8 @@ public:
     virtual Fl_Color selection_color ( void ) const { return _selection_color; }
     virtual void selection_color ( Fl_Color v ) { _selection_color = v; }
 
-    Sequence * track ( void ) const { return _track; }
-    void track ( Sequence *t ) {  _track = t; }
+    Sequence * sequence ( void ) const { return _sequence; }
+    void sequence ( Sequence *t ) {  _sequence = t; }
 
     nframes_t offset ( void ) const { return _r->offset; }
 //    void offset ( nframes_t o ) { _r->offset = o; }
@@ -329,10 +329,10 @@ public:
     /** convert a screen x coord into an offset into the region */
     nframes_t x_to_offset ( int X )
         {
-            return timeline->x_to_ts( scroll_x() + ( X - _track->x() ) ) - _r->offset;
+            return timeline->x_to_ts( scroll_x() + ( X - _sequence->x() ) ) - _r->offset;
         }
 
-    int active_r ( void ) const { return _track->active_r(); }
+    int active_r ( void ) const { return _sequence->active_r(); }
     virtual nframes_t length ( void ) const { return _r->end - _r->start; }
 
     virtual Fl_Boxtype box ( void ) const { return FL_UP_BOX; }
@@ -344,10 +344,10 @@ public:
             if ( ! (align() & FL_ALIGN_INSIDE) )
             {
                 // FIXME: to better..
-                _track->redraw();
+                _sequence->redraw();
             }
             else
-                _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
+                _sequence->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
         }
 
     /* just draw a simple box */

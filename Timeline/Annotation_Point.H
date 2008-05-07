@@ -65,9 +65,9 @@ public:
     /* for loggable */
     LOG_CREATE_FUNC( Annotation_Point );
 
-    Annotation_Point ( Sequence *track, nframes_t when, const char *name )
+    Annotation_Point ( Sequence *sequence, nframes_t when, const char *name )
         {
-            _track = track;
+            _sequence = sequence;
 
             _r->offset = when;
 
@@ -112,7 +112,7 @@ public:
 
             if ( m == FL_RELEASE )
             {
-                _track->sort();
+                sequence()->sort();
                 timeline->redraw();
             }
 

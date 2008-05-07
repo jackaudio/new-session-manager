@@ -151,7 +151,7 @@ Sequence_Widget::handle ( int m )
             fl_cursor( FL_CURSOR_HAND );
             return 1;
         case FL_LEAVE:
-            fl_cursor( _track->cursor() );
+            fl_cursor( sequence()->cursor() );
             return 1;
         case FL_PUSH:
         {
@@ -160,7 +160,7 @@ Sequence_Widget::handle ( int m )
                  Fl::event_button3() )
             {
                 redraw();
-                _track->queue_delete( this );
+                sequence()->queue_delete( this );
                 return 1;
             }
             else
@@ -199,15 +199,15 @@ Sequence_Widget::handle ( int m )
                     _r->offset = of - _drag->offset;
 
                     if ( Sequence_Widget::_current == this )
-                        _track->snap( this );
+                        sequence()->snap( this );
                 }
                 else
                     _r->offset = 0;
 
             }
 
-            if ( X >= _track->x() + _track->w() ||
-                 X <= _track->x() )
+            if ( X >= sequence()->x() + sequence()->w() ||
+                 X <= sequence()->x() )
             {
                 /* this drag needs to scroll */
 
@@ -215,7 +215,7 @@ Sequence_Widget::handle ( int m )
 
                 nframes_t d = timeline->x_to_ts( 100 );
 
-                if ( X <= _track->x() )
+                if ( X <= sequence()->x() )
                 {
 
                     if ( pos > d )
@@ -229,7 +229,7 @@ Sequence_Widget::handle ( int m )
                 timeline->xposition( timeline->ts_to_x(  pos ) );
 
                 /* FIXME: why isn't this enough? */
-//                _track->redraw();
+//                sequence()->redraw();
                 timeline->redraw();
             }
 

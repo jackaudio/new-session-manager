@@ -87,7 +87,7 @@ void
 Audio_Region::init ( void )
 {
 
-    _track = NULL;
+    _sequence = NULL;
     _r->offset = 0;
     _r->start = 0;
     _r->end = 0;
@@ -140,10 +140,10 @@ Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
     init();
     _clip = c;
     _r->end = _clip->length();
-    _track = t;
+    _sequence = t;
     _r->offset = o;
 
-    _track->add( this );
+    sequence()->add( this );
 
     int sum = 0;
     const char *s = rindex( _clip->name(), '/' );
@@ -204,7 +204,7 @@ Audio_Region::handle ( int m )
                 if ( offset < length() )
                     _fade_in.length = offset;
 
-                printf( "setting fade in length to %lu\n", _fade_in.length );
+                DMESSAGE( "setting fade in length to %lu", _fade_in.length );
 
                 redraw();
 
@@ -217,7 +217,7 @@ Audio_Region::handle ( int m )
                 if ( offset > 0 )
                     _fade_out.length = offset;
 
-                printf( "setting fade out length to %lu\n", _fade_in.length );
+                DMESSAGE( "setting fade out length to %lu", _fade_in.length );
 
                 redraw();
 
@@ -246,7 +246,7 @@ Audio_Region::handle ( int m )
                             trim( RIGHT, X );
                             copy->trim( LEFT, X );
 
-                            _track->add( copy );
+                            sequence()->add( copy );
 
                             log_end();
 
@@ -369,7 +369,7 @@ Audio_Region::handle ( int m )
 
                 _r->end = _r->start + W;
 
-                _track->redraw();
+                sequence()->redraw();
                 return 1;
             }
 
@@ -378,7 +378,7 @@ Audio_Region::handle ( int m )
             {
                 if ( _drag->state == 0 )
                 {
-                    _track->add( new Audio_Region( *this ) );
+                    sequence()->add( new Audio_Region( *this ) );
                     _drag->state = 1;
                     return 1;
                 }
@@ -468,11 +468,11 @@ Audio_Region::draw_box( void )
 
     Fl_Color selection_color = _selection_color;
 
-    Fl_Color color = Audio_Region::inherit_track_color ? track()->track()->color() :  _box_color;
+    Fl_Color color = Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color;
 
-    color = fl_color_average( color, track()->color(), 0.75f );
+    color = fl_color_average( color, sequence()->color(), 0.75f );
 
-    if ( this == ((Audio_Sequence*)track())->capture() )
+    if ( this == ((Audio_Sequence*)sequence())->capture() )
     {
         color = FL_RED;
     }
@@ -515,7 +515,7 @@ Audio_Region::draw ( void )
     int OX = scroll_x();
     int ox = timeline->ts_to_x( _r->offset );
 
-    if ( ox > OX + _track->w() ||
+    if ( ox > OX + sequence()->w() ||
          ox < OX && ox + abs_w() < OX )
         /* not in viewport */
         return;
@@ -532,7 +532,7 @@ Audio_Region::draw ( void )
         rw -= OX - ox;
     }
 
-    rw = min( rw, _track->w() );
+    rw = min( rw, sequence()->w() );
 
     int rx = x();
 
@@ -823,7 +823,7 @@ Audio_Region::write ( nframes_t nframes )
         if ( W )
         {
             ++W;
-            track()->damage( FL_DAMAGE_ALL, x() + w() - W, y(), W, h() );
+            sequence()->damage( FL_DAMAGE_ALL, x() + w() - W, y(), W, h() );
         }
     }
 

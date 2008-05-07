@@ -121,7 +121,7 @@ Sequence::draw ( void )
 
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
-    if ( Sequence_Widget::pushed() && Sequence_Widget::pushed()->track() == this )
+    if ( Sequence_Widget::pushed() && Sequence_Widget::pushed()->sequence() == this )
     {
         /* make sure the Sequence_Widget::pushed widget is above all others */
         remove( Sequence_Widget::pushed() );
@@ -198,14 +198,14 @@ Sequence::add ( Sequence_Widget *r )
 {
 //    Logger _log( this );
 
-    if ( r->track() )
+    if ( r->sequence() )
     {
         r->redraw();
-        r->track()->remove( r );
+        r->sequence()->remove( r );
 //        r->track()->redraw();
     }
 
-    r->track( this );
+    r->sequence( this );
     _widgets.push_back( r );
 
     sort();
@@ -254,7 +254,7 @@ Sequence::snap ( Sequence_Widget *r )
 
     if ( timeline->nearest_line( r->offset(), &f ) )
     {
-        printf( "snap frame is %lu\n", f );
+//        printf( "snap frame is %lu\n", f );
         r->offset( f );
     }
 }
@@ -276,7 +276,7 @@ Sequence::handle ( int m )
             if ( Sequence_Widget::pushed() )
             {
 
-                if ( Sequence_Widget::pushed()->track()->class_name() == class_name() )
+                if ( Sequence_Widget::pushed()->sequence()->class_name() == class_name() )
                 {
                     /* accept objects dragged from other sequences of this type */
                     add( Sequence_Widget::pushed() );

@@ -87,7 +87,7 @@ Tempo_Point::handle ( int m )
 
     if ( m == FL_RELEASE )
     {
-        _track->sort();
+        sequence()->sort();
         timeline->redraw();
     }
     return r;

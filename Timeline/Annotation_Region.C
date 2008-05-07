@@ -48,9 +48,9 @@ Annotation_Region::set ( Log_Entry &e )
 //            timeline->redraw();
 }
 
-Annotation_Region::Annotation_Region ( Sequence *track, nframes_t when, const char *name )
+Annotation_Region::Annotation_Region ( Sequence *sequence, nframes_t when, const char *name )
 {
-    _track = track;
+    _sequence = sequence;
 
     _r->offset = when;
 
@@ -110,7 +110,7 @@ Annotation_Region::handle ( int m )
 
     if ( m == FL_RELEASE )
     {
-        _track->sort();
+        sequence()->sort();
         timeline->redraw();
     }
 

@@ -36,7 +36,7 @@ void
 Sequence_Region::trim ( enum trim_e t, int X )
 {
 
-    X -= _track->x();
+    X -= sequence()->x();
     redraw();
 
     switch ( t )

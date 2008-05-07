@@ -21,7 +21,7 @@
 
 Control_Point::Control_Point ( Sequence *t, nframes_t when, float y )
 {
-    _track = t;
+    _sequence = t;
     _y = y;
     _r->offset = when;
     _box_color = FL_WHITE;
@@ -87,12 +87,12 @@ Control_Point::handle ( int m )
     {
 
         case FL_RELEASE:
-            _track->sort();
+            sequence()->sort();
             redraw();
             break;
         case FL_DRAG:
         {
-            track()->sort();
+            sequence()->sort();
 
             if ( selected() )
                 break;

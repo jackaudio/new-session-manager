@@ -52,8 +52,8 @@ public:
         {
             const int x = Sequence_Widget::x();
 
-            if ( x >= _track->x() + _track->w() )
-                return _track->x() + _track->w() + abs_w();
+            if ( x >= sequence()->x() + sequence()->w() )
+                return sequence()->x() + sequence()->w() + abs_w();
             else
                 return x;
 

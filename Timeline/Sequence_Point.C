@@ -23,7 +23,7 @@ void
 Sequence_Point::get ( Log_Entry &e ) const
 {
     e.add( ":x", _r->offset );
-    e.add( ":t", _track );
+    e.add( ":t", _sequence );
 }
 
 void
@@ -39,7 +39,7 @@ Sequence_Point::set ( Log_Entry &e )
 
         if ( ! strcmp( ":x", s ) )
         {
-            _track->sort();
+            sequence()->sort();
         }
 
     }

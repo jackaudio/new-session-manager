@@ -23,7 +23,7 @@ void
 Sequence_Point::get ( Log_Entry &e ) const
 {
     e.add( ":x", _r->offset );
-    e.add( ":t", _sequence );
+    e.add( ":sequence", _sequence );
 }
 
 void

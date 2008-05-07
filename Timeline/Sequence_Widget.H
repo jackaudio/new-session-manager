@@ -316,7 +316,7 @@ public:
     virtual void selection_color ( Fl_Color v ) { _selection_color = v; }
 
     Sequence * sequence ( void ) const { return _sequence; }
-    void sequence ( Sequence *t ) {  _sequence = t; }
+    void sequence ( Sequence *t ) { _sequence = t; }
 
     nframes_t offset ( void ) const { return _r->offset; }
 //    void offset ( nframes_t o ) { _r->offset = o; }

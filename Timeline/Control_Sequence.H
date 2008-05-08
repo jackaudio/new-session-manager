@@ -25,6 +25,11 @@
 
 class Control_Sequence : public Sequence
 {
+
+    /* not permitted */
+    Control_Sequence ( const Control_Sequence &rhs );
+    Control_Sequence & operator = ( const Control_Sequence &rhs );
+
 public:
 
     enum curve_type_e { Linear, Quadratic };

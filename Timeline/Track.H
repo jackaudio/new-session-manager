@@ -56,6 +56,10 @@ class Audio_File;
 class Track : public Fl_Group, public Loggable
 {
 
+    /* not permitted  */
+    Track ( const Track &rhs );
+    Track & operator= ( const Track &rhs );
+
 public:
 
     Track ( const char *L, int channels=1 );

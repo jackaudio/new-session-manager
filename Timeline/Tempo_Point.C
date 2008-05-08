@@ -112,6 +112,10 @@ Tempo_Point::handle ( int m )
 class Tempo_Point_Editor : public Fl_Menu_Window
 {
 
+    /* not permitted */
+    Tempo_Point_Editor ( const Tempo_Point_Editor &rhs );
+    Tempo_Point_Editor & operator = ( const Tempo_Point_Editor &rhs );
+
     float *_tempo;
     Fl_Float_Input *_fi;
 

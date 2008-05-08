@@ -137,11 +137,12 @@ private:
 
     void init ( bool loggable=true )
         {
+            _new_state = _old_state = NULL;
+            _nest = 0;
+
             if ( loggable )
             {
                 _id = ++_log_id;
-                _old_state = NULL;
-                _nest = 0;
 
                 ensure_size( _id );
 
@@ -151,6 +152,9 @@ private:
                 _id = 0;
 
         }
+
+    /* not implemented */
+    const Loggable & operator= ( const Loggable &rhs );
 
 public:
 
@@ -221,6 +225,7 @@ public:
 
     static bool do_this ( const char *s, bool reverse );
 
+
 protected:
 
     void log_start ( void );
@@ -250,6 +255,10 @@ class Logger
 
     Loggable *_this;
     Logger ( ) {}
+
+    /* not permitted */
+    Logger ( const Logger &rhs );
+    const Logger & operator= ( const Logger &rhs );
 
 public:
 
@@ -285,6 +294,10 @@ class Log_Entry
 //    vector <Pair> _sa;
     char **_sa;
     int _i;
+
+    /* not permitted */
+    Log_Entry ( const Log_Entry &rhs );
+    Log_Entry & operator= ( const Log_Entry &rhs );
 
 public:
 

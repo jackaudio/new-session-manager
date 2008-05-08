@@ -34,6 +34,10 @@ struct Transport : public jack_position_t, public Fl_Pack
 
 private:
 
+    /* not permitted */
+    Transport ( const Transport &rhs );
+    Transport & operator = ( const Transport &rhs );
+
     Fl_Button *_home_button;
     Fl_Button *_end_button;
     Fl_Button *_play_button;

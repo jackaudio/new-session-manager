@@ -35,6 +35,10 @@ const float CLOCK_UPDATE_FREQ = 0.06f;
 
 class Clock : public Fl_Widget
 {
+    /* not permitted */
+    Clock ( const Clock &rhs );
+    Clock & operator = ( const Clock &rhs );
+
     nframes_t _when;
     nframes_t *_v;
 

@@ -26,6 +26,9 @@
 class Annotation_Region : public Sequence_Region
 {
 
+    /* not permitted */
+    Annotation_Region & operator = ( const Annotation_Region &rhs );
+
     char *_label;
 
 public:

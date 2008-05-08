@@ -28,6 +28,11 @@ class Peak_Writer;
 class Record_DS : public Disk_Stream
 {
 
+    /* not permitted  */
+    Record_DS ( const Record_DS &rhs );
+    Record_DS & operator= ( const Record_DS &rhs );
+
+
     nframes_t _frames_written;
     volatile nframes_t _stop_frame;
 

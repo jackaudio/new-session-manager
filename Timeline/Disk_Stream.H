@@ -38,6 +38,10 @@ class Audio_Sequence;
 class Disk_Stream : public Mutex
 {
 
+    /* not permitted */
+    Disk_Stream ( const Disk_Stream &rhs );
+    Disk_Stream & operator = ( const Disk_Stream &rhs );
+
 protected:
 
     pthread_t _thread;                                 /* io thread */

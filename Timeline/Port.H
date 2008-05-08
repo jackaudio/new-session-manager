@@ -28,6 +28,12 @@ class Port
     jack_port_t *_port;
     const char *_name;
 
+    /* FIXME: reference count? */
+
+/*     /\* not permitted  *\/ */
+/*     Port ( const Port &rhs ); */
+/*     Port & operator= ( const Port &rhs ); */
+
 public:
 
     enum type_e { Output, Input };

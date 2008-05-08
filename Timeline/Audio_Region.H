@@ -32,6 +32,9 @@
 class Audio_Region : public Sequence_Region
 {
 
+    /* not permitted */
+    Audio_Region & operator = ( const Audio_Region &rhs );
+
 public:
 
     static bool inherit_track_color;

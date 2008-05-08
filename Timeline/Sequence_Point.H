@@ -23,6 +23,8 @@
 
 class Sequence_Point : public Sequence_Widget
 {
+    /* not permitted  */
+    Sequence_Point & operator= ( const Sequence_Point &rhs );
 
 protected:
 

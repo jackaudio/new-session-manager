@@ -35,6 +35,9 @@ class Audio_File
 {
     static std::map <std::string, Audio_File*> _open_files;
 
+    Audio_File ( const Audio_File &rhs );
+    const Audio_File & operator= ( const Audio_File &rhs );
+
 protected:
 
     struct format_desc

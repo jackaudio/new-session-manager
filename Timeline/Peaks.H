@@ -123,6 +123,10 @@ class Peak_Writer
 
     int _index;
 
+    Peak_Writer ( const Peak_Writer &rhs );
+    const Peak_Writer &operator= ( const Peak_Writer &rhs );
+
+
 public:
 
     Peak_Writer ( const char *filename, int chunksize, int channels );

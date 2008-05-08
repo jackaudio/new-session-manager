@@ -41,6 +41,10 @@ class Sequence_Widget;
 class Sequence : public Fl_Widget, public Loggable
 {
 
+    /* not permitted  */
+    Sequence ( const Sequence &rhs );
+    Sequence & operator= ( const Sequence &rhs );
+
     static queue <Sequence_Widget *> _delete_queue;
 
     void init ( void );
@@ -61,6 +65,7 @@ public:
     LOG_NAME_FUNC( Sequence );
 
     Sequence ( Track *track=0 );
+
     Sequence ( int X, int Y, int W, int H );
 
     virtual ~Sequence (  );

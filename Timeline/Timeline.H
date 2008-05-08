@@ -105,6 +105,9 @@ class Timeline : public Fl_Overlay_Window, public RWLock
 
     nframes_t p1, p2;                                           /* cursors */
 
+    /* not permitted */
+    Timeline ( const Timeline &rhs );
+    Timeline & operator = ( const Timeline &rhs );
 
 public:
 

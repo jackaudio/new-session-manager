@@ -51,6 +51,9 @@ class Engine : public Mutex
     static int xrun ( void *arg );
     int xrun ( void );
 
+    Engine ( const Engine &rhs );
+    Engine & operator = ( const Engine &rhs );
+
 private:
 
     friend class Port;

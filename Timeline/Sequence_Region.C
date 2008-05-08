@@ -215,22 +215,36 @@ Sequence_Region::handle ( int m )
                 }
                 else
                     return 0;
-
-            /* track jumping */
-            if ( ! selected() )
+            else if ( Fl::event_button1() )
             {
-                if ( Y > y() + h() || Y < y() )
+                if ( Fl::event_state() & FL_CTRL )
                 {
-                    printf( "wants to jump tracks\n" );
+                    /* duplication */
+                    if ( _drag->state == 0 )
+                    {
+//                    sequence()->add( new Audio_Region( *this ) );
+                        sequence()->add( this->clone() );
 
-                    Track *t = timeline->track_under( Y );
+                        _drag->state = 1;
+                        return 1;
+                    }
+                }
+                else if ( ! selected() )
+                {
+                    /* track jumping */
+                    if ( Y > y() + h() || Y < y() )
+                    {
+                        printf( "wants to jump tracks\n" );
 
-                    fl_cursor( (Fl_Cursor)1 );
+                        Track *t = timeline->track_under( Y );
 
-                    if ( t )
-                        t->handle( FL_ENTER );
+                        fl_cursor( (Fl_Cursor)1 );
 
-                    return 0;
+                        if ( t )
+                            t->handle( FL_ENTER );
+
+                        return 0;
+                    }
                 }
             }
 

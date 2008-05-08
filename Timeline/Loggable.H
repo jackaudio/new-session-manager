@@ -135,6 +135,23 @@ private:
 
     static bool snapshot( FILE * fp );
 
+    void init ( bool loggable=true )
+        {
+            if ( loggable )
+            {
+                _id = ++_log_id;
+                _old_state = NULL;
+                _nest = 0;
+
+                ensure_size( _id );
+
+                _loggables[ _id - 1 ] = this;
+            }
+            else
+                _id = 0;
+
+        }
+
 public:
 
     static const char *escape ( const char *s );
@@ -176,19 +193,7 @@ public:
 
     Loggable ( bool loggable=true )
         {
-            if ( loggable )
-            {
-                _id = ++_log_id;
-                _old_state = NULL;
-                _nest = 0;
-
-                ensure_size( _id );
-
-                _loggables[ _id - 1 ] = this;
-            }
-            else
-                _id = 0;
-
+            init( loggable );
         }
 
     void update_id ( int id );
@@ -226,8 +231,9 @@ protected:
     /* leaf subclasses *must* call log_create() at the end of their copy contructors */
     Loggable ( const Loggable &rhs )
         {
+            init( true );
             /* FIXME: get a real id here!!! */
-            _id = 0;
+//            _id = 0;
         }
 
 public:

@@ -304,11 +304,6 @@ Audio_Region::handle ( int m )
                     redraw();
                     return 1;
                 }
-                else if ( Fl::event_button1() && Fl::event_ctrl() )
-                {
-                    /* duplication */
-                    return 1;
-                }
                 else if ( Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
                 {
                     /* context menu */
@@ -350,13 +345,13 @@ Audio_Region::handle ( int m )
                     return 0;
                 }
                 else
-                    return Sequence_Widget::handle( m );
+                    return Sequence_Region::handle( m );
             }
             break;
         }
         case FL_RELEASE:
         {
-            Sequence_Widget::handle( m );
+            Sequence_Region::handle( m );
 
             copied = false;
 
@@ -369,38 +364,28 @@ Audio_Region::handle ( int m )
                 begin_drag( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
                 _log.hold();
             }
-
-            /* panning */
-            if ( Fl::event_state() & FL_SHIFT &&
-                 Fl::event_state() & FL_CTRL )
+            if ( Fl::event_button1() )
             {
-                int d = (ox + X) - x();
-                long td = timeline->x_to_ts( d );
-
-                if ( td > 0 && os < (nframes_t)td )
-                    _r->offset = 0;
-                else
-                    _r->offset = os - td;
-
-                sequence()->redraw();
-                return 1;
-            }
-
-            /* duplication */
-            if ( Fl::event_state() & FL_CTRL )
-            {
-                if ( _drag->state == 0 )
+                if ( Fl::event_state() & ( FL_SHIFT | FL_CTRL ) )
                 {
-                    sequence()->add( new Audio_Region( *this ) );
-                    _drag->state = 1;
+                    /* panning */
+                    int d = (ox + X) - x();
+                    long td = timeline->x_to_ts( d );
+
+                    if ( td > 0 && os < (nframes_t)td )
+                        _r->offset = 0;
+                    else
+                        _r->offset = os - td;
+
+                    sequence()->redraw();
                     return 1;
                 }
             }
 
-            ret = Sequence_Widget::handle( m );
+            ret = Sequence_Region::handle( m );
             return ret | 1;
         default:
-            return Sequence_Widget::handle( m );
+            return Sequence_Region::handle( m );
             break;
     }
 

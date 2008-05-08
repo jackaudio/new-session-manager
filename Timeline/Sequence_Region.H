@@ -43,6 +43,11 @@ protected:
 
         }
 
+    Sequence_Region ( const Sequence_Region &rhs ) : Sequence_Widget( rhs )
+        {
+
+        }
+
 public:
 
     LOG_NAME_FUNC( Region );

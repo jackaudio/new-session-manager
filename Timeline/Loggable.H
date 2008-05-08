@@ -223,6 +223,13 @@ protected:
     void log_create  ( void ) const;
     void log_destroy ( void ) const;
 
+    /* leaf subclasses *must* call log_create() at the end of their copy contructors */
+    Loggable ( const Loggable &rhs )
+        {
+            /* FIXME: get a real id here!!! */
+            _id = 0;
+        }
+
 public:
 
 //    virtual const char *class_name ( void ) const = 0;

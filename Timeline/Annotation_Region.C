@@ -62,12 +62,11 @@ Annotation_Region::Annotation_Region ( Sequence *sequence, nframes_t when, const
     log_create();
 }
 
-Annotation_Region::Annotation_Region ( const Annotation_Region &rhs )
+Annotation_Region::Annotation_Region ( const Annotation_Region &rhs ) : Sequence_Region( rhs )
 {
-    _r->start = rhs._r->start;
-    _r->length = rhs._r->length;
-
     _label = strdup( rhs._label );
+
+    log_create();
 }
 
 

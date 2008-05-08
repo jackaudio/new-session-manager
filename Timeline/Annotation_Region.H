@@ -49,6 +49,8 @@ protected:
             _label = NULL;
         }
 
+    Annotation_Region ( const Annotation_Region &rhs );
+
 public:
 
     /* for loggable */
@@ -56,7 +58,6 @@ public:
     SEQUENCE_WIDGET_CLONE_FUNC( Annotation_Region );
 
     Annotation_Region ( Sequence *track, nframes_t when, const char *name );
-    Annotation_Region ( const Annotation_Region &rhs );
     virtual ~Annotation_Region ( );
 
     void draw_box ( void );

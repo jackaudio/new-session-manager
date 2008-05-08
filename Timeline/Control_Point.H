@@ -36,6 +36,8 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
 
+    Control_Point ( const Control_Point &rhs );
+
 public:
 
 
@@ -44,7 +46,6 @@ public:
     SEQUENCE_WIDGET_CLONE_FUNC( Control_Point );
 
     Control_Point ( Sequence *t, nframes_t when, float y );
-    Control_Point ( const Control_Point &rhs );
 
     ~Control_Point ( )
         {

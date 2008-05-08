@@ -31,6 +31,12 @@ protected:
     void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
+    Sequence_Point ( const Sequence_Point &rhs ) : Sequence_Widget( rhs )
+        {
+            if ( _label )
+                _label = strdup( rhs._label );
+        }
+
 public:
 
     const char *name ( void ) const { return _label; }

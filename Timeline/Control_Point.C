@@ -29,10 +29,11 @@ Control_Point::Control_Point ( Sequence *t, nframes_t when, float y )
     log_create();
 }
 
-Control_Point::Control_Point ( const Control_Point &rhs )
+Control_Point::Control_Point ( const Control_Point &rhs ) : Sequence_Point( rhs )
 {
-    _r->start = rhs._r->start;
     _y = rhs._y;
+
+    log_create();
 }
 
 void

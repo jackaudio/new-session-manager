@@ -24,9 +24,9 @@
 void
 Time_Point::get ( Log_Entry &e ) const
 {
+//    Sequence_Point::get( e );
 
-    Sequence_Point::get( e );
-
+    e.add( ":start", start() );
     e.add( ":beats_per_bar", _time.beats_per_bar );
     e.add( ":beat_type",     _time.beat_type     );
 }
@@ -74,8 +74,9 @@ Time_Point::Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note 
     log_create();
 }
 
-Time_Point::Time_Point ( const Time_Point &rhs )
+Time_Point::Time_Point ( const Time_Point &rhs ) : Sequence_Point( rhs )
 {
-    _r->offset = rhs._r->offset;
     _time = rhs._time;
+
+    log_create();
 }

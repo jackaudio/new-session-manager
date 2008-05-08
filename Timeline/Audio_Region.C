@@ -127,9 +127,9 @@ Audio_Region::init ( void )
 }
 
 /* copy constructor */
-Audio_Region::Audio_Region ( const Audio_Region & rhs )
+Audio_Region::Audio_Region ( const Audio_Region & rhs ) : Sequence_Region( rhs )
 {
-    *((Sequence_Region*)this) = (Sequence_Region &)rhs;
+//    *((Sequence_Region*)this) = (Sequence_Region &)rhs;
 
     _clip      = rhs._clip;
     _scale     = rhs._scale;

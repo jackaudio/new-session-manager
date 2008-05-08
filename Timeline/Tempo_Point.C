@@ -25,8 +25,9 @@
 void
 Tempo_Point::get ( Log_Entry &e ) const
 {
-    Sequence_Point::get( e );
+//    Sequence_Point::get( e );
 
+    e.add( ":start", start() );
     e.add( ":tempo", _tempo );
 }
 

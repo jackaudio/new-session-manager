@@ -55,10 +55,11 @@ public:
 
     ~Tempo_Point ( );
 
-    Tempo_Point ( const Tempo_Point &rhs )
+    Tempo_Point ( const Tempo_Point &rhs ) : Sequence_Point( rhs )
         {
-            _r->offset = rhs._r->offset;
             _tempo = rhs._tempo;
+
+            log_create();
         }
 
 

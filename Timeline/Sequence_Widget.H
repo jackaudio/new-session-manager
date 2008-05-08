@@ -64,8 +64,6 @@ class Sequence_Widget : public Loggable
 
     static Fl_Color _selection_color;
 
-    /* can't have this */
-    Sequence_Widget ( const Sequence_Widget &rhs );
 
 protected:
 
@@ -81,6 +79,20 @@ protected:
 
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
+
+    /* careful with this, it doesn't journal */
+    Sequence_Widget ( const Sequence_Widget &rhs ) : Loggable( rhs )
+        {
+            _drag = NULL;
+
+            _sequence = rhs._sequence;
+
+            _range = rhs._range;
+            _r = &_range;
+
+            _color = rhs._color;
+            _box_color = rhs._box_color;
+        };
 
 public:
 

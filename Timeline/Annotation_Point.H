@@ -77,10 +77,9 @@ public:
             log_create();
         }
 
-    Annotation_Point ( const Annotation_Point &rhs )
+    Annotation_Point ( const Annotation_Point &rhs ) : Sequence_Point( rhs )
         {
-            _r->start = rhs._r->start;
-            _label = strdup( rhs._label );
+            log_create();
         }
 
     ~Annotation_Point ( )

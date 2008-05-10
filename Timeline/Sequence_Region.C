@@ -234,8 +234,6 @@ Sequence_Region::handle ( int m )
                     /* track jumping */
                     if ( Y > y() + h() || Y < y() )
                     {
-                        printf( "wants to jump tracks\n" );
-
                         Track *t = timeline->track_under( Y );
 
                         fl_cursor( (Fl_Cursor)1 );

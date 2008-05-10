@@ -78,7 +78,8 @@ Waveform::draw ( int X, int Y, int W, int H,
                 fl_color( FL_RED );
             else
                 if ( Waveform::vary_color )
-                    fl_color( fl_color_average( FL_WHITE, color, diff / 2.0f ) );
+//                    fl_color( fl_color_average( FL_WHITE, color, diff / 2.0f ) );
+                    fl_color( fl_color_average( FL_WHITE, color, diff * 0.5f ) );
                 else
                     fl_color( color );
 

@@ -604,7 +604,8 @@ Audio_Region::draw ( void )
     {
         /* couldn't read peaks--perhaps they're being generated. Try again later. */
 
-        Fl::add_timeout( 0.1f, damager, new Rectangle( X, y(), W, h() ) );
+        /* commented out for testing. */
+//        Fl::add_timeout( 0.1f, damager, new Rectangle( X, y(), W, h() ) );
 
     }
 

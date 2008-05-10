@@ -52,9 +52,9 @@ protected:
     nframes_t _samplerate;                   /* sample rate */
     int _channels;
 
-    Peaks *_peaks;
+    Peaks _peaks;
 
-    Peak_Writer *_peak_writer;
+//    Peak_Writer *_peak_writer;
 
     static const format_desc *
     find_format ( const format_desc *fd, const char *name )
@@ -69,7 +69,7 @@ protected:
 
 public:
 
-    Audio_File ( )
+    Audio_File ( ) : _peaks( this )
         {
             _filename = NULL;
             _length = _channels = 0;
@@ -81,7 +81,7 @@ public:
 
     static Audio_File *from_file ( const char *filename );
 
-    Peaks const * peaks ( ) { return _peaks; }
+    Peaks const * peaks ( ) { return &_peaks; }
     const char *name ( void ) const { return _filename; }
     nframes_t length ( void ) const  { return _length; }
     int channels ( void ) const { return _channels; }
@@ -96,6 +96,5 @@ public:
     virtual nframes_t write ( sample_t *buf, nframes_t len ) = 0;
 
     bool read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, Peak **pbuf, int *channels );
-
 
 };

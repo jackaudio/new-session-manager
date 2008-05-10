@@ -32,13 +32,14 @@ struct Peak {
 };
 
 class Audio_File;
+class Peak_Writer;
 
 class Peaks
 {
 
     struct peakdata {
 
-        int chunksize;             /* should always be a power of 2 */
+        nframes_t chunksize;             /* should always be a power of 2 */
         Peak data[];
 
     };
@@ -61,31 +62,29 @@ class Peaks
 
     Audio_File *_clip;
 
-    size_t _len;
-
     mutable float _fpp;
 
-    int read_peaks ( nframes_t s, nframes_t e, int npeaks, int chunksize ) const;
-    int read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const;
-    int read_source_peaks ( Peak *peaks, int npeaks, int chunksize ) const;
-    int read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, int chunksize ) const;
+    int read_peaks ( nframes_t s, nframes_t e, int npeaks, nframes_t chunksize ) const;
+    int read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const;
+    int read_source_peaks ( Peak *peaks, int npeaks, nframes_t chunksize ) const;
+    int read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const;
 
-//    const char *peakname ( const char *filename ) const;
-
-
-    // Peaks ( );
+    Peak_Writer *_peak_writer;
 
 public:
 
+
+    static const int cache_minimum;
+    static const int cache_levels;
+    static const int cache_step;
+
     Peaks ( )
         {
-            _len = 0;
             _clip = NULL;
         }
 
     Peaks ( Audio_File *c )
         {
-            _len = 0;
             _clip = c;
         }
 
@@ -99,8 +98,8 @@ public:
     bool open ( void );
 //    float normalization_factor( float fpp, nframes_t start, nframes_t end ) ;
 
-    bool current ( void ) const;
-    bool make_peaks ( int chunksize );
+    bool current ( nframes_t chunksize ) const;
+    bool make_peaks ( void ) const;
 
     Peak & peak ( nframes_t start, nframes_t end ) const;
 
@@ -112,10 +111,6 @@ public:
 
 class Peak_Writer
 {
-
-    static const int VERSION_MAJOR = 0;
-    static const int VERSION_MINOR = 1;
-
     FILE *_fp;
     Peak *_peak;
     int _chunksize;
@@ -123,17 +118,15 @@ class Peak_Writer
 
     int _index;
 
+    /* not permitted */
     Peak_Writer ( const Peak_Writer &rhs );
     const Peak_Writer &operator= ( const Peak_Writer &rhs );
 
-
 public:
 
-    Peak_Writer ( const char *filename, int chunksize, int channels );
+    Peak_Writer ( const char *filename, nframes_t chunksize, int channels );
     ~Peak_Writer ( );
 
-    void write_header ( void );
     void write ( sample_t *buf, nframes_t nframes );
-
 
 };

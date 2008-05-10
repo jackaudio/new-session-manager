@@ -17,8 +17,12 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* FIXME: need locking for when disk thread and peak reader are
+ * interested in the same source? */
+
 #include "Audio_File.H"
 #include "Audio_File_SF.H"
+
 
 std::map <std::string, Audio_File*> Audio_File::_open_files;
 
@@ -72,22 +76,23 @@ done:
 bool
 Audio_File::read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, Peak **pbuf, int *channels )
 {
-    Peaks pk;
+//    Peaks pk;
 
     *peaks    = 0;
     *channels = 0;
     *pbuf     = NULL;
 
-    pk.clip( this );
+//    pk.clip( this );
 
-    if ( ! pk.open() )
-        return false;
+/*     /\* only open peaks (and potentially generate) when first requested *\/ */
+/*     if ( ! _peaks.open() ) */
+/*         return false; */
 
-    *peaks = pk.fill_buffer( fpp, start, end );
+    *peaks = _peaks.fill_buffer( fpp, start, end );
 
     *channels = this->channels();
 
-    *pbuf = pk.peakbuf();
+    *pbuf = _peaks.peakbuf();
 
     return true;
 }

@@ -28,7 +28,6 @@ struct Peak {
     float max;
 
     float normalization_factor ( void ) const;
-
 };
 
 class Audio_File;
@@ -39,7 +38,7 @@ class Peaks
 
     struct peakdata {
 
-        nframes_t chunksize;             /* should always be a power of 2 */
+        nframes_t chunksize;       /* should always be a power of 2 */
         Peak data[];
 
     };
@@ -47,8 +46,8 @@ class Peaks
     struct peakbuffer {
 
         size_t size;                       /* total allocation size */
-        size_t len;                             /* number of peaks  */
-        nframes_t offset;                        /* starting sample */
+        size_t len;                        /* number of peaks  */
+        nframes_t offset;                  /* starting sample */
 
         peakdata *buf;
 
@@ -69,42 +68,39 @@ class Peaks
     int read_source_peaks ( Peak *peaks, int npeaks, nframes_t chunksize ) const;
     int read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const;
 
-    Peak_Writer *_peak_writer;
+    Peak_Writer *_peak_writer; /* exists when streaming peaks to disk */
+
+
+    /* not permitted */
+    Peaks ( const Peaks &rhs );
+    const Peaks &operator= ( const Peaks &rhs );
 
 public:
 
+    static bool mipmapped_peakfiles;
 
     static const int cache_minimum;
     static const int cache_levels;
     static const int cache_step;
 
-    Peaks ( )
-        {
-            _clip = NULL;
-        }
 
-    Peaks ( Audio_File *c )
-        {
-            _clip = c;
-        }
+
+    Peaks ( Audio_File *c );
+    ~Peaks ( );
 
     Peak *peakbuf ( void ) const { return Peaks::_peakbuf.buf->data; }
     void clip ( Audio_File *c ) { _clip = c; }
 
     int fill_buffer ( float fpp, nframes_t s, nframes_t e ) const;
 
-    void downsample ( Peak *peaks, int s, int e, float *mhi, float *mlo ) const;
     void read ( int X, float *hi, float *lo ) const;
     bool open ( void );
-//    float normalization_factor( float fpp, nframes_t start, nframes_t end ) ;
 
     bool current ( nframes_t chunksize ) const;
     bool make_peaks ( void ) const;
 
-    Peak & peak ( nframes_t start, nframes_t end ) const;
-
-    Peak & operator[] ( int X ) const;
-
+    void prepare_for_writing ( void );
+    void write ( sample_t *buf, nframes_t nframes );
 };
 
 #include <stdio.h>

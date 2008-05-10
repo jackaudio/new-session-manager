@@ -78,6 +78,9 @@
 
 Peaks::peakbuffer Peaks::_peakbuf;
 
+
+bool Peaks::mipmapped_peakfiles = true;
+
 /* chunksizes at which to generate peakfiles (on demand). This should
  pretty much cover the usable range.  Better performance can be
  achieved at high zoom-levels and for compressed sources with a
@@ -87,6 +90,24 @@ const int Peaks::cache_levels  = 8;                             /* number of sam
 // const int Peaks::cache_step    = 2;                             /* powers of two between each level. 4 == 256, 2048, 16384, ... */
 
 const int Peaks::cache_step    = 1;                             /* powers of two between each level. 4 == 256, 2048, 16384, ... */
+
+/* Peaks ( ) */
+/* { */
+/*     _clip = NULL; */
+/* } */
+
+Peaks::Peaks ( Audio_File *c )
+{
+    _clip = c;
+    _peak_writer = NULL;
+}
+
+Peaks::~Peaks ( )
+{
+    if ( _peak_writer )
+        delete _peak_writer;
+}
+
 
 static
 const char *
@@ -297,7 +318,7 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chu
 
     nframes_t ncc = nearest_cached_chunksize( chunksize );
 
-    if ( ! current( cache_minimum ) )
+    if ( ! _peak_writer && ! current( cache_minimum ) )
         /* Build peaks asyncronously */
         if ( ! fork() )
             exit( make_peaks( ) );
@@ -532,6 +553,26 @@ Peak::normalization_factor( void ) const
     return s;
 }
 
+
+/* wrapper for peak writer */
+void
+Peaks::prepare_for_writing ( void )
+{
+    assert( ! _peak_writer );
+
+    _peak_writer = new Peak_Writer( _clip->name(), cache_minimum, _clip->channels() );
+}
+
+void
+Peaks::write ( sample_t *buf, nframes_t nframes )
+{
+    _peak_writer->write( buf, nframes );
+}
+
+/* The Peak_Writer is for streaming peaks from audio buffers to disk
+ * while capturing. It works by accumulating a peak value across
+ * write() calls. */
+
 Peak_Writer::Peak_Writer ( const char *filename, nframes_t chunksize, int channels )
 {
 
@@ -549,7 +590,7 @@ Peak_Writer::Peak_Writer ( const char *filename, nframes_t chunksize, int channe
 Peak_Writer::~Peak_Writer ( )
 {
     fclose( _fp );
-    delete _peak;
+    delete[] _peak;
 }
 
 /** append peaks for samples in /buf/ to peakfile */

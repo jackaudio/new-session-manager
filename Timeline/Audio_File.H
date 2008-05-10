@@ -54,8 +54,6 @@ protected:
 
     Peaks _peaks;
 
-//    Peak_Writer *_peak_writer;
-
     static const format_desc *
     find_format ( const format_desc *fd, const char *name )
         {

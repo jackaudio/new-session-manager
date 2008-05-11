@@ -49,9 +49,9 @@
  * drastically improve performance */
 bool Peaks::mipmapped_peakfiles = true;
 
-const int Peaks::cache_minimum = 256;                           /* minimum chunksize to build peakfiles for */
-const int Peaks::cache_levels  = 8;                             /* number of sampling levels in peak cache */
-const int Peaks::cache_step    = 1;                             /* powers of two between each level. 4 == 256, 2048, 16384, ... */
+const int Peaks::cache_minimum = 256;          /* minimum chunksize to build peakfiles for */
+const int Peaks::cache_levels  = 8;           /* number of sampling levels in peak cache */
+const int Peaks::cache_step    = 1;            /* powers of two between each level. 4 == 256, 2048, 16384, ... */
 
 
 Peaks::peakbuffer Peaks::_peakbuf;
@@ -187,11 +187,14 @@ public:
             std::list <block_descriptor> blocks;
 
             /* scan all blocks */
-            do
+            for ( ;; )
             {
                 peakfile_block_header bh;
 
                 fread( &bh, sizeof( bh ), 1, _fp );
+
+                if ( feof( _fp ) )
+                    break;
 
 //                printf( "chunksize=%lu, skip=%lu\n", (unsigned long)bh.chunksize, (unsigned long) bh.skip );
 
@@ -209,7 +212,6 @@ public:
                     break;
                 }
             }
-            while ( ! feof( _fp ) );
 
             if ( ! blocks.size() )
                 FATAL( "invalid peak file?" );

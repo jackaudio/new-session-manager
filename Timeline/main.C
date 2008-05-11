@@ -125,4 +125,6 @@ main ( int argc, char **argv )
     MESSAGE( "Starting GUI" );
 //    tle.main_window->show( argc, argv );
     tle.run();
+
+    MESSAGE( "Your fun is over" );
 }

@@ -448,15 +448,42 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
     fl_pop_matrix();
 }
 
-static void
-damager ( void *v )
+struct Peaks_Redraw_Request {
+
+    Audio_Region *region;
+
+    nframes_t start;
+    nframes_t end;
+
+    Peaks_Redraw_Request ( Audio_Region *region, nframes_t start, nframes_t end ) : region( region ), start( start), end( end )
+        {
+        }
+};
+
+/* static wrapper */
+void
+Audio_Region::peaks_pending_cb ( void *v )
 {
-    Rectangle *r = (Rectangle*)v;
+    Peaks_Redraw_Request *r = (Peaks_Redraw_Request*)v;
 
-    printf( "damaging from timeout\n" );
-    timeline->damage( FL_DAMAGE_ALL, r->x, r->y, r->w, r->h );
+    r->region->peaks_pending_cb( r );
+}
 
-    delete r;
+void
+Audio_Region::peaks_pending_cb ( Peaks_Redraw_Request *r )
+{
+    int npeaks = timeline->ts_to_x( r->end - r->start );
+
+    if ( _clip->peaks()->ready( r->start, npeaks, timeline->fpp() ) )
+    {
+        printf( "damaging from timeout\n" );
+        /* FIXME: only need to damage the affected area! */
+        timeline->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
+
+        delete r;
+    }
+    else
+        Fl::repeat_timeout( 0.1f, &Audio_Region::peaks_pending_cb, (void*)r );
 }
 
 void
@@ -553,9 +580,11 @@ Audio_Region::draw ( void )
 
     const int peaks_needed = min( timeline->ts_to_x( _clip->length() - start ), W );
 
+    const nframes_t end = start + timeline->x_to_ts( peaks_needed );
+
     if ( _clip->read_peaks( timeline->fpp(),
                             start,
-                            start + timeline->x_to_ts( peaks_needed ),
+                            end,
                             &peaks, &pbuf, &channels ) &&
          peaks )
     {
@@ -603,13 +632,10 @@ Audio_Region::draw ( void )
     if ( peaks < peaks_needed )
     {
         /* couldn't read peaks--perhaps they're being generated. Try again later. */
-
-        /* commented out for testing. */
-//        Fl::add_timeout( 0.1f, damager, new Rectangle( X, y(), W, h() ) );
-
+        Fl::add_timeout( 0.1f, &Audio_Region::peaks_pending_cb,
+                         new Peaks_Redraw_Request( this, start + timeline->x_to_ts( peaks ), end ) );
     }
 
-    /* FIXME: only draw as many as are necessary! */
     timeline->draw_measure_lines( X, Y, W, H, _box_color );
 
 /*     fl_color( FL_BLACK ); */

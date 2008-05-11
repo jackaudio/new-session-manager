@@ -132,6 +132,7 @@ public:
     int fill_buffer ( float fpp, nframes_t s, nframes_t e ) const;
 
     void read ( int X, float *hi, float *lo ) const;
+    bool ready ( nframes_t s, int npeaks, nframes_t chunksize ) const;
 
     bool current ( void ) const;
     bool make_peaks ( void ) const;

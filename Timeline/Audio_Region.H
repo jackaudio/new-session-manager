@@ -28,6 +28,7 @@
 
 #include "Sequence_Region.H"
 
+class Peaks_Redraw_Request;
 
 class Audio_Region : public Sequence_Region
 {
@@ -102,6 +103,10 @@ private:
     Fade _fade_out;
 
     friend class Track;                                  /* for _clip */
+
+
+    static void peaks_pending_cb ( void *v );
+    void peaks_pending_cb ( Peaks_Redraw_Request *r );
 
 protected:
 

@@ -142,6 +142,7 @@ class Peakfile
     nframes_t _length; /* length, in frames, of the clip this peakfile represents */
     const char *_name;
     size_t _offset;
+    int _blocks;
 
     struct block_descriptor
     {
@@ -163,11 +164,11 @@ public:
 
     Peakfile ( )
         {
+            _blocks = 0;
             _fp = NULL;
             _offset = 0;
             _chunksize = 0;
             _channels = 0;
-            _length = 0;
             _name =NULL;
         }
 
@@ -177,9 +178,10 @@ public:
                 close();
         }
 
+    int blocks ( void ) const { return _blocks; }
     /** find the best block for /chunksize/ */
     void
-    find_block ( nframes_t chunksize )
+    scan ( nframes_t chunksize )
         {
             rewind( _fp );
             clearerr( _fp );
@@ -230,7 +232,7 @@ public:
                 }
 
 //            DMESSAGE( "using peakfile block for chunksize %lu", _chunksize );
-
+            _blocks = blocks.size();
             _offset = ftell( _fp );
         }
 
@@ -248,14 +250,17 @@ public:
 
             fstat( fileno( _fp ), &st );
 
-            return st.st_size / sizeof( Peak );
+            return ( st.st_size - sizeof( peakfile_block_header ) ) / sizeof( Peak );
         }
 
     /** returns true if the peakfile contains /npeaks/ peaks starting at sample /s/ */
     bool
-    contains ( nframes_t start, nframes_t npeaks )
+    ready ( nframes_t start, nframes_t npeaks )
         {
-            return frame_to_peak( start ) + npeaks <= this->npeaks();
+            if ( _blocks > 1 )
+                return true;
+            else
+                return this->npeaks() > frame_to_peak( start ) + npeaks;
         }
 
     /** given soundfile name /name/, try to open the best peakfile for /chunksize/ */
@@ -269,7 +274,7 @@ public:
             if ( ! ( _fp = fopen( peakname( name ), "r" ) ) )
                 return false;
 
-            find_block( chunksize );
+            scan( chunksize );
 
             assert( _chunksize );
 
@@ -283,7 +288,7 @@ public:
             _chunksize = 0;
             _channels = channels;
 
-            find_block( chunksize );
+            scan( chunksize );
 
             assert( _chunksize );
         }
@@ -368,6 +373,16 @@ public:
         }
 };
 
+bool
+Peaks::ready ( nframes_t s, int npeaks, nframes_t chunksize ) const
+{
+    Peakfile _peakfile;
+
+    if ( ! _peakfile.open( _clip->name(), chunksize, _clip->channels() ) )
+        return false;
+
+    return _peakfile.ready( s, npeaks );
+}
 
 int
 Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const
@@ -390,14 +405,15 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chu
 
     if ( ! _peakfile.open( _clip->name(), chunksize, _clip->channels() ) )
         return 0;
-    else if ( ! _peakfile.contains( s, npeaks ) )
-    {
-        /* the best peakfile for this chunksize doesn't have the
-         * peaks we need. Perhaps it's still being constructed,
-         * try the next best, then give up. */
-        if ( ! _peakfile.open( _clip->name(), chunksize >> 1, _clip->channels() ) )
-            return 0;
-    }
+
+/*     else if ( ! _peakfile.contains( s, npeaks ) ) */
+/*     { */
+/*         /\* the best peakfile for this chunksize doesn't have the */
+/*          * peaks we need. Perhaps it's still being constructed, */
+/*          * try the next best, then give up. *\/ */
+/*         if ( ! _peakfile.open( _clip->name(), chunksize >> 1, _clip->channels() ) ) */
+/*             return 0; */
+/*     } */
 
     return _peakfile.read_peaks( peaks, s, npeaks, chunksize );
 
@@ -679,6 +695,8 @@ Peaks::Builder::write_block_header ( nframes_t chunksize )
     fwrite( &bh, sizeof( bh ), 1, fp );
 
     last_block_pos = ftell( fp );
+
+    fflush( fp );
 }
 
 /** generate additional cache levels for a peakfile with only 1 block (ie. that of a new capture) */
@@ -718,8 +736,6 @@ Peaks::Builder::make_peaks_mipmap ( void )
         pf.open( rfp, _clip->channels(), cs >> Peaks::cache_step );
 
         write_block_header( cs );
-
-        fflush( fp );
 
         size_t len;
         nframes_t s = 0;

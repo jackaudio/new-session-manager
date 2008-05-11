@@ -581,46 +581,28 @@ class Peak_Builder
 
 public:
 
+    /** generate additional cache levels for a peakfile with only 1 block (ie. that of a new capture) */
     bool
-    run ( void )
+    make_peaks_mipmap ( void )
         {
+            if ( ! Peaks::mipmapped_peakfiles )
+                return true;
+
             Audio_File *_clip = _peaks->_clip;
 
             const char *filename = _clip->name();
 
-            DMESSAGE( "building peaks for \"%s\"", filename );
-
             FILE *rfp;
 
-            if ( ! ( fp  = fopen( peakname( filename ), "w+" ) ) )
-                return false;
+            last_block_pos = sizeof( peakfile_block_header );
 
-            _clip->seek( 0 );
-
-            Peak buf[ _clip->channels() ];
-
-            DMESSAGE( "building level 1 peak cache" );
-
-            write_block_header( Peaks::cache_minimum );
-
-            /* build first level from source */
-            size_t len;
-            do {
-                len = _peaks->read_source_peaks( buf, 1, Peaks::cache_minimum );
-
-                fwrite( buf, sizeof( buf ), len, fp );
-            }
-            while ( len );
-
-            /* reopen for reading */
-            fclose( fp );
+            /* open for reading */
             rfp = fopen( peakname( filename ), "r" );
-
-//            rfp = freopen( peakname( filename ), "r", fp );
-
             /* open the file again for appending */
             fp = fopen( peakname( filename ), "r+" );
             fseek( fp, 0, SEEK_END );
+
+            Peak buf[ _clip->channels() ];
 
             /* now build the remaining peak levels, each based on the
              * preceding level */
@@ -655,6 +637,45 @@ public:
             fclose( rfp );
             fclose( fp );
 
+            return true;
+        }
+
+    bool
+    make_peaks ( void )
+        {
+            Audio_File *_clip = _peaks->_clip;
+
+            const char *filename = _clip->name();
+
+            DMESSAGE( "building peaks for \"%s\"", filename );
+
+            FILE *rfp;
+
+            if ( ! ( fp  = fopen( peakname( filename ), "w+" ) ) )
+                return false;
+
+            _clip->seek( 0 );
+
+            Peak buf[ _clip->channels() ];
+
+            DMESSAGE( "building level 1 peak cache" );
+
+            write_block_header( Peaks::cache_minimum );
+
+            /* build first level from source */
+            size_t len;
+            do {
+                len = _peaks->read_source_peaks( buf, 1, Peaks::cache_minimum );
+
+                fwrite( buf, sizeof( buf ), len, fp );
+            }
+            while ( len );
+
+            /* reopen for reading */
+            fclose( fp );
+
+            make_peaks_mipmap();
+
             DMESSAGE( "done building peaks" );
 
             return true;
@@ -674,7 +695,15 @@ Peaks::make_peaks ( void ) const
 {
     Peak_Builder pb( this );
 
-    return pb.run();
+    return pb.make_peaks();
+}
+
+bool
+Peaks::make_peaks_mipmap ( void ) const
+{
+    Peak_Builder pb( this );
+
+    return pb.make_peaks_mipmap();
 }
 
 /** return normalization factor for a single peak, assuming the peak
@@ -710,6 +739,11 @@ Peaks::finish_writing ( void )
         delete _peak_writer;
         _peak_writer = NULL;
     }
+
+    /* now fill in the rest of the cache */
+
+    if ( ! fork() )
+        exit( make_peaks_mipmap() );
 }
 
 void

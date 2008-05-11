@@ -101,6 +101,7 @@ public:
 
     bool current ( void ) const;
     bool make_peaks ( void ) const;
+    bool make_peaks_mipmap ( void ) const;
 
     void prepare_for_writing ( void );
     void finish_writing ( void );

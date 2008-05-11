@@ -842,6 +842,8 @@ Audio_Region::finalize ( nframes_t frame )
     _clip->close();
     _clip->open();
 
+    _clip->finalize();
+
     /* FIXME: should we attempt to truncate the file? */
 
     _range.length = frame - _range.start - _range.offset;

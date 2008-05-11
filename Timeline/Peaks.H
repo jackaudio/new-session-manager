@@ -68,12 +68,15 @@ class Peaks
     int read_source_peaks ( Peak *peaks, int npeaks, nframes_t chunksize ) const;
     int read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const;
 
-    Peak_Writer *_peak_writer; /* exists when streaming peaks to disk */
+    Peak_Writer * volatile _peak_writer; /* exists when streaming peaks to disk */
 
+    size_t last_block_pos;                                      /* FIXME: only needed in make_peaks! */
 
     /* not permitted */
     Peaks ( const Peaks &rhs );
     const Peaks &operator= ( const Peaks &rhs );
+
+    friend class Peak_Builder;
 
 public:
 

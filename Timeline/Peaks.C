@@ -19,38 +19,8 @@
 
 
 /*
-   peakfile reading/writing.
-
-   Here's how it works:
-
-   Peakfiles are of the form 'name-[chunksize].peak', and contain
-   floating point min/max pairs for an entire soundfile at a certain
-   chunksize.
-
-   It gets a little complicated because peakfiles are generated
-   asynchronously and streamed to disk when capturing.
-
-   When the GUI requests the peaks for a range of samples at a certain
-   chunksize, a search is performed for a peakfile--starting with the
-   requested chunksize, and then moving to smaller chunksizes--that
-   exists and contains the peaks for the requested range (which it may
-   not--if the peaks are in the process of being written). The peaks,
-   if available, are then read from disk, downsampled to the exact
-   chunksize requested, and displayed.
-
-   On the generation end, peaks are either streamed to disk while
-   recording (and therefore more or less in real time), or a process
-   is forked to generate the entire peak file (either directly from
-   the source, or from a higher-resolution peak file that exists and
-   is complete).
-
-   The end result is that peaks are:
-
-  * read synchronously
-  * generated asynchronously
-  * cached at many resolutions
-
- */
+  peakfile reading/writing.
+  */
 
 
 #include "Peaks.H"
@@ -75,6 +45,10 @@
 #include <FL/Fl.H> // for Fl::check();
 
 #include "debug.h"
+#include <errno.h>
+
+
+#include <list>
 
 Peaks::peakbuffer Peaks::_peakbuf;
 
@@ -82,9 +56,9 @@ Peaks::peakbuffer Peaks::_peakbuf;
 bool Peaks::mipmapped_peakfiles = true;
 
 /* chunksizes at which to generate peakfiles (on demand). This should
- pretty much cover the usable range.  Better performance can be
- achieved at high zoom-levels and for compressed sources with a
- minimum of 64, but those files are up into the megabytes. */
+   pretty much cover the usable range.  Better performance can be
+   achieved at high zoom-levels and for compressed sources with a
+   minimum of 64, but those files are up into the megabytes. */
 const int Peaks::cache_minimum = 256;                           /* minimum chunksize to build peakfiles for */
 const int Peaks::cache_levels  = 8;                             /* number of sampling levels in peak cache */
 // const int Peaks::cache_step    = 2;                             /* powers of two between each level. 4 == 256, 2048, 16384, ... */
@@ -111,11 +85,11 @@ Peaks::~Peaks ( )
 
 static
 const char *
-peakname ( const char *filename, nframes_t chunksize )
+peakname ( const char *filename )
 {
     static char file[512];
 
-    snprintf( file, 512, "%s-[%d].peak", filename, chunksize );
+    snprintf( file, 512, "%s.peak", filename );
 
     return (const char*)&file;
 }
@@ -152,21 +126,47 @@ nearest_cached_chunksize ( nframes_t chunksize )
     return 0;
 }
 
+struct peakfile_block_header
+{
+    unsigned long chunksize;
+    unsigned long skip;
+};
+
 class Peakfile
 {
 
     FILE *_fp;
     nframes_t _chunksize;
-    int _channels;
+    int _channels;   /* number of channels this peakfile represents */
+    nframes_t _length; /* length, in frames, of the clip this peakfile represents */
     const char *_name;
+    size_t _offset;
+
+    struct block_descriptor
+    {
+        nframes_t chunksize;
+        size_t pos;
+
+        block_descriptor ( nframes_t chunksize, size_t pos ) : chunksize( chunksize ), pos( pos )
+            {
+            }
+
+        bool operator< ( const block_descriptor &rhs )
+            {
+                return chunksize < rhs.chunksize;
+            }
+    };
+
 
 public:
 
     Peakfile ( )
         {
             _fp = NULL;
+            _offset = 0;
             _chunksize = 0;
             _channels = 0;
+            _length = 0;
             _name =NULL;
         }
 
@@ -176,14 +176,65 @@ public:
                 close();
         }
 
+    /** find the best block for /chunksize/ */
+    void
+    find_block ( nframes_t chunksize )
+        {
+            rewind( _fp );
+            clearerr( _fp );
+
+            std::list <block_descriptor> blocks;
+
+            /* scan all blocks */
+            do
+            {
+                peakfile_block_header bh;
+
+                fread( &bh, sizeof( bh ), 1, _fp );
+
+                ASSERT( bh.chunksize, "Invalid peak file structure!" );
+
+                blocks.push_back( block_descriptor( bh.chunksize, ftell( _fp ) ) );
+
+                if ( ! bh.skip )
+                    break;
+
+                if ( fseek( _fp, bh.skip, SEEK_CUR ) )
+                {
+                    WARNING( "seek failed: %s (%lu)", strerror( errno ), bh.skip );
+                    break;
+                }
+            }
+            while ( ! feof( _fp ) );
+
+            if ( ! blocks.size() )
+                FATAL( "invalid peak file?" );
+
+//            DMESSAGE( "peakfile has %d blocks.", blocks.size() );
+
+            blocks.sort();
+
+            /* fall back on the smallest chunksize */
+            fseek( _fp, blocks.front().pos, SEEK_SET );
+            _chunksize = blocks.front().chunksize;
+
+            /* search for the best-fit chunksize */
+            for ( std::list <block_descriptor>::const_reverse_iterator i = blocks.rbegin();
+                  i != blocks.rend(); ++i )
+                if ( chunksize >= i->chunksize )
+                {
+                    _chunksize = i->chunksize;
+                    fseek( _fp, i->pos, SEEK_SET );
+                    break;
+                }
+
+
+            _offset = ftell( _fp );
+        }
+
     /** convert frame number of peak number */
     nframes_t frame_to_peak ( nframes_t frame )
         {
-            /* how many powers of two is chunksize > cache_minimum?
-             skip clip size of peaks at increasing powers of two until
-             we reach the closest one less than chunksize. Then
-             address normally.*/
-
             return frame * _channels / _chunksize;
         }
 
@@ -209,23 +260,30 @@ public:
     bool
     open ( const char *name, nframes_t chunksize, int channels )
         {
+            _chunksize = 0;
             _channels = channels;
             _name = name;
 
-            for ( _chunksize = nearest_cached_chunksize( chunksize );
-                  _chunksize >= Peaks::cache_minimum; _chunksize >>= Peaks::cache_step )
-                if ( ( _fp = fopen( peakname( name, _chunksize ), "r" ) ) )
-                    break;
+            if ( ! ( _fp = fopen( peakname( name ), "r" ) ) )
+                return false;
 
-            return _fp != NULL;
+            find_block( chunksize );
+
+            assert( _chunksize );
+
+            return true;
         }
 
     bool
     open ( FILE *fp, int channels, nframes_t chunksize )
         {
             _fp = fp;
-            _chunksize = chunksize;
+            _chunksize = 0;
             _channels = channels;
+
+            find_block( chunksize );
+
+            assert( _chunksize );
         }
 
     void
@@ -255,7 +313,7 @@ public:
             const unsigned int ratio = chunksize / _chunksize;
 
             /* locate to start position */
-            if ( fseek( _fp, frame_to_peak( s ) * sizeof( Peak ), SEEK_SET ) )
+            if ( fseek( _fp, _offset + frame_to_peak( s ) * sizeof( Peak ), SEEK_SET ) )
                 /* failed to seek... peaks not ready? */
                 return 0;
 
@@ -430,19 +488,6 @@ Peaks::read_peaks ( nframes_t s, nframes_t e, int npeaks, nframes_t chunksize ) 
 bool
 Peaks::open ( void )
 {
-
-/*     const char *filename = _clip->name(); */
-
-/*     /\* FIXME: determine this based on zoom level *\/ */
-/*     const nframes_t chunksize = 256; */
-
-/* /\*     if ( ! current( chunksize ) ) *\/ */
-/* /\*         /\\* Build peaks asyncronously *\\/ *\/ */
-/* /\*         if ( ! fork() ) *\/ */
-/* /\*             exit( make_peaks( chunksize ) ); *\/ */
-
-/*     return true; */
-
 }
 
 
@@ -455,7 +500,7 @@ Peaks::current ( nframes_t chunksize ) const
     if ( ( sfd = ::open( _clip->name(), O_RDONLY ) ) < 0 )
         return true;
 
-    if ( ( pfd = ::open( peakname( _clip->name(), chunksize ), O_RDONLY ) ) < 0 )
+    if ( ( pfd = ::open( peakname( _clip->name() ), O_RDONLY ) ) < 0 )
         return false;
 
     struct stat sst, pst;
@@ -470,73 +515,151 @@ Peaks::current ( nframes_t chunksize ) const
 }
 
 
-/** build peaks file at /chunksize/. If higher-resolution peaks
-    already exist, downsample those rather than building from
-    scratch */
+
+/* The Peak_Builder is for generating peaks from imported or updated sources, or when the
+   peakfile is simply missing */
+
+class Peak_Builder
+{
+    FILE *fp;
+    size_t last_block_pos;
+    const Peaks *_peaks;
+
+    void
+    write_block_header ( nframes_t chunksize )
+        {
+            if ( last_block_pos )
+            {
+                /* update previous block */
+                size_t pos = ftell( fp );
+
+                fseek( fp, last_block_pos - sizeof( peakfile_block_header ), SEEK_SET );
+
+                peakfile_block_header bh;
+
+                fread( &bh, sizeof( bh ), 1, fp );
+
+                fseek( fp, last_block_pos - sizeof( peakfile_block_header ), SEEK_SET );
+//                fseek( fp, 0 - sizeof( bh ), SEEK_CUR );
+
+//                DMESSAGE( "old block header: chunksize=%lu, skip=%lu", bh.chunksize, bh.skip );
+
+                bh.skip = pos - last_block_pos;
+
+//                DMESSAGE( "new block header: chunksize=%lu, skip=%lu", bh.chunksize, bh.skip );
+
+                fwrite( &bh, sizeof( bh ), 1, fp );
+
+                fseek( fp, pos, SEEK_SET );
+            }
+
+            peakfile_block_header bh;
+
+            bh.chunksize = chunksize;
+            bh.skip = 0;
+
+            fwrite( &bh, sizeof( bh ), 1, fp );
+
+            last_block_pos = ftell( fp );
+        }
+
+public:
+
+    bool
+    run ( void )
+        {
+            Audio_File *_clip = _peaks->_clip;
+
+            const char *filename = _clip->name();
+
+            DMESSAGE( "building peaks for \"%s\"", filename );
+
+            FILE *rfp;
+
+            if ( ! ( fp  = fopen( peakname( filename ), "w+" ) ) )
+                return false;
+
+            _clip->seek( 0 );
+
+            Peak buf[ _clip->channels() ];
+
+            DMESSAGE( "building level 1 peak cache" );
+
+            write_block_header( Peaks::cache_minimum );
+
+            /* build first level from source */
+            size_t len;
+            do {
+                len = _peaks->read_source_peaks( buf, 1, Peaks::cache_minimum );
+
+                fwrite( buf, sizeof( buf ), len, fp );
+            }
+            while ( len );
+
+            /* reopen for reading */
+            fclose( fp );
+            rfp = fopen( peakname( filename ), "r" );
+
+//            rfp = freopen( peakname( filename ), "r", fp );
+
+            /* open the file again for appending */
+            fp = fopen( peakname( filename ), "r+" );
+            fseek( fp, 0, SEEK_END );
+
+            /* now build the remaining peak levels, each based on the
+             * preceding level */
+
+            nframes_t cs = Peaks::cache_minimum << Peaks::cache_step;
+            for ( int i = 1; i < Peaks::cache_levels; ++i, cs <<= Peaks::cache_step )
+            {
+                DMESSAGE( "building level %d peak cache", i + 1 );
+
+                Peakfile pf;
+
+                /* open the peakfile for the previous cache level */
+                pf.open( rfp, _clip->channels(), cs >> Peaks::cache_step );
+
+                write_block_header( cs );
+
+                fflush( fp );
+
+                size_t len;
+                nframes_t s = 0;
+                do {
+                    len = pf.read_peaks( buf, s, 1, cs );
+                    s += cs;
+
+                    fwrite( buf, sizeof( buf ), len, fp );
+                }
+                while ( len );
+
+                pf.leave_open();
+            }
+
+            fclose( rfp );
+            fclose( fp );
+
+            DMESSAGE( "done building peaks" );
+
+            return true;
+        }
+
+
+    Peak_Builder ( const Peaks *peaks ) : _peaks( peaks )
+        {
+            fp = NULL;
+            last_block_pos = 0;
+        }
+};
+
+
 bool
 Peaks::make_peaks ( void ) const
 {
-    const char *filename = _clip->name();
+    Peak_Builder pb( this );
 
-    _clip->seek( 0 );
-
-    FILE *fp[ cache_levels ];
-
-    Peak buf[ _clip->channels() ];
-
-    if ( ! ( fp[ 0 ]  = fopen( peakname( filename, cache_minimum ), "w+" ) ) )
-        return false;
-
-    DMESSAGE( "building level 1 peak cache" );
-
-    /* build first level from source */
-    size_t len;
-    do {
-        len = read_source_peaks( buf, 1, cache_minimum );
-
-        fwrite( buf, sizeof( buf ), len, fp[ 0 ] );
-    }
-    while ( len );
-
-    /* now build the remaining peak levels, each based on the
-     * preceding level */
-
-    nframes_t cs = cache_minimum << cache_step;
-    for ( int i = 1; i < cache_levels; ++i, cs <<= cache_step )
-    {
-        DMESSAGE( "building level %d peak cache", i + 1 );
-
-        Peakfile pf;
-
-        if ( ! ( fp[ i ] = fopen( peakname( filename, cs ), "w+" ) ) )
-        {
-            DWARNING( "could not open peakfile for writing" );
-            return false;
-        }
-
-        /* open the peakfile for the previous cache level */
-        pf.open( fp[ i - 1 ], _clip->channels(), cs >> cache_step );
-
-        size_t len;
-        nframes_t s = 0;
-        do {
-            len = pf.read_peaks( buf, s, 1, cs );
-            s += cs;
-
-            fwrite( buf, sizeof( buf ), len, fp[ i ] );
-        }
-        while ( len );
-
-        pf.leave_open();
-    }
-
-    /* all done */
-    for ( int i = cache_levels; i--; )
-        fclose( fp[ i ] );
-
-    return true;
+    return pb.run();
 }
-
 
 /** return normalization factor for a single peak, assuming the peak
  * represents a downsampling of the entire range to be normalized. */
@@ -575,7 +698,6 @@ Peaks::write ( sample_t *buf, nframes_t nframes )
 
 Peak_Writer::Peak_Writer ( const char *filename, nframes_t chunksize, int channels )
 {
-
     _channels  = channels;
     _chunksize = chunksize;
     _index     = 0;
@@ -583,8 +705,17 @@ Peak_Writer::Peak_Writer ( const char *filename, nframes_t chunksize, int channe
     _peak = new Peak[ channels ];
     memset( _peak, 0, sizeof( Peak ) * channels );
 
-    if ( ! ( _fp = fopen( peakname( filename, chunksize ), "w" ) ) )
+    if ( ! ( _fp = fopen( peakname( filename ), "w" ) ) )
         /* error! */;
+
+    peakfile_block_header bh;
+
+    bh.chunksize = chunksize;
+    bh.skip = 0;
+
+    fwrite( &bh, sizeof( bh ), 1, _fp );
+
+    fflush( _fp );
 }
 
 Peak_Writer::~Peak_Writer ( )

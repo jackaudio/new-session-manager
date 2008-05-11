@@ -792,6 +792,13 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 }
 
 
+/** prepare for capturing */
+void
+Audio_Region::prepare ( void )
+{
+    log_start();
+}
+
 /* THREAD: IO */
 /** write /nframes/ from /buf/ to source. /buf/ is interleaved and
     must match the channel layout of the write source!  */
@@ -824,15 +831,6 @@ Audio_Region::write ( nframes_t nframes )
 
     return nframes;
 }
-
-
-/** prepare for capturing */
-void
-Audio_Region::prepare ( void )
-{
-    log_start();
-}
-
 
 /** finalize region capture. Assumes that this *is* a captured region
  and that no other regions refer to the same source */

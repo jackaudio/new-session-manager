@@ -158,6 +158,8 @@ Audio_File_SF::close ( void )
     if ( _in )
         sf_close( _in );
 
+    _peaks.finish_writing();
+
     _in = NULL;
 }
 

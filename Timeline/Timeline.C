@@ -1066,6 +1066,9 @@ Timeline::remove_track ( Track *track )
 bool
 Timeline::record ( void )
 {
+    /* FIXME: right place for this? */
+    transport->recording = true;
+
     Loggable::block_start();
 
     for ( int i = tracks->children(); i-- ; )
@@ -1096,6 +1099,8 @@ Timeline::stop ( void )
     Loggable::block_end();
 
     activate();
+
+    transport->recording = false;
 }
 
 

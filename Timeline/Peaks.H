@@ -99,10 +99,11 @@ public:
     void read ( int X, float *hi, float *lo ) const;
     bool open ( void );
 
-    bool current ( nframes_t chunksize ) const;
+    bool current ( void ) const;
     bool make_peaks ( void ) const;
 
     void prepare_for_writing ( void );
+    void finish_writing ( void );
     void write ( sample_t *buf, nframes_t nframes );
 };
 

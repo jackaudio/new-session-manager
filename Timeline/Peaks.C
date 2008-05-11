@@ -20,7 +20,7 @@
 
 /*
   peakfile reading/writing.
-  */
+*/
 
 
 #include "Peaks.H"
@@ -47,6 +47,8 @@
 #include "debug.h"
 #include <errno.h>
 
+
+#include "Transport.H" // for .recording
 
 #include <list>
 
@@ -376,12 +378,16 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chu
 
     nframes_t ncc = nearest_cached_chunksize( chunksize );
 
-    if ( ! _peak_writer && ! current( cache_minimum ) )
-        /* Build peaks asyncronously */
-        if ( ! fork() )
-            exit( make_peaks( ) );
-        else
-            return 0;
+    /* never try to build peaks while recording */
+    if ( ! ( _peak_writer || transport->recording ) )
+    {
+        if ( ! current() )
+            /* Build peaks asyncronously */
+            if ( ! fork() )
+                exit( make_peaks() );
+            else
+                return 0;
+    }
 
     Peakfile _peakfile;
 
@@ -493,7 +499,7 @@ Peaks::open ( void )
 
 /** returns false if peak file for /filename/ is out of date  */
 bool
-Peaks::current ( nframes_t chunksize ) const
+Peaks::current ( void ) const
 {
     int sfd, pfd;
 
@@ -514,6 +520,16 @@ Peaks::current ( nframes_t chunksize ) const
     return sst.st_mtime <= pst.st_mtime;
 }
 
+
+static void
+touch ( int fd )
+{
+    struct stat st;
+
+    fstat( fd, &st );
+
+    fchmod( fd, st.st_mode );
+}
 
 
 /* The Peak_Builder is for generating peaks from imported or updated sources, or when the
@@ -687,6 +703,16 @@ Peaks::prepare_for_writing ( void )
 }
 
 void
+Peaks::finish_writing ( void )
+{
+    if ( _peak_writer )
+    {
+        delete _peak_writer;
+        _peak_writer = NULL;
+    }
+}
+
+void
 Peaks::write ( sample_t *buf, nframes_t nframes )
 {
     _peak_writer->write( buf, nframes );
@@ -720,7 +746,10 @@ Peak_Writer::Peak_Writer ( const char *filename, nframes_t chunksize, int channe
 
 Peak_Writer::~Peak_Writer ( )
 {
+    touch( fileno( _fp ) );
+
     fclose( _fp );
+
     delete[] _peak;
 }
 
@@ -746,6 +775,5 @@ Peak_Writer::write ( sample_t *buf, nframes_t nframes )
             memset( _peak, 0, sizeof( Peak ) * _channels );
             _index = 0;
         }
-
     }
 }

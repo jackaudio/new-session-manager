@@ -30,8 +30,9 @@ struct Peak {
     float normalization_factor ( void ) const;
 };
 
+#include <stdio.h>
+
 class Audio_File;
-class Peak_Writer;
 
 class Peaks
 {
@@ -57,6 +58,44 @@ class Peaks
             }
     };
 
+    class Streamer
+    {
+        FILE *_fp;
+        Peak *_peak;
+        int _chunksize;
+        int _channels;
+
+        int _index;
+
+        /* not permitted */
+        Streamer ( const Streamer &rhs );
+        const Streamer &operator= ( const Streamer &rhs );
+
+    public:
+
+        Streamer ( const char *filename, nframes_t chunksize, int channels );
+        ~Streamer ( );
+
+        void write ( sample_t *buf, nframes_t nframes );
+
+    };
+
+    class Builder
+    {
+        FILE *fp;
+        size_t last_block_pos;
+        const Peaks *_peaks;
+
+        void write_block_header ( nframes_t chunksize );
+
+    public:
+
+        bool make_peaks_mipmap ( void );
+        bool make_peaks ( void );
+
+        Builder ( const Peaks *peaks );
+    };
+
     static peakbuffer _peakbuf;
 
     Audio_File *_clip;
@@ -68,15 +107,11 @@ class Peaks
     int read_source_peaks ( Peak *peaks, int npeaks, nframes_t chunksize ) const;
     int read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const;
 
-    Peak_Writer * volatile _peak_writer; /* exists when streaming peaks to disk */
-
-    size_t last_block_pos;                                      /* FIXME: only needed in make_peaks! */
+    Streamer * volatile _peak_writer; /* exists when streaming peaks to disk */
 
     /* not permitted */
     Peaks ( const Peaks &rhs );
     const Peaks &operator= ( const Peaks &rhs );
-
-    friend class Peak_Builder;
 
 public:
 
@@ -97,7 +132,6 @@ public:
     int fill_buffer ( float fpp, nframes_t s, nframes_t e ) const;
 
     void read ( int X, float *hi, float *lo ) const;
-    bool open ( void );
 
     bool current ( void ) const;
     bool make_peaks ( void ) const;
@@ -106,28 +140,4 @@ public:
     void prepare_for_writing ( void );
     void finish_writing ( void );
     void write ( sample_t *buf, nframes_t nframes );
-};
-
-#include <stdio.h>
-
-class Peak_Writer
-{
-    FILE *_fp;
-    Peak *_peak;
-    int _chunksize;
-    int _channels;
-
-    int _index;
-
-    /* not permitted */
-    Peak_Writer ( const Peak_Writer &rhs );
-    const Peak_Writer &operator= ( const Peak_Writer &rhs );
-
-public:
-
-    Peak_Writer ( const char *filename, nframes_t chunksize, int channels );
-    ~Peak_Writer ( );
-
-    void write ( sample_t *buf, nframes_t nframes );
-
 };

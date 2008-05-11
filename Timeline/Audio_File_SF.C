@@ -109,7 +109,6 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
     char *name;
     asprintf( &name, "%s.%s", filename, fd->extension );
 
-//    if ( ! ( out = sf_open( name, SFM_RDWR, &si ) ) )
     if ( ! ( out = sf_open( name, SFM_WRITE, &si ) ) )
     {
         printf( "couldn't create soundfile.\n" );

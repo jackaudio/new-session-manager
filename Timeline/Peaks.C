@@ -140,7 +140,6 @@ class Peakfile
     nframes_t _chunksize;
     int _channels;   /* number of channels this peakfile represents */
     nframes_t _length; /* length, in frames, of the clip this peakfile represents */
-    const char *_name;
     size_t _offset;
     int _blocks;
 
@@ -169,7 +168,6 @@ public:
             _offset = 0;
             _chunksize = 0;
             _channels = 0;
-            _name =NULL;
         }
 
     ~Peakfile ( )
@@ -195,11 +193,14 @@ public:
 
                 fread( &bh, sizeof( bh ), 1, _fp );
 
+//                printf( "chunksize=%lu, skip=%lu\n", (unsigned long)bh.chunksize, (unsigned long) bh.skip );
+
                 ASSERT( bh.chunksize, "Invalid peak file structure!" );
 
                 blocks.push_back( block_descriptor( bh.chunksize, ftell( _fp ) ) );
 
                 if ( ! bh.skip )
+                    /* last block */
                     break;
 
                 if ( fseek( _fp, bh.skip, SEEK_CUR ) )
@@ -265,11 +266,10 @@ public:
 
     /** given soundfile name /name/, try to open the best peakfile for /chunksize/ */
     bool
-    open ( const char *name, nframes_t chunksize, int channels )
+    open ( const char *name, int channels, nframes_t chunksize )
         {
             _chunksize = 0;
             _channels = channels;
-            _name = name;
 
             if ( ! ( _fp = fopen( peakname( name ), "r" ) ) )
                 return false;
@@ -311,7 +311,7 @@ public:
      * channels. Place the result in buffer /peaks/, which must be
      * large enough to fit the entire request. Returns the number of
      * peaks actually read, which may be fewer than were requested. */
-    int
+    nframes_t
     read_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize )
         {
             if ( ! _fp )
@@ -320,22 +320,18 @@ public:
             const unsigned int ratio = chunksize / _chunksize;
 
             /* locate to start position */
-            if ( fseek( _fp, _offset + frame_to_peak( s ) * sizeof( Peak ), SEEK_SET ) )
+            if ( fseek( _fp, _offset + ( frame_to_peak( s ) * sizeof( Peak ) ), SEEK_SET ) )
                 /* failed to seek... peaks not ready? */
                 return 0;
 
             if ( ratio == 1 )
-            {
-                int len = fread( peaks, sizeof( Peak ) * _channels, npeaks, _fp );
-                // close;
-                return len;
-            }
+                return fread( peaks, sizeof( Peak ) * _channels, npeaks, _fp );
 
             Peak *pbuf = new Peak[ ratio * _channels ];
 
-            size_t len = 0;
+            nframes_t len = 0;
 
-            int i;
+            nframes_t i;
             for ( i = 0; i < npeaks; ++i )
             {
                 /* read in a buffer */
@@ -378,7 +374,7 @@ Peaks::ready ( nframes_t s, int npeaks, nframes_t chunksize ) const
 {
     Peakfile _peakfile;
 
-    if ( ! _peakfile.open( _clip->name(), chunksize, _clip->channels() ) )
+    if ( ! _peakfile.open( _clip->name(), _clip->channels(), chunksize ) )
         return false;
 
     return _peakfile.ready( s, npeaks );
@@ -391,7 +387,7 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chu
     nframes_t ncc = nearest_cached_chunksize( chunksize );
 
     /* never try to build peaks while recording */
-    if ( ! ( _peak_writer || transport->recording ) )
+    if ( ! transport->recording )
     {
         if ( ! current() )
             /* Build peaks asyncronously */
@@ -403,7 +399,7 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chu
 
     Peakfile _peakfile;
 
-    if ( ! _peakfile.open( _clip->name(), chunksize, _clip->channels() ) )
+    if ( ! _peakfile.open( _clip->name(),  _clip->channels(), chunksize ) )
         return 0;
 
 /*     else if ( ! _peakfile.contains( s, npeaks ) ) */
@@ -556,15 +552,17 @@ Peak::normalization_factor( void ) const
     return s;
 }
 
+/* THREAD: IO */
 /* wrapper for peak writer */
 void
 Peaks::prepare_for_writing ( void )
 {
     assert( ! _peak_writer );
 
-    _peak_writer = new Peaks::Streamer( _clip->name(), cache_minimum, _clip->channels() );
+    _peak_writer = new Peaks::Streamer( _clip->name(), _clip->channels(), cache_minimum );
 }
 
+/* THREAD: IO */
 void
 Peaks::finish_writing ( void )
 {
@@ -575,11 +573,14 @@ Peaks::finish_writing ( void )
     }
 
     /* now fill in the rest of the cache */
+    make_peaks_mipmap();
 
-    if ( ! fork() )
-        exit( make_peaks_mipmap() );
+/*     if ( ! fork() ) */
+/*         exit( make_peaks_mipmap() ); */
+
 }
 
+/* THREAD: IO */
 void
 Peaks::write ( sample_t *buf, nframes_t nframes )
 {
@@ -596,17 +597,20 @@ Peaks::write ( sample_t *buf, nframes_t nframes )
   Streamer has finished.
 */
 
-Peaks::Streamer::Streamer ( const char *filename, nframes_t chunksize, int channels )
+Peaks::Streamer::Streamer ( const char *filename, int channels, nframes_t chunksize )
 {
     _channels  = channels;
     _chunksize = chunksize;
     _index     = 0;
+    _fp = NULL;
 
     _peak = new Peak[ channels ];
     memset( _peak, 0, sizeof( Peak ) * channels );
 
     if ( ! ( _fp = fopen( peakname( filename ), "w" ) ) )
-        /* error! */;
+    {
+        WARNING( "could not open peakfile for streaming." );
+    }
 
     peakfile_block_header bh;
 
@@ -620,6 +624,10 @@ Peaks::Streamer::Streamer ( const char *filename, nframes_t chunksize, int chann
 
 Peaks::Streamer::~Streamer ( )
 {
+    fwrite( _peak, sizeof( Peak ) * _channels, 1, _fp );
+
+    fflush( _fp );
+
     touch( fileno( _fp ) );
 
     fclose( _fp );
@@ -645,7 +653,11 @@ Peaks::Streamer::write ( sample_t *buf, nframes_t nframes )
 
         if ( _index == _chunksize - 1 )
         {
-            fwrite( _peak, sizeof( Peak ), _channels, _fp );
+            fwrite( _peak, sizeof( Peak ) * _channels, 1, _fp );
+
+            /* FIXME: why the hell is this necessary? */
+            fflush( _fp );
+
             memset( _peak, 0, sizeof( Peak ) * _channels );
             _index = 0;
         }
@@ -676,11 +688,13 @@ Peaks::Builder::write_block_header ( nframes_t chunksize )
         fseek( fp, last_block_pos - sizeof( peakfile_block_header ), SEEK_SET );
 //                fseek( fp, 0 - sizeof( bh ), SEEK_CUR );
 
-//                DMESSAGE( "old block header: chunksize=%lu, skip=%lu", bh.chunksize, bh.skip );
+//        DMESSAGE( "old block header: chunksize=%lu, skip=%lu", bh.chunksize, bh.skip );
 
         bh.skip = pos - last_block_pos;
 
-//                DMESSAGE( "new block header: chunksize=%lu, skip=%lu", bh.chunksize, bh.skip );
+        ASSERT( bh.skip, "Attempt to create empty block. pos=%lu, last_block_pos=%lu", pos, last_block_pos );
+
+//        DMESSAGE( "new block header: chunksize=%lu, skip=%lu", bh.chunksize, bh.skip );
 
         fwrite( &bh, sizeof( bh ), 1, fp );
 
@@ -712,13 +726,27 @@ Peaks::Builder::make_peaks_mipmap ( void )
 
     FILE *rfp;
 
+    rfp = fopen( peakname( filename ), "r" );
+
     last_block_pos = sizeof( peakfile_block_header );
 
     /* open for reading */
-    rfp = fopen( peakname( filename ), "r" );
+//    rfp = fopen( peakname( filename ), "r" );
     /* open the file again for appending */
-    fp = fopen( peakname( filename ), "r+" );
-    fseek( fp, 0, SEEK_END );
+    if ( ! ( fp = fopen( peakname( filename ), "r+" ) ) )
+    {
+        WARNING( "could not open peakfile for appending." );
+        return false;
+    }
+
+    if ( fseek( fp, 0, SEEK_END ) )
+        FATAL( "error performing seek: %s", strerror( errno ) );
+
+    if ( ftell( fp ) == sizeof( peakfile_block_header ) )
+    {
+        DWARNING( "truncated peakfile. Programming error?" );
+        return false;
+    }
 
     Peak buf[ _clip->channels() ];
 
@@ -730,10 +758,21 @@ Peaks::Builder::make_peaks_mipmap ( void )
     {
         DMESSAGE( "building level %d peak cache", i + 1 );
 
+        DMESSAGE( "%lu", _clip->length() / cs );
+
+        if ( _clip->length() / cs < 1 )
+        {
+            DMESSAGE( "source not long enough for any peaks at chunksize %lu", cs );
+            break;
+        }
+
+
         Peakfile pf;
 
         /* open the peakfile for the previous cache level */
         pf.open( rfp, _clip->channels(), cs >> Peaks::cache_step );
+
+//        pf.open( _clip->name(), _clip->channels(), cs >> Peaks::cache_step );
 
         write_block_header( cs );
 
@@ -764,8 +803,6 @@ Peaks::Builder::make_peaks ( void )
     const char *filename = _clip->name();
 
     DMESSAGE( "building peaks for \"%s\"", filename );
-
-    FILE *rfp;
 
     if ( ! ( fp  = fopen( peakname( filename ), "w+" ) ) )
         return false;

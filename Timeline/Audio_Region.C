@@ -840,7 +840,8 @@ Audio_Region::write ( nframes_t nframes )
     {
         nframes_t oldl = _clip->length();
 
-        /* FIXME: hack */
+        /* get the new size. Remember, this is a read-only handle on the source--not the same
+         one being written to */
         _clip->close();
         _clip->open();
 
@@ -858,6 +859,7 @@ Audio_Region::write ( nframes_t nframes )
     return nframes;
 }
 
+/* THREAD: IO */
 /** finalize region capture. Assumes that this *is* a captured region
  and that no other regions refer to the same source */
 bool
@@ -865,10 +867,10 @@ Audio_Region::finalize ( nframes_t frame )
 {
     log_end();
 
+    _clip->finalize();
+
     _clip->close();
     _clip->open();
-
-    _clip->finalize();
 
     /* FIXME: should we attempt to truncate the file? */
 

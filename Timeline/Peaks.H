@@ -64,7 +64,6 @@ class Peaks
         Peak *_peak;
         int _chunksize;
         int _channels;
-
         int _index;
 
         /* not permitted */
@@ -73,7 +72,7 @@ class Peaks
 
     public:
 
-        Streamer ( const char *filename, nframes_t chunksize, int channels );
+        Streamer ( const char *filename, int channels, nframes_t chunksize );
         ~Streamer ( );
 
         void write ( sample_t *buf, nframes_t nframes );

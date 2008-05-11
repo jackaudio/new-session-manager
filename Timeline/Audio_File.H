@@ -35,6 +35,7 @@ class Audio_File
 {
     static std::map <std::string, Audio_File*> _open_files;
 
+    /* not permitted */
     Audio_File ( const Audio_File &rhs );
     const Audio_File & operator= ( const Audio_File &rhs );
 
@@ -48,7 +49,7 @@ protected:
     };
 
     const char *_filename;
-    nframes_t _length;                 /* length of file in samples */
+    volatile nframes_t _length;                 /* length of file in samples */
     nframes_t _samplerate;                   /* sample rate */
     int _channels;
 
@@ -70,6 +71,7 @@ public:
     Audio_File ( ) : _peaks( this )
         {
             _filename = NULL;
+            _samplerate = 0;
             _length = _channels = 0;
         }
 

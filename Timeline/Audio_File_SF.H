@@ -31,12 +31,19 @@ class Audio_File_SF : public Audio_File
      * enough to do this for us */
     nframes_t _current_read;
 
+    Audio_File_SF ( )
+        {
+            _in = 0;
+            _current_read = 0;
+        }
+
 public:
 
     static const Audio_File::format_desc supported_formats[];
 
     static Audio_File_SF *from_file ( const char *filename );
     static Audio_File_SF *create ( const char *filename, nframes_t samplerate, int channels, const char *format );
+
 
     ~Audio_File_SF ( )
         {

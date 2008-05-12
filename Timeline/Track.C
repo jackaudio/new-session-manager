@@ -769,11 +769,13 @@ uuid ( void )
 void
 Track::record ( nframes_t frame )
 {
-    assert( _capture == NULL );
+    assert( ! _capture );
+    assert( ! _capture_af );
 
     char pat[256];
 
     snprintf( pat, sizeof( pat ), "%s-%llu", name(), uuid() );
+
 
     _capture_af = Audio_File_SF::create( pat, engine->sample_rate(), input.size(), Track::capture_format );
 
@@ -810,4 +812,9 @@ Track::stop ( nframes_t frame )
     _capture->finalize( frame );
 
     _capture = NULL;
+
+    _capture_af->finalize();
+
+    delete _capture_af;
+    _capture_af = NULL;
 }

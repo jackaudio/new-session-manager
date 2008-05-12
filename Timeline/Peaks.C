@@ -568,11 +568,10 @@ Peaks::prepare_for_writing ( void )
 void
 Peaks::finish_writing ( void )
 {
-    if ( _peak_writer )
-    {
-        delete _peak_writer;
-        _peak_writer = NULL;
-    }
+    assert( _peak_writer );
+
+    delete _peak_writer;
+    _peak_writer = NULL;
 
     /* now fill in the rest of the cache */
     make_peaks_mipmap();

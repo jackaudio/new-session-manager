@@ -625,9 +625,7 @@ Peaks::Streamer::Streamer ( const char *filename, int channels, nframes_t chunks
 
 Peaks::Streamer::~Streamer ( )
 {
-    fwrite( _peak, sizeof( Peak ) * _channels, 1, _fp );
-
-    fflush( _fp );
+/*     fwrite( _peak, sizeof( Peak ) * _channels, 1, _fp ); */
 
     touch( fileno( _fp ) );
 
@@ -638,30 +636,43 @@ Peaks::Streamer::~Streamer ( )
 
 /** append peaks for samples in /buf/ to peakfile */
 void
-Peaks::Streamer::write ( sample_t *buf, nframes_t nframes )
+Peaks::Streamer::write ( const sample_t *buf, nframes_t nframes )
 {
-    for ( ; nframes--; ++_index, buf += _channels )
+    while ( nframes )
     {
-        for ( int j = 0; j < _channels; ++j )
-        {
-            Peak *p = _peak + j;
+        const nframes_t remaining = _chunksize - _index;
 
-            if ( *buf > p->max )
-                p->max = *buf;
-            if ( *buf < p->min )
-                p->min = *buf;
-        }
-
-        if ( _index == _chunksize - 1 )
+        if ( ! remaining )
         {
             fwrite( _peak, sizeof( Peak ) * _channels, 1, _fp );
 
-            /* FIXME: why the hell is this necessary? */
+            /* FIXME: shouldn't we just use write() instead? */
             fflush( _fp );
 
             memset( _peak, 0, sizeof( Peak ) * _channels );
+
             _index = 0;
         }
+
+        int processed = min( nframes, remaining );
+
+        for ( int i = _channels; i--; )
+        {
+            Peak *p = _peak + i;
+
+            const sample_t *f = buf + i;
+
+            for ( int j = processed; j--; f += _channels )
+            {
+                if ( *f > p->max )
+                    p->max = *f;
+                if ( *f < p->min )
+                    p->min = *f;
+            }
+        }
+
+        _index  += processed;
+        nframes -= processed;
     }
 }
 

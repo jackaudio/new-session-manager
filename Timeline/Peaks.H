@@ -75,7 +75,7 @@ class Peaks
         Streamer ( const char *filename, int channels, nframes_t chunksize );
         ~Streamer ( );
 
-        void write ( sample_t *buf, nframes_t nframes );
+        void write ( const sample_t *buf, nframes_t nframes );
 
     };
 

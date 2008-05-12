@@ -123,7 +123,7 @@ class Tempo_Point_Editor : public Fl_Menu_Window
 
 public:
 
-    Tempo_Point_Editor ( int X, int Y, float *tempo ) : Fl_Menu_Window( X, Y, 75, 58, "Edit Tempo" )
+    Tempo_Point_Editor ( float *tempo ) : Fl_Menu_Window(  75, 58, "Edit Tempo" )
         {
             _sucess = false;
             _tempo = tempo;
@@ -173,7 +173,7 @@ public:
 bool
 Tempo_Point::edit ( float *tempo )
 {
-    Tempo_Point_Editor ti( Fl::event_x(), Fl::event_y(), tempo );
+    Tempo_Point_Editor ti( tempo );
 
     return ti.sucess();
 }

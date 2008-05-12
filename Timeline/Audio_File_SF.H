@@ -29,7 +29,7 @@ class Audio_File_SF : public Audio_File
 
     /* used to avoid unnecessary seeking--libsndfile isn't smart
      * enough to do this for us */
-    nframes_t _current_read;
+    volatile nframes_t _current_read;
 
     Audio_File_SF ( )
         {

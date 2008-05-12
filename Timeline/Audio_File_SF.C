@@ -163,10 +163,12 @@ Audio_File_SF::close ( void )
 void
 Audio_File_SF::seek ( nframes_t offset )
 {
+    lock();
+
     if ( offset != _current_read )
-    {
         sf_seek( _in, _current_read = offset, SEEK_SET | SFM_READ );
-    }
+
+    unlock();
 }
 
 /* if channels is -1, then all channels are read into buffer
@@ -178,6 +180,8 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
         WARNING( "warning: attempt to read an insane number of frames (%lu) from soundfile\n", (unsigned long)len );
 
 //    printf( "len = %lu, channels = %d\n", len, _channels );
+
+    lock();
 
     nframes_t rlen;
 
@@ -198,6 +202,8 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
 
     _current_read += rlen;
 
+    unlock();
+
     return rlen;
 }
 
@@ -207,11 +213,14 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t start, nframes_t end
 {
     assert( end > start );
 
+    lock();
 //    open();
 
     seek( start );
 
     nframes_t len = read( buf, channel, end - start );
+
+    unlock();
 
 //    close();
 
@@ -225,9 +234,13 @@ Audio_File_SF::write ( sample_t *buf, nframes_t nframes )
 {
     _peaks.write( buf, nframes );
 
+//    lock();
+
     nframes_t l = sf_writef_float( _in, buf, nframes );
 
     _length += l;
+
+//    unlock();
 
     return l;
 }

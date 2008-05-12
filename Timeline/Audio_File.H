@@ -29,9 +29,11 @@
 #include <map>
 #include <list>
 
+#include "Mutex.H"
+
 class Peak_Writer;
 
-class Audio_File
+class Audio_File : protected Mutex
 {
     static std::map <std::string, Audio_File*> _open_files;
 

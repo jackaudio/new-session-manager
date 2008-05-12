@@ -357,7 +357,7 @@ Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, me
 
     for ( list <Sequence_Widget *>::const_reverse_iterator i = tempo_track->_widgets.rbegin();
           i != tempo_track->_widgets.rend(); i++ )
-        if ( (*i)->offset() <= when )
+        if ( (*i)->start() <= when )
         {
             tpi = i.base();
             break;
@@ -365,7 +365,7 @@ Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, me
 
     for ( list <Sequence_Widget *>::const_reverse_iterator i = time_track->_widgets.rbegin();
           i != time_track->_widgets.rend(); i++ )
-        if ( (*i)->offset() <= when )
+        if ( (*i)->start() <= when )
         {
             mpi = i.base();
             break;
@@ -378,17 +378,17 @@ Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, me
     const Tempo_Point *tp = (Tempo_Point*)(*tpi);
     nframes_t beat_inc = samples_per_minute / tp->tempo();
 
-    nframes_t f = when - ( ( when - tp->offset() ) % beat_inc );
+    nframes_t f = when - ( ( when - tp->start() ) % beat_inc );
 
     for ( ; tpi != tempo_track->_widgets.end(); ++tpi )
     {
         list <Sequence_Widget*>::const_iterator ntpi = tpi;
         ++ntpi;
-
-        tp = (Tempo_Point*)(*tpi);
         const Tempo_Point *ntp = ntpi == tempo_track->_widgets.end() ? NULL : (Tempo_Point*)(*ntpi);
 
-        const nframes_t ntpo = ntp ? ntp->offset() : when + x_to_ts( W + 1 );
+        tp = (Tempo_Point*)(*tpi);
+
+        const nframes_t ntpo = ntp ? ntp->start() : when + x_to_ts( W + 1 );
 
         beat_inc = samples_per_minute / tp->tempo();
 

@@ -40,12 +40,39 @@ struct Drag
     Drag( int X, int Y, nframes_t start=0 ) : x( X ), y( Y ), start( start ) { state = 0; }
 };
 
+/* most common position description. /offset/ is only used by Regions,
+but it's more convenient to have it here  */
 struct Range
 {
     nframes_t start;                       /* where on the timeline */
     nframes_t offset;                      /* first sample from clip */
     nframes_t length;                      /* total number of samples */
+
+    void
+    trim_left ( long n )
+        {
+            start -= n;
+            offset -= n;
+            length += n;
+        }
+
+    void
+    trim_right ( long n )
+        {
+            length += n;
+        }
 };
+
+/* Used by time/tempo points or any other child of Sequence_Widget
+ which must be locked to a point in musical time rather than wallclock
+ time. Bar and beat start at 1. */
+struct BBT
+{
+    unsigned short bar;
+    unsigned char beat;
+    unsigned short tick;
+};
+
 
 /* Base class for virtual widget on a track */
 class Sequence_Widget : public Loggable

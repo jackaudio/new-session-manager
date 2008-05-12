@@ -90,9 +90,8 @@ Sequence_Region::trim ( enum trim_e t, int X )
 
 //                td = _r->length - timeline->x_to_ts( 1 );
 
-            _r->offset += td;
-            _r->start  += td;
-            _r->length -= td;
+            _r->trim_left( 0 - td );
+
             break;
         }
         case RIGHT:
@@ -106,9 +105,9 @@ Sequence_Region::trim ( enum trim_e t, int X )
 //            printf( "%li %li\n", td, _r->length - _r->offset );
 
             if ( td >= 0 && _r->length < (nframes_t)td )
-                _r->length = timeline->x_to_ts( 1 );
-            else
-                _r->length -= td;
+                td = _r->length - timeline->x_to_ts( 1 );
+
+            _r->trim_right( 0 - td );
 
             break;
         }

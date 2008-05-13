@@ -28,6 +28,8 @@ Sequence_Point::get ( Log_Entry &e ) const
 void
 Sequence_Point::set ( Log_Entry &e )
 {
+    Sequence_Widget::set( e );
+
     for ( int i = 0; i < e.size(); ++i )
     {
         const char *s, *v;
@@ -40,8 +42,6 @@ Sequence_Point::set ( Log_Entry &e )
         }
 
     }
-
-    Sequence_Widget::set( e );
 }
 
 static void

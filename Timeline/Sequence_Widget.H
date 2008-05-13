@@ -61,6 +61,10 @@ struct Range
         {
             length += n;
         }
+
+    Range ( ) : start( 0 ), offset( 0 ), length( 0 )
+        {
+        }
 };
 
 /* Used by time/tempo points or any other child of Sequence_Widget
@@ -71,6 +75,10 @@ struct BBT
     unsigned short bar;
     unsigned char beat;
     unsigned short tick;
+
+    BBT ( ) : bar( 0 ), beat( 0 ), tick( 0 )
+        {
+        }
 };
 
 
@@ -242,31 +250,31 @@ public:
             _drag = NULL;
         }
 
-    void
-    start ( nframes_t where )
-        {
+/*     void */
+/*     start ( nframes_t where ) */
+/*         { */
 
-            if  ( ! selected() )
-            {
-                redraw();
-                _r->start = where;
-            }
-            else
-            {
-                long d = where - _r->start;
+/*             if  ( ! selected() ) */
+/*             { */
+/*                 redraw(); */
+/*                 _r->start = where; */
+/*             } */
+/*             else */
+/*             { */
+/*                 long d = where - _r->start; */
 
-                for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
-                {
-                    (*i)->redraw();
+/*                 for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ ) */
+/*                 { */
+/*                     (*i)->redraw(); */
 
-                    if ( d < 0 )
-                        (*i)->_r->start -= 0 - d;
-                    else
-                        (*i)->_r->start += d;
+/*                     if ( d < 0 ) */
+/*                         (*i)->_r->start -= 0 - d; */
+/*                     else */
+/*                         (*i)->_r->start += d; */
 
-                }
-            }
-        }
+/*                 } */
+/*             } */
+/*         } */
 
 
     int dispatch ( int m );
@@ -317,7 +325,7 @@ public:
     void sequence ( Sequence *t ) { _sequence = t; }
 
     nframes_t start ( void ) const { return _r->start; }
-//    void start ( nframes_t o ) { _r->start = o; }
+    void start ( nframes_t o ) { _r->start = o; }
 
     void length ( nframes_t v ) { _r->length = v; }
     virtual nframes_t length ( void ) const { return _r->length; }

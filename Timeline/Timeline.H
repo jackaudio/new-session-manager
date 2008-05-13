@@ -42,6 +42,7 @@ extern Timeline *timeline;
 
 #include "Sequence.H"
 
+struct BBT;
 class Tempo_Sequence;
 class Time_Sequence;
 class Annotation_Sequence;
@@ -149,9 +150,10 @@ public:
 
     typedef void (measure_line_callback)( nframes_t frame, int X, int Y, int H, void *arg );
 
+    BBT solve_tempomap ( nframes_t when );
     void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
     void draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color );
-    void draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, measure_line_callback *cb, void *arg, bool BBT ) const;
+    void draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, measure_line_callback *cb, void *arg ) const;
 
     void xposition ( int X );
     void yposition ( int Y );

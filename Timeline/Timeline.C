@@ -313,10 +313,9 @@ Timeline::nearest_line ( nframes_t when, nframes_t *frame ) const
     nearest_line_arg n = { when, -1 };
 
     /* FIXME: handle snap to bar */
-    draw_measure( when - x_to_ts( 10 ), 0, 20, 0, (Fl_Color)0, nearest_line_cb, &n, false );
+    draw_measure( when - x_to_ts( 10 ), 0, 20, 0, (Fl_Color)0, nearest_line_cb, frame );
 
     *frame = n.closest;
-
     return *frame != (nframes_t)-1;
 }
 
@@ -340,9 +339,102 @@ draw_measure_cb ( nframes_t frame, int X, int Y, int H, void *arg )
     fl_line( X, Y, X, Y + H );
 }
 
+#if 0
+/* we cache measure lines by rendering them to these structures.  */
+struct Measure_Line
+{
+    /* it's easier to use this than a pixel coord, because the snapping
+     * code requires a frame number to be precise. */
+    nframes_t frame;
+
+    bool bar;                /* is this a bar line, or just a beat? */
+};
+#endif
+
+BBT
+Timeline::solve_tempomap ( nframes_t when )
+{
+
+/*     if ( ! tempo_track->_widgets.size() || ! time_track->_widgets.size() ) */
+/*     { */
+/*         DWARNING( "No tempo/time points" ); */
+/*         return; */
+/*     } */
+
+    const nframes_t samples_per_minute = sample_rate() * 60;
+
+    list <Sequence_Widget*> tempo_map;
+
+    /* merge time and tempo maps into one list for convenience */
+
+    for ( list <Sequence_Widget *>::iterator i = tempo_track->_widgets.begin();
+          i != tempo_track->_widgets.end(); ++i )
+        tempo_map.push_back( *i );
+
+    for ( list <Sequence_Widget *>::iterator i = time_track->_widgets.begin();
+          i != time_track->_widgets.end(); ++i )
+        tempo_map.push_back( *i );
+
+    tempo_map.sort( Sequence_Widget::sort_func );
+
+    float bpm = 120.0f;
+
+    time_sig sig;
+
+    sig.beats_per_bar = 4;
+    sig.beat_type = 4;
+
+    BBT bbt;
+
+    nframes_t f = 0;
+
+    nframes_t beat_inc = samples_per_minute / bpm;
+
+    for ( list <Sequence_Widget *>::iterator i = tempo_map.begin();
+          i != tempo_map.end(); ++i )
+    {
+        nframes_t next;
+
+        {
+            list <Sequence_Widget *>::iterator n = i;
+            ++n;
+
+            next = n != tempo_map.end() ? (*n)->start() : when;
+        }
+
+        if ( ! strcmp( (*i)->class_name(), "Tempo_Point" ) )
+        {
+            const Tempo_Point *p = (Tempo_Point*)(*i);
+
+            bpm = p->tempo();
+            beat_inc = samples_per_minute / bpm;
+        }
+        else
+        {
+            const Time_Point *p = (Time_Point*)(*i);
+
+            sig = p->time();
+        }
+
+        for ( ; f < next; f += beat_inc )
+        {
+            if ( ++bbt.beat == sig.beats_per_bar )
+            {
+                bbt.beat = 0;
+                ++bbt.bar;
+            }
+        }
+
+//            const int x = ts_to_x( f - xoffset ) + Track::width();
+        if ( f >= when )
+            return bbt;
+    }
+}
+
+
 /** draw appropriate measure lines inside the given bounding box */
 void
-Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, measure_line_callback * cb, void *arg, bool BBT ) const
+Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, measure_line_callback * cb, void *arg ) const
 {
     if ( ! draw_with_measure_lines )
         return;
@@ -368,35 +460,39 @@ Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, me
 /*         W += 40; */
 /*     } */
 
-    list <Sequence_Widget*>::const_iterator tpi;
     list <Sequence_Widget*>::const_iterator mpi;
 
     /* find the first points before our range */
 
-    for ( list <Sequence_Widget *>::const_reverse_iterator i = tempo_track->_widgets.rbegin();
-          i != tempo_track->_widgets.rend(); i++ )
-        if ( (*i)->start() <= when )
-        {
-            tpi = i.base();
-            break;
-        }
+/*     for ( list <Sequence_Widget *>::const_reverse_iterator i = tempo_track->_widgets.rbegin(); */
+/*           i != tempo_track->_widgets.rend(); i++ ) */
+/*         if ( (*i)->start() <= when ) */
+/*         { */
+/*             tpi = i.base(); */
+/*             break; */
+/*         } */
 
-    for ( list <Sequence_Widget *>::const_reverse_iterator i = time_track->_widgets.rbegin();
-          i != time_track->_widgets.rend(); i++ )
-        if ( (*i)->start() <= when )
-        {
-            mpi = i.base();
-            break;
-        }
+/*     for ( list <Sequence_Widget *>::const_reverse_iterator i = time_track->_widgets.rbegin(); */
+/*           i != time_track->_widgets.rend(); i++ ) */
+/*         if ( (*i)->start() <= when ) */
+/*         { */
+/*             mpi = i.base(); */
+/*             break; */
+/*         } */
 
 
-    --tpi;
+/*     --tpi; */
+
+    /* start from the beginnnig */
+    /* FIXME: find a closer place to start */
+    list <Sequence_Widget *>::const_iterator tpi = tempo_track->_widgets.begin();
 
     /* start on the next beat */
     const Tempo_Point *tp = (Tempo_Point*)(*tpi);
     nframes_t beat_inc = samples_per_minute / tp->tempo();
 
-    nframes_t f = when - ( ( when - tp->start() ) % beat_inc );
+    nframes_t f = 0;
+/*     nframes_t f = when - ( ( when - tp->start() ) % beat_inc ); */
 
     for ( ; tpi != tempo_track->_widgets.end(); ++tpi )
     {
@@ -422,6 +518,13 @@ Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, me
             const int x = ts_to_x( f - xoffset ) + Track::width();
 
             cb( f, x, Y, H, arg );
+
+/*             BBT bbt; */
+
+/*             bbt = const_cast< Timeline* >(this)->solve_tempomap( f ); */
+
+/*             printf( "%d:%d:%d\n", bbt.bar, bbt.beat, bbt.tick ); */
+
         }
     }
 
@@ -431,7 +534,7 @@ Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, me
 void
 Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 {
-    draw_measure( x_to_offset( X ), Y, W, H, color, draw_measure_cb, 0, false );
+    draw_measure( x_to_offset( X ), Y, W, H, color, draw_measure_cb, 0 );
 }
 
 /** just like draw mesure lines except that it also draws the BBT values.  */

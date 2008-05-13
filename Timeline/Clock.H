@@ -32,6 +32,7 @@ const float CLOCK_UPDATE_FREQ = 0.06f;
 
 /* TODO: frames per second? */
 
+#include "Sequence_Widget.H"
 
 class Clock : public Fl_Widget
 {
@@ -93,7 +94,9 @@ public:
     static void
     frame_to_BBT ( char *dst, int n, nframes_t frame )
         {
-            snprintf( dst, n, "unimplemented" );
+            struct BBT bbt = timeline->solve_tempomap( frame );
+
+            snprintf( dst, n, "%03d:%1d:%04d", bbt.bar + 1, bbt.beat + 1  , bbt.tick );
         }
 
 

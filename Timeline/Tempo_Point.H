@@ -26,6 +26,8 @@ class Tempo_Point : public Sequence_Point
 {
     float _tempo;
 
+    BBT _bbt;
+
     void
     _make_label ( void )
         {
@@ -51,6 +53,8 @@ public:
 
     static bool edit ( float *tempo );
 
+    const BBT * bbt ( void ) const { return &_bbt; }
+
     Tempo_Point ( nframes_t when, float bpm );
 
     ~Tempo_Point ( );
@@ -58,6 +62,7 @@ public:
     Tempo_Point ( const Tempo_Point &rhs ) : Sequence_Point( rhs )
         {
             _tempo = rhs._tempo;
+            _bbt = rhs._bbt;
 
             log_create();
         }

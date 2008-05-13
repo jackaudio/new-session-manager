@@ -55,7 +55,7 @@ public:
     float control ( void ) const { return _y; }
     void control ( float v ) { _y = v; }
     /* only for playback thread */
-    nframes_t when ( void ) const { return _range.offset; }
+    nframes_t when ( void ) const { return _range.start; }
 
     int abs_w ( void ) const { return 6; }
 

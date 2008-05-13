@@ -406,11 +406,13 @@ Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, me
 
         tp = (Tempo_Point*)(*tpi);
 
-        const nframes_t ntpo = ntp ? ntp->start() : when + x_to_ts( W + 1 );
+        nframes_t ntpo = ntp ? ntp->start() : when + x_to_ts( W + 1 );
 
         beat_inc = samples_per_minute / tp->tempo();
-
         const int incx = ts_to_x( beat_inc );
+
+        /* lock to beat lines */
+        ntpo += (ntpo % beat_inc);
 
         if ( incx < 8 )
             continue;
@@ -1247,8 +1249,8 @@ Timeline::total_capture_xruns ( void )
         Track *t = (Track*)tracks->child( i );
 
         if ( t->record_ds )
-             r += t->record_ds->xruns();
-     }
+            r += t->record_ds->xruns();
+    }
 
     return r;
 }

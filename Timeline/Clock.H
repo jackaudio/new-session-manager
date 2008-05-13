@@ -96,7 +96,7 @@ public:
         {
             struct BBT bbt = timeline->solve_tempomap( frame );
 
-            snprintf( dst, n, "%03d:%1d:%04d", bbt.bar + 1, bbt.beat + 1  , bbt.tick );
+            snprintf( dst, n, "%03d|%1d|%04d", bbt.bar + 1, bbt.beat + 1, bbt.tick );
         }
 
 

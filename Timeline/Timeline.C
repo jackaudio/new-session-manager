@@ -46,8 +46,8 @@ const float UPDATE_FREQ = 0.02f;
 #include "Transport.H"
 
 /** return the combined height of all visible children of (veritcal)
- pack, /p/. This is necessary because pack sizes are adjusted only
- when the relevant areas are exposes. */
+    pack, /p/. This is necessary because pack sizes are adjusted only
+    when the relevant areas are exposes. */
 static int
 pack_visible_height ( const Fl_Pack *p )
 {
@@ -97,7 +97,7 @@ Timeline::cb_scroll ( Fl_Widget *w )
             const int tw = tracks->w() - Track::width();
 //            hscroll->value( ts_to_x( xoffset ), tw, 0, ts_to_x( _length ) );
             hscroll->value( max( 0, ts_to_x( under_mouse ) - ( Fl::event_x() - tracks->x() - Track::width() ) ),
-                tw, 0, ts_to_x( _length ) );
+                            tw, 0, ts_to_x( _length ) );
 
             redraw();
         }
@@ -250,41 +250,57 @@ Timeline::time ( nframes_t when, int bpb, int note_type )
     time_track->add( new Time_Point( when, bpb, note_type ) );
 }
 
-#if 0
-struct BBT
-{
-    int bar, beat, tick;
+/* struct BBT */
+/* { */
+/*     int bar, beat, tick; */
 
-    BBT ( int bar, int beat, int tick ) : bar( bar ), beat( beat ), tick( tick )
-        {
-        }
+/*     BBT ( int bar, int beat, int tick ) : bar( bar ), beat( beat ), tick( tick ) */
+/*         { */
+/*         } */
+/* }; */
+
+/* /\** returns the BBT value for timestamp /when/ by examining the tempo/time maps *\/ */
+/* BBT */
+/* Timeline::bbt ( nframes_t when ) */
+/* { */
+/*     Tempo_Sequence *tempo = (Tempo_Sequence*)rulers->child( 0 ); */
+
+/*     BBT bbt; */
+
+/*     for ( list <Sequence_Widget *>::const_iterator i = tempo.widgets.begin(); */
+/*           i != tempo.widgets.end(); ++i ) */
+/*     { */
+/*         Tempo_Point *p = *i; */
+
+/*     } */
+/* } */
+
+struct nearest_line_arg
+{
+    nframes_t original;
+    nframes_t closest;
 };
 
-/** returns the BBT value for timestamp /when/ by examining the tempo/time maps */
-BBT
-Timeline::bbt ( nframes_t when )
+const int snap_pixel = 10;
+
+
+static nframes_t
+abs_diff ( nframes_t n1, nframes_t n2 )
 {
-    Tempo_Sequence *tempo = (Tempo_Sequence*)rulers->child( 0 );
-
-    BBT bbt;
-
-    for ( list <Sequence_Widget *>::const_iterator i = tempo.widgets.begin();
-          i != tempo.widgets.end(); ++i )
-    {
-        Tempo_Point *p = *i;
-
-    }
-
-
-
-};
-#endif
-
+    return n1 > n2 ? n1 - n2 : n2 - n1;
+}
 
 void
 nearest_line_cb ( nframes_t frame, int X, int Y, int H, void *arg )
 {
-    *((nframes_t*)arg) = frame;
+    nearest_line_arg *n = (nearest_line_arg *)arg;
+
+    if ( Timeline::snap_magnetic &&
+         abs_diff( frame, n->original ) > timeline->x_to_ts( snap_pixel ) )
+        return;
+
+    if ( abs_diff( frame, n->original ) < abs_diff( n->original, n->closest ) )
+        n->closest = frame;
 }
 
 /** return the absolute pixel of the nearest measure line to /x/ */
@@ -294,10 +310,12 @@ Timeline::nearest_line ( nframes_t when, nframes_t *frame ) const
     if ( snap_to == None )
         return false;
 
-    *frame = -1;
+    nearest_line_arg n = { when, -1 };
 
     /* FIXME: handle snap to bar */
-    draw_measure( when - x_to_ts( 10 ), 0, 20, 0, (Fl_Color)0, nearest_line_cb, frame, false );
+    draw_measure( when - x_to_ts( 10 ), 0, 20, 0, (Fl_Color)0, nearest_line_cb, &n, false );
+
+    *frame = n.closest;
 
     return *frame != (nframes_t)-1;
 }

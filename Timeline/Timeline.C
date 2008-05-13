@@ -351,6 +351,9 @@ struct Measure_Line
 };
 #endif
 
+/* FIXME wrong place for this */
+const float ticks_per_beat = 1920.0;
+
 BBT
 Timeline::solve_tempomap ( nframes_t when )
 {
@@ -388,7 +391,7 @@ Timeline::solve_tempomap ( nframes_t when )
 
     nframes_t f = 0;
 
-    nframes_t beat_inc = samples_per_minute / bpm;
+    nframes_t frames_per_beat = samples_per_minute / bpm;
 
     for ( list <Sequence_Widget *>::iterator i = tempo_map.begin();
           i != tempo_map.end(); ++i )
@@ -399,7 +402,7 @@ Timeline::solve_tempomap ( nframes_t when )
             const Tempo_Point *p = (Tempo_Point*)(*i);
 
             bpm = p->tempo();
-            beat_inc = samples_per_minute / bpm;
+            frames_per_beat = samples_per_minute / bpm;
         }
         else
         {
@@ -419,7 +422,7 @@ Timeline::solve_tempomap ( nframes_t when )
                 next = min( (*n)->start(), when );
         }
 
-        for ( ; f < next; f += beat_inc )
+        for ( ; f < next; f += frames_per_beat )
         {
             if ( ++bbt.beat == sig.beats_per_bar )
             {
@@ -433,6 +436,9 @@ Timeline::solve_tempomap ( nframes_t when )
             break;
 
     }
+
+    /* FIXME: this this right? */
+    bbt.tick = ticks_per_beat - ( ( ( f - when ) * ticks_per_beat ) / frames_per_beat );
 
     return bbt;
 }

@@ -116,6 +116,7 @@ void
 Track::init ( void )
 {
     _capture = NULL;
+    _capture_af = NULL;
     _sequence = NULL;
     _name = NULL;
     _selected = false;

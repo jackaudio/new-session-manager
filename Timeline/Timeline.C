@@ -393,14 +393,6 @@ Timeline::solve_tempomap ( nframes_t when )
     for ( list <Sequence_Widget *>::iterator i = tempo_map.begin();
           i != tempo_map.end(); ++i )
     {
-        nframes_t next;
-
-        {
-            list <Sequence_Widget *>::iterator n = i;
-            ++n;
-
-            next = n != tempo_map.end() ? (*n)->start() : when;
-        }
 
         if ( ! strcmp( (*i)->class_name(), "Tempo_Point" ) )
         {
@@ -416,6 +408,17 @@ Timeline::solve_tempomap ( nframes_t when )
             sig = p->time();
         }
 
+        nframes_t next;
+
+        {
+            list <Sequence_Widget *>::iterator n = i;
+            ++n;
+            if ( n == tempo_map.end() )
+                next = when;
+            else
+                next = min( (*n)->start(), when );
+        }
+
         for ( ; f < next; f += beat_inc )
         {
             if ( ++bbt.beat == sig.beats_per_bar )
@@ -427,8 +430,11 @@ Timeline::solve_tempomap ( nframes_t when )
 
 //            const int x = ts_to_x( f - xoffset ) + Track::width();
         if ( f >= when )
-            return bbt;
+            break;
+
     }
+
+    return bbt;
 }
 
 

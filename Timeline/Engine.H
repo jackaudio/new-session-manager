@@ -50,6 +50,8 @@ class Engine : public Mutex
     int sync ( jack_transport_state_t state, jack_position_t *pos );
     static int xrun ( void *arg );
     int xrun ( void );
+    static void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos, void *arg );
+    void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos );
 
     Engine ( const Engine &rhs );
     Engine & operator = ( const Engine &rhs );

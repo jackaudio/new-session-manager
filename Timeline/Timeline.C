@@ -363,13 +363,10 @@ draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
 /* FIXME: wrong place for this */
 const float ticks_per_beat = 1920.0;
 
-/** return the BBT values for point in time /frame/ */
-BBT
+position_info
 Timeline::solve_tempomap ( nframes_t frame ) const
 {
-    position_info pos = render_tempomap( frame, 1, 0, 0 );
-
-return pos.bbt;
+    return render_tempomap( frame, 1, 0, 0 );
 }
 
 /** draw appropriate measure lines inside the given bounding box */

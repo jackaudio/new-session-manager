@@ -94,7 +94,7 @@ public:
     static void
     frame_to_BBT ( char *dst, int n, nframes_t frame )
         {
-            struct BBT bbt = timeline->solve_tempomap( frame );
+            struct BBT bbt = timeline->solve_tempomap( frame ).bbt;
 
             snprintf( dst, n, "%03d|%1d|%04d", bbt.bar + 1, bbt.beat + 1, bbt.tick );
         }

@@ -21,6 +21,7 @@
 #include "Transport.H"
 
 #include "Timeline.H" // for process()
+#include "Sequence_Widget.H" // for BBT and position info.
 
 #define APP_NAME "Non-DAW" // FIXME: wrong place for this!
 
@@ -54,6 +55,12 @@ int
 Engine::xrun ( void *arg )
 {
     return ((Engine*)arg)->xrun();
+}
+
+void
+Engine::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos, void *arg )
+{
+    ((Engine*)arg)->timebase( state, nframes, pos, new_pos );
 }
 
 
@@ -121,6 +128,29 @@ Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
     return 0;
 }
 
+
+/* THREAD: RT */
+void
+Engine::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos )
+{
+    position_info pi = timeline->solve_tempomap( pos->frame );
+
+    pos->valid = JackPositionBBT;
+    pos->beats_per_bar = pi.beats_per_bar;
+    pos->beat_type = pi.beat_type;
+    pos->beats_per_minute = pi.tempo;
+
+    pos->bar = pi.bbt.bar + 1;
+    pos->beat = pi.bbt.beat + 1;
+    pos->tick = pi.bbt.tick;
+    pos->ticks_per_beat = 1920.0;                               /* FIXME: wrong place for this */
+
+    /* FIXME: fill this in */
+    pos->bar_start_tick = 0;
+
+}
+
+
 /* THREAD: RT */
 int
 Engine::process ( nframes_t nframes )
@@ -165,9 +195,12 @@ Engine::init ( void )
 
     set_callback( process );
     set_callback( xrun );
+
     /* FIXME: should we wait to register this until after the project
      has been loaded (and we have disk threads running)? */
     set_callback( sync );
+
+    jack_set_timebase_callback( _client, 0, &Engine::timebase, this );
 
     jack_activate( _client );
 

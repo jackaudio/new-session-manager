@@ -83,7 +83,7 @@ non: $(OBJS)
 	@ echo -n "Linking..."
 	@ rm -f $@
 	@ $(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@ || (tput bold; tput setaf 1; echo Error!; tput sgr0)
-	@ test -x $@ && echo done.
+	@ if test -x $@; then tput bold; tput setaf 2; echo done; tput sgr0; test -x "$(prefix)/bin/$@" || echo "You must now run 'make install' (as the appropriate user) to install the executable, documentation and other support files in order for the program to function properly."; fi
 
 install: all
 	@ echo -n "Installing..."
@@ -92,7 +92,7 @@ install: all
 	@ cp -r instruments "$(SYSTEM_PATH)"
 	@ mkdir -p "$(DOCUMENT_PATH)"
 	@ cp doc/*.html doc/*.png "$(DOCUMENT_PATH)"
-	@ echo done
+	@ tput bold; tput setaf 2; echo done; tput sgr0
 #	make -C doc install
 
 dist:

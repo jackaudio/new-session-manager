@@ -399,6 +399,7 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
     sig.beat_type = 4;
 
     nframes_t f = 0;
+    nframes_t next = 0;
 
     nframes_t frames_per_beat = samples_per_minute / bpm;
 
@@ -420,16 +421,17 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
             sig = p->time();
         }
 
-        nframes_t next;
-
         {
             list <Sequence_Widget *>::iterator n = i;
             ++n;
             if ( n == tempo_map.end() )
                 next = end;
             else
-                next = min( (*n)->start(), end );
+//                next = min( (*n)->start(), end );
+                /* points may not always be aligned with beat boundaries, so we must align here */
+                next = (*n)->start() - ( ( (*n)->start() - (*i)->start() ) % frames_per_beat );
         }
+
 
         for ( ; f < next; f += frames_per_beat )
         {
@@ -471,7 +473,6 @@ done:
     /* FIXME: this this right? */
 
     const nframes_t frames_per_tick = frames_per_beat / ticks_per_beat;
-
     bbt.tick = ticks_per_beat - ( ( ( f - end ) / frames_per_tick ) % (nframes_t)ticks_per_beat );
 
     return pos;

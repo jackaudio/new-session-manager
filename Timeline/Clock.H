@@ -197,6 +197,13 @@ public:
                     snprintf( buf, sizeof( buf ), "%lu", (unsigned long)timeline->sample_rate() );
                     fl_draw( buf, dx, dy, dw, dh, FL_ALIGN_BOTTOM );
                     break;
+                case BBT:
+                {
+                    /* FIXME: find a way to avoid doing this twice */
+                    position_info pos = timeline->solve_tempomap( _when );
+                    snprintf( buf, sizeof( buf ), "%d/%d %5.1f", pos.beats_per_bar, pos.beat_type, pos.tempo );
+                    fl_draw( buf, dx, dy, dw, dh, FL_ALIGN_BOTTOM );
+                }
                 default:
                     break;
             }

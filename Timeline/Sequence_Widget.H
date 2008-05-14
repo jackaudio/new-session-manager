@@ -82,6 +82,19 @@ struct BBT
 };
 
 
+/* FIXME: wrong place for this */
+struct position_info
+{
+    nframes_t frame;
+
+    float tempo;
+    int beats_per_bar;
+    int beat_type;
+
+    BBT bbt;
+};
+
+
 /* Base class for virtual widget on a track */
 class Sequence_Widget : public Loggable
 {

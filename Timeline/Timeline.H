@@ -62,6 +62,8 @@ class Track;
 #define redraw_overlay()
 #endif
 
+struct position_info;
+
 struct Rectangle
 {
     int x;
@@ -150,10 +152,10 @@ public:
 
     typedef void (measure_line_callback)( nframes_t frame, const BBT & bbt, void *arg );
 
-    BBT solve_tempomap ( nframes_t when );
+    BBT solve_tempomap ( nframes_t when ) const;
     void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
     void draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color );
-    void draw_measure ( nframes_t start, nframes_t length, measure_line_callback *cb, void *arg ) const;
+    position_info render_tempomap ( nframes_t start, nframes_t length, measure_line_callback *cb, void *arg ) const;
 
     void xposition ( int X );
     void yposition ( int Y );

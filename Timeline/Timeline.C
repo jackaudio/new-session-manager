@@ -277,6 +277,12 @@ Timeline::time ( nframes_t when, int bpb, int note_type )
 /*     } */
 /* } */
 
+
+
+/************/
+/* Snapping */
+/************/
+
 struct nearest_line_arg
 {
     nframes_t original;
@@ -284,7 +290,6 @@ struct nearest_line_arg
 };
 
 const int snap_pixel = 10;
-
 
 static nframes_t
 abs_diff ( nframes_t n1, nframes_t n2 )
@@ -297,6 +302,9 @@ nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
 {
     nearest_line_arg *n = (nearest_line_arg *)arg;
 
+    if ( Timeline::snap_to == Timeline::Bars && bbt.beat )
+        return;
+
     if ( Timeline::snap_magnetic &&
          abs_diff( frame, n->original ) > timeline->x_to_ts( snap_pixel ) )
         return;
@@ -305,7 +313,9 @@ nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
         n->closest = frame;
 }
 
-/** return the absolute pixel of the nearest measure line to /x/ */
+/** Set the value pointed to by /frame/ to the frame number of the of
+ the nearest measure line to /when/. Returns true if the new value of
+ *frame is valid, false otherwise. */
 bool
 Timeline::nearest_line ( nframes_t when, nframes_t *frame ) const
 {
@@ -314,12 +324,13 @@ Timeline::nearest_line ( nframes_t when, nframes_t *frame ) const
 
     nearest_line_arg n = { when, -1 };
 
-    /* FIXME: handle snap to bar */
-    draw_measure( when - x_to_ts( 10 ), x_to_ts( 20 ), nearest_line_cb, frame );
+    render_tempomap( when - x_to_ts( w() >> 1 ), x_to_ts( w() ), nearest_line_cb, &n );
 
     *frame = n.closest;
     return *frame != (nframes_t)-1;
 }
+
+
 
 nframes_t
 Timeline::x_to_offset ( int x ) const
@@ -328,11 +339,8 @@ Timeline::x_to_offset ( int x ) const
 }
 
 
-
-
-
-void
-static
+/** draws a single measure line */
+static void
 draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
 {
     Fl_Color *color = (Fl_Color*)arg;
@@ -352,117 +360,30 @@ draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
     fl_line_style( FL_SOLID, 0 );
 }
 
-#if 0
-/* we cache measure lines by rendering them to these structures.  */
-struct Measure_Line
-{
-    /* it's easier to use this than a pixel coord, because the snapping
-     * code requires a frame number to be precise. */
-    nframes_t frame;
-
-    bool bar;                /* is this a bar line, or just a beat? */
-};
-#endif
-
-/* FIXME wrong place for this */
+/* FIXME: wrong place for this */
 const float ticks_per_beat = 1920.0;
 
+/** return the BBT values for point in time /frame/ */
 BBT
-Timeline::solve_tempomap ( nframes_t when )
+Timeline::solve_tempomap ( nframes_t frame ) const
 {
-    BBT bbt;
+    position_info pos = render_tempomap( frame, 1, 0, 0 );
 
-    if ( ! tempo_track->_widgets.size() )
-        return bbt;
-
-    const nframes_t samples_per_minute = sample_rate() * 60;
-
-    list <Sequence_Widget*> tempo_map;
-
-    /* merge time and tempo maps into one list for convenience */
-
-    for ( list <Sequence_Widget *>::iterator i = tempo_track->_widgets.begin();
-          i != tempo_track->_widgets.end(); ++i )
-        tempo_map.push_back( *i );
-
-    for ( list <Sequence_Widget *>::iterator i = time_track->_widgets.begin();
-          i != time_track->_widgets.end(); ++i )
-        tempo_map.push_back( *i );
-
-    tempo_map.sort( Sequence_Widget::sort_func );
-
-    float bpm = 120.0f;
-
-    time_sig sig;
-
-    sig.beats_per_bar = 4;
-    sig.beat_type = 4;
-
-    nframes_t f = 0;
-
-    nframes_t frames_per_beat = samples_per_minute / bpm;
-
-    for ( list <Sequence_Widget *>::iterator i = tempo_map.begin();
-          i != tempo_map.end(); ++i )
-    {
-
-        if ( ! strcmp( (*i)->class_name(), "Tempo_Point" ) )
-        {
-            const Tempo_Point *p = (Tempo_Point*)(*i);
-
-            bpm = p->tempo();
-            frames_per_beat = samples_per_minute / bpm;
-        }
-        else
-        {
-            const Time_Point *p = (Time_Point*)(*i);
-
-            sig = p->time();
-        }
-
-        nframes_t next;
-
-        {
-            list <Sequence_Widget *>::iterator n = i;
-            ++n;
-            if ( n == tempo_map.end() )
-                next = when;
-            else
-                next = min( (*n)->start(), when );
-        }
-
-        for ( ; f < next; f += frames_per_beat )
-        {
-            if ( ++bbt.beat == sig.beats_per_bar )
-            {
-                bbt.beat = 0;
-                ++bbt.bar;
-            }
-        }
-
-//            const int x = ts_to_x( f - xoffset ) + Track::width();
-        if ( f >= when )
-            break;
-
-    }
-
-    /* FIXME: this this right? */
-    bbt.tick = ticks_per_beat - ( ( ( f - when ) * ticks_per_beat ) / frames_per_beat );
-
-    return bbt;
+return pos.bbt;
 }
 
 /** draw appropriate measure lines inside the given bounding box */
-void
-Timeline::draw_measure ( nframes_t start, nframes_t length, measure_line_callback * cb, void *arg ) const
+position_info
+Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callback * cb, void *arg ) const
 {
-    if ( ! draw_with_measure_lines )
-        return;
 
 
     const nframes_t end = start + length;
 
-    BBT bbt;
+    position_info pos;
+    memset( &pos, 0, sizeof( pos ) );
+
+    BBT &bbt = pos.bbt;
 
     const nframes_t samples_per_minute = sample_rate() * 60;
 
@@ -521,25 +442,47 @@ Timeline::draw_measure ( nframes_t start, nframes_t length, measure_line_callbac
             if ( f >= start )
             {
                 if ( f >= end )
-                    return;
+                    goto done;
 
                 /* in the zone */
 
-                cb( f, bbt, arg );
+                if ( cb )
+                    cb( f, bbt, arg );
             }
         }
     }
 
-/*     /\* FIXME: this this right? *\/ */
-/*     bbt.tick = ticks_per_beat - ( ( ( f - start ) * ticks_per_beat ) / frames_per_beat ); */
+done:
 
-/*     return bbt; */
+    if ( f < end )
+        /* no tempo points? */
+        return pos;
 
+    pos.frame = f;
+    pos.tempo = bpm;
+    pos.beats_per_bar = sig.beats_per_bar;
+    pos.beat_type = sig.beat_type;
+
+    assert( f >= end );
+
+/*     assert( f - end <= frames_per_beat ); */
+/*     bbt.tick = ticks_per_beat - ( ( ( f - end ) * ticks_per_beat ) / frames_per_beat ); */
+
+    /* FIXME: this this right? */
+
+    const nframes_t frames_per_tick = frames_per_beat / ticks_per_beat;
+
+    bbt.tick = ticks_per_beat - ( ( ( f - end ) / frames_per_tick ) % (nframes_t)ticks_per_beat );
+
+    return pos;
 }
 
 void
 Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 {
+    if ( ! draw_with_measure_lines )
+        return;
+
     Fl_Color colors[] = {  fl_color_average( FL_RED, color, 0.65f ),
                            fl_color_average( FL_BLACK, color, 0.65f ) };
 
@@ -548,7 +491,7 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 
     fl_push_clip( X, Y, W, H );
 
-    draw_measure( start, length, draw_measure_cb, &colors );
+    render_tempomap( start, length, draw_measure_cb, &colors );
 
     fl_pop_clip();
 
@@ -558,7 +501,7 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 void
 Timeline::draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color )
 {
-//    draw_measure( X, Y, W, H, color, true );
+//    render_tempomap( X, Y, W, H, color, true );
 }
 
 void

@@ -444,14 +444,16 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
                 ++bbt.bar;
             }
 
-            if ( f + frames_per_beat >= end )
-                goto done;
-            else if ( f >= start )
+            if ( f >= start )
             {
                 /* in the zone */
                 if ( cb )
                     cb( f, bbt, arg );
             }
+
+            if ( f + frames_per_beat >= end )
+                goto done;
+
         }
     }
 

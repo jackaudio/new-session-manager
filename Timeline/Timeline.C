@@ -403,6 +403,8 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
 
     nframes_t frames_per_beat = samples_per_minute / bpm;
 
+    /* FIXME: don't we need to sort so that Time_Points always preceed Tempo_Points? */
+
     for ( list <Sequence_Widget *>::iterator i = tempo_map.begin();
           i != tempo_map.end(); ++i )
     {
@@ -433,21 +435,20 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
         }
 
 
-        for ( ; f < next; f += frames_per_beat )
+        for ( ; f < next; ++bbt.beat, f += frames_per_beat )
         {
-            if ( ++bbt.beat == sig.beats_per_bar )
+
+            if ( bbt.beat == sig.beats_per_bar )
             {
                 bbt.beat = 0;
                 ++bbt.bar;
             }
 
-            if ( f >= start )
+            if ( f + frames_per_beat >= end )
+                goto done;
+            else if ( f >= start )
             {
-                if ( f >= end )
-                    goto done;
-
                 /* in the zone */
-
                 if ( cb )
                     cb( f, bbt, arg );
             }
@@ -456,24 +457,17 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
 
 done:
 
-    if ( f < end )
-        /* no tempo points? */
-        return pos;
-
     pos.frame = f;
     pos.tempo = bpm;
     pos.beats_per_bar = sig.beats_per_bar;
     pos.beat_type = sig.beat_type;
 
-    assert( f >= end );
-
-/*     assert( f - end <= frames_per_beat ); */
-/*     bbt.tick = ticks_per_beat - ( ( ( f - end ) * ticks_per_beat ) / frames_per_beat ); */
+    assert( f < end );
 
     /* FIXME: this this right? */
 
     const nframes_t frames_per_tick = frames_per_beat / ticks_per_beat;
-    bbt.tick = ticks_per_beat - ( ( ( f - end ) / frames_per_tick ) % (nframes_t)ticks_per_beat );
+    bbt.tick = ( ( ( end - f ) / frames_per_tick ) % (nframes_t)ticks_per_beat );
 
     return pos;
 }

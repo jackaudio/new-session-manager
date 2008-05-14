@@ -42,66 +42,7 @@ public:
 //            box( FL_DOWN_BOX );
         }
 
+    void draw ( void );
+    int handle ( int m );
 
-    /** return a pointer to the closest tempo point *before* /when/ */
-    Tempo_Point *
-    at ( nframes_t when )
-        {
-            for ( std::list <Sequence_Widget *>::const_reverse_iterator i = _widgets.rbegin();
-                  i != _widgets.rend(); i++ )
-                if ( (*i)->offset() < when )
-                    return ((Tempo_Point*)(*i));
-
-            return NULL;
-        }
-
-    float
-    beats_per_minute ( nframes_t when )
-        {
-//            sort();
-
-            Tempo_Point *p = at( when );
-
-            if ( p )
-                return p->tempo();
-            else
-                return 120.0;
-        }
-
-    void
-    beats_per_minute ( nframes_t when, float bpm )
-        {
-            add( new Tempo_Point( when, bpm ) );
-            sort();
-        }
-
-    int
-    handle ( int m )
-        {
-            int r = Sequence::handle( m );
-
-            if ( r )
-                return r;
-
-            switch ( m )
-            {
-                case FL_PUSH:
-                    if ( Fl::event_button1() )
-                    {
-                        static float t = 120.0f;
-
-                        if ( Tempo_Point::edit( &t ) )
-                        {
-                            add( new Tempo_Point( timeline->x_to_offset( Fl::event_x() ), t ) );
-
-                            timeline->redraw();
-                        }
-                        return 0;
-                    }
-                default:
-                    return 0;
-
-            }
-
-        }
 };

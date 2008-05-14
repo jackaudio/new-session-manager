@@ -18,8 +18,9 @@
 /*******************************************************************************/
 
 
+
 #include "Tempo_Point.H"
-#include "Tempo_Sequence.H"
+#include "Tempo_Map_Sequence.H"
 #include "Timeline.H" // for timeline->tempo_track
 
 void

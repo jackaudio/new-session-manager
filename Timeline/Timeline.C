@@ -227,7 +227,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 float
 Timeline::beats_per_minute ( nframes_t when ) const
 {
-    return tempo_track->beats_per_minute( when );
+
+/*     return tempo_track->beats_per_minute( when ); */
+
 }
 
 int

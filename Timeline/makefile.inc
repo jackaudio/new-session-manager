@@ -3,8 +3,10 @@
 Timeline_VERSION := 0.5.0
 
 Timeline_SRCS= \
+Timeline/Annotation_Region.C \
 Timeline/Audio_File.C \
 Timeline/Audio_File_SF.C \
+Timeline/Audio_Region.C \
 Timeline/Audio_Sequence.C \
 Timeline/Control_Point.C \
 Timeline/Control_Sequence.C \
@@ -15,14 +17,14 @@ Timeline/Loggable.C \
 Timeline/Peaks.C \
 Timeline/Playback_DS.C \
 Timeline/Port.C \
+Timeline/Project.C \
 Timeline/Record_DS.C \
-Timeline/Audio_Region.C \
 Timeline/Sequence.C \
 Timeline/Sequence_Point.C \
-Timeline/Sequence_Widget.C \
 Timeline/Sequence_Region.C \
-Timeline/Annotation_Region.C \
+Timeline/Sequence_Widget.C \
 Timeline/TLE.C \
+Timeline/Tempo_Map_Sequence.C \
 Timeline/Tempo_Point.C \
 Timeline/Time_Point.C \
 Timeline/Timeline.C \
@@ -31,7 +33,6 @@ Timeline/Transport.C \
 Timeline/Waveform.C \
 Timeline/dsp.C \
 Timeline/main.C \
-Timeline/Project.C \
 debug.C \
 
 Timeline_OBJS:=$(Timeline_SRCS:.C=.o)

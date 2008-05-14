@@ -132,11 +132,11 @@ Sequence::draw ( void )
 
     timeline->draw_measure_lines( X, Y, W, H, color() );
 
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
+    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
         (*r)->draw_box();
 
 
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
+    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
         (*r)->draw();
 
     fl_pop_clip();

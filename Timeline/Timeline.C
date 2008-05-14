@@ -366,7 +366,7 @@ const float ticks_per_beat = 1920.0;
 position_info
 Timeline::solve_tempomap ( nframes_t frame ) const
 {
-    return render_tempomap( frame, 1, 0, 0 );
+    return render_tempomap( frame, 0, 0, 0 );
 }
 
 /** draw appropriate measure lines inside the given bounding box */
@@ -461,12 +461,14 @@ done:
     pos.beats_per_bar = sig.beats_per_bar;
     pos.beat_type = sig.beat_type;
 
-    assert( f < end );
+    assert( f <= end );
+
+    assert( end - f <= frames_per_beat );
 
     /* FIXME: this this right? */
 
     const nframes_t frames_per_tick = frames_per_beat / ticks_per_beat;
-    bbt.tick = ( ( ( end - f ) / frames_per_tick ) % (nframes_t)ticks_per_beat );
+    bbt.tick = ( end - f ) / frames_per_tick;
 
     return pos;
 }

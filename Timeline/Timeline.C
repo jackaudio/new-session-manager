@@ -366,6 +366,7 @@ const float ticks_per_beat = 1920.0;
 void
 Timeline::update_tempomap ( void )
 {
+    /* FIXME: we need some type of locking! */
     _tempomap.clear();
 
     for ( list <Sequence_Widget *>::const_iterator i = time_track->_widgets.begin();
@@ -387,11 +388,11 @@ Timeline::solve_tempomap ( nframes_t frame ) const
     return render_tempomap( frame, 0, 0, 0 );
 }
 
+/* THREAD: UI and RT */
 /** draw appropriate measure lines inside the given bounding box */
 position_info
 Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callback * cb, void *arg ) const
 {
-
     const nframes_t end = start + length;
 
     position_info pos;
@@ -431,6 +432,9 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
             const Time_Point *p = (Time_Point*)(*i);
 
             sig = p->time();
+
+            /* Time point resets beat */
+            bbt.beat = 0;
         }
 
         {

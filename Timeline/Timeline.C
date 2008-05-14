@@ -293,7 +293,7 @@ abs_diff ( nframes_t n1, nframes_t n2 )
 }
 
 void
-nearest_line_cb ( nframes_t frame, int X, int Y, int H, void *arg )
+nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
 {
     nearest_line_arg *n = (nearest_line_arg *)arg;
 
@@ -315,7 +315,7 @@ Timeline::nearest_line ( nframes_t when, nframes_t *frame ) const
     nearest_line_arg n = { when, -1 };
 
     /* FIXME: handle snap to bar */
-    draw_measure( when - x_to_ts( 10 ), 0, 20, 0, (Fl_Color)0, nearest_line_cb, frame );
+    draw_measure( when - x_to_ts( 10 ), x_to_ts( 20 ), nearest_line_cb, frame );
 
     *frame = n.closest;
     return *frame != (nframes_t)-1;
@@ -333,12 +333,23 @@ Timeline::x_to_offset ( int x ) const
 
 void
 static
-draw_measure_cb ( nframes_t frame, int X, int Y, int H, void *arg )
+draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
 {
+    Fl_Color *color = (Fl_Color*)arg;
 
     fl_color( FL_BLACK );
+    fl_line_style( FL_DASH, 0 );
 
-    fl_line( X, Y, X, Y + H );
+    if ( bbt.beat )
+        ++color;
+
+    fl_color( *color );
+
+    const int x = timeline->ts_to_x( frame - timeline->xoffset ) + Track::width();
+
+    fl_line( x, 0, x, 5000 );
+
+    fl_line_style( FL_SOLID, 0 );
 }
 
 #if 0
@@ -359,12 +370,10 @@ const float ticks_per_beat = 1920.0;
 BBT
 Timeline::solve_tempomap ( nframes_t when )
 {
+    BBT bbt;
 
-/*     if ( ! tempo_track->_widgets.size() || ! time_track->_widgets.size() ) */
-/*     { */
-/*         DWARNING( "No tempo/time points" ); */
-/*         return; */
-/*     } */
+    if ( ! tempo_track->_widgets.size() )
+        return bbt;
 
     const nframes_t samples_per_minute = sample_rate() * 60;
 
@@ -388,8 +397,6 @@ Timeline::solve_tempomap ( nframes_t when )
 
     sig.beats_per_bar = 4;
     sig.beat_type = 4;
-
-    BBT bbt;
 
     nframes_t f = 0;
 
@@ -445,110 +452,106 @@ Timeline::solve_tempomap ( nframes_t when )
     return bbt;
 }
 
-
 /** draw appropriate measure lines inside the given bounding box */
 void
-Timeline::draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, measure_line_callback * cb, void *arg ) const
+Timeline::draw_measure ( nframes_t start, nframes_t length, measure_line_callback * cb, void *arg ) const
 {
     if ( ! draw_with_measure_lines )
         return;
 
-    if ( ! tempo_track->_widgets.size() || ! time_track->_widgets.size() )
-    {
-        DWARNING( "No tempo/time points" );
-        return;
-    }
 
-    fl_line_style( FL_DASH, 0 );
+    const nframes_t end = start + length;
 
-    const Fl_Color beat = fl_color_average( FL_BLACK, color, 0.65f );
-    const Fl_Color bar  = fl_color_average( FL_RED, beat, 0.65f );
+    BBT bbt;
 
     const nframes_t samples_per_minute = sample_rate() * 60;
 
-    /* we need to back up a bit in order to catch all the numbers */
+    list <Sequence_Widget*> & tempo_map = tempo_track->_widgets;
 
-/*     if ( BBT ) */
-/*     { */
-/*         X -= 40; */
-/*         W += 40; */
-/*     } */
+/*     tempo_map.sort( Sequence_Widget::sort_func ); */
 
-    list <Sequence_Widget*>::const_iterator mpi;
+    float bpm = 120.0f;
 
-    /* find the first points before our range */
+    time_sig sig;
 
-/*     for ( list <Sequence_Widget *>::const_reverse_iterator i = tempo_track->_widgets.rbegin(); */
-/*           i != tempo_track->_widgets.rend(); i++ ) */
-/*         if ( (*i)->start() <= when ) */
-/*         { */
-/*             tpi = i.base(); */
-/*             break; */
-/*         } */
-
-/*     for ( list <Sequence_Widget *>::const_reverse_iterator i = time_track->_widgets.rbegin(); */
-/*           i != time_track->_widgets.rend(); i++ ) */
-/*         if ( (*i)->start() <= when ) */
-/*         { */
-/*             mpi = i.base(); */
-/*             break; */
-/*         } */
-
-
-/*     --tpi; */
-
-    /* start from the beginnnig */
-    /* FIXME: find a closer place to start */
-    list <Sequence_Widget *>::const_iterator tpi = tempo_track->_widgets.begin();
-
-    /* start on the next beat */
-    const Tempo_Point *tp = (Tempo_Point*)(*tpi);
-    nframes_t beat_inc = samples_per_minute / tp->tempo();
+    sig.beats_per_bar = 4;
+    sig.beat_type = 4;
 
     nframes_t f = 0;
-/*     nframes_t f = when - ( ( when - tp->start() ) % beat_inc ); */
 
-    for ( ; tpi != tempo_track->_widgets.end(); ++tpi )
+    nframes_t frames_per_beat = samples_per_minute / bpm;
+
+    for ( list <Sequence_Widget *>::iterator i = tempo_map.begin();
+          i != tempo_map.end(); ++i )
     {
-        list <Sequence_Widget*>::const_iterator ntpi = tpi;
-        ++ntpi;
-        const Tempo_Point *ntp = ntpi == tempo_track->_widgets.end() ? NULL : (Tempo_Point*)(*ntpi);
 
-        tp = (Tempo_Point*)(*tpi);
-
-        nframes_t ntpo = ntp ? ntp->start() : when + x_to_ts( W + 1 );
-
-        beat_inc = samples_per_minute / tp->tempo();
-        const int incx = ts_to_x( beat_inc );
-
-        /* lock to beat lines */
-        ntpo += (ntpo % beat_inc);
-
-        if ( incx < 8 )
-            continue;
-
-        for ( ; f < ntpo; f += beat_inc )
+        if ( ! strcmp( (*i)->class_name(), "Tempo_Point" ) )
         {
-            const int x = ts_to_x( f - xoffset ) + Track::width();
+            const Tempo_Point *p = (Tempo_Point*)(*i);
 
-            cb( f, x, Y, H, arg );
+            bpm = p->tempo();
+            frames_per_beat = samples_per_minute / bpm;
+        }
+        else
+        {
+            const Time_Point *p = (Time_Point*)(*i);
 
-/*             BBT bbt; */
+            sig = p->time();
+        }
 
-/*             bbt = const_cast< Timeline* >(this)->solve_tempomap( f ); */
+        nframes_t next;
 
-/*             printf( "%d:%d:%d\n", bbt.bar, bbt.beat, bbt.tick ); */
+        {
+            list <Sequence_Widget *>::iterator n = i;
+            ++n;
+            if ( n == tempo_map.end() )
+                next = end;
+            else
+                next = min( (*n)->start(), end );
+        }
 
+        for ( ; f < next; f += frames_per_beat )
+        {
+            if ( ++bbt.beat == sig.beats_per_bar )
+            {
+                bbt.beat = 0;
+                ++bbt.bar;
+            }
+
+            if ( f >= start )
+            {
+                if ( f >= end )
+                    return;
+
+                /* in the zone */
+
+                cb( f, bbt, arg );
+            }
         }
     }
 
-    fl_line_style( FL_SOLID, 0 );
+/*     /\* FIXME: this this right? *\/ */
+/*     bbt.tick = ticks_per_beat - ( ( ( f - start ) * ticks_per_beat ) / frames_per_beat ); */
+
+/*     return bbt; */
+
 }
 
 void
 Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 {
-    draw_measure( x_to_offset( X ), Y, W, H, color, draw_measure_cb, 0 );
+    Fl_Color colors[] = {  fl_color_average( FL_RED, color, 0.65f ),
+                           fl_color_average( FL_BLACK, color, 0.65f ) };
+
+    const nframes_t start = x_to_offset( X );
+    const nframes_t length = x_to_ts( W );
+
+    fl_push_clip( X, Y, W, H );
+
+    draw_measure( start, length, draw_measure_cb, &colors );
+
+    fl_pop_clip();
+
 }
 
 /** just like draw mesure lines except that it also draws the BBT values.  */

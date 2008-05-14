@@ -148,12 +148,12 @@ public:
     void time ( nframes_t when, int bpb, int beat_type );
     bool nearest_line ( nframes_t when, nframes_t *f ) const;
 
-    typedef void (measure_line_callback)( nframes_t frame, int X, int Y, int H, void *arg );
+    typedef void (measure_line_callback)( nframes_t frame, const BBT & bbt, void *arg );
 
     BBT solve_tempomap ( nframes_t when );
     void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
     void draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color );
-    void draw_measure ( nframes_t when, int Y, int W, int H, Fl_Color color, measure_line_callback *cb, void *arg ) const;
+    void draw_measure ( nframes_t start, nframes_t length, measure_line_callback *cb, void *arg ) const;
 
     void xposition ( int X );
     void yposition ( int Y );

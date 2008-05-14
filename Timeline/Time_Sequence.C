@@ -17,29 +17,34 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
+#include "Time_Sequence.H"
 
-#include "Sequence.H"
-#include "Tempo_Point.H"
-
-class Tempo_Sequence : public Sequence
+int
+Time_Sequence::handle ( int m )
 {
+    int r = Sequence::handle( m );
 
-protected:
+    if ( r )
+        return r;
 
-    /* not used */
-    void get ( Log_Entry &e ) const { }
-    void set ( Log_Entry &e ) { }
+    switch ( m )
+    {
+        case FL_PUSH:
+            if ( Fl::event_button1() )
+            {
+                static time_sig t = time_sig( 4, 4 );
 
-public:
+                if ( Time_Point::edit( &t ) )
+                {
+                    add( new Time_Point( timeline->x_to_offset( Fl::event_x() ), t.beats_per_bar, t.beat_type ) );
 
-    Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }
+                    timeline->redraw();
+                }
+                return 0;
+            }
+        default:
+            return 0;
 
-    Tempo_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
-        {
-//            box( FL_DOWN_BOX );
-        }
+    }
 
-    int handle ( int m );
-
-};
+}

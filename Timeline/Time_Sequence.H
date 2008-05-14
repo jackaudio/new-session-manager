@@ -62,4 +62,5 @@ public:
             add( new Time_Point( when, bpb, note ) );
         }
 
+    int handle ( int m );
 };

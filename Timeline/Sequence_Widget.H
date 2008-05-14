@@ -382,13 +382,13 @@ public:
         }
 
     bool
-    operator< ( const Sequence_Widget & rhs )
+    operator< ( const Sequence_Widget & rhs ) const
         {
             return _r->start < rhs._r->start;
         }
 
     bool
-    operator<=( const Sequence_Widget & rhs )
+    operator<=( const Sequence_Widget & rhs ) const
         {
             return _r->start <= rhs._r->start;
         }
@@ -397,7 +397,7 @@ public:
     virtual int handle ( int m );
 
     static bool
-    sort_func ( Sequence_Widget *lhs, Sequence_Widget *rhs )
+    sort_func ( const Sequence_Widget *lhs, const Sequence_Widget *rhs )
         {
             return *lhs < *rhs;
         }

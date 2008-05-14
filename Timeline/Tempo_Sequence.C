@@ -19,45 +19,6 @@
 
 #include "Tempo_Sequence.H"
 
-
-void
-Tempo_Sequence::draw ( void )
-{
-    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
-        return;
-
-    fl_push_clip( x(), y(), w(), h() );
-
-    /* draw the box with the ends cut off. */
-    draw_box( box(),
-              x() - Fl::box_dx( box() ) - 1, y(),
-              w() + Fl::box_dw( box() ) + 2, h() >> 1, color() );
-    draw_box( box(),
-              x() - Fl::box_dx( box() ) - 1, y() + (h() >> 1) ,
-              w() + Fl::box_dw( box() ) + 2, h() >> 1, color() );
-
-    int X, Y, W, H;
-
-    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
-
-    if ( Sequence_Widget::pushed() && Sequence_Widget::pushed()->sequence() == this )
-    {
-        /* make sure the Sequence_Widget::pushed widget is above all others */
-        remove( Sequence_Widget::pushed() );
-        add( Sequence_Widget::pushed() );
-    }
-
-    timeline->draw_measure_lines( X, Y, W, H, color() );
-
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
-        (*r)->draw_box();
-
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
-        (*r)->draw();
-
-    fl_pop_clip();
-}
-
 int
 Tempo_Sequence::handle ( int m )
 {

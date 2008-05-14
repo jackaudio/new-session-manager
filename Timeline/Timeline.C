@@ -378,7 +378,7 @@ Timeline::update_tempomap ( void )
 
     /* FIXME: shouldn't we ensure that time points always precede
      tempo points at the same position? */
-    _tempomap.sort();
+    _tempomap.sort( Sequence_Widget::sort_func );
 }
 
 position_info

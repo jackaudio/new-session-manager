@@ -24,8 +24,8 @@ Timeline/Sequence_Point.C \
 Timeline/Sequence_Region.C \
 Timeline/Sequence_Widget.C \
 Timeline/TLE.C \
-Timeline/Tempo_Map_Sequence.C \
 Timeline/Tempo_Point.C \
+Timeline/Tempo_Sequence.C \
 Timeline/Time_Point.C \
 Timeline/Timeline.C \
 Timeline/Track.C \

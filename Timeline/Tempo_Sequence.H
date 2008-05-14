@@ -22,8 +22,6 @@
 #include "Sequence.H"
 #include "Tempo_Point.H"
 
-#include <list>
-
 class Tempo_Sequence : public Sequence
 {
 

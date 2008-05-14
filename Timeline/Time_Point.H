@@ -36,9 +36,6 @@ struct time_sig
         }
 };
 
-
-#define __CLASS__ "Time_Point"
-
 class Time_Point : public Sequence_Point
 {
     time_sig _time;
@@ -70,15 +67,11 @@ public:
     Time_Point ( nframes_t when, int bpb, int note );
     Time_Point ( const Time_Point &rhs );
 
-    ~Time_Point ( )
-        {
-            log_destroy();
-        }
-
+    ~Time_Point ( );
 
     void time ( int bpb, int note ) { _time.beats_per_bar = bpb; _time.beat_type = note; }
     time_sig time ( void ) const { return _time; }
 
-};
+    int handle ( int m );
 
-#undef __CLASS__
+};

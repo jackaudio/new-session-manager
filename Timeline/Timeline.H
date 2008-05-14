@@ -112,6 +112,8 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     Timeline ( const Timeline &rhs );
     Timeline & operator = ( const Timeline &rhs );
 
+    std::list <const Sequence_Widget*> _tempomap;
+
 public:
 
     enum snap_e {
@@ -136,6 +138,8 @@ public:
     int _yposition;
 
     Timeline ( int X, int Y, int W, int H, const char *L=0 );
+
+    void update_tempomap ( void );
 
     nframes_t fpp ( void ) const { return 1 << _fpp; }
     nframes_t length ( void ) const { return _length; }

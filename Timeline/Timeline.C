@@ -363,6 +363,24 @@ draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
 /* FIXME: wrong place for this */
 const float ticks_per_beat = 1920.0;
 
+void
+Timeline::update_tempomap ( void )
+{
+    _tempomap.clear();
+
+    for ( list <Sequence_Widget *>::const_iterator i = time_track->_widgets.begin();
+          i != time_track->_widgets.end(); ++i )
+        _tempomap.push_back( *i );
+
+    for ( list <Sequence_Widget *>::const_iterator i = tempo_track->_widgets.begin();
+          i != tempo_track->_widgets.end(); ++i )
+        _tempomap.push_back( *i );
+
+    /* FIXME: shouldn't we ensure that time points always precede
+     tempo points at the same position? */
+    _tempomap.sort();
+}
+
 position_info
 Timeline::solve_tempomap ( nframes_t frame ) const
 {
@@ -374,7 +392,6 @@ position_info
 Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callback * cb, void *arg ) const
 {
 
-
     const nframes_t end = start + length;
 
     position_info pos;
@@ -383,10 +400,6 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
     BBT &bbt = pos.bbt;
 
     const nframes_t samples_per_minute = sample_rate() * 60;
-
-    list <Sequence_Widget*> & tempo_map = tempo_track->_widgets;
-
-/*     tempo_map.sort( Sequence_Widget::sort_func ); */
 
     float bpm = 120.0f;
 
@@ -402,8 +415,8 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
 
     /* FIXME: don't we need to sort so that Time_Points always preceed Tempo_Points? */
 
-    for ( list <Sequence_Widget *>::iterator i = tempo_map.begin();
-          i != tempo_map.end(); ++i )
+    for ( list <const Sequence_Widget *>::const_iterator i = _tempomap.begin();
+          i != _tempomap.end(); ++i )
     {
 
         if ( ! strcmp( (*i)->class_name(), "Tempo_Point" ) )
@@ -421,9 +434,9 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
         }
 
         {
-            list <Sequence_Widget *>::iterator n = i;
+            list <const Sequence_Widget *>::const_iterator n = i;
             ++n;
-            if ( n == tempo_map.end() )
+            if ( n == _tempomap.end() )
                 next = end;
             else
 //                next = min( (*n)->start(), end );

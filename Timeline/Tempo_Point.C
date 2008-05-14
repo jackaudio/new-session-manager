@@ -20,7 +20,7 @@
 
 
 #include "Tempo_Point.H"
-#include "Tempo_Map_Sequence.H"
+#include "Tempo_Sequence.H"
 #include "Timeline.H" // for timeline->tempo_track
 
 void
@@ -52,6 +52,7 @@ Tempo_Point::set ( Log_Entry &e )
 
     }
 
+    timeline->update_tempomap();
     timeline->redraw();
 
     _make_label();
@@ -61,6 +62,7 @@ Tempo_Point::set ( Log_Entry &e )
 Tempo_Point::Tempo_Point ( )
 {
     timeline->tempo_track->add( this );
+    timeline->update_tempomap();
 }
 
 Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
@@ -71,6 +73,7 @@ Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
     _make_label();
 
     timeline->tempo_track->add( this );
+    timeline->update_tempomap();
 
     log_create();
 }
@@ -79,6 +82,8 @@ Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
 
 Tempo_Point::~Tempo_Point ( )
 {
+    timeline->tempo_track->remove( this );
+    timeline->update_tempomap();
     log_destroy();
 }
 
@@ -100,6 +105,7 @@ Tempo_Point::handle ( int m )
     if ( m == FL_RELEASE )
     {
         sequence()->sort();
+        timeline->update_tempomap();
         timeline->redraw();
     }
     return r;

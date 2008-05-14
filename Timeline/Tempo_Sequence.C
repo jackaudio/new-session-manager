@@ -17,11 +17,11 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Tempo_Map_Sequence.H"
+#include "Tempo_Sequence.H"
 
 
 void
-Tempo_Map_Sequence::draw ( void )
+Tempo_Sequence::draw ( void )
 {
     if ( ! fl_not_clipped( x(), y(), w(), h() ) )
         return;
@@ -59,7 +59,7 @@ Tempo_Map_Sequence::draw ( void )
 }
 
 int
-Tempo_Map_Sequence::handle ( int m )
+Tempo_Sequence::handle ( int m )
 {
     int r = Sequence::handle( m );
 

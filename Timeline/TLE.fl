@@ -165,9 +165,7 @@ main_window->redraw();}
           }
           MenuItem {} {
             label {&Open}
-            callback {save_timeline_settings();
-
-const char *name = fl_dir_chooser( "Open Project", NULL, NULL );
+            callback {const char *name = fl_dir_chooser( "Open Project", NULL, NULL );
 
 Project::close();
 
@@ -176,13 +174,7 @@ if ( ! Project::open( name ) )
 	fl_alert( "Could not open \\"%s\\" as a Non-DAW project!", name );
 	
 	// we are in a somewhar ambiguous state now with no project open.
-}
-else
-{
-	load_timeline_settings();
-}
-
-update_menu();}
+}}
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -192,7 +184,7 @@ update_menu();}
 if ( n != 2 )
 	return;
 	
-Loggable::compact();} selected
+Loggable::compact();}
             xywh {20 20 40 25}
           }
           Submenu {} {
@@ -210,15 +202,7 @@ Loggable::compact();} selected
           }
           MenuItem {} {
             label {&Quit}
-            callback {save();
-
-save_timeline_settings();
-
-Project::close();
-
-printf( "dropped %d buffers\\n", engine->dropped() );
-
-exit( 0 );}
+            callback {quit()}
             xywh {40 40 40 25} shortcut 0x40071
           }
         }
@@ -592,7 +576,7 @@ delete win;}
         code0 {timeline = o;}
         class Timeline
       }
-      Fl_Box {} {
+      Fl_Box project_name {
         label {<project name>}
         xywh {450 0 475 22} labeltype SHADOW_LABEL labelfont 2
         code0 {o->label( Project::name() );}
@@ -634,7 +618,9 @@ else
 	transport->activate();	
 }
 
-m->redraw();} {}
+m->redraw();
+project_name->redraw();} {selected
+    }
   }
   Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
   } {
@@ -673,7 +659,7 @@ xruns_output->value( engine->xruns() );} {}
   } {
     Fl_Window {} {
       label About open
-      xywh {677 145 495 525} type Double visible
+      xywh {733 400 495 525} type Double visible
     } {
       Fl_Tabs {} {open
         xywh {-4 122 507 419}
@@ -726,7 +712,20 @@ with fast, light, reliable alternatives.}
     code {if ( Project::open() )
 {
 	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Timeline" ), "options" );
-}} {}
+}
+
+
+update_menu();
+
+project_name->redraw();} {}
+  }
+  Function {quit()} {open
+  } {
+    code {Project::close();
+
+save();
+
+exit( 0 );} {}
   }
 } 
 
@@ -747,7 +746,7 @@ while ( _window->shown() )
   } {
     Fl_Window _window {
       label {New Project} open
-      xywh {576 340 550 195} type Double modal visible
+      xywh {23 779 550 195} type Double modal visible
     } {
       Fl_File_Input _name {
         label {Named:}

@@ -33,6 +33,10 @@ project state belongs to Timeline and other classes. */
 
 #include "Timeline.H" // for sample_rate();
 
+#include "TLE.H" // all this just for load and save...
+
+extern TLE *tle;
+
 /* FIXME: wrong place for this */
 #define APP_TITLE "Non-DAW"
 
@@ -45,9 +49,16 @@ bool Project::_is_open = false;
 void
 Project::set_name ( const char *name )
 {
-    char *s = rindex( name, '/' );
+    strcpy( Project::_name, name );
 
-    strcpy( Project::_name, s ? s + 1 : name );
+    if ( Project::_name[ strlen( Project::_name ) - 1 ] == '/' )
+        Project::_name[ strlen( Project::_name ) - 1 ] = '\0';
+
+    char *s = rindex( Project::_name, '/' );
+
+    s = s ? s + 1 : Project::_name;
+
+    memmove( Project::_name, s, strlen( s ) + 1 );
 
     for ( s = Project::_name; *s; ++s )
         if ( *s == '_' || *s == '-' )
@@ -67,6 +78,8 @@ exists ( const char *name )
 bool
 Project::close ( void )
 {
+    tle->save_timeline_settings();
+
     Loggable::close();
 
     write_info();
@@ -145,6 +158,8 @@ Project::open ( const char *name )
     read_info();
 
     _is_open = true;
+
+    tle->load_timeline_settings();
 
     return true;
 }

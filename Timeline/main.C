@@ -57,12 +57,13 @@ Engine *engine;
 Timeline *timeline;
 Transport *transport;
 LASH *lash;
+TLE *tle;
 
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-daw/"
 
 const char APP_NAME[]   = "Non-DAW";
-const char APP_TITLE[]  = "The Non-DAW (Digital Audio Workstation)";
+const char APP_TITLE[]  = "The Non-DAW";
 const char COPYRIGHT[]  = "Copyright (C) 2008 Jonathan Moore Liles";
 
 #define PACKAGE "non"
@@ -116,7 +117,7 @@ main ( int argc, char **argv )
 
     printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
 
-    TLE tle;
+    tle = new TLE;
 
     MESSAGE( "Initializing JACK" );
 
@@ -142,8 +143,8 @@ main ( int argc, char **argv )
     /* FIXME: open project in /tmp if none is given? */
 
     MESSAGE( "Starting GUI" );
-//    tle.main_window->show( argc, argv );
-    tle.run();
+
+    tle->run();
 
     MESSAGE( "Your fun is over" );
 }

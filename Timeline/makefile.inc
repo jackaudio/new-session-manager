@@ -3,6 +3,7 @@
 Timeline_VERSION := 0.5.0
 
 Timeline_SRCS= \
+Timeline/LASH_Client.C \
 Timeline/Annotation_Region.C \
 Timeline/Audio_File.C \
 Timeline/Audio_File_SF.C \
@@ -40,7 +41,7 @@ Timeline_OBJS:=$(Timeline_SRCS:.C=.o)
 
 $(Timeline_OBJS): Makefile
 
-Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS)
+Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS) $(LASH_LIBS)
 
 Timeline/timeline: $(Timeline_OBJS) FL
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(Timeline_LIBS)  $(Timeline_OBJS) -o $@ -LFL -lfl_widgets

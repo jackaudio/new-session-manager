@@ -65,28 +65,24 @@ LASH_Client::poll ( void )
         switch ( lash_event_get_type( e )  )
         {
             case LASH_Save_File:
-            {
                 handle_save_file( name );
 
                 lash_send_event( _client, lash_event_new_with_type( LASH_Save_File ) );
 
                 break;
-
-            }
             case LASH_Restore_File:
-            {
                 if ( ! handle_restore_file( name ) )
                     /* FIXME: should we tell lash that we couldn't load the song? */;
 
                 lash_send_event( _client, lash_event_new_with_type( LASH_Restore_File ) );
 
                 break;
-            }
             case LASH_Quit:
                 handle_quit();
                 break;
             default:
                 WARNING( "unhandled LASH event" );
+                break;
         }
 
         lash_event_destroy( e );

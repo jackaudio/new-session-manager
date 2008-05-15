@@ -473,6 +473,10 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
 
 done:
 
+    if ( ! f )
+        /* no points? */
+        return pos;
+
     pos.frame = f;
     pos.tempo = bpm;
     pos.beats_per_bar = sig.beats_per_bar;

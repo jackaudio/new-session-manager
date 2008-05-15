@@ -38,8 +38,6 @@ LASH_Client::~LASH_Client ( )
 bool
 LASH_Client::init ( const char *jack_name, const char *long_name, int *argc, char ***argv )
 {
-    MESSAGE( "Initializing LASH" );
-
     if ( ! ( _void = lash_init( lash_extract_args( argc, argv ), jack_name,
                                   LASH_Config_File, LASH_PROTOCOL( 2, 0 ) ) ) )
         return false;
@@ -68,8 +66,6 @@ LASH_Client::poll ( void )
         {
             case LASH_Save_File:
             {
-                MESSAGE( "LASH wants us to save \"%s\"", name );
-
                 handle_save_file( name );
 
                 lash_send_event( _client, lash_event_new_with_type( LASH_Save_File ) );
@@ -79,9 +75,7 @@ LASH_Client::poll ( void )
             }
             case LASH_Restore_File:
             {
-                MESSAGE( "LASH wants us to load \"%s\"", name );
-
-                if ( ! handle_load_file( name ) )
+                if ( ! handle_restore_file( name ) )
                     /* FIXME: should we tell lash that we couldn't load the song? */;
 
                 lash_send_event( _client, lash_event_new_with_type( LASH_Restore_File ) );
@@ -89,7 +83,6 @@ LASH_Client::poll ( void )
                 break;
             }
             case LASH_Quit:
-                MESSAGE( "LASH wants us to quit" );
                 handle_quit();
                 break;
             default:

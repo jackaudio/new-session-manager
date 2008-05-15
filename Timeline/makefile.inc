@@ -3,6 +3,7 @@
 Timeline_VERSION := 0.5.0
 
 Timeline_SRCS= \
+Timeline/LASH.C \
 Timeline/LASH_Client.C \
 Timeline/Annotation_Region.C \
 Timeline/Audio_File.C \

@@ -17,33 +17,40 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* actual implementation of our side of the LASH protocol */
 
-/* generic master class for interfacing with LASH... */
+#include "LASH.H"
 
-#pragma once
+#include "debug.h"
 
-class LASH_Client
+
+LASH::LASH ( )
 {
-    /* to avoid including the lash header here... */
-    void *_void;
+}
 
-protected:
+LASH::~LASH ( )
+{
+}
 
-    virtual bool handle_save_file ( const char *path ) = 0;
-    virtual bool handle_restore_file ( const char *path ) = 0;
-    virtual void handle_quit ( void ) = 0;
 
-public:
+bool
+LASH::handle_save_file ( const char *path )
+{
+    MESSAGE( "LASH wants us to save \"%s\"", path );
 
-    LASH_Client ( );
-    virtual ~LASH_Client ( );
+    return true;
+}
 
-    bool init ( const char *jack_name, const char *full_name, int *argc, char ***argv );
-    void poll ( void );
+bool
+LASH::handle_restore_file ( const char *path )
+{
+    MESSAGE( "LASH wants us to load \"%s\"", path );
 
-    void project_save ( void );
-    void project_quit ( void );
+    return true;
+}
 
-    /* TODO: project_add, project_remove, project_dir, project_name, percentage */
-
-};
+void
+LASH::handle_quit ( void )
+{
+    MESSAGE( "LASH wants us to quit" );
+}

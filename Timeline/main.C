@@ -51,9 +51,12 @@
 
 #include "Project.H"
 
+#include "LASH.H"
+
 Engine *engine;
 Timeline *timeline;
 Transport *transport;
+LASH *lash;
 
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-daw/"
@@ -81,6 +84,15 @@ ensure_dirs ( void )
     return r == 0 || errno == EEXIST;
 }
 
+const float lash_poll_interval = 0.2f;
+
+static void
+lash_cb ( void *arg )
+{
+    lash->poll();
+
+    Fl::repeat_timeout( lash_poll_interval, lash_cb, 0 );
+}
 
 int
 main ( int argc, char **argv )
@@ -115,6 +127,13 @@ main ( int argc, char **argv )
     /* always start stopped (please imagine for me a realistic
      * scenario requiring otherwise */
     transport->stop();
+
+    MESSAGE( "Initializing LASH" );
+    lash = new LASH;
+
+    lash->init( APP_NAME, APP_TITLE, &argc, &argv );
+
+    Fl::add_timeout( lash_poll_interval, lash_cb, 0 );
 
     if ( argc > 1 )
         if ( ! Project::open( argv[ 1 ] ) )

@@ -36,11 +36,24 @@ failed ()
 
 echo "-- Configuration:"
 
+# get the old values
+if [ -f make.conf ]
+then
+    OIFS="$IFS"
+    IFS=''
+    eval "`sed -n '/^## options/{ : i; /^## libs/{ q }; p; n; b i }' make.conf`"
+    IFS="$OIFS"
+fi
+
 echo "# This is a generated file. Any changes may be lost!" > make.conf
 
-ask "Install prefix?" prefix /usr/local
-ask "Use LASH?" USE_LASH yes
-ask "Build for debugging?" MAINTAINER_MODE no
+echo "## options" >> make.conf
+
+ask "Install prefix?" prefix ${prefix:-/usr/local}
+ask "Use LASH?" USE_LASH ${USE_LASH:-yes}
+ask "Build for debugging?" MAINTAINER_MODE ${MAINTAINER_MODE:-no}
+
+echo "## libs/flags" >> make.conf
 
 # tests
 

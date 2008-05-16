@@ -35,7 +35,8 @@ decl {\#include <FL/Fl_File_Chooser.H>} {}
 
 decl {\#include <FL/Fl.H>} {} 
 
-decl {\#include <Fl/Fl_PNG_Image.H>} {} 
+decl {\#include <Fl/Fl_Shared_Image.H>} {selected
+} 
 
 decl {extern char project_display_name[256];} {global
 } 
@@ -697,7 +698,7 @@ with fast, light, reliable alternatives.}
       Fl_Box {} {
         label {the Non-DAW (Digital Audio Workstation)}
         xywh {-1 1 499 115} align 16
-        code0 {o->image( new Fl_PNG_Image( INSTALL_PREFIX "/share/pixmaps/non-daw/logo.png" ) );}
+        code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo.png" ) );}
       }
     }
   }

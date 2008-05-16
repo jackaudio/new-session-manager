@@ -34,16 +34,29 @@
 #include "Project.H"
 #include "TLE.H" // all this just for quit()
 
+#include <FL/Fl.H>
+
 extern TLE *tle;
 
 #include "debug.h"
 
+const float lash_poll_interval = 0.2f;
+
+void
+LASH::timer_cb ( void *v )
+{
+    ((LASH*)v)->poll();
+    Fl::repeat_timeout( lash_poll_interval, &LASH::timer_cb, v );
+}
+
 LASH::LASH ( )
 {
+    Fl::add_timeout( lash_poll_interval, &LASH::timer_cb, this );
 }
 
 LASH::~LASH ( )
 {
+    Fl::remove_timeout( &LASH::timer_cb );
 }
 
 bool

@@ -56,6 +56,9 @@ LASH_Client::init ( const char *jack_name, const char *long_name, int *argc, cha
 void
 LASH_Client::poll ( void )
 {
+    if ( ! _client )
+        return;
+
     lash_event_t *e;
 
     while ( ( e = lash_get_event( _client ) ) )

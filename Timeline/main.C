@@ -85,16 +85,6 @@ ensure_dirs ( void )
     return r == 0 || errno == EEXIST;
 }
 
-const float lash_poll_interval = 0.2f;
-
-static void
-lash_cb ( void *arg )
-{
-    lash->poll();
-
-    Fl::repeat_timeout( lash_poll_interval, lash_cb, 0 );
-}
-
 #include <FL/Fl_Shared_Image.H>
 
 int
@@ -138,8 +128,6 @@ main ( int argc, char **argv )
     lash = new LASH;
 
     lash->init( APP_NAME, APP_TITLE, &argc, &argv );
-
-    Fl::add_timeout( lash_poll_interval, lash_cb, 0 );
 
     if ( argc > 1 )
         if ( ! Project::open( argv[ 1 ] ) )

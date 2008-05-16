@@ -24,6 +24,8 @@
 class LASH : public LASH_Client
 {
 
+    static void timer_cb ( void *v );
+
 public:
 
     LASH ( );

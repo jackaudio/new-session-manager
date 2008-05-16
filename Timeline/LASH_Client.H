@@ -17,7 +17,6 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-
 /* generic master class for interfacing with LASH... */
 
 #pragma once
@@ -39,6 +38,7 @@ public:
     virtual ~LASH_Client ( );
 
     bool init ( const char *jack_name, const char *full_name, int *argc, char ***argv );
+    bool enabled ( void );
     void poll ( void );
 
     void project_save ( void );

@@ -52,6 +52,12 @@ LASH_Client::init ( const char *jack_name, const char *long_name, int *argc, cha
     return true;
 }
 
+bool
+LASH_Client::enabled ( void )
+{
+    return lash_enabled( _client );
+}
+
 /** process any queued events */
 void
 LASH_Client::poll ( void )

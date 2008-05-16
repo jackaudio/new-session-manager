@@ -95,9 +95,14 @@ lash_cb ( void *arg )
     Fl::repeat_timeout( lash_poll_interval, lash_cb, 0 );
 }
 
+#include <FL/Fl_Shared_Image.H>
+
 int
 main ( int argc, char **argv )
 {
+
+    fl_register_images();
+
     /* welcome to C++ */
     LOG_REGISTER_CREATE( Annotation_Point    );
     LOG_REGISTER_CREATE( Annotation_Region   );

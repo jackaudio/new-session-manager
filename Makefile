@@ -16,7 +16,7 @@ make.conf: configure
 
 -include make.conf
 
-ifeq (($MAINTAINER_MODE),yes)
+ifeq ($(MAINTAINER_MODE),yes)
 	CXXFLAGS := -pipe -ggdb -Wextra -Wno-missing-field-initializers -O0 -fno-rtti -fno-exceptions
 else
 	CXXFLAGS := -pipe -O3 -fno-rtti -fno-exceptions -DNDEBUG

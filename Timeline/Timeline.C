@@ -491,7 +491,7 @@ done:
 
     /* FIXME: this this right? */
 
-    const nframes_t frames_per_tick = frames_per_beat / ticks_per_beat;
+    const double frames_per_tick = frames_per_beat / ticks_per_beat;
     bbt.tick = ( end - f ) / frames_per_tick;
 
     return pos;

@@ -1,3 +1,4 @@
+# -*- mode: makefile; -*-
 
 FL_SRCS= \
    FL/Fl_Scalepack.C \
@@ -12,7 +13,7 @@ all: FL/libfl_widgets.a
 # $(OBJS): Makefile
 
 FL/libfl_widgets.a: $(FL_OBJS)
-	ar rcs $@ $(FL_OBJS)
+	@ ar rcs $@ $(FL_OBJS)
 
 .PHONEY: FL
 FL: FL/libfl_widgets.a

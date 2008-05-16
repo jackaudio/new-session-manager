@@ -5,6 +5,12 @@
 
 . scripts/colors
 
+if [ $# -gt 0 ]
+then
+    echo This is not an autoconf script. Run it without any options and you will be prompted.
+    exit 255
+fi
+
 fatal ()
 {
     echo "$BOLD$RED$*$SGR0"
@@ -13,7 +19,7 @@ fatal ()
 
 ask ()
 {
-   echo -n "$1 [$BOLD$GREEN$3$SGR0] "
+   echo -n "$1 [$BOLD$3$SGR0] "
    read R
    echo "$2 := ${R:-$3}" >> make.conf
 }
@@ -27,6 +33,8 @@ failed ()
 {
     echo "$BOLD${RED}failed!$SGR0"
 }
+
+echo "-- Configuration:"
 
 echo "# This is a generated file. Any changes may be lost!" > make.conf
 

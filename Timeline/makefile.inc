@@ -40,12 +40,14 @@ debug.C
 
 Timeline_OBJS:=$(Timeline_SRCS:.C=.o)
 
-$(Timeline_OBJS): Makefile
+# $(Timeline_OBJS): Makefile
+# $(Timeline_OBJS): make.conf
 
 Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS) $(LASH_LIBS)
 
 Timeline/timeline: $(Timeline_OBJS) FL
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(Timeline_LIBS)  $(Timeline_OBJS) -o $@ -LFL -lfl_widgets
+	@ echo -n Linking timeline...
+	@ $(CXX) $(CXXFLAGS) $(INCLUDES) $(Timeline_LIBS)  $(Timeline_OBJS) -o $@ -LFL -lfl_widgets && echo $(DONE)
 
 Timeline: Timeline/timeline
 

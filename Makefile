@@ -11,12 +11,12 @@ include scripts/colors
 
 VERSION := 0.5.0
 
-all: make.conf makedepend FL Timeline Mixer
+all: makedepend FL Timeline Mixer
 
 make.conf: configure
 	@ ./configure
 
-include make.conf
+-include make.conf
 
 ifeq (($MAINTAINER_MODE),yes)
 	CXXFLAGS := -ggdb -Wextra -Wno-missing-field-initializers -O0 -fno-rtti -fno-exceptions
@@ -33,16 +33,23 @@ CXXFLAGS += $(LASH_CFLAGS) -DINSTALL_PREFIX=\"$(prefix)\" -DVERSION=\"$(VERSION)
 %.C : %.fl
 	@ cd `dirname $<` && fluid -c ../$<
 
+DONE := $(BOLD)$(GREEN)done$(SGR0)
+
 include FL/makefile.inc
 include Timeline/makefile.inc
 include Mixer/makefile.inc
 
 SRCS:=$(FL_SRCS) $(Timeline_SRCS) $(Mixer_SRCS)
+OBJS:=$(FL_OBJS) $(Timeline_OBJS) $(Mixer_OBJS)
+
+# FIXME: isn't there a better way?
+$(OBJS): make.conf
 
 TAGS: $(SRCS)
 	etags $(SRCS)
 
-makedepend: $(SRCS) Makefile
+#makedepend: $(SRCS) Makefile
+makedepend: $(SRCS)
 	@ echo -n Checking dependencies...
 	@ makedepend -f- -- $(CXXFLAGS) -- $(SRCS) > makedepend 2>/dev/null && echo done.
 
@@ -54,4 +61,4 @@ config:
 	@ rm -f make.conf
 	@ $(MAKE) -s
 
-include makedepend
+-include makedepend

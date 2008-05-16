@@ -21,7 +21,7 @@ ask ()
 {
    echo -n "$1 [$BOLD$3$SGR0] "
    read R
-   echo "$2 := ${R:-$3}" >> make.conf
+   echo "${2}=${R:-$3}" >> make.conf
 }
 
 ok ()
@@ -60,7 +60,7 @@ else
     ok
 fi
 
-echo "FLTK_LIBS := `fltk-config --use-images --ldflags`" >> make.conf
+echo "FLTK_LIBS=`fltk-config --use-images --ldflags`" >> make.conf
 
 # 
 
@@ -77,12 +77,12 @@ check ()
     return 0
 }
 
-check JACK 0.103.0 jack && echo "JACK_LIBS := `pkg-config --libs jack`" >> make.conf
-check libSNDFILE 1.0.17 sndfile && echo "SNDFILE_LIBS := `pkg-config --libs sndfile`" >> make.conf
+check JACK 0.103.0 jack && echo "JACK_LIBS=`pkg-config --libs jack`" >> make.conf
+check libSNDFILE 1.0.17 sndfile && echo "SNDFILE_LIBS=`pkg-config --libs sndfile`" >> make.conf
 
-grep -q 'USE_LASH := yes' make.conf &&
+grep -q 'USE_LASH=yes' make.conf &&
 check LASH 0.5.4 lash-1.0 &&
-( echo "LASH_LIBS := `pkg-config --libs lash-1.0`" >> make.conf
-  echo "LASH_CFLAGS := -DUSE_LASH `pkg-config --cflags lash-1.0`" >> make.conf )
+( echo "LASH_LIBS=`pkg-config --libs lash-1.0`" >> make.conf
+  echo "LASH_CFLAGS=-DUSE_LASH `pkg-config --cflags lash-1.0`" >> make.conf )
 
 echo "-- Configuration complete."

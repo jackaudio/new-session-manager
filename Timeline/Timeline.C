@@ -500,8 +500,10 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
     if ( ! draw_with_measure_lines )
         return;
 
-    Fl_Color colors[] = {  fl_color_average( FL_RED, color, 0.65f ),
-                           fl_color_average( FL_BLACK, color, 0.65f ) };
+    Fl_Color colors[2];
+
+    colors[1] = fl_color_average( FL_BLACK, color, 0.65f );
+    colors[0] = fl_color_average( FL_RED, colors[1], 0.65f );
 
     const nframes_t start = x_to_offset( X );
     const nframes_t length = x_to_ts( W );

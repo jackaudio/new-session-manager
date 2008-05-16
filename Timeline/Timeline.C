@@ -416,6 +416,9 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
 
     /* FIXME: don't we need to sort so that Time_Points always preceed Tempo_Points? */
 
+    if ( ! _tempomap.size() )
+        return pos;
+
     for ( list <const Sequence_Widget *>::const_iterator i = _tempomap.begin();
           i != _tempomap.end(); ++i )
     {
@@ -448,7 +451,6 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
                 next = (*n)->start() - ( ( (*n)->start() - (*i)->start() ) % frames_per_beat );
         }
 
-
         for ( ; f < next; ++bbt.beat, f += frames_per_beat )
         {
 
@@ -465,17 +467,18 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
                     cb( f, bbt, arg );
             }
 
-            if ( f + frames_per_beat >= end )
+            /* ugliness to avoid failing out at -1 */
+            if ( end >= frames_per_beat )
+            {
+                if ( f >= end - frames_per_beat )
+                    goto done;
+            }
+            else if ( f + frames_per_beat >= end )
                 goto done;
-
         }
     }
 
 done:
-
-    if ( ! f )
-        /* no points? */
-        return pos;
 
     pos.frame = f;
     pos.tempo = bpm;

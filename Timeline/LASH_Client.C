@@ -19,9 +19,6 @@
 
 #include "LASH_Client.H"
 
-#include <lash/lash.h>
-
-#define _client (static_cast<lash_client_t*>(_void))
 
 #include "debug.h"
 
@@ -34,6 +31,12 @@ LASH_Client::~LASH_Client ( )
 {
     /* TODO: anything? */
 }
+
+#ifdef USE_LASH
+
+#include <lash/lash.h>
+
+#define _client (static_cast<lash_client_t*>(_void))
 
 bool
 LASH_Client::init ( const char *jack_name, const char *long_name, int *argc, char ***argv )
@@ -97,3 +100,24 @@ LASH_Client::poll ( void )
         lash_event_destroy( e );
     }
 }
+
+#else
+
+bool
+LASH_Client::init ( const char *jack_name, const char *long_name, int *argc, char ***argv )
+{
+    return true;
+}
+
+bool
+LASH_Client::enabled ( void )
+{
+    return false;
+}
+
+void
+LASH_Client::poll ( void )
+{
+}
+
+#endif

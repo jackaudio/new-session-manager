@@ -3,8 +3,6 @@
 Timeline_VERSION := 0.5.0
 
 Timeline_SRCS= \
-Timeline/LASH.C \
-Timeline/LASH_Client.C \
 Timeline/Annotation_Region.C \
 Timeline/Audio_File.C \
 Timeline/Audio_File_SF.C \
@@ -15,6 +13,8 @@ Timeline/Control_Sequence.C \
 Timeline/Disk_Stream.C \
 Timeline/Engine.C \
 Timeline/Fl_Menu_Settings.C \
+Timeline/LASH.C \
+Timeline/LASH_Client.C \
 Timeline/Loggable.C \
 Timeline/Peaks.C \
 Timeline/Playback_DS.C \
@@ -36,7 +36,7 @@ Timeline/Transport.C \
 Timeline/Waveform.C \
 Timeline/dsp.C \
 Timeline/main.C \
-debug.C \
+debug.C
 
 Timeline_OBJS:=$(Timeline_SRCS:.C=.o)
 

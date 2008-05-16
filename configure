@@ -1,0 +1,80 @@
+#!/bin/sh
+#
+# Copyright (C) 2008 Jonathan Moore Liles
+#
+
+. scripts/colors
+
+fatal ()
+{
+    echo "$BOLD$RED$*$SGR0"
+    exit 255
+}
+
+ask ()
+{
+   echo -n "$1 [$BOLD$GREEN$3$SGR0] "
+   read R
+   echo "$2 := ${R:-$3}" >> make.conf
+}
+
+ok ()
+{
+    echo "$BOLD${GREEN}ok$SGR0."
+}
+
+failed ()
+{
+    echo "$BOLD${RED}failed!$SGR0"
+}
+
+echo "# This is a generated file. Any changes may be lost!" > make.conf
+
+ask "Install prefix?" prefix /usr/local
+ask "Use LASH?" USE_LASH yes
+ask "Build for debugging?" MAINTAINER_MODE no
+
+# tests
+
+echo -n "Checking for ${BOLD}FLTK${SGR0}..."
+
+FLTK_VERSION=`fltk-config --version`
+
+FLTK_VERSION_MAJOR=`echo $FLTK_VERSION | cut -d'.' -f1`
+FLTK_VERSION_MINOR=`echo $FLTK_VERSION | cut -d'.' -f2`
+FLTK_VERSION_PATCH=`echo $FLTK_VERSION | cut -d'.' -f3`
+
+if ! ( [ $FLTK_VERSION_MAJOR -ge 1 ] && [ $FLTK_VERSION_MINOR -ge 1 ] && [ $FLTK_VERSION_PATCH -ge 8 ] )
+then
+    failed
+    fatal "The installed FLTK version ($FLTK_VERSION) is too old."
+else
+    ok
+fi
+
+echo "FLTK_LIBS := `fltk-config --use-images --ldflags`" >> make.conf
+
+# 
+
+check ()
+{
+    echo -n "Checking for $BOLD$1$SGR0..."
+    if ! pkg-config --atleast-version $2 $3
+    then
+        failed
+        fatal "$1 not installed or too old."
+    fi
+
+    ok
+    return 0
+}
+
+check JACK 0.103.0 jack && echo "JACK_LIBS := `pkg-config --libs jack`" >> make.conf
+check libSNDFILE 1.0.17 sndfile && echo "SNDFILE_LIBS := `pkg-config --libs sndfile`" >> make.conf
+
+grep -q 'USE_LASH := yes' make.conf &&
+check LASH 0.5.4 lash-1.0 &&
+( echo "LASH_LIBS := `pkg-config --libs lash-1.0`" >> make.conf
+  echo "LASH_CFLAGS := -DUSE_LASH `pkg-config --cflags lash-1.0`" >> make.conf )
+
+echo "-- Configuration complete."

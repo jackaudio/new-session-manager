@@ -253,7 +253,7 @@ public:
             _r = new Range( _range );
         }
 
-    void length_drag ( void )
+    void end_drag ( void )
         {
             _range = *_r;
             delete _r;
@@ -262,33 +262,6 @@ public:
             delete _drag;
             _drag = NULL;
         }
-
-/*     void */
-/*     start ( nframes_t where ) */
-/*         { */
-
-/*             if  ( ! selected() ) */
-/*             { */
-/*                 redraw(); */
-/*                 _r->start = where; */
-/*             } */
-/*             else */
-/*             { */
-/*                 long d = where - _r->start; */
-
-/*                 for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ ) */
-/*                 { */
-/*                     (*i)->redraw(); */
-
-/*                     if ( d < 0 ) */
-/*                         (*i)->_r->start -= 0 - d; */
-/*                     else */
-/*                         (*i)->_r->start += d; */
-
-/*                 } */
-/*             } */
-/*         } */
-
 
     int dispatch ( int m );
 

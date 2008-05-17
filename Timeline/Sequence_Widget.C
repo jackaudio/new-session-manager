@@ -224,7 +224,7 @@ Sequence_Widget::handle ( int m )
         case FL_RELEASE:
             if ( _drag )
             {
-                length_drag();
+                end_drag();
                 _log.release();
             }
 

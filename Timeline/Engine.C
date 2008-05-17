@@ -30,6 +30,7 @@
 
 Engine::Engine ( )
 {
+    _freewheeling = false;
     _client = NULL;
     _buffers_dropped = 0;
     _xruns = 0;
@@ -63,6 +64,12 @@ Engine::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_po
     ((Engine*)arg)->timebase( state, nframes, pos, new_pos );
 }
 
+void
+Engine::freewheel ( int starting, void *arg )
+{
+    ((Engine*)arg)->freewheel( starting );
+}
+
 
 
 void
@@ -80,6 +87,16 @@ Engine::xrun ( void )
     ++_xruns;
 
     return 0;
+}
+
+/* THREAD: RT */
+void
+Engine::freewheel ( bool starting )
+{
+    _freewheeling = starting;
+
+    if ( _freewheeling )
+        FATAL( "Freewheeling mode is unimplemented" );
 }
 
 /* THREAD: RT */
@@ -185,6 +202,14 @@ Engine::process ( nframes_t nframes )
 }
 
 
+/** enter or leave freehweeling mode */
+void
+Engine::freewheeling ( bool yes )
+{
+    if ( jack_set_freewheel( _client, yes ) )
+        WARNING( "Unkown error while setting freewheeling mode" );
+}
+
 int
 Engine::init ( void )
 {
@@ -195,6 +220,7 @@ Engine::init ( void )
 
     set_callback( process );
     set_callback( xrun );
+    set_callback( freewheel );
 
     /* FIXME: should we wait to register this until after the project
      has been loaded (and we have disk threads running)? */

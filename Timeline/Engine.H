@@ -43,6 +43,7 @@ class Engine : public Mutex
     int _buffers_dropped;                                       /* buffers dropped because of locking */
     nframes_t _sample_rate;
     volatile int _xruns;
+    volatile bool _freewheeling;
 
     static int process ( nframes_t nframes, void *arg );
     int process ( nframes_t nframes );
@@ -52,6 +53,8 @@ class Engine : public Mutex
     int xrun ( void );
     static void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos, void *arg );
     void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos );
+    static void freewheel ( int yes, void *arg );
+    void freewheel ( bool yes );
 
     Engine ( const Engine &rhs );
     Engine & operator = ( const Engine &rhs );
@@ -76,6 +79,8 @@ public:
     nframes_t sample_rate ( void ) const { return _sample_rate; }
     int xruns ( void ) const { return _xruns; };
     int dropped ( void ) const { return _buffers_dropped; }
+    bool freehweeling ( void ) const { return _freewheeling; }
+    void freewheeling ( bool yes );
 
     float cpu_load ( void ) const { return jack_cpu_load( _client ); }
 };

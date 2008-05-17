@@ -185,7 +185,7 @@ else if ( ! Project::open( name ) )
 	fl_alert( "Could not open \\"%s\\" as a Non-DAW project!", name );
 	
 	// we are in a somewhar ambiguous state now with no project open.
-}} selected
+}}
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -203,7 +203,7 @@ Loggable::compact();}
             xywh {0 0 74 25} deactivate
           } {
             MenuItem {} {
-              label Project
+              label Project selected
               xywh {0 0 40 25}
             }
             MenuItem {} {

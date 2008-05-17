@@ -110,6 +110,10 @@ system_colors[ 2 ] = (Fl_Color)Fl::get_color( FL_BACKGROUND2_COLOR  );
 
 Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );
 
+fl_message_icon()->box( FL_RSHADOW_BOX );
+fl_message_icon()->labelcolor( FL_BLACK );
+fl_message_icon()->color( FL_RED );
+fl_message_font( FL_HELVETICA, 18 );
 
 
 std::list <const char *> formats;
@@ -174,14 +178,14 @@ if ( ! name )
 	
 if ( ! Project::validate( name ) )
 {
-	fl_alert( "\\"%s\\" does not appear to be a valid Non-DAW project!", name );
+	fl_alert( "The path \\"%s\\"\\ndoes not refer to a valid Non-DAW project!", name );
 }
 else if ( ! Project::open( name ) )
 {
 	fl_alert( "Could not open \\"%s\\" as a Non-DAW project!", name );
 	
 	// we are in a somewhar ambiguous state now with no project open.
-}}
+}} selected
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -776,7 +780,7 @@ while ( _window->shown() )
 		fl_alert( "Error creating project!" );
 
 	_window->hide();
-}} selected
+}}
         xywh {455 140 80 35}
       }
       Fl_File_Input _directory {

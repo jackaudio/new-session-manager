@@ -87,6 +87,7 @@ ensure_dirs ( void )
 
 #include <FL/Fl_Shared_Image.H>
 
+
 int
 main ( int argc, char **argv )
 {

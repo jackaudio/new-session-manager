@@ -47,7 +47,6 @@ Loggable::open ( const char *filename )
         return false;
     }
 
-
     /* replay log */
     {
         char buf[BUFSIZ];

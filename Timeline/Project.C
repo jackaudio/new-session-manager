@@ -35,6 +35,8 @@ project state belongs to Timeline and other classes. */
 
 #include "TLE.H" // all this just for load and save...
 
+#include <FL/filename.H>
+
 extern TLE *tle;
 
 /* FIXME: wrong place for this */
@@ -44,6 +46,7 @@ extern TLE *tle;
 
 #include "debug.h"
 char Project::_name[256];
+char Project::_path[512];
 bool Project::_is_open = false;
 
 void
@@ -78,6 +81,9 @@ exists ( const char *name )
 bool
 Project::close ( void )
 {
+    if ( ! open() )
+        return true;
+
     tle->save_timeline_settings();
 
     Loggable::close();
@@ -85,6 +91,8 @@ Project::close ( void )
     write_info();
 
     _is_open = false;
+
+    *Project::_name = '\0';
 
     return true;
 }
@@ -132,28 +140,53 @@ Project::read_info ( void )
     return true;
 }
 
-
+/** ensure a project is valid before opening it... */
 bool
-Project::open ( const char *name )
+Project::validate ( const char *name )
 {
+    bool r = true;
+
+    char pwd[512];
+
+    fl_filename_absolute( pwd, sizeof( pwd ), "." );
+
     if ( chdir( name ) )
     {
         WARNING( "Cannot change to project dir \"%s\"", name );
         return false;
     }
 
-    if ( ! exists( "history" ) ||
+    if ( ! exists( "info" ) ||
+         ! exists( "history" ) ||
          ! exists( "sources" ) )
 //         ! exists( "options" ) )
     {
         WARNING( "Not a Non-DAW project: \"%s\"", name );
-        return false;
+        r = false;
     }
+
+    chdir( pwd );
+
+    return r;
+}
+
+bool
+Project::open ( const char *name )
+{
+    if ( ! validate( name ) )
+        return false;
+
+    close();
+
+    chdir( name );
 
     if ( ! Loggable::open( "history" ) )
         FATAL( "error opening journal" );
 
     set_name( name );
+
+    *_path = '\0';
+    fl_filename_absolute( _path, sizeof( _path ), "." );
 
     read_info();
 
@@ -167,13 +200,13 @@ Project::open ( const char *name )
 bool
 Project::create ( const char *name, const char *template_name )
 {
-    close();
-
     if ( exists( name ) )
     {
         WARNING( "Project already exists" );
         return false;
     }
+
+    close();
 
     if ( mkdir( name, 0777 ) )
     {
@@ -186,12 +219,15 @@ Project::create ( const char *name, const char *template_name )
 
     mkdir( "sources", 0777 );
 
+    creat( "info", 0666 );
     creat( "history", 0666 );
 
     /* TODO: copy template */
 
     if ( open( name ) )
     {
+        write_info();
+
         /* add the bare essentials */
         timeline->beats_per_minute( 0, 120 );
         timeline->time( 0, 4, 4 );

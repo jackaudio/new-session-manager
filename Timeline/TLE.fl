@@ -35,8 +35,7 @@ decl {\#include <FL/Fl_File_Chooser.H>} {}
 
 decl {\#include <FL/Fl.H>} {} 
 
-decl {\#include <Fl/Fl_Shared_Image.H>} {selected
-} 
+decl {\#include <Fl/Fl_Shared_Image.H>} {} 
 
 decl {extern char project_display_name[256];} {global
 } 
@@ -170,9 +169,14 @@ main_window->redraw();}
             label {&Open}
             callback {const char *name = fl_dir_chooser( "Open Project", NULL, NULL );
 
-Project::close();
-
-if ( ! Project::open( name ) )
+if ( ! name )
+	return;
+	
+if ( ! Project::validate( name ) )
+{
+	fl_alert( "\\"%s\\" does not appear to be a valid Non-DAW project!", name );
+}
+else if ( ! Project::open( name ) )
 {
 	fl_alert( "Could not open \\"%s\\" as a Non-DAW project!", name );
 	
@@ -768,20 +772,11 @@ while ( _window->shown() )
 	
 	snprintf( pat, sizeof( pat ), "%s/%s", _directory->value(), _name->value() );
 
-//	if ( ! fl_filename_exists( pat ) )
-	{
+	if ( ! Project::create( pat, _template->text( _template->value() ) ) )
+		fl_alert( "Error creating project!" );
 
-		if ( ! Project::create( pat,  _template->text( _template->value() ) ) )
-			fl_alert( "Error opening project!" );
-
-		_window->hide();
-	}
-//	else
-//	{
-//		fl_alert( "A file already exists at that location. Choose a differnt name." );
-//		
-//	}
-}}
+	_window->hide();
+}} selected
         xywh {455 140 80 35}
       }
       Fl_File_Input _directory {

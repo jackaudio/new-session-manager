@@ -25,6 +25,7 @@ class Project
 
     static bool _is_open;
     static char _name[256];
+    static char _path[512];
 
 public:
 
@@ -33,6 +34,7 @@ public:
     static const char *name ( void ) { return Project::_name; }
     static void set_name ( const char *name );
     static bool close ( void );
+    static bool validate ( const char *name );
     static bool open ( const char *name );
     static bool open ( void ) { return _is_open; }
     static bool create ( const char *name, const char *template_name );

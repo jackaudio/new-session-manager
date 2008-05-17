@@ -252,32 +252,6 @@ Timeline::time ( nframes_t when, int bpb, int note_type )
     time_track->add( new Time_Point( when, bpb, note_type ) );
 }
 
-/* struct BBT */
-/* { */
-/*     int bar, beat, tick; */
-
-/*     BBT ( int bar, int beat, int tick ) : bar( bar ), beat( beat ), tick( tick ) */
-/*         { */
-/*         } */
-/* }; */
-
-/* /\** returns the BBT value for timestamp /when/ by examining the tempo/time maps *\/ */
-/* BBT */
-/* Timeline::bbt ( nframes_t when ) */
-/* { */
-/*     Tempo_Sequence *tempo = (Tempo_Sequence*)rulers->child( 0 ); */
-
-/*     BBT bbt; */
-
-/*     for ( list <Sequence_Widget *>::const_iterator i = tempo.widgets.begin(); */
-/*           i != tempo.widgets.end(); ++i ) */
-/*     { */
-/*         Tempo_Point *p = *i; */
-
-/*     } */
-/* } */
-
-
 
 /************/
 /* Snapping */

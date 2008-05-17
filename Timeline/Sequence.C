@@ -212,37 +212,43 @@ Sequence::add ( Sequence_Widget *r )
     sort();
 }
 
+static nframes_t
+abs_diff ( nframes_t n1, nframes_t n2 )
+{
+    return n1 > n2 ? n1 - n2 : n2 - n1;
+}
+
 /* snap /r/ to nearest edge */
 void
 Sequence::snap ( Sequence_Widget *r )
 {
     const int snap_pixels = 10;
+    const int snap_frames = timeline->x_to_ts( snap_pixels );
 
+    /* snap to other widgets */
     if ( Timeline::snap_magnetic )
     {
+        const int rx1 = r->start();
+        const int rx2 = r->start() + r->length();
 
-        const int rx1 = r->x();
-        const int rx2 = r->x() + r->w();
-
-
-        for ( list <Sequence_Widget*>::iterator i = _widgets.begin(); i != _widgets.end(); i++ )
+        for ( list <Sequence_Widget*>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
         {
             const Sequence_Widget *w = (*i);
 
             if ( w == r )
                 continue;
 
-            const int wx1 = w->x();
-            const int wx2 = w->x() + w->w();
+            const int wx1 = w->start();
+            const int wx2 = w->start() + w->length();
 
-            if ( abs( rx1 - wx2 ) < snap_pixels )
+            if ( abs_diff( rx1, wx2 ) < snap_frames )
             {
                 r->start( w->start() + w->length() + 1 );
 
                 return;
             }
 
-            if ( abs( rx2 - wx1 ) < snap_pixels )
+            if ( abs_diff( rx2, wx1 ) < snap_frames )
             {
                 r->start( ( w->start() - r->length() ) - 1 );
 
@@ -253,11 +259,9 @@ Sequence::snap ( Sequence_Widget *r )
 
     nframes_t f;
 
+    /* snap to beat/bar lines */
     if ( timeline->nearest_line( r->start(), &f ) )
-    {
-//        printf( "snap frame is %lu\n", f );
         r->start( f );
-    }
 }
 
 int

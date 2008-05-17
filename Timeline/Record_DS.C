@@ -213,7 +213,6 @@ Record_DS::start ( nframes_t frame )
 void
 Record_DS::stop ( nframes_t frame )
 {
-
     if ( ! _recording )
     {
         printf( "programming error: attempt to stop recording when no recording is being made\n" );

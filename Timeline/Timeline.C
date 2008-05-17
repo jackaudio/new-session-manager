@@ -1167,12 +1167,14 @@ Timeline::record ( void )
 void
 Timeline::stop ( void )
 {
+    nframes_t frame = transport->frame;
+
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
 
         if ( t->armed() && t->record_ds )
-            t->record_ds->stop( transport->frame );
+            t->record_ds->stop( frame );
     }
 
     Loggable::block_end();

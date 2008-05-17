@@ -62,6 +62,20 @@ struct Range
             length += n;
         }
 
+    void
+    set_left ( nframes_t f )
+        {
+            offset += f - start;
+            length -= f - start;
+            start = f;
+        }
+
+    void
+    set_right ( nframes_t f )
+        {
+            length = f - start;
+        }
+
     Range ( ) : start( 0 ), offset( 0 ), length( 0 )
         {
         }

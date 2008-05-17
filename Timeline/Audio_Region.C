@@ -865,14 +865,14 @@ Audio_Region::write ( nframes_t nframes )
 bool
 Audio_Region::finalize ( nframes_t frame )
 {
+    _range.length = frame - _range.start;
+
     log_end();
 
     _clip->close();
     _clip->open();
 
     /* FIXME: should we attempt to truncate the file? */
-
-    _range.length = frame - _range.start;
 
     redraw();
 

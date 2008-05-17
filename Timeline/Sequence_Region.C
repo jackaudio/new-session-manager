@@ -92,6 +92,11 @@ Sequence_Region::trim ( enum trim_e t, int X )
 
             _r->trim_left( 0 - td );
 
+            nframes_t f;
+            /* snap to beat/bar lines */
+            if ( timeline->nearest_line( _r->start, &f ) )
+                _r->set_left( f );
+
             break;
         }
         case RIGHT:
@@ -108,6 +113,11 @@ Sequence_Region::trim ( enum trim_e t, int X )
                 td = _r->length - timeline->x_to_ts( 1 );
 
             _r->trim_right( 0 - td );
+
+            nframes_t f;
+            /* snap to beat/bar lines */
+            if ( timeline->nearest_line( _r->start + _r->length, &f ) )
+                _r->set_right( f );
 
             break;
         }

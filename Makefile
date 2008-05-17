@@ -9,7 +9,7 @@
 
 VERSION := 0.5.0
 
-all: makedepend FL Timeline Mixer
+all: FL Timeline Mixer
 
 make.conf: configure
 	@ ./configure
@@ -27,7 +27,7 @@ CXXFLAGS += $(LASH_CFLAGS) -DINSTALL_PREFIX=\"$(prefix)\" -DVERSION=\"$(VERSION)
 include scripts/colors
 
 .C.o:
-	@ echo -n "Compiling: "; echo $(BOLD)$(YELLOW)$<$(SGR0); true
+	@ echo "Compiling: $(BOLD)$(YELLOW)$<$(SGR0)"
 	@ $(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 %.C : %.fl
@@ -39,7 +39,7 @@ include FL/makefile.inc
 include Timeline/makefile.inc
 include Mixer/makefile.inc
 
-SRCS:=$(FL_SRCS) $(Timeline_SRCS) $(Mixer_SRCS)
+SRCS:=$(Timeline_SRCS) $(FL_SRCS) $(Mixer_SRCS)
 OBJS:=$(FL_OBJS) $(Timeline_OBJS) $(Mixer_OBJS)
 
 # FIXME: isn't there a better way?
@@ -48,10 +48,9 @@ $(OBJS): make.conf
 TAGS: $(SRCS)
 	etags $(SRCS)
 
-#makedepend: $(SRCS) Makefile
 makedepend: $(SRCS)
 	@ echo -n Checking dependencies...
-	@ makedepend -f- -- $(CXXFLAGS) -- $(SRCS) > makedepend 2>/dev/null && echo done.
+	@ makedepend -f- -- $(CXXFLAGS) -I. -IFL -ITimeline -IMixer -- $(SRCS) > makedepend 2>/dev/null && echo $(DONE)
 
 .PHONEY: clean config
 

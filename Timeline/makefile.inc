@@ -36,7 +36,7 @@ Timeline/Transport.C \
 Timeline/Waveform.C \
 Timeline/dsp.C \
 Timeline/main.C \
-debug.C
+debug.C \
 
 Timeline_OBJS:=$(Timeline_SRCS:.C=.o)
 
@@ -53,8 +53,3 @@ Timeline: Timeline/timeline
 
 Timeline_clean:
 	rm -f $(Timeline_OBJS) Timeline/timeline
-
-# valgrind:
-#  valgrind ./timeline
-
-# include makedepend

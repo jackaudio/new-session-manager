@@ -574,11 +574,8 @@ Peaks::finish_writing ( void )
     _peak_writer = NULL;
 
     /* now fill in the rest of the cache */
-    make_peaks_mipmap();
-
-/*     if ( ! fork() ) */
-/*         exit( make_peaks_mipmap() ); */
-
+    if ( ! fork() )
+        exit( make_peaks_mipmap() );
 }
 
 /* THREAD: IO */

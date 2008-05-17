@@ -182,6 +182,8 @@ Record_DS::disk_thread ( void )
 #ifndef AVOID_UNNECESSARY_COPYING
     delete[] cbuf;
 #endif
+
+    _thread = NULL;
 }
 
 

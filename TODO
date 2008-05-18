@@ -5,6 +5,12 @@
 
 ; General
 
+* improve or get rid of the transport.valid test at initialization time.
+* deal with dropped ticks from timebase master better when running as slave.
+* add 'compaction' action to remove unnamed phrases/patterns and
+   ajdust their numbers approrpiately (offline)?
+* fix transport seeking to the middle of a phrase/pattern in Sequence
+   Mode.
 * allow deletion and renumbering of individual patterns and phrases.
 * add mode for disconnected operation. This is especially important
    for the situation where there is a timebase master when Non is

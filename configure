@@ -1,119 +1,27 @@
 #!/bin/sh
 #
 # Copyright (C) 2008 Jonathan Moore Liles
-#
+# This file is licensed under version 2 of the GPL.
 
-. scripts/colors
-
-
-fatal ()
-{
-    echo "$BOLD$RED$*$SGR0"
-    exit 255
-}
-
-ask ()
-{
-   echo -n "$1 [$BOLD$3$SGR0] "
-   read R
-   echo "${2}=${R:-$3}" >> make.conf
-}
-
-ok ()
-{
-    echo "$BOLD${GREEN}ok${SGR0}."
-}
-
-failed ()
-{
-    echo "$BOLD${RED}failed!${SGR0}"
-    rm -f make.conf
-}
+. scripts/config-funcs
 
 [ $# -gt 0 ] && fatal "This is not an autoconf script. Run it without any options and you will be prompted."
 
-echo "-- Configuration:"
+begin
 
-# get the old values
-if [ -f make.conf ]
-then
-    OIFS="$IFS"
-    IFS=''
-    eval "`sed -n '/^## options/{ : i; /^## libs/{ q }; p; n; b i }' make.conf`"
-    IFS="$OIFS"
-fi
-
-echo "# This is a generated file. Any changes may be lost!" > make.conf
-
-echo "## options" >> make.conf
+begin_options
 
 ask "Install prefix?" prefix ${prefix:-/usr/local}
 ask "Use LASH?" USE_LASH ${USE_LASH:-yes}
 ask "Build for debugging?" MAINTAINER_MODE ${MAINTAINER_MODE:-no}
 
-echo "## libs/flags" >> make.conf
+begin_tests
 
-# tests
+require_FLTK 1 1 7
+require_command FLUID fluid
+require_package JACK 0.103.0 jack
+require_package libsndfile 1.0.17 sndfile
 
-echo -n "Checking for ${BOLD}FLTK${SGR0}..."
+[ $USE_LASH = yes ] && require_package LASH 0.5.4 lash-1.0
 
-FLTK_VERSION=`fltk-config --version`
-
-FLTK_VERSION_MAJOR=`echo $FLTK_VERSION | cut -d'.' -f1`
-FLTK_VERSION_MINOR=`echo $FLTK_VERSION | cut -d'.' -f2`
-FLTK_VERSION_PATCH=`echo $FLTK_VERSION | cut -d'.' -f3`
-
-if ! ( [ $FLTK_VERSION_MAJOR -ge 1 ] && [ $FLTK_VERSION_MINOR -ge 1 ] && [ $FLTK_VERSION_PATCH -ge 7 ] )
-then
-    failed
-    fatal "The installed FLTK version ($FLTK_VERSION) is too old."
-else
-    ok
-fi
-
-echo "FLTK_LIBS=`fltk-config --use-images --ldflags`" >> make.conf
-echo "FLTK_CFLAGS=`fltk-config --cflags`" >> make.conf
-
-check_command ()
-{
-    echo -n "Checking for ${BOLD}$1${SGR0}..."
-
-    if ! [ -x "`which $2`" ]
-    then
-	failed
-	fatal "Command $1 not found."
-    else
-	ok
-    fi
-}
-
-check_command FLUID fluid
-
-# 
-
-check ()
-{
-    echo -n "Checking for $BOLD$1$SGR0..."
-    if ! pkg-config --exists $3
-    then
-    	failed
-	fatal "Required package $1 doesn't appear to be installed."
-    elif ! pkg-config --atleast-version $2 $3
-    then
-        failed
-        fatal "The installed version of $1 (`pkg-config --mod-version $3`) is too old."
-    fi
-
-    ok
-    return 0
-}
-
-check JACK 0.103.0 jack && echo "JACK_LIBS=`pkg-config --libs jack`" >> make.conf
-check libSNDFILE 1.0.17 sndfile && echo "SNDFILE_LIBS=`pkg-config --libs sndfile`" >> make.conf
-
-grep -q 'USE_LASH=yes' make.conf &&
-check LASH 0.5.4 lash-1.0 &&
-( echo "LASH_LIBS=`pkg-config --libs lash-1.0`" >> make.conf
-  echo "LASH_CFLAGS=-DUSE_LASH `pkg-config --cflags lash-1.0`" >> make.conf )
-
-echo "-- Configuration complete."
+end

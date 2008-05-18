@@ -32,7 +32,7 @@ LASH_Client::~LASH_Client ( )
     /* TODO: anything? */
 }
 
-#ifdef USE_LASH
+#ifdef HAVE_LASH
 
 #include <lash/lash.h>
 

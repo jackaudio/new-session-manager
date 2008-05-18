@@ -43,7 +43,7 @@ Timeline_OBJS:=$(Timeline_SRCS:.C=.o)
 # $(Timeline_OBJS): Makefile
 # $(Timeline_OBJS): make.conf
 
-Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS) $(LASH_LIBS)
+Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(libsndfile_LIBS) $(LASH_LIBS)
 
 Timeline/timeline: $(Timeline_OBJS) FL
 	@ echo -n Linking timeline...

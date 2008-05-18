@@ -1,0 +1,141 @@
+#!/bin/sh
+#
+# Copyright (C) 2008 Jonathan Moore Liles
+# This file is licensed under version 2 of the GPL.
+
+. scripts/colors
+
+# support functions for 'configure' scripts.
+
+fatal ()
+{
+    echo "$BOLD$RED$*$SGR0" > /dev/stderr
+    exit 255
+}
+
+ask ()
+{
+   local answer default
+
+   default="`eval echo \\$$2`"
+   default=${default:-$3}
+
+   echo -n "$BLACK$BOLD::$SGR0 $1 [$BOLD$3$SGR0] "
+   read answer
+   echo "${2}=${answer:-$default}" >> make.conf
+}
+
+ok ()
+{
+    echo "$BOLD${GREEN}ok${SGR0}."
+}
+
+failed ()
+{
+    echo "$BOLD${RED}failed!${SGR0}" > /dev/stderr
+    rm -f make.conf
+}
+
+extract_options ()
+{
+    local OIFS
+
+    if [ -f make.conf ]
+    then
+        OIFS="$IFS"
+        IFS=''
+        eval "`sed -n '/^## options/{ : i; /^## libs/{ q }; p; n; b i }' make.conf`"
+        IFS="$OIFS"
+    fi
+}
+
+begin ()
+{
+    echo -n "Checking sanity..."
+    require_command pkg-config pkg-config > /dev/null
+    require_command sed sed > /dev/null
+    ok
+}
+
+begin_options ()
+{
+    # get the old values
+    extract_options
+
+    echo "# This is a generated file. Any changes may be lost!" > make.conf
+    echo "## options" >> make.conf
+
+    echo "--- Configuration required ---"
+}
+
+begin_tests ()
+{
+    echo "## libs/flags" >> make.conf
+    extract_options
+}
+
+append ()
+{
+    echo "$1" >> make.conf
+}
+
+end ()
+{
+    echo "--- Configuration complete ---"
+}
+
+require_command ()
+{
+    echo -n "Checking for ${BOLD}$1${SGR0}..."
+
+    if ! [ -x "`which $2`" ]
+    then
+	failed
+	fatal "Command $1 not found."
+    else
+	ok
+    fi
+}
+
+require_package ()
+{
+    echo -n "Checking for $BOLD$1$SGR0..."
+    if ! pkg-config --exists $3
+    then
+    	failed
+	fatal "Required package $1 doesn't appear to be installed."
+    elif ! pkg-config --atleast-version $2 $3
+    then
+        failed
+        fatal "The installed version of $1 (`pkg-config --mod-version $3`) is too old."
+    fi
+
+    append "${1}_LIBS=`pkg-config --libs $3`"
+    append "${1}_CFLAGS=-DHAVE_${1} `pkg-config --cflags $3`"
+
+    ok
+    return 0
+}
+
+
+require_FLTK ()
+{
+    echo -n "Checking for ${BOLD}FLTK${SGR0}..."
+
+    FLTK_VERSION=`fltk-config --version`
+
+    FLTK_VERSION_MAJOR=`echo $FLTK_VERSION | cut -d'.' -f1`
+    FLTK_VERSION_MINOR=`echo $FLTK_VERSION | cut -d'.' -f2`
+    FLTK_VERSION_PATCH=`echo $FLTK_VERSION | cut -d'.' -f3`
+
+    if ! ( [ $FLTK_VERSION_MAJOR -ge $1 ] && [ $FLTK_VERSION_MINOR -ge $2 ] && [ $FLTK_VERSION_PATCH -ge $3 ] )
+    then
+        failed
+        fatal "The installed FLTK version ($FLTK_VERSION) is too old."
+    else
+        ok
+    fi
+
+    append "FLTK_LIBS=`fltk-config --use-images --ldflags`"
+    append "FLTK_CFLAGS=`fltk-config --cflags`"
+}

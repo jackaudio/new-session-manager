@@ -5,11 +5,6 @@
 
 . scripts/colors
 
-if [ $# -gt 0 ]
-then
-    echo This is not an autoconf script. Run it without any options and you will be prompted.
-    exit 255
-fi
 
 fatal ()
 {
@@ -26,13 +21,16 @@ ask ()
 
 ok ()
 {
-    echo "$BOLD${GREEN}ok$SGR0."
+    echo "$BOLD${GREEN}ok${SGR0}."
 }
 
 failed ()
 {
-    echo "$BOLD${RED}failed!$SGR0"
+    echo "$BOLD${RED}failed!${SGR0}"
+    rm -f make.conf
 }
+
+[ $# -gt 0 ] && fatal "This is not an autoconf script. Run it without any options and you will be prompted."
 
 echo "-- Configuration:"
 
@@ -65,7 +63,7 @@ FLTK_VERSION_MAJOR=`echo $FLTK_VERSION | cut -d'.' -f1`
 FLTK_VERSION_MINOR=`echo $FLTK_VERSION | cut -d'.' -f2`
 FLTK_VERSION_PATCH=`echo $FLTK_VERSION | cut -d'.' -f3`
 
-if ! ( [ $FLTK_VERSION_MAJOR -ge 1 ] && [ $FLTK_VERSION_MINOR -ge 1 ] && [ $FLTK_VERSION_PATCH -ge 8 ] )
+if ! ( [ $FLTK_VERSION_MAJOR -ge 1 ] && [ $FLTK_VERSION_MINOR -ge 1 ] && [ $FLTK_VERSION_PATCH -ge 7 ] )
 then
     failed
     fatal "The installed FLTK version ($FLTK_VERSION) is too old."
@@ -74,16 +72,36 @@ else
 fi
 
 echo "FLTK_LIBS=`fltk-config --use-images --ldflags`" >> make.conf
+echo "FLTK_CFLAGS=`fltk-config --cflags`" >> make.conf
+
+check_command ()
+{
+    echo -n "Checking for ${BOLD}$1${SGR0}..."
+
+    if ! [ -x "`which $2`" ]
+    then
+	failed
+	fatal "Command $1 not found."
+    else
+	ok
+    fi
+}
+
+check_command FLUID fluid
 
 # 
 
 check ()
 {
     echo -n "Checking for $BOLD$1$SGR0..."
-    if ! pkg-config --atleast-version $2 $3
+    if ! pkg-config --exists $3
+    then
+    	failed
+	fatal "Required package $1 doesn't appear to be installed."
+    elif ! pkg-config --atleast-version $2 $3
     then
         failed
-        fatal "$1 not installed or too old."
+        fatal "The installed version of $1 (`pkg-config --mod-version $3`) is too old."
     fi
 
     ok

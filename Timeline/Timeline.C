@@ -23,7 +23,7 @@
 #include "Audio_Sequence.H"
 #include "Control_Sequence.H"
 #include <FL/Fl_Scrollbar.H>
-
+#include "Scalebar.H"
 #include "Annotation_Sequence.H"
 
 // #include <FL/Fl_Image.H>

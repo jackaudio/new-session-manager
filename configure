@@ -11,9 +11,9 @@ begin
 
 begin_options
 
-ask "Install prefix?" prefix ${prefix:-/usr/local}
-ask "Use LASH?" USE_LASH ${USE_LASH:-yes}
-ask "Build for debugging?" MAINTAINER_MODE ${MAINTAINER_MODE:-no}
+ask "Install prefix?" prefix /usr/local
+ask "Use LASH?" USE_LASH yes
+ask "Build for debugging?" MAINTAINER_MODE no
 
 begin_tests
 

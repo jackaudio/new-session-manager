@@ -20,14 +20,14 @@ ask ()
    default="`eval echo \\$$2`"
    default=${default:-$3}
 
-   echo -n "$BLACK$BOLD::$SGR0 $1 [$BOLD$3$SGR0] "
+   echo -n "$BLACK$BOLD::$SGR0 $1 [$BOLD${default}$SGR0] "
    read answer
    echo "${2}=${answer:-$default}" >> make.conf
 }
 
 ok ()
 {
-    echo "$BOLD${GREEN}ok${SGR0}."
+    echo "$BOLD${GREEN}ok${SGR0}"
 }
 
 failed ()

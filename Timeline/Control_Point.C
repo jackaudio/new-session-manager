@@ -19,6 +19,8 @@
 
 #include "Control_Point.H"
 
+#include <FL/fl_draw.H>
+
 Control_Point::Control_Point ( Sequence *t, nframes_t when, float y )
 {
     _sequence = t;

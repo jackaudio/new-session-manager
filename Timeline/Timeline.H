@@ -19,13 +19,6 @@
 
 #pragma once
 
-#include <FL/Fl_Scroll.H>
-#include <FL/Fl_Pack.H>
-#include <FL/Fl_Scrollbar.H>
-#include <FL/Fl_Widget.H>
-#include <FL/fl_draw.H>
-
-#include "Scalebar.H"
 
 /* FIXME: this class needs a lot of cleaning up. Too many public
  * members etc. */
@@ -36,17 +29,24 @@
 
 #include <math.h>
 #include <assert.h>
+#include <list>
+
+class Fl_Scroll;
+class Fl_Pack;
+class Fl_Scrollbar;
+class Fl_Widget;
 
 class Timeline;
 extern Timeline *timeline;
-
-#include "Sequence.H"
 
 struct BBT;
 class Tempo_Sequence;
 class Time_Sequence;
 class Annotation_Sequence;
 class Track;
+class Scalebar;
+class Sequence;
+class Sequence_Widget;
 
 // disables double-buffering to make unnecessary redrawing more apparent
 // #define DEBUG_TIMELINE_DRAWING

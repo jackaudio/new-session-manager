@@ -19,6 +19,8 @@
 
 #include "Sequence_Point.H"
 
+#include <FL/fl_draw.H>
+
 void
 Sequence_Point::get ( Log_Entry &e ) const
 {

@@ -19,6 +19,7 @@
 
 #include <FL/Fl_Tooltip.H>
 #include <FL/fl_ask.H>
+#include <FL/fl_draw.H>
 
 #include "Annotation_Region.H"
 

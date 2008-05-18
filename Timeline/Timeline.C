@@ -17,6 +17,14 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+
+#include <FL/Fl_Scroll.H>
+#include <FL/Fl_Pack.H>
+#include <FL/Fl_Scrollbar.H>
+#include <FL/Fl_Widget.H>
+#include <FL/fl_draw.H>
+
+
 #include "Timeline.H"
 #include "Tempo_Sequence.H"
 #include "Time_Sequence.H"
@@ -24,6 +32,7 @@
 #include "Control_Sequence.H"
 #include <FL/Fl_Scrollbar.H>
 #include "Scalebar.H"
+#include "Sequence.H"
 #include "Annotation_Sequence.H"
 
 // #include <FL/Fl_Image.H>

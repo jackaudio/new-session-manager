@@ -17,15 +17,9 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-/* TODO:
-
-   What if we solve the continuous-modification/sync issue by making a
-   copy of the 'pushed' widget, and operating on that instead (hiding
-   the original), then when the widget is released, copy its data into
-   the original?
-
- */
 #include "Sequence_Widget.H"
+
+#include <FL/fl_draw.H>
 
 list <Sequence_Widget *> Sequence_Widget::_selection;
 Sequence_Widget * Sequence_Widget::_current = NULL;
@@ -187,6 +181,19 @@ Sequence_Widget::dispatch ( int m )
     else
         return handle( m );
 }
+
+void
+Sequence_Widget::draw ( void )
+{
+    draw_box();
+}
+
+void
+Sequence_Widget::draw_box ( void )
+{
+    fl_draw_box( box(), x(), y(), w(), h(), selected() ? FL_MAGENTA : _box_color );
+}
+
 
 /* base hanlde just does basic dragging */
 int

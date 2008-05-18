@@ -29,6 +29,9 @@
 
 #include <math.h>
 
+#include <algorithm>
+using std::min;
+using std::max;
 
 bool Waveform::fill = true;
 bool Waveform::outline = true;

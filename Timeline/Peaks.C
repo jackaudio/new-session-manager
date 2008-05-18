@@ -44,6 +44,10 @@
 #include "Transport.H" // for .recording
 
 #include <list>
+#include <algorithm>
+using std::min;
+using std::max;
+
 
 /* whether to cache peaks at multiple resolutions on disk to
  * drastically improve performance */

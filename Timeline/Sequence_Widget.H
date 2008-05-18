@@ -24,7 +24,8 @@
 #include "Timeline.H"
 #include <list>
 #include <algorithm>
-using namespace std;
+using std::min;
+using std::max;
 
 class Sequence_Widget;
 
@@ -113,7 +114,7 @@ struct position_info
 class Sequence_Widget : public Loggable
 {
 
-    static list <Sequence_Widget *> _selection;                    /* all the widgets making up the selection */
+    static std::list <Sequence_Widget *> _selection;                    /* all the widgets making up the selection */
 
     /* FIXME: is this not the same as /pushed/? */
     static Sequence_Widget * _current;                             /* the widget initiating events that affect the selection */
@@ -355,18 +356,8 @@ public:
                 _sequence->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
         }
 
-    /* just draw a simple box */
-    virtual void
-    draw_box ( void )
-        {
-            fl_draw_box( box(), x(), y(), w(), h(), selected() ? FL_MAGENTA : _box_color );
-        }
-
-    virtual void
-    draw ( void )
-        {
-            draw_box();
-        }
+    virtual void draw_box ( void );
+    virtual void draw ( void );
 
     bool
     operator< ( const Sequence_Widget & rhs ) const

@@ -33,7 +33,7 @@ ask ()
        esac
    fi
 
-   echo "${2}=${A:-$D}" >> make.conf
+   append "${2}=${A:-$D}"
 }
 
 ok ()
@@ -56,14 +56,26 @@ using ()
 
 extract_options ()
 {
-    local OIFS
+    local line;
 
     if [ -f make.conf ]
     then
-        OIFS="$IFS"
-        IFS=''
-        eval "`sed -n '/^## options/{ : i; /^## libs/{ q }; p; n; b i }' make.conf`"
-        IFS="$OIFS"
+        {
+            while read line
+            do
+                [ "$line" = "## options" ] && break
+            done
+
+            while read line
+            do
+                if [ "$line" = "## libs" ]
+                then
+                    break
+                else
+                    eval "$line"
+                fi
+            done
+        } < make.conf
     fi
 }
 
@@ -71,7 +83,6 @@ begin ()
 {
     echo -n "Checking sanity..."
     require_command pkg-config pkg-config > /dev/null
-    require_command sed sed > /dev/null
     ok
 }
 
@@ -80,15 +91,16 @@ begin_options ()
     # get the old values
     extract_options
 
-    echo "# This file was automatically generated on `date`. Any changes may be lost!" > make.conf
-    echo "## options" >> make.conf
+    echo > make.conf
+    append "# This file was automatically generated on `date`. Any changes may be lost!"
+    append "## options"
 
     echo "--- Configuration required ---"
 }
 
 begin_tests ()
 {
-    echo "## libs" >> make.conf
+    append "## libs"
     extract_options
 }
 
@@ -100,6 +112,7 @@ append ()
 end ()
 {
     echo "--- Configuration complete ---"
+    touch make.conf
 }
 
 require_command ()

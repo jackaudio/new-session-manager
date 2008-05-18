@@ -3,7 +3,7 @@
 # Copyright 2007-2008 Jonathan Moore Liles
 # This file is licencesd under version 2 of the GPL.
 
-VERSION := 1.9.1
+VERSION := 1.9.2
 
 all: make.conf non-sequencer
 

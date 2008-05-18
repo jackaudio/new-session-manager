@@ -102,6 +102,11 @@ install: all
 	@ mkdir -p "$(DOCUMENT_PATH)"
 	@ cp doc/*.html doc/*.png "$(DOCUMENT_PATH)"
 	@ echo "$(DONE)"
+ifneq ($(USE_DEBUG),yes)
+	@ echo -n "Stripping..."
+	@ strip $(prefix)/bin/non-sequencer
+	@ echo "$(DONE)"
+endif
 
 dist:
 	git archive --prefix=non-sequencer-$(VERSION)/ v$(VERSION) | bzip2 > non-sequencer-$(VERSION).tar.bz2

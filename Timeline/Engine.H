@@ -79,7 +79,7 @@ public:
     nframes_t sample_rate ( void ) const { return _sample_rate; }
     int xruns ( void ) const { return _xruns; };
     int dropped ( void ) const { return _buffers_dropped; }
-    bool freehweeling ( void ) const { return _freewheeling; }
+    bool freewheeling ( void ) const { return _freewheeling; }
     void freewheeling ( bool yes );
 
     float cpu_load ( void ) const { return jack_cpu_load( _client ); }

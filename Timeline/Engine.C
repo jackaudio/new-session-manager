@@ -95,8 +95,10 @@ Engine::freewheel ( bool starting )
 {
     _freewheeling = starting;
 
-    if ( _freewheeling )
-        FATAL( "Freewheeling mode is unimplemented" );
+    if ( starting )
+        DMESSAGE( "entering freewheeling mode" );
+    else
+        DMESSAGE( "leaving freewheeling mode" );
 }
 
 /* THREAD: RT */
@@ -174,29 +176,38 @@ Engine::process ( nframes_t nframes )
 {
     transport->poll();
 
-    if ( ! trylock() )
+    if ( freewheeling() )
     {
-        /* the data structures we need to access here (tracks and
-         * their ports, but not track contents) may be in an
-         * inconsistent state at the moment. Just punt and drop this
-         * buffer. */
-        ++_buffers_dropped;
-        return 0;
+        /* freewheeling mode/export. We're actually running
+           non-RT. Assume that everything is quiescent, locking is
+           unecessary and do I/O synchronously */
+        if ( timeline )
+            timeline->process( nframes );
+
+        /* because we're going faster than realtime. */
+        timeline->wait_for_buffers();
     }
+    else
+    {
+        if ( ! trylock() )
+        {
+            /* the data structures we need to access here (tracks and
+             * their ports, but not track contents) may be in an
+             * inconsistent state at the moment. Just punt and drop this
+             * buffer. */
+            ++_buffers_dropped;
+            return 0;
+        }
 
-/*     if ( ! transport->rolling ) */
-/*         timeline->silence( nframes ); */
-/*         return 0; */
+        /* handle chicken/egg problem */
+        if ( timeline )
+            /* this will initiate the process() call graph for the various
+             * number and types of tracks, which will in turn send data out
+             * the appropriate ports.  */
+            timeline->process( nframes );
 
-
-    /* handle chicken/egg problem */
-    if ( timeline )
-        /* this will initiate the process() call graph for the various
-         * number and types of tracks, which will in turn send data out
-         * the appropriate ports.  */
-        timeline->process( nframes );
-
-    unlock();
+        unlock();
+    }
 
     return 0;
 }

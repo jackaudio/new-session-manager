@@ -1284,6 +1284,15 @@ Timeline::total_output_buffer_percent ( void )
     return r / cnt;
 }
 
+/** wait for I/O threads to fill their buffers */
+void
+Timeline::wait_for_buffers ( void )
+{
+    while ( total_output_buffer_percent() + total_input_buffer_percent() < 200 )
+        usleep( 5000 );
+}
+
+
 int
 Timeline::total_playback_xruns ( void )
 {

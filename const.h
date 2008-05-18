@@ -29,11 +29,11 @@ const unsigned int PPQN = 480;
 /* interval between GUI updates for playhead movement, etc. */
 const double TRANSPORT_POLL_INTERVAL = 0.05;
 
-const char APP_NAME[]   = "Non";
+const char APP_NAME[]   = "Non-Sequencer";
 const char APP_TITLE[]  = "The Non-Sequencer";
 const char COPYRIGHT[]  = "Copyright (c) 2007-2008 Jonathan Moore Liles";
 
-#define PACKAGE "non"
+#define PACKAGE "non-sequencer"
 
 /* directories */
 

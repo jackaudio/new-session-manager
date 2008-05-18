@@ -5,7 +5,7 @@
 
 VERSION := 1.9.1
 
-all: make.conf non
+all: make.conf non-sequencer
 
 make.conf: configure
 	@ ./configure
@@ -69,11 +69,11 @@ OBJS=$(SRCS:.C=.o)
 .PHONEY: all clean install dist valgrind config
 
 clean:
-	rm -f non makedepend $(OBJS)
+	rm -f non-sequencer makedepend $(OBJS)
 	@ echo "$(DONE)"
 
 valgrind:
-	valgrind ./non
+	valgrind ./non-sequencer
 
 include scripts/colors
 
@@ -88,7 +88,7 @@ $(OBJS): make.conf
 
 DONE:=$(BOLD)$(GREEN)done$(SGR0)
 
-non: $(OBJS)
+non-sequencer: $(OBJS)
 	@ echo -n "Linking..."
 	@ rm -f $@
 	@ $(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@ || echo "$(BOLD)$(RED)Error!$(SGR0)"
@@ -96,7 +96,7 @@ non: $(OBJS)
 
 install: all
 	@ echo -n "Installing..."
-	@ install non $(prefix)/bin
+	@ install non-sequencer $(prefix)/bin
 	@ mkdir -p "$(SYSTEM_PATH)"
 	@ cp -r instruments "$(SYSTEM_PATH)"
 	@ mkdir -p "$(DOCUMENT_PATH)"

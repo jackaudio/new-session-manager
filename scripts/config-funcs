@@ -15,14 +15,25 @@ fatal ()
 
 ask ()
 {
-   local answer default
+   local A D
 
-   default="`eval echo \\$$2`"
-   default=${default:-$3}
+   D="`eval echo \\$$2`"
+   D=${D:-$3}
 
-   echo -n "$BLACK$BOLD::$SGR0 $1 [$BOLD${default}$SGR0] "
-   read answer
-   echo "${2}=${answer:-$default}" >> make.conf
+   echo -n "$BLACK$BOLD::$SGR0 $1 [$BOLD${D}$SGR0] "
+   read A
+   A=${A:-$D}
+
+   if [ "$3" = yes ] || [ "$3" = no ]
+     then
+       case "$A" in
+           no | n | N) A=no ;;
+           yes | y | Y) A=yes ;;
+           * ) fatal "Invalid response. Must be 'yes' or 'no'" ;;
+       esac
+   fi
+
+   echo "${2}=${A:-$D}" >> make.conf
 }
 
 ok ()
@@ -34,6 +45,13 @@ failed ()
 {
     echo "$BOLD${RED}failed!${SGR0}" > /dev/stderr
     rm -f make.conf
+}
+
+using ()
+{
+    [ "`eval echo \\$USE_$1`" = yes ]
+
+    return $?
 }
 
 extract_options ()
@@ -62,7 +80,7 @@ begin_options ()
     # get the old values
     extract_options
 
-    echo "# This is a generated file. Any changes may be lost!" > make.conf
+    echo "# This file was automatically generated on `date`. Any changes may be lost!" > make.conf
     echo "## options" >> make.conf
 
     echo "--- Configuration required ---"
@@ -70,7 +88,7 @@ begin_options ()
 
 begin_tests ()
 {
-    echo "## libs/flags" >> make.conf
+    echo "## libs" >> make.conf
     extract_options
 }
 
@@ -117,7 +135,6 @@ require_package ()
     return 0
 }
 
-
 require_FLTK ()
 {
     echo -n "Checking for ${BOLD}FLTK${SGR0}..."
@@ -126,9 +143,9 @@ require_FLTK ()
 
     FLTK_VERSION_MAJOR=`echo $FLTK_VERSION | cut -d'.' -f1`
     FLTK_VERSION_MINOR=`echo $FLTK_VERSION | cut -d'.' -f2`
-    FLTK_VERSION_PATCH=`echo $FLTK_VERSION | cut -d'.' -f3`
+    FLTK_VERSION_MICRO=`echo $FLTK_VERSION | cut -d'.' -f3`
 
-    if ! ( [ $FLTK_VERSION_MAJOR -ge $1 ] && [ $FLTK_VERSION_MINOR -ge $2 ] && [ $FLTK_VERSION_PATCH -ge $3 ] )
+    if ! ( [ $FLTK_VERSION_MAJOR -ge $1 ] && [ $FLTK_VERSION_MINOR -ge $2 ] && [ $FLTK_VERSION_MICRO -ge $3 ] )
     then
         failed
         fatal "The installed FLTK version ($FLTK_VERSION) is too old."

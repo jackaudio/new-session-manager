@@ -12,8 +12,8 @@ begin
 begin_options
 
 ask "Install prefix?" prefix /usr/local
-ask "Use LASH?" USE_LASH yes
-ask "Build for debugging?" MAINTAINER_MODE no
+ask "Require LASH?" USE_LASH yes
+ask "Build for debugging?" USE_DEBUG no
 
 begin_tests
 
@@ -22,6 +22,6 @@ require_command FLUID fluid
 require_package JACK 0.103.0 jack
 require_package libsndfile 1.0.17 sndfile
 
-[ $USE_LASH = yes ] && require_package LASH 0.5.4 lash-1.0
+using LASH && require_package LASH 0.5.4 lash-1.0
 
 end

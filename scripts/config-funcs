@@ -1,0 +1,203 @@
+#!/bin/sh
+#
+# Copyright (C) 2008 Jonathan Moore Liles
+# This file is licensed under version 2 of the GPL.
+
+. scripts/colors
+
+# support functions for 'configure' scripts.
+
+
+fatal ()
+{
+    echo "$BOLD$RED$*$SGR0" > /dev/stderr
+    exit 255
+}
+
+[ $# -gt 0 ] && fatal "This is not an autoconf script. Run it without any options and you will be prompted."
+
+ask ()
+{
+   local A D
+
+   D="`eval echo \\$$2`"
+   D=${D:-$3}
+
+   echo -n "$BLACK$BOLD::$SGR0 $1 [$BOLD${D}$SGR0] "
+   read A
+   A=${A:-$D}
+
+   if [ "$3" = yes ] || [ "$3" = no ]
+     then
+       case "$A" in
+           no | n | N) A=no ;;
+           yes | y | Y) A=yes ;;
+           * ) fatal "Invalid response. Must be 'yes' or 'no'" ;;
+       esac
+   fi
+
+   append "${2}=${A:-$D}"
+}
+
+ok ()
+{
+    echo "$BOLD${GREEN}ok${SGR0}"
+}
+
+failed ()
+{
+    echo "$BOLD${RED}failed!${SGR0}" > /dev/stderr
+    rm -f make.conf
+}
+
+using ()
+{
+    [ "`eval echo \\$USE_$1`" = yes ]
+
+    return $?
+}
+
+extract_options ()
+{
+    local line;
+
+    if [ -f make.conf ]
+    then
+        {
+            while read line
+            do
+                [ "$line" = "## options" ] && break
+            done
+
+            while read line
+            do
+                if [ "$line" = "## libs" ]
+                then
+                    break
+                else
+                    eval "$line"
+                fi
+            done
+        } < make.conf
+    fi
+}
+
+begin ()
+{
+    echo -n "Checking sanity..."
+    require_command pkg-config pkg-config > /dev/null
+    ok
+}
+
+begin_options ()
+{
+    # get the old values
+    extract_options
+
+    echo > make.conf
+    append "# This file was automatically generated on `date`. Any changes may be lost!"
+    append "## options"
+
+    echo "--- Configuration required ---"
+}
+
+begin_tests ()
+{
+    append "## libs"
+    extract_options
+}
+
+append ()
+{
+    echo "$1" >> make.conf
+}
+
+end ()
+{
+    echo "--- Configuration complete ---"
+    touch make.conf
+}
+
+require_command ()
+{
+    echo -n "Checking for ${BOLD}$1${SGR0}..."
+
+    if ! [ -x "`which $2`" ]
+    then
+	failed
+	fatal "Command $1 not found."
+    else
+	ok
+    fi
+}
+
+require_package ()
+{
+    echo -n "Checking for $BOLD$1$SGR0..."
+    if ! pkg-config --exists $3
+    then
+    	failed
+	fatal "Required package $1 doesn't appear to be installed."
+    elif ! pkg-config --atleast-version $2 $3
+    then
+        failed
+        fatal "The installed version of $1 (`pkg-config --mod-version $3`) is too old."
+    fi
+
+    append "${1}_LIBS=`pkg-config --libs $3`"
+    append "${1}_CFLAGS=-DHAVE_${1} `pkg-config --cflags $3`"
+
+    ok
+    return 0
+}
+
+_test_version ()
+{
+    [ $1 $4 $5 ] && [ $2 $4 $6 ] && [ $3 $4 $7 ]
+}
+
+test_version ()
+{
+    local IFS
+    IFS='.'
+
+    if  [ $2 != -ge ] && [ $2 != -le ]
+    then
+       fatal "Syntax error"
+    fi
+
+    _test_version $1 $2 $3
+}
+
+version_of ()
+{
+    echo `pkg-config --modversion $1`
+}
+
+require_FLTK ()
+{
+    local use
+
+    echo -n "Checking for ${BOLD}FLTK${SGR0}..."
+
+    FLTK_VERSION=`fltk-config --version`
+
+    if ! test_version $FLTK_VERSION -ge $1
+    then
+        failed
+        fatal "The installed FLTK version ($FLTK_VERSION) is too old."
+    else
+        ok
+    fi
+
+    use=
+
+    while [ $# -gt 1 ]
+    do
+        shift 1
+        use="$use --use-$1"
+    done
+
+    append "FLTK_LIBS=`fltk-config $use --ldflags`"
+    append "FLTK_CFLAGS=`fltk-config $use --cflags`"
+}

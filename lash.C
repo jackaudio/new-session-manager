@@ -24,7 +24,7 @@
 
 // TODO: produce Save_Project events...
 
-#ifndef USE_LASH
+#ifndef HAVE_LASH
 
 Lash::Lash ( ) {}
 bool Lash::init ( int *argc, char ***argv ) { return true; }

@@ -21,14 +21,14 @@
 
 #include "config.h"
 
-#ifdef USE_LASH
+#ifdef HAVE_LASH
 #include <lash/lash.h>
 #endif
 
 class Lash
 {
 
-#ifdef USE_LASH
+#ifdef HAVE_LASH
     lash_client_t *_client;
 #endif
 

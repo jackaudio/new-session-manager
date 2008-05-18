@@ -3,31 +3,38 @@
 # Copyright 2007-2008 Jonathan Moore Liles
 # This file is licencesd under version 2 of the GPL.
 
-# config
-prefix=/usr/local/
+VERSION := 1.9.1
+
+all: make.conf non
+
+make.conf: configure
+	@ ./configure
+
+config:
+	@ ./configure
+
+-include make.conf
 
 SYSTEM_PATH=$(prefix)/share/non-sequencer/
 DOCUMENT_PATH=$(prefix)/share/doc/non-sequencer/
-USE_LASH=1
 
-VERSION=1.9.1
-
-# Debugging
-CFLAGS:=-O0 -ggdb -fno-omit-frame-pointer -Wall
-# Production
-# CFLAGS:=-O3 -fomit-frame-pointer -DNDEBUG
+ifeq ($(USE_DEBUG),yes)
+	CXXFLAGS := -pipe -ggdb -Wall -Wextra -Wnon-virtual-dtor -Wno-missing-field-initializers -O0 -fno-rtti -fno-exceptions
+else
+	CXXFLAGS := -pipe -O3 -fno-rtti -fno-exceptions -DNDEBUG
+endif
 
 CFLAGS+=-DVERSION=\"$(VERSION)\" \
 	-DINSTALL_PREFIX=\"$(prefix)\" \
 	-DSYSTEM_PATH=\"$(SYSTEM_PATH)\" \
 	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\"
 
-CXXFLAGS:=$(CFLAGS) -fno-exceptions -fno-rtti `fltk-config --cxxflags` `pkg-config jack --atleast-version 0.105 || echo -DJACK_MIDI_PROTO_API` `pkg-config jack --cflags` `pkg-config --cflags sigc++-2.0`
-LIBS=`pkg-config --libs jack` `fltk-config --use-images --ldflags` `pkg-config --libs sigc++-2.0`
+CXXFLAGS:=$(CFLAGS) $(CXXFLAGS) $(FLTK_CFLAGS) $(sigcpp_CFLAGS) $(LASH_CFLAGS)
 
-ifeq ($(USE_LASH),1)
-	LIBS+=-llash
-	CXXFLAGS+=-DUSE_LASH `pkg-config --cflags lash-1.0`
+LIBS:=$(FLTK_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(sigcpp_LIBS)
+
+ifeq ($(JACK_MIDI_PROTO_API),yes)
+	CXXFLAGS+=-DJACK_MIDI_PROTO_API
 endif
 
 # uncomment this line to print each playback event to the console (not RT safe)
@@ -59,31 +66,33 @@ SRCS= \
 
 OBJS=$(SRCS:.C=.o)
 
-.PHONEY: all clean install dist valgrind
-
-all: non makedepend
+.PHONEY: all clean install dist valgrind config
 
 clean:
 	rm -f non makedepend $(OBJS)
-	@ echo Done
+	@ echo "$(DONE)"
 
 valgrind:
 	valgrind ./non
 
+include scripts/colors
+
 .C.o:
-	@ echo -n "Compiling: "; tput bold; tput setaf 3; echo $<; tput sgr0; true
+	@ echo "Compiling: $(BOLD)$(YELLOW)$<$(SGR0)"
 	@ $(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.C : %.fl
-	@ cd gui && fluid -c ../$<
+	@ cd `dirname $<` && fluid -c ../$<
 
-$(OBJS): Makefile
+$(OBJS): make.conf
+
+DONE:=$(BOLD)$(GREEN)done$(SGR0)
 
 non: $(OBJS)
 	@ echo -n "Linking..."
 	@ rm -f $@
-	@ $(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@ || (tput bold; tput setaf 1; echo Error!; tput sgr0)
-	@ if test -x $@; then tput bold; tput setaf 2; echo done; tput sgr0; test -x "$(prefix)/bin/$@" || echo "You must now run 'make install' (as the appropriate user) to install the executable, documentation and other support files in order for the program to function properly."; fi
+	@ $(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@ || echo "$(BOLD)$(RED)Error!$(SGR0)"
+	@ if test -x $@; then echo "$(DONE)"; test -x "$(prefix)/bin/$@" || echo "You must now run 'make install' (as the appropriate user) to install the executable, documentation and other support files in order for the program to function properly."; fi
 
 install: all
 	@ echo -n "Installing..."
@@ -92,8 +101,7 @@ install: all
 	@ cp -r instruments "$(SYSTEM_PATH)"
 	@ mkdir -p "$(DOCUMENT_PATH)"
 	@ cp doc/*.html doc/*.png "$(DOCUMENT_PATH)"
-	@ tput bold; tput setaf 2; echo done; tput sgr0
-#	make -C doc install
+	@ echo "$(DONE)"
 
 dist:
 	git archive --prefix=non-sequencer-$(VERSION)/ v$(VERSION) | bzip2 > non-sequencer-$(VERSION).tar.bz2
@@ -101,9 +109,8 @@ dist:
 TAGS: $(SRCS)
 	etags $(SRCS)
 
-makedepend: $(SRCS)
+makedepend: make.conf $(SRCS)
 	@ echo -n Checking dependencies...
-	@ makedepend -f- -- $(CXXFLAGS) -- $(SRCS) > makedepend 2>/dev/null && echo done.
+	@ makedepend -f- -- $(CXXFLAGS) -- $(SRCS) > makedepend 2>/dev/null && echo "$(DONE)"
 
-
-include makedepend
+-include makedepend

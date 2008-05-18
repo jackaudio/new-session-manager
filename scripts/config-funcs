@@ -161,7 +161,17 @@ test_version ()
     local IFS
     IFS='.'
 
+    if  [ $2 != -ge ] && [ $2 != -le ]
+    then
+       fatal "Syntax error"
+    fi
+
     _test_version $1 $2 $3
+}
+
+version_of ()
+{
+    echo `pkg-config --modversion $1`
 }
 
 require_FLTK ()

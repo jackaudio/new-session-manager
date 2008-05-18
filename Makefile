@@ -9,7 +9,7 @@
 
 VERSION := 0.5.0
 
-all: FL Timeline Mixer
+all: make.conf FL Timeline Mixer
 
 make.conf: configure
 	@ ./configure
@@ -17,7 +17,7 @@ make.conf: configure
 -include make.conf
 
 ifeq ($(USE_DEBUG),yes)
-	CXXFLAGS := -pipe -ggdb -Wextra -Wno-missing-field-initializers -O0 -fno-rtti -fno-exceptions
+	CXXFLAGS := -pipe -ggdb -Wall -Wextra -Wnon-virtual-dtor -Wno-missing-field-initializers -O0 -fno-rtti -fno-exceptions
 else
 	CXXFLAGS := -pipe -O3 -fno-rtti -fno-exceptions -DNDEBUG
 endif
@@ -48,7 +48,7 @@ $(OBJS): make.conf
 TAGS: $(SRCS)
 	etags $(SRCS)
 
-makedepend: $(SRCS)
+makedepend: make.conf $(SRCS)
 	@ echo -n Checking dependencies...
 	@ makedepend -f- -- $(CXXFLAGS) -I. -IFL -ITimeline -IMixer -- $(SRCS) > makedepend 2>/dev/null && echo $(DONE)
 

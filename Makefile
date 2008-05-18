@@ -57,8 +57,6 @@ makedepend: $(SRCS)
 clean: FL_clean Timeline_clean Mixer_clean
 
 config:
-#	@ rm -f make.conf
 	@ ./configure
-	@ $(MAKE) -s
 
 -include makedepend

@@ -7,11 +7,14 @@
 
 # support functions for 'configure' scripts.
 
+
 fatal ()
 {
     echo "$BOLD$RED$*$SGR0" > /dev/stderr
     exit 255
 }
+
+[ $# -gt 0 ] && fatal "This is not an autoconf script. Run it without any options and you will be prompted."
 
 ask ()
 {
@@ -148,17 +151,28 @@ require_package ()
     return 0
 }
 
+_test_version ()
+{
+    [ $1 $4 $5 ] && [ $2 $4 $6 ] && [ $3 $4 $7 ]
+}
+
+test_version ()
+{
+    local IFS
+    IFS='.'
+
+    _test_version $1 $2 $3
+}
+
 require_FLTK ()
 {
+    local use
+
     echo -n "Checking for ${BOLD}FLTK${SGR0}..."
 
     FLTK_VERSION=`fltk-config --version`
 
-    FLTK_VERSION_MAJOR=`echo $FLTK_VERSION | cut -d'.' -f1`
-    FLTK_VERSION_MINOR=`echo $FLTK_VERSION | cut -d'.' -f2`
-    FLTK_VERSION_MICRO=`echo $FLTK_VERSION | cut -d'.' -f3`
-
-    if ! ( [ $FLTK_VERSION_MAJOR -ge $1 ] && [ $FLTK_VERSION_MINOR -ge $2 ] && [ $FLTK_VERSION_MICRO -ge $3 ] )
+    if ! test_version $FLTK_VERSION -ge $1
     then
         failed
         fatal "The installed FLTK version ($FLTK_VERSION) is too old."
@@ -166,6 +180,14 @@ require_FLTK ()
         ok
     fi
 
-    append "FLTK_LIBS=`fltk-config --use-images --ldflags`"
-    append "FLTK_CFLAGS=`fltk-config --cflags`"
+    use=
+
+    while [ $# -gt 1 ]
+    do
+        shift 1
+        use="$use --use-$1"
+    done
+
+    append "FLTK_LIBS=`fltk-config $use --ldflags`"
+    append "FLTK_CFLAGS=`fltk-config $use --cflags`"
 }

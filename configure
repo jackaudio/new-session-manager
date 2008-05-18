@@ -5,8 +5,6 @@
 
 . scripts/config-funcs
 
-[ $# -gt 0 ] && fatal "This is not an autoconf script. Run it without any options and you will be prompted."
-
 begin
 
 begin_options
@@ -17,7 +15,7 @@ ask "Build for debugging?" USE_DEBUG no
 
 begin_tests
 
-require_FLTK 1 1 7
+require_FLTK 1.1.7 images
 require_command FLUID fluid
 require_package JACK 0.103.0 jack
 require_package libsndfile 1.0.17 sndfile

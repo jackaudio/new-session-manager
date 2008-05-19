@@ -614,6 +614,13 @@ Timeline::draw ( void )
         draw_child( *hscroll );
         draw_child( *vscroll );
 
+
+        if ( p1 != p2 )
+        {
+            draw_cursor( p1, FL_BLUE );
+            draw_cursor( p2, FL_GREEN );
+        }
+
         redraw_overlay();
 
 
@@ -684,6 +691,7 @@ done:
     _old_xposition = xoffset;
     _old_yposition = _yposition;
 
+
 }
 
 void
@@ -702,9 +710,9 @@ Timeline::draw_cursor ( nframes_t frame, Fl_Color color )
     fl_color( color );
 
     const int y = rulers->y() + rulers->h();
-    const int h = this->h() - hscroll->h();
+    const int h = this->h() - hscroll->h() - 1;
 
-    fl_push_clip( Track::width(), y, tracks->w(), h );
+    fl_push_clip( tracks->x() + Track::width(), y, tracks->w(), h );
 
     fl_line( x, y, x, h );
 
@@ -744,12 +752,6 @@ Timeline::draw_cursor ( nframes_t frame, Fl_Color color )
 void
 Timeline::draw_playhead ( void )
 {
-    if ( p1 != p2 )
-    {
-        draw_cursor( p1, FL_BLUE );
-        draw_cursor( p2, FL_GREEN );
-    }
-
     draw_cursor( transport->frame, FL_RED );
 }
 
@@ -936,6 +938,9 @@ Timeline::handle ( int m )
                         p1 = xoffset + x_to_ts( X );
                     }
 
+                    /* FIXME: only needs to damage the location of the old cursor! */
+                    redraw();
+
                     return 1;
                 }
                 case ']':
@@ -947,6 +952,8 @@ Timeline::handle ( int m )
                         p2 = xoffset + x_to_ts( X );
                     }
 
+                    /* FIXME: only needs to damage the location of the old cursor! */
+                    redraw();
                     return 1;
                 }
                 default:

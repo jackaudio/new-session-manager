@@ -301,10 +301,10 @@ Sequence_Widget::handle ( int m )
             {
                 const nframes_t of = timeline->x_to_offset( X );
 
-/*                 if ( of >= _drag->start ) */
-/*                 { */
-
-                start( of - _drag->start );
+                if ( of >= _drag->start )
+                    start( of - _drag->start );
+                else
+                    start( 0 );
 
                 if ( Sequence_Widget::_current == this )
                     sequence()->snap( this );

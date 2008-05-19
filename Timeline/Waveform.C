@@ -41,19 +41,25 @@ bool Waveform::logarithmic = true;
 /* TODO: split the variations into separate functions. eg, plain,
  * outlined, filled, polygonal, rectified. */
 
-/* TODO: this should be made completely independent of /timeline/ so that it can be used for other purposes (file previews) */
+
+void
+Waveform::scale ( Peak *pbuf, int npeaks, float gain )
+{
+    /* scale it */
+    for ( int j = npeaks; j--; )
+    {
+        pbuf[ j ].min *= gain;
+        pbuf[ j ].max *= gain;
+    }
+}
 
 /** draw a portion of /clip/'s waveform. coordinates are the portion to draw  */
 void
 Waveform::draw ( int X, int Y, int W, int H,
-                 Peak *pbuf, int peaks, int skip,
+                 const Peak *pbuf, int peaks, int skip,
                  Fl_Color color )
 {
-//    fl_push_clip( X, Y, W, H );
-
     int j;
-
-//    int start = timeline->ts_to_x( _r->start ) + (X - ox);
 
     int start = 0;
 
@@ -71,17 +77,10 @@ Waveform::draw ( int X, int Y, int W, int H,
 
             const float diff = fabs( p.max - p.min );
 
-/*             if ( Waveform::logarithmic ) */
-/*             { */
-/*                 p.max = 10.0f * log10f( p.max ); */
-/*                 p.min = 10.0f * log10f( p.min ); */
-/*             } */
-
             if ( diff > 2.0f )
                 fl_color( FL_RED );
             else
                 if ( Waveform::vary_color )
-//                    fl_color( fl_color_average( FL_WHITE, color, diff / 2.0f ) );
                     fl_color( fl_color_average( FL_WHITE, color, diff * 0.5f ) );
                 else
                     fl_color( color );
@@ -89,14 +88,6 @@ Waveform::draw ( int X, int Y, int W, int H,
             const int ty = mid - ( halfheight * p.min );
             const int by = mid - ( halfheight * p.max );
             fl_line( x, ty, x, by );
-
-/*             if ( outline ) */
-/*             { */
-/*                 fl_color( fl_darker( fl_darker( color ) ) ); */
-/*                 fl_line( x, ty - 2, x, ty ); */
-/*                 fl_line( x, by + 2, x, by ); */
-/*             } */
-
         }
     }
 
@@ -104,11 +95,9 @@ Waveform::draw ( int X, int Y, int W, int H,
 
     if ( Waveform::outline )
     {
-
         fl_color( fl_darker( fl_darker( color ) ) );
 
         fl_line_style( FL_SOLID | FL_CAP_FLAT, 2 );
-//        fl_line_style( FL_SOLID, 0 );
 
         fl_begin_line();
 
@@ -129,8 +118,5 @@ Waveform::draw ( int X, int Y, int W, int H,
         fl_end_line();
 
         fl_line_style( FL_SOLID, 0 );
-
     }
-
-//    fl_pop_clip();
 }

@@ -35,8 +35,9 @@ public:
     static bool vary_color;
     static bool logarithmic;
 
+    static void scale ( Peak *pbuf, int npeaks, float gain );
     static void draw ( int X, int Y, int W, int H,
-                       Peak *pbuf, int peaks, int skip,
+                       const Peak *pbuf, int peaks, int skip,
                        Fl_Color color );
 
 };

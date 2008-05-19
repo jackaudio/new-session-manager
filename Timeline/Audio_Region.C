@@ -597,13 +597,7 @@ Audio_Region::draw ( void )
 
         int ch = (h() - Fl::box_dh( box() ))  / channels;
 
-
-        /* scale it */
-        for ( int j = peaks * channels; j--; )
-        {
-            pbuf[ j ].min *= _scale;
-            pbuf[ j ].max *= _scale;
-        }
+        Waveform::scale( pbuf, peaks * channels, _scale );
 
 
         for ( int i = 0; i < channels; ++i )

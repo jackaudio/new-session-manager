@@ -846,7 +846,10 @@ Audio_Region::write ( nframes_t nframes )
         if ( W )
         {
             ++W;
+            Fl::lock();
             sequence()->damage( FL_DAMAGE_ALL, x() + w() - W, y(), W, h() );
+            Fl::awake();
+            Fl::unlock();
         }
     }
 

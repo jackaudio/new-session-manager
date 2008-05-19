@@ -92,7 +92,10 @@ Track::capture_format = o->menu()[ o->value() ].label();} {}
 
 main_window->show();
 
-Fl::run();} {}
+Fl::lock();
+
+Fl::run();} {selected
+    }
   }
   Function {TLE()} {open
   } {
@@ -675,7 +678,7 @@ xruns_output->value( engine->xruns() );} {}
         xywh {-4 122 513 427}
       } {
         Fl_Group {} {
-          label Credits open selected
+          label Credits open
           xywh {-4 147 507 394}
         } {
           Fl_Box {} {

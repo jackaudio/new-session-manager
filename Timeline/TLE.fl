@@ -203,7 +203,7 @@ Loggable::compact();}
             xywh {0 0 74 25} deactivate
           } {
             MenuItem {} {
-              label Project selected
+              label Project
               xywh {0 0 40 25}
             }
             MenuItem {} {
@@ -667,15 +667,15 @@ xruns_output->value( engine->xruns() );} {}
   }
   Function {make_about_dialog()} {open
   } {
-    Fl_Window {} {
+    Fl_Window about_dialog_window {
       label About open
-      xywh {733 400 495 525} type Double visible
+      private xywh {625 208 495 525} type Double visible
     } {
       Fl_Tabs {} {open
-        xywh {-4 122 507 419}
+        xywh {-4 122 513 427}
       } {
         Fl_Group {} {
-          label Credits open
+          label Credits open selected
           xywh {-4 147 507 394}
         } {
           Fl_Box {} {
@@ -687,19 +687,24 @@ Nobody planned. Nobody helped.
  You can help now by donating time, money,
 and/or replacing the rest of Linux Audio
 with fast, light, reliable alternatives.}
-            xywh {42 203 416 260} labelsize 17
+            xywh {42 203 418 262} box ROUNDED_BOX color 46 labelsize 18
           }
         }
         Fl_Group {} {
           label License open
-          xywh {-1 157 504 384} hide
+          xywh {-1 157 510 392} hide
         } {
           Fl_Box {} {
-            label {Copyright (C) 2008 Jonathan Moore Liles
+            label {Copyright (C) 2008 Jonathan Moore Liles}
+            xywh {50 168 410 37} labeltype SHADOW_LABEL labelfont 1 labelsize 18
+          }
+          Fl_Box {} {
+            label {This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 
- This software is released under version 3
- of the GNU General Public License (GPLv3).}
-            xywh {45 213 403 83} labelsize 17
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.}
+            xywh {10 217 475 233} box ROUNDED_BOX color 46 labelfont 1 labelsize 12 labelcolor 53 align 144
           }
         }
       }
@@ -707,6 +712,21 @@ with fast, light, reliable alternatives.}
         label {the Non-DAW (Digital Audio Workstation)}
         xywh {-1 1 499 115} align 16
         code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo.png" ) );}
+      }
+      Fl_Return_Button {} {
+        label Rock
+        callback {about_dialog_window->hide();}
+        xywh {400 480 76 30}
+      }
+      Fl_Button {} {
+        label {http://non-daw.tuxfamily.org}
+        callback {\#if ! ( FL_MAJOR_VERSION >= 1 && FL_MINOR_VERSION >= 1 && FL_PATCH_VERSION >= 8 )
+	// FIXME: got a better idea?
+	system( "x-www-browser http://non-daw.tuxfamily.org &" );
+\#else
+	fl_open_uri( "http://non-daw.tuxfamily.org" );
+\#endif}
+        xywh {125 480 245 30} color 14 labeltype SHADOW_LABEL labelcolor 6
       }
     }
   }

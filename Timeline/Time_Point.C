@@ -68,12 +68,12 @@ Time_Point::Time_Point ( ) : _time( 4, 4 )
 
 Time_Point::Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
 {
-    start( when );
-
     _make_label();
 
     timeline->time_track->add( this );
     timeline->update_tempomap();
+
+    start( when );
 
     log_create();
 }

@@ -68,12 +68,13 @@ Tempo_Point::Tempo_Point ( )
 Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
 {
     _tempo = bpm;
-    _r->start = when;
 
     _make_label();
 
     timeline->tempo_track->add( this );
     timeline->update_tempomap();
+
+    start( when );
 
     log_create();
 }

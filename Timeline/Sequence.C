@@ -186,7 +186,7 @@ Sequence::event_widget ( void )
 void
 Sequence::select_range ( int X, int W )
 {
-    nframes_t sts = timeline->xoffset + timeline->x_to_ts( X - x() );
+    nframes_t sts = x_to_offset( X );
     nframes_t ets = sts + timeline->x_to_ts( W );
 
     for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )

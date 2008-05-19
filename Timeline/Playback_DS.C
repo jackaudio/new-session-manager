@@ -82,7 +82,7 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
     if ( sequence()->play( buf, _frame, nframes, channels() ) )
         _frame += nframes;
     else
-        /* error */;
+        WARNING( "Programming error?" );
 
     timeline->unlock();
 }

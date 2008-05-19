@@ -41,7 +41,7 @@ int Track::_soloing = 0;
 const char *Track::capture_format = "Wav 24";
 
 void
-Track::cb_input_field ( Fl_Widget *w, void *v )
+Track::cb_input_field ( Fl_Widget *, void *v )
 {
     ((Track*)v)->cb_input_field();
 }

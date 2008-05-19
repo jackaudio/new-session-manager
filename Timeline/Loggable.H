@@ -234,7 +234,7 @@ protected:
     void log_destroy ( void ) const;
 
     /* leaf subclasses *must* call log_create() at the end of their copy contructors */
-    Loggable ( const Loggable &rhs )
+    Loggable ( const Loggable & )
         {
             init( true );
             /* FIXME: get a real id here!!! */

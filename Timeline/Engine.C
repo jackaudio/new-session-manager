@@ -150,7 +150,7 @@ Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
 
 /* THREAD: RT */
 void
-Engine::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos )
+Engine::timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t *pos, int )
 {
     position_info pi = timeline->solve_tempomap( pos->frame );
 

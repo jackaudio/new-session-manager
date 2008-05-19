@@ -223,7 +223,7 @@ void
 Sequence::snap ( Sequence_Widget *r )
 {
     const int snap_pixels = 10;
-    const int snap_frames = timeline->x_to_ts( snap_pixels );
+    const nframes_t snap_frames = timeline->x_to_ts( snap_pixels );
 
     /* snap to other widgets */
     if ( Timeline::snap_magnetic )

@@ -118,6 +118,6 @@ public:
     virtual int handle ( int m );
     virtual void draw ( void );
 
-    virtual nframes_t process ( nframes_t nframes ) { return 0; }
+    virtual nframes_t process ( nframes_t ) { return 0; }
 
 };

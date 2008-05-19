@@ -101,7 +101,7 @@ class Peaks
 
     mutable float _fpp;
 
-    int read_peaks ( nframes_t s, nframes_t e, int npeaks, nframes_t chunksize ) const;
+    int read_peaks ( nframes_t s, int npeaks, nframes_t chunksize ) const;
     int read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const;
     int read_source_peaks ( Peak *peaks, int npeaks, nframes_t chunksize ) const;
     int read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const;

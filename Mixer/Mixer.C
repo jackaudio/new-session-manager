@@ -36,7 +36,7 @@ Fl_Single_Window *main_window;
 #include <FL/Boxtypes.H>
 
 int
-main ( int argc, char **arv )
+main ( int argc, char **argv )
 {
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
@@ -61,7 +61,7 @@ main ( int argc, char **arv )
         o->end();
     }
     o->end();
-    o->show();
+    o->show( argc, argv );
 
     while ( 1 )
     {

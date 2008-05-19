@@ -28,8 +28,8 @@ class Tempo_Sequence : public Sequence
 protected:
 
     /* not used */
-    void get ( Log_Entry &e ) const { }
-    void set ( Log_Entry &e ) { }
+    void get ( Log_Entry & ) const { }
+    void set ( Log_Entry & ) { }
 
 public:
 

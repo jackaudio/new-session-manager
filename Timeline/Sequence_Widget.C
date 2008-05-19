@@ -106,7 +106,7 @@ Sequence_Widget::start ( nframes_t where )
 
             d = 0 - d;
 
-            if ( m <= d )
+            if ( m <= (nframes_t)d )
                 d = m;
 
             for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); ++i )

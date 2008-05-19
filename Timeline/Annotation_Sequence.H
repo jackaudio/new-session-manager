@@ -77,9 +77,9 @@ public:
             log_create();
         }
 
-    Annotation_Sequence ( int X, int Y, int W, int H ) : Sequence ( 0 )
-        {
-        }
+/*     Annotation_Sequence ( int X, int Y, int W, int H ) : Sequence ( 0 ) */
+/*         { */
+/*         } */
 
     ~Annotation_Sequence ( )
         {

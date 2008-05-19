@@ -165,7 +165,7 @@ void
 Disk_Stream::run ( void )
 {
     if ( pthread_create( &_thread, NULL, &Disk_Stream::disk_thread, this ) != 0 )
-        /* error */;
+        FATAL( "Could not create IO thread!" );
 }
 
 /* to be called when the JACK buffer size changes. */

@@ -84,29 +84,6 @@ touch ( int fd )
     fchmod( fd, st.st_mode );
 }
 
-
-static int
-nearest_power_of_two ( int v )
-{
-    int p = 1;
-    while ( 1 << p < v )
-        ++p;
-
-    return 1 << p;
-}
-
-static nframes_t
-nearest_cached_chunksize ( nframes_t chunksize )
-{
-    nframes_t r = nearest_power_of_two( chunksize );
-
-    for ( int i = Peaks::cache_levels; i--; r >>= Peaks::cache_step )
-        if ( chunksize >= r )
-            return r;
-
-    return 0;
-}
-
 
 
 Peaks::Peaks ( Audio_File *c )
@@ -128,7 +105,7 @@ Peaks::fill_buffer ( float fpp, nframes_t s, nframes_t e ) const
 {
     _fpp = fpp;
 
-    return read_peaks( s, e, (e - s) / fpp, fpp );
+    return read_peaks( s, (e - s) / fpp, fpp );
 }
 
 struct peakfile_block_header
@@ -297,6 +274,8 @@ public:
             scan( chunksize );
 
             assert( _chunksize );
+
+            return true;
         }
 
     void
@@ -337,7 +316,8 @@ public:
 
             nframes_t len = 0;
 
-            nframes_t i;
+            int i;
+
             for ( i = 0; i < npeaks; ++i )
             {
                 /* read in a buffer */
@@ -389,9 +369,6 @@ Peaks::ready ( nframes_t s, int npeaks, nframes_t chunksize ) const
 int
 Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const
 {
-
-    nframes_t ncc = nearest_cached_chunksize( chunksize );
-
     /* never try to build peaks while recording */
     if ( ! transport->recording )
     {
@@ -408,19 +385,7 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chu
     if ( ! _peakfile.open( _clip->name(),  _clip->channels(), chunksize ) )
         return 0;
 
-/*     else if ( ! _peakfile.contains( s, npeaks ) ) */
-/*     { */
-/*         /\* the best peakfile for this chunksize doesn't have the */
-/*          * peaks we need. Perhaps it's still being constructed, */
-/*          * try the next best, then give up. *\/ */
-/*         if ( ! _peakfile.open( _clip->name(), chunksize >> 1, _clip->channels() ) ) */
-/*             return 0; */
-/*     } */
-
     return _peakfile.read_peaks( peaks, s, npeaks, chunksize );
-
-    // _peakfile.close();
-
 }
 
 
@@ -479,7 +444,7 @@ Peaks::read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunk
 }
 
 int
-Peaks::read_peaks ( nframes_t s, nframes_t e, int npeaks, nframes_t chunksize ) const
+Peaks::read_peaks ( nframes_t s, int npeaks, nframes_t chunksize ) const
 {
 //    printf( "reading peaks %d @ %d\n", npeaks, chunksize );
 
@@ -494,7 +459,7 @@ Peaks::read_peaks ( nframes_t s, nframes_t e, int npeaks, nframes_t chunksize ) 
     _peakbuf.buf->chunksize = chunksize;
 
     /* FIXME: use actual minimum chunksize from peakfile! */
-    if ( chunksize < cache_minimum )
+    if ( chunksize < (nframes_t)cache_minimum )
         _peakbuf.len = read_source_peaks( _peakbuf.buf->data, s, npeaks, chunksize );
     else
         _peakbuf.len = read_peakfile_peaks( _peakbuf.buf->data, s, npeaks, chunksize );

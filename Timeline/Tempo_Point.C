@@ -156,7 +156,7 @@ public:
         }
 
     static void
-    enter_cb ( Fl_Widget *w, void *v )
+    enter_cb ( Fl_Widget *, void *v )
         {
             ((Tempo_Point_Editor*)v)->enter_cb();
         }

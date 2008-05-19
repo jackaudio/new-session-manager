@@ -233,21 +233,22 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 }
 
 
-float
-Timeline::beats_per_minute ( nframes_t when ) const
-{
 
-/*     return tempo_track->beats_per_minute( when ); */
+/* float */
+/* Timeline::beats_per_minute ( nframes_t when ) const */
+/* { */
 
-}
+/* /\*     return tempo_track->beats_per_minute( when ); *\/ */
 
-int
-Timeline::beats_per_bar ( nframes_t when ) const
-{
-    time_sig t = time_track->time( when );
+/* } */
 
-    return t.beats_per_bar;
-}
+/* int */
+/* Timeline::beats_per_bar ( nframes_t when ) const */
+/* { */
+/*     time_sig t = time_track->time( when ); */
+
+/*     return t.beats_per_bar; */
+/* } */
 
 void
 Timeline::beats_per_minute ( nframes_t when, float bpm )
@@ -502,12 +503,12 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 
 }
 
-/** just like draw mesure lines except that it also draws the BBT values.  */
-void
-Timeline::draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color )
-{
-//    render_tempomap( X, Y, W, H, color, true );
-}
+/* /\** just like draw mesure lines except that it also draws the BBT values.  *\/ */
+/* void */
+/* Timeline::draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color ) */
+/* { */
+/* //    render_tempomap( X, Y, W, H, color, true ); */
+/* } */
 
 void
 Timeline::xposition ( int X )

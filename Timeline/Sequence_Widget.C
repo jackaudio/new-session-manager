@@ -78,6 +78,54 @@ Sequence_Widget::set ( Log_Entry &e )
 
 }
 
+/** set position of widget on the timeline. */
+void
+Sequence_Widget::start ( nframes_t where )
+{
+    /* this is pretty complicated because of selection and snapping */
+
+    if  ( ! selected() )
+    {
+        redraw();
+        _r->start = where;
+    }
+    else
+    {
+        if ( this != Sequence_Widget::_current )
+            return;
+
+        long d = where - _r->start;
+
+        if ( d < 0 )
+        {
+            /* first, make sure we stop at 0 */
+            nframes_t m = (nframes_t)-1;
+
+            for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); ++i )
+                m = min( m, (*i)->_r->start );
+
+            d = 0 - d;
+
+            if ( m <= d )
+                d = m;
+
+            for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); ++i )
+            {
+                (*i)->redraw();
+                (*i)->_r->start -= d;
+            }
+        }
+        else
+        {
+            /* TODO: do like the above and disallow wrapping */
+            for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); ++i )
+            {
+                (*i)->redraw();
+                (*i)->_r->start += d;
+            }
+        }
+    }
+}
 
 void
 Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )
@@ -253,15 +301,13 @@ Sequence_Widget::handle ( int m )
             {
                 const nframes_t of = timeline->x_to_offset( X );
 
-                if ( of >= _drag->start )
-                {
-                    _r->start = of - _drag->start;
+/*                 if ( of >= _drag->start ) */
+/*                 { */
 
-                    if ( Sequence_Widget::_current == this )
-                        sequence()->snap( this );
-                }
-                else
-                    _r->start = 0;
+                start( of - _drag->start );
+
+                if ( Sequence_Widget::_current == this )
+                    sequence()->snap( this );
 
             }
 

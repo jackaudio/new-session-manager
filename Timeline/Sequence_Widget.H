@@ -326,7 +326,10 @@ public:
     void sequence ( Sequence *t ) { _sequence = t; }
 
     nframes_t start ( void ) const { return _r->start; }
-    void start ( nframes_t o ) { _r->start = o; }
+
+/*     void start ( nframes_t o ) { _r->start = o; } */
+
+    void start ( nframes_t where );
 
     void length ( nframes_t v ) { _r->length = v; }
     virtual nframes_t length ( void ) const { return _r->length; }

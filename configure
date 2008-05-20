@@ -18,7 +18,7 @@ begin_tests
 require_FLTK 1.1.7 images
 require_command FLUID fluid
 require_package JACK 0.103.0 jack
-require_package libsndfile 1.0.17 sndfile
+require_package sndfile 1.0.17 sndfile
 
 using LASH && require_package LASH 0.5.4 lash-1.0
 

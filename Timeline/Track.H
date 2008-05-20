@@ -265,6 +265,7 @@ public:
     const Audio_Region *capture ( void ) const { return _capture; }
 
     /* Engine */
+    void resize_buffers ( nframes_t nframes );
     nframes_t process ( nframes_t nframes );
     void seek ( nframes_t frame );
     void record ( nframes_t nframes );

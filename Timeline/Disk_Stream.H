@@ -59,6 +59,9 @@ protected:
     int _total_blocks; /* total number of blocks that we can  buffer */
     int _disk_io_blocks; /* the number of blocks to read/write to/from disk at once */
 
+
+    nframes_t _frame_rate;      /* used for buffer size calculations */
+
     volatile nframes_t _pending_seek; /* absolute transport position to seek to */
     volatile int _terminate;
 
@@ -70,6 +73,8 @@ protected:
     Track * track ( void ) const;
 
     static void *disk_thread ( void *arg );
+
+    void _resize_buffers ( nframes_t nframes, int channels );
 
 protected:
 
@@ -86,7 +91,8 @@ protected:
 
     virtual void disk_thread ( void ) = 0;
 
-    void flush ( bool is_output );
+    void base_flush ( bool is_output );
+    virtual void flush ( void ) = 0;
 
 public:
 
@@ -100,7 +106,7 @@ public:
 
     virtual ~Disk_Stream ( );
 
-    void resize ( nframes_t nframes );
+    void resize_buffers ( nframes_t nframes );
 
 /*     void seek ( nframes_t frame ); */
 /*     bool seek_pending ( void ); */

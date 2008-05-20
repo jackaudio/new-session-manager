@@ -52,7 +52,6 @@ size_t Disk_Stream::disk_io_kbytes = 256;
 
 Disk_Stream::Disk_Stream ( Track *track, float frame_rate, nframes_t nframes, int channels ) : _track( track )
 {
-
     assert( channels );
 
     _frame = 0;
@@ -60,20 +59,9 @@ Disk_Stream::Disk_Stream ( Track *track, float frame_rate, nframes_t nframes, in
     _terminate = false;
     _pending_seek = -1;
     _xruns = 0;
+    _frame_rate = frame_rate;
 
-    _total_blocks = frame_rate * seconds_to_buffer / nframes;
-
-    _nframes = nframes;
-
-    size_t bufsize = _total_blocks * nframes * sizeof( sample_t );
-
-    if ( disk_io_kbytes )
-        _disk_io_blocks = ( bufsize * channels ) / ( disk_io_kbytes * 1024 );
-    else
-        _disk_io_blocks = 1;
-
-    for ( int i = channels; i--; )
-        _rb.push_back( jack_ringbuffer_create( bufsize ) );
+    _resize_buffers( nframes, channels );
 
     sem_init( &_blocks, 0, _total_blocks );
 }
@@ -97,13 +85,12 @@ Disk_Stream::~Disk_Stream ( )
 /* THREAD: RT */
 /** flush buffers and reset. Must only be called from the RT thread. */
 void
-Disk_Stream::flush ( bool is_output )
+Disk_Stream::base_flush ( bool is_output )
 {
 
     /* flush buffers */
-    for ( int i = channels(); i--; )
+    for ( int i = _rb.size(); i--; )
         jack_ringbuffer_read_advance( _rb[ i ], jack_ringbuffer_read_space( _rb[ i ] ) );
-
 
 /*  sem_destroy( &_blocks ); */
 
@@ -114,7 +101,6 @@ Disk_Stream::flush ( bool is_output )
 
     if ( is_output )
     {
-
         int n;
         sem_getvalue( &_blocks, &n );
 
@@ -145,6 +131,7 @@ Disk_Stream::shutdown ( void )
     if ( _thread )
         pthread_join( _thread, NULL );
 
+    _thread = 0;
     _terminate = false;
 }
 
@@ -168,12 +155,50 @@ Disk_Stream::run ( void )
         FATAL( "Could not create IO thread!" );
 }
 
+void
+Disk_Stream::_resize_buffers ( nframes_t nframes, int channels )
+{
+    for ( int i = _rb.size(); i--; )
+        jack_ringbuffer_free( _rb[ i ] );
+
+    _rb.clear();
+
+    _nframes = nframes;
+
+    _total_blocks = _frame_rate * seconds_to_buffer / nframes;
+
+    size_t bufsize = _total_blocks * nframes * sizeof( sample_t );
+
+    if ( disk_io_kbytes )
+        _disk_io_blocks = ( bufsize * channels ) / ( disk_io_kbytes * 1024 );
+    else
+        _disk_io_blocks = 1;
+
+    for ( int i = channels; i--; )
+        _rb.push_back( jack_ringbuffer_create( bufsize ) );
+}
+
+/* THREAD: RT (non-RT)  */
 /* to be called when the JACK buffer size changes. */
 void
-Disk_Stream::resize ( nframes_t nframes )
+Disk_Stream::resize_buffers ( nframes_t nframes )
 {
     if ( nframes != _nframes )
-        /* FIXME: to something here! */;
+    {
+        DMESSAGE( "resizing buffers" );
+
+        const bool was_running = _thread;
+
+        if ( was_running )
+            shutdown();
+
+        flush();
+
+        _resize_buffers( nframes, channels() );
+
+        if ( was_running )
+            run();
+    }
 }
 
 

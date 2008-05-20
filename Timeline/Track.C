@@ -745,7 +745,15 @@ Track::seek ( nframes_t frame )
         return playback_ds->seek( frame );
 }
 
-
+/* THREAD: RT (non-RT) */
+void
+Track::resize_buffers ( nframes_t nframes )
+{
+    if ( record_ds )
+        record_ds->resize_buffers( nframes );
+    if ( playback_ds )
+        playback_ds->resize_buffers( nframes );
+}
 
 /* FIXME: what about theading issues with this region/audiofile being
    accessible from the UI thread? Need locking? */

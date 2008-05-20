@@ -54,7 +54,7 @@ Playback_DS::seek ( nframes_t frame )
 
     _pending_seek = frame;
 
-    flush( true );
+    flush();
 }
 
 /* THREAD: IO */
@@ -93,7 +93,6 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
 void
 Playback_DS::disk_thread ( void )
 {
-
     DMESSAGE( "playback thread running" );
 
     /* buffer to hold the interleaved data returned by the track reader */

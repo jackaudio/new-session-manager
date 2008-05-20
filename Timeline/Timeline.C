@@ -1233,6 +1233,18 @@ Timeline::seek ( nframes_t frame )
     }
 }
 
+/* THREAD: RT (non-RT) */
+void
+Timeline::resize_buffers ( nframes_t nframes )
+{
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        t->resize_buffers( nframes );
+    }
+}
+
 /* THREAD: RT */
 int
 Timeline::seek_pending ( void )

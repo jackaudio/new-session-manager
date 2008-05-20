@@ -25,6 +25,8 @@ class Playback_DS : public Disk_Stream
     void read_block ( sample_t *buf, nframes_t nframes );
     void disk_thread ( void );
 
+    void flush ( void ) { base_flush( true ); }
+
 public:
 
     Playback_DS ( Track *th, float frame_rate, nframes_t nframes, int channels ) :

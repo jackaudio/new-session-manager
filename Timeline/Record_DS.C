@@ -199,7 +199,7 @@ Record_DS::start ( nframes_t frame )
     }
 
     /* FIXME: safe to do this here? */
-    flush( false );
+    flush();
 
     _frame = frame;
 

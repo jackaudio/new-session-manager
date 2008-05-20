@@ -43,6 +43,8 @@ class Record_DS : public Disk_Stream
     void write_block ( sample_t *buf, nframes_t nframes );
     void disk_thread ( void );
 
+    void flush ( void ) { base_flush( false ); }
+
 public:
 
     Record_DS ( Track *th, float frame_rate, nframes_t nframes, int channels ) :

@@ -70,6 +70,12 @@ Engine::freewheel ( int starting, void *arg )
     ((Engine*)arg)->freewheel( starting );
 }
 
+int
+Engine::buffer_size ( nframes_t nframes, void *arg )
+{
+    return ((Engine*)arg)->buffer_size( nframes );
+}
+
 
 
 void
@@ -99,6 +105,16 @@ Engine::freewheel ( bool starting )
         DMESSAGE( "entering freewheeling mode" );
     else
         DMESSAGE( "leaving freewheeling mode" );
+}
+
+/* THREAD: RT (non-RT) */
+int
+Engine::buffer_size ( nframes_t nframes )
+{
+    /* TODO: inform all disktreams the the buffer size has changed */
+    timeline->resize_buffers( nframes );
+
+    return 0;
 }
 
 /* THREAD: RT */
@@ -232,6 +248,7 @@ Engine::init ( void )
     set_callback( process );
     set_callback( xrun );
     set_callback( freewheel );
+    set_callback( buffer_size );
 
     /* FIXME: should we wait to register this until after the project
      has been loaded (and we have disk threads running)? */

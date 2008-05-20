@@ -55,6 +55,8 @@ class Engine : public Mutex
     void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos );
     static void freewheel ( int yes, void *arg );
     void freewheel ( bool yes );
+    static int buffer_size ( nframes_t nframes, void *arg );
+    int buffer_size ( nframes_t nframes );
 
     Engine ( const Engine &rhs );
     Engine & operator = ( const Engine &rhs );

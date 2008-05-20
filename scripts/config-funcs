@@ -59,7 +59,7 @@ using ()
 
 extract_options ()
 {
-    local line;
+    local line name value
 
     if [ -f make.conf ]
     then
@@ -75,7 +75,9 @@ extract_options ()
                 then
                     break
                 else
-                    eval "$line"
+                    name=${line%=*}
+                    value=${line#*=}
+                    eval "$name='$value'"
                 fi
             done
         } < make.conf

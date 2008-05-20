@@ -22,7 +22,7 @@ else
 	CXXFLAGS := -pipe -O3 -fno-rtti -fno-exceptions -DNDEBUG
 endif
 
-CXXFLAGS += $(libsndfile_CFLAGS) $(LASH_CFLAGS) $(FLTK_CFLAGS) -DINSTALL_PREFIX=\"$(prefix)\" -DVERSION=\"$(VERSION)\"
+CXXFLAGS += $(libsndfile_CFLAGS) $(LASH_CFLAGS) $(FLTK_CFLAGS) -DINSTALL_PREFIX="\"$(prefix)\"" -DVERSION=\"$(VERSION)\"
 
 include scripts/colors
 

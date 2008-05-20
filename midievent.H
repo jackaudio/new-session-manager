@@ -89,7 +89,7 @@ public:
     };
 
     midievent ( void );
-    ~midievent ( void );
+    virtual ~midievent ( void );
 
     tick_t timestamp ( void ) const;
     void timestamp ( tick_t time );

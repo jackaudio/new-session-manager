@@ -72,7 +72,7 @@ Grid::~Grid ( void )
 }
 
 /* copy constructor */
-Grid::Grid ( const Grid &rhs )
+Grid::Grid ( const Grid &rhs ) : sigc::trackable()
 {
     _rd = new data( *rhs._rd );
     _rw = NULL;
@@ -620,21 +620,9 @@ Grid::_relink ( void )
     _rw->events.relink();
 }
 
-void
-Grid::record_event ( event *e )
-{
-    WARNING( "unimplemented" );
-/*     lock(); */
-
-/*     _rw->events.push_back( *e ); */
-/*     _rw->events.sort(); */
-
-/*     unlock(); */
-}
-
 /* Dump the event list -- used by pattern / phrase dumppers */
 void
-Grid::dump ( smf *f, int channel, bool translate ) const
+Grid::dump ( smf *f, int channel ) const
 {
     data *d = const_cast<data *>(_rd);
 
@@ -642,13 +630,8 @@ Grid::dump ( smf *f, int channel, bool translate ) const
 
     for ( event *e = d->events.first(); e; e = e->next() )
     {
-        //   e->print();
         me = *e;
         me.channel( channel );
-
-/*         if ( me.is_note_on() || me.is_note_off() ) */
-/*             if ( translate ) */
-/*                 d->mapping.translate( &me ); */
 
         f->write_event( &me );
     }

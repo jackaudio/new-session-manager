@@ -545,7 +545,7 @@ pattern::save ( const char *name ) const
 
     f.open_track( _name, _number );
 
-    Grid::dump( &f, _channel, true );
+    Grid::dump( &f, _channel );
 
     f.close_track( length() );
 }
@@ -558,7 +558,7 @@ pattern::dump ( smf *f ) const
 
     f->write_pattern_info( this );
 
-    Grid::dump( f, _channel, false );
+    Grid::dump( f, _channel  );
 
     f->close_track( length() );
 }

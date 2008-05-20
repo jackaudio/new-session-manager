@@ -42,9 +42,8 @@ event::~event ( void )
 }
 
 /* copy constructor */
-event::event ( const event &e )
+event::event ( const event &e ) : midievent( e )
 {
-    *this = e;
     _link = _next = _prev = NULL;
 }
 

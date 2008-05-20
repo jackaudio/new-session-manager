@@ -223,7 +223,7 @@ extern UI *ui;
 
 static
 void
-clear_status ( void *arg )
+clear_status ( void * )
 {
     ui->status->value( "" );
 }

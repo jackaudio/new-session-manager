@@ -284,7 +284,7 @@ phrase::dump ( smf *f )
 
     f->cue( true );
 
-    Grid::dump( f, 0, false );
+    Grid::dump( f, 0 );
 
     f->close_track( length() );
 }

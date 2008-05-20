@@ -46,7 +46,7 @@ static volatile bool _done;
  * number of 1920 ticks_per_beat in an attempt to reduce the magnitude
  * of the error. Currently, we keep this behaviour. */
 void
-Transport::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos, void *arg )
+Transport::timebase ( jack_transport_state_t, jack_nframes_t nframes, jack_position_t *pos, int new_pos, void * )
 {
 
     if ( new_pos || ! _done )

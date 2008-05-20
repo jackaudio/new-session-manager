@@ -104,9 +104,6 @@ class Grid : public trackable
 
 protected:
 
-
-
-
     unsigned int     _height;
     char     *_notes;
     char     *_name;
@@ -155,8 +152,7 @@ public:
     Viewport viewport;                                          /* used by the Canvas */
 
     Grid ( void );
-    // FIXME: needs to be virtual?
-    ~Grid ( void );
+    virtual ~Grid ( void );
     Grid ( const Grid &rhs );
 
     int y_to_note ( int y ) const;
@@ -226,7 +222,7 @@ public:
     void resolution ( unsigned int n );
     int resolution ( void ) const;
 
-    void dump ( smf *f, int channel, bool translate ) const;
+    void dump ( smf *f, int channel ) const;
     void draw ( Canvas *c, int bx, int by, int bw, int bh );
     void print ( void ) const;
 

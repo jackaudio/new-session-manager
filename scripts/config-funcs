@@ -57,9 +57,14 @@ using ()
     return $?
 }
 
+upcase ()
+{
+    echo "$*" | tr '[[:lower:]]' '[[:upper:]]'
+}
+
 extract_options ()
 {
-    local line;
+    local line name value
 
     if [ -f make.conf ]
     then
@@ -75,7 +80,9 @@ extract_options ()
                 then
                     break
                 else
-                    eval "$line"
+                    name=${line%=*}
+                    value=${line#*=}
+                    eval "$name='$value'"
                 fi
             done
         } < make.conf
@@ -133,6 +140,8 @@ require_command ()
 
 require_package ()
 {
+    local name
+
     echo -n "Checking for $BOLD$1$SGR0..."
     if ! pkg-config --exists $3
     then
@@ -144,8 +153,9 @@ require_package ()
         fatal "The installed version of $1 (`pkg-config --mod-version $3`) is too old."
     fi
 
-    append "${1}_LIBS=`pkg-config --libs $3`"
-    append "${1}_CFLAGS=-DHAVE_${1} `pkg-config --cflags $3`"
+    name="`upcase \"$1\"`"
+    append "${name}_LIBS=`pkg-config --libs $3`"
+    append "${name}_CFLAGS=-DHAVE_${1} `pkg-config --cflags $3`"
 
     ok
     return 0

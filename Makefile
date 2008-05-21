@@ -115,7 +115,7 @@ TAGS: $(SRCS)
 	etags $(SRCS)
 
 makedepend: make.conf $(SRCS)
-	@ echo -n Checking dependencies...
+	@ echo -n Calculating dependencies...
 	@ makedepend -f- -- $(CXXFLAGS) -- $(SRCS) > makedepend 2>/dev/null && echo "$(DONE)"
 
 -include makedepend

@@ -27,6 +27,8 @@ decl {\#include <Fl/Fl_Dial.H>} {public
 
 decl {\#include <Fl/Fl_Help_Dialog.H>} {} 
 
+decl {\#include <FL/Fl_Shared_Image.H>} {} 
+
 decl {\#include "widgets.H"} {} 
 
 decl {\#include "event_edit.H"} {} 
@@ -106,7 +108,9 @@ class UI {open
   decl {Fl_Text_Buffer *phrase_notes_buffer} {}
   Function {UI()} {open
   } {
-    code {// Make her pretty
+    code {fl_register_images();
+
+// Make her pretty
 Fl::background( 32, 32, 32 );
 Fl::background2( 36, 36, 36 );
 Fl::foreground( 255, 255, 255 );
@@ -131,7 +135,8 @@ main_window->show();
 Fl::add_timeout( TRANSPORT_POLL_INTERVAL, update_transport );
 
 
-playlist->signal_new_song.connect( sigc::mem_fun( this, &UI::update_sequence_widgets ) );} {}
+playlist->signal_new_song.connect( sigc::mem_fun( this, &UI::update_sequence_widgets ) );} {selected
+    }
   }
   Function {~UI()} {open
   } {
@@ -152,7 +157,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {623 109 869 801} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
+      xywh {272 103 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
@@ -979,7 +984,7 @@ if ( s != o->label() )
 		o->color( FL_RED );
 	else
 		o->color( FL_GREEN );
-}} selected
+}}
           xywh {781 776 87 25} box UP_BOX
         }
       }
@@ -1003,12 +1008,14 @@ detach_button->value( 0 );} open
   } {
     Fl_Window about_popup {
       label About open
-      xywh {944 405 539 608} type Single non_modal size_range {539 608 539 608} visible
+      xywh {626 238 535 605} type Single non_modal size_range {539 608 539 608} visible
     } {
       Fl_Box {} {
         label VERSION
-        image {../logo.xpm} xywh {10 29 525 209}
+        xywh {10 29 515 209}
         code0 {o->label( VERSION );}
+        code1 {o->image( Fl_Shared_Image::get( DOCUMENT_PATH "/logo.png" ) );}
+        code2 {o->redraw();}
       }
       Fl_Group {} {open
         xywh {26 272 488 272} box ROUNDED_BOX color 51
@@ -1046,7 +1053,7 @@ You should have received a copy of the GNU General Public License along with thi
   Function {make_randomization_dialog()} {} {
     Fl_Window randomization_dialog {
       label {Randomization Settings} open
-      xywh {656 39 342 98} type Double
+      xywh {656 39 340 95} type Double
       code0 {// feel->value( )}
       code1 {probability->value( song.random.probability );} non_modal visible
     } {
@@ -1553,7 +1560,7 @@ class Instrument_Editor {} {
     Fl_Window window {
       label {Instrument Editor}
       callback {done->do_callback();} open
-      xywh {670 458 339 191} type Double visible
+      xywh {670 458 335 190} type Double visible
     } {
       Fl_Box {} {
         label {Instrument Row}

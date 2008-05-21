@@ -143,7 +143,6 @@ save_song ( const char *name )
 int
 main ( int argc, char **argv )
 {
-
     config.follow_playhead = true;
     config.record_mode = MERGE;
     song.play_mode = PATTERN;

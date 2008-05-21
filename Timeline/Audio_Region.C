@@ -636,7 +636,14 @@ Audio_Region::draw ( void )
 /*     fl_line( rx, Y, rx, Y + H ); */
 /*     fl_line( rx + rw - 1, Y, rx + rw - 1, Y + H ); */
 
-    draw_label( _clip->name(), align() );
+    if ( _clip->dummy() )
+    {
+        char pat[256];
+        snprintf( pat, sizeof( pat ), "Missing Source!: %s", _clip->name() );
+        draw_label( pat, align() );
+    }
+    else
+        draw_label( _clip->name(), align() );
 
 /*     if ( current() ) */
 /*     { */

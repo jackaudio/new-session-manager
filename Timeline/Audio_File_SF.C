@@ -58,10 +58,7 @@ Audio_File_SF::from_file ( const char *filename )
     memset( &si, 0, sizeof( si ) );
 
     if ( ! ( in = sf_open( filename, SFM_READ, &si ) ) )
-    {
-        printf( "couldn't open file\n" );
         return NULL;
-    }
 
 /*     if ( si.samplerate != timeline->sample_rate() ) */
 /*     { */

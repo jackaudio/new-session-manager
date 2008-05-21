@@ -17,18 +17,19 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-/* FIXME: need locking for when disk thread and peak reader are
- * interested in the same source? */
-
 #include "Audio_File.H"
 #include "Audio_File_SF.H"
+#include "Audio_File_Dummy.H"
 
+#include "debug.h"
 
 std::map <std::string, Audio_File*> Audio_File::_open_files;
 
 Audio_File::~Audio_File ( )
 {
     _open_files[ std::string( _filename ) ] = NULL;
+    if ( _filename )
+        free( _filename );
 }
 
 void
@@ -58,14 +59,15 @@ Audio_File::from_file ( const char * filename )
 
 // TODO: other formats
 
+    DWARNING( "creating dummy source for \"%s\"", filename );
+
+    /* FIXME: wrong place for this? */
+    if ( ( a = Audio_File_Dummy::from_file( filename ) ) )
+        goto done;
+
     return NULL;
 
 done:
-
-/*     a->_peaks = new Peaks; */
-
-/*     a->_peaks->clip( a ); */
-/*     a->_peaks->open(); */
 
     _open_files[ std::string( filename ) ] = a;
 
@@ -78,21 +80,26 @@ Audio_File::read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, P
 {
 //    Peaks pk;
 
-    *peaks    = 0;
-    *channels = 0;
-    *pbuf     = NULL;
+    if ( dummy() )
+    {
+        *peaks = (end - start) / fpp;
+        *channels = 0;
+        *pbuf = NULL;
 
-//    pk.clip( this );
+        return false;
+    }
+    else
+    {
+        *peaks    = 0;
+        *channels = 0;
+        *pbuf     = NULL;
 
-/*     /\* only open peaks (and potentially generate) when first requested *\/ */
-/*     if ( ! _peaks.open() ) */
-/*         return false; */
+        *peaks = _peaks.fill_buffer( fpp, start, end );
 
-    *peaks = _peaks.fill_buffer( fpp, start, end );
+        *channels = this->channels();
 
-    *channels = this->channels();
+        *pbuf = _peaks.peakbuf();
 
-    *pbuf = _peaks.peakbuf();
-
-    return true;
+        return true;
+    }
 }

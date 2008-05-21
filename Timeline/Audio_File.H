@@ -50,7 +50,7 @@ protected:
         unsigned long id;
     };
 
-    const char *_filename;
+    char *_filename;
     volatile nframes_t _length;                 /* length of file in samples */
     nframes_t _samplerate;                   /* sample rate */
     int _channels;
@@ -78,6 +78,8 @@ public:
         }
 
     virtual ~Audio_File ( );
+
+    virtual bool dummy ( void ) const { return false; }
 
     static void all_supported_formats ( std::list <const char *> &formats );
 

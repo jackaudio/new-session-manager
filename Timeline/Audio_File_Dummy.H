@@ -21,43 +21,33 @@
 
 #include "Audio_File.H"
 
-#include <sndfile.h>
-
-class Audio_File_SF : public Audio_File
+class Audio_File_Dummy : public Audio_File
 {
-//    Audio_File_SF ( const char *filename )
-
-    SNDFILE *_in;
-
-    /* used to avoid unnecessary seeking--libsndfile isn't smart
-     * enough to do this for us */
-    volatile nframes_t _current_read;
-
-    Audio_File_SF ( )
+    Audio_File_Dummy ( )
         {
-            _in = 0;
-            _current_read = 0;
         }
 
 public:
 
-    static const Audio_File::format_desc supported_formats[];
+/*     static const Audio_File::format_desc supported_formats[]; */
 
-    static Audio_File_SF *from_file ( const char *filename );
-    static Audio_File_SF *create ( const char *filename, nframes_t samplerate, int channels, const char *format );
-
-
-    ~Audio_File_SF ( )
+    static Audio_File_Dummy *from_file ( const char *filename )
         {
-            /* stupid C++ */
-            close();
+            Audio_File_Dummy *d = new Audio_File_Dummy;
+            d->_filename = strdup( filename );
+            return d;
         }
 
-    bool open ( void );
-    void close ( void );
-    void seek ( nframes_t offset );
-    nframes_t read ( sample_t *buf, int channel, nframes_t len );
-    nframes_t read ( sample_t *buf, int channel,  nframes_t start, nframes_t end );
-    nframes_t write ( sample_t *buf, nframes_t nframes );
+    bool dummy ( void ) const { return true; }
 
+    ~Audio_File_Dummy ( )
+        {
+        }
+
+    bool open ( void ) { return true; }
+    void close ( void ) { }
+    void seek ( nframes_t ) { }
+    nframes_t read ( sample_t *, int, nframes_t len ) { return len; }
+    nframes_t read ( sample_t *, int,  nframes_t start, nframes_t end ) { return end - start; }
+    nframes_t write ( sample_t *, nframes_t nframes ) { return nframes; }
 };

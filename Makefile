@@ -21,7 +21,7 @@ DOCUMENT_PATH=$(prefix)/share/doc/non-sequencer/
 ifeq ($(USE_DEBUG),yes)
 	CXXFLAGS := -pipe -ggdb -Wall -Wextra -Wnon-virtual-dtor -Wno-missing-field-initializers -O0 -fno-rtti -fno-exceptions
 else
-	CXXFLAGS := -pipe -O3 -fno-rtti -fno-exceptions -DNDEBUG
+	CXXFLAGS := -pipe -O2 -fno-rtti -fno-exceptions -DNDEBUG
 endif
 
 CFLAGS+=-DVERSION=\"$(VERSION)\" \

@@ -23,22 +23,22 @@
 #include <FL/Fl_Scrollbar.H>
 #include <FL/Fl_Widget.H>
 #include <FL/fl_draw.H>
-
+#include <FL/Fl_Scrollbar.H>
 
 #include "Timeline.H"
 #include "Tempo_Sequence.H"
 #include "Time_Sequence.H"
 #include "Audio_Sequence.H"
 #include "Control_Sequence.H"
-#include <FL/Fl_Scrollbar.H>
 #include "Scalebar.H"
 #include "Sequence.H"
 #include "Annotation_Sequence.H"
-
-// #include <FL/Fl_Image.H>
-// #include <FL/Fl_RGB_Image.H> // needed for alpha blending
-
 #include "Track.H"
+#include "Playback_DS.H"
+#include "Record_DS.H"
+#include "Transport.H"
+
+
 
 bool Timeline::draw_with_measure_lines = true;
 Timeline::snap_e Timeline::snap_to = Bars;
@@ -48,11 +48,7 @@ bool Timeline::center_playhead = true;
 
 const float UPDATE_FREQ = 0.02f;
 
-
-#include "Playback_DS.H"
-#include "Record_DS.H"
-
-#include "Transport.H"
+
 
 /** return the combined height of all visible children of (veritcal)
     pack, /p/. This is necessary because pack sizes are adjusted only
@@ -98,6 +94,8 @@ draw_full_arrow_symbol ( Fl_Color color )
     EL;
 
 }
+
+
 
 /** recalculate the size of vertical scrolling area and inform scrollbar */
 void
@@ -583,9 +581,6 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
     fl_pop_clip();
 }
 
-
-// static unsigned char *rect_image;
-
 void
 Timeline::resize ( int X, int Y, int W, int H )
 {
@@ -614,18 +609,6 @@ Timeline::draw ( void )
 
     adjust_vscroll();
 
-/*     if ( damage() & FL_DAMAGE_USER1 ) */
-/*     { */
-
-/*         /\* save the rectangle so we can draw it (darkened) in the overlay *\/ */
-/*         Rectangle &r = _selection; */
-/*         make_current(); */
-/*         rect_image = fl_read_image( NULL, r.x, r.y, r.w, r.h, 0 ); */
-
-/*         return; */
-/*     } */
-
-
     if ( ( damage() & FL_DAMAGE_ALL ) || ( damage() & FL_DAMAGE_EXPOSE ) )
     {
         DMESSAGE( "complete redraw" );
@@ -651,33 +634,6 @@ Timeline::draw ( void )
         }
 
         redraw_overlay();
-
-
-/*     Rectangle &r = _selection; */
-
-/*     unsigned char *data = fl_read_image( NULL, r.x, r.y, r.w, r.h, 0 ); */
-
-/*     Fl_RGB_Image bi( data, r.w, r.h, 3 ); */
-
-/*     bi.color_average( FL_BLACK, 0.50f ); */
-
-/*     bi.draw( r.x, r.y ); */
-
-/*     delete[] data; */
-
-
-/*     if ( r.w && r.h ) */
-/*     { */
-/*     const unsigned char data[] = { 0, 127, 0, 96, */
-/*                                    0, 96, 0, 127 }; */
-/*     Fl_RGB_Image bi( data, 2, 2, 2 ); */
-
-/*     Fl_Image *bi2 = bi.copy( r.w, r.h ); */
-
-/*     bi2->draw( r.x, r.y ); */
-
-/*     delete bi2; */
-/*     } */
 
         goto done;
     }
@@ -838,34 +794,7 @@ Timeline::draw_overlay ( void )
 
     fl_line( r.x + r.w, r.y, r.x, r.y + r.h );
 
-/*     fl_overlay_rect( r.x, r.y, r.w, r.h ); */
-
     fl_line_style( FL_SOLID, 0 );
-
-
-/*     const unsigned char data[] = { 127, 127, 127, 96, */
-/*                                    127, 96, 127, 40 }; */
-/*     Fl_RGB_Image bi( data, 2, 2, 2 ); */
-
-/*     Fl_Image *bi2 = bi.copy( r.w, r.h ); */
-
-/*     bi2->draw( r.x, r.y ); */
-
-/*     delete bi2; */
-
-
-/*     unsigned char *data = fl_read_image( NULL, r.x, r.y, r.w, r.h, 0 ); */
-
-
-
-/*     Fl_RGB_Image bi( rect_image, r.w, r.h, 3 ); */
-
-/*     bi.color_average( FL_BLACK, 0.50f ); */
-
-/*     bi.draw( r.x, r.y ); */
-
-/*     delete[] rect_image; */
-/*     rect_image = NULL; */
 
     fl_pop_clip();
 

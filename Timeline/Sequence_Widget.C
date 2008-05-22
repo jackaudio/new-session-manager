@@ -313,6 +313,8 @@ Sequence_Widget::handle ( int m )
                 _log.release();
             }
 
+            sequence()->handle_widget_change( _r->start, _r->length );
+
             fl_cursor( FL_CURSOR_HAND );
 
             return 1;

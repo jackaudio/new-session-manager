@@ -52,8 +52,7 @@ Tempo_Point::set ( Log_Entry &e )
 
     }
 
-    timeline->update_tempomap();
-    timeline->redraw();
+    sequence()->handle_widget_change( start(), length() );
 
     _make_label();
 }
@@ -62,7 +61,6 @@ Tempo_Point::set ( Log_Entry &e )
 Tempo_Point::Tempo_Point ( )
 {
     timeline->tempo_track->add( this );
-    timeline->update_tempomap();
 }
 
 Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
@@ -72,7 +70,6 @@ Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
     _make_label();
 
     timeline->tempo_track->add( this );
-    timeline->update_tempomap();
 
     start( when );
 
@@ -84,7 +81,6 @@ Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
 Tempo_Point::~Tempo_Point ( )
 {
     timeline->tempo_track->remove( this );
-    timeline->update_tempomap();
     log_destroy();
 }
 
@@ -101,15 +97,7 @@ Tempo_Point::handle ( int m )
         return 0;
     }
 
-    int r = Sequence_Widget::handle( m );
-
-    if ( m == FL_RELEASE )
-    {
-        sequence()->sort();
-        timeline->update_tempomap();
-        timeline->redraw();
-    }
-    return r;
+    return Sequence_Point::handle( m );
 }
 
 

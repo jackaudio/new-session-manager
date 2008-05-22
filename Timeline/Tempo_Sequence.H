@@ -40,6 +40,7 @@ public:
 //            box( FL_DOWN_BOX );
         }
 
+    void handle_widget_change ( nframes_t start, nframes_t length );
     int handle ( int m );
 
 };

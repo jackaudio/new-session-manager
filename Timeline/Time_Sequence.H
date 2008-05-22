@@ -63,5 +63,6 @@ public:
             add( new Time_Point( when, bpb, note ) );
         }
 
+    void handle_widget_change ( nframes_t start, nframes_t length );
     int handle ( int m );
 };

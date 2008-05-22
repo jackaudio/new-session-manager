@@ -359,8 +359,6 @@ Audio_Region::handle ( int m )
 
             copied = false;
 
-            sequence()->handle_widget_change( _r->start, _r->length );
-
             return 1;
         }
         case FL_DRAG:

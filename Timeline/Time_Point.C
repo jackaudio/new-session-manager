@@ -54,8 +54,7 @@ Time_Point::set ( Log_Entry &e )
 
     }
 
-    timeline->update_tempomap();
-    timeline->redraw();
+    sequence()->handle_widget_change( start(), length() );
 
     _make_label();
 }
@@ -64,7 +63,6 @@ Time_Point::set ( Log_Entry &e )
 Time_Point::Time_Point ( ) : _time( 4, 4 )
 {
     timeline->time_track->add( this );
-    timeline->update_tempomap();
 }
 
 Time_Point::Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
@@ -72,7 +70,6 @@ Time_Point::Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note 
     _make_label();
 
     timeline->time_track->add( this );
-    timeline->update_tempomap();
 
     start( when );
 
@@ -83,7 +80,6 @@ Time_Point::Time_Point ( const Time_Point &rhs ) : Sequence_Point( rhs )
 {
     _time = rhs._time;
 
-    timeline->update_tempomap();
     log_create();
 
 }
@@ -91,7 +87,6 @@ Time_Point::Time_Point ( const Time_Point &rhs ) : Sequence_Point( rhs )
 Time_Point::~Time_Point ( )
 {
     timeline->time_track->remove( this );
-    timeline->update_tempomap();
 
     log_destroy();
 }
@@ -114,16 +109,7 @@ Time_Point::handle ( int m )
 
     }
 
-    int r = Sequence_Widget::handle( m );
-
-    if ( m == FL_RELEASE )
-    {
-        sequence()->sort();
-        timeline->update_tempomap();
-        timeline->redraw();
-    }
-    return r;
-
+    return Sequence_Point::handle( m );
 }
 
 

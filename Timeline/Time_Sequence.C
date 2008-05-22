@@ -19,6 +19,14 @@
 
 #include "Time_Sequence.H"
 
+void
+Time_Sequence::handle_widget_change ( nframes_t, nframes_t )
+{
+    sort();
+    timeline->update_tempomap();
+    timeline->redraw();
+}
+
 int
 Time_Sequence::handle ( int m )
 {

@@ -149,9 +149,9 @@ Sequence::draw ( void )
 void
 Sequence::remove ( Sequence_Widget *r )
 {
-//    Logger _log( this );
-
     _widgets.remove( r );
+
+    handle_widget_change( r->start(), r->length() );
 }
 
 
@@ -213,6 +213,8 @@ Sequence::add ( Sequence_Widget *r )
     _widgets.push_back( r );
 
     sort();
+
+    handle_widget_change( r->start(), r->length() );
 }
 
 static nframes_t

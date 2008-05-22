@@ -18,10 +18,10 @@
 /*******************************************************************************/
 
 #include "Engine.H"
-#include "Transport.H"
+#include "../Transport.H"
 
-#include "Timeline.H" // for process()
-#include "Sequence_Widget.H" // for BBT and position info.
+#include "../Timeline.H" // for process()
+#include "../Sequence_Widget.H" // for BBT and position info.
 
 #define APP_NAME "Non-DAW" // FIXME: wrong place for this!
 
@@ -259,6 +259,8 @@ Engine::init ( void )
     jack_activate( _client );
 
     _sample_rate = frame_rate();
+
+    timeline->_sample_rate = frame_rate();
 
     /* we don't need to create any ports until tracks are created */
     return 1;

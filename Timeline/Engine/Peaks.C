@@ -22,9 +22,6 @@
   peakfile reading/writing.
 */
 
-
-#include "Peaks.H"
-
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -34,14 +31,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../Transport.H" // for .recording
+
 #include "Audio_File.H"
+#include "Peaks.H"
 
 #include "assert.h"
-
-#include "debug.h"
+#include "util/debug.h"
 #include <errno.h>
-
-#include "Transport.H" // for .recording
 
 #include <list>
 #include <algorithm>

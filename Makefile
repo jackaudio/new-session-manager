@@ -26,8 +26,10 @@ else
 endif
 
 CXXFLAGS += $(SNDFILE_CFLAGS) $(LASH_CFLAGS) $(FLTK_CFLAGS) -DINSTALL_PREFIX="\"$(prefix)\"" -DVERSION=\"$(VERSION)\"
+INCLUDES := -Iutil
 
 include scripts/colors
+
 
 .C.o:
 	@ echo "Compiling: $(BOLD)$(YELLOW)$<$(SGR0)"

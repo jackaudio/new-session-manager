@@ -36,7 +36,7 @@
 #include <vector>
 using std::vector;
 
-#include "Port.H"
+#include "Engine/Port.H"
 
 #include "Timeline.H"
 
@@ -211,6 +211,8 @@ public:
     void select ( int X, int Y, int W, int H, bool include_control, bool merge_control );
 
     int size ( void ) const { return _size; }
+
+    int ncontrols ( void ) { return controls->children(); }
 
     void resize ( void );
     void size ( int v );

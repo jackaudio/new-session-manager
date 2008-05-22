@@ -19,71 +19,9 @@
 
 #pragma once
 
-#include "Sequence.H"
-#include "Control_Point.H"
+struct Peak {
+    float min;
+    float max;
 
-
-#include "Engine/Port.H"
-
-class Control_Sequence : public Sequence
-{
-
-    /* not permitted */
-    Control_Sequence ( const Control_Sequence &rhs );
-    Control_Sequence & operator = ( const Control_Sequence &rhs );
-
-public:
-
-    enum curve_type_e { Linear, Quadratic };
-
-private:
-
-    Port *_output;
-
-    bool _highlighted;
-
-    curve_type_e _type;
-
-    void init ( void );
-
-
-protected:
-
-
-    virtual void get ( Log_Entry &e ) const;
-    void set ( Log_Entry &e );
-
-    Control_Sequence (  ) : Sequence( 0 )
-        {
-            init();
-        }
-
-private:
-
-    void draw_curve ( bool flip, bool filled );
-
-public:
-
-    static bool draw_with_gradient;
-    static bool draw_with_polygon;
-    static bool draw_with_grid;
-
-    LOG_CREATE_FUNC( Control_Sequence );
-
-    Control_Sequence ( Track * );
-    ~Control_Sequence ( );
-
-    Fl_Cursor cursor ( void ) const { return FL_CURSOR_CROSS; }
-
-//    const char *class_name ( void ) { return "Control_Sequence"; }
-
-    void draw ( void );
-    int handle ( int m );
-
-
-    /* Engine */
-    void output ( Port *p ) { _output = p; }
-    nframes_t play ( sample_t *buf, nframes_t frame, nframes_t nframes );
-    nframes_t process ( nframes_t nframes );
-
+    float normalization_factor ( void ) const;
 };

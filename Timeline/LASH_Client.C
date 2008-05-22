@@ -20,7 +20,7 @@
 #include "LASH_Client.H"
 
 
-#include "debug.h"
+#include "util/debug.h"
 
 LASH_Client::LASH_Client ( )
 {

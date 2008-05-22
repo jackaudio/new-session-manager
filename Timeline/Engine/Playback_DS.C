@@ -21,17 +21,16 @@
 /* Handles streaming regions from disk to track outputs. */
 
 /* FIXME: we shouldn't depend on these */
-#include "Timeline.H"
-#include "Engine.H"
-#include "Audio_Sequence.H"
-#include "Track.H"
+#include "../Timeline.H" // for locking
+#include "../Audio_Sequence.H"
+#include "../Track.H"
+
 #include "Port.H"
 #include "Playback_DS.H"
-
-
+#include "Engine.H"
 #include "dsp.h"
 
-#include "debug.h"
+#include "util/debug.h"
 
 bool
 Playback_DS::seek_pending ( void )

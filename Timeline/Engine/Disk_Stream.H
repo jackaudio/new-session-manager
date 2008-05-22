@@ -27,7 +27,7 @@
 
 #include <pthread.h>
 
-#include "Mutex.H"
+#include "util/Mutex.H"
 
 #include <vector>
 using std::vector;

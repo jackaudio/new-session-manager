@@ -17,14 +17,10 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+
 #pragma once
 
-#include <FL/Fl_Widget.H>
-#include <FL/fl_draw.H>
-
-#include "Timeline.H"
-
-#include "Peaks.H"
+#include "Engine/Peak.H"
 
 class Waveform {
 

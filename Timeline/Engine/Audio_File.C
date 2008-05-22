@@ -21,7 +21,7 @@
 #include "Audio_File_SF.H"
 #include "Audio_File_Dummy.H"
 
-#include "debug.h"
+#include "util/debug.h"
 
 std::map <std::string, Audio_File*> Audio_File::_open_files;
 

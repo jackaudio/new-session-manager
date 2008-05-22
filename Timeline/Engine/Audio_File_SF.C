@@ -31,7 +31,7 @@
 
 // #define HAS_SF_FORMAT_VORBIS
 
-#include "debug.h"
+#include "util/debug.h"
 
 const Audio_File::format_desc Audio_File_SF::supported_formats[] =
 {

@@ -23,12 +23,7 @@
 
 #include "types.h"
 
-struct Peak {
-    float min;
-    float max;
-
-    float normalization_factor ( void ) const;
-};
+#include "Peak.H"
 
 #include <stdio.h>
 

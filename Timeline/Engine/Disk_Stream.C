@@ -17,12 +17,15 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Disk_Stream.H"
-#include "Track.H"
-#include "Audio_Sequence.H"
-#include "Port.H"
+
+#include "../Track.H"
+// #include "Audio_Sequence.H"
+class Audio_Sequence;
+
+// #include "Port.H"
 #include "Engine.H" // for locking.
 
+#include "Disk_Stream.H"
 #include "dsp.h"
 
 /**********/

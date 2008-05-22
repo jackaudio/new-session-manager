@@ -20,11 +20,11 @@
 #include "Audio_Sequence.H"
 #include "Waveform.H"
 
-#include "dsp.h"
-
 #include <Fl/fl_ask.H>
 
 #include "Track.H"
+
+#include "Engine/Audio_File.H" // for ::from_file()
 
 Audio_Sequence::Audio_Sequence ( Track *track ) : Sequence( track )
 {
@@ -250,52 +250,3 @@ Audio_Sequence::handle ( int m )
             return Sequence::handle( m );
     }
 }
-
-
-/**********/
-/* Engine */
-/**********/
-
-/* THREAD: IO */
-/** determine region coverage and fill /buf/ with interleaved samples
- * from /frame/ to /nframes/ for exactly /channels/ channels. */
-nframes_t
-Audio_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels )
-{
-    sample_t *cbuf = new sample_t[ nframes ];
-
-    memset( cbuf, 0, nframes * sizeof( sample_t ) );
-
-    /* quick and dirty--let the regions figure out coverage for themselves */
-    for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin();
-          i != _widgets.end(); ++i )
-    {
-        const Audio_Region *r = (Audio_Region*)(*i);
-
-        for ( int i = channels; i--;  )
-        {
-            int nfr;
-
-            if ( ! ( nfr = r->read( cbuf, frame, nframes, i ) ) )
-                /* error ? */
-                continue;
-
-            if ( channels == 1 )
-                buffer_mix( buf, cbuf, nframes );
-            else
-                buffer_interleave_one_channel_and_mix( buf, cbuf, i, channels, nframes );
-        }
-    }
-
-    delete[] cbuf;
-
-    /* FIXME: bogus */
-    return nframes;
-}
-
-/* /\* THREAD: RT *\/ */
-/* nframes_t */
-/* Audio_Sequence::process ( nframes_t nframes ) */
-/* { */
-/*     return disktream->process( nframes ); */
-/* } */

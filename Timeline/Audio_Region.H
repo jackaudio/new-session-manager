@@ -19,15 +19,10 @@
 
 #pragma once
 
-#include "Audio_File.H"
 #include "Timeline.H"
-
-/* Audio_Regions are "virtual" FLTK widgets; this is necessary because the
- * dimensions of real FLTK widgets are limited to 16-bits, which is
- * far too little for our purposes */
-
 #include "Sequence_Region.H"
 
+class Audio_File;
 class Peaks_Redraw_Request;
 
 class Audio_Region : public Sequence_Region
@@ -131,7 +126,7 @@ public:
 
 public:
 
-    const char *source_name ( void ) const { return _clip->name(); }
+    const char * source_name ( void ) const;
 
     LOG_CREATE_FUNC( Audio_Region );
 

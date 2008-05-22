@@ -21,7 +21,7 @@
 
 #include "Control_Sequence.H"
 #include "Track.H"
-
+#include "Engine/Port.H"
 
 #include "Transport.H" // for transport->frame
 
@@ -38,7 +38,7 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
     if ( track )
         track->add( this );
 
-//    output.activate( track->name(),
+    _output = new Port( Port::Output, track->name(), track->ncontrols(), "cv" );
 
     log_create();
 }
@@ -47,6 +47,8 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 Control_Sequence::~Control_Sequence ( )
 {
     log_destroy();
+
+    delete _output;
 }
 
 void
@@ -82,6 +84,8 @@ Control_Sequence::set ( Log_Entry &e )
             Track *t = (Track*)Loggable::find( i );
 
             assert( t );
+
+            _output = new Port( Port::Output, t->name(), t->ncontrols(), "cv" );
 
             t->add( this );
         }

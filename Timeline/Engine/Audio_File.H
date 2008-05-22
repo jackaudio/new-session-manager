@@ -20,16 +20,15 @@
 #pragma once
 
 /* Base class for all audio file library interfaces */
+
 #include <stdlib.h>
-
-#include "types.h"
-
-#include "Peaks.H"
 #include <string>
 #include <map>
 #include <list>
 
-#include "Mutex.H"
+#include "types.h"
+#include "util/Mutex.H"
+#include "Peaks.H"
 
 class Peak_Writer;
 

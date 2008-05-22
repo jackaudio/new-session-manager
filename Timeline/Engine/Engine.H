@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "Mutex.H"
+#include "util/Mutex.H"
 
 #include <jack/jack.h>
 

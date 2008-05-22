@@ -44,7 +44,7 @@ extern TLE *tle;
 
 #define PROJECT_VERSION "0.28.0"
 
-#include "debug.h"
+#include "util/debug.h"
 char Project::_name[256];
 char Project::_path[512];
 bool Project::_is_open = false;

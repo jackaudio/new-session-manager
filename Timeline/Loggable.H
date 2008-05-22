@@ -34,7 +34,7 @@ using namespace std;
 
 #include "types.h"
 
-#include "debug.h"
+#include "util/debug.h"
 
 /* welcome to C++ */
 /* This class is just a dummy to allow base classes with null ids but

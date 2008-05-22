@@ -20,16 +20,16 @@
 /* Handles streaming from track inputs to disk */
 
 /* FIXME: we shouldn't depend on these */
-#include "Timeline.H"
-#include "Engine.H"
-#include "Audio_Sequence.H"
-#include "Track.H"
+#include "../Timeline.H" // for locking
+#include "../Audio_Sequence.H"
+#include "../Track.H"
+
 #include "Port.H"
 #include "Record_DS.H"
-
+#include "Engine.H"
 #include "dsp.h"
 
-#include "debug.h"
+#include "util/debug.h"
 
 /* THREAD: IO */
 /** write /nframes/ from buf to the capture file of the attached track */

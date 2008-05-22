@@ -75,11 +75,6 @@ struct Rectangle
     Rectangle ( int X, int Y, int W, int H ) : x( X ), y( Y ), w( W ), h( H ) {}
 };
 
-
-#include "Engine.H" // for sample_rate()
-
-// class Engine;
-
 #include "RWLock.H"
 
 class Timeline : public Fl_Overlay_Window, public RWLock
@@ -137,13 +132,15 @@ public:
 
     int _yposition;
 
+    nframes_t _sample_rate;
+
     Timeline ( int X, int Y, int W, int H, const char *L=0 );
 
     void update_tempomap ( void );
 
     nframes_t fpp ( void ) const { return 1 << _fpp; }
     nframes_t length ( void ) const { return _length; }
-    nframes_t sample_rate ( void ) const { return engine->sample_rate(); }
+    nframes_t sample_rate ( void ) const { return _sample_rate; }
     int ts_to_x( nframes_t ts ) const { return  ts >> _fpp; }
     nframes_t x_to_ts ( int x ) const { return x << _fpp; }
     nframes_t x_to_offset ( int x ) const;

@@ -28,8 +28,6 @@ decl {\#include "Fl_Menu_Settings.H"} {}
 
 decl {\#include "Timeline.H"} {} 
 
-decl {\#include "Engine.H"} {} 
-
 decl {\#include "Transport.H"} {} 
 
 decl {\#include "Loggable.H"} {} 
@@ -41,21 +39,24 @@ decl {\#include "Clock.H"} {public
 
 decl {\#include "Track.H" // for capture_format} {} 
 
-decl {\#include "Audio_File.H" // for supported formats} {} 
-
 decl {\#include "Waveform.H" // for options} {} 
 
 decl {\#include "Audio_Region.H" // for options} {} 
 
 decl {\#include "Control_Sequence.H" // for options} {} 
 
-decl {\#include <FL/fl_ask.H>} {} 
+decl {\#include <FL/fl_ask.H>} {selected
+} 
 
 decl {\#include <FL/Fl_File_Chooser.H>} {} 
 
 decl {\#include <FL/Fl.H>} {} 
 
 decl {\#include <Fl/Fl_Shared_Image.H>} {} 
+
+decl {\#include "Engine/Engine.H"} {} 
+
+decl {\#include "Engine/Audio_File.H" // for supported formats} {} 
 
 decl {extern char project_display_name[256];} {global
 } 
@@ -160,8 +161,7 @@ menubar->picked( menubar->find_item( "&Timeline/Capture Format/Wav 24" ) );
 char *path;
 asprintf( &path, "%s/options", user_config_dir );
 ((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options" ), path );
-free( path );} {selected
-    }
+free( path );} {}
   }
   Function {make_window()} {open
   } {

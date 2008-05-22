@@ -25,7 +25,9 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 
+/* for registrations */
 #include "Audio_Region.H"
 #include "Sequence.H"
 #include "Audio_Sequence.H"
@@ -34,24 +36,16 @@
 #include "Time_Sequence.H"
 #include "Annotation_Sequence.H"
 #include "Control_Sequence.H"
-
-#include "Transport.H"
-
-#include "Loggable.H"
 #include "Track.H"
-
-#include "Engine.H"
 
 #include "TLE.H"
 
 #include "../FL/Boxtypes.H"
 
-#include <stdlib.h>
-#include <sys/stat.h>
-
 #include "Project.H"
-
 #include "LASH.H"
+#include "Transport.H"
+#include "Engine/Engine.H"
 
 Engine *engine;
 Timeline *timeline;
@@ -69,7 +63,7 @@ const char COPYRIGHT[]  = "Copyright (C) 2008 Jonathan Moore Liles";
 #define PACKAGE "non"
 
 
-#include "debug.h"
+#include "util/debug.h"
 
 char *user_config_dir;
 

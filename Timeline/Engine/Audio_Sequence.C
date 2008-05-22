@@ -17,73 +17,54 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
+#include "../Audio_Sequence.H"
 
-#include "Sequence.H"
-#include "Control_Point.H"
+#include "dsp.h"
 
+/**********/
+/* Engine */
+/**********/
 
-#include "Engine/Port.H"
-
-class Control_Sequence : public Sequence
+/* THREAD: IO */
+/** determine region coverage and fill /buf/ with interleaved samples
+ * from /frame/ to /nframes/ for exactly /channels/ channels. */
+nframes_t
+Audio_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels )
 {
+    sample_t *cbuf = new sample_t[ nframes ];
 
-    /* not permitted */
-    Control_Sequence ( const Control_Sequence &rhs );
-    Control_Sequence & operator = ( const Control_Sequence &rhs );
+    memset( cbuf, 0, nframes * sizeof( sample_t ) );
 
-public:
+    /* quick and dirty--let the regions figure out coverage for themselves */
+    for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin();
+          i != _widgets.end(); ++i )
+    {
+        const Audio_Region *r = (Audio_Region*)(*i);
 
-    enum curve_type_e { Linear, Quadratic };
-
-private:
-
-    Port *_output;
-
-    bool _highlighted;
-
-    curve_type_e _type;
-
-    void init ( void );
-
-
-protected:
-
-
-    virtual void get ( Log_Entry &e ) const;
-    void set ( Log_Entry &e );
-
-    Control_Sequence (  ) : Sequence( 0 )
+        for ( int i = channels; i--;  )
         {
-            init();
+            int nfr;
+
+            if ( ! ( nfr = r->read( cbuf, frame, nframes, i ) ) )
+                /* error ? */
+                continue;
+
+            if ( channels == 1 )
+                buffer_mix( buf, cbuf, nframes );
+            else
+                buffer_interleave_one_channel_and_mix( buf, cbuf, i, channels, nframes );
         }
+    }
 
-private:
+    delete[] cbuf;
 
-    void draw_curve ( bool flip, bool filled );
+    /* FIXME: bogus */
+    return nframes;
+}
 
-public:
-
-    static bool draw_with_gradient;
-    static bool draw_with_polygon;
-    static bool draw_with_grid;
-
-    LOG_CREATE_FUNC( Control_Sequence );
-
-    Control_Sequence ( Track * );
-    ~Control_Sequence ( );
-
-    Fl_Cursor cursor ( void ) const { return FL_CURSOR_CROSS; }
-
-//    const char *class_name ( void ) { return "Control_Sequence"; }
-
-    void draw ( void );
-    int handle ( int m );
-
-
-    /* Engine */
-    void output ( Port *p ) { _output = p; }
-    nframes_t play ( sample_t *buf, nframes_t frame, nframes_t nframes );
-    nframes_t process ( nframes_t nframes );
-
-};
+/* /\* THREAD: RT *\/ */
+/* nframes_t */
+/* Audio_Sequence::process ( nframes_t nframes ) */
+/* { */
+/*     return disktream->process( nframes ); */
+/* } */

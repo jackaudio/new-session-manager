@@ -163,7 +163,7 @@ public:
 
     void xposition ( int X );
     void yposition ( int Y );
-    void draw_cursor ( nframes_t frame, Fl_Color color );
+    void draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color) );
     void draw_playhead ( void );
     void redraw_playhead ( void );
     void resize ( int X, int Y, int W, int H );

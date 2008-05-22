@@ -70,6 +70,35 @@ pack_visible_height ( const Fl_Pack *p )
     return th;
 }
 
+#define BP fl_begin_polygon()
+#define EP fl_end_polygon()
+#define vv(x,y) fl_vertex( x, y )
+#define BL fl_begin_line()
+#define EL fl_end_line()
+
+static void
+draw_full_arrow_symbol ( Fl_Color color )
+{
+    /* draw cap */
+    fl_color( color );
+
+    BP;
+    vv( -1, -1 );
+    vv( 0, 1 );
+    vv( 1, -1 );
+    EP;
+
+    /* draw cap outline */
+    fl_color( FL_BLACK );
+
+    BL;
+    vv( -1, -1 );
+    vv( 0, 1 );
+    vv( 1, -1 );
+    EL;
+
+}
+
 /** recalculate the size of vertical scrolling area and inform scrollbar */
 void
 Timeline::adjust_vscroll ( void )
@@ -617,8 +646,8 @@ Timeline::draw ( void )
 
         if ( p1 != p2 )
         {
-            draw_cursor( p1, FL_BLUE );
-            draw_cursor( p2, FL_GREEN );
+            draw_cursor( p1, FL_BLUE, draw_full_arrow_symbol );
+            draw_cursor( p2, FL_GREEN, draw_full_arrow_symbol );
         }
 
         redraw_overlay();
@@ -694,8 +723,9 @@ done:
 
 }
 
+
 void
-Timeline::draw_cursor ( nframes_t frame, Fl_Color color )
+Timeline::draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color) )
 {
 //    int x = ( ts_to_x( frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track::width();
 
@@ -724,26 +754,14 @@ Timeline::draw_cursor ( nframes_t frame, Fl_Color color )
 
     fl_line( x + 1, y, x + 1, h );
 
-    /* draw cap */
-    fl_color( color );
-    fl_begin_polygon();
+    fl_push_matrix();
 
-    fl_vertex( x - 8, y );
-    fl_vertex( x, y + 8 );
-    fl_vertex( x + 8, y );
+    fl_translate( x, y );
+    fl_scale( 16, 8 );
 
-    fl_end_polygon();
+    symbol( color );
 
-
-    /* draw cap outline */
-    fl_color( FL_BLACK );
-    fl_begin_line();
-
-    fl_vertex( x - 8, y );
-    fl_vertex( x, y + 8 );
-    fl_vertex( x + 8, y );
-
-    fl_end_line();
+    fl_pop_matrix();
 
     fl_pop_clip();
 
@@ -752,7 +770,7 @@ Timeline::draw_cursor ( nframes_t frame, Fl_Color color )
 void
 Timeline::draw_playhead ( void )
 {
-    draw_cursor( transport->frame, FL_RED );
+    draw_cursor( transport->frame, FL_RED, draw_full_arrow_symbol );
 }
 
 void

@@ -53,11 +53,13 @@ $(OBJS): make.conf
 TAGS: $(SRCS)
 	etags $(SRCS)
 
-makedepend: make.conf $(SRCS)
+.deps: make.conf $(SRCS)
 	@ echo -n Calculating dependencies...
-	@ makedepend -f- -- $(CXXFLAGS) -I. -IFL -ITimeline -IMixer -- $(SRCS) > makedepend 2>/dev/null && echo $(DONE)
+	@ makedepend -f- -- $(CXXFLAGS) -I. -IFL -ITimeline -IMixer -- $(SRCS) > .deps 2>/dev/null && echo $(DONE)
 
-.PHONEY: clean config
+depend: .deps
+
+.PHONEY: clean config depend
 
 clean: FL_clean Timeline_clean Mixer_clean
 

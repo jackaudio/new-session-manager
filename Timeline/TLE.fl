@@ -118,9 +118,10 @@ Fl::run();} {}
   }
   Function {TLE()} {open
   } {
-    code {make_window();
+    code {Fl::visual( FL_DOUBLE | FL_RGB8 );
 
-// Fl::visual( RGB8 );
+make_window();
+
 Fl::visible_focus( 0 );
 
 Fl::get_system_colors();
@@ -159,7 +160,8 @@ menubar->picked( menubar->find_item( "&Timeline/Capture Format/Wav 24" ) );
 char *path;
 asprintf( &path, "%s/options", user_config_dir );
 ((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options" ), path );
-free( path );} {}
+free( path );} {selected
+    }
   }
   Function {make_window()} {open
   } {
@@ -697,7 +699,7 @@ xruns_output->value( engine->xruns() );} {}
         xywh {-4 122 513 427}
       } {
         Fl_Group {} {
-          label Credits open selected
+          label Credits open
           xywh {-4 147 507 394}
         } {
           Fl_Box {} {

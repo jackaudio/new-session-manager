@@ -263,21 +263,8 @@ public:
 
 //    static void pushed ( Sequence_Widget *w ) { Sequence_Widget::_pushed = w; }
 
-    void begin_drag ( const Drag &d )
-        {
-            _drag = new Drag( d );
-            _r = new Range( _range );
-        }
-
-    void end_drag ( void )
-        {
-            _range = *_r;
-            delete _r;
-            _r = &_range;
-
-            delete _drag;
-            _drag = NULL;
-        }
+    void begin_drag ( const Drag &d );
+    void end_drag ( void );
 
     int dispatch ( int m );
 

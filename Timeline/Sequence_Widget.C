@@ -78,6 +78,32 @@ Sequence_Widget::set ( Log_Entry &e )
 
 }
 
+void
+Sequence_Widget::begin_drag ( const Drag &d )
+{
+    _drag = new Drag( d );
+    _r = new Range( _range );
+}
+
+void
+Sequence_Widget::end_drag ( void )
+{
+    timeline->wrlock();
+
+    /* swap in the new value */
+    _range = *_r;
+
+    timeline->unlock();
+
+    /* TODO: perhaps trigger rebuffer here? */
+
+    delete _r;
+    _r = &_range;
+
+    delete _drag;
+    _drag = NULL;
+}
+
 /** set position of widget on the timeline. */
 void
 Sequence_Widget::start ( nframes_t where )

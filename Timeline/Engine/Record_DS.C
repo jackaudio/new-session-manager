@@ -145,12 +145,11 @@ Record_DS::disk_thread ( void )
         const nframes_t nframes = _nframes;
         const size_t block_size = _nframes * sizeof( sample_t );
 
-
 #ifdef AVOID_UNNECESSARY_COPYING
         sample_t *cbuf = new sample_t[ nframes ];
 #endif
 
-        while ( blocks_ready-- > 0 || ! sem_trywait( &_blocks ) && errno != EAGAIN )
+        while ( blocks_ready-- > 0 || ( ! sem_trywait( &_blocks ) && errno != EAGAIN ) )
         {
 
                 for ( int i = channels(); i--; )
@@ -182,8 +181,6 @@ Record_DS::disk_thread ( void )
 #ifndef AVOID_UNNECESSARY_COPYING
     delete[] cbuf;
 #endif
-
-    _thread = NULL;
 }
 
 
@@ -217,20 +214,15 @@ Record_DS::stop ( nframes_t frame )
 {
     if ( ! _recording )
     {
-        printf( "programming error: attempt to stop recording when no recording is being made\n" );
+        WARNING( "programming error: attempt to stop recording when no recording is being made\n" );
         return;
     }
 
     _recording = false;
 
-    /* FIXME: we may still have data in the buffers waiting to be
-     * written to disk... We should flush it out before stopping... */
-
     _stop_frame = frame;
 
     shutdown();
-
-    /* FIXME: flush buffers here? */
 
     track()->stop( frame );
 

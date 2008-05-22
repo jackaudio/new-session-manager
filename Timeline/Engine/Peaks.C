@@ -530,7 +530,6 @@ Peaks::prepare_for_writing ( void )
     _peak_writer = new Peaks::Streamer( _clip->name(), _clip->channels(), cache_minimum );
 }
 
-/* THREAD: IO */
 void
 Peaks::finish_writing ( void )
 {
@@ -539,10 +538,9 @@ Peaks::finish_writing ( void )
     delete _peak_writer;
     _peak_writer = NULL;
 
-    /* now fill in the rest of the cache */
-    make_peaks_mipmap();
-/*     if ( ! fork() ) */
-/*         exit( make_peaks_mipmap() ); */
+/*     now fill in the rest of the cache */
+    if ( ! fork() )
+        exit( make_peaks_mipmap() );
 
 }
 

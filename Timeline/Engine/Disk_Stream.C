@@ -135,6 +135,7 @@ Disk_Stream::shutdown ( void )
         pthread_join( _thread, NULL );
 
     _thread = 0;
+
     _terminate = false;
 }
 

@@ -209,7 +209,6 @@ Audio_Region::write ( nframes_t nframes )
     return nframes;
 }
 
-/* THREAD: IO */
 /** finalize region capture. Assumes that this *is* a captured region
  and that no other regions refer to the same source */
 bool

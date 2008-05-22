@@ -17,7 +17,6 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-
 #include <FL/Fl.H>
 #include <FL/Fl_Single_Window.H>
 #include <FL/Fl_Single_Window.H>

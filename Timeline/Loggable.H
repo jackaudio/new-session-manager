@@ -231,6 +231,7 @@ protected:
 
     void log_start ( void );
     void log_end ( void );
+
     void log_create  ( void ) const;
     void log_destroy ( void ) const;
 

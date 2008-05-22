@@ -95,8 +95,6 @@ Sequence_Widget::end_drag ( void )
 
     timeline->unlock();
 
-    /* TODO: perhaps trigger rebuffer here? */
-
     delete _r;
     _r = &_range;
 

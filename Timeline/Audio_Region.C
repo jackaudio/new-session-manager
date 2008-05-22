@@ -25,7 +25,6 @@
 #include <FL/Fl_Menu_Item.H>
 #include <stdio.h>
 
-
 #include "Sequence.H"
 #include "Audio_Region.H"
 #include "Timeline.H"
@@ -210,7 +209,7 @@ Audio_Region::handle ( int m )
 
     int ret;
 
-    if ( Sequence_Region::handle( m ) )
+    if ( m != FL_RELEASE && Sequence_Region::handle( m ) )
         return 1;
 
     Logger _log( this );
@@ -360,6 +359,8 @@ Audio_Region::handle ( int m )
             Sequence_Region::handle( m );
 
             copied = false;
+
+            sequence()->handle_widget_change( _r->start, _r->length );
 
             return 1;
         }

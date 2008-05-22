@@ -25,6 +25,7 @@
 #include "Track.H"
 
 #include "Engine/Audio_File.H" // for ::from_file()
+#include "Transport.H" // for locate()
 
 Audio_Sequence::Audio_Sequence ( Track *track ) : Sequence( track )
 {
@@ -115,6 +116,18 @@ deurlify ( char *url )
     *w = NULL;
 }
 
+
+void
+Audio_Sequence::handle_widget_change ( nframes_t start, nframes_t length )
+{
+    /* a region has changed. we may need to rebuffer... */
+
+    /* trigger rebuffer */
+    /* FIXME: we really only need to rebuffer *this* sequence! */
+    /* FIXME: how does this fit into the selection? */
+    if ( start > transport->frame || start + length > transport->frame )
+        transport->locate( transport->frame );
+}
 
 void
 Audio_Sequence::draw ( void )

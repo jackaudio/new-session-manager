@@ -39,6 +39,8 @@ protected:
         }
 
 
+    void handle_widget_change ( nframes_t start, nframes_t length );
+
 public:
 
     LOG_CREATE_FUNC( Audio_Sequence );

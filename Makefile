@@ -63,4 +63,4 @@ depend: .deps
 
 clean: FL_clean Timeline_clean Mixer_clean
 
--include makedepend
+-include .deps

@@ -35,9 +35,8 @@
 #include "Engine/Audio_File.H"
 
 #include <algorithm>
-// using  std::algorithm;
-using namespace std;
-
+using std::min;
+using std::max;
 
 extern Timeline *timeline;
 

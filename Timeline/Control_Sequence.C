@@ -18,6 +18,8 @@
 /*******************************************************************************/
 
 #include <FL/fl_ask.H>
+#include <list>
+using namespace std;
 
 #include "Control_Sequence.H"
 #include "Track.H"

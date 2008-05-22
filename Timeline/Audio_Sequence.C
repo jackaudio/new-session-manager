@@ -17,15 +17,19 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include <Fl/fl_ask.H>
+
 #include "Audio_Sequence.H"
 #include "Waveform.H"
-
-#include <Fl/fl_ask.H>
+#include <list>
+using namespace std;
 
 #include "Track.H"
 
 #include "Engine/Audio_File.H" // for ::from_file()
 #include "Transport.H" // for locate()
+
+
 
 Audio_Sequence::Audio_Sequence ( Track *track ) : Sequence( track )
 {

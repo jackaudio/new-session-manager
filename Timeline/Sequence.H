@@ -31,6 +31,7 @@
 #include <assert.h>
 
 #include <list>
+#include <queue>
 
 class Track;
 class Sequence_Widget;
@@ -46,7 +47,7 @@ class Sequence : public Fl_Widget, public Loggable
     Sequence ( const Sequence &rhs );
     Sequence & operator= ( const Sequence &rhs );
 
-    static queue <Sequence_Widget *> _delete_queue;
+    static std::queue <Sequence_Widget *> _delete_queue;
 
     void init ( void );
 

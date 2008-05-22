@@ -27,6 +27,12 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include <algorithm>
+using std::min;
+using std::max;
+
+
+
 FILE *Loggable::_fp;
 int Loggable::_log_id = 0;
 int Loggable::_level = 0;
@@ -34,8 +40,8 @@ int Loggable::_undo_index = 1;
 
 size_t Loggable::_loggables_size = 0;
 Loggable ** Loggable::_loggables;
-map <string, create_func*> Loggable::_class_map;
-queue <char *> Loggable::_transaction;
+std::map <std::string, create_func*> Loggable::_class_map;
+std::queue <char *> Loggable::_transaction;
 
 bool
 Loggable::open ( const char *filename )
@@ -334,11 +340,11 @@ Loggable::do_this ( const char *s, bool reverse )
         Log_Entry e( sa );
 
 
-        ASSERT( _class_map[ string( classname ) ], "Journal contains an object of class \"%s\", but I don't know how to create such objects.", classname );
+        ASSERT( _class_map[ std::string( classname ) ], "Journal contains an object of class \"%s\", but I don't know how to create such objects.", classname );
 
         {
             /* create */
-            Loggable *l = _class_map[ string( classname ) ]( e );
+            Loggable *l = _class_map[ std::string( classname ) ]( e );
             l->update_id( id );
             l->log_create();
         }
@@ -486,7 +492,7 @@ Loggable::snapshot( FILE *fp )
     {
         const Loggable * l = _loggables[ i ];
 
-        if ( l && _class_map[ string( l->class_name() ) ] )
+        if ( l && _class_map[ std::string( l->class_name() ) ] )
             l->log_create();
     }
 

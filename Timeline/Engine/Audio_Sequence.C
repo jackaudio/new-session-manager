@@ -21,6 +21,10 @@
 
 #include "dsp.h"
 
+using namespace std;
+
+
+
 /**********/
 /* Engine */
 /**********/

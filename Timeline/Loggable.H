@@ -27,38 +27,17 @@
 #include <string.h>
 #include <assert.h>
 
-#include <vector>
 #include <map>
 #include <string>
 #include <queue>
-using namespace std;
 
 #include "types.h"
 
 #include "util/debug.h"
 
-/* welcome to C++ */
-/* This class is just a dummy to allow base classes with null ids but
- * whose children are really loggable. */
-
-/* class Loggable_ID */
-/* { */
-
-/* public: */
-
-/*     Loggable_ID ( )  { } */
-/*     virtual ~Loggable_ID ( ) { } */
-
-/*     virtual int id ( void ) const = 0; */
-
-/*     virtual const char *class_name ( void ) const = 0; */
-
-/* }; */
-
 class Log_Entry;
 class Loggable;
 typedef Loggable *(create_func)(Log_Entry &);
-
 
 #define LOG_REGISTER_CREATE( class ) \
     Loggable::register_create( #class, & class ::create  );
@@ -92,9 +71,9 @@ class Loggable
     static size_t _loggables_size;
     static Loggable ** _loggables;
 
-    static map <string, create_func*> _class_map;
+    static std::map <std::string, create_func*> _class_map;
 
-    static queue <char *> _transaction;
+    static std::queue <char *> _transaction;
 
 private:
 
@@ -214,7 +193,7 @@ public:
         {
 //            printf( "registering %s to %p\n", name, func );
 
-            _class_map[ string( name ) ] = func;
+            _class_map[ std::string( name ) ] = func;
         }
 
     /* log messages for journal */

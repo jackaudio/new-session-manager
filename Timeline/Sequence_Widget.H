@@ -215,7 +215,7 @@ public:
 
     bool selected ( void ) const
         {
-            return ::find( _selection.begin(), _selection.end(), this ) != _selection.end();
+            return std::find( _selection.begin(), _selection.end(), this ) != _selection.end();
         }
 
     void select ( void )

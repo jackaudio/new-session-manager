@@ -17,15 +17,21 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include <FL/fl_draw.H>
+
 #include "Sequence_Widget.H"
 
-#include <FL/fl_draw.H>
+using namespace std;
+
+
 
 list <Sequence_Widget *> Sequence_Widget::_selection;
 Sequence_Widget * Sequence_Widget::_current = NULL;
 Sequence_Widget * Sequence_Widget::_pushed = NULL;
 Sequence_Widget * Sequence_Widget::_belowmouse = NULL;
 Fl_Color Sequence_Widget::_selection_color = FL_MAGENTA;
+
+
 
 void
 Sequence_Widget::get ( Log_Entry &e ) const

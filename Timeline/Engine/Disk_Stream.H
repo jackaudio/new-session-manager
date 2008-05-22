@@ -19,18 +19,16 @@
 
 #pragma once
 
-#include "types.h"
 
 #include <jack/ringbuffer.h>
 #include <semaphore.h>
 #include <errno.h>
 
 #include <pthread.h>
-
-#include "util/Mutex.H"
-
 #include <vector>
-using std::vector;
+
+#include "types.h"
+#include "util/Mutex.H"
 
 class Track;
 class Audio_Sequence;
@@ -52,7 +50,7 @@ protected:
 
     nframes_t _frame;                      /* location of disk read */
 
-    vector < jack_ringbuffer_t * >_rb; /* one ringbuffer for each channel */
+    std::vector < jack_ringbuffer_t * >_rb; /* one ringbuffer for each channel */
 
     sem_t _blocks;          /* semaphore to wake the IO thread with */
 

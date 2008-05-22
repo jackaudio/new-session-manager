@@ -29,6 +29,8 @@
 
 #include "../FL/Boxtypes.H"
 
+using namespace std;
+
 queue <Sequence_Widget *> Sequence::_delete_queue;
 
 Sequence::Sequence ( Track *track ) : Fl_Widget( 0, 0, 0, 0 ), Loggable( true  )

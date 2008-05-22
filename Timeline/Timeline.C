@@ -713,6 +713,13 @@ Timeline::draw ( void )
 
         update_child( *hscroll );
         update_child( *vscroll );
+
+
+        if ( p1 != p2 )
+        {
+            draw_cursor( p1, FL_BLUE, draw_full_arrow_symbol );
+            draw_cursor( p2, FL_GREEN, draw_full_arrow_symbol );
+        }
     }
 
 done:
@@ -915,6 +922,7 @@ int
 Timeline::handle ( int m )
 {
     static Drag *drag = NULL;
+    static bool range = false;
 
     switch ( m )
     {
@@ -922,7 +930,21 @@ Timeline::handle ( int m )
         case FL_UNFOCUS:
 //            redraw();
             return 1;
-        case FL_KEYBOARD:
+        case FL_KEYDOWN:
+            if ( Fl::event_key() == 'r' )
+            {
+                range = true;
+                return 1;
+            }
+            return 0;
+        case FL_KEYUP:
+            if ( Fl::event_key() == 'r' )
+            {
+                range = false;
+                return 1;
+            }
+            return 0;
+//        case FL_KEYBOARD:
         case FL_SHORTCUT:
         {
             if ( Fl::event_state() & ( FL_ALT | FL_CTRL | FL_SHIFT ) )
@@ -1063,6 +1085,14 @@ Timeline::handle ( int m )
 
                     _selection.w = abs( ox );
                     _selection.h = abs( oy );
+
+                    if ( range )
+                    {
+                        p1 = x_to_offset( _selection.x );
+                        p2 = x_to_offset( _selection.x + _selection.w );
+                        redraw();
+                    }
+
                     break;
                 }
                 case FL_RELEASE:
@@ -1070,7 +1100,15 @@ Timeline::handle ( int m )
                     delete drag;
                     drag = NULL;
 
-                    select( _selection );
+
+                    if ( range )
+                    {
+                        p1 = x_to_offset( _selection.x );
+                        p2 = x_to_offset( _selection.x + _selection.w );
+                        redraw();
+                    }
+                    else
+                        select( _selection );
 
                     _selection.w = _selection.h = 0;
                     break;

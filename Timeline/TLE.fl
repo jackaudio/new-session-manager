@@ -2,6 +2,26 @@
 version 1.0108 
 header_name {.H} 
 code_name {.C}
+comment {//
+// Copyright (C) 2008 Jonathan Moore Liles
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+} {in_source in_header
+} 
+
 decl {const float STATUS_UPDATE_FREQ = 0.5f;} {} 
 
 decl {\#include "Fl_Menu_Settings.H"} {} 
@@ -94,8 +114,7 @@ main_window->show();
 
 Fl::lock();
 
-Fl::run();} {selected
-    }
+Fl::run();} {}
   }
   Function {TLE()} {open
   } {
@@ -145,8 +164,8 @@ free( path );} {}
   Function {make_window()} {open
   } {
     Fl_Window main_window {
-      label {Non-DAW - Timeline} open
-      xywh {236 77 1020 765} type Double resizable xclass {Non-DAW} visible
+      label Timeline open
+      xywh {260 192 1020 765} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
@@ -672,13 +691,13 @@ xruns_output->value( engine->xruns() );} {}
   } {
     Fl_Window about_dialog_window {
       label About open
-      private xywh {625 208 495 525} type Double visible
+      private xywh {772 70 495 525} type Double xclass {Non-DAW} visible
     } {
       Fl_Tabs {} {open
         xywh {-4 122 513 427}
       } {
         Fl_Group {} {
-          label Credits open
+          label Credits open selected
           xywh {-4 147 507 394}
         } {
           Fl_Box {} {
@@ -690,7 +709,7 @@ Nobody planned. Nobody helped.
  You can help now by donating time, money,
 and/or replacing the rest of Linux Audio
 with fast, light, reliable alternatives.}
-            xywh {42 203 418 262} box ROUNDED_BOX color 46 labelsize 18
+            xywh {42 188 418 262} box ROUNDED_BOX color 46 labelsize 18
           }
         }
         Fl_Group {} {
@@ -780,7 +799,7 @@ while ( _window->shown() )
   } {
     Fl_Window _window {
       label {New Project} open
-      xywh {23 779 550 195} type Double modal visible
+      xywh {619 742 550 195} type Double modal xclass Non_DAW visible
     } {
       Fl_File_Input _name {
         label {Named:}

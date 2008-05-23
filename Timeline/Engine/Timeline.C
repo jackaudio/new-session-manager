@@ -34,12 +34,14 @@ Timeline::record ( void )
 
     Loggable::block_start();
 
+    nframes_t frame = transport->frame;
+
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
 
         if ( t->armed() && t->record_ds )
-            t->record_ds->start( transport->frame );
+            t->record_ds->start( frame );
     }
 
     deactivate();

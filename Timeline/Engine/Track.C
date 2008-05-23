@@ -29,6 +29,15 @@
 /* Engine */
 /**********/
 
+const Audio_Region *
+Track::capture_region ( void ) const
+{
+    if ( record_ds )
+        return record_ds->capture_region();
+    else
+        return NULL;
+}
+
 void
 Track::update_port_names ( void )
 {
@@ -209,57 +218,47 @@ uuid ( void )
 }
 
 
+
 /* THREAD: IO */
 /** create capture region and prepare to record */
 void
-Track::record ( nframes_t frame )
+Track::record ( Capture *c,  nframes_t frame )
 {
-    assert( ! _capture );
-    assert( ! _capture_af );
-
     char pat[256];
 
     snprintf( pat, sizeof( pat ), "%s-%llu", name(), uuid() );
 
+    c->audio_file = Audio_File_SF::create( pat, engine->sample_rate(), input.size(), Track::capture_format );
 
-    _capture_af = Audio_File_SF::create( pat, engine->sample_rate(), input.size(), Track::capture_format );
-
-    if ( ! _capture_af )
-    {
-        /* ERROR */
-
-    }
+    if ( ! c->audio_file )
+        FATAL( "Could not create file for new capture!" );
 
     /* open it again for reading in the GUI thread */
-    Audio_File *af = Audio_File::from_file( _capture_af->name() );
+    Audio_File *af = Audio_File::from_file( c->audio_file->name() );
 
-    _capture = new Audio_Region( af, sequence(), frame );
+    c->region = new Audio_Region( af, sequence(), frame );
 
-    _capture->prepare();
+    c->region->prepare();
 }
 
 /* THREAD: IO */
 /** write a block to the (already opened) capture file */
 void
-Track::write ( sample_t *buf, nframes_t nframes )
+Track::write ( Capture *c, sample_t *buf, nframes_t nframes )
 {
-    nframes_t l = _capture_af->write( buf, nframes );
+    nframes_t l = c->audio_file->write( buf, nframes );
 
-    _capture->write( l );
+    c->region->write( l );
 }
 
 #include <stdio.h>
 
 /* THREAD: IO */
 void
-Track::stop ( nframes_t frame )
+Track::finalize ( Capture *c, nframes_t frame )
 {
-    _capture->finalize( frame );
+    c->region->finalize( frame );
+    c->audio_file->finalize();
 
-    _capture = NULL;
-
-    _capture_af->finalize();
-
-    delete _capture_af;
-    _capture_af = NULL;
+    delete c->audio_file;
 }

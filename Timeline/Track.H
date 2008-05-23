@@ -69,6 +69,12 @@ public:
 
     static const char *capture_format;
 
+    struct Capture
+    {
+        Audio_File *audio_file;
+        Audio_Region *region;
+    };
+
 private:
 
     static int _soloing;
@@ -84,9 +90,6 @@ private:
     enum { AUDIO } _type;
 
     Audio_Sequence *_sequence;
-
-    Audio_Region *_capture;                                           /* capture region */
-    Audio_File *_capture_af;                                    /* capture write source */
 
     bool configure_outputs ( int n );
     bool configure_inputs ( int n );
@@ -264,14 +267,15 @@ public:
     int handle ( int m );
 
 
-    const Audio_Region *capture ( void ) const { return _capture; }
-
     /* Engine */
+    const Audio_Region *capture_region ( void ) const;
+
     void resize_buffers ( nframes_t nframes );
     nframes_t process ( nframes_t nframes );
     void seek ( nframes_t frame );
-    void record ( nframes_t nframes );
-    void write ( sample_t *buf, nframes_t nframes );
-    void stop ( nframes_t nframes );
+
+    void record ( Capture *c, nframes_t frame );
+    void write ( Capture *c, sample_t *buf, nframes_t nframes );
+    void finalize ( Capture *c, nframes_t frame );
 
 };

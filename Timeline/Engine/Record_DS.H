@@ -24,6 +24,7 @@
 #include "Audio_File_SF.H"
 class Audio_File;
 class Peak_Writer;
+class Track::Capture;
 
 class Record_DS : public Disk_Stream
 {
@@ -32,6 +33,7 @@ class Record_DS : public Disk_Stream
     Record_DS ( const Record_DS &rhs );
     Record_DS & operator= ( const Record_DS &rhs );
 
+    Track::Capture *_capture;
 
     nframes_t _frames_written;
     volatile nframes_t _stop_frame;
@@ -53,6 +55,7 @@ public:
             sem_destroy( &_blocks );
             sem_init( &_blocks, 0, 0 );
 
+            _capture = NULL;
             _recording = false;
             _stop_frame = -1;
             _frames_written = 0;
@@ -60,6 +63,7 @@ public:
 
 /*     bool seek_pending ( void ); */
 /*     void seek ( nframes_t frame ); */
+    const Audio_Region * capture_region ( void ) const;
 
     void start ( nframes_t frame );
     void stop ( nframes_t frame );

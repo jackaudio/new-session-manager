@@ -66,7 +66,7 @@ public:
     void dump ( void );
     void remove_selected ( void );
 
-    const Audio_Region *capture ( void ) const;
+    const Audio_Region *capture_region ( void ) const;
 
     nframes_t play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels );
 

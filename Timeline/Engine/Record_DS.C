@@ -31,6 +31,15 @@
 
 #include "util/debug.h"
 
+const Audio_Region *
+Record_DS::capture_region ( void ) const
+{
+    if ( _capture )
+        return _capture->region;
+    else
+        return NULL;
+}
+
 /* THREAD: IO */
 /** write /nframes/ from buf to the capture file of the attached track */
 void
@@ -43,7 +52,7 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
 
 //    timeline->wrlock();
 
-    track()->write( buf, nframes );
+    track()->write( _capture, buf, nframes );
 
     _frames_written += nframes;
 
@@ -181,6 +190,14 @@ Record_DS::disk_thread ( void )
 #ifndef AVOID_UNNECESSARY_COPYING
     delete[] cbuf;
 #endif
+
+    /* now finalize the recording */
+    track()->finalize( _capture, _stop_frame );
+
+    delete _capture;
+    _capture = NULL;
+
+    _terminate = false;
 }
 
 
@@ -200,7 +217,9 @@ Record_DS::start ( nframes_t frame )
 
     _frame = frame;
 
-    track()->record( frame );
+    _capture = new Track::Capture;
+
+    track()->record( _capture, frame );
 
     run();
 
@@ -223,8 +242,6 @@ Record_DS::stop ( nframes_t frame )
     _stop_frame = frame;
 
     shutdown();
-
-    track()->stop( frame );
 
     DMESSAGE( "recording finished" );
 }

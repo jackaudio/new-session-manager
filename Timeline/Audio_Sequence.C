@@ -54,9 +54,9 @@ Audio_Sequence::~Audio_Sequence ( )
 
 
 const Audio_Region *
-Audio_Sequence::capture ( void ) const
+Audio_Sequence::capture_region ( void ) const
 {
-    return track()->capture();
+    return track()->capture_region();
 }
 
 void

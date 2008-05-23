@@ -122,7 +122,7 @@ Disk_Stream::base_flush ( bool is_output )
 
 }
 
-/** stop the IO thread, block until it finishes. */
+/** stop the IO thread. */
 void
 Disk_Stream::shutdown ( void )
 {
@@ -132,11 +132,15 @@ Disk_Stream::shutdown ( void )
     block_processed();
 
     if ( _thread )
-        pthread_join( _thread, NULL );
+        pthread_detach( _thread );
+
+        /* we must block until the thread returns, because it might
+         * still have data left to process in its buffers--and we
+         * don't want to delete any of the datastructures it's using
+         * until it finishes with them. */
+//        pthread_join( _thread, NULL );
 
     _thread = 0;
-
-    _terminate = false;
 }
 
 Track *

@@ -503,7 +503,7 @@ Audio_Region::draw_box( void )
 
     color = fl_color_average( color, sequence()->color(), 0.75f );
 
-    if ( this == ((Audio_Sequence*)sequence())->capture() )
+    if ( this == ((Audio_Sequence*)sequence())->capture_region() )
     {
         color = FL_RED;
     }

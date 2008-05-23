@@ -208,7 +208,7 @@ Record_DS::start ( nframes_t frame )
 
     if ( _recording )
     {
-        printf( "programming error: attempt to start recording while recording is still in progress\n" );
+        WARNING( "programming error: attempt to start recording while recording is still in progress" );
         return;
     }
 
@@ -233,7 +233,7 @@ Record_DS::stop ( nframes_t frame )
 {
     if ( ! _recording )
     {
-        WARNING( "programming error: attempt to stop recording when no recording is being made\n" );
+        WARNING( "programming error: attempt to stop recording when no recording is being made" );
         return;
     }
 
@@ -258,8 +258,6 @@ Record_DS::process ( nframes_t nframes )
 
     const size_t block_size = nframes * sizeof( sample_t );
 
-//    printf( "process: %lu %lu %lu\n", _frame, _frame + nframes, nframes );
-
     for ( int i = channels(); i--;  )
     {
         void *buf = track()->input[ i ].buffer( nframes );
@@ -267,7 +265,6 @@ Record_DS::process ( nframes_t nframes )
         if ( jack_ringbuffer_write( _rb[ i ], (char*)buf, block_size ) < block_size )
         {
             ++_xruns;
-            printf( "RT: buffer overrun (disk can't keep up).\n" );
             memset( buf, 0, block_size );
             /* FIXME: we need to resync somehow */
         }

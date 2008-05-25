@@ -1,16 +1,16 @@
 # -*- mode: makefile; -*-
 
-FL_SRCS= \
-   FL/Fl_Scalepack.C \
-   FL/Fl_Arc_Dial.C \
-   FL/Fl_Text_Edit_Window.C \
-   FL/Boxtypes.C \
+FL/.sources:
+	@ echo "FL_SRCS=\\" > FL/.sources
+	@ git ls-files 'FL/*.C' | tr '\n' ' ' >> FL/.sources
+	@ git ls-files 'FL/*.fl' | tr '\n' ' ' >> FL/.sources
 
-FL_OBJS := $(FL_SRCS:.C=.o)
+include FL/.sources
+
+FL_SRCS:=$(FL_SRCS:.fl=.C)
+FL_OBJS:=$(FL_SRCS:.C=.o)
 
 all: FL/libfl_widgets.a
-
-# $(OBJS): Makefile
 
 FL/libfl_widgets.a: $(FL_OBJS)
 	@ ar rcs $@ $(FL_OBJS)

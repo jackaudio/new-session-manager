@@ -1,12 +1,16 @@
 # -*- mode: makefile; -*-
 
-Mixer_SRCS= \
-Mixer/DPM.C \
-Mixer/Mixer_Strip.C \
-Mixer/Panner.C \
-Mixer/Mixer.C \
+Mixer/.sources:
+	@ echo "Mixer_SRCS=\\" > Mixer/.sources
+	@ git ls-files 'Mixer/*.C' | tr '\n' ' ' >> Mixer/.sources
+	@ git ls-files 'Mixer/*.fl' | tr '\n' ' ' >> Mixer/.sources
 
-Mixer_OBJS := $(Mixer_SRCS:.C=.o)
+include Mixer/.sources
+
+Mixer_SRCS += util/debug.C
+
+Mixer_SRCS:=$(Mixer_SRCS:.fl=.C)
+Mixer_OBJS:=$(Mixer_SRCS:.C=.o)
 
 Mixer_LIBS := $(FLTK_LIBS)
 

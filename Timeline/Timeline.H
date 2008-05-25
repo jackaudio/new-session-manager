@@ -36,6 +36,8 @@ class Fl_Pack;
 class Fl_Scrollbar;
 class Fl_Widget;
 
+#include <FL/Fl_Menu.H>
+
 class Timeline;
 extern Timeline *timeline;
 
@@ -92,10 +94,11 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     Scalebar     *hscroll;
     Fl_Scrollbar *vscroll;
 
-
     void adjust_vscroll ( void );
     static void cb_scroll ( Fl_Widget *w, void *v );
     void cb_scroll ( Fl_Widget *w );
+    static void menu_cb ( Fl_Widget *w, void *v );
+    void menu_cb ( Fl_Widget *w );
 
     int _fpp;                                                 /* frames per pixel, power of two */
     nframes_t _length;
@@ -127,6 +130,7 @@ public:
     Time_Sequence  *time_track;
     Annotation_Sequence *ruler_track;
 
+    Fl_Menu *menu;
 
     nframes_t xoffset;
 

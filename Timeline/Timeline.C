@@ -140,6 +140,64 @@ Timeline::cb_scroll ( Fl_Widget *w )
     }
 }
 
+#include <FL/Fl_Menu.H>
+
+void
+Timeline::menu_cb ( Fl_Widget *w, void *v )
+{
+    ((Timeline*)v)->menu_cb( w );
+}
+
+void
+Timeline::menu_cb ( Fl_Widget *w )
+{
+    Fl_Menu_ *m = static_cast<Fl_Menu_*>(w);
+
+    const char *picked = m->mvalue()->label();
+
+
+/*     m->item_pathname( picked, sizeof( picked ) ); */
+
+    DMESSAGE( "%s", picked );
+
+    if ( ! strcmp( picked, "Add Audio Track" ) )
+    {
+        /* FIXME: prompt for I/O config? */
+
+        Loggable::block_start();
+
+        /* add audio track */
+        char *name = get_unique_track_name( "Audio" );
+
+        Track *t = new Track( name );
+
+        Audio_Sequence *o = new Audio_Sequence( t );
+
+        add_track( t );
+
+        t->sequence( o );
+
+        Loggable::block_end();
+    }
+    else if ( ! strcmp( picked, "Tempo from range" ) )
+    {
+        if ( p1 != p2 )
+        {
+            if ( p1 > p2 )
+            {
+                nframes_t t = p2;
+                p2 = p1;
+                p1 = t;
+            }
+
+            beats_per_minute( p1, sample_rate() * 60 / (float)( p2 - p1 ) );
+
+            p2 = p1;
+        }
+    }
+    else
+        WARNING( "programming error: Unknown menu item" );
+}
 
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Window( X, Y, W, H, L )
 {
@@ -154,6 +212,13 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     X = Y = 0;
 
     p1 = p2 = 0;
+
+    menu = new Fl_Menu;
+
+/*     menu->add( "Add Track", 0, 0, 0  ); */
+
+    menu->add( "Add Audio Track", 'a', &Timeline::menu_cb, this );
+    menu->add( "Tempo from range", 't', &Timeline::menu_cb, this );
 
     {
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
@@ -324,8 +389,8 @@ nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
 }
 
 /** Set the value pointed to by /frame/ to the frame number of the of
- the nearest measure line to /when/. Returns true if the new value of
- *frame is valid, false otherwise. */
+    the nearest measure line to /when/. Returns true if the new value of
+    *frame is valid, false otherwise. */
 bool
 Timeline::nearest_line ( nframes_t when, nframes_t *frame ) const
 {
@@ -388,7 +453,7 @@ Timeline::update_tempomap ( void )
         _tempomap.push_back( *i );
 
     /* FIXME: shouldn't we ensure that time points always precede
-     tempo points at the same position? */
+       tempo points at the same position? */
     _tempomap.sort( Sequence_Widget::sort_func );
 }
 
@@ -924,24 +989,6 @@ Timeline::handle ( int m )
                     redraw();
                     return 1;
                 }
-                case 't':
-                {
-                    if ( p1 != p2 )
-                    {
-                        if ( p1 > p2 )
-                        {
-                            nframes_t t = p2;
-                            p2 = p1;
-                            p1 = t;
-                        }
-
-                        beats_per_minute( p1, sample_rate() * 60 / (float)( p2 - p1 ) );
-
-                        p2 = p1;
-                    }
-
-                    return 1;
-                }
                 default:
                     return Fl_Overlay_Window::handle( m );
             }
@@ -981,36 +1028,20 @@ Timeline::handle ( int m )
                     }
                     else if ( Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
                     {
-                        Fl_Menu_Item menu[] =
-                            {
-                                { "Add Track",        0, 0, 0, FL_SUBMENU    },
-                                { "Audio",           0, 0, 0 },
-                                { 0 },
-                                { 0 },
-                            };
+
+/*                         Fl_Menu_Item menu[] = */
+/*                             { */
+/*                                 { "Add Track",        0, 0, 0, FL_SUBMENU    }, */
+/*                                 { "Audio",           0, 0, 0 }, */
+/*                                 { 0 }, */
+/*                                 { 0 }, */
+/*                             }; */
 
                         const Fl_Menu_Item *r = menu->popup( X, Y, "Timeline" );
-
-                        if ( r == &menu[1] )
+                        if ( r )
                         {
-                            /* FIXME: prompt for I/O config? */
-
-                            Loggable::block_start();
-
-                            /* add audio track */
-                            char *name = get_unique_track_name( "Audio" );
-
-                            Track *t = new Track( name );
-
-                            Audio_Sequence *o = new Audio_Sequence( t );
-
-//                            new Control_Sequence( t );
-
-                            add_track( t );
-
-                            t->sequence( o );
-
-                            Loggable::block_end();
+                            ((Fl_Menu_*)(menu))->value( r );
+                            r->do_callback( (Fl_Widget*)menu );
                         }
 
                     }

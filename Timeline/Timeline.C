@@ -924,6 +924,24 @@ Timeline::handle ( int m )
                     redraw();
                     return 1;
                 }
+                case 't':
+                {
+                    if ( p1 != p2 )
+                    {
+                        if ( p1 > p2 )
+                        {
+                            nframes_t t = p2;
+                            p2 = p1;
+                            p1 = t;
+                        }
+
+                        beats_per_minute( p1, sample_rate() * 60 / (float)( p2 - p1 ) );
+
+                        p2 = p1;
+                    }
+
+                    return 1;
+                }
                 default:
                     return Fl_Overlay_Window::handle( m );
             }

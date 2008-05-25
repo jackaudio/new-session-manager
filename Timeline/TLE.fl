@@ -164,7 +164,7 @@ free( path );} {}
       label Timeline open
       xywh {225 89 1020 765} type Double resizable xclass Non_DAW visible
     } {
-      Fl_Menu_Bar menubar {open selected
+      Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -296,17 +296,17 @@ Loggable::compact();}
             MenuItem {} {
               label {&In}
               callback {timeline->zoom_in();}
-              xywh {20 20 40 25}
+              xywh {20 20 40 25} shortcut 0x2b
             }
             MenuItem {} {
               label {&Out}
               callback {timeline->zoom_out();}
-              xywh {30 30 40 25}
+              xywh {30 30 40 25} shortcut 0x5f
             }
             MenuItem {} {
               label {&Fit}
               callback {timeline->zoom_fit();}
-              xywh {10 10 40 25} divider
+              xywh {10 10 40 25} shortcut 0x3d divider
             }
             MenuItem {} {
               label {1 sec.}
@@ -645,7 +645,8 @@ if ( ! Project::open() )
 	find_item( m, "&Project/&Compact" )->deactivate();
 	find_item( m, "&Project/&Info" )->deactivate();
 	
-	find_item( m, "&Options/&Project/&Timeline" )->deactivate();
+ 	find_item( m, "&Options/&Project/&Timeline" )->deactivate();
+ 	find_item( m, "&Timeline" )->deactivate();
 
 	timeline->deactivate();
 	transport->deactivate();
@@ -657,13 +658,15 @@ else
 	find_item( m, "&Project/&Info" )->activate();
 
 	find_item( m, "&Options/&Project/&Timeline" )->activate();
+ 	find_item( m, "&Timeline" )->activate();
 	
 	timeline->activate();
 	transport->activate();	
 }
 
 m->redraw();
-project_name->redraw();} {}
+project_name->redraw();} {selected
+    }
   }
   Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
   } {

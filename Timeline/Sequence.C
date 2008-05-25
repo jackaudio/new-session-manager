@@ -124,12 +124,12 @@ Sequence::draw ( void )
 
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
-    if ( Sequence_Widget::pushed() && Sequence_Widget::pushed()->sequence() == this )
-    {
-        /* make sure the Sequence_Widget::pushed widget is above all others */
-        remove( Sequence_Widget::pushed() );
-        add( Sequence_Widget::pushed() );
-    }
+/*     if ( Sequence_Widget::pushed() && Sequence_Widget::pushed()->sequence() == this ) */
+/*     { */
+/*         /\* make sure the Sequence_Widget::pushed widget is above all others *\/ */
+/*         remove( Sequence_Widget::pushed() ); */
+/*         add( Sequence_Widget::pushed() ); */
+/*     } */
 
 //    printf( "track::draw %d,%d %dx%d\n", X,Y,W,H );
 
@@ -149,7 +149,11 @@ Sequence::draw ( void )
 void
 Sequence::remove ( Sequence_Widget *r )
 {
+    timeline->wrlock();
+
     _widgets.remove( r );
+
+    timeline->unlock();
 
     handle_widget_change( r->start(), r->length() );
 }
@@ -209,10 +213,14 @@ Sequence::add ( Sequence_Widget *r )
 //        r->track()->redraw();
     }
 
+    timeline->wrlock();
+
     r->sequence( this );
     _widgets.push_back( r );
 
     sort();
+
+    timeline->unlock();
 
     handle_widget_change( r->start(), r->length() );
 }

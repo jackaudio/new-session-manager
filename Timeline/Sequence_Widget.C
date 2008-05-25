@@ -88,7 +88,12 @@ void
 Sequence_Widget::begin_drag ( const Drag &d )
 {
     _drag = new Drag( d );
+
+    timeline->rdlock();
+
     _r = new Range( _range );
+
+    timeline->unlock();
 }
 
 void
@@ -106,6 +111,8 @@ Sequence_Widget::end_drag ( void )
 
     delete _drag;
     _drag = NULL;
+
+    sequence()->handle_widget_change( _r->start, _r->length );
 }
 
 /** set position of widget on the timeline. */
@@ -312,8 +319,6 @@ Sequence_Widget::handle ( int m )
                 end_drag();
                 _log.release();
             }
-
-            sequence()->handle_widget_change( _r->start, _r->length );
 
             fl_cursor( FL_CURSOR_HAND );
 

@@ -25,6 +25,9 @@
 #include <FL/fl_draw.H>
 #include <FL/Fl_Scrollbar.H>
 
+
+#include <FL/Fl_Menu_Button.H>
+
 #include "Timeline.H"
 #include "Tempo_Sequence.H"
 #include "Time_Sequence.H"
@@ -155,7 +158,6 @@ Timeline::menu_cb ( Fl_Widget *w )
 
     const char *picked = m->mvalue()->label();
 
-
 /*     m->item_pathname( picked, sizeof( picked ) ); */
 
     DMESSAGE( "%s", picked );
@@ -232,6 +234,7 @@ Timeline::menu_cb ( Fl_Widget *w )
         WARNING( "programming error: Unknown menu item" );
 }
 
+
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Window( X, Y, W, H, L )
 {
     _sample_rate = 0;
@@ -246,7 +249,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
     p1 = p2 = 0;
 
-    menu = new Fl_Menu;
+    menu = new Fl_Menu_Button( 0, 0, 0, 0, "Timeline" );
 
 /*     menu->add( "Add Track", 0, 0, 0  ); */
 
@@ -1026,20 +1029,11 @@ Timeline::handle ( int m )
                     }
                     else if ( Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
                     {
-
-/*                         Fl_Menu_Item menu[] = */
-/*                             { */
-/*                                 { "Add Track",        0, 0, 0, FL_SUBMENU    }, */
-/*                                 { "Audio",           0, 0, 0 }, */
-/*                                 { 0 }, */
-/*                                 { 0 }, */
-/*                             }; */
-
-                        const Fl_Menu_Item *r = menu->popup( X, Y, "Timeline" );
+                        const Fl_Menu_Item *r = menu->menu()->popup( X, Y, "Timeline" );
                         if ( r )
                         {
-                            ((Fl_Menu_*)(menu))->value( r );
-                            r->do_callback( (Fl_Widget*)menu );
+                            menu->value( r );
+                            r->do_callback( static_cast<Fl_Widget*>(menu) );
                         }
 
                     }

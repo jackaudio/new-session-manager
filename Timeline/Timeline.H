@@ -36,7 +36,7 @@ class Fl_Pack;
 class Fl_Scrollbar;
 class Fl_Widget;
 
-#include <FL/Fl_Menu.H>
+class Fl_Menu_Button;
 
 class Timeline;
 extern Timeline *timeline;
@@ -130,7 +130,7 @@ public:
     Time_Sequence  *time_track;
     Annotation_Sequence *ruler_track;
 
-    Fl_Menu *menu;
+    Fl_Menu_Button *menu;
 
     nframes_t xoffset;
 

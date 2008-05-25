@@ -111,13 +111,6 @@ Fl::run();} {}
 
 make_window();
 
-{
-	Fl_Menu_Item *tl = (Fl_Menu_Item*)menubar->find_item( "&Timeline" );
-	
-	tl->user_data( timeline->menu );
-	tl->flags = FL_SUBMENU_POINTER;
-}
-
 Fl::visible_focus( 0 );
 
 Fl::get_system_colors();
@@ -156,7 +149,11 @@ menubar->picked( menubar->find_item( "&Options/&Project/&Timeline/Capture Format
 char *path;
 asprintf( &path, "%s/options", user_config_dir );
 ((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options/&Global" ), path );
-free( path );} {}
+free( path );
+
+
+menubar->add( "&Timeline", 0, 0, const_cast< Fl_Menu_Item *>( timeline->menu->menu() ), FL_SUBMENU_POINTER );} {selected
+    }
   }
   Function {make_window()} {open
   } {
@@ -283,7 +280,7 @@ Loggable::compact();}
         }
         MenuItem {} {
           label {&Timeline}
-          xywh {5 5 40 25}
+          xywh {0 0 40 25}
         }
         Submenu {} {
           label {&View} open
@@ -665,8 +662,7 @@ else
 }
 
 m->redraw();
-project_name->redraw();} {selected
-    }
+project_name->redraw();} {}
   }
   Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
   } {

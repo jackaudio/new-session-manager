@@ -59,28 +59,21 @@ fi
 
 ask ()
 {
-    local A D
+    local A D O
 
     D="`eval echo \\$$2`"
     D=${D:-$3}
 
     if [ $HELP = yes ]
     then
-        echo -en "\t"
-
-        if [ "$D" = yes ] || [ "$D" = no ]
+        if [ "$3" = yes ] || [ "$3" = no ]
         then
-            if [ "$D" = yes ]
-            then
-                echo -n "$2" | sed s/^USE_/--enable-/ | tr '[[:upper:]]' '[[:lower:]]'
-            else
-                echo -n "$2" | sed s/^USE_/--disable-/ | tr '[[:upper:]]' '[[:lower:]]'
-            fi
+            O=`echo -n "$2" | sed s/^USE_/--enable-/ | tr '[[:upper:]]' '[[:lower:]]'`
         else
-            echo -n "--$2" | tr '[[:upper:]]' '[[:lower:]]'
+            O=`echo -n "--$2" | tr '[[:upper:]]' '[[:lower:]]'`
         fi
 
-        echo -e "\t$1"
+        printf "    ${BOLD}${GREEN}%-15s${SGR0}\t%-40s (currently: ${BOLD}%s${SGR0})\n" "$O" "$1" "$D"
 
         return
     fi
@@ -165,6 +158,11 @@ begin ()
     ok
 }
 
+warn ()
+{
+    echo "${BOLD}${YELLOW}* ${SGR0}$*"
+}
+
 begin_options ()
 {
     # get the old values
@@ -172,11 +170,9 @@ begin_options ()
 
     if [ $HELP = yes ]
     then
-        echo "****"
-        echo "This is not an autoconf script! Run without any arguments and you will be prompted."
-        echo "Alternatively, you may use the following autoconf style arguments for"
-        echo "non-interactive configuration."
-        echo "****"
+        warn "This is not an autoconf script! Run without any arguments and you will be prompted."
+        warn "Alternatively, you may use the following autoconf style arguments for"
+        warn "non-interactive configuration."
         echo
         echo " Available options:"
         echo

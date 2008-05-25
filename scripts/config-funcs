@@ -14,29 +14,98 @@ fatal ()
     exit 255
 }
 
-[ $# -gt 0 ] && fatal "This is not an autoconf script. Run it without any options and you will be prompted."
+UPDATE=no
+HELP=no
+
+split ()
+{
+    while [ $# -gt 0 ]
+    do
+        echo $1
+        shift 1
+    done
+}
+
+if [ $# -gt 0 ]
+then
+    case "$1" in
+        --update)
+            UPDATE=yes
+            shift 1
+            ;;
+        --help)
+            HELP=yes
+            shift 1
+            ;;
+        *)
+#            fatal "This is not an autoconf script. Run it without any options and you will be prompted."
+            ;;
+    esac
+
+    if [ $# -gt 0 ]
+    then
+        echo "## options" > make.conf
+
+        split "$@" | sed '
+s/--\(enable\|disable\)-\([^ =]\+\)/--\1-\U\2/g;
+s/--enable-\([^ =]\+\)=\(.*\)/USE_\1=\2/g;
+s/--enable-\([^ =]\+\)/USE_\1=yes/g;
+s/--disable-\([^ =]\+\)/USE_\1=no/g;
+s/--\([^ =]\+\)/\1/g;
+' | sed -n '/^[^ =]\+=./p' >> make.conf
+        UPDATE=yes;
+    fi
+fi
 
 ask ()
 {
-   local A D
+    local A D
 
-   D="`eval echo \\$$2`"
-   D=${D:-$3}
+    D="`eval echo \\$$2`"
+    D=${D:-$3}
 
-   echo -n "$BLACK$BOLD::$SGR0 $1 [$BOLD${D}$SGR0] "
-   read A
-   A=${A:-$D}
+    if [ $HELP = yes ]
+    then
+        echo -en "\t"
 
-   if [ "$3" = yes ] || [ "$3" = no ]
-     then
-       case "$A" in
-           no | n | N) A=no ;;
-           yes | y | Y) A=yes ;;
-           * ) fatal "Invalid response. Must be 'yes' or 'no'" ;;
-       esac
-   fi
+        if [ "$D" = yes ] || [ "$D" = no ]
+        then
+            if [ "$D" = yes ]
+            then
+                echo -n "$2" | sed s/^USE_/--enable-/ | tr '[[:upper:]]' '[[:lower:]]'
+            else
+                echo -n "$2" | sed s/^USE_/--disable-/ | tr '[[:upper:]]' '[[:lower:]]'
+            fi
+        else
+            echo -n "--$2" | tr '[[:upper:]]' '[[:lower:]]'
+        fi
 
-   append "${2}=${A:-$D}"
+        echo -e "\t$1"
+
+        return
+    fi
+
+    echo -n "$BLACK$BOLD::$SGR0 ${1}? [$BOLD${D}$SGR0] "
+
+    if [ $UPDATE = yes ]
+    then
+        A="$D"
+        echo
+    else
+        read A
+        A=${A:-$D}
+    fi
+
+    if [ "$3" = yes ] || [ "$3" = no ]
+    then
+        case "$A" in
+            no | n | N) A=no ;;
+            yes | y | Y) A=yes ;;
+            * ) fatal "Invalid response. Must be 'yes' or 'no'" ;;
+        esac
+    fi
+
+    append "${2}=${A:-$D}"
 }
 
 ok ()
@@ -101,15 +170,34 @@ begin_options ()
     # get the old values
     extract_options
 
-    echo > make.conf
-    append "# This file was automatically generated on `date`. Any changes may be lost!"
-    append "## options"
+    if [ $HELP = yes ]
+    then
+        echo "****"
+        echo "This is not an autoconf script! Run without any arguments and you will be prompted."
+        echo "Alternatively, you may use the following autoconf style arguments for"
+        echo "non-interactive configuration."
+        echo "****"
+        echo
+        echo " Available options:"
+        echo
+    else
+        echo > make.conf
+        append "# This file was automatically generated on `date`. Any changes may be lost!"
+        append "## options"
 
-    echo "--- Configuration required ---"
+        if [ $UPDATE = yes ]
+        then
+            echo "--- Updating configuration ---"
+        else
+            echo "--- Configuration required ---"
+        fi
+    fi
 }
 
 begin_tests ()
 {
+    [ $HELP = yes ] && exit 0
+
     append "## libs"
     extract_options
 }
@@ -173,7 +261,7 @@ test_version ()
 
     if  [ $2 != -ge ] && [ $2 != -le ]
     then
-       fatal "Syntax error"
+        fatal "Syntax error"
     fi
 
     _test_version $1 $2 $3

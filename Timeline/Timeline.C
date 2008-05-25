@@ -195,6 +195,39 @@ Timeline::menu_cb ( Fl_Widget *w )
             p2 = p1;
         }
     }
+    else if ( ! strcmp( picked, "Playhead to mouse" ) )
+    {
+                    int X = Fl::event_x() - Track::width();
+
+                    if ( X > 0 )
+                    {
+                        transport->locate( xoffset + x_to_ts( X ) );
+                    }
+    }
+    else if ( ! strcmp( picked, "P1 to mouse" ) )
+    {
+        int X = Fl::event_x() - Track::width();
+
+        if ( X > 0 )
+        {
+            p1 = xoffset + x_to_ts( X );
+                    }
+
+        /* FIXME: only needs to damage the location of the old cursor! */
+        redraw();
+    }
+    else if ( ! strcmp( picked, "P2 to mouse" ) )
+    {
+        int X = Fl::event_x() - Track::width();
+
+        if ( X > 0 )
+        {
+            p2 = xoffset + x_to_ts( X );
+        }
+
+        /* FIXME: only needs to damage the location of the old cursor! */
+        redraw();
+    }
     else
         WARNING( "programming error: Unknown menu item" );
 }
@@ -219,6 +252,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
     menu->add( "Add Audio Track", 'a', &Timeline::menu_cb, this );
     menu->add( "Tempo from range", 't', &Timeline::menu_cb, this );
+    menu->add( "Playhead to mouse", 'p', &Timeline::menu_cb, this );
+    menu->add( "P1 to mouse", '[', &Timeline::menu_cb, this );
+    menu->add( "P2 to mouse", ']', &Timeline::menu_cb, this );
 
     {
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
@@ -951,44 +987,6 @@ Timeline::handle ( int m )
                 case FL_End:
                     /* keep scrollbar from eating these. */
                     return 0;
-                case 'p':
-                {
-                    int X = Fl::event_x() - Track::width();
-
-                    if ( X > 0 )
-                    {
-                        transport->locate( xoffset + x_to_ts( X ) );
-                    }
-
-                    return 1;
-                }
-                case '[':
-                {
-                    int X = Fl::event_x() - Track::width();
-
-                    if ( X > 0 )
-                    {
-                        p1 = xoffset + x_to_ts( X );
-                    }
-
-                    /* FIXME: only needs to damage the location of the old cursor! */
-                    redraw();
-
-                    return 1;
-                }
-                case ']':
-                {
-                    int X = Fl::event_x() - Track::width();
-
-                    if ( X > 0 )
-                    {
-                        p2 = xoffset + x_to_ts( X );
-                    }
-
-                    /* FIXME: only needs to damage the location of the old cursor! */
-                    redraw();
-                    return 1;
-                }
                 default:
                     return Fl_Overlay_Window::handle( m );
             }

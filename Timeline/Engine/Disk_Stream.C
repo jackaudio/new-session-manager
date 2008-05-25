@@ -74,6 +74,8 @@ Disk_Stream::~Disk_Stream ( )
     /* it isn't safe to do all this with the RT thread running */
     engine->lock();
 
+    shutdown();
+
     _track = NULL;
 
     sem_destroy( &_blocks );

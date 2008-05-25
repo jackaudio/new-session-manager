@@ -81,10 +81,6 @@
 	#define __FUNCTION__ NULL
 #endif
 
-#include <string.h>
-#include <stdio.h>
-#include <stdarg.h>
-
 typedef enum {
 	W_MESSAGE = 0,
 	W_WARNING,
@@ -95,7 +91,7 @@ void
 warnf ( warning_t level,
 	   const char *module,
 	   const char *file,
-        const char *function, size_t line, const char *fmt, ... );
+        const char *function, int line, const char *fmt, ... );
 
 
 #ifndef NDEBUG

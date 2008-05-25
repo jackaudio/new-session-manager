@@ -24,7 +24,7 @@
 
 LASH_Client::LASH_Client ( )
 {
-    _void = NULL;
+    _void = 0;
 }
 
 LASH_Client::~LASH_Client ( )

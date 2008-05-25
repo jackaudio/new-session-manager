@@ -19,11 +19,15 @@
 
 #include "debug.h"
 
+#include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
+
 void
 warnf ( warning_t level,
 	   const char *module,
 	   const char *file,
-	   const char *function, size_t line, const char *fmt, ... )
+	   const char *function, int line, const char *fmt, ... )
 {
 	va_list args;
 	static const char *level_tab[] = {

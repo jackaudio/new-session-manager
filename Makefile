@@ -9,7 +9,7 @@
 
 VERSION := 0.5.0
 
-all: make.conf FL Timeline Mixer
+all: make.conf FL Timeline
 
 make.conf: configure
 	@ ./configure
@@ -26,10 +26,9 @@ else
 endif
 
 CXXFLAGS += $(SNDFILE_CFLAGS) $(LASH_CFLAGS) $(FLTK_CFLAGS) -DINSTALL_PREFIX="\"$(prefix)\"" -DVERSION=\"$(VERSION)\"
-INCLUDES := -Iutil
+INCLUDES := -I. -Iutil -IFL
 
 include scripts/colors
-
 
 .C.o:
 	@ echo "Compiling: $(BOLD)$(YELLOW)$<$(SGR0)"
@@ -42,10 +41,9 @@ DONE := $(BOLD)$(GREEN)done$(SGR0)
 
 include FL/makefile.inc
 include Timeline/makefile.inc
-include Mixer/makefile.inc
 
-SRCS:=$(Timeline_SRCS) $(FL_SRCS) $(Mixer_SRCS)
-OBJS:=$(FL_OBJS) $(Timeline_OBJS) $(Mixer_OBJS)
+SRCS:=$(Timeline_SRCS) $(FL_SRCS)
+OBJS:=$(FL_OBJS) $(Timeline_OBJS)
 
 # FIXME: isn't there a better way?
 $(OBJS): make.conf
@@ -55,12 +53,12 @@ TAGS: $(SRCS)
 
 .deps: make.conf $(SRCS)
 	@ echo -n Calculating dependencies...
-	@ makedepend -f- -- $(CXXFLAGS) -I. -IFL -ITimeline -IMixer -- $(SRCS) > .deps 2>/dev/null && echo $(DONE)
+	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) > .deps 2>/dev/null && echo $(DONE)
 
 depend: .deps
 
 .PHONEY: clean config depend
 
-clean: FL_clean Timeline_clean Mixer_clean
+clean: FL_clean Timeline_clean
 
 -include .deps

@@ -155,12 +155,13 @@ begin ()
 {
     echo -n "Checking sanity..."
     require_command pkg-config pkg-config > /dev/null
+    require_command sed sed > /dev/null
     ok
 }
 
 warn ()
 {
-    echo "${BOLD}${YELLOW}* ${SGR0}$*"
+    echo " ${BOLD}${YELLOW}* ${SGR0}$*"
 }
 
 begin_options ()
@@ -170,6 +171,7 @@ begin_options ()
 
     if [ $HELP = yes ]
     then
+        echo
         warn "This is not an autoconf script! Run without any arguments and you will be prompted."
         warn "Alternatively, you may use the following autoconf style arguments for"
         warn "non-interactive configuration."

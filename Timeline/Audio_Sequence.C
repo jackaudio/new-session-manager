@@ -49,6 +49,8 @@ Audio_Sequence::Audio_Sequence ( Track *track ) : Sequence( track )
 
 Audio_Sequence::~Audio_Sequence ( )
 {
+    track()->remove( this );
+
     log_destroy();
 }
 

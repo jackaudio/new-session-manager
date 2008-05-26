@@ -354,11 +354,23 @@ Track::add ( Audio_Sequence * t )
 void
 Track::remove ( Audio_Sequence *t )
 {
+    timeline->wrlock();
+
     takes->remove( t );
+
+    timeline->unlock();
 
     resize();
 
 //            take_menu->remove( t->name() );
+}
+
+void
+Track::remove ( Annotation_Sequence *t )
+{
+    annotation->remove( t );
+
+    resize();
 }
 
 void
@@ -371,8 +383,6 @@ Track::remove ( Control_Sequence *t )
     engine->unlock();
 
     resize();
-
-    redraw();
 }
 
 void

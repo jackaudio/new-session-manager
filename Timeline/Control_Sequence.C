@@ -25,6 +25,7 @@ using namespace std;
 #include "Track.H"
 #include "Engine/Port.H"
 
+#include "Engine/Engine.H" // for lock()
 #include "Transport.H" // for transport->frame
 
 bool Control_Sequence::draw_with_gradient = true;
@@ -50,9 +51,19 @@ Control_Sequence::~Control_Sequence ( )
 {
     log_destroy();
 
+    engine->lock();
+
+    track()->remove( this );
+
+    engine->unlock();
+
     _output->shutdown();
 
     delete _output;
+
+    _output = NULL;
+
+    log_destroy();
 }
 
 void

@@ -75,10 +75,6 @@ Sequence::~Sequence (  )
     }
 
     _widgets.clear();
-
-    parent()->redraw();
-    parent()->remove( this );
-//    log_destroy();
 }
 
 nframes_t

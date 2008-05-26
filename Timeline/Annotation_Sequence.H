@@ -83,6 +83,8 @@ public:
 
     ~Annotation_Sequence ( )
         {
+            track()->remove( this );
+
             log_destroy();
         }
 

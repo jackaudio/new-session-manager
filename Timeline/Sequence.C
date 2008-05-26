@@ -280,20 +280,21 @@ Sequence::snap ( Sequence_Widget *r )
 int
 Sequence::handle ( int m )
 {
-
     switch ( m )
     {
         case FL_FOCUS:
         case FL_UNFOCUS:
+            return 1;
         case FL_LEAVE:
+//            DMESSAGE( "leave" );
             fl_cursor( FL_CURSOR_DEFAULT );
             return 1;
         case FL_DND_DRAG:
             return 1;
         case FL_ENTER:
+//            DMESSAGE( "enter" );
             if ( Sequence_Widget::pushed() )
             {
-
                 if ( Sequence_Widget::pushed()->sequence()->class_name() == class_name() )
                 {
                     /* accept objects dragged from other sequences of this type */
@@ -306,7 +307,8 @@ Sequence::handle ( int m )
                     fl_cursor( (Fl_Cursor)1 );
             }
             else
-                fl_cursor( cursor() );
+                if ( ! event_widget() )
+                    fl_cursor( cursor() );
 
             return 1;
         case FL_DND_ENTER:
@@ -337,15 +339,17 @@ Sequence::handle ( int m )
             {
                 int retval = r->dispatch( m );
 
-                if ( retval && m == FL_PUSH )
+                if ( retval )
                 {
-                    take_focus();
+                    if ( m == FL_PUSH )
+                    {
+                        take_focus();
 
-                    Sequence_Widget::pushed( r );
+                        Sequence_Widget::pushed( r );
+                    }
+                    else if ( m == FL_RELEASE )
+                        Sequence_Widget::pushed( NULL );
                 }
-
-                if ( retval && m == FL_RELEASE )
-                    Sequence_Widget::pushed( NULL );
 
                 Loggable::block_start();
 
@@ -354,7 +358,6 @@ Sequence::handle ( int m )
 
                     Sequence_Widget *t = _delete_queue.front();
                     _delete_queue.pop();
-
 
                     if ( Sequence_Widget::pushed() == t )
                         Sequence_Widget::pushed( NULL );

@@ -252,7 +252,6 @@ Sequence_Widget::dispatch ( int m )
 
         int r = 0;
 
-
         for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); i++ )
             if ( *i != this )
                 r |= (*i)->handle( m );
@@ -289,27 +288,32 @@ Sequence_Widget::handle ( int m )
 
     Logger _log( this );
 
+
     switch ( m )
     {
         case FL_ENTER:
             fl_cursor( FL_CURSOR_HAND );
             return 1;
         case FL_LEAVE:
+//            DMESSAGE( "leave" );
             fl_cursor( sequence()->cursor() );
             return 1;
         case FL_PUSH:
         {
             /* deletion */
-            if ( Fl::event_state() & FL_CTRL &&
-                 Fl::event_button3() )
+            if ( Fl::test_shortcut( FL_CTRL + FL_BUTTON3 ) && ! Fl::event_shift() )
             {
                 redraw();
                 sequence()->queue_delete( this );
                 return 1;
             }
-            else
-                if ( Fl::event_button1() )
-                    return 1;
+            else if ( Fl::test_shortcut( FL_BUTTON1 ) && ! Fl::event_shift() )
+            {
+                fl_cursor( FL_CURSOR_MOVE );
+
+                /* movement drag */
+                return 1;
+            }
 
             return 0;
         }
@@ -331,11 +335,13 @@ Sequence_Widget::handle ( int m )
                 _log.hold();
             }
 
-            fl_cursor( FL_CURSOR_MOVE );
-
-            redraw();
-
+            if ( ( Fl::test_shortcut( FL_BUTTON1 + FL_CTRL ) ||
+                   Fl::test_shortcut( FL_BUTTON1 ) )  && ! Fl::event_shift() )
             {
+//                fl_cursor( FL_CURSOR_MOVE );
+
+                redraw();
+
                 const nframes_t of = timeline->x_to_offset( X );
 
                 if ( of >= _drag->start )
@@ -346,36 +352,37 @@ Sequence_Widget::handle ( int m )
                 if ( Sequence_Widget::_current == this )
                     sequence()->snap( this );
 
-            }
-
-            if ( X >= sequence()->x() + sequence()->w() ||
-                 X <= sequence()->x() )
-            {
-                /* this drag needs to scroll */
-
-                nframes_t pos = timeline->xoffset;
-
-                nframes_t d = timeline->x_to_ts( 100 );
-
-                if ( X <= sequence()->x() )
+                if ( X >= sequence()->x() + sequence()->w() ||
+                     X <= sequence()->x() )
                 {
+                    /* this drag needs to scroll */
 
-                    if ( pos > d )
-                        pos -= d;
+                    nframes_t pos = timeline->xoffset;
+
+                    nframes_t d = timeline->x_to_ts( 100 );
+
+                    if ( X <= sequence()->x() )
+                    {
+
+                        if ( pos > d )
+                            pos -= d;
+                        else
+                            pos = 0;
+                    }
                     else
-                        pos = 0;
-                }
-                else
-                    pos += d;
+                        pos += d;
 
-                timeline->xposition( timeline->ts_to_x(  pos ) );
+                    timeline->xposition( timeline->ts_to_x(  pos ) );
 
-                /* FIXME: why isn't this enough? */
+                    /* FIXME: why isn't this enough? */
 //                sequence()->redraw();
-                timeline->redraw();
-            }
+                    timeline->redraw();
+                }
 
-            return 1;
+                return 1;
+            }
+            else
+                return 0;
         }
         default:
             return 0;

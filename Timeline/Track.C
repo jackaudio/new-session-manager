@@ -452,7 +452,6 @@ Track::draw ( void )
 int
 Track::handle ( int m )
 {
-
     switch ( m )
     {
         case FL_MOUSEWHEEL:
@@ -478,7 +477,10 @@ Track::handle ( int m )
             int X = Fl::event_x();
             int Y = Fl::event_y();
 
-            if ( Fl::event_button3() && X < Track::width() )
+            if ( Fl_Group::handle( m ) )
+                return 1;
+
+            if ( Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() && X < Track::width() )
             {
                 int c = output.size();
 
@@ -561,14 +563,16 @@ Track::handle ( int m )
                             }
                         }
                     }
+                    return 1;
                 }
 
                 return 1;
             }
+
+            return 0;
         }
         default:
             return Fl_Group::handle( m );
-
     }
 
     return 0;

@@ -136,17 +136,10 @@ Sequence_Region::handle ( int m )
 
     static bool copied = false;
 
-/*     if ( ! active_r() ) */
-/*         return 0; */
-
-//    int X = Fl::event_x() - _track->x();
     int X = Fl::event_x();
     int Y = Fl::event_y();
 
-    int ret;
-
     Logger _log( this );
-//log_r->offset();
 
     switch ( m )
     {
@@ -188,14 +181,14 @@ Sequence_Region::handle ( int m )
                 redraw();
                 return 1;
             }
-            else if ( Fl::test_shortcut( FL_CTRL + FL_BUTTON1 ) )
+            else if ( Fl::test_shortcut( FL_CTRL + FL_BUTTON1 ) && ! Fl::event_shift() )
             {
                 /* duplication */
+                fl_cursor( FL_CURSOR_MOVE );
                 return 1;
             }
             else
                 return Sequence_Widget::handle( m );
-            break;
         }
         case FL_RELEASE:
         {
@@ -216,7 +209,8 @@ Sequence_Region::handle ( int m )
             }
 
             /* trimming */
-            if ( Fl::event_state() & FL_SHIFT )
+            if ( Fl::event_shift() )
+            {
                 if ( trimming )
                 {
                     trim( trimming, X );
@@ -224,6 +218,7 @@ Sequence_Region::handle ( int m )
                 }
                 else
                     return 0;
+            }
             else if ( Fl::event_button1() )
             {
                 if ( Fl::event_state() & FL_CTRL )
@@ -238,7 +233,7 @@ Sequence_Region::handle ( int m )
                         return 1;
                     }
                 }
-                else if ( ! selected() )
+                else if ( Fl::test_shortcut( FL_BUTTON1 ) && ! Fl::event_shift() && ! selected() )
                 {
                     /* track jumping */
                     if ( Y > y() + h() || Y < y() )
@@ -255,8 +250,7 @@ Sequence_Region::handle ( int m )
                 }
             }
 
-            ret = Sequence_Widget::handle( m );
-            return ret | 1;
+            return Sequence_Widget::handle( m );
         }
         default:
             return Sequence_Widget::handle( m );

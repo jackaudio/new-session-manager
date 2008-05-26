@@ -198,21 +198,10 @@ Audio_Region::handle ( int m )
     static bool copied = false;
     static nframes_t os;
 
-
-    if ( ! active_r() )
-        return 0;
-
-//    int X = Fl::event_x() - _track->x();
     int X = Fl::event_x();
     int Y = Fl::event_y();
 
-    int ret;
-
-    if ( m != FL_RELEASE && Sequence_Region::handle( m ) )
-        return 1;
-
     Logger _log( this );
-//log_r->start();
 
     switch ( m )
     {
@@ -251,36 +240,26 @@ Audio_Region::handle ( int m )
         case FL_PUSH:
         {
             /* splitting  */
-            if ( Fl::event_shift() && ! Fl::event_ctrl() )
+            if ( Fl::test_shortcut( FL_BUTTON2 | FL_SHIFT ) )
             {
-                switch ( Fl::event_button() )
+                /* split */
+                if ( ! copied )
                 {
-                    case 2:
-                    {
-                        /* split */
-                        if ( ! copied )
-                        {
-                            Loggable::block_start();
+                    Loggable::block_start();
 
-                            Audio_Region *copy = new Audio_Region( *this );
+                    Audio_Region *copy = new Audio_Region( *this );
 
-                            trim( RIGHT, X );
-                            copy->trim( LEFT, X );
+                    trim( RIGHT, X );
+                    copy->trim( LEFT, X );
 
-                            sequence()->add( copy );
+                    sequence()->add( copy );
 
-                            log_end();
+                    log_end();
 
-                            Loggable::block_end();
-                            return 0;
-                        }
-                    }
-                    default:
-                        return 0;
-                        break;
+                    Loggable::block_end();
                 }
 
-                return 1;
+                return 0;
             }
             else
             {
@@ -289,22 +268,9 @@ Audio_Region::handle ( int m )
                 /* for panning */
                 os = _r->offset;
 
-                /* normalization and selection */
-                if ( Fl::event_button2() )
+                if ( Fl::test_shortcut( FL_BUTTON2 | FL_CTRL ) && ! Fl::event_shift() )
                 {
-                    if ( Fl::event_ctrl() )
-                        normalize();
-                    else
-                    {
-                        if ( Sequence_Widget::current() == this )
-                        {
-                            if ( selected() )
-                                deselect();
-                            else
-                                select();
-                        }
-                    }
-
+                    normalize();
                     redraw();
                     return 1;
                 }
@@ -346,11 +312,12 @@ Audio_Region::handle ( int m )
                         redraw();
                     }
 
-                    return 0;
+                    return 1;
                 }
                 else
                     return Sequence_Region::handle( m );
             }
+
             break;
         }
         case FL_RELEASE:
@@ -362,32 +329,29 @@ Audio_Region::handle ( int m )
             return 1;
         }
         case FL_DRAG:
-
             if ( ! _drag )
             {
                 begin_drag( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
                 _log.hold();
             }
-            if ( Fl::event_button1() )
+
+            if ( Fl::test_shortcut( FL_BUTTON1 | FL_SHIFT | FL_CTRL ) )
             {
-                if ( Fl::event_state() & ( FL_SHIFT | FL_CTRL ) )
-                {
-                    /* panning */
-                    int d = (ox + X) - x();
-                    long td = timeline->x_to_ts( d );
+                /* panning */
+                int d = (ox + X) - x();
+                long td = timeline->x_to_ts( d );
 
-                    if ( td > 0 && os < (nframes_t)td )
-                        _r->offset = 0;
-                    else
-                        _r->offset = os - td;
+                if ( td > 0 && os < (nframes_t)td )
+                    _r->offset = 0;
+                else
+                    _r->offset = os - td;
 
-                    sequence()->redraw();
-                    return 1;
-                }
+                redraw();
+                return 1;
             }
 
-            ret = Sequence_Region::handle( m );
-            return ret | 1;
+            return Sequence_Region::handle( m );
+
         default:
             return Sequence_Region::handle( m );
             break;

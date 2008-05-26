@@ -962,6 +962,10 @@ Timeline::handle ( int m )
         case FL_UNFOCUS:
 //            redraw();
             return 1;
+        case FL_ENTER:
+            return 1;
+        case FL_LEAVE:
+            return 1;
         case FL_KEYDOWN:
             if ( Fl::event_key() == 'r' )
             {
@@ -998,9 +1002,10 @@ Timeline::handle ( int m )
         }
         default:
         {
+            if ( m == FL_PUSH && this != Fl::focus() )
+                take_focus();
 
-            if ( m == FL_PUSH )
-                Fl::focus( this );
+//Fl::focus( this );
 
             int r = Fl_Overlay_Window::handle( m );
 
@@ -1014,18 +1019,15 @@ Timeline::handle ( int m )
             {
                 case FL_PUSH:
                 {
-//                    take_focus();
-
-                    if ( Fl::event_state() & ( FL_ALT | FL_CTRL | FL_SHIFT ) )
-                        return 0;
-
-                    if ( Fl::event_button1() )
+                    if ( Fl::test_shortcut( FL_BUTTON1 ) && ! Fl::event_shift() )
                     {
                         assert( ! drag );
 
                         drag = new Drag( X - x(), Y - y() );
                         _selection.x = drag->x;
                         _selection.y = drag->y;
+
+                        return 1;
                     }
                     else if ( Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
                     {
@@ -1036,11 +1038,10 @@ Timeline::handle ( int m )
                             r->do_callback( static_cast<Fl_Widget*>(menu) );
                         }
 
+                        return 1;
                     }
-                    else
-                        return 0;
 
-                    break;
+                    return 0;
                 }
                 case FL_DRAG:
                 {
@@ -1062,13 +1063,15 @@ Timeline::handle ( int m )
                         redraw();
                     }
 
+                    redraw_overlay();
+                    return 1;
+
                     break;
                 }
                 case FL_RELEASE:
                 {
                     delete drag;
                     drag = NULL;
-
 
                     if ( range )
                     {
@@ -1080,18 +1083,19 @@ Timeline::handle ( int m )
                         select( _selection );
 
                     _selection.w = _selection.h = 0;
-                    break;
+
+
+                    redraw_overlay();
+                    return 1;
                 }
                 default:
                     return 0;
                     break;
             }
 
-            redraw_overlay();
-            return 1;
+            return 0;
         }
     }
-
 }
 
 

@@ -37,10 +37,10 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 
     _track = track;
 
+   _output = new Port( Port::Output, track->name(), track->ncontrols(), "cv" );
+
     if ( track )
         track->add( this );
-
-    _output = new Port( Port::Output, track->name(), track->ncontrols(), "cv" );
 
     log_create();
 }
@@ -49,6 +49,8 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 Control_Sequence::~Control_Sequence ( )
 {
     log_destroy();
+
+    _output->shutdown();
 
     delete _output;
 }
@@ -306,7 +308,7 @@ Control_Sequence::handle ( int m )
                     }
                     else if ( r == &menu[ 1 ] )
                     {
-                        /* TODO: remove */
+                        Fl::delete_widget( this );
                     }
 
                 }

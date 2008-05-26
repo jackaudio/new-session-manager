@@ -29,6 +29,8 @@
 // #include <FL/fl_draw.H>
 #include <FL/Fl.H>
 
+#include "Engine/Engine.H" // for lock()
+
 #include "Control_Sequence.H"
 #include "Annotation_Sequence.H"
 
@@ -362,9 +364,15 @@ Track::remove ( Audio_Sequence *t )
 void
 Track::remove ( Control_Sequence *t )
 {
+    engine->lock();
+
     control->remove( t );
 
+    engine->unlock();
+
     resize();
+
+    redraw();
 }
 
 void
@@ -388,9 +396,13 @@ Track::add ( Control_Sequence *t )
 {
     DMESSAGE( "adding control sequence" );
 
+    engine->lock();
+
     t->track( this );
 
     control->add( t );
+
+    engine->unlock();
 
     resize();
 }

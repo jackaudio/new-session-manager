@@ -215,7 +215,7 @@ public:
 
     int size ( void ) const { return _size; }
 
-    int ncontrols ( void ) { return controls->children(); }
+    int ncontrols ( void ) { return control->children(); }
 
     void resize ( void );
     void size ( int v );

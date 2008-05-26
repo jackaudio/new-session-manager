@@ -39,6 +39,8 @@
 #include "Track.H"
 #include "Transport.H"
 
+#include "Engine/Engine.H" // for lock()
+
 
 
 bool Timeline::draw_with_measure_lines = true;
@@ -1165,8 +1167,11 @@ Timeline::add_track ( Track *track )
 {
     DMESSAGE( "added new track to the timeline" );
 
-    /* FIXME: do locking */
+    engine->lock();
+
     tracks->add( track );
+
+    engine->unlock();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
@@ -1178,10 +1183,12 @@ Timeline::remove_track ( Track *track )
 {
     DMESSAGE( "removed track from the timeline" );
 
-    /* FIXME: do locking */
+    engine->lock();
 
     /* FIXME: what to do about track contents? */
     tracks->remove( track );
+
+    engine->unlock();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();

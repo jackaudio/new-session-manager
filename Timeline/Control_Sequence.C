@@ -19,18 +19,21 @@
 
 #include <FL/fl_ask.H>
 #include <list>
-using namespace std;
+using std::list;
 
 #include "Control_Sequence.H"
 #include "Track.H"
 #include "Engine/Port.H"
 
 #include "Engine/Engine.H" // for lock()
-#include "Transport.H" // for transport->frame
+
+
 
 bool Control_Sequence::draw_with_gradient = true;
 bool Control_Sequence::draw_with_polygon = true;
 bool Control_Sequence::draw_with_grid = true;
+
+
 
 Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 {
@@ -75,6 +78,8 @@ Control_Sequence::init ( void )
 
     color( fl_darker( FL_YELLOW ) );
 }
+
+
 
 void
 Control_Sequence::get ( Log_Entry &e ) const
@@ -332,77 +337,4 @@ Control_Sequence::handle ( int m )
         default:
             return 0;
     }
-}
-
-
-/**********/
-/* Engine */
-/**********/
-
-
-static inline float
-linear_interpolate ( float y1, float y2, float mu )
-{
-//    return y1 + mu * ( y2 - y1 );
-    return y1 * ( 1.0f - mu ) + y2 * mu;
-}
-
-static inline float
-sigmoid_interpolate ( float y1, float y2, float mu )
-{
-    return linear_interpolate( y1, y2, ( 1 - cos( mu * M_PI ) ) / 2 );
-}
-
-/* THREAD: ?? */
-/** fill buf with /nframes/ of interpolated control curve values
- * starting at /frame/  */
-nframes_t
-Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
-{
-    Control_Point *p2, *p1 = (Control_Point*)&_widgets.front();
-
-    nframes_t n = nframes;
-
-    for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin();
-          i != _widgets.end(); ++i, p1 = p2 )
-    {
-        p2 = (Control_Point*)(*i);
-
-        if ( p2->when() < frame )
-            continue;
-
-        /* do incremental linear interpolation */
-
-        const nframes_t len = p2->when() - p1->when();
-
-        /* scale to -1.0 to 1.0 */
-        const float y1 = 1.0f - ( 2.0f * p1->control() );
-        const float y2 = 1.0f - ( 2.0f * p2->control() );
-
-        const nframes_t start = frame - p1->when();
-        const float incr = ( y2 - y1 ) / (float)len;
-
-        float v = y1 + start * incr;
-
-        for ( nframes_t i = start; i < len && n--; ++i, v += incr )
-            *(buf++) = v;
-
-    }
-
-    return nframes - n;
-}
-
-
-/* THREAD: RT */
-nframes_t
-Control_Sequence::process ( nframes_t nframes )
-{
-    if ( _output->connected() )                                 /* don't waste CPU on disconnected ports */
-    {
-        void *buf = _output->buffer( nframes );
-
-        return play( (sample_t*)buf, transport->frame, nframes );
-    }
-    else
-        return nframes;
 }

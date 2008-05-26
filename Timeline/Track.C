@@ -508,7 +508,7 @@ Track::handle ( int m )
                         { "Add Control"      },
                         { "Add Annotation"   },
                         { "Color"            },
-                        { "Remove",          0, 0, 0, transport->rolling ? FL_MENU_INACTIVE : 0 },
+                        { "Remove",          0, 0, 0 }, // transport->rolling ? FL_MENU_INACTIVE : 0 },
                         { 0 },
                     };
 
@@ -569,8 +569,6 @@ Track::handle ( int m )
                             if ( r == 2 )
                             {
                                 timeline->remove_track( this );
-                                /* FIXME: need to queue deletion. in a way that won't crash the playback. */
-//                                delete this;
                                 Fl::delete_widget( this );
                             }
                         }

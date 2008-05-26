@@ -367,11 +367,7 @@ Sequence::handle ( int m )
                         Sequence_Widget::belowmouse( NULL );
                     }
 
-                    timeline->wrlock();
-
                     delete t;
-
-                    timeline->unlock();
                 }
 
                 Loggable::block_end();

@@ -189,6 +189,7 @@ Audio_Region::source_name ( void ) const
     return _clip->name();
 }
 
+#include <FL/fl_show_colormap.H>
 
 int
 Audio_Region::handle ( int m )
@@ -297,6 +298,7 @@ Audio_Region::handle ( int m )
                             { "Parabolic",        0, 0, 0, FL_MENU_RADIO | ( ot == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
                             { 0 },
                             { 0 },
+                            { "Color",        0, 0, 0, inherit_track_color ? FL_MENU_INACTIVE : 0 },
                             { 0 },
                         };
 
@@ -308,6 +310,10 @@ Audio_Region::handle ( int m )
                             _fade_in.type = (Fade::fade_type_e)(int)(r - &menu[2]);
                         else if ( r > &menu[7] && r < &menu[12] )
                             _fade_out.type = (Fade::fade_type_e)(int)(r - &menu[8]);
+                        else if ( r == &menu[ 14 ] )
+                        {
+                            box_color( fl_show_colormap( box_color() ) );
+                        }
 
                         redraw();
                     }

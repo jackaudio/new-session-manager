@@ -307,6 +307,7 @@ public:
     Fl_Color color ( void ) const { return _color; }
     void color ( Fl_Color v ) { _color = v; }
     Fl_Color box_color ( void ) const { return _box_color; }
+    void box_color ( Fl_Color v ) { _box_color = v; }
     virtual Fl_Color selection_color ( void ) const { return _selection_color; }
     virtual void selection_color ( Fl_Color v ) { _selection_color = v; }
 

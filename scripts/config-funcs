@@ -7,7 +7,6 @@
 
 # support functions for 'configure' scripts.
 
-
 fatal ()
 {
     echo "$BOLD$RED$*$SGR0" > /dev/stderr
@@ -164,6 +163,11 @@ warn ()
     echo " ${BOLD}${YELLOW}* ${SGR0}$*"
 }
 
+info ()
+{
+    echo "${BOLD}${CYAN}--- ${SGR0}$*"
+}
+
 begin_options ()
 {
     # get the old values
@@ -172,9 +176,9 @@ begin_options ()
     if [ $HELP = yes ]
     then
         echo
-        warn "This is not an autoconf script! Run without any arguments and you will be prompted."
-        warn "Alternatively, you may use the following autoconf style arguments for"
-        warn "non-interactive configuration."
+        warn "This is a ${BOLD}non-configure${SGR0} script. Run without any arguments and you will be prompted"
+        warn "with configuration choices. Alternatively, you may use the following autoconf style"
+        warn "arguments for non-interactive configuration."
         echo
         echo " Available options:"
         echo
@@ -185,16 +189,20 @@ begin_options ()
 
         if [ $UPDATE = yes ]
         then
-            echo "--- Updating configuration ---"
+            info "Updating configuration"
         else
-            echo "--- Configuration required ---"
+            info "Configuration required"
         fi
     fi
 }
 
 begin_tests ()
 {
-    [ $HELP = yes ] && exit 0
+    if [ $HELP = yes ]
+    then
+        echo
+        exit 0;
+    fi
 
     append "## libs"
     extract_options
@@ -207,7 +215,7 @@ append ()
 
 end ()
 {
-    echo "--- Configuration complete ---"
+    info "Configuration complete"
     touch make.conf
 }
 

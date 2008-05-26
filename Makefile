@@ -55,9 +55,19 @@ TAGS: $(SRCS)
 	@ echo -n Calculating dependencies...
 	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) > .deps 2>/dev/null && echo $(DONE)
 
-depend: .deps
+clean_deps:
+	@ rm -f .deps
 
-.PHONEY: clean config depend
+clean_sources:
+	@ rm -f Timeline/.sources FL/.sources
+
+.sources: Timeline/.sources FL/.sources
+
+rearrange: clean_deps clean_sources
+	@ $(MAKE) -s .deps
+	@ $(MAKE) -s .sources
+
+.PHONEY: clean config depend clean_deps clean_sources .sources rearrange
 
 clean: FL_clean Timeline_clean
 

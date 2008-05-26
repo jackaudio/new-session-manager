@@ -19,16 +19,9 @@
 
 /* actual implementation of our side of the LASH protocol */
 
-/* NOTES: The LASH API, as it stands, is basically retarded. It was
- * designed by retards for retards. The way it handles project state
- * and project directories shows a deep lack of insight into how real
- * software works. Since LASH doesn't provide us with the information
- * we need--when we need it--we just punt and only use LASH to save
- * and load the path to the *real* project data. One of these days a
- * motivated individual (probably me, unfortuately) is going to spend
- * a cozy afternoon implementing a replacement for LASH--a load of
- * shit which has been in the works for God know how many years and is
- * still stinking up the place. */
+/* NOTES: Since LASH doesn't provide us with the information we
+ * need--when we need it--we just punt and only use LASH to save and
+ * load the path to the *real* project data. */
 
 #include "LASH.H"
 #include "Project.H"

@@ -493,8 +493,6 @@ Timeline::update_tempomap ( void )
           i != tempo_track->_widgets.end(); ++i )
         _tempomap.push_back( *i );
 
-    /* FIXME: shouldn't we ensure that time points always precede
-       tempo points at the same position? */
     _tempomap.sort( Sequence_Widget::sort_func );
 }
 
@@ -529,8 +527,6 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
     nframes_t next = 0;
 
     nframes_t frames_per_beat = samples_per_minute / bpm;
-
-    /* FIXME: don't we need to sort so that Time_Points always preceed Tempo_Points? */
 
     if ( ! _tempomap.size() )
         return pos;

@@ -172,7 +172,7 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color 
     X = x();
     Y = y();
 
-    /* FIXME: why do we have to to this here? why doesn't Fl_Lable::draw take care of this stuff? */
+    /* FIXME: why do we have to do this here? why doesn't Fl_Label::draw take care of this stuff? */
     if ( ! (align & FL_ALIGN_INSIDE) )
     {
         if ( align & FL_ALIGN_RIGHT )

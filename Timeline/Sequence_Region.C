@@ -23,7 +23,7 @@
 void
 Sequence_Region::get ( Log_Entry &e ) const
 {
-    e.add( ":color",  (int)_box_color  );
+    e.add( ":color",  _box_color );
     e.add( ":length", _r->length );
 
     Sequence_Widget::get( e );

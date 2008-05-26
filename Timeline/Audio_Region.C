@@ -38,6 +38,8 @@
 using std::min;
 using std::max;
 
+
+
 extern Timeline *timeline;
 
 bool Audio_Region::inherit_track_color = true;
@@ -45,6 +47,8 @@ bool Audio_Region::inherit_track_color = true;
 Fl_Boxtype Audio_Region::_box = FL_UP_BOX;
 
 Fl_Color Audio_Region::_selection_color = FL_MAGENTA;
+
+
 
 static Fl_Color fl_invert_color ( Fl_Color c )
 {
@@ -65,7 +69,6 @@ Audio_Region::get ( Log_Entry &e ) const
     e.add( ":fade-in-duration",  _fade_in.length  );
     e.add( ":fade-out-type",     _fade_out.type   );
     e.add( ":fade-out-duration", _fade_out.length );
-    e.add( ":color",             (int)_box_color  );
 
     Sequence_Region::get( e );
 

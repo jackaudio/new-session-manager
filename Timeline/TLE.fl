@@ -152,7 +152,8 @@ asprintf( &path, "%s/options", user_config_dir );
 free( path );
 
 
-menubar->add( "&Timeline", 0, 0, const_cast< Fl_Menu_Item *>( timeline->menu->menu() ), FL_SUBMENU_POINTER );} {}
+menubar->add( "&Timeline", 0, 0, const_cast< Fl_Menu_Item *>( timeline->menu->menu() ), FL_SUBMENU_POINTER );} {selected
+    }
   }
   Function {make_window()} {open
   } {
@@ -706,7 +707,7 @@ xruns_output->value( engine->xruns() );} {}
         xywh {0 213 497 392}
       } {
         Fl_Group {} {
-          label Credits open selected
+          label Credits open
           xywh {2 237 492 362}
         } {
           Fl_Box {} {

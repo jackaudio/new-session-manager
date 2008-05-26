@@ -129,7 +129,8 @@ Audio_Sequence::handle_widget_change ( nframes_t start, nframes_t length )
     /* trigger rebuffer */
     /* FIXME: we really only need to rebuffer *this* sequence! */
     /* FIXME: how does this fit into the selection? */
-    if ( start > transport->frame || start + length > transport->frame )
+
+    if ( transport->rolling && ( start > transport->frame || start + length > transport->frame ) )
         transport->locate( transport->frame );
 }
 

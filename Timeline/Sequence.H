@@ -103,6 +103,9 @@ public:
 
     void remove_selected ( void );
 
+    Fl_Color color ( void ) const { return this == Fl::focus() ? fl_color_average( FL_FOREGROUND_COLOR, Fl_Widget::color(), 0.24f ) : Fl_Widget::color(); }
+    void color ( Fl_Color v ) { Fl_Widget::color( v ); }
+
     const std::list <Sequence_Widget *> widgets ( void ) const { return _widgets; }
 
     void queue_delete ( Sequence_Widget *r )

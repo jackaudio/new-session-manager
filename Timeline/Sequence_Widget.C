@@ -279,6 +279,8 @@ Sequence_Widget::draw_box ( void )
 }
 
 
+#include "FL/test_press.H"
+
 /* base hanlde just does basic dragging */
 int
 Sequence_Widget::handle ( int m )
@@ -287,7 +289,6 @@ Sequence_Widget::handle ( int m )
     int Y = Fl::event_y();
 
     Logger _log( this );
-
 
     switch ( m )
     {
@@ -301,13 +302,13 @@ Sequence_Widget::handle ( int m )
         case FL_PUSH:
         {
             /* deletion */
-            if ( Fl::test_shortcut( FL_CTRL + FL_BUTTON3 ) && ! Fl::event_shift() )
+            if ( test_press( FL_BUTTON3 + FL_CTRL ) )
             {
                 redraw();
                 sequence()->queue_delete( this );
                 return 1;
             }
-            else if ( Fl::test_shortcut( FL_BUTTON1 ) && ! Fl::event_shift() )
+            else if ( test_press( FL_BUTTON1 ) || test_press( FL_BUTTON1 + FL_CTRL ) )
             {
                 fl_cursor( FL_CURSOR_MOVE );
 
@@ -318,6 +319,7 @@ Sequence_Widget::handle ( int m )
             return 0;
         }
         case FL_RELEASE:
+
             if ( _drag )
             {
                 end_drag();
@@ -329,17 +331,16 @@ Sequence_Widget::handle ( int m )
             return 1;
         case FL_DRAG:
         {
+            Fl::event_key( 0 );
+
             if ( ! _drag )
             {
                 begin_drag ( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
                 _log.hold();
             }
 
-            if ( ( Fl::test_shortcut( FL_BUTTON1 + FL_CTRL ) ||
-                   Fl::test_shortcut( FL_BUTTON1 ) )  && ! Fl::event_shift() )
+            else if ( test_press( FL_BUTTON1 ) || test_press( FL_BUTTON1 + FL_CTRL ) )
             {
-//                fl_cursor( FL_CURSOR_MOVE );
-
                 redraw();
 
                 const nframes_t of = timeline->x_to_offset( X );
@@ -382,7 +383,10 @@ Sequence_Widget::handle ( int m )
                 return 1;
             }
             else
+            {
+                DMESSAGE( "unknown" );
                 return 0;
+            }
         }
         default:
             return 0;

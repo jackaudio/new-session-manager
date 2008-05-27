@@ -273,17 +273,29 @@ Sequence::snap ( Sequence_Widget *r )
         r->start( f );
 }
 
+#include "FL/event_name.H"
+
 int
 Sequence::handle ( int m )
 {
+
+/*     if ( m != FL_NO_EVENT ) */
+/*         DMESSAGE( "%s", event_name( m ) ); */
+
     switch ( m )
     {
+        case FL_NO_EVENT:
+            /* garbage from overlay window */
+            return 0;
         case FL_FOCUS:
         case FL_UNFOCUS:
+            Fl_Widget::handle( m );
+            redraw();
             return 1;
         case FL_LEAVE:
 //            DMESSAGE( "leave" );
             fl_cursor( FL_CURSOR_DEFAULT );
+            Fl_Widget::handle( m );
             return 1;
         case FL_DND_DRAG:
             return 1;
@@ -306,6 +318,8 @@ Sequence::handle ( int m )
                 if ( ! event_widget() )
                     fl_cursor( cursor() );
 
+            Fl_Widget::handle( m );
+
             return 1;
         case FL_DND_ENTER:
         case FL_DND_LEAVE:
@@ -319,29 +333,41 @@ Sequence::handle ( int m )
             {
                 if ( Sequence_Widget::belowmouse() )
                     Sequence_Widget::belowmouse()->handle( FL_LEAVE );
+
                 Sequence_Widget::belowmouse( r );
 
                 if ( r )
                     r->handle( FL_ENTER );
             }
 
-            return 0;
+            return 1;
         }
         default:
         {
             Sequence_Widget *r = Sequence_Widget::pushed() ? Sequence_Widget::pushed() : event_widget();
 
+/*             if ( this == Fl::focus() ) */
+/*                 DMESSAGE( "Sequence widget = %p", r ); */
+
             if ( r )
             {
                 int retval = r->dispatch( m );
+
+/*                 DMESSAGE( "retval = %d", retval ); */
+
+                if ( m == FL_PUSH )
+                    take_focus();
 
                 if ( retval )
                 {
                     if ( m == FL_PUSH )
                     {
-                        take_focus();
+                        if ( Sequence_Widget::pushed() )
+                            Sequence_Widget::pushed()->handle( FL_UNFOCUS );
 
                         Sequence_Widget::pushed( r );
+
+                        r->handle( FL_FOCUS );
                     }
                     else if ( m == FL_RELEASE )
                         Sequence_Widget::pushed( NULL );
@@ -368,7 +394,10 @@ Sequence::handle ( int m )
 
                 Loggable::block_end();
 
-                return retval;
+                if ( m == FL_PUSH )
+                    return 1;
+                else
+                    return retval;
             }
             else
                 return Fl_Widget::handle( m );

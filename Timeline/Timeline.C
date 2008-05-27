@@ -947,12 +947,20 @@ Timeline::track_under ( int Y )
     return NULL;
 }
 
+#include "FL/event_name.H"
+#include "FL/test_press.H"
 
 int
 Timeline::handle ( int m )
 {
     static Drag *drag = NULL;
     static bool range = false;
+
+/*     if ( m != FL_NO_EVENT ) */
+/*         DMESSAGE( "%s", event_name( m ) ); */
+
+
+    int r = Fl_Overlay_Window::handle( m );
 
     switch ( m )
     {
@@ -993,19 +1001,20 @@ Timeline::handle ( int m )
                     /* keep scrollbar from eating these. */
                     return 0;
                 default:
-                    return Fl_Overlay_Window::handle( m );
+                    return r;
             }
 
             return 0;
         }
         default:
         {
-            if ( m == FL_PUSH && this != Fl::focus() )
-                take_focus();
+
+/*             if ( m == FL_PUSH ) */
+/*                 take_focus(); */
 
 //Fl::focus( this );
 
-            int r = Fl_Overlay_Window::handle( m );
+/*             r = Fl_Overlay_Window::handle( m ); */
 
             if ( m != FL_RELEASE && r )
                 return r;
@@ -1017,7 +1026,7 @@ Timeline::handle ( int m )
             {
                 case FL_PUSH:
                 {
-                    if ( Fl::test_shortcut( FL_BUTTON1 ) && ! Fl::event_shift() )
+                    if ( test_press( FL_BUTTON1 ) )
                     {
                         assert( ! drag );
 
@@ -1027,7 +1036,7 @@ Timeline::handle ( int m )
 
                         return 1;
                     }
-                    else if ( Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
+                    else if ( test_press( FL_BUTTON3 ) )
                     {
                         const Fl_Menu_Item *r = menu->menu()->popup( X, Y, "Timeline" );
                         if ( r )

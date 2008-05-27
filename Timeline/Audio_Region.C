@@ -193,6 +193,7 @@ Audio_Region::source_name ( void ) const
 }
 
 #include <FL/fl_show_colormap.H>
+#include "FL/test_press.H"
 
 int
 Audio_Region::handle ( int m )
@@ -244,7 +245,7 @@ Audio_Region::handle ( int m )
         case FL_PUSH:
         {
             /* splitting  */
-            if ( Fl::test_shortcut( FL_BUTTON2 | FL_SHIFT ) )
+            if ( test_press( FL_BUTTON2 | FL_SHIFT ) )
             {
                 /* split */
                 if ( ! copied )
@@ -272,13 +273,13 @@ Audio_Region::handle ( int m )
                 /* for panning */
                 os = _r->offset;
 
-                if ( Fl::test_shortcut( FL_BUTTON2 | FL_CTRL ) && ! Fl::event_shift() )
+                if ( test_press( FL_BUTTON2 | FL_CTRL ) )
                 {
                     normalize();
                     redraw();
                     return 1;
                 }
-                else if ( Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
+                else if ( test_press( FL_BUTTON3 ) )
                 {
                     /* context menu */
 
@@ -344,7 +345,7 @@ Audio_Region::handle ( int m )
                 _log.hold();
             }
 
-            if ( Fl::test_shortcut( FL_BUTTON1 | FL_SHIFT | FL_CTRL ) )
+            if ( test_press( FL_BUTTON1 | FL_SHIFT | FL_CTRL ) )
             {
                 /* panning */
                 int d = (ox + X) - x();

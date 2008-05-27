@@ -470,9 +470,16 @@ Track::draw ( void )
         Fl_Group::draw();
 }
 
+#include "FL/event_name.H"
+#include "FL/test_press.H"
+
 int
 Track::handle ( int m )
 {
+
+/*     if ( m != FL_NO_EVENT ) */
+/*         DMESSAGE( "%s", event_name( m ) ); */
+
     switch ( m )
     {
         case FL_MOUSEWHEEL:
@@ -493,6 +500,8 @@ Track::handle ( int m )
         }
         case FL_PUSH:
         {
+            Fl::event_key( 0 );
+
             Logger log( this );
 
             int X = Fl::event_x();
@@ -501,7 +510,7 @@ Track::handle ( int m )
             if ( Fl_Group::handle( m ) )
                 return 1;
 
-            if ( Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() && X < Track::width() )
+            if ( test_press( FL_BUTTON3 ) && X < Track::width() )
             {
                 int c = output.size();
 

@@ -90,22 +90,26 @@ Annotation_Region::draw ( void )
 }
 
 #include "FL/Fl_Text_Edit_Window.H"
+#include "FL/test_press.H"
 
 int
 Annotation_Region::handle ( int m )
 {
     Logger _log( this );
 
-    if ( m == FL_PUSH && Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
+    if ( m == FL_PUSH )
     {
-        char *s = fl_text_edit( "Annotation text:", "&Save", name() );
+        if ( test_press( FL_BUTTON3 ) )
+        {
+            char *s = fl_text_edit( "Annotation text:", "&Save", name() );
 
-        if ( s )
-            name( s );
+            if ( s )
+                name( s );
 
-        free( s );
+            free( s );
 
-        return 0;
+            return 0;
+        }
     }
 
     int r = Sequence_Region::handle( m );

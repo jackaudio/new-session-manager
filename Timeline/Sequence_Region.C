@@ -127,7 +127,7 @@ Sequence_Region::trim ( enum trim_e t, int X )
     }
 }
 
-
+#include "FL/test_press.H"
 
 int
 Sequence_Region::handle ( int m )
@@ -168,7 +168,7 @@ Sequence_Region::handle ( int m )
                 fl_cursor( FL_CURSOR_WE );
                 return 1;
             }
-            else if ( Fl::test_shortcut( FL_BUTTON2 ) && ! Fl::event_shift() )
+            else if ( test_press( FL_BUTTON2 ) )
             {
                 if ( Sequence_Widget::current() == this )
                 {
@@ -181,7 +181,7 @@ Sequence_Region::handle ( int m )
                 redraw();
                 return 1;
             }
-            else if ( Fl::test_shortcut( FL_CTRL + FL_BUTTON1 ) && ! Fl::event_shift() )
+            else if ( test_press( FL_CTRL + FL_BUTTON1 ) )
             {
                 /* duplication */
                 fl_cursor( FL_CURSOR_MOVE );
@@ -233,7 +233,7 @@ Sequence_Region::handle ( int m )
                         return 1;
                     }
                 }
-                else if ( Fl::test_shortcut( FL_BUTTON1 ) && ! Fl::event_shift() && ! selected() )
+                else if ( test_press( FL_BUTTON1 )  && ! selected() )
                 {
                     /* track jumping */
                     if ( Y > y() + h() || Y < y() )

@@ -126,6 +126,8 @@ deurlify ( char *url )
 void
 Audio_Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
+    Sequence::handle_widget_change( start, length );
+
     /* a region has changed. we may need to rebuffer... */
 
     /* trigger rebuffer */

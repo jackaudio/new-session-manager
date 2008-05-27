@@ -176,6 +176,26 @@ Sequence::remove_selected ( void )
 }
 
 
+void
+Sequence::handle_widget_change ( nframes_t start, nframes_t length )
+{
+    timeline->update_length( start + length );
+}
+
+
+/* /\** calculate the length of this sequence by looking at the end of the */
+/*  * least widget it contains *\/ */
+/* nframes_t */
+/* Sequence::length ( void ) const */
+/* { */
+
+/*     if ( _widgets.size() ) */
+/*         return _widgets.back().start() + _widgets.back().length(); */
+/*     else */
+/*         return 0; */
+
+/* } */
+
 Sequence_Widget *
 Sequence::event_widget ( void )
 {

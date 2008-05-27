@@ -384,6 +384,8 @@ Sequence_Widget::handle ( int m )
 
                     timeline->xposition( timeline->ts_to_x(  pos ) );
 
+                    timeline->update_length( start() + length() );
+
                     /* FIXME: why isn't this enough? */
 //                sequence()->redraw();
                     timeline->redraw();

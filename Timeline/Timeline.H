@@ -95,6 +95,7 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     Fl_Scrollbar *vscroll;
 
     void adjust_vscroll ( void );
+    void adjust_hscroll ( void );
     static void cb_scroll ( Fl_Widget *w, void *v );
     void cb_scroll ( Fl_Widget *w );
     static void menu_cb ( Fl_Widget *w, void *v );
@@ -102,7 +103,6 @@ class Timeline : public Fl_Overlay_Window, public RWLock
 
     int _fpp;                                                 /* frames per pixel, power of two */
     nframes_t _length;
-
 
     nframes_t p1, p2;                                           /* cursors */
 
@@ -144,6 +144,7 @@ public:
 
     nframes_t fpp ( void ) const { return 1 << _fpp; }
     nframes_t length ( void ) const { return _length; }
+    void update_length ( nframes_t l );
     nframes_t sample_rate ( void ) const { return _sample_rate; }
     int ts_to_x( nframes_t ts ) const { return  ts >> _fpp; }
     nframes_t x_to_ts ( int x ) const { return x << _fpp; }

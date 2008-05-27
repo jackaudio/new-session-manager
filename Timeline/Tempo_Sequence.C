@@ -20,8 +20,10 @@
 #include "Tempo_Sequence.H"
 
 void
-Tempo_Sequence::handle_widget_change ( nframes_t, nframes_t )
+Tempo_Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
+    Sequence::handle_widget_change( start, length );
+
     sort();
     timeline->update_tempomap();
     timeline->redraw();

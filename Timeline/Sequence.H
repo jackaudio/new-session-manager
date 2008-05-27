@@ -67,7 +67,7 @@ public:
     /* child classes should implement this if they need to take
      special action when a widget is changed/moved/resized. /start/
      and /length/ define the affected region */
-    virtual void handle_widget_change ( nframes_t start, nframes_t length ) { (void)(start + length); }
+    virtual void handle_widget_change ( nframes_t start, nframes_t length );
 
     /* welcome to C++ */
     LOG_NAME_FUNC( Sequence );
@@ -114,6 +114,8 @@ public:
         }
 
     Sequence_Widget * overlaps ( Sequence_Widget *r );
+
+    nframes_t length ( void ) const;
 
     virtual Sequence * clone ( void )
         {

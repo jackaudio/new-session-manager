@@ -108,6 +108,12 @@ Timeline::adjust_vscroll ( void )
 }
 
 void
+Timeline::adjust_hscroll ( void )
+{
+    hscroll->value( ts_to_x( xoffset ), tracks->w() - Track::width(), 0, ts_to_x( _length ) );
+}
+
+void
 Timeline::cb_scroll ( Fl_Widget *w, void *v )
 {
     ((Timeline*)v)->cb_scroll( w );
@@ -135,6 +141,7 @@ Timeline::cb_scroll ( Fl_Widget *w )
 
             const int tw = tracks->w() - Track::width();
 //            hscroll->value( ts_to_x( xoffset ), tw, 0, ts_to_x( _length ) );
+
             hscroll->value( max( 0, ts_to_x( under_mouse ) - ( Fl::event_x() - tracks->x() - Track::width() ) ),
                             tw, 0, ts_to_x( _length ) );
 
@@ -333,8 +340,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 //        sample_rate() = engine->sample_rate();
         _fpp = 8;
 //        _length = sample_rate() * 60 * 2;
+
         /* FIXME: hack */
-        _length = -1;
+        _length = x_to_ts( W );
 
         {
             Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W - vscroll->w(), 1 );
@@ -643,8 +651,8 @@ Timeline::xposition ( int X )
 {
 //    _old_xposition = xoffset;
 
-    /* FIXME: shouldn't have to do this... */
-    X = min( X, ts_to_x( _length ) - tracks->w() - Track::width() );
+/*     /\* FIXME: shouldn't have to do this... *\/ */
+/*     X = min( X, ts_to_x( _length ) - tracks->w() - Track::width() ); */
 
     xoffset = x_to_ts( X );
 
@@ -958,6 +966,26 @@ Timeline::handle_scroll ( int m )
         return hscroll->handle( m ) || vscroll->handle( m );
     else
         return 0;
+}
+
+void
+Timeline::update_length ( nframes_t l )
+{
+    _length = max( _length, l );
+
+    adjust_hscroll();
+
+/*     nframes_t l = 0; */
+
+/*     for ( int i = tracks->children(); i-- ; ) */
+/*     { */
+/*         Track *t = (Track*)tracks->child( i ); */
+
+/*         l = max( l, t->sequence()->length() ); */
+/*     } */
+
+/*     _length = l; */
+
 }
 
 int

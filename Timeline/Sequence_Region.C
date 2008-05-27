@@ -219,36 +219,6 @@ Sequence_Region::handle ( int m )
                 else
                     return 0;
             }
-            else if ( Fl::event_button1() )
-            {
-                if ( Fl::event_state() & FL_CTRL )
-                {
-                    /* duplication */
-                    if ( _drag->state == 0 )
-                    {
-//                    sequence()->add( new Audio_Region( *this ) );
-                        sequence()->add( this->clone() );
-
-                        _drag->state = 1;
-                        return 1;
-                    }
-                }
-                else if ( test_press( FL_BUTTON1 )  && ! selected() )
-                {
-                    /* track jumping */
-                    if ( Y > y() + h() || Y < y() )
-                    {
-                        Track *t = timeline->track_under( Y );
-
-                        fl_cursor( (Fl_Cursor)1 );
-
-                        if ( t )
-                            t->handle( FL_ENTER );
-
-                        return 0;
-                    }
-                }
-            }
 
             return Sequence_Widget::handle( m );
         }

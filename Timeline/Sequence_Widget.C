@@ -20,6 +20,7 @@
 #include <FL/fl_draw.H>
 
 #include "Sequence_Widget.H"
+#include "Track.H"
 
 using namespace std;
 
@@ -339,6 +340,14 @@ Sequence_Widget::handle ( int m )
                 _log.hold();
             }
 
+            if ( test_press( FL_BUTTON1 + FL_CTRL ) && ! _drag->state )
+            {
+                /* duplication */
+                sequence()->add( this->clone() );
+
+                _drag->state = 1;
+                return 1;
+            }
             else if ( test_press( FL_BUTTON1 ) || test_press( FL_BUTTON1 + FL_CTRL ) )
             {
                 redraw();
@@ -378,6 +387,22 @@ Sequence_Widget::handle ( int m )
                     /* FIXME: why isn't this enough? */
 //                sequence()->redraw();
                     timeline->redraw();
+                }
+
+                if ( ! selected() )
+                {
+                    /* track jumping */
+                    if ( Y > y() + h() || Y < y() )
+                    {
+                        Track *t = timeline->track_under( Y );
+
+                        fl_cursor( (Fl_Cursor)1 );
+
+                        if ( t )
+                            t->handle( FL_ENTER );
+
+                        return 0;
+                    }
                 }
 
                 return 1;

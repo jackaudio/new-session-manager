@@ -2,12 +2,15 @@
 
 Timeline_VERSION := 0.5.0
 
+# always regenerate source list when running under git
+FOO := $(shell [ -f .git ] && [ -x `which git` ] && rm -f FL/.sources )
+
 Timeline/.sources:
 	@ echo "Timeline_SRCS=\\" > Timeline/.sources
 	@ git ls-files 'Timeline/*.C' | tr '\n' ' ' >> Timeline/.sources
 	@ git ls-files 'Timeline/*.fl' | tr '\n' ' ' >> Timeline/.sources
 
-include Timeline/.sources
+-include Timeline/.sources
 
 Timeline_SRCS += util/debug.C
 

@@ -1,11 +1,14 @@
 # -*- mode: makefile; -*-
 
+# always regenerate source list when running under git
+FOO := $(shell [ -f .git ] && [ -x `which git` ] && rm -f FL/.sources )
+
 FL/.sources:
 	@ echo "FL_SRCS=\\" > FL/.sources
 	@ git ls-files 'FL/*.C' | tr '\n' ' ' >> FL/.sources
 	@ git ls-files 'FL/*.fl' | tr '\n' ' ' >> FL/.sources
 
-include FL/.sources
+-include FL/.sources
 
 FL_SRCS:=$(FL_SRCS:.fl=.C)
 FL_OBJS:=$(FL_SRCS:.C=.o)

@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# May 2008 Jonathan Moore Liles
+#
+# Use git to build a distribution tarball.
+#
+# USAGE:
+#
+#    dist foo 1.2.0 extra-files ...
+#
+# This will build a tarball foo-1.2.0.tar.bz2 using git tag 'v1.2.0'
+#
+# Files not in git but listed as arguemnts will also be included in the archive.
+
+. colors
+
+NAME="$1"
+shift 1
+VERSION="$1"
+shift 1
+EXTRA_DIST="$@"
+
+PREFIX="${NAME}-${VERSION}"
+git archive --prefix="${PREFIX}/" v${VERSION} > ${PREFIX}.tar
+tar --owner 0 --group 0 --transform "s:^:${PREFIX}/:" -rf ${PREFIX}.tar ${EXTRA_DIST}
+bzip2 -f ${PREFIX}.tar

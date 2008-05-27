@@ -954,7 +954,10 @@ Timeline::track_under ( int Y )
 int
 Timeline::handle_scroll ( int m )
 {
-    return hscroll->handle( m ) || vscroll->handle( m );
+    if ( m == FL_KEYBOARD && Fl::event_key() != FL_Home && Fl::event_key() != FL_End )
+        return hscroll->handle( m ) || vscroll->handle( m );
+    else
+        return 0;
 }
 
 int

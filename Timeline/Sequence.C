@@ -57,6 +57,8 @@ Sequence::init ( void )
     box( FL_DOWN_BOX );
     color(  FL_BACKGROUND_COLOR );
     align( FL_ALIGN_LEFT );
+
+//    clear_visible_focus();
 }
 
 Sequence::~Sequence (  )
@@ -284,6 +286,10 @@ Sequence::handle ( int m )
 
     switch ( m )
     {
+        case FL_KEYBOARD:
+            /* this is a hack to override FLTK's use of arrow keys for
+             * focus navigation */
+            return timeline->handle_scroll( m );
         case FL_NO_EVENT:
             /* garbage from overlay window */
             return 0;

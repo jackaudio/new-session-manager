@@ -124,6 +124,8 @@ Track::init ( void )
 
     labeltype( FL_NO_LABEL );
 
+//    clear_visible_focus();
+
     Fl_Group::size( timeline->w(), height() );
 
     Track *o = this;
@@ -500,8 +502,6 @@ Track::handle ( int m )
         }
         case FL_PUSH:
         {
-            Fl::event_key( 0 );
-
             Logger log( this );
 
             int X = Fl::event_x();

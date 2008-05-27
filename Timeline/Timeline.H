@@ -171,6 +171,7 @@ public:
 
     void draw ( void );
     void draw_overlay ( void );
+    int handle_scroll ( int m );
     int handle ( int m );
     static void update_cb ( void *arg );
 

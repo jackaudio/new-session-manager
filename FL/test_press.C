@@ -28,7 +28,8 @@
 int
 test_press ( unsigned long e )
 {
-    ((char *)Fl::event_text())[0] = '\0';
+    if ( Fl::event_text()[0] )
+        ((char *)Fl::event_text())[0] = '\0';
 
     if ( ! ( e & FL_SHIFT ) )
         return Fl::test_shortcut( e ) && ! Fl::event_shift();

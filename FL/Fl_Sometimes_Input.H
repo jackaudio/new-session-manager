@@ -22,23 +22,23 @@
 /* Just like an Fl_Input, except that when not being edited it
  * displays just like a label. */
 
+#include <FL/Fl.H>
+
 class Fl_Sometimes_Input : public Fl_Input
 {
-
-    bool _editing;
 
 public:
 
     Fl_Sometimes_Input ( int X, int Y, int W, int H, const char *L=0 )
         : Fl_Input( X, Y, W, H, L )
         {
-            _editing = false;
+            clear_visible_focus();
         }
 
     virtual void
     draw ( void )
         {
-            if ( _editing )
+            if ( this == Fl::focus() )
                 Fl_Input::draw();
             else
             {
@@ -56,15 +56,15 @@ public:
             switch ( m )
             {
                 case FL_FOCUS:
-                    _editing = true;
                     redraw();
                     return 1;
                 case FL_PUSH:
-                    _editing = true;
+                    set_visible_focus();
+                    take_focus();
+                    clear_visible_focus();
                     redraw();
                     return r;
                 case FL_UNFOCUS:
-                    _editing = false;
 
                     if ( window() )
                         window()->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );

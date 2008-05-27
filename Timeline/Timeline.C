@@ -950,6 +950,13 @@ Timeline::track_under ( int Y )
 #include "FL/event_name.H"
 #include "FL/test_press.H"
 
+/** give the scrollbars a shot at events */
+int
+Timeline::handle_scroll ( int m )
+{
+    return hscroll->handle( m ) || vscroll->handle( m );
+}
+
 int
 Timeline::handle ( int m )
 {
@@ -959,8 +966,7 @@ Timeline::handle ( int m )
 /*     if ( m != FL_NO_EVENT ) */
 /*         DMESSAGE( "%s", event_name( m ) ); */
 
-
-    int r = Fl_Overlay_Window::handle( m );
+/*     int r = Fl_Overlay_Window::handle( m ); */
 
     switch ( m )
     {
@@ -1001,7 +1007,7 @@ Timeline::handle ( int m )
                     /* keep scrollbar from eating these. */
                     return 0;
                 default:
-                    return r;
+                    return Fl_Overlay_Window::handle( m );
             }
 
             return 0;
@@ -1014,7 +1020,7 @@ Timeline::handle ( int m )
 
 //Fl::focus( this );
 
-/*             r = Fl_Overlay_Window::handle( m ); */
+            int r = Fl_Overlay_Window::handle( m );
 
             if ( m != FL_RELEASE && r )
                 return r;

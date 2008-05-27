@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# May 2008 Jonathan Moore Liles
+#
+# Given the name of a file containing a list of files and a filename
+# from that list, return the percentage of the distance from the
+# beginning of the list.
+
+[ $# -ne 2 ] && exit
+
+MATCH="`grep -nFx \"$2\" \"$1\"`"
+MATCH=${MATCH%%:*}
+TOTAL="`cat \"$1\" | wc -l`"
+
+if [ -z "$MATCH" ]
+then
+    echo "0%"
+else
+    printf "%3s%%" $(( $MATCH * 100 / $TOTAL ))
+fi

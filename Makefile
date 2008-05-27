@@ -9,6 +9,11 @@
 
 VERSION := 0.5.0
 
+# a bit of a hack to make sure this runs before any rules
+ifneq ($(CALCULATING),yes)
+TOTAL := $(shell $(MAKE) CALCULATING=yes -n | sed -n 's/^.*Compiling: \([^"]\+\)"/\1/p' > .files )
+endif
+
 all: make.conf FL Timeline
 
 make.conf: configure
@@ -30,8 +35,14 @@ INCLUDES := -I. -Iutil -IFL
 
 include scripts/colors
 
+ifneq ($(CALCULATING),yes)
+	COMPILING="$(BOLD)$(BLACK)[$(SGR0)$(CYAN)`scripts/percent-complete .files "$<"`$(SGR0)$(BOLD)$(BLACK)]$(SGR0) Compiling: $(BOLD)$(YELLOW)$<$(SGR0)"
+else
+	COMPILING="Compiling: $<"
+endif
+
 .C.o:
-	@ echo "Compiling: $(BOLD)$(YELLOW)$<$(SGR0)"
+	@ echo $(COMPILING)
 	@ $(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 %.C : %.fl

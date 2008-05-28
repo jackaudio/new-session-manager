@@ -63,6 +63,9 @@ Sequence::init ( void )
 
 Sequence::~Sequence (  )
 {
+
+    DMESSAGE( "destroying sequence" );
+
     if ( _name )
         free( _name );
 

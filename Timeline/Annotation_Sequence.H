@@ -83,9 +83,9 @@ public:
 
     ~Annotation_Sequence ( )
         {
-            track()->remove( this );
-
             log_destroy();
+
+            track()->remove( this );
         }
 
     int handle ( int m )

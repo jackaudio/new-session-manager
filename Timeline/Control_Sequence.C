@@ -65,8 +65,6 @@ Control_Sequence::~Control_Sequence ( )
     delete _output;
 
     _output = NULL;
-
-    log_destroy();
 }
 
 void

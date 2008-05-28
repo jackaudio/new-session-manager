@@ -76,6 +76,8 @@ Disk_Stream::~Disk_Stream ( )
 
     shutdown();
 
+    /* FIXME: we must wait on the thread to finish here!!! */
+
     _track = NULL;
 
     sem_destroy( &_blocks );
@@ -135,12 +137,6 @@ Disk_Stream::shutdown ( void )
 
     if ( _thread )
         pthread_detach( _thread );
-
-        /* we must block until the thread returns, because it might
-         * still have data left to process in its buffers--and we
-         * don't want to delete any of the datastructures it's using
-         * until it finishes with them. */
-//        pthread_join( _thread, NULL );
 
     _thread = 0;
 }

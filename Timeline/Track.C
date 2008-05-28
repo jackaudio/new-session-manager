@@ -247,6 +247,8 @@ Track::Track ( const char *L, int channels ) :
 
 Track::~Track ( )
 {
+    log_destroy();
+
     timeline->remove_track( this );
 
     /* give up our ports */
@@ -260,8 +262,10 @@ Track::~Track ( )
             delete control_out.back();
             control_out.pop_back();
     }
-
-    log_destroy();
+    _sequence = NULL;
+    takes = NULL;
+    control = NULL;
+    annotation = NULL;
 
     if ( _name )
         free( _name );
@@ -355,6 +359,9 @@ Track::add ( Audio_Sequence * t )
 void
 Track::remove ( Audio_Sequence *t )
 {
+    if ( ! takes )
+        return;
+
     timeline->wrlock();
 
     takes->remove( t );
@@ -369,6 +376,9 @@ Track::remove ( Audio_Sequence *t )
 void
 Track::remove ( Annotation_Sequence *t )
 {
+    if ( ! annotation )
+        return;
+
     annotation->remove( t );
 
     resize();
@@ -377,6 +387,9 @@ Track::remove ( Annotation_Sequence *t )
 void
 Track::remove ( Control_Sequence *t )
 {
+    if ( ! control )
+        return;
+
     engine->lock();
 
     control->remove( t );

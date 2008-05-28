@@ -34,6 +34,35 @@ Fl_Color Sequence_Widget::_selection_color = FL_MAGENTA;
 
 
 
+Sequence_Widget::Sequence_Widget ( )
+{
+    _sequence = NULL;
+
+    _r = &_range;
+
+    _r->start = _r->offset = _r->length = 0;
+
+    _drag = NULL;
+
+    _box_color = FL_BACKGROUND_COLOR;
+    _color     = FL_FOREGROUND_COLOR;
+}
+
+Sequence_Widget::~Sequence_Widget ( )
+{
+    redraw();
+
+    if ( this == _pushed )
+        _pushed = NULL;
+
+    if ( this == _belowmouse )
+        _belowmouse = NULL;
+
+    _sequence->remove( this );
+
+    _selection.remove( this );
+}
+
 void
 Sequence_Widget::get ( Log_Entry &e ) const
 {

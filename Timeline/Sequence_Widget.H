@@ -158,30 +158,11 @@ protected:
             _box_color = rhs._box_color;
         };
 
+    Sequence_Widget ( );
+
 public:
 
-    Sequence_Widget ( )
-        {
-            _sequence = NULL;
-
-            _r = &_range;
-
-            _r->start = _r->offset = _r->length = 0;
-
-            _drag = NULL;
-
-            _box_color = FL_BACKGROUND_COLOR;
-            _color     = FL_FOREGROUND_COLOR;
-        }
-
-    virtual ~Sequence_Widget ( )
-        {
-            redraw();
-
-            _sequence->remove( this );
-
-            _selection.remove( this );
-        }
+    virtual ~Sequence_Widget ( );
 
     const Sequence_Widget &
     operator= ( const Sequence_Widget &rhs )

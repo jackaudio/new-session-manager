@@ -47,10 +47,6 @@ Track::update_port_names ( void )
     for ( unsigned int i = 0; i < input.size(); ++i )
         input[ i ].name( name(), i );
 
-    for ( unsigned int i = 0; i < control_out.size(); ++i )
-        control_out[ i ]->name( name(), i, "cv" );
-
-
 /*     /\* tell any attached control sequences to do the same *\/ */
 /*     for ( int i = control->children(); i-- ) */
 /*         ((Control_Sequence*)control->child( i ))->update_port_names(); */
@@ -165,10 +161,6 @@ Track::process ( nframes_t nframes )
 
         for ( int i = input.size(); i--; )
             input[ i ].silence( nframes );
-
-        /* FIXME: is this really the right thing to do for control ports? */
-        for ( int i = control_out.size(); i--; )
-            control_out[ i ]->silence( nframes );
 
         return 0;
     }

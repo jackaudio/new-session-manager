@@ -255,13 +255,6 @@ Track::~Track ( )
     configure_inputs( 0 );
     configure_outputs( 0 );
 
-    /* controls too */
-    for ( int i = control_out.size(); i--; )
-    {
-            control_out.back()->shutdown();
-            delete control_out.back();
-            control_out.pop_back();
-    }
     _sequence = NULL;
     takes = NULL;
     control = NULL;

@@ -191,13 +191,17 @@ Record_DS::disk_thread ( void )
     delete[] cbuf;
 #endif
 
+    DMESSAGE( "finalzing capture" );
+
     /* now finalize the recording */
     track()->finalize( _capture, _stop_frame );
 
     delete _capture;
     _capture = NULL;
 
+    _thread = 0;
     _terminate = false;
+    DMESSAGE( "capture thread gone" );
 }
 
 
@@ -241,7 +245,7 @@ Record_DS::stop ( nframes_t frame )
 
     _stop_frame = frame;
 
-    shutdown();
+    detach();
 
     DMESSAGE( "recording finished" );
 }

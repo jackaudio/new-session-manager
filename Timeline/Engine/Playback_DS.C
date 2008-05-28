@@ -196,6 +196,9 @@ Playback_DS::disk_thread ( void )
 #ifndef AVOID_UNNECESSARY_COPYING
     delete[] cbuf;
 #endif
+
+    _terminate = false;
+    _thread = 0;
 }
 
 /* THREAD: RT */

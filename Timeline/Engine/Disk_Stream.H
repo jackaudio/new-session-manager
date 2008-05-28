@@ -81,16 +81,17 @@ protected:
         {
             while ( ! sem_wait( &_blocks ) && errno == EINTR );
 
-            if ( _terminate )
-                return false;
-            else
-                return true;
+            return ! _terminate;
         }
 
     virtual void disk_thread ( void ) = 0;
 
     void base_flush ( bool is_output );
     virtual void flush ( void ) = 0;
+
+    void run ( void );
+    void shutdown ( void );
+    void detach ( void );
 
 public:
 
@@ -108,9 +109,6 @@ public:
 
 /*     void seek ( nframes_t frame ); */
 /*     bool seek_pending ( void ); */
-
-    void run ( void );
-    void shutdown ( void );
 
     virtual nframes_t process ( nframes_t nframes ) = 0;
 

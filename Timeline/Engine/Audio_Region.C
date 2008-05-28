@@ -201,7 +201,7 @@ Audio_Region::write ( nframes_t nframes )
             ++W;
             Fl::lock();
             sequence()->damage( FL_DAMAGE_ALL, x() + w() - W, y(), W, h() );
-            Fl::awake();
+//            Fl::awake();
             Fl::unlock();
         }
     }
@@ -215,6 +215,8 @@ Audio_Region::write ( nframes_t nframes )
 bool
 Audio_Region::finalize ( nframes_t frame )
 {
+    DMESSAGE( "finalizing capture region" );
+
     _range.length = frame - _range.start;
 
     log_end();

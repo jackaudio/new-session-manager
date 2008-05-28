@@ -68,7 +68,6 @@ Track::configure_outputs ( int n )
         Playback_DS *ds = playback_ds;
         playback_ds = NULL;
 
-        ds->shutdown();
         delete ds;
     }
 
@@ -116,7 +115,6 @@ Track::configure_inputs ( int n )
         Record_DS *ds = record_ds;
         record_ds = NULL;
 
-        ds->shutdown();
         delete ds;
     }
 
@@ -250,6 +248,7 @@ void
 Track::finalize ( Capture *c, nframes_t frame )
 {
     c->region->finalize( frame );
+    DMESSAGE( "finalizing audio file" );
     c->audio_file->finalize();
 
     delete c->audio_file;

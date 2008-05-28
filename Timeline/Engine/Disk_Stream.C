@@ -76,9 +76,7 @@ Disk_Stream::~Disk_Stream ( )
 
     shutdown();
 
-    /* FIXME: we must wait on the thread to finish here!!! */
-
-    _track = NULL;
+     _track = NULL;
 
     sem_destroy( &_blocks );
 
@@ -126,6 +124,17 @@ Disk_Stream::base_flush ( bool is_output )
 
 }
 
+/** signal thread to terminate, then detach it */
+void
+Disk_Stream::detach ( void )
+{
+    _terminate = true;
+
+    block_processed();
+
+    pthread_detach( _thread );
+}
+
 /** stop the IO thread. */
 void
 Disk_Stream::shutdown ( void )
@@ -136,9 +145,7 @@ Disk_Stream::shutdown ( void )
     block_processed();
 
     if ( _thread )
-        pthread_detach( _thread );
-
-    _thread = 0;
+        pthread_join( _thread, NULL );
 }
 
 Track *
@@ -157,6 +164,8 @@ Disk_Stream::sequence ( void ) const
 void
 Disk_Stream::run ( void )
 {
+    ASSERT( ! _thread, "Thread is already running" );
+
     if ( pthread_create( &_thread, NULL, &Disk_Stream::disk_thread, this ) != 0 )
         FATAL( "Could not create IO thread!" );
 }

@@ -733,7 +733,7 @@ Peaks::Builder::make_peaks_mipmap ( void )
     {
         DMESSAGE( "building level %d peak cache", i + 1 );
 
-        DMESSAGE( "%lu", _clip->length() / cs );
+/*         DMESSAGE( "%lu", _clip->length() / cs ); */
 
         if ( _clip->length() / cs < 1 )
         {
@@ -766,6 +766,8 @@ Peaks::Builder::make_peaks_mipmap ( void )
 
     fclose( rfp );
     fclose( fp );
+
+    DMESSAGE( "done" );
 
     return true;
 }

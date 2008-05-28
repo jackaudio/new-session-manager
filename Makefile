@@ -69,27 +69,11 @@ TAGS: $(SRCS)
 clean_deps:
 	@ rm -f .deps
 
-SOURCES = Timeline/.sources FL/.sources
-
-clean_sources:
-	@ rm -f $(SOURCES)
-
-.sources: $(SOURCES)
-
-rearrange: clean_deps clean_sources
-	@ $(MAKE) -s .deps
-	@ $(MAKE) -s .sources
-
-.PHONEY: clean config depend clean_deps clean_sources .sources rearrange
+.PHONEY: clean config depend clean_deps
 
 clean: FL_clean Timeline_clean
 
-# (generated) files not in git that need to go into the distribution tarball
-EXTRA_DIST := $(SOURCES)
-
-dist: .sources
-	@ echo -n Building tarball...
-	@ scripts/dist non-daw $(VERSION) $(EXTRA_DIST)
-	@ echo $(DONE)
+dist:
+	git archive --prefix=non-daw-$(VERSION)/ v$(VERSION) | bzip2 > non-daw-$(VERSION).tar.bz2
 
 -include .deps

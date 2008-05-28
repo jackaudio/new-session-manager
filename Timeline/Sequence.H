@@ -93,6 +93,9 @@ public:
 
     void sort ( void );
 
+    nframes_t next ( nframes_t from ) const;
+    nframes_t prev ( nframes_t from ) const;
+
     Track *track ( void ) const { return _track; }
     void track ( Track *t ) { _track = t; }
 

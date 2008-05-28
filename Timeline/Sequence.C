@@ -298,7 +298,37 @@ Sequence::snap ( Sequence_Widget *r )
         r->start( f );
 }
 
+/** return the location of the next widget from frame /from/ */
+nframes_t
+Sequence::next ( nframes_t from ) const
+{
+    for ( list <Sequence_Widget*>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
+        if ( (*i)->start() > from )
+            return (*i)->start();
+
+    if ( _widgets.size() )
+        return _widgets.back()->start();
+    else
+        return 0;
+}
+
+/** return the location of the next widget from frame /from/ */
+nframes_t
+Sequence::prev ( nframes_t from ) const
+{
+    for ( list <Sequence_Widget*>::const_reverse_iterator i = _widgets.rbegin(); i != _widgets.rend(); i++ )
+        if ( (*i)->start() < from )
+            return (*i)->start();
+
+    if ( _widgets.size() )
+        return _widgets.front()->start();
+    else
+        return 0;
+}
+
 #include "FL/event_name.H"
+
+#include "Transport.H" // for locate()
 
 int
 Sequence::handle ( int m )
@@ -310,9 +340,20 @@ Sequence::handle ( int m )
     switch ( m )
     {
         case FL_KEYBOARD:
+            if ( Fl::test_shortcut( FL_CTRL + FL_Right ) )
+            {
+                transport->locate( next( transport->frame ) );
+                return 1;
+            }
+            else if ( Fl::test_shortcut( FL_CTRL + FL_Left ) )
+            {
+                transport->locate( prev( transport->frame ) );
+                return 1;
+            }
+            else
             /* this is a hack to override FLTK's use of arrow keys for
              * focus navigation */
-            return timeline->handle_scroll( m );
+                return timeline->handle_scroll( m );
         case FL_NO_EVENT:
             /* garbage from overlay window */
             return 0;

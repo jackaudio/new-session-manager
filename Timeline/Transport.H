@@ -93,6 +93,9 @@ public:
     Transport ( int X, int Y, int W, int H, const char *L=0 )
         : Fl_Pack( X, Y, W, H, L )
         {
+            recording = false;
+            rolling = false;
+
             const int bw = W / 3;
 
             type( HORIZONTAL );

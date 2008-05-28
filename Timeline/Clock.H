@@ -82,7 +82,7 @@ public:
             int M = S / 60; S -= M * 60;
             int H = M / 60; M -= H * 60;
 
-            snprintf( dst, n, "%02d:%02d:%05.3f", H, M, S );
+            snprintf( dst, n, "%02d:%02d:%06.3f", H, M, S );
         }
 
     static void

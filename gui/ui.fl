@@ -98,7 +98,8 @@ if ( transport.rolling )
 
 }
 
-ui->transport_state->do_callback();} {}
+ui->transport_state->do_callback();} {selected
+  }
 } 
 
 class UI {open
@@ -135,8 +136,7 @@ main_window->show();
 Fl::add_timeout( TRANSPORT_POLL_INTERVAL, update_transport );
 
 
-playlist->signal_new_song.connect( sigc::mem_fun( this, &UI::update_sequence_widgets ) );} {selected
-    }
+playlist->signal_new_song.connect( sigc::mem_fun( this, &UI::update_sequence_widgets ) );} {}
   }
   Function {~UI()} {open
   } {
@@ -1608,7 +1608,7 @@ while ( window->shown() )
   }
 } 
 
-class Trigger {: {public Fl_Dial}
+class Trigger {open : {public Fl_Dial}
 } {
   Function {Trigger( int X, int Y, int W, int H, const char *L = 0 ) : Fl_Dial( X, Y, W, H, L )} {open
   } {}
@@ -1660,7 +1660,6 @@ switch ( m )
 		break;
 	}
 	case FL_RELEASE:
-		MESSAGE("doing callback");
 		do_callback();
 		r = 1;
 		break;

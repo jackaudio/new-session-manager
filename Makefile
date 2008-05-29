@@ -9,20 +9,20 @@
 
 VERSION := 0.5.0
 
-# a bit of a hack to make sure this runs before any rules
-ifneq ($(CALCULATING),yes)
-TOTAL := $(shell $(MAKE) CALCULATING=yes -n | sed -n 's/^.*Compiling: \([^"]\+\)"/\1/p' > .files )
-endif
+all: .config FL Timeline
 
-all: make.conf FL Timeline
-
-make.conf: configure
+.config: configure
 	@ ./configure
 
 config:
 	@ ./configure
 
--include make.conf
+-include .config
+
+# a bit of a hack to make sure this runs before any rules
+ifneq ($(CALCULATING),yes)
+TOTAL := $(shell $(MAKE) CALCULATING=yes -n 2>/dev/null | sed -n 's/^.*Compiling: \([^"]\+\)"/\1/p' > .files )
+endif
 
 ifeq ($(USE_DEBUG),yes)
 	CXXFLAGS := -pipe -ggdb -Wall -Wextra -Wnon-virtual-dtor -Wno-missing-field-initializers -O0 -fno-rtti -fno-exceptions
@@ -57,12 +57,12 @@ SRCS:=$(Timeline_SRCS) $(FL_SRCS)
 OBJS:=$(FL_OBJS) $(Timeline_OBJS)
 
 # FIXME: isn't there a better way?
-$(OBJS): make.conf
+$(OBJS): .config
 
 TAGS: $(SRCS)
 	etags $(SRCS)
 
-.deps: make.conf $(SRCS)
+.deps: .config $(SRCS)
 	@ echo -n Calculating dependencies...
 	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) > .deps 2>/dev/null && echo $(DONE)
 

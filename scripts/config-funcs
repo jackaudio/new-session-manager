@@ -43,7 +43,7 @@ then
 
     if [ $# -gt 0 ]
     then
-        echo "## options" > make.conf
+        echo "## options" > .config
 
         split "$@" | sed '
 s/--\(enable\|disable\)-\([^ =]\+\)/--\1-\U\2/g;
@@ -51,8 +51,16 @@ s/--enable-\([^ =]\+\)=\(.*\)/USE_\1=\2/g;
 s/--enable-\([^ =]\+\)/USE_\1=yes/g;
 s/--disable-\([^ =]\+\)/USE_\1=no/g;
 s/--\([^ =]\+\)/\1/g;
-' | sed -n '/^[^ =]\+=./p' >> make.conf
+' | sed -n '/^[^ =]\+=./p' >> .config
         UPDATE=yes;
+    fi
+fi
+
+if [ $HELP != yes ] && [ $UPDATE != yes ]
+then
+    if ! ( [ -t 0 ] && [ -t 1 ] )
+    then
+        fatal "not a terminal!"
     fi
 fi
 
@@ -108,7 +116,7 @@ ok ()
 failed ()
 {
     echo "$BOLD${RED}failed!${SGR0}" > /dev/stderr
-    rm -f make.conf
+    rm -f .config
 }
 
 using ()
@@ -127,7 +135,7 @@ extract_options ()
 {
     local line name value
 
-    if [ -f make.conf ]
+    if [ -f .config ]
     then
         {
             while read line
@@ -146,7 +154,7 @@ extract_options ()
                     eval "$name='$value'"
                 fi
             done
-        } < make.conf
+        } < .config
     fi
 }
 
@@ -183,7 +191,7 @@ begin_options ()
         echo " Available options:"
         echo
     else
-        echo > make.conf
+        echo > .config
         append "# This file was automatically generated on `date`. Any changes may be lost!"
         append "## options"
 
@@ -210,13 +218,13 @@ begin_tests ()
 
 append ()
 {
-    echo "$1" >> make.conf
+    echo "$1" >> .config
 }
 
 end ()
 {
     info "Configuration complete"
-    touch make.conf
+    touch .config
 }
 
 require_command ()

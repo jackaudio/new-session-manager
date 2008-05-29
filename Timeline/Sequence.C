@@ -101,13 +101,12 @@ Sequence::overlaps ( Sequence_Widget *r )
     for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
     {
         if ( *i == r ) continue;
-        if ( ! ( (*i)->start() > r->start() + r->length() || (*i)->start() + (*i)->length() < r->start() ) )
+        if ( (*i)->overlaps( r ) )
             return *i;
     }
 
     return NULL;
 }
-
 
 void
 Sequence::draw ( void )

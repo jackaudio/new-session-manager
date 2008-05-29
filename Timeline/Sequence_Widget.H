@@ -314,6 +314,21 @@ public:
 
     int active_r ( void ) const { return _sequence->active_r(); }
 
+
+
+
+/** returns true if widget /w/ begins and ends completely within the range of this widget */
+    bool contains ( const Sequence_Widget *w ) const
+        {
+            return w->start() >= start() && w->start() + w->length() <= start() + length();
+        }
+
+/** returns true of widget /w/ overlaps this widget in any place */
+    bool overlaps ( const Sequence_Widget *w ) const
+        {
+            return ! ( w->start() > start() + length() || w->start() + w->length() < start() );
+        }
+
     virtual Fl_Boxtype box ( void ) const { return FL_UP_BOX; }
     virtual Fl_Align align ( void ) const { return (Fl_Align)0; }
 

@@ -159,7 +159,7 @@ Audio_Sequence::draw ( void )
 /*                 if ( o->x() == (*r)->x() && o->w() == (*r)->w() ) */
 /*                     printf( "complete superposition\n" ); */
 
-                if ( (*r)->x() >= o->x() && (*r)->x() + (*r)->w() <= o->x() + o->w() )
+                if ( o->contains( *r ) )
                     /* completely inside */
                     continue;
 
@@ -195,7 +195,7 @@ Audio_Sequence::draw ( void )
             if ( *o <= **r )
             {
 
-                if ( (*r)->x() >= o->x() && (*r)->x() + (*r)->w() <= o->x() + o->w() )
+                if ( o->contains( *r ) )
                     /* completely inside */
                     continue;
 

@@ -181,28 +181,27 @@ Sequence::remove_selected ( void )
 void
 Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
-    timeline->update_length( start + length );
+//    timeline->update_length( start + length );
 }
 
+/** calculate the length of this sequence by looking at the end of the
+ * least widget it contains */
+nframes_t
+Sequence::length ( void ) const
+{
+    nframes_t l = 0;
 
-/* /\** calculate the length of this sequence by looking at the end of the */
-/*  * least widget it contains *\/ */
-/* nframes_t */
-/* Sequence::length ( void ) const */
-/* { */
+    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin(); r != _widgets.end(); ++r )
+        l = max( l, (*r)->start() + (*r)->length() );
 
-/*     if ( _widgets.size() ) */
-/*         return _widgets.back().start() + _widgets.back().length(); */
-/*     else */
-/*         return 0; */
-
-/* } */
+    return l;
+}
 
 Sequence_Widget *
 Sequence::event_widget ( void )
 {
     nframes_t ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() );
-    for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
+    for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); ++r )
         if ( ets > (*r)->start() && ets < (*r)->start() + (*r)->length()
              && Fl::event_y() >= (*r)->y() && Fl::event_y() <= (*r)->y() + (*r)->h() )
             return (*r);
@@ -216,7 +215,7 @@ Sequence::select_range ( int X, int W )
     nframes_t sts = x_to_offset( X );
     nframes_t ets = sts + timeline->x_to_ts( W );
 
-    for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); r++ )
+    for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); ++r )
         if ( ! ( (*r)->start() > ets || (*r)->start() + (*r)->length() < sts ) )
             (*r)->select();
 }

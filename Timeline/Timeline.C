@@ -110,7 +110,7 @@ Timeline::adjust_vscroll ( void )
 void
 Timeline::adjust_hscroll ( void )
 {
-    hscroll->value( ts_to_x( xoffset ), tracks->w() - Track::width(), 0, ts_to_x( _length ) );
+    hscroll->value( ts_to_x( xoffset ), tracks->w() - Track::width(), 0, ts_to_x( length() ) );
 }
 
 void
@@ -140,10 +140,10 @@ Timeline::cb_scroll ( Fl_Widget *w )
             _fpp = hscroll->zoom();
 
             const int tw = tracks->w() - Track::width();
-//            hscroll->value( ts_to_x( xoffset ), tw, 0, ts_to_x( _length ) );
+//            hscroll->value( ts_to_x( xoffset ), tw, 0, ts_to_x( length() ) );
 
             hscroll->value( max( 0, ts_to_x( under_mouse ) - ( Fl::event_x() - tracks->x() - Track::width() ) ),
-                            tw, 0, ts_to_x( _length ) );
+                            tw, 0, ts_to_x( length() ) );
 
             redraw();
         }
@@ -358,10 +358,10 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     {
 //        sample_rate() = engine->sample_rate();
         _fpp = 8;
-//        _length = sample_rate() * 60 * 2;
+//        length() = sample_rate() * 60 * 2;
 
         /* FIXME: hack */
-        _length = x_to_ts( W );
+//        length() = x_to_ts( W );
 
         {
             Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W - vscroll->w(), 1 );
@@ -678,7 +678,7 @@ Timeline::xposition ( int X )
 //    _old_xposition = xoffset;
 
 /*     /\* FIXME: shouldn't have to do this... *\/ */
-/*     X = min( X, ts_to_x( _length ) - tracks->w() - Track::width() ); */
+/*     X = min( X, ts_to_x( length() ) - tracks->w() - Track::width() ); */
 
     xoffset = x_to_ts( X );
 
@@ -730,6 +730,16 @@ Timeline::resize ( int X, int Y, int W, int H )
 }
 
 void
+Timeline::draw_cursors ( void ) const
+{
+    if ( p1 != p2 )
+    {
+        draw_cursor( p1, FL_BLUE, draw_full_arrow_symbol );
+        draw_cursor( p2, FL_GREEN, draw_full_arrow_symbol );
+    }
+}
+
+void
 Timeline::draw ( void )
 {
     int X, Y, W, H;
@@ -761,12 +771,7 @@ Timeline::draw ( void )
         draw_child( *hscroll );
         draw_child( *vscroll );
 
-
-        if ( p1 != p2 )
-        {
-            draw_cursor( p1, FL_BLUE, draw_full_arrow_symbol );
-            draw_cursor( p2, FL_GREEN, draw_full_arrow_symbol );
-        }
+        draw_cursors();
 
         redraw_overlay();
 
@@ -805,12 +810,8 @@ Timeline::draw ( void )
         update_child( *hscroll );
         update_child( *vscroll );
 
+        draw_cursors();
 
-        if ( p1 != p2 )
-        {
-            draw_cursor( p1, FL_BLUE, draw_full_arrow_symbol );
-            draw_cursor( p2, FL_GREEN, draw_full_arrow_symbol );
-        }
     }
 
 done:
@@ -823,7 +824,7 @@ done:
 
 
 void
-Timeline::draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color) )
+Timeline::draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color) ) const
 {
 //    int x = ( ts_to_x( frame ) - ts_to_x( xoffset ) ) + tracks->x() + Track::width();
 
@@ -869,6 +870,7 @@ void
 Timeline::draw_playhead ( void )
 {
     draw_cursor( transport->frame, FL_RED, draw_full_arrow_symbol );
+    draw_cursor( length(), FL_BLACK, draw_full_arrow_symbol );
 }
 
 void
@@ -994,24 +996,17 @@ Timeline::handle_scroll ( int m )
         return 0;
 }
 
-void
-Timeline::update_length ( nframes_t l )
+nframes_t
+Timeline::length ( void ) const
 {
-    _length = max( _length, l );
+    nframes_t l = 0;
 
-    adjust_hscroll();
+    for ( int i = tracks->children(); i--; )
+        l = max( l, ((Track*)tracks->child( i ))->sequence()->length() );
 
-/*     nframes_t l = 0; */
+//    adjust_hscroll();
 
-/*     for ( int i = tracks->children(); i-- ; ) */
-/*     { */
-/*         Track *t = (Track*)tracks->child( i ); */
-
-/*         l = max( l, t->sequence()->length() ); */
-/*     } */
-
-/*     _length = l; */
-
+    return l;
 }
 
 int
@@ -1200,7 +1195,7 @@ Timeline::zoom ( float secs )
 void
 Timeline::zoom_fit ( void )
 {
-    zoom( _length / (float)sample_rate() );
+    zoom( length() / (float)sample_rate() );
 }
 
 Track *

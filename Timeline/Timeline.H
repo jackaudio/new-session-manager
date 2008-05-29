@@ -103,7 +103,6 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     void menu_cb ( Fl_Menu_ *m );
 
     int _fpp;                                                 /* frames per pixel, power of two */
-    nframes_t _length;
 
     nframes_t p1, p2;                                           /* cursors */
 
@@ -144,8 +143,8 @@ public:
     void update_tempomap ( void );
 
     nframes_t fpp ( void ) const { return 1 << _fpp; }
-    nframes_t length ( void ) const { return _length; }
-    void update_length ( nframes_t l );
+
+    nframes_t length ( void ) const;
     nframes_t sample_rate ( void ) const { return _sample_rate; }
     int ts_to_x( nframes_t ts ) const { return  ts >> _fpp; }
     nframes_t x_to_ts ( int x ) const { return x << _fpp; }
@@ -166,7 +165,8 @@ public:
 
     void xposition ( int X );
     void yposition ( int Y );
-    void draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color) );
+    void draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color) ) const;
+    void draw_cursors ( void ) const;
     void draw_playhead ( void );
     void redraw_playhead ( void );
     void resize ( int X, int Y, int W, int H );

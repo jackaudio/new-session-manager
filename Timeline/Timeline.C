@@ -239,11 +239,17 @@ Timeline::menu_cb ( Fl_Menu_ *m )
     }
     else if ( ! strcmp( picked, "Playhead left" ) )
     {
-#warning unimplemented
+        nframes_t f = transport->frame;
+
+        if ( prev_line( &f ) )
+            transport->locate( f );
     }
     else if ( ! strcmp( picked, "Playhead right" ) )
     {
-#warning unimplemented
+        nframes_t f = transport->frame;
+
+        if ( next_line( &f ) )
+            transport->locate( f );
     }
     else if ( ! strcmp( picked, "Swap P1 and playhead" ) )
     {
@@ -440,7 +446,7 @@ abs_diff ( nframes_t n1, nframes_t n2 )
     return n1 > n2 ? n1 - n2 : n2 - n1;
 }
 
-void
+static void
 nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
 {
     nearest_line_arg *n = (nearest_line_arg *)arg;
@@ -451,6 +457,15 @@ nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
     if ( Timeline::snap_magnetic &&
          abs_diff( frame, n->original ) > timeline->x_to_ts( snap_pixel ) )
         return;
+
+    if ( abs_diff( frame, n->original ) < abs_diff( n->original, n->closest ) )
+        n->closest = frame;
+}
+
+static void
+prev_next_line_cb ( nframes_t frame, const BBT &, void *arg )
+{
+    nearest_line_arg *n = (nearest_line_arg *)arg;
 
     if ( abs_diff( frame, n->original ) < abs_diff( n->original, n->closest ) )
         n->closest = frame;
@@ -479,6 +494,51 @@ Timeline::nearest_line ( nframes_t *frame ) const
         return true;
     }
 }
+
+/** Set the value pointed to by /frame/ to the frame number of the of
+    the nearest measure line to *greater than* /when/. Returns true if
+    the new value of *frame is valid, false otherwise. */
+bool
+Timeline::next_line ( nframes_t *frame ) const
+{
+    nframes_t when = *frame + 1;
+
+    nearest_line_arg n = { when, -1 };
+
+    render_tempomap( when, x_to_ts( w() ), prev_next_line_cb, &n );
+
+    if ( n.closest == (nframes_t)-1 )
+        return false;
+    else
+    {
+        *frame = n.closest;
+        return true;
+    }
+}
+
+
+/** Set the value pointed to by /frame/ to the frame number of the of
+    the nearest measure line to *less than* /when/. Returns true if
+    the new value of *frame is valid, false otherwise. */
+bool
+Timeline::prev_line ( nframes_t *frame ) const
+{
+    nframes_t when = *frame - 1;
+
+    nearest_line_arg n = { when, -1 };
+
+    render_tempomap( xoffset, when - xoffset, prev_next_line_cb, &n );
+
+    if ( n.closest == (nframes_t)-1 )
+        return false;
+    else
+    {
+        *frame = n.closest;
+        return true;
+    }
+}
+
+
 
 
 
@@ -986,12 +1046,15 @@ Timeline::track_under ( int Y )
 #include "FL/event_name.H"
 #include "FL/test_press.H"
 
-/** give the scrollbars a shot at events */
+/** a bit of a hack to keep FLTK's focus navigation stuff from
+ * stealing the arrow keys from us */
 int
 Timeline::handle_scroll ( int m )
 {
-    if ( m == FL_KEYBOARD && Fl::event_key() != FL_Home && Fl::event_key() != FL_End )
-        return hscroll->handle( m ) || vscroll->handle( m );
+    if ( m == FL_KEYBOARD &&
+         Fl::event_key() != FL_Home &&
+         Fl::event_key() != FL_End )
+        return menu->test_shortcut() || hscroll->handle( m ) || vscroll->handle( m );
     else
         return 0;
 }

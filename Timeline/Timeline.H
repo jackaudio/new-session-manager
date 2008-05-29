@@ -37,6 +37,7 @@ class Fl_Scrollbar;
 class Fl_Widget;
 
 class Fl_Menu_Button;
+class Fl_Menu_;
 
 class Timeline;
 extern Timeline *timeline;
@@ -99,7 +100,7 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     static void cb_scroll ( Fl_Widget *w, void *v );
     void cb_scroll ( Fl_Widget *w );
     static void menu_cb ( Fl_Widget *w, void *v );
-    void menu_cb ( Fl_Widget *w );
+    void menu_cb ( Fl_Menu_ *m );
 
     int _fpp;                                                 /* frames per pixel, power of two */
     nframes_t _length;

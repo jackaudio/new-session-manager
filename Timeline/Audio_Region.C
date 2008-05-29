@@ -23,6 +23,7 @@
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Menu_Item.H>
+#include <FL/fl_show_colormap.H>
 #include <stdio.h>
 
 #include "Sequence.H"
@@ -47,6 +48,8 @@ bool Audio_Region::inherit_track_color = true;
 Fl_Boxtype Audio_Region::_box = FL_UP_BOX;
 
 Fl_Color Audio_Region::_selection_color = FL_MAGENTA;
+
+Fl_Menu_Button *Audio_Region::_menu = NULL;
 
 
 
@@ -109,7 +112,6 @@ Audio_Region::set ( Log_Entry &e )
 
     Sequence_Region::set( e );
 }
-
 
 void
 Audio_Region::init ( void )
@@ -192,8 +194,97 @@ Audio_Region::source_name ( void ) const
     return _clip->name();
 }
 
-#include <FL/fl_show_colormap.H>
+void
+Audio_Region::menu_cb ( Fl_Widget *w, void *v )
+{
+    ((Audio_Region*)v)->menu_cb( (Fl_Menu_*) w );
+}
+
+void
+Audio_Region::menu_cb ( const Fl_Menu_ *m )
+{
+    char picked[256];
+
+    m->item_pathname( picked, sizeof( picked ) );
+
+    Logger log( this );
+
+    if ( ! strcmp( picked, "Fade/In/Linear" ) )
+        _fade_in.type = Fade::Linear;
+    else if ( ! strcmp( picked, "Fade/In/Sigmoid" ) )
+        _fade_in.type = Fade::Sigmoid;
+    else if ( ! strcmp( picked, "Fade/In/Logarithmic" ) )
+        _fade_in.type = Fade::Logarithmic;
+    else if ( ! strcmp( picked, "Fade/In/Parabolic" ) )
+        _fade_in.type = Fade::Parabolic;
+    else if ( ! strcmp( picked, "Fade/Out/Linear" ) )
+        _fade_out.type = Fade::Linear;
+    else if ( ! strcmp( picked, "Fade/Out/Sigmoid" ) )
+        _fade_out.type = Fade::Sigmoid;
+    else if ( ! strcmp( picked, "Fade/Out/Logarithmic" ) )
+        _fade_out.type = Fade::Logarithmic;
+    else if ( ! strcmp( picked, "Fade/Out/Parabolic" ) )
+        _fade_out.type = Fade::Parabolic;
+    else if ( ! strcmp( picked, "/Color" ) )
+        box_color( fl_show_colormap( box_color() ) );
+    else if ( ! strcmp( picked, "/Fade in to mouse" ) )
+    {
+        nframes_t offset = x_to_offset( Fl::event_x() );
+
+        if ( offset < length() )
+            _fade_in.length = offset;
+
+        DMESSAGE( "set fade in duration" );
+    }
+    else if ( ! strcmp( picked, "/Fade out to mouse" ) )
+    {
+        long offset = length() - x_to_offset( Fl::event_x() );
+
+        if ( offset > 0 )
+            _fade_out.length = offset;
+    }
+    else
+        FATAL( "Unknown menu choice \"%s\"", picked );
+
+    redraw();
+}
+
 #include "FL/test_press.H"
+
+/** build the context menu for this region */
+void
+Audio_Region::update_menu ( void )
+{
+    if ( ! Audio_Region::_menu )
+        Audio_Region::_menu = new Fl_Menu_Button( 0, 0, 0, 0, "Region" );
+
+    Fade::fade_type_e it = _fade_in.type;
+    Fade::fade_type_e ot = _fade_out.type;
+
+    Fl_Menu_Item items[] =
+        {
+            { "Fade",             0, &Audio_Region::menu_cb, this,  FL_SUBMENU    },
+            { "In",               0, &Audio_Region::menu_cb, this,  FL_SUBMENU    },
+            { "Linear",           0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( it == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
+            { "Sigmoid",          0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( it == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
+            { "Logarithmic",      0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( it == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
+            { "Parabolic",        0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( it == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
+            { 0                   },
+            { "Out",              0, &Audio_Region::menu_cb, this,  FL_SUBMENU    },
+            { "Linear",           0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( ot == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
+            { "Sigmoid",          0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( ot == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
+            { "Logarothmic",      0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( ot == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
+            { "Parabolic",        0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( ot == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
+            { 0                   },
+            { 0 },
+            { "Color",        0, &Audio_Region::menu_cb, this,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
+            { "Fade in to mouse", FL_F + 3, &Audio_Region::menu_cb, this },
+            { "Fade out to mouse", FL_F + 4, &Audio_Region::menu_cb, this },
+            { 0 },
+        };
+
+    _menu->copy( items );
+}
 
 int
 Audio_Region::handle ( int m )
@@ -210,38 +301,18 @@ Audio_Region::handle ( int m )
 
     switch ( m )
     {
+        case FL_FOCUS:
+        case FL_UNFOCUS:
+            return 1;
         case FL_KEYBOARD:
+            return _menu->test_shortcut() != 0;
+        case FL_ENTER:
         {
-            if ( Fl::event_key() == FL_F + 3 )
-            {
-                nframes_t offset = x_to_offset( X );
-
-                if ( offset < length() )
-                    _fade_in.length = offset;
-
-                DMESSAGE( "setting fade in length to %lu", _fade_in.length );
-
-                redraw();
-
-                return 1;
-            }
-            else if ( Fl::event_key() == FL_F + 4 )
-            {
-                long offset = length() - x_to_offset( X );
-
-                if ( offset > 0 )
-                    _fade_out.length = offset;
-
-                DMESSAGE( "setting fade out length to %lu", _fade_in.length );
-
-                redraw();
-
-                return 1;
-            }
-
-            return 0;
-
+            update_menu();
+            return Sequence_Region::handle( m );
         }
+        case FL_LEAVE:
+            return Sequence_Region::handle( m );
         case FL_PUSH:
         {
             /* splitting  */
@@ -283,43 +354,14 @@ Audio_Region::handle ( int m )
                 {
                     /* context menu */
 
-                    Fade::fade_type_e it = _fade_in.type;
-                    Fade::fade_type_e ot = _fade_out.type;
+                    update_menu();
 
-                    Fl_Menu_Item menu[] =
-                        {
-                            { "Fade",        0, 0, 0, FL_SUBMENU    },
-                            { "In",          0, 0, 0, FL_SUBMENU    },
-                            { "Linear",           0, 0, 0, FL_MENU_RADIO | ( it == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
-                            { "Sigmoid",          0, 0, 0, FL_MENU_RADIO | ( it == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
-                            { "Logarithmic",      0, 0, 0, FL_MENU_RADIO | ( it == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
-                            { "Parabolic",        0, 0, 0, FL_MENU_RADIO | ( it == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
-                            { 0 },
-                            { "Out",         0, 0, 0, FL_SUBMENU    },
-                            { "Linear",           0, 0, 0, FL_MENU_RADIO | ( ot == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
-                            { "Sigmoid",          0, 0, 0, FL_MENU_RADIO | ( ot == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
-                            { "Logarothmic",      0, 0, 0, FL_MENU_RADIO | ( ot == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
-                            { "Parabolic",        0, 0, 0, FL_MENU_RADIO | ( ot == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
-                            { 0 },
-                            { 0 },
-                            { "Color",        0, 0, 0, inherit_track_color ? FL_MENU_INACTIVE : 0 },
-                            { 0 },
-                        };
-
-                    const Fl_Menu_Item *r = menu->popup( X, Y, "Audio_Region" );
+                    const Fl_Menu_Item *r = _menu->menu()->popup( X, Y, _menu->label() );
 
                     if ( r )
                     {
-                        if ( r > &menu[1] && r < &menu[6] )
-                            _fade_in.type = (Fade::fade_type_e)(int)(r - &menu[2]);
-                        else if ( r > &menu[7] && r < &menu[12] )
-                            _fade_out.type = (Fade::fade_type_e)(int)(r - &menu[8]);
-                        else if ( r == &menu[ 14 ] )
-                        {
-                            box_color( fl_show_colormap( box_color() ) );
-                        }
-
-                        redraw();
+                        _menu->value( r );
+                        r->do_callback( static_cast<Fl_Widget*>(_menu) );
                     }
 
                     return 1;

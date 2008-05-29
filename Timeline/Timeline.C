@@ -157,14 +157,12 @@ Timeline::cb_scroll ( Fl_Widget *w )
 void
 Timeline::menu_cb ( Fl_Widget *w, void *v )
 {
-    ((Timeline*)v)->menu_cb( w );
+    ((Timeline*)v)->menu_cb( (Fl_Menu_*)w );
 }
 
 void
-Timeline::menu_cb ( Fl_Widget *w )
+Timeline::menu_cb ( Fl_Menu_ *m )
 {
-    Fl_Menu_ *m = static_cast<Fl_Menu_*>(w);
-
     const char *picked = m->mvalue()->label();
 
 /*     m->item_pathname( picked, sizeof( picked ) ); */

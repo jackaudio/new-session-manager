@@ -25,6 +25,9 @@
 class Audio_File;
 class Peaks_Redraw_Request;
 
+class Fl_Menu_;
+class Fl_Menu_Button;
+
 class Audio_Region : public Sequence_Region
 {
 
@@ -99,9 +102,14 @@ private:
 
     friend class Track;                                  /* for _clip */
 
+    static Fl_Menu_Button *_menu;
 
+    void update_menu ( void );
     static void peaks_pending_cb ( void *v );
     void peaks_pending_cb ( Peaks_Redraw_Request *r );
+
+    static void menu_cb ( Fl_Widget *w, void *v );
+    void menu_cb ( const Fl_Menu_ *m );
 
 protected:
 

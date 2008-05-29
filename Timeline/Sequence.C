@@ -340,6 +340,7 @@ Sequence::handle ( int m )
     switch ( m )
     {
         case FL_KEYBOARD:
+        case FL_SHORTCUT:
             if ( Fl::test_shortcut( FL_CTRL + FL_Right ) )
             {
                 transport->locate( next( transport->frame ) );
@@ -351,9 +352,23 @@ Sequence::handle ( int m )
                 return 1;
             }
             else
-            /* this is a hack to override FLTK's use of arrow keys for
-             * focus navigation */
-                return timeline->handle_scroll( m );
+            {
+                switch ( Fl::event_key() )
+                {
+                    case FL_Left:
+                    case FL_Right:
+                    case FL_Up:
+                    case FL_Down:
+                        /* this is a hack to override FLTK's use of arrow keys for
+                         * focus navigation */
+                        return timeline->handle_scroll( m );
+                    default:
+                        break;
+                }
+            }
+
+            if ( Sequence_Widget::belowmouse() )
+                return Sequence_Widget::belowmouse()->handle( m );
         case FL_NO_EVENT:
             /* garbage from overlay window */
             return 0;

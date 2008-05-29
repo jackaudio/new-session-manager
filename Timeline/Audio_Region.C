@@ -305,6 +305,9 @@ Audio_Region::handle ( int m )
         case FL_UNFOCUS:
             return 1;
         case FL_KEYBOARD:
+            if ( selected() )
+                /* make sure the user_data fields of menu point to this object */
+                update_menu();
             return _menu->test_shortcut() != 0;
         case FL_ENTER:
         {

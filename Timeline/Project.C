@@ -27,6 +27,7 @@ project state belongs to Timeline and other classes. */
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include "Loggable.H"
 #include "Project.H"
@@ -45,9 +46,55 @@ extern TLE *tle;
 #define PROJECT_VERSION "0.28.0"
 
 #include "util/debug.h"
+
+
+
 char Project::_name[256];
 char Project::_path[512];
 bool Project::_is_open = false;
+int Project::_lockfd = 0;
+
+
+
+bool
+Project::get_lock ( const char *filename )
+{
+    struct flock fl;
+
+    fl.l_type = F_WRLCK;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0;
+
+    assert( ! _lockfd );
+
+    _lockfd = ::creat( filename, 0777 );
+
+    if ( fcntl( _lockfd, F_SETLK, &fl ) != 0 )
+        return false;
+
+    return true;
+}
+
+void
+Project::release_lock ( const char *filename )
+{
+    unlink( filename );
+
+    ::close( _lockfd );
+
+    _lockfd = 0;
+}
+
+static int
+exists ( const char *name )
+{
+    struct stat st;
+
+    return 0 == stat( name, &st );
+}
+
+
 
 void
 Project::set_name ( const char *name )
@@ -68,16 +115,6 @@ Project::set_name ( const char *name )
             *s = ' ';
 }
 
-static int
-exists ( const char *name )
-{
-    struct stat st;
-
-    return 0 == stat( name, &st );
-}
-
-#include <errno.h>
-
 bool
 Project::close ( void )
 {
@@ -93,6 +130,8 @@ Project::close ( void )
     _is_open = false;
 
     *Project::_name = '\0';
+
+    release_lock( ".lock" );
 
     return true;
 }
@@ -179,6 +218,12 @@ Project::open ( const char *name )
     close();
 
     chdir( name );
+
+    if ( ! get_lock( ".lock" ) )
+    {
+        WARNING( "Could not open project: locked by another process!" );
+        return false;
+    }
 
     if ( ! Loggable::open( "history" ) )
         FATAL( "error opening journal" );

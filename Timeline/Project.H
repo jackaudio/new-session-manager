@@ -23,9 +23,13 @@ const char user_template_dir[] = "~/.non-daw/templates";
 class Project
 {
 
+    static int _lockfd;
     static bool _is_open;
     static char _name[256];
     static char _path[512];
+
+    static bool get_lock ( const char *filename );
+    static void release_lock ( const char *filename );
 
 public:
 

@@ -53,7 +53,7 @@ Sequence_Region::set ( Log_Entry &e )
 void
 Sequence_Region::draw_box ( void )
 {
-    fl_draw_box( box(), x(), y(), w(), h(), box_color() );
+    fl_draw_box( box(), line_x(), y(), abs_w(), h(), box_color() );
 }
 
 void

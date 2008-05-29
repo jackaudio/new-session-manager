@@ -208,12 +208,12 @@ Timeline::menu_cb ( Fl_Widget *w )
     }
     else if ( ! strcmp( picked, "Playhead to mouse" ) )
     {
-                    int X = Fl::event_x() - Track::width();
+        int X = Fl::event_x() - Track::width();
 
-                    if ( X > 0 )
-                    {
-                        transport->locate( xoffset + x_to_ts( X ) );
-                    }
+        if ( X > 0 )
+        {
+            transport->locate( xoffset + x_to_ts( X ) );
+        }
     }
     else if ( ! strcmp( picked, "P1 to mouse" ) )
     {
@@ -222,7 +222,7 @@ Timeline::menu_cb ( Fl_Widget *w )
         if ( X > 0 )
         {
             p1 = xoffset + x_to_ts( X );
-                    }
+        }
 
         /* FIXME: only needs to damage the location of the old cursor! */
         redraw();
@@ -237,6 +237,24 @@ Timeline::menu_cb ( Fl_Widget *w )
         }
 
         /* FIXME: only needs to damage the location of the old cursor! */
+        redraw();
+    }
+    else if ( ! strcmp( picked, "Playhead left" ) )
+    {
+#warning unimplemented
+    }
+    else if ( ! strcmp( picked, "Playhead right" ) )
+    {
+#warning unimplemented
+    }
+    else if ( ! strcmp( picked, "Swap P1 and playhead" ) )
+    {
+        nframes_t t = transport->frame;
+
+        transport->locate( p1 );
+
+        p1 = t;
+
         redraw();
     }
     else
@@ -267,6 +285,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     menu->add( "Playhead to mouse", 'p', &Timeline::menu_cb, this );
     menu->add( "P1 to mouse", '[', &Timeline::menu_cb, this );
     menu->add( "P2 to mouse", ']', &Timeline::menu_cb, this );
+    menu->add( "Playhead left", FL_CTRL + FL_Up, &Timeline::menu_cb, this );
+    menu->add( "Playhead right", FL_CTRL + FL_Down, &Timeline::menu_cb, this );
+    menu->add( "Swap P1 and playhead", FL_CTRL + '[', &Timeline::menu_cb, this );
 
     {
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
@@ -441,17 +462,24 @@ nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
     the nearest measure line to /when/. Returns true if the new value of
     *frame is valid, false otherwise. */
 bool
-Timeline::nearest_line ( nframes_t when, nframes_t *frame ) const
+Timeline::nearest_line ( nframes_t *frame ) const
 {
     if ( snap_to == None )
         return false;
+
+    nframes_t when = *frame;
 
     nearest_line_arg n = { when, -1 };
 
     render_tempomap( when - x_to_ts( w() >> 1 ), x_to_ts( w() ), nearest_line_cb, &n );
 
-    *frame = n.closest;
-    return *frame != (nframes_t)-1;
+    if ( n.closest == (nframes_t)-1 )
+        return false;
+    else
+    {
+        *frame = n.closest;
+        return true;
+    }
 }
 
 

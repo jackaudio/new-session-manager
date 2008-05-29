@@ -291,10 +291,10 @@ Sequence::snap ( Sequence_Widget *r )
         }
     }
 
-    nframes_t f;
+    nframes_t f = r->start();
 
     /* snap to beat/bar lines */
-    if ( timeline->nearest_line( r->start(), &f ) )
+    if ( timeline->nearest_line( &f ) )
         r->start( f );
 }
 

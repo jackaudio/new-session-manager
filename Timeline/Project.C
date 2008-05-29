@@ -239,6 +239,8 @@ Project::open ( const char *name )
 
     tle->load_timeline_settings();
 
+    timeline->zoom_fit();
+
     return true;
 }
 

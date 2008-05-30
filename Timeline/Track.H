@@ -261,6 +261,12 @@ public:
     void sequence ( Audio_Sequence * t );
     Audio_Sequence * sequence ( void ) const { return _sequence; }
 
+
+    Fl_Menu_Button & menu ( void ) const;
+
+    static void menu_cb ( Fl_Widget *w, void *v );
+    void menu_cb ( const Fl_Menu_ *m );
+
     void draw ( void );
     int handle ( int m );
 

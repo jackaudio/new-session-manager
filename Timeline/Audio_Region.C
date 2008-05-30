@@ -286,6 +286,8 @@ Audio_Region::update_menu ( void )
     _menu->copy( items );
 }
 
+#include "FL/menu_popup.H"
+
 int
 Audio_Region::handle ( int m )
 {
@@ -359,13 +361,7 @@ Audio_Region::handle ( int m )
 
                     update_menu();
 
-                    const Fl_Menu_Item *r = _menu->menu()->popup( X, Y, _menu->label() );
-
-                    if ( r )
-                    {
-                        _menu->value( r );
-                        r->do_callback( static_cast<Fl_Widget*>(_menu) );
-                    }
+                    menu_popup( _menu );
 
                     return 1;
                 }

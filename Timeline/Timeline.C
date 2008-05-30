@@ -152,8 +152,6 @@ Timeline::cb_scroll ( Fl_Widget *w )
     }
 }
 
-#include <FL/Fl_Menu.H>
-
 void
 Timeline::menu_cb ( Fl_Widget *w, void *v )
 {

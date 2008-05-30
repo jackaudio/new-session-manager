@@ -478,8 +478,115 @@ Track::draw ( void )
         Fl_Group::draw();
 }
 
+#include <FL/Fl_Menu_Button.H>
+
+void
+Track::menu_cb ( Fl_Widget *w, void *v )
+{
+    ((Track*)v)->menu_cb( (Fl_Menu_*) w );
+}
+
+void
+Track::menu_cb ( const Fl_Menu_ *m )
+{
+    char picked[256];
+
+    m->item_pathname( picked, sizeof( picked ) );
+
+   Logger log( this );
+
+   if ( ! strcmp( picked, "Type/Mono" ) )
+   {
+       configure_inputs( 1 );
+       configure_outputs( 1 );
+   }
+   else if ( ! strcmp( picked, "Type/Stereo" ) )
+   {
+       configure_inputs( 2 );
+       configure_outputs( 2 );
+   }
+   else if ( ! strcmp( picked, "Type/Quad" ) )
+   {
+       configure_inputs( 4 );
+       configure_outputs( 4 );
+   }
+   else if ( ! strcmp( picked, "Type/..." ) )
+   {
+       const char *s = fl_input( "How many channels?", "3" );
+       int c = atoi( s );
+
+       if ( c <= 0 || c > 10 )
+           fl_alert( "Invalid number of channels." );
+       else
+       {
+                                configure_inputs( c );
+                                configure_outputs( c );
+       }
+   }
+   else if ( ! strcmp( picked, "/Add Control" ) )
+   {
+       new Control_Sequence( this );
+   }
+   else if ( ! strcmp( picked, "/Add Annotation" ) )
+   {
+       add( new Annotation_Sequence( this ) );
+   }
+   else if ( ! strcmp( picked, "/Color" ) )
+   {
+       unsigned char r, g, b;
+
+       Fl::get_color( color(), r, g, b );
+
+       if ( fl_color_chooser( "Track Color", r, g, b ) )
+       {
+           color( fl_rgb_color( r, g, b ) );
+       }
+
+       redraw();
+   }
+   else if ( ! strcmp( picked, "/Remove" ) )
+   {
+       int r = fl_choice( "Are you certain you want to remove track \"%s\"?", "Cancel", NULL, "Remove", name() );
+
+       if ( r == 2 )
+       {
+           timeline->remove_track( this );
+           Fl::delete_widget( this );
+       }
+   }
+}
+
+/** build the context menu */
+Fl_Menu_Button &
+Track::menu ( void ) const
+{
+    static Fl_Menu_Button m( 0, 0, 0, 0, "Track" );
+
+    int c = output.size();
+
+    Fl_Menu_Item menu[] =
+        {
+            { "Type",            0, &Track::menu_cb, 0, FL_SUBMENU    },
+            { "Mono",            0, &Track::menu_cb, 0, FL_MENU_RADIO | ( c == 1 ? FL_MENU_VALUE : 0 ) },
+            { "Stereo",          0, &Track::menu_cb, 0, FL_MENU_RADIO | ( c == 2 ? FL_MENU_VALUE : 0 ) },
+            { "Quad",            0, &Track::menu_cb, 0, FL_MENU_RADIO | ( c == 4 ? FL_MENU_VALUE : 0 ) },
+            { "...",             0, &Track::menu_cb, 0, FL_MENU_RADIO | ( c == 3 || c > 4 ? FL_MENU_VALUE : 0 ) },
+            { 0                  },
+            { "Add Control"      },
+            { "Add Annotation"   },
+            { "Color"            },
+            { "Remove",          0, &Track::menu_cb, 0 }, // transport->rolling ? FL_MENU_INACTIVE : 0 },
+            { 0 },
+        };
+
+    m.copy( menu, (void*)this );
+
+    return m;
+}
+
 #include "FL/event_name.H"
 #include "FL/test_press.H"
+#include "FL/menu_popup.H"
 
 int
 Track::handle ( int m )
@@ -490,6 +597,8 @@ Track::handle ( int m )
 
     switch ( m )
     {
+        case FL_KEYBOARD:
+            return menu().test_shortcut() || Fl_Group::handle( m );
         case FL_MOUSEWHEEL:
         {
             Logger log( this );
@@ -516,90 +625,10 @@ Track::handle ( int m )
             if ( Fl_Group::handle( m ) )
                 return 1;
 
+
             if ( test_press( FL_BUTTON3 ) && X < Track::width() )
             {
-                int c = output.size();
-
-                /* context menu */
-                Fl_Menu_Item menu[] =
-                    {
-                        { "Type",            0, 0, 0, FL_SUBMENU    },
-                        { "Mono",            0, 0, 0, FL_MENU_RADIO | ( c == 1 ? FL_MENU_VALUE : 0 ) },
-                        { "Stereo",          0, 0, 0, FL_MENU_RADIO | ( c == 2 ? FL_MENU_VALUE : 0 ) },
-                        { "Quad",            0, 0, 0, FL_MENU_RADIO | ( c == 4 ? FL_MENU_VALUE : 0 ) },
-                        { "...",             0, 0, 0, FL_MENU_RADIO | ( c == 3 || c > 4 ? FL_MENU_VALUE : 0 ) },
-                        { 0                  },
-                        { "Add Control"      },
-                        { "Add Annotation"   },
-                        { "Color"            },
-                        { "Remove",          0, 0, 0 }, // transport->rolling ? FL_MENU_INACTIVE : 0 },
-                        { 0 },
-                    };
-
-                const Fl_Menu_Item *r = menu->popup( X, Y, "Track" );
-
-                if ( r && r > &menu[ 0 ] )
-                {
-                    if ( r < &menu[ 4 ] )
-                    {
-                        int c = r - &menu[1];
-                        int ca[] = { 1, 2, 4 };
-
-                        configure_inputs( ca[ c ] );
-                        configure_outputs( ca[ c ] );
-                    }
-                    else
-                    {
-                        if ( r == &menu[ 4 ] )
-                        {
-                            const char *s = fl_input( "How many channels?", "3" );
-
-                            int c = atoi( s );
-
-                            if ( c <= 0 || c > 10 )
-                                fl_alert( "Invalid number of channels." );
-                            else
-                            {
-                                configure_inputs( c );
-                                configure_outputs( c );
-                            }
-                        }
-                        else if ( r == &menu[ 6 ] )
-                        {
-                            new Control_Sequence( this );
-                        }
-                        else if ( r == &menu[ 7 ] )
-                        {
-                            add( new Annotation_Sequence( this ) );
-                        }
-                        else if ( r == &menu[ 8 ] )
-                        {
-                            unsigned char r, g, b;
-
-                            Fl::get_color( color(), r, g, b );
-
-                            if ( fl_color_chooser( "Track Color", r, g, b ) )
-                            {
-                                color( fl_rgb_color( r, g, b ) );
-                            }
-
-//                            color( fl_show_colormap( color() ) );
-                            redraw();
-                        }
-                        else if ( r == &menu[ 9 ] )
-                        {
-                            int r = fl_choice( "Are you certain you want to remove track \"%s\"?", "Cancel", NULL, "Remove", name() );
-
-                            if ( r == 2 )
-                            {
-                                timeline->remove_track( this );
-                                Fl::delete_widget( this );
-                            }
-                        }
-                    }
-                    return 1;
-                }
-
+                menu_popup( &menu() );
                 return 1;
             }
 

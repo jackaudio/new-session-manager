@@ -248,6 +248,7 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
 }
 
 #include "FL/test_press.H"
+#include "FL/menu_popup.H"
 
 /** build the context menu for this region */
 Fl_Menu_Button &
@@ -260,32 +261,32 @@ Audio_Region::menu ( void )
 
     Fl_Menu_Item items[] =
         {
-            { "Fade",             0, &Audio_Region::menu_cb, 0,  FL_SUBMENU    },
-            { "In",               0, &Audio_Region::menu_cb, 0,  FL_SUBMENU    },
-            { "Linear",           0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( it == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
-            { "Sigmoid",          0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( it == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
-            { "Logarithmic",      0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( it == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
-            { "Parabolic",        0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( it == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
+            { "Fade",             0, 0, 0,  FL_SUBMENU    },
+            { "In",               0, 0, 0,  FL_SUBMENU    },
+            { "Linear",           0, 0, 0,  FL_MENU_RADIO | ( it == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
+            { "Sigmoid",          0, 0, 0,  FL_MENU_RADIO | ( it == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
+            { "Logarithmic",      0, 0, 0,  FL_MENU_RADIO | ( it == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
+            { "Parabolic",        0, 0, 0,  FL_MENU_RADIO | ( it == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
             { 0                   },
-            { "Out",              0, &Audio_Region::menu_cb, 0,  FL_SUBMENU    },
-            { "Linear",           0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( ot == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
-            { "Sigmoid",          0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( ot == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
-            { "Logarothmic",      0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( ot == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
-            { "Parabolic",        0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( ot == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
+            { "Out",              0, 0, 0,  FL_SUBMENU    },
+            { "Linear",           0, 0, 0,  FL_MENU_RADIO | ( ot == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
+            { "Sigmoid",          0, 0, 0,  FL_MENU_RADIO | ( ot == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
+            { "Logarothmic",      0, 0, 0,  FL_MENU_RADIO | ( ot == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
+            { "Parabolic",        0, 0, 0,  FL_MENU_RADIO | ( ot == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
             { 0                   },
             { 0 },
-            { "Color",        0, &Audio_Region::menu_cb, 0,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
-            { "Fade in to mouse", FL_F + 3, &Audio_Region::menu_cb, 0 },
-            { "Fade out to mouse", FL_F + 4, &Audio_Region::menu_cb, 0 },
+            { "Color",        0, 0, 0,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
+            { "Fade in to mouse", FL_F + 3, 0, 0 },
+            { "Fade out to mouse", FL_F + 4, 0, 0 },
             { 0 },
         };
+
+    menu_set_callback( items, &Audio_Region::menu_cb, (void*)this );
 
     m.copy( items, (void*)this );
 
     return m;
 }
-
-#include "FL/menu_popup.H"
 
 int
 Audio_Region::handle ( int m )

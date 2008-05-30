@@ -19,8 +19,9 @@
 
 #include <FL/Fl.H>
 #include <FL/Fl_Menu_.H>
+#include <FL/Fl_Menu_Item.H>
 
-/* popup menu and execute callback */
+/** popup menu and execute callback */
 bool
 menu_popup ( Fl_Menu_ *m )
 {
@@ -30,5 +31,20 @@ menu_popup ( Fl_Menu_ *m )
     {
         m->value( r );
         r->do_callback( static_cast<Fl_Widget*>(m) );
+        return true;
     }
+
+    return false;
+}
+
+/** set a single callback for all items in menu.  */
+void
+menu_set_callback( Fl_Menu_Item *menu, void (*callback)( Fl_Widget *, void * ), void *user_data )
+{
+    for ( int i = menu->size(); i--; )
+        if ( menu[i].label() && ! menu[i].submenu() )
+        {
+            menu[i].callback( callback );
+            menu[i].user_data( user_data );
+        }
 }

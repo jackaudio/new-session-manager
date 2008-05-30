@@ -41,6 +41,9 @@
 
 #include "Engine/Engine.H" // for lock()
 
+
+#include "FL/menu_popup.H"
+
 
 
 bool Timeline::draw_with_measure_lines = true;
@@ -318,19 +321,21 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
 /*     menu->add( "Add Track", 0, 0, 0  ); */
 
-    menu->add( "Add Audio Track", 'a', &Timeline::menu_cb, this );
-    menu->add( "Tempo from range", 't', &Timeline::menu_cb, this );
-    menu->add( "Playhead to mouse", 'p', &Timeline::menu_cb, this );
-    menu->add( "P1 to mouse", '[', &Timeline::menu_cb, this );
-    menu->add( "P2 to mouse", ']', &Timeline::menu_cb, this );
-    menu->add( "Playhead left beat", FL_SHIFT + FL_Left, &Timeline::menu_cb, this );
-    menu->add( "Playhead right beat", FL_SHIFT + FL_Right, &Timeline::menu_cb, this );
-    menu->add( "Playhead left bar", FL_CTRL + FL_SHIFT + FL_Left, &Timeline::menu_cb, this );
-    menu->add( "Playhead right bar", FL_CTRL + FL_SHIFT + FL_Right, &Timeline::menu_cb, this );
-    menu->add( "Swap P1 and playhead", FL_CTRL + FL_SHIFT + '[', &Timeline::menu_cb, this );
-    menu->add( "Swap P2 and playhead", FL_CTRL + FL_SHIFT + ']', &Timeline::menu_cb, this );
-    menu->add( "P1 to playhead", FL_CTRL + '[', &Timeline::menu_cb, this );
-    menu->add( "P2 to playhead", FL_CTRL + ']', &Timeline::menu_cb, this );
+    menu->add( "Add Audio Track", 'a', 0, 0 );
+    menu->add( "Tempo from range", 't', 0, 0 );
+    menu->add( "Playhead to mouse", 'p', 0, 0 );
+    menu->add( "P1 to mouse", '[', 0, 0 );
+    menu->add( "P2 to mouse", ']', 0, 0 );
+    menu->add( "Playhead left beat", FL_SHIFT + FL_Left, 0, 0 );
+    menu->add( "Playhead right beat", FL_SHIFT + FL_Right, 0, 0 );
+    menu->add( "Playhead left bar", FL_CTRL + FL_SHIFT + FL_Left, 0, 0 );
+    menu->add( "Playhead right bar", FL_CTRL + FL_SHIFT + FL_Right, 0, 0 );
+    menu->add( "Swap P1 and playhead", FL_CTRL + FL_SHIFT + '[', 0, 0 );
+    menu->add( "Swap P2 and playhead", FL_CTRL + FL_SHIFT + ']', 0, 0 );
+    menu->add( "P1 to playhead", FL_CTRL + '[', 0, 0 );
+    menu->add( "P2 to playhead", FL_CTRL + ']', 0, 0 );
+
+    menu_set_callback( const_cast<Fl_Menu_Item*>(menu->menu()), &Timeline::menu_cb, (void*)this );
 
     {
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
@@ -1203,12 +1208,7 @@ Timeline::handle ( int m )
                     }
                     else if ( test_press( FL_BUTTON3 ) )
                     {
-                        const Fl_Menu_Item *r = menu->menu()->popup( X, Y, "Timeline" );
-                        if ( r )
-                        {
-                            menu->value( r );
-                            r->do_callback( static_cast<Fl_Widget*>(menu) );
-                        }
+                        menu_popup( menu );
 
                         return 1;
                     }

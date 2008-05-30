@@ -556,6 +556,8 @@ Track::menu_cb ( const Fl_Menu_ *m )
    }
 }
 
+#include "FL/menu_popup.H"
+
 /** build the context menu */
 Fl_Menu_Button &
 Track::menu ( void ) const
@@ -566,18 +568,20 @@ Track::menu ( void ) const
 
     Fl_Menu_Item menu[] =
         {
-            { "Type",            0, &Track::menu_cb, 0, FL_SUBMENU    },
-            { "Mono",            0, &Track::menu_cb, 0, FL_MENU_RADIO | ( c == 1 ? FL_MENU_VALUE : 0 ) },
-            { "Stereo",          0, &Track::menu_cb, 0, FL_MENU_RADIO | ( c == 2 ? FL_MENU_VALUE : 0 ) },
-            { "Quad",            0, &Track::menu_cb, 0, FL_MENU_RADIO | ( c == 4 ? FL_MENU_VALUE : 0 ) },
-            { "...",             0, &Track::menu_cb, 0, FL_MENU_RADIO | ( c == 3 || c > 4 ? FL_MENU_VALUE : 0 ) },
+            { "Type",            0, 0, 0, FL_SUBMENU    },
+            { "Mono",            0, 0, 0, FL_MENU_RADIO | ( c == 1 ? FL_MENU_VALUE : 0 ) },
+            { "Stereo",          0, 0, 0, FL_MENU_RADIO | ( c == 2 ? FL_MENU_VALUE : 0 ) },
+            { "Quad",            0, 0, 0, FL_MENU_RADIO | ( c == 4 ? FL_MENU_VALUE : 0 ) },
+            { "...",             0, 0, 0, FL_MENU_RADIO | ( c == 3 || c > 4 ? FL_MENU_VALUE : 0 ) },
             { 0                  },
-            { "Add Control"      },
-            { "Add Annotation"   },
-            { "Color"            },
-            { "Remove",          0, &Track::menu_cb, 0 }, // transport->rolling ? FL_MENU_INACTIVE : 0 },
+            { "Add Control",     0, 0, 0 },
+            { "Add Annotation",  0, 0, 0 },
+            { "Color",           0, 0, 0 },
+            { "Remove",          0, 0, 0 }, // transport->rolling ? FL_MENU_INACTIVE : 0 },
             { 0 },
         };
+
+    menu_set_callback( menu, &Track::menu_cb, (void*)this );
 
     m.copy( menu, (void*)this );
 
@@ -586,7 +590,6 @@ Track::menu ( void ) const
 
 #include "FL/event_name.H"
 #include "FL/test_press.H"
-#include "FL/menu_popup.H"
 
 int
 Track::handle ( int m )
@@ -619,14 +622,10 @@ Track::handle ( int m )
         {
             Logger log( this );
 
-            int X = Fl::event_x();
-            int Y = Fl::event_y();
-
             if ( Fl_Group::handle( m ) )
                 return 1;
 
-
-            if ( test_press( FL_BUTTON3 ) && X < Track::width() )
+            if ( test_press( FL_BUTTON3 ) && Fl::event_x() < Track::width() )
             {
                 menu_popup( &menu() );
                 return 1;

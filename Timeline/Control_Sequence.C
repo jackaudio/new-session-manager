@@ -251,7 +251,7 @@ Control_Sequence::draw ( void )
 
     timeline->draw_measure_lines( x(), y(), w(), h(), color );
 
-    if ( _highlighted )
+    if ( _highlighted || Fl::focus() == this )
         for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
             (*r)->draw_box();
     else

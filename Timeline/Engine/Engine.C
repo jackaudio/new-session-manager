@@ -130,7 +130,7 @@ Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
             /* JACK docs lie. This is only called when the transport
                is *really* stopped, not when starting a slow-sync
                cycle */
-            request_locate( pos->frame );
+            transport->frame = pos->frame;
             return 1;
         case JackTransportStarting:          /* this means JACK is polling slow-sync clients */
         {

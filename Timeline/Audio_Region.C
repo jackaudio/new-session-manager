@@ -49,8 +49,6 @@ Fl_Boxtype Audio_Region::_box = FL_UP_BOX;
 
 Fl_Color Audio_Region::_selection_color = FL_MAGENTA;
 
-Fl_Menu_Button *Audio_Region::_menu = NULL;
-
 
 
 static Fl_Color fl_invert_color ( Fl_Color c )
@@ -252,38 +250,39 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
 #include "FL/test_press.H"
 
 /** build the context menu for this region */
-void
-Audio_Region::update_menu ( void )
+Fl_Menu_Button &
+Audio_Region::menu ( void )
 {
-    if ( ! Audio_Region::_menu )
-        Audio_Region::_menu = new Fl_Menu_Button( 0, 0, 0, 0, "Region" );
+    static Fl_Menu_Button m( 0, 0, 0, 0, "Region" );
 
     Fade::fade_type_e it = _fade_in.type;
     Fade::fade_type_e ot = _fade_out.type;
 
     Fl_Menu_Item items[] =
         {
-            { "Fade",             0, &Audio_Region::menu_cb, this,  FL_SUBMENU    },
-            { "In",               0, &Audio_Region::menu_cb, this,  FL_SUBMENU    },
-            { "Linear",           0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( it == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
-            { "Sigmoid",          0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( it == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
-            { "Logarithmic",      0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( it == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
-            { "Parabolic",        0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( it == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
+            { "Fade",             0, &Audio_Region::menu_cb, 0,  FL_SUBMENU    },
+            { "In",               0, &Audio_Region::menu_cb, 0,  FL_SUBMENU    },
+            { "Linear",           0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( it == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
+            { "Sigmoid",          0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( it == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
+            { "Logarithmic",      0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( it == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
+            { "Parabolic",        0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( it == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
             { 0                   },
-            { "Out",              0, &Audio_Region::menu_cb, this,  FL_SUBMENU    },
-            { "Linear",           0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( ot == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
-            { "Sigmoid",          0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( ot == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
-            { "Logarothmic",      0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( ot == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
-            { "Parabolic",        0, &Audio_Region::menu_cb, this,  FL_MENU_RADIO | ( ot == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
+            { "Out",              0, &Audio_Region::menu_cb, 0,  FL_SUBMENU    },
+            { "Linear",           0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( ot == Fade::Linear      ? FL_MENU_VALUE : 0 ) },
+            { "Sigmoid",          0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( ot == Fade::Sigmoid     ? FL_MENU_VALUE : 0 ) },
+            { "Logarothmic",      0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( ot == Fade::Logarithmic ? FL_MENU_VALUE : 0 ) },
+            { "Parabolic",        0, &Audio_Region::menu_cb, 0,  FL_MENU_RADIO | ( ot == Fade::Parabolic   ? FL_MENU_VALUE : 0 ) },
             { 0                   },
             { 0 },
-            { "Color",        0, &Audio_Region::menu_cb, this,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
-            { "Fade in to mouse", FL_F + 3, &Audio_Region::menu_cb, this },
-            { "Fade out to mouse", FL_F + 4, &Audio_Region::menu_cb, this },
+            { "Color",        0, &Audio_Region::menu_cb, 0,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
+            { "Fade in to mouse", FL_F + 3, &Audio_Region::menu_cb, 0 },
+            { "Fade out to mouse", FL_F + 4, &Audio_Region::menu_cb, 0 },
             { 0 },
         };
 
-    _menu->copy( items );
+    m.copy( items, (void*)this );
+
+    return m;
 }
 
 #include "FL/menu_popup.H"
@@ -307,15 +306,9 @@ Audio_Region::handle ( int m )
         case FL_UNFOCUS:
             return 1;
         case FL_KEYBOARD:
-            if ( selected() )
-                /* make sure the user_data fields of menu point to this object */
-                update_menu();
-            return _menu->test_shortcut() != 0;
+            return menu().test_shortcut() != 0;
         case FL_ENTER:
-        {
-            update_menu();
             return Sequence_Region::handle( m );
-        }
         case FL_LEAVE:
             return Sequence_Region::handle( m );
         case FL_PUSH:
@@ -358,10 +351,7 @@ Audio_Region::handle ( int m )
                 else if ( test_press( FL_BUTTON3 ) )
                 {
                     /* context menu */
-
-                    update_menu();
-
-                    menu_popup( _menu );
+                    menu_popup( &menu() );
 
                     return 1;
                 }

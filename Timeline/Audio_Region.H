@@ -102,9 +102,7 @@ private:
 
     friend class Track;                                  /* for _clip */
 
-    static Fl_Menu_Button *_menu;
-
-    void update_menu ( void );
+    Fl_Menu_Button & menu ( void );
     static void peaks_pending_cb ( void *v );
     void peaks_pending_cb ( Peaks_Redraw_Request *r );
 

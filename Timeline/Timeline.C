@@ -237,18 +237,32 @@ Timeline::menu_cb ( Fl_Menu_ *m )
         /* FIXME: only needs to damage the location of the old cursor! */
         redraw();
     }
-    else if ( ! strcmp( picked, "Playhead left" ) )
+    else if ( ! strcmp( picked, "Playhead left beat" ) )
     {
         nframes_t f = transport->frame;
 
         if ( prev_line( &f ) )
             transport->locate( f );
     }
-    else if ( ! strcmp( picked, "Playhead right" ) )
+    else if ( ! strcmp( picked, "Playhead right beat" ) )
     {
         nframes_t f = transport->frame;
 
         if ( next_line( &f ) )
+            transport->locate( f );
+    }
+    else if ( ! strcmp( picked, "Playhead left bar" ) )
+    {
+        nframes_t f = transport->frame;
+
+        if ( prev_line( &f, true ) )
+            transport->locate( f );
+    }
+    else if ( ! strcmp( picked, "Playhead right bar" ) )
+    {
+        nframes_t f = transport->frame;
+
+        if ( next_line( &f, true ) )
             transport->locate( f );
     }
     else if ( ! strcmp( picked, "Swap P1 and playhead" ) )
@@ -258,6 +272,28 @@ Timeline::menu_cb ( Fl_Menu_ *m )
         transport->locate( p1 );
 
         p1 = t;
+
+        redraw();
+    }
+    else if ( ! strcmp( picked, "Swap P2 and playhead" ) )
+    {
+        nframes_t t = transport->frame;
+
+        transport->locate( p2 );
+
+        p2 = t;
+
+        redraw();
+    }
+    else if ( ! strcmp( picked, "P1 to playhead" ) )
+    {
+        p1 = transport->frame;
+
+        redraw();
+    }
+    else if ( ! strcmp( picked, "P2 to playhead" ) )
+    {
+        p2 = transport->frame;
 
         redraw();
     }
@@ -289,9 +325,14 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     menu->add( "Playhead to mouse", 'p', &Timeline::menu_cb, this );
     menu->add( "P1 to mouse", '[', &Timeline::menu_cb, this );
     menu->add( "P2 to mouse", ']', &Timeline::menu_cb, this );
-    menu->add( "Playhead left", FL_CTRL + FL_Up, &Timeline::menu_cb, this );
-    menu->add( "Playhead right", FL_CTRL + FL_Down, &Timeline::menu_cb, this );
-    menu->add( "Swap P1 and playhead", FL_CTRL + '[', &Timeline::menu_cb, this );
+    menu->add( "Playhead left beat", FL_SHIFT + FL_Left, &Timeline::menu_cb, this );
+    menu->add( "Playhead right beat", FL_SHIFT + FL_Right, &Timeline::menu_cb, this );
+    menu->add( "Playhead left bar", FL_CTRL + FL_SHIFT + FL_Left, &Timeline::menu_cb, this );
+    menu->add( "Playhead right bar", FL_CTRL + FL_SHIFT + FL_Right, &Timeline::menu_cb, this );
+    menu->add( "Swap P1 and playhead", FL_CTRL + FL_SHIFT + '[', &Timeline::menu_cb, this );
+    menu->add( "Swap P2 and playhead", FL_CTRL + FL_SHIFT + ']', &Timeline::menu_cb, this );
+    menu->add( "P1 to playhead", FL_CTRL + '[', &Timeline::menu_cb, this );
+    menu->add( "P2 to playhead", FL_CTRL + ']', &Timeline::menu_cb, this );
 
     {
         Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
@@ -436,6 +477,7 @@ struct nearest_line_arg
 {
     nframes_t original;
     nframes_t closest;
+    bool bar;
 };
 
 const int snap_pixel = 10;
@@ -451,7 +493,7 @@ nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
 {
     nearest_line_arg *n = (nearest_line_arg *)arg;
 
-    if ( Timeline::snap_to == Timeline::Bars && bbt.beat )
+    if ( n->bar && bbt.beat )
         return;
 
     if ( Timeline::snap_magnetic &&
@@ -463,9 +505,12 @@ nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
 }
 
 static void
-prev_next_line_cb ( nframes_t frame, const BBT &, void *arg )
+prev_next_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
 {
     nearest_line_arg *n = (nearest_line_arg *)arg;
+
+    if ( n->bar && bbt.beat )
+        return;
 
     if ( abs_diff( frame, n->original ) < abs_diff( n->original, n->closest ) )
         n->closest = frame;
@@ -480,9 +525,10 @@ Timeline::nearest_line ( nframes_t *frame ) const
     if ( snap_to == None )
         return false;
 
+
     nframes_t when = *frame;
 
-    nearest_line_arg n = { when, -1 };
+    nearest_line_arg n = { when, -1, Timeline::snap_to == Timeline::Bars };
 
     render_tempomap( when - x_to_ts( w() >> 1 ), x_to_ts( w() ), nearest_line_cb, &n );
 
@@ -499,11 +545,11 @@ Timeline::nearest_line ( nframes_t *frame ) const
     the nearest measure line to *greater than* /when/. Returns true if
     the new value of *frame is valid, false otherwise. */
 bool
-Timeline::next_line ( nframes_t *frame ) const
+Timeline::next_line ( nframes_t *frame, bool bar ) const
 {
     nframes_t when = *frame + 1;
 
-    nearest_line_arg n = { when, -1 };
+    nearest_line_arg n = { when, -1, bar };
 
     render_tempomap( when, x_to_ts( w() ), prev_next_line_cb, &n );
 
@@ -521,11 +567,11 @@ Timeline::next_line ( nframes_t *frame ) const
     the nearest measure line to *less than* /when/. Returns true if
     the new value of *frame is valid, false otherwise. */
 bool
-Timeline::prev_line ( nframes_t *frame ) const
+Timeline::prev_line ( nframes_t *frame, bool bar ) const
 {
     nframes_t when = *frame - 1;
 
-    nearest_line_arg n = { when, -1 };
+    nearest_line_arg n = { when, -1, bar };
 
     render_tempomap( xoffset, when - xoffset, prev_next_line_cb, &n );
 

@@ -155,8 +155,8 @@ public:
     void beats_per_minute ( nframes_t when, float bpm );
     void time ( nframes_t when, int bpb, int beat_type );
     bool nearest_line ( nframes_t *f ) const;
-    bool next_line ( nframes_t *f ) const;
-    bool prev_line ( nframes_t *f ) const;
+    bool next_line ( nframes_t *f, bool bar=false ) const;
+    bool prev_line ( nframes_t *f, bool bar=false ) const;
 
     typedef void (measure_line_callback)( nframes_t frame, const BBT & bbt, void *arg );
 

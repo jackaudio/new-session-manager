@@ -519,9 +519,9 @@ Audio_Region::draw_box( void )
     }
 
     if ( selected() )
-        fl_draw_box( fl_down( box() ), x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ), h(), selection_color );
+        fl_draw_box( fl_down( box() ), x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ) + 50, h(), selection_color );
     else
-        fl_draw_box( box(), x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ), h(), color );
+        fl_draw_box( box(), x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ) + 50, h(), color );
 
     /* draw fades */
     draw_fade( _fade_in, Fade::In, false, x(), w() );

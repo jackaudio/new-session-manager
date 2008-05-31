@@ -95,7 +95,7 @@ public:
     virtual void close ( void ) = 0;
     virtual void seek ( nframes_t offset ) = 0;
     virtual nframes_t read ( sample_t *buf, int channel, nframes_t len ) = 0;
-    virtual nframes_t read ( sample_t *buf, int channel, nframes_t start, nframes_t end ) = 0;
+    virtual nframes_t read ( sample_t *buf, int channel, nframes_t start, nframes_t len ) = 0;
     virtual nframes_t write ( sample_t *buf, nframes_t len ) = 0;
 
     virtual void finalize ( void ) { _peaks.finish_writing(); }

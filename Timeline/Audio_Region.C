@@ -251,7 +251,7 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
     {
         nframes_t offset = x_to_offset( Fl::event_x() );
 
-        if ( offset < length() )
+        if ( offset > 0 )
             _loop = offset;
     }
     else
@@ -656,12 +656,14 @@ Audio_Region::draw ( void )
 
     if ( _loop )
     {
+        const int x = timeline->ts_to_x( _loop - offset );
+
         /* FIXME: is there no way to draw these symbols direclty? */
         fl_font( FL_SYMBOL, 14 );
         fl_color( FL_WHITE );
-        fl_draw( "@2>", X + timeline->ts_to_x( _loop - start ), y(), 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
+        fl_draw( "@2>", X + x - 7, y(), 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
         fl_color( FL_WHITE );
-        fl_draw( "@2<", X + timeline->ts_to_x( _loop - start ), y() + h() - 14, 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
+        fl_draw( "@2<", X + x - 7, y() + h() - 14, 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
     }
 
     timeline->draw_measure_lines( X, Y, W, H, _box_color );

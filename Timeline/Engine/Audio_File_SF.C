@@ -206,22 +206,20 @@ Audio_File_SF::read ( sample_t *buf, int channel, nframes_t len )
 
 /** read samples from /start/ to /end/ into /buf/ */
 nframes_t
-Audio_File_SF::read ( sample_t *buf, int channel, nframes_t start, nframes_t end )
+Audio_File_SF::read ( sample_t *buf, int channel, nframes_t start, nframes_t len )
 {
-    assert( end > start );
-
     lock();
 //    open();
 
     seek( start );
 
-    nframes_t len = read( buf, channel, end - start );
+    nframes_t cnt = read( buf, channel, len );
 
     unlock();
 
 //    close();
 
-    return len;
+    return cnt;
 }
 
 /** write /nframes/ from /buf/ to soundfile. Should be interleaved for

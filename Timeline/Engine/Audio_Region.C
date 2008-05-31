@@ -108,7 +108,6 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 //    const nframes_t start = ofs + r.start + sofs;
     const nframes_t start =  r.offset + sofs;
     const nframes_t len = min( cnt, nframes - ofs );
-    const nframes_t end = start + len;
 
     if ( len == 0 )
         return 0;
@@ -117,7 +116,24 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
     //    printf( "reading region ofs = %lu, sofs = %lu, %lu-%lu\n", ofs, sofs, start, end  );
 
-    cnt = _clip->read( buf + ofs, channel, start, end );
+    if ( _loop )
+    {
+
+/*         /\* keep things simple *\/ */
+/*         assert( _loop > len ); */
+
+        nframes_t lstart = r.offset + ( sofs % _loop );
+
+        cnt = _clip->read( buf + ofs, channel, lstart, len );
+
+/*             /\* read the part before the loop point *\/ */
+/*             cnt = _clip->read( buf + ofs, channel, start, min( len, _loop - start ) ); */
+/*             /\* read the part after the loop point *\/ */
+/*             cnt += _clip->read( buf + ofs + cnt, channel, _loop, len - cnt ); */
+
+    }
+    else
+        cnt = _clip->read( buf + ofs, channel, start, len );
 
     /* apply gain */
 

@@ -118,19 +118,24 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
     if ( _loop )
     {
+        nframes_t lofs = sofs % _loop;
+        nframes_t lstart = r.offset + lofs;
 
-/*         /\* keep things simple *\/ */
-/*         assert( _loop > len ); */
+        if ( lofs + len > _loop )
+        {
+            /* this buffer covers a loop bounary */
 
-        nframes_t lstart = r.offset + ( sofs % _loop );
+            /* read the first part */
+            cnt = _clip->read( buf + ofs, channel, lstart, len - ( ( lofs + len ) - _loop ) );
+            /* read the second part */
+            cnt += _clip->read( buf + ofs + cnt, channel, lstart + cnt, len - cnt );
 
-        cnt = _clip->read( buf + ofs, channel, lstart, len );
+            /* TODO: declick/crossfade transition? */
 
-/*             /\* read the part before the loop point *\/ */
-/*             cnt = _clip->read( buf + ofs, channel, start, min( len, _loop - start ) ); */
-/*             /\* read the part after the loop point *\/ */
-/*             cnt += _clip->read( buf + ofs + cnt, channel, _loop, len - cnt ); */
-
+            assert( cnt == len );
+        }
+        else
+            cnt = _clip->read( buf + ofs, channel, lstart, len );
     }
     else
         cnt = _clip->read( buf + ofs, channel, start, len );

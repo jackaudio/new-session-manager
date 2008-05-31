@@ -247,13 +247,22 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
         if ( offset > 0 )
             _fade_out.length = offset;
     }
-    else if ( ! strcmp( picked, "/Loop to mouse" ) )
+    else if ( ! strcmp( picked, "/Loop point to mouse" ) )
     {
         nframes_t offset = x_to_offset( Fl::event_x() );
 
         if ( offset > 0 )
-            _loop = offset;
+        {
+            nframes_t f = offset + _r->start;
+
+            if ( timeline->nearest_line( &f ) )
+                _loop = f - _r->start;
+            else
+                _loop = offset;
+        }
     }
+    else if ( ! strcmp( picked, "/Clear loop point" ) )
+        _loop = 0;
     else
         FATAL( "Unknown menu choice \"%s\"", picked );
 
@@ -291,7 +300,8 @@ Audio_Region::menu ( void )
             { "Color",        0, 0, 0,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
             { "Fade in to mouse", FL_F + 3, 0, 0 },
             { "Fade out to mouse", FL_F + 4, 0, 0 },
-            { "Loop to mouse", 'l', 0, 0 },
+            { "Loop point to mouse", 'l', 0, 0 },
+            { "Clear loop point", FL_SHIFT + 'l', 0, 0 },
             { 0 },
         };
 

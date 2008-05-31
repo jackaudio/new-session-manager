@@ -1178,12 +1178,6 @@ Timeline::handle ( int m )
         }
         default:
         {
-
-/*             if ( m == FL_PUSH ) */
-/*                 take_focus(); */
-
-//Fl::focus( this );
-
             int r = Fl_Overlay_Window::handle( m );
 
             if ( m != FL_RELEASE && r )

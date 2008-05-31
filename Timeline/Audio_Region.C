@@ -74,6 +74,7 @@ Audio_Region::get ( Log_Entry &e ) const
     Sequence_Region::get( e );
 
     e.add( ":offset", _r->offset );
+    e.add( ":loop", _loop );
 }
 
 void
@@ -99,6 +100,8 @@ Audio_Region::set ( Log_Entry &e )
             _fade_out.length = atoll( v );
         else if ( ! strcmp( s, ":offset" ) )
             _r->offset = atoll( v );
+        else if ( ! strcmp( s, ":loop" ) )
+            _loop = atoll( v );
         else if ( ! strcmp( s, ":source" ) )
         {
             if ( ! ( _clip = Audio_File::from_file( v ) ) )
@@ -114,6 +117,7 @@ Audio_Region::set ( Log_Entry &e )
 void
 Audio_Region::init ( void )
 {
+    _loop = 0;
     _sequence = NULL;
     _scale = 1.0f;
     _clip = NULL;
@@ -137,6 +141,8 @@ Audio_Region::Audio_Region ( const Audio_Region & rhs ) : Sequence_Region( rhs )
 
     _fade_in   = rhs._fade_in;
     _fade_out  = rhs._fade_out;
+
+    _loop  = rhs._loop;
 
     log_create();
 }
@@ -241,6 +247,13 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
         if ( offset > 0 )
             _fade_out.length = offset;
     }
+    else if ( ! strcmp( picked, "/Loop to mouse" ) )
+    {
+        nframes_t offset = x_to_offset( Fl::event_x() );
+
+        if ( offset < length() )
+            _loop = offset;
+    }
     else
         FATAL( "Unknown menu choice \"%s\"", picked );
 
@@ -278,6 +291,7 @@ Audio_Region::menu ( void )
             { "Color",        0, 0, 0,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
             { "Fade in to mouse", FL_F + 3, 0, 0 },
             { "Fade out to mouse", FL_F + 4, 0, 0 },
+            { "Loop to mouse", 'l', 0, 0 },
             { 0 },
         };
 
@@ -638,6 +652,16 @@ Audio_Region::draw ( void )
         /* couldn't read peaks--perhaps they're being generated. Try again later. */
         Fl::add_timeout( 0.1f, &Audio_Region::peaks_pending_cb,
                          new Peaks_Redraw_Request( this, start + timeline->x_to_ts( peaks ), end ) );
+    }
+
+    if ( _loop )
+    {
+        /* FIXME: is there no way to draw these symbols direclty? */
+        fl_font( FL_SYMBOL, 14 );
+        fl_color( FL_WHITE );
+        fl_draw( "@2>", X + timeline->ts_to_x( _loop - start ), y(), 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
+        fl_color( FL_WHITE );
+        fl_draw( "@2<", X + timeline->ts_to_x( _loop - start ), y() + h() - 14, 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
     }
 
     timeline->draw_measure_lines( X, Y, W, H, _box_color );

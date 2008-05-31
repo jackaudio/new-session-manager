@@ -100,6 +100,8 @@ private:
     Fade _fade_in;
     Fade _fade_out;
 
+    nframes_t _loop;                                            /* loop point */
+
     friend class Track;                                  /* for _clip */
 
     Fl_Menu_Button & menu ( void );

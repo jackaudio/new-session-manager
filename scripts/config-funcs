@@ -110,7 +110,7 @@ ask ()
 
 ok ()
 {
-    echo "$BOLD${GREEN}ok${SGR0}"
+    echo -e '\r'`tput cuf 30`"$BOLD${GREEN}ok${SGR0} ${*:+${BOLD}${BLACK}($*)${SGR0}}"
 }
 
 failed ()
@@ -259,7 +259,7 @@ require_package ()
     append "${name}_LIBS=`pkg-config --libs $3`"
     append "${name}_CFLAGS=-DHAVE_${1} `pkg-config --cflags $3`"
 
-    ok
+    ok `pkg-config --modversion "$3"`
     return 0
 }
 
@@ -299,7 +299,7 @@ require_FLTK ()
         failed
         fatal "The installed FLTK version ($FLTK_VERSION) is too old."
     else
-        ok
+        ok $FLTK_VERSION
     fi
 
     use=

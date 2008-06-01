@@ -162,6 +162,17 @@ Timeline::menu_cb ( Fl_Widget *w, void *v )
 }
 
 void
+Timeline::fix_range ( void )
+{
+    if ( p1 > p2 )
+    {
+        nframes_t t = p2;
+        p2 = p1;
+        p1 = t;
+    }
+}
+
+void
 Timeline::menu_cb ( Fl_Menu_ *m )
 {
     const char *picked = m->mvalue()->label();
@@ -189,18 +200,26 @@ Timeline::menu_cb ( Fl_Menu_ *m )
 
         Loggable::block_end();
     }
-    else if ( ! strcmp( picked, "Tempo from range" ) )
+    else if ( ! strcmp( picked, "Tempo from range (beat)" ) )
     {
         if ( p1 != p2 )
         {
-            if ( p1 > p2 )
-            {
-                nframes_t t = p2;
-                p2 = p1;
-                p1 = t;
-            }
+            fix_range();
 
             beats_per_minute( p1, sample_rate() * 60 / (float)( p2 - p1 ) );
+
+            p2 = p1;
+        }
+    }
+    else if ( ! strcmp( picked, "Tempo from range (bar)" ) )
+    {
+        if ( p1 != p2 )
+        {
+            fix_range();
+
+            position_info pi = solve_tempomap( p1 );
+
+            beats_per_minute( p1, sample_rate() * 60 / (float)( ( p2 - p1 ) / pi.beats_per_bar ) );
 
             p2 = p1;
         }
@@ -322,7 +341,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 /*     menu->add( "Add Track", 0, 0, 0  ); */
 
     menu->add( "Add Audio Track", 'a', 0, 0 );
-    menu->add( "Tempo from range", 't', 0, 0 );
+    menu->add( "Tempo from range (beat)", 't', 0, 0 );
+    menu->add( "Tempo from range (bar)", FL_CTRL + 't', 0, 0 );
     menu->add( "Playhead to mouse", 'p', 0, 0 );
     menu->add( "P1 to mouse", '[', 0, 0 );
     menu->add( "P2 to mouse", ']', 0, 0 );

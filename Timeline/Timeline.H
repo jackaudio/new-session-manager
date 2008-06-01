@@ -101,6 +101,7 @@ class Timeline : public Fl_Overlay_Window, public RWLock
     void cb_scroll ( Fl_Widget *w );
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( Fl_Menu_ *m );
+    void fix_range ( void );
 
     int _fpp;                                                 /* frames per pixel, power of two */
 

@@ -1302,6 +1302,7 @@ Timeline::zoom ( float secs )
 void
 Timeline::zoom_fit ( void )
 {
+    xposition( 0 );
     zoom( length() / (float)sample_rate() );
 }
 

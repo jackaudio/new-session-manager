@@ -525,15 +525,15 @@ prev_next_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
 bool
 Timeline::nearest_line ( nframes_t *frame ) const
 {
-    if ( snap_to == None )
+    if ( None == Timeline::snap_to )
         return false;
-
 
     nframes_t when = *frame;
 
-    nearest_line_arg n = { when, -1, Timeline::snap_to == Timeline::Bars };
+    nearest_line_arg n = { when, -1, Timeline::Bars == Timeline::snap_to };
 
-    render_tempomap( when - x_to_ts( w() >> 1 ), x_to_ts( w() ), nearest_line_cb, &n );
+    render_tempomap( when > x_to_ts( w() >> 1 ) ? when - x_to_ts( w() >> 1 ) : 0,
+                     when + x_to_ts( w() >> 1 ), nearest_line_cb, &n );
 
     if ( n.closest == (nframes_t)-1 )
         return false;

@@ -17,54 +17,42 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "../Audio_Sequence.H"
+#pragma once
 
-#include "dsp.h"
+/* simple wrapper for pthreads with thread role checking */
+#include <pthread.h>
 
-#include "util/Thread.H"
+#include "debug.h"
 
-using namespace std;
+#define THREAD_ASSERT( n ) ASSERT( Thread::is( #n ), "Function called from wrong thread! (is %s, should be %s)", Thread::current()->name(), #n )
 
-
-
-/**********/
-/* Engine */
-/**********/
-
-/** determine region coverage and fill /buf/ with interleaved samples
- * from /frame/ to /nframes/ for exactly /channels/ channels. */
-nframes_t
-Audio_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int channels )
+class Thread
 {
-    THREAD_ASSERT( Playback );
+    static pthread_key_t _current;
 
-    sample_t *cbuf = new sample_t[ nframes ];
+    pthread_t _thread;
+    const char * _name;
 
-    memset( cbuf, 0, nframes * sizeof( sample_t ) );
+    static void * run_thread ( void *arg );
 
-    /* quick and dirty--let the regions figure out coverage for themselves */
-    for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin();
-          i != _widgets.end(); ++i )
-    {
-        const Audio_Region *r = (Audio_Region*)(*i);
+public:
 
-        for ( int i = channels; i--;  )
-        {
-            int nfr;
+    static bool is ( const char *name );
 
-            if ( ! ( nfr = r->read( cbuf, frame, nframes, i ) ) )
-                /* error ? */
-                continue;
+    static void init ( void );
+    static Thread *current ( void );
 
-            if ( channels == 1 )
-                buffer_mix( buf, cbuf, nframes );
-            else
-                buffer_interleave_one_channel_and_mix( buf, cbuf, i, channels, nframes );
-        }
-    }
+    Thread ( );
+    Thread ( const char *name );
 
-    delete[] cbuf;
+    const char *name ( void ) const { return _name; }
+    void name ( const char *name ) { _name = name; }
 
-    /* FIXME: bogus */
-    return nframes;
-}
+    bool running ( void ) const { return _thread; }
+    void set ( const char *name );
+    void set ( void ) { set( _name ); }
+    bool clone ( void *(*entry_point)(void *), void *arg );
+    void detach ( void );
+    void join ( void );
+
+};

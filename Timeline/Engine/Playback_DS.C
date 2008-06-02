@@ -31,6 +31,7 @@
 #include "dsp.h"
 
 #include "util/debug.h"
+#include "util/Thread.H"
 
 bool
 Playback_DS::seek_pending ( void )
@@ -38,7 +39,6 @@ Playback_DS::seek_pending ( void )
     return _pending_seek != (nframes_t)-1;
 }
 
-/* THREAD: RT */
 /** request that the IO thread perform a seek and rebuffer.  This is
  called for each Disk_Stream whenever the RT thread determines that
  the transport has jumped to a new position. This is called *before*
@@ -46,6 +46,8 @@ Playback_DS::seek_pending ( void )
 void
 Playback_DS::seek ( nframes_t frame )
 {
+    THREAD_ASSERT( RT );
+
     DMESSAGE( "requesting seek" );
 
     if ( seek_pending() )
@@ -56,11 +58,11 @@ Playback_DS::seek ( nframes_t frame )
     flush();
 }
 
-/* THREAD: IO */
 /** read /nframes/ from the attached track into /buf/ */
 void
 Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
 {
+    THREAD_ASSERT( Playback );
 
     memset( buf, 0, nframes * sizeof( sample_t ) * channels() );
 
@@ -88,10 +90,11 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
 
 #define AVOID_UNNECESSARY_COPYING 1
 
-/* THREAD: IO */
 void
 Playback_DS::disk_thread ( void )
 {
+    _thread.name( "Playback" );
+
     DMESSAGE( "playback thread running" );
 
     /* buffer to hold the interleaved data returned by the track reader */
@@ -198,15 +201,15 @@ Playback_DS::disk_thread ( void )
 #endif
 
     _terminate = false;
-    _thread = 0;
 }
 
-/* THREAD: RT */
 /** take a single block from the ringbuffers and send it out the
  *  attached track's ports */
 nframes_t
 Playback_DS::process ( nframes_t nframes )
 {
+    THREAD_ASSERT( RT );
+
     const size_t block_size = nframes * sizeof( sample_t );
 
 //    printf( "process: %lu %lu %lu\n", _frame, _frame + nframes, nframes );

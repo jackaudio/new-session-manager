@@ -58,7 +58,6 @@ Disk_Stream::Disk_Stream ( Track *track, float frame_rate, nframes_t nframes, in
     assert( channels );
 
     _frame = 0;
-    _thread = 0;
     _terminate = false;
     _pending_seek = -1;
     _xruns = 0;
@@ -87,11 +86,11 @@ Disk_Stream::~Disk_Stream ( )
 }
 
 
-/* THREAD: RT */
 /** flush buffers and reset. Must only be called from the RT thread. */
 void
 Disk_Stream::base_flush ( bool is_output )
 {
+    THREAD_ASSERT( RT );
 
     /* flush buffers */
     for ( int i = _rb.size(); i--; )
@@ -132,7 +131,7 @@ Disk_Stream::detach ( void )
 
     block_processed();
 
-    pthread_detach( _thread );
+    _thread.detach();
 }
 
 /** stop the IO thread. */
@@ -144,8 +143,8 @@ Disk_Stream::shutdown ( void )
     /* try to wake the thread so it'll see that it's time to die */
     block_processed();
 
-    if ( _thread )
-        pthread_join( _thread, NULL );
+    if ( _thread.running() )
+        _thread.join();
 }
 
 Track *
@@ -164,9 +163,9 @@ Disk_Stream::sequence ( void ) const
 void
 Disk_Stream::run ( void )
 {
-    ASSERT( ! _thread, "Thread is already running" );
+    ASSERT( ! _thread.running(), "Thread is already running" );
 
-    if ( pthread_create( &_thread, NULL, &Disk_Stream::disk_thread, this ) != 0 )
+    if ( ! _thread.clone( &Disk_Stream::disk_thread, this ) )
         FATAL( "Could not create IO thread!" );
 }
 
@@ -202,7 +201,7 @@ Disk_Stream::resize_buffers ( nframes_t nframes )
     {
         DMESSAGE( "resizing buffers" );
 
-        const bool was_running = _thread;
+        const bool was_running = _thread.running();
 
         if ( was_running )
             shutdown();

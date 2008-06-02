@@ -47,6 +47,8 @@
 #include "Transport.H"
 #include "Engine/Engine.H"
 
+#include "util/Thread.H"
+
 Engine *engine;
 Timeline *timeline;
 Transport *transport;
@@ -85,6 +87,10 @@ ensure_dirs ( void )
 int
 main ( int argc, char **argv )
 {
+    Thread::init();
+
+    Thread thread( "UI" );
+    thread.set();
 
     fl_register_images();
 

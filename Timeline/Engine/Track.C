@@ -148,10 +148,11 @@ Track::configure_inputs ( int n )
     return true;
 }
 
-/* THREAD: RT */
 nframes_t
 Track::process ( nframes_t nframes )
 {
+    THREAD_ASSERT( RT );
+
     if ( ! transport->rolling )
     {
         for ( int i = output.size(); i--; )
@@ -175,10 +176,11 @@ Track::process ( nframes_t nframes )
         return 0;
 }
 
-/* THREAD: RT */
 void
 Track::seek ( nframes_t frame )
 {
+    THREAD_ASSERT( RT );
+
     if ( playback_ds )
         return playback_ds->seek( frame );
 }
@@ -207,13 +209,12 @@ uuid ( void )
     return (unsigned long long) t;
 }
 
-
-
-/* THREAD: IO */
 /** create capture region and prepare to record */
 void
-Track::record ( Capture *c,  nframes_t frame )
+Track::record ( Capture *c, nframes_t frame )
 {
+    THREAD_ASSERT( Capture );
+
     char pat[256];
 
     snprintf( pat, sizeof( pat ), "%s-%llu", name(), uuid() );
@@ -231,11 +232,12 @@ Track::record ( Capture *c,  nframes_t frame )
     c->region->prepare();
 }
 
-/* THREAD: IO */
 /** write a block to the (already opened) capture file */
 void
 Track::write ( Capture *c, sample_t *buf, nframes_t nframes )
 {
+    THREAD_ASSERT( Capture );
+
     nframes_t l = c->audio_file->write( buf, nframes );
 
     c->region->write( l );
@@ -243,10 +245,11 @@ Track::write ( Capture *c, sample_t *buf, nframes_t nframes )
 
 #include <stdio.h>
 
-/* THREAD: IO */
 void
 Track::finalize ( Capture *c, nframes_t frame )
 {
+    THREAD_ASSERT( Capture );
+
     c->region->finalize( frame );
     DMESSAGE( "finalizing audio file" );
     c->audio_file->finalize();

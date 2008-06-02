@@ -27,9 +27,14 @@ typedef jack_nframes_t nframes_t;
 
 class Port;
 
+#include "Thread.H"
+
 class Engine : public Mutex
 {
     jack_client_t *_client;
+
+    Thread _thread;                                            /* only used for thread checking */
+
 
     /* I know locking out the process callback is cheating, even
        though we use trylock... The thing is, every other DAW does
@@ -57,6 +62,8 @@ class Engine : public Mutex
     void freewheel ( bool yes );
     static int buffer_size ( nframes_t nframes, void *arg );
     int buffer_size ( nframes_t nframes );
+    static void thread_init ( void *arg );
+    void thread_init ( void );
 
     Engine ( const Engine &rhs );
     Engine & operator = ( const Engine &rhs );

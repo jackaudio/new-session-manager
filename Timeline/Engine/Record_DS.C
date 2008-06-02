@@ -30,6 +30,7 @@
 #include "dsp.h"
 
 #include "util/debug.h"
+#include "util/Thread.H"
 
 const Audio_Region *
 Record_DS::capture_region ( void ) const
@@ -40,11 +41,11 @@ Record_DS::capture_region ( void ) const
         return NULL;
 }
 
-/* THREAD: IO */
 /** write /nframes/ from buf to the capture file of the attached track */
 void
 Record_DS::write_block ( sample_t *buf, nframes_t nframes )
 {
+    THREAD_ASSERT( Capture );
 
     /* stupid chicken/egg */
     if ( ! ( timeline && sequence() ) )
@@ -61,11 +62,15 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
 
 #define AVOID_UNNECESSARY_COPYING 1
 
-/* THREAD: IO */
 void
 Record_DS::disk_thread ( void )
 {
+    _thread.name( "Capture" );
+
+    track()->record( _capture, _frame );
+
     DMESSAGE( "capture thread running..." );
+
 
     const nframes_t nframes = _nframes * _disk_io_blocks;
 
@@ -199,7 +204,6 @@ Record_DS::disk_thread ( void )
     delete _capture;
     _capture = NULL;
 
-    _thread = 0;
     _terminate = false;
     DMESSAGE( "capture thread gone" );
 }
@@ -209,6 +213,7 @@ Record_DS::disk_thread ( void )
 void
 Record_DS::start ( nframes_t frame )
 {
+    THREAD_ASSERT( UI );
 
     if ( _recording )
     {
@@ -216,14 +221,12 @@ Record_DS::start ( nframes_t frame )
         return;
     }
 
-    /* FIXME: safe to do this here? */
-    flush();
+/*     /\* FIXME: safe to do this here? *\/ */
+/*     flush(); */
 
     _frame = frame;
 
     _capture = new Track::Capture;
-
-    track()->record( _capture, frame );
 
     run();
 
@@ -235,6 +238,8 @@ Record_DS::start ( nframes_t frame )
 void
 Record_DS::stop ( nframes_t frame )
 {
+    THREAD_ASSERT( UI );
+
     if ( ! _recording )
     {
         WARNING( "programming error: attempt to stop recording when no recording is being made" );
@@ -251,11 +256,11 @@ Record_DS::stop ( nframes_t frame )
 }
 
 
-/* THREAD: RT */
 /** read from the attached track's ports and stuff the ringbuffers */
 nframes_t
 Record_DS::process ( nframes_t nframes )
 {
+    THREAD_ASSERT( RT );
 
     if ( ! _recording )
         return 0;

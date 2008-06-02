@@ -38,6 +38,8 @@
 
 #include "assert.h"
 #include "util/debug.h"
+#include "util/Thread.H"
+
 #include <errno.h>
 
 #include <list>
@@ -520,11 +522,12 @@ Peak::normalization_factor( void ) const
     return s;
 }
 
-/* THREAD: IO */
 /* wrapper for peak writer */
 void
 Peaks::prepare_for_writing ( void )
 {
+    THREAD_ASSERT( Capture );
+
     assert( ! _peak_writer );
 
     _peak_writer = new Peaks::Streamer( _clip->name(), _clip->channels(), cache_minimum );
@@ -544,10 +547,11 @@ Peaks::finish_writing ( void )
 
 }
 
-/* THREAD: IO */
 void
 Peaks::write ( sample_t *buf, nframes_t nframes )
 {
+    THREAD_ASSERT( Capture );
+
     _peak_writer->write( buf, nframes );
 }
 

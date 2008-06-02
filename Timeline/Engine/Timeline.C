@@ -25,6 +25,8 @@
 #include "Record_DS.H"
 #include "Playback_DS.H"
 
+#include "util/Thread.H"
+
 /** Initiate recording for all armed tracks */
 bool
 Timeline::record ( void )
@@ -90,10 +92,11 @@ Timeline::process ( nframes_t nframes )
     return nframes;
 }
 
-/* THREAD: RT */
 void
 Timeline::seek ( nframes_t frame )
 {
+    THREAD_ASSERT( RT );
+
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
@@ -114,10 +117,11 @@ Timeline::resize_buffers ( nframes_t nframes )
     }
 }
 
-/* THREAD: RT */
 int
 Timeline::seek_pending ( void )
 {
+    THREAD_ASSERT( RT );
+
     int r = 0;
 
     for ( int i = tracks->children(); i-- ; )

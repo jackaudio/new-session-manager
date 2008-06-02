@@ -28,7 +28,9 @@
 /* This is the home of the JACK process callback (does this *really*
    need to be a class?) */
 
-Engine::Engine ( )
+#include "util/Thread.H"
+
+Engine::Engine ( ) : _thread( "RT" )
 {
     _freewheeling = false;
     _client = NULL;
@@ -190,6 +192,9 @@ Engine::timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t *pos,
 int
 Engine::process ( nframes_t nframes )
 {
+    /* FIXME: wrong place for this */
+    _thread.set( "RT" );
+
     transport->poll();
 
     if ( freewheeling() )
@@ -237,6 +242,18 @@ Engine::freewheeling ( bool yes )
         WARNING( "Unkown error while setting freewheeling mode" );
 }
 
+void
+Engine::thread_init ( void *arg )
+{
+    ((Engine*)arg)->thread_init();
+}
+
+void
+Engine::thread_init ( void )
+{
+    _thread.set( "RT" );
+}
+
 int
 Engine::init ( void )
 {
@@ -245,6 +262,7 @@ Engine::init ( void )
 
 #define set_callback( name ) jack_set_ ## name ## _callback( _client, &Engine:: name , this )
 
+    set_callback( thread_init );
     set_callback( process );
     set_callback( xrun );
     set_callback( freewheel );

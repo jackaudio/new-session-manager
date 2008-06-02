@@ -21,6 +21,8 @@
 
 #include "../Transport.H" // for ->frame
 
+#include "util/Thread.H"
+
 #include <list>
 using std::list;
 
@@ -45,12 +47,13 @@ sigmoid_interpolate ( float y1, float y2, float mu )
 
 
 
-/* THREAD: RT */
 /** fill buf with /nframes/ of interpolated control curve values
  * starting at /frame/  */
 nframes_t
 Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
 {
+    THREAD_ASSERT( RT );
+
     Control_Point *p2, *p1 = (Control_Point*)&_widgets.front();
 
     nframes_t n = nframes;
@@ -84,11 +87,11 @@ Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
     return nframes - n;
 }
 
-
-/* THREAD: RT */
 nframes_t
 Control_Sequence::process ( nframes_t nframes )
 {
+    THREAD_ASSERT( RT );
+
     if ( _output->connected() ) /* don't waste CPU on disconnected ports */
     {
         void *buf = _output->buffer( nframes );

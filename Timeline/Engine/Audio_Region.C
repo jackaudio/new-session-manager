@@ -26,6 +26,10 @@
 #include "Audio_File.H"
 #include "dsp.h"
 
+#include "util/Thread.H"
+
+
+
 /** Apply a (portion of) fade from /start/ to /end/ assuming a
  * buffer size of /nframes/. /start/ and /end/ are relative to the
  * given buffer, and /start/ may be negative. */
@@ -63,7 +67,6 @@ Audio_Region::Fade::apply ( sample_t *buf, Audio_Region::Fade::fade_dir_e dir, l
             *(buf++) *= gain( fi );
 }
 
-/* THREAD: IO */
 /** read the overlapping part of /channel/ at /pos/ for /nframes/ of
     this region into /buf/, where /pos/ is in timeline frames */
 /* this runs in the diskstream thread. */
@@ -78,6 +81,8 @@ Audio_Region::Fade::apply ( sample_t *buf, Audio_Region::Fade::fade_dir_e dir, l
 nframes_t
 Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const
 {
+    THREAD_ASSERT( Playback );
+
     const Range r = _range;
 
     /* do nothing if we aren't covered by this frame range */
@@ -193,12 +198,13 @@ Audio_Region::prepare ( void )
     log_start();
 }
 
-/* THREAD: IO */
 /** write /nframes/ from /buf/ to source. /buf/ is interleaved and
     must match the channel layout of the write source!  */
 nframes_t
 Audio_Region::write ( nframes_t nframes )
 {
+    THREAD_ASSERT( Capture );
+
     _range.length += nframes;
 
     /* FIXME: too much? */
@@ -230,12 +236,13 @@ Audio_Region::write ( nframes_t nframes )
     return nframes;
 }
 
-/* THREAD: IO */
 /** finalize region capture. Assumes that this *is* a captured region
  and that no other regions refer to the same source */
 bool
 Audio_Region::finalize ( nframes_t frame )
 {
+    THREAD_ASSERT( Capture );
+
     DMESSAGE( "finalizing capture region" );
 
     _range.length = frame - _range.start;

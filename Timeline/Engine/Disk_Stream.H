@@ -24,11 +24,11 @@
 #include <semaphore.h>
 #include <errno.h>
 
-#include <pthread.h>
 #include <vector>
 
 #include "types.h"
 #include "util/Mutex.H"
+#include "util/Thread.H"
 
 class Track;
 class Audio_Sequence;
@@ -40,9 +40,10 @@ class Disk_Stream : public Mutex
     Disk_Stream ( const Disk_Stream &rhs );
     Disk_Stream & operator = ( const Disk_Stream &rhs );
 
+
 protected:
 
-    pthread_t _thread;                                 /* io thread */
+    Thread _thread;                                    /* io thread */
 
     Track *_track;                               /* Track we belong to */
 

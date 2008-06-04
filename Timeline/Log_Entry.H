@@ -32,10 +32,13 @@ class Log_Entry
     Log_Entry ( const Log_Entry &rhs );
     Log_Entry & operator= ( const Log_Entry &rhs );
 
+    static char ** parse_alist ( const char *s );
+
 public:
 
     Log_Entry ( );
     Log_Entry ( char **sa );
+    Log_Entry ( const char *s );
     ~Log_Entry ( );
 
 /****************/

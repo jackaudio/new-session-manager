@@ -18,9 +18,7 @@
 /*******************************************************************************/
 
 
-#define _LOGGABLE_C
 #include "Loggable.H"
-#undef _LOGABLE_C
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -160,110 +158,7 @@ Loggable::escape ( const char *s )
     return r;
 }
 
-/** remove escapes from string /s/ in-place */
-static void
-unescape ( char *s )
-{
-    char *r = s;
-    for ( ; *s; s++, r++ )
-    {
-        if ( '\\' == *s )
-        {
-            switch ( *(++s) )
-            {
-                case 'n':
-                    *r = '\n';
-                    break;
-                case '"':
-                    *r = '"';
-                    break;
-                default:
-                    break;
-            }
-        }
-        else
-            *r = *s;
-    }
 
-    *r = '\0';
-}
-
-/** sigh. parse a string of ":name value :name value" pairs into an
- * array of strings, one per pair */
-// FIXME: doesn't handle the case of :name ":foo bar", nested quotes
-// or other things it should.
-static
-char **
-parse_alist( const char *s )
-{
-
-// FIXME: bogus over allocation...
-
-    int tl = strlen( s );
-    char **r = (char**)malloc( sizeof( char* ) * tl );
-
-//    const char *e = s + tl;
-
-    const char *c = NULL;
-    int i = 0;
-    for ( ; ; s++ )
-    {
-
-/*         if ( *s == '\n' ) */
-/*             break; */
-
-//        if ( *s == ':' || s == e )
-        if ( *s == ':' || *s == '\0' )
-        {
-            if ( c )
-            {
-                int l = s - c;
-
-                char *pair = (char*)malloc( l + 1 );
-
-                /* remove trailing space */
-                if ( c[ l  - 1 ] == ' ' )
-                    --l;
-
-                strncpy( pair, c, l );
-
-                pair[ l ] = '\0';
-
-                r[ i++ ] = pair;
-
-                /* split */
-
-                strtok( pair, " " );
-
-                /* remove quotes */
-                char *v = pair + strlen( pair ) + 1;
-
-                unescape( v );
-
-                if  ( *v == '"' )
-                {
-//                    v++;
-                    if ( v[ strlen( v ) - 1 ] != '"' )
-                        WARNING( "invalid quoting in log entry!" );
-                    else
-                    {
-                        v[ strlen( v ) - 1 ] = '\0';
-                        memmove( v, v + 1, strlen( v ) + 1 );
-                    }
-                }
-            }
-
-            c = s;
-
-            if ( *s == '\0' )
-                break;
-        }
-    }
-
-    r[ i ] = NULL;
-
-    return r;
-}
 
 
 static
@@ -322,9 +217,7 @@ Loggable::do_this ( const char *s, bool reverse )
     {
 //        printf( "got set command (%s).\n", arguments );
 
-        char **sa  = parse_alist( arguments );
-
-        Log_Entry e( sa );
+        Log_Entry e( arguments );
 
         l->log_start();
         l->set( e );
@@ -332,13 +225,7 @@ Loggable::do_this ( const char *s, bool reverse )
     }
     else if ( ! strcmp( command, create ) )
     {
-        char **sa = NULL;
-
-        if ( arguments )
-            sa = parse_alist( arguments );
-
-        Log_Entry e( sa );
-
+        Log_Entry e( arguments );
 
         ASSERT( _class_map[ std::string( classname ) ], "Journal contains an object of class \"%s\", but I don't know how to create such objects.", classname );
 

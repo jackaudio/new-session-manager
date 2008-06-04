@@ -36,6 +36,15 @@ Log_Entry::Log_Entry ( char **sa )
 
 }
 
+Log_Entry::Log_Entry ( const char *s )
+{
+    _i = 0;
+    _sa = s ? parse_alist( s ) : NULL;
+
+    if ( _sa )
+        while ( _sa[ _i ] ) ++_i;
+}
+
 Log_Entry::~Log_Entry ( )
 {
     if ( ! _sa )
@@ -47,6 +56,111 @@ Log_Entry::~Log_Entry ( )
     }
 
     free( _sa );
+}
+
+
+/** remove escapes from string /s/ in-place */
+static void
+unescape ( char *s )
+{
+    char *r = s;
+    for ( ; *s; s++, r++ )
+    {
+        if ( '\\' == *s )
+        {
+            switch ( *(++s) )
+            {
+                case 'n':
+                    *r = '\n';
+                    break;
+                case '"':
+                    *r = '"';
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+            *r = *s;
+    }
+
+    *r = '\0';
+}
+
+/** sigh. parse a string of ":name value :name value" pairs into an
+ * array of strings, one per pair */
+// FIXME: doesn't handle the case of :name ":foo bar", nested quotes
+// or other things it should.
+char **
+Log_Entry::parse_alist( const char *s )
+{
+
+// FIXME: bogus over allocation...
+
+    int tl = strlen( s );
+    char **r = (char**)malloc( sizeof( char* ) * tl );
+
+//    const char *e = s + tl;
+
+    const char *c = NULL;
+    int i = 0;
+    for ( ; ; s++ )
+    {
+
+/*         if ( *s == '\n' ) */
+/*             break; */
+
+//        if ( *s == ':' || s == e )
+        if ( *s == ':' || *s == '\0' )
+        {
+            if ( c )
+            {
+                int l = s - c;
+
+                char *pair = (char*)malloc( l + 1 );
+
+                /* remove trailing space */
+                if ( c[ l  - 1 ] == ' ' )
+                    --l;
+
+                strncpy( pair, c, l );
+
+                pair[ l ] = '\0';
+
+                r[ i++ ] = pair;
+
+                /* split */
+
+                strtok( pair, " " );
+
+                /* remove quotes */
+                char *v = pair + strlen( pair ) + 1;
+
+                unescape( v );
+
+                if  ( *v == '"' )
+                {
+//                    v++;
+                    if ( v[ strlen( v ) - 1 ] != '"' )
+                        WARNING( "invalid quoting in log entry!" );
+                    else
+                    {
+                        v[ strlen( v ) - 1 ] = '\0';
+                        memmove( v, v + 1, strlen( v ) + 1 );
+                    }
+                }
+            }
+
+            c = s;
+
+            if ( *s == '\0' )
+                break;
+        }
+    }
+
+    r[ i ] = NULL;
+
+    return r;
 }
 
 void

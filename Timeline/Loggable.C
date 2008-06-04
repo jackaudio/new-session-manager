@@ -158,19 +158,6 @@ Loggable::escape ( const char *s )
     return r;
 }
 
-
-
-
-static
-void free_sa ( char **sa )
-{
-    char **a = sa;
-    for ( ; *a; a++ )
-        free( *a );
-
-    free( sa );
-}
-
 /** 'do' a message like "Audio_Region 0xF1 set :r 123" */
 bool
 Loggable::do_this ( const char *s, bool reverse )
@@ -491,51 +478,15 @@ Loggable::log_print(  char **o, char **n ) const
     log( "\n" );
 }
 
-/** compare elements of dumps s1 and s2, removing those elements
-    of dst which are not changed from src */
-static
-bool
-log_diff (  char **sa1, char **sa2 )
-{
-    if ( ! sa1 )
-        return true;
-
-    int w = 0;
-    for ( int i = 0; sa1[ i ]; ++i )
-    {
-        const char *v1 = sa1[ i ] + strlen( sa1[ i ] ) + 1;
-        const char *v2 = sa2[ i ] + strlen( sa2[ i ] ) + 1;
-
-        if ( ! strcmp( sa1[ i ], sa2[ i ] ) && ! strcmp( v1, v2 ) )
-        {
-            free( sa2[ i ] );
-            free( sa1[ i ] );
-        }
-        else
-        {
-            sa2[ w ] = sa2[ i ];
-            sa1[ w ] = sa1[ i ];
-
-            w++;
-        }
-    }
-
-    sa1[ w ] = NULL;
-    sa2[ w ] = NULL;
-
-    return w == 0 ? false : true;
-}
 
 void
 Loggable::log_start ( void )
 {
     if ( ! _old_state )
     {
-        Log_Entry e;
+        _old_state = new Log_Entry;
 
-        get( e );
-
-        _old_state = e.sa();
+        get( *_old_state );
     }
     ++_nest;
 }
@@ -547,29 +498,27 @@ Loggable::log_end ( void )
     if ( --_nest > 0 )
         return;
 
-    char **_new_state;
+    Log_Entry *_new_state;
 
     {
-        Log_Entry e;
+        _new_state = new Log_Entry;
 
-        get( e );
-
-        _new_state = e.sa();
+        get( *_new_state );
     }
 
-    if ( log_diff( _old_state, _new_state ) )
+    if ( *_old_state != *_new_state )
     {
 //        indent();
         log( "%s 0x%X set ", class_name(), _id );
 
-        log_print( _old_state, _new_state );
+        log_print( _old_state->sa(), _new_state->sa() );
     }
 
     if ( _new_state )
-        free_sa( _new_state );
+        delete _new_state;
 
     if ( _old_state )
-        free_sa( _old_state );
+        delete _old_state;
 
     _old_state = NULL;
 
@@ -603,7 +552,6 @@ Loggable::log_create ( void ) const
     if ( sa )
     {
         log_print( NULL, sa );
-        free_sa( sa );
     }
     else
         log( "\n" );
@@ -621,18 +569,11 @@ Loggable::log_destroy ( void ) const
 
     log( "%s 0x%X destroy << ", class_name(), _id );
 
-    char **sa;
-
     Log_Entry e;
 
     get( e );
 
-    sa = e.sa();
-
-//    log_print( sa, NULL );
-    log_print( NULL, sa );
-
-    free_sa( sa );
+    log_print( NULL, e.sa() );
 
     if ( Loggable::_level == 0 )
         Loggable::flush();

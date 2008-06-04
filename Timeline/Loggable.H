@@ -79,8 +79,8 @@ private:
 
     int _id;
 
-    char **_old_state;
-    char **_new_state;
+    Log_Entry *_old_state;
+//    Log_Entry *_new_state;
 
     int _nest;
 
@@ -117,7 +117,8 @@ private:
 
     void init ( bool loggable=true )
         {
-            _new_state = _old_state = NULL;
+            // _new_state
+            _old_state = NULL;
             _nest = 0;
 
             if ( loggable )

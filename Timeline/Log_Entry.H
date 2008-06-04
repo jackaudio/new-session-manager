@@ -33,6 +33,7 @@ class Log_Entry
     Log_Entry & operator= ( const Log_Entry &rhs );
 
     static char ** parse_alist ( const char *s );
+    static bool log_diff (  char **sa1, char **sa2 );
 
 public:
 
@@ -58,6 +59,8 @@ public:
 /***************/
 /* Examination */
 /***************/
+
+    bool operator!= ( const Log_Entry &rhs ) const;
 
     int size ( void ) const;
 

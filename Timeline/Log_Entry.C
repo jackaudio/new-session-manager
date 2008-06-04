@@ -163,6 +163,46 @@ Log_Entry::parse_alist( const char *s )
     return r;
 }
 
+/** compare elements of dumps s1 and s2, removing those elements
+    of dst which are not changed from src */
+bool
+Log_Entry::log_diff (  char **sa1, char **sa2 )
+{
+    if ( ! sa1 )
+        return true;
+
+    int w = 0;
+    for ( int i = 0; sa1[ i ]; ++i )
+    {
+        const char *v1 = sa1[ i ] + strlen( sa1[ i ] ) + 1;
+        const char *v2 = sa2[ i ] + strlen( sa2[ i ] ) + 1;
+
+        if ( ! strcmp( sa1[ i ], sa2[ i ] ) && ! strcmp( v1, v2 ) )
+        {
+            free( sa2[ i ] );
+            free( sa1[ i ] );
+        }
+        else
+        {
+            sa2[ w ] = sa2[ i ];
+            sa1[ w ] = sa1[ i ];
+
+            w++;
+        }
+    }
+
+    sa1[ w ] = NULL;
+    sa2[ w ] = NULL;
+
+    return w == 0 ? false : true;
+}
+
+bool
+Log_Entry::operator!= ( const Log_Entry &rhs ) const
+{
+    return log_diff( this->_sa, rhs._sa );
+}
+
 void
 Log_Entry::grow (  )
 {
@@ -187,9 +227,13 @@ Log_Entry::get ( int n, const char **name, const char **value )
 char **
 Log_Entry::sa ( void )
 {
-    char **sa = _sa;
+    return _sa;
 
-    _sa = NULL;
+/*   char **sa = _sa; */
 
-    return sa;
+/* //    _sa = NULL; */
+
+/*     return sa; */
+/* } */
+
 }

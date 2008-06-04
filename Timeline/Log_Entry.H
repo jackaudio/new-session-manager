@@ -64,7 +64,7 @@ public:
 
     int size ( void ) const;
 
-    void get ( int n, const char **name, const char **value );
+    void get ( int n, const char **name, const char **value ) const;
     char **sa ( void );
 
 /* #define ADD ( type, format, exp )             \ */

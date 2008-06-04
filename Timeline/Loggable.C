@@ -462,17 +462,33 @@ Loggable::flush ( void )
 }
 
 void
-Loggable::log_print(  char **o, char **n ) const
+Loggable::log_print( const Log_Entry *o, const Log_Entry *n ) const
 {
-    if ( n )
-        for ( ; *n; n++ )
-            log( "%s %s%s", *n, *n + strlen( *n ) + 1, *(n + 1) ? " " : ""  );
+    if ( ! _fp )
+        return;
 
-    if ( o && *o )
+    if ( n )
+        for ( int i = 0; i < n->size(); ++i )
+        {
+            const char *s, *v;
+
+            n->get( i, &s, &v );
+
+            log( "%s %s%s", s, v, n->size() == i + 1 ? "" : " " );
+        }
+
+    if ( o && o->size() )
     {
         if ( n ) log( " << " );
-        for ( ; *o; o++ )
-            log( "%s %s%s", *o, *o + strlen( *o ) + 1, *(o + 1) ? " " : ""  );
+
+        for ( int i = 0; i < o->size(); ++i )
+        {
+            const char *s, *v;
+
+            o->get( i, &s, &v );
+
+            log( "%s %s%s", s, o->size() == i + 1 ? "" : " " );
+        }
     }
 
     log( "\n" );
@@ -498,24 +514,21 @@ Loggable::log_end ( void )
     if ( --_nest > 0 )
         return;
 
-    Log_Entry *_new_state;
+    Log_Entry *new_state;
 
+    new_state = new Log_Entry;
+
+    get( *new_state );
+
+    if ( *_old_state != *new_state )
     {
-        _new_state = new Log_Entry;
-
-        get( *_new_state );
-    }
-
-    if ( *_old_state != *_new_state )
-    {
-//        indent();
         log( "%s 0x%X set ", class_name(), _id );
 
-        log_print( _old_state->sa(), _new_state->sa() );
+        log_print( _old_state, new_state );
     }
 
-    if ( _new_state )
-        delete _new_state;
+    if ( new_state )
+        delete new_state;
 
     if ( _old_state )
         delete _old_state;
@@ -529,32 +542,13 @@ Loggable::log_end ( void )
 void
 Loggable::log_create ( void ) const
 {
-//    indent();
-
-/*     if ( Loggable::_level ) */
-/*     { */
-/*         /\* defer until the block ends--this is really only required for capturing... *\/ */
-
-
-
-/*     } */
-
     log( "%s 0x%X create ", class_name(), _id );
-
-    char **sa;
 
     Log_Entry e;
 
     get( e );
 
-    sa = e.sa();
-
-    if ( sa )
-    {
-        log_print( NULL, sa );
-    }
-    else
-        log( "\n" );
+    log_print( NULL, &e );
 
     if ( Loggable::_level == 0 )
         Loggable::flush();
@@ -573,7 +567,7 @@ Loggable::log_destroy ( void ) const
 
     get( e );
 
-    log_print( NULL, e.sa() );
+    log_print( NULL, &e );
 
     if ( Loggable::_level == 0 )
         Loggable::flush();

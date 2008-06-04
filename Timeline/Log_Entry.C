@@ -209,7 +209,7 @@ Log_Entry::grow (  )
     _sa = (char**)realloc( _sa, sizeof( char * ) * (_i + 2) );
     _sa[ _i + 1 ] = NULL;
 }
-\
+
 int
 Log_Entry::size ( void ) const
 {
@@ -217,7 +217,7 @@ Log_Entry::size ( void ) const
 }
 
 void
-Log_Entry::get ( int n, const char **name, const char **value )
+Log_Entry::get ( int n, const char **name, const char **value ) const
 {
     *name = _sa[ n ];
     *value = *name + strlen( *name ) + 1;

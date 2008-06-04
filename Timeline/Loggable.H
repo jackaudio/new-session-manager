@@ -100,7 +100,7 @@ private:
             }
         }
 
-    void log_print(  char **o, char **n ) const;
+    void log_print( const Log_Entry *o, const Log_Entry *n ) const;
     static void log ( const char *fmt, ... );
 
     static void flush ( void );

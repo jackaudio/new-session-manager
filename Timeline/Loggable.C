@@ -41,6 +41,9 @@ Loggable ** Loggable::_loggables;
 std::map <std::string, create_func*> Loggable::_class_map;
 std::queue <char *> Loggable::_transaction;
 
+
+
+/** Open the journal /filename/ and replay it, bringing the end state back into RAM */
 bool
 Loggable::open ( const char *filename )
 {
@@ -54,6 +57,7 @@ Loggable::open ( const char *filename )
 
     /* replay log */
     {
+        /* FIXME: bogus */
         char buf[BUFSIZ];
 
         while ( fscanf( fp, "%[^\n]\n", buf ) == 1 )
@@ -68,13 +72,12 @@ Loggable::open ( const char *filename )
         }
     }
 
-
     Loggable::_fp = fp;
 
     return true;
 }
 
-/** close journal and delete all loggable objects */
+/** close journal and delete all loggable objects, returing the systemt to a blank slate */
 bool
 Loggable::close ( void )
 {
@@ -104,8 +107,7 @@ Loggable::close ( void )
     return true;
 }
 
-
-    /** must be called after construction in create() methods */
+/** must be called after construction in create() methods */
 void
 Loggable::update_id ( int id )
 {
@@ -192,11 +194,11 @@ Loggable::do_this ( const char *s, bool reverse )
     if ( ! strcmp( command, destroy ) )
     {
         /* deleting eg. a track, which contains a list of other
-         widgets, causes destroy messages to be emitted for all those
-         widgets, but when replaying the journal the destroy message
-         causes the children to be deleted also... This is a temporary
-         hack. Would it be better to queue up objects for deletion
-         (when?) */
+           widgets, causes destroy messages to be emitted for all those
+           widgets, but when replaying the journal the destroy message
+           causes the children to be deleted also... This is a temporary
+           hack. Would it be better to queue up objects for deletion
+           (when?) */
         if ( l )
             delete l;
     }
@@ -231,6 +233,7 @@ Loggable::do_this ( const char *s, bool reverse )
     return true;
 }
 
+/** Reverse the last journal transaction */
 void
 Loggable::undo ( void )
 {
@@ -311,7 +314,7 @@ Loggable::undo ( void )
         s++;
 
         if ( ! strcmp( s, "{" ) )
-             break;
+            break;
 
         if ( *s == '\t' )
             s++;
@@ -377,10 +380,10 @@ Loggable::snapshot( FILE *fp )
     return true;
 }
 
+/** Replace the journal with a snapshot of the current state */
 void
 Loggable::compact ( void )
 {
-
     fseek( _fp, 0, SEEK_SET );
     ftruncate( fileno( _fp ), 0 );
 
@@ -389,7 +392,7 @@ Loggable::compact ( void )
     _undo_index = 1;
 }
 
-
+/** Buffered sprintf wrapper */
 void
 Loggable::log ( const char *fmt, ... )
 {
@@ -413,11 +416,10 @@ Loggable::log ( const char *fmt, ... )
     }
 }
 
+/** End the current transaction and commit it to the journal */
 void
 Loggable::flush ( void )
 {
-
-
     if ( ! _fp )
     {
 //        printf( "error: no log file open!\n" );
@@ -461,6 +463,7 @@ Loggable::flush ( void )
     fflush( _fp );
 }
 
+/** Print bidirectional journal entry */
 void
 Loggable::log_print( const Log_Entry *o, const Log_Entry *n ) const
 {
@@ -495,6 +498,9 @@ Loggable::log_print( const Log_Entry *o, const Log_Entry *n ) const
 }
 
 
+/** Remember current object state for later comparison. *Must* be
+ * called before any user action that might change one of the object's
+ * journaled properties.  */
 void
 Loggable::log_start ( void )
 {
@@ -507,10 +513,10 @@ Loggable::log_start ( void )
     ++_nest;
 }
 
+/** Log any change to the object's state since log_start(). */
 void
 Loggable::log_end ( void )
 {
-
     if ( --_nest > 0 )
         return;
 
@@ -539,6 +545,8 @@ Loggable::log_end ( void )
         Loggable::flush();
 }
 
+/** Log object creation. *Must* be called at the end of all public
+ * constructors for leaf classes  */
 void
 Loggable::log_create ( void ) const
 {
@@ -554,6 +562,8 @@ Loggable::log_create ( void ) const
         Loggable::flush();
 }
 
+/** Log object destruction. *Must* be called at the beginning of the
+ * destructors of leaf classes */
 void
 Loggable::log_destroy ( void ) const
 {

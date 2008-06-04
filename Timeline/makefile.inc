@@ -4,7 +4,7 @@ Timeline_VERSION := 0.5.0
 
 Timeline_SRCS := $(wildcard Timeline/*.C Timeline/*.fl Timeline/Engine/*.C)
 
-Timeline_SRCS += util/debug.C util/Thread.C
+Timeline_SRCS += util/debug.C util/Thread.C util/file.C
 
 Timeline_SRCS:=$(Timeline_SRCS:.fl=.C)
 Timeline_SRCS:=$(sort $(Timeline_SRCS))

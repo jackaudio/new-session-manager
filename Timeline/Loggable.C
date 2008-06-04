@@ -25,6 +25,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "util/file.h"
+
 #include <algorithm>
 using std::min;
 using std::max;
@@ -49,32 +51,55 @@ Loggable::open ( const char *filename )
 {
     FILE *fp;
 
+    Loggable::_fp = NULL;
+
     if ( ! ( fp = fopen( filename, "a+" ) ) )
     {
         WARNING( "Could not open log file for writing!" );
         return false;
     }
 
-    /* replay log */
+    if ( newer( "snapshot", filename ) )
     {
-        /* FIXME: bogus */
-        char buf[BUFSIZ];
+        DMESSAGE( "Loading snapshot" );
 
-        while ( fscanf( fp, "%[^\n]\n", buf ) == 1 )
-        {
-            if ( ! ( ! strcmp( buf, "{" ) || ! strcmp( buf, "}" ) ) )
-            {
-                if ( *buf == '\t' )
-                    do_this( buf + 1, false );
-                else
-                    do_this( buf, false );
-            }
-        }
+        FILE *fp = fopen( "snapshot", "r" );
+
+        replay( fp );
+
+        fclose( fp );
     }
+    else
+    {
+        DMESSAGE( "Replaying journal" );
+
+        replay( fp );
+    }
+
+    fseek( fp, 0, SEEK_END );
 
     Loggable::_fp = fp;
 
     return true;
+}
+
+/** replay journal or snapshot */
+bool
+Loggable::replay ( FILE *fp )
+{
+    /* FIXME: bogus */
+    char buf[BUFSIZ];
+
+    while ( fscanf( fp, "%[^\n]\n", buf ) == 1 )
+    {
+        if ( ! ( ! strcmp( buf, "{" ) || ! strcmp( buf, "}" ) ) )
+        {
+            if ( *buf == '\t' )
+                do_this( buf + 1, false );
+            else
+                do_this( buf, false );
+        }
+    }
 }
 
 /** close journal and delete all loggable objects, returing the systemt to a blank slate */
@@ -90,6 +115,8 @@ Loggable::close ( void )
     fclose( _fp );
 
     _fp = NULL;
+
+    snapshot( "snapshot" );
 
     for ( int i = 0; i < _log_id - 1; ++i )
     {
@@ -333,10 +360,11 @@ Loggable::undo ( void )
     delete[] buf;
 }
 
+/* FIXME: we need a version of this that is fully const, right? */
 /** write a snapshot of the state of all loggable objects, sufficient
  * for later reconstruction, to /fp/ */
 bool
-Loggable::snapshot( FILE *fp )
+Loggable::snapshot ( FILE *fp )
 {
     FILE *ofp = _fp;
 
@@ -380,6 +408,19 @@ Loggable::snapshot( FILE *fp )
     return true;
 }
 
+bool
+Loggable::snapshot ( const char *name )
+{
+    FILE *fp;
+
+    if ( ! ( fp = fopen( name, "w" ) ))
+        return false;
+
+    snapshot( fp );
+
+    fclose( fp );
+}
+
 /** Replace the journal with a snapshot of the current state */
 void
 Loggable::compact ( void )
@@ -396,6 +437,9 @@ Loggable::compact ( void )
 void
 Loggable::log ( const char *fmt, ... )
 {
+    if ( ! _fp )
+        return;
+
     /* FIXME: bogus limit  */
     static char buf[1024];
     static int i = 0;
@@ -490,7 +534,7 @@ Loggable::log_print( const Log_Entry *o, const Log_Entry *n ) const
 
             o->get( i, &s, &v );
 
-            log( "%s %s%s", s, o->size() == i + 1 ? "" : " " );
+            log( "%s %s%s", s, v, o->size() == i + 1 ? "" : " " );
         }
     }
 
@@ -550,13 +594,20 @@ Loggable::log_end ( void )
 void
 Loggable::log_create ( void ) const
 {
+    if ( ! _fp )
+        /* replaying, don't bother */
+
+        return;
     log( "%s 0x%X create ", class_name(), _id );
 
     Log_Entry e;
 
     get( e );
 
-    log_print( NULL, &e );
+    if ( e.size() )
+        log_print( NULL, &e );
+    else
+        log( "\n" );
 
     if ( Loggable::_level == 0 )
         Loggable::flush();

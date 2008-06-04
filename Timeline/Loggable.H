@@ -104,16 +104,10 @@ private:
     static void log ( const char *fmt, ... );
 
     static void flush ( void );
-    static
-    void indent ( void )
-        {
-            int n = Loggable::_level;
-
-            while ( n-- )
-                log( "\t" );
-        }
 
     static bool snapshot( FILE * fp );
+    static bool snapshot( const char *name );
+    static bool replay ( FILE *fp );
 
     void init ( bool loggable=true )
         {

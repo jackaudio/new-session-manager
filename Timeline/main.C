@@ -83,6 +83,8 @@ ensure_dirs ( void )
 
 #include <FL/Fl_Shared_Image.H>
 
+#include <signal.h>
+
 
 int
 main ( int argc, char **argv )
@@ -108,6 +110,8 @@ main ( int argc, char **argv )
 
     init_boxtypes();
 
+    signal( SIGPIPE, SIG_IGN );
+
     if ( ! ensure_dirs() )
         FATAL( "Cannot create required directories" );
 
@@ -119,7 +123,8 @@ main ( int argc, char **argv )
 
     /* we don't really need a pointer for this */
     engine = new Engine;
-    engine->init();
+    if ( ! engine->init() )
+        FATAL( "Could not connect to JACK!" );
 
     /* always start stopped (please imagine for me a realistic
      * scenario requiring otherwise */

@@ -152,14 +152,13 @@ asprintf( &path, "%s/options", user_config_dir );
 free( path );
 
 
-menubar->add( "&Timeline", 0, 0, const_cast< Fl_Menu_Item *>( timeline->menu->menu() ), FL_SUBMENU_POINTER );} {selected
-    }
+menubar->add( "&Timeline", 0, 0, const_cast< Fl_Menu_Item *>( timeline->menu->menu() ), FL_SUBMENU_POINTER );} {}
   }
   Function {make_window()} {open
   } {
     Fl_Window main_window {
       label Timeline open
-      xywh {225 89 1020 765} type Double resizable xclass Non_DAW visible
+      xywh {500 26 1020 765} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
@@ -192,6 +191,10 @@ main_window->redraw();}
 if ( ! name )
 	return;
 	
+progress->show();
+timeline->hide();
+Loggable::progress_callback( progress_cb, this );
+
 if ( ! Project::validate( name ) )
 {
 	fl_alert( "The path \\"%s\\"\\ndoes not refer to a valid Non-DAW project!", name );
@@ -201,7 +204,9 @@ else if ( ! Project::open( name ) )
 	fl_alert( "Could not open \\"%s\\" as a Non-DAW project!", name );
 	
 	// we are in a somewhar ambiguous state now with no project open.
-}}
+}
+progress->hide();
+timeline->show();}
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -544,15 +549,15 @@ delete win;}
         }
       }
       Fl_Group {} {open
-        xywh {0 23 1024 48}
+        xywh {-10 23 1034 51}
       } {
         Fl_Pack {} {open
-          xywh {0 23 473 46} type HORIZONTAL
+          xywh {-10 23 483 46} type HORIZONTAL
           code0 {o->spacing( 10 );}
         } {
           Fl_Box {} {
             label {<Transport>}
-            xywh {0 23 184 46} color 30
+            xywh {-10 23 194 46} color 30
             code0 {transport = o;}
             code1 {o->labeltype( FL_NO_LABEL );}
             class Transport
@@ -610,6 +615,10 @@ delete win;}
             xywh {925 40 99 14} labelsize 10
           }
         }
+      }
+      Fl_Progress progress {
+        label {0%}
+        xywh {15 394 995 41} hide
       }
       Fl_Box {} {
         label {<Timeline>}
@@ -670,7 +679,8 @@ project_name->redraw();} {}
 
 snprintf( s, 5, "%d%%", (int)v );
 
-p->label( s );} {}
+p->label( s );} {selected
+    }
   }
   Function {update_status()} {open
   } {
@@ -701,7 +711,7 @@ xruns_output->value( engine->xruns() );} {}
   } {
     Fl_Window about_dialog_window {
       label About open
-      private xywh {658 165 495 600} type Double xclass {Non-DAW} visible
+      private xywh {758 335 495 600} type Double xclass {Non-DAW} visible
     } {
       Fl_Tabs {} {open
         xywh {0 213 497 392}
@@ -794,6 +804,18 @@ project_name->redraw();} {}
 save();
 
 exit( 0 );} {}
+  }
+  Function {progress_cb( int p, void *arg )} {open return_type {static void}
+  } {
+    code {Fl_Progress *progress = ((TLE*)arg)->progress;
+
+static char pat[10];
+
+update_progress( progress, pat, p );
+
+progress->redraw();
+
+Fl::check();} {}
   }
 } 
 

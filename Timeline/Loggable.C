@@ -31,6 +31,8 @@
 using std::min;
 using std::max;
 
+#include <FL/Fl.H> // for Fl::check()
+
 
 
 FILE *Loggable::_fp;
@@ -42,6 +44,9 @@ size_t Loggable::_loggables_size = 0;
 Loggable ** Loggable::_loggables;
 std::map <std::string, create_func*> Loggable::_class_map;
 std::queue <char *> Loggable::_transaction;
+
+progress_func *Loggable::_progress_callback = NULL;
+void *Loggable::_progress_callback_arg = NULL;
 
 
 
@@ -83,12 +88,21 @@ Loggable::open ( const char *filename )
     return true;
 }
 
+#include <sys/stat.h>
+#include <unistd.h>
+
 /** replay journal or snapshot */
 bool
 Loggable::replay ( FILE *fp )
 {
     /* FIXME: bogus */
     char buf[BUFSIZ];
+
+    struct stat st;
+    fstat( fileno( fp ), &st );
+
+    off_t total = st.st_size;
+    off_t current = 0;
 
     while ( fscanf( fp, "%[^\n]\n", buf ) == 1 )
     {
@@ -99,7 +113,14 @@ Loggable::replay ( FILE *fp )
             else
                 do_this( buf, false );
         }
+
+        current = ftell( fp );
+
+        if ( _progress_callback )
+            _progress_callback( current * 100 / total, _progress_callback_arg );
     }
+
+    return true;
 }
 
 /** close journal and delete all loggable objects, returing the systemt to a blank slate */
@@ -360,21 +381,9 @@ Loggable::undo ( void )
     delete[] buf;
 }
 
-/* FIXME: we need a version of this that is fully const, right? */
-/** write a snapshot of the state of all loggable objects, sufficient
- * for later reconstruction, to /fp/ */
-bool
-Loggable::snapshot ( FILE *fp )
+void
+Loggable::compact_ids ( void )
 {
-    FILE *ofp = _fp;
-
-    if ( ! ( _fp = fp ) )
-    {
-        _fp = ofp;
-        return false;
-    }
-
-    /* first, make all ids consecutive */
     int id = 0;
     for ( int i = 0; i < _log_id; ++i )
         if ( _loggables[ i ] )
@@ -390,6 +399,21 @@ Loggable::snapshot ( FILE *fp )
         }
 
     _log_id = id;
+}
+
+/* FIXME: we need a version of this that is fully const, right? */
+/** write a snapshot of the state of all loggable objects, sufficient
+ * for later reconstruction, to /fp/ */
+bool
+Loggable::snapshot ( FILE *fp )
+{
+    FILE *ofp = _fp;
+
+    if ( ! ( _fp = fp ) )
+    {
+        _fp = ofp;
+        return false;
+    }
 
     block_start();
 
@@ -419,6 +443,8 @@ Loggable::snapshot ( const char *name )
     snapshot( fp );
 
     fclose( fp );
+
+    return true;
 }
 
 /** Replace the journal with a snapshot of the current state */
@@ -428,7 +454,9 @@ Loggable::compact ( void )
     fseek( _fp, 0, SEEK_SET );
     ftruncate( fileno( _fp ), 0 );
 
-    snapshot( _fp );
+    compact_ids();
+    if ( ! snapshot( _fp ) )
+        FATAL( "Could not write snapshot!" );
 
     _undo_index = 1;
 }

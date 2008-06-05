@@ -35,6 +35,8 @@
 
 #include "util/debug.h"
 
+typedef void (progress_func)( int, void * );
+
 class Log_Entry;
 class Loggable;
 typedef Loggable *(create_func)(Log_Entry &);
@@ -74,6 +76,9 @@ class Loggable
     static std::map <std::string, create_func*> _class_map;
 
     static std::queue <char *> _transaction;
+
+    static progress_func *_progress_callback;
+    static void *_progress_callback_arg;
 
 private:
 
@@ -131,8 +136,11 @@ private:
     /* not implemented */
     const Loggable & operator= ( const Loggable &rhs );
 
+    static void compact_ids ( void );
+
 public:
 
+    static void progress_callback ( progress_func *p, void *arg ) { _progress_callback = p; _progress_callback_arg = arg;}
     static const char *escape ( const char *s );
 
     int id ( void ) const { return _id; }

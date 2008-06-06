@@ -49,9 +49,15 @@ Audio_Sequence::Audio_Sequence ( Track *track ) : Sequence( track )
 
 Audio_Sequence::~Audio_Sequence ( )
 {
+    Loggable::block_start();
+
+    clear();
+
     log_destroy();
 
     track()->remove( this );
+
+    Loggable::block_end();
 }
 
 

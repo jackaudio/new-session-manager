@@ -247,6 +247,14 @@ Track::Track ( const char *L, int channels ) :
 
 Track::~Track ( )
 {
+    Loggable::block_start();
+
+    takes = NULL;
+    control = NULL;
+    annotation = NULL;
+
+    Fl_Group::clear();
+
     log_destroy();
 
     timeline->remove_track( this );
@@ -256,12 +264,11 @@ Track::~Track ( )
     configure_outputs( 0 );
 
     _sequence = NULL;
-    takes = NULL;
-    control = NULL;
-    annotation = NULL;
 
     if ( _name )
         free( _name );
+
+    Loggable::block_end();
 }
 
 

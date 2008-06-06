@@ -52,6 +52,11 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 
 Control_Sequence::~Control_Sequence ( )
 {
+
+    Loggable::block_start();
+
+    clear();
+
     log_destroy();
 
     engine->lock();
@@ -65,6 +70,8 @@ Control_Sequence::~Control_Sequence ( )
     delete _output;
 
     _output = NULL;
+
+    Loggable::block_end();
 }
 
 void

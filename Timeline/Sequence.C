@@ -61,14 +61,9 @@ Sequence::init ( void )
 //    clear_visible_focus();
 }
 
-Sequence::~Sequence (  )
+void
+Sequence::clear ( void )
 {
-
-    DMESSAGE( "destroying sequence" );
-
-    if ( _name )
-        free( _name );
-
     for ( std::list <Sequence_Widget*>::iterator i = _widgets.begin();
           i != _widgets.end(); ++i )
     {
@@ -80,6 +75,17 @@ Sequence::~Sequence (  )
     }
 
     _widgets.clear();
+}
+
+Sequence::~Sequence (  )
+{
+    DMESSAGE( "destroying sequence" );
+
+    if ( _name )
+        free( _name );
+
+    if ( _widgets.size() )
+        FATAL( "programming error: leaf destructor must call Sequence::clear()!" );
 }
 
 nframes_t

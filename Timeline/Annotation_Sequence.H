@@ -83,9 +83,15 @@ public:
 
     ~Annotation_Sequence ( )
         {
+            Loggable::block_start();
+
+            clear();
+
             log_destroy();
 
             track()->remove( this );
+
+            Loggable::block_end();
         }
 
     int handle ( int m )

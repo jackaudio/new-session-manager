@@ -92,6 +92,7 @@ public:
         }
 
     void sort ( void );
+    void clear ( void );
 
     nframes_t next ( nframes_t from ) const;
     nframes_t prev ( nframes_t from ) const;

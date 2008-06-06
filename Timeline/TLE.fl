@@ -161,7 +161,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   } {
     Fl_Window main_window {
       label Timeline open
-      xywh {500 26 1020 765} type Double resizable xclass Non_DAW visible
+      xywh {177 137 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
@@ -204,7 +204,7 @@ else if ( ! Project::open( name ) )
 	fl_alert( "Could not open \\"%s\\" as a Non-DAW project!", name );
 	
 	// we are in a somewhar ambiguous state now with no project open.
-}} selected
+}}
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -547,33 +547,33 @@ delete win;}
         }
       }
       Fl_Group {} {open
-        xywh {-10 23 1034 51}
+        xywh {0 23 1025 51}
       } {
         Fl_Pack {} {open
-          xywh {-10 23 483 46} type HORIZONTAL
+          xywh {0 23 483 46} type HORIZONTAL
           code0 {o->spacing( 10 );}
         } {
           Fl_Box {} {
-            label {<Transport>}
-            xywh {-10 23 194 46} color 30
+            label {<Transport>} selected
+            xywh {5 23 189 46} color 30
             code0 {transport = o;}
             code1 {o->labeltype( FL_NO_LABEL );}
             class Transport
           }
           Fl_Pack clocks_pack {open
-            xywh {185 23 288 46} type HORIZONTAL
+            xywh {195 23 288 46} type HORIZONTAL
             code0 {o->spacing( 2 );}
           } {
             Fl_Box playhead_clock {
               label PLAYHEAD
-              xywh {185 29 137 40} box BORDER_BOX color 40
+              xywh {195 29 137 40} box BORDER_BOX color 40
               code0 {o->type( Clock::HMS );}
               code1 {o->run( &transport->frame );}
               class Clock
             }
             Fl_Box {} {
               label PLAYHEAD
-              xywh {325 29 142 40} box BORDER_BOX color 40
+              xywh {335 29 142 40} box BORDER_BOX color 40
               code0 {o->type( Clock::BBT );}
               code1 {o->run( &transport->frame );}
               class Clock
@@ -582,35 +582,35 @@ delete win;}
         }
         Fl_Box {} {
           label {<empty>}
-          xywh {477 27 387 42} resizable
+          xywh {487 27 378 42} resizable
           code0 {o->labeltype( FL_NO_LABEL );}
         }
-        Fl_Group {} {
-          xywh {869 25 155 44}
+        Fl_Group {} {open
+          xywh {865 26 160 44}
         } {
           Fl_Box {} {
             label {capture:}
-            xywh {869 25 56 14} labelsize 10 align 24
+            xywh {865 26 56 14} labelsize 10 align 24
           }
           Fl_Box {} {
             label {playback:}
-            xywh {869 41 56 14} labelsize 10 align 24
+            xywh {865 42 56 14} labelsize 10 align 24
           }
           Fl_Box {} {
             label {DSP:}
-            xywh {869 55 56 14} labelsize 10 align 24
+            xywh {865 56 56 14} labelsize 10 align 24
           }
           Fl_Progress capture_buffer_progress {
             label {50%}
-            xywh {925 25 99 14} labelsize 10
+            xywh {921 26 104 14} labelsize 10
           }
           Fl_Progress cpu_load_progress {
             label {50%}
-            xywh {925 55 99 14} labelsize 9
+            xywh {921 56 104 14} labelsize 9
           }
           Fl_Progress playback_buffer_progress {
             label {50%}
-            xywh {925 40 99 14} labelsize 10
+            xywh {921 41 104 14} labelsize 10
           }
         }
       }

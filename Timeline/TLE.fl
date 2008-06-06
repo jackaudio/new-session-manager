@@ -103,7 +103,7 @@ main_window->show();
 
 Fl::lock();
 
-Fl::run();} {}
+// Fl::run();} {}
   }
   Function {TLE()} {open
   } {
@@ -152,7 +152,10 @@ asprintf( &path, "%s/options", user_config_dir );
 free( path );
 
 
-menubar->add( "&Timeline", 0, 0, const_cast< Fl_Menu_Item *>( timeline->menu->menu() ), FL_SUBMENU_POINTER );} {}
+menubar->add( "&Timeline", 0, 0, const_cast< Fl_Menu_Item *>( timeline->menu->menu() ), FL_SUBMENU_POINTER );
+
+
+Loggable::progress_callback( &TLE::progress_cb, this );} {}
   }
   Function {make_window()} {open
   } {
@@ -191,9 +194,6 @@ main_window->redraw();}
 if ( ! name )
 	return;
 	
-progress->show();
-timeline->hide();
-Loggable::progress_callback( progress_cb, this );
 
 if ( ! Project::validate( name ) )
 {
@@ -204,9 +204,7 @@ else if ( ! Project::open( name ) )
 	fl_alert( "Could not open \\"%s\\" as a Non-DAW project!", name );
 	
 	// we are in a somewhar ambiguous state now with no project open.
-}
-progress->hide();
-timeline->show();}
+}} selected
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -679,8 +677,7 @@ project_name->redraw();} {}
 
 snprintf( s, 5, "%d%%", (int)v );
 
-p->label( s );} {selected
-    }
+p->label( s );} {}
   }
   Function {update_status()} {open
   } {
@@ -807,7 +804,20 @@ exit( 0 );} {}
   }
   Function {progress_cb( int p, void *arg )} {open return_type {static void}
   } {
-    code {Fl_Progress *progress = ((TLE*)arg)->progress;
+    code {((TLE*)arg)->progress_cb( p );} {}
+  }
+  Function {progress_cb( int p )} {open return_type void
+  } {
+    code {if ( ! progress->visible() )
+{
+	timeline->hide();
+	progress->show();
+}
+else if ( 0 == p )
+{
+	timeline->show();
+	progress->hide();
+}
 
 static char pat[10];
 

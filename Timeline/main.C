@@ -135,15 +135,17 @@ main ( int argc, char **argv )
 
     lash->init( APP_NAME, APP_TITLE, &argc, &argv );
 
+    MESSAGE( "Starting GUI" );
+
+    tle->run();
+
     if ( argc > 1 )
         if ( ! Project::open( argv[ 1 ] ) )
             FATAL( "Could not open project specified on command line" );
 
     /* FIXME: open project in /tmp if none is given? */
 
-    MESSAGE( "Starting GUI" );
-
-    tle->run();
+    Fl::run();
 
     MESSAGE( "Your fun is over" );
 }

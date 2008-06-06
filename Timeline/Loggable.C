@@ -120,6 +120,9 @@ Loggable::replay ( FILE *fp )
             _progress_callback( current * 100 / total, _progress_callback_arg );
     }
 
+    if ( _progress_callback )
+        _progress_callback( 0, _progress_callback_arg );
+
     return true;
 }
 
@@ -127,7 +130,6 @@ Loggable::replay ( FILE *fp )
 bool
 Loggable::close ( void )
 {
-
     DMESSAGE( "closing journal and destroying all journaled objects" );
 
     if ( ! _fp )

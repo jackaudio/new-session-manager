@@ -554,7 +554,7 @@ delete win;}
           code0 {o->spacing( 10 );}
         } {
           Fl_Box {} {
-            label {<Transport>} selected
+            label {<Transport>}
             xywh {5 23 189 46} color 30
             code0 {transport = o;}
             code1 {o->labeltype( FL_NO_LABEL );}
@@ -819,13 +819,16 @@ else if ( 0 == p )
 	progress->hide();
 }
 
+DMESSAGE( "progress: %d%%", p );
+
 static char pat[10];
 
 update_progress( progress, pat, p );
 
 progress->redraw();
 
-Fl::check();} {}
+Fl::check();} {selected
+    }
   }
 } 
 

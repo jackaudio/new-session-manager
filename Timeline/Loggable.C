@@ -104,6 +104,9 @@ Loggable::replay ( FILE *fp )
     off_t total = st.st_size;
     off_t current = 0;
 
+    if ( _progress_callback )
+        _progress_callback( 0, _progress_callback_arg );
+
     while ( fscanf( fp, "%[^\n]\n", buf ) == 1 )
     {
         if ( ! ( ! strcmp( buf, "{" ) || ! strcmp( buf, "}" ) ) )

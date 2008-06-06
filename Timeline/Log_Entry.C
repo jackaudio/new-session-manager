@@ -166,8 +166,11 @@ Log_Entry::parse_alist( const char *s )
 /** compare elements of dumps s1 and s2, removing those elements
     of dst which are not changed from src */
 bool
-Log_Entry::log_diff (  char **sa1, char **sa2 )
+Log_Entry::diff ( Log_Entry *e1, Log_Entry *e2 )
 {
+    char **sa1 = e1->_sa;
+    char **sa2 = e2->_sa;
+
     if ( ! sa1 )
         return true;
 
@@ -194,13 +197,10 @@ Log_Entry::log_diff (  char **sa1, char **sa2 )
     sa1[ w ] = NULL;
     sa2[ w ] = NULL;
 
-    return w == 0 ? false : true;
-}
+    e1->_i = w;
+    e2->_i = w;
 
-bool
-Log_Entry::operator!= ( const Log_Entry &rhs ) const
-{
-    return log_diff( this->_sa, rhs._sa );
+    return w == 0 ? false : true;
 }
 
 void

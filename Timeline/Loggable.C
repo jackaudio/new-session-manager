@@ -603,7 +603,7 @@ Loggable::log_end ( void )
 
     get( *new_state );
 
-    if ( *_old_state != *new_state )
+    if ( Log_Entry::diff( _old_state, new_state ) )
     {
         log( "%s 0x%X set ", class_name(), _id );
 

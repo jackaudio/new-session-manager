@@ -60,7 +60,7 @@ public:
 /* Examination */
 /***************/
 
-    bool operator!= ( const Log_Entry &rhs ) const;
+    static bool diff ( Log_Entry *e1, Log_Entry *e2 );
 
     int size ( void ) const;
 

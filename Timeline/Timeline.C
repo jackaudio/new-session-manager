@@ -175,6 +175,9 @@ Timeline::fix_range ( void )
 void
 Timeline::menu_cb ( Fl_Menu_ *m )
 {
+    if ( ! active_r() )
+        return;
+
     const char *picked = m->mvalue()->label();
 
 /*     m->item_pathname( picked, sizeof( picked ) ); */

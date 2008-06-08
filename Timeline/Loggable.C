@@ -38,7 +38,8 @@ using std::max;
 FILE *Loggable::_fp;
 int Loggable::_log_id = 0;
 int Loggable::_level = 0;
-int Loggable::_undo_index = 1;
+
+off_t Loggable::_undo_offset = 0;
 
 size_t Loggable::_loggables_size = 0;
 Loggable ** Loggable::_loggables;
@@ -82,6 +83,7 @@ Loggable::open ( const char *filename )
     }
 
     fseek( fp, 0, SEEK_END );
+    _undo_offset = ftell( fp );
 
     Loggable::_fp = fp;
 
@@ -236,6 +238,8 @@ Loggable::do_this ( const char *s, bool reverse )
         sscanf( s, "%s %*X %s%*[^\n<]<< %a[^\n]", classname, command, &arguments );
         create = "destroy";
         destroy = "create";
+
+        DMESSAGE( "undoing \"%s\"", s );
     }
     else
     {
@@ -286,104 +290,85 @@ Loggable::do_this ( const char *s, bool reverse )
     return true;
 }
 
+
+static int
+backwards_fgetc ( FILE *fp )
+{
+    int c;
+
+    if ( fseek( fp, -1, SEEK_CUR ) != 0 )
+        return -1;
+
+    c = fgetc( fp );
+
+    fseek( fp, -1, SEEK_CUR );
+
+    return c;
+}
+
+static char *
+backwards_fgets ( char *s, int size, FILE *fp )
+{
+    if ( fseek( fp, -1, SEEK_CUR ) != 0 )
+        return NULL;
+
+    int c;
+    while ( ( c = backwards_fgetc( fp ) ) >= 0 )
+        if ( '\n' == c )
+            break;
+
+    long here = ftell( fp );
+
+    fseek( fp, 1, SEEK_CUR );
+
+    char *r = fgets( s, size, fp );
+
+    fseek( fp, here, SEEK_SET );
+
+    return r;
+}
+
 /** Reverse the last journal transaction */
 void
 Loggable::undo ( void )
 {
-    char *buf = new char[ BUFSIZ ];
-
-//    fflush( _fp );
-
-    /* FIXME: handle more than the first block!!! */
-
-    fseek( _fp, 0, SEEK_END );
-    size_t len = ftell( _fp );
-
-    fseek( _fp, 0 - (BUFSIZ > len ? len : BUFSIZ), SEEK_END );
-
-    len = fread( buf, 1, BUFSIZ, _fp );
-
-    char *s = buf + len - 1;
-
-    int i = 1;
-
-    /* move back _undo_index items from the end */
-    for ( int j = _undo_index; j-- ; )
-        for ( --s; *s && s >= buf; --s, ++i )
-        {
-            if ( *s == '\n' )
-            {
-                if ( *(s + 1) == '\t' )
-                    continue;
-
-                if ( *(s + 1) == '}' )
-                {
-                    *(s + 1) = NULL;
-                    continue;
-                }
-
-                break;
-            }
-        }
-    s++;
-
-    buf[ len ] = NULL;
-
-    if ( ! strlen( s ) )
-    {
-        WARNING( "corrupt undo file or no undo entries." );
-        return;
-    }
-
-    char *b = s;
-
-    s += strlen( s ) - 1;
-
-    if ( strtok( b, "\n" ) == NULL )
-        FATAL( "empty undo transaction!\n" );
-
-    int n = 1;
-    while ( strtok( NULL, "\n" ) )
-        ++n;
-
-    int ui = _undo_index;
+    const int bufsiz = 1024;
+    char buf[bufsiz];
 
     block_start();
 
-    if ( strcmp( b, "{" ) )
+    long here = ftell( _fp );
+
+    fseek( _fp, _undo_offset, SEEK_SET );
+
+    backwards_fgets( buf, bufsiz, _fp );
+
+    if ( ! strcmp( buf, "}\n" ) )
     {
-        /* It's a single undo, get rid of trailing messages in this block */
+        DMESSAGE( "undoing block" );
+        for ( ;; )
+        {
+            backwards_fgets( buf, bufsiz, _fp );
 
-        n = 1;
+            char *s = buf;
+            if ( *s != '\t' )
+                break;
+            else
+                ++s;
 
-        s = b + 2;
-        s += strlen( s ) - 1;
+            do_this( s, true );
+        }
     }
+    else
+        do_this( buf, true );
 
-    while ( n-- )
-    {
-        while ( s >= b && *(--s) );
+    off_t uo = ftell( _fp );
 
-        s++;
-
-        if ( ! strcmp( s, "{" ) )
-            break;
-
-        if ( *s == '\t' )
-            s++;
-
-        DMESSAGE( "undoing \"%s\"", s );
-
-        do_this( s, true );
-
-        s -= 2;
-    }
+    ASSERT( _undo_offset <= here, "WTF?" );
 
     block_end();
 
-    _undo_index = ui + 2;
-
-    delete[] buf;
+    _undo_offset = uo;
 }
 
 void
@@ -463,7 +448,8 @@ Loggable::compact ( void )
     if ( ! snapshot( _fp ) )
         FATAL( "Could not write snapshot!" );
 
-    _undo_index = 1;
+    fseek( _fp, 0, SEEK_END );
+//    _undo_index = 1;
 }
 
 /** Buffered sprintf wrapper */
@@ -512,10 +498,6 @@ Loggable::flush ( void )
 
     int n = _transaction.size();
 
-    if ( n )
-        /* something done, reset undo index */
-        _undo_index = 1;
-
     if ( n > 1 )
         fprintf( _fp, "{\n" );
 
@@ -536,6 +518,9 @@ Loggable::flush ( void )
     if ( n > 1 )
         fprintf( _fp, "}\n" );
 
+    if ( n )
+        /* something done, reset undo index */
+        _undo_offset = ftell( _fp );
 
     fflush( _fp );
 }

@@ -68,7 +68,10 @@ class Loggable
     static FILE *_fp;
     static int _log_id;
     static int _level;
-    static int _undo_index;
+
+/*     static int _undo_index; */
+
+    static off_t _undo_offset;
 
     static size_t _loggables_size;
     static Loggable ** _loggables;
@@ -148,7 +151,9 @@ public:
     static bool open ( const char *filename );
     static bool close ( void );
     static void undo ( void );
-    static int undo_index ( void ) { return _undo_index; }
+
+/*     static int undo_index ( void ) { return _undo_index; } */
+
     static void compact ( void );
 
     static

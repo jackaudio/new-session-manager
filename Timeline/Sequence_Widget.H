@@ -220,18 +220,26 @@ public:
     static void
     delete_selected ( void )
         {
+            Loggable::block_start();
+
             while ( _selection.size() )
                 delete _selection.front();
+
+            Loggable::block_end();
         }
 
     static void
     select_none ( void )
         {
+            Loggable::block_start();
+
             while ( _selection.size() )
             {
                 _selection.front()->redraw();
                 _selection.pop_front();
             }
+
+            Loggable::block_end();
         }
 
     static Sequence_Widget *current    ( void ) { return Sequence_Widget::_current; }

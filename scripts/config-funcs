@@ -163,20 +163,20 @@ require_package ()
 
 _test_version ()
 {
-    [ $1 $4 $5 ] && [ $2 $4 $6 ] && [ $3 $4 $7 ]
+    [ $1 -gt $4 ] && return 0
+    [ $1 -eq $4 ] && [ $2 -gt $5 ] && return 0
+    [ $1 -eq $4 ] && [ $2 -eq $5 ] && [ $3 -gt $6 ] && return 0
+    [ $1 -eq $4 ] && [ $2 -eq $5 ] && [ $3 -eq $6 ] && return 0
+    return 1
 }
 
+# return true if #1 is greater than or equal to $2
 test_version ()
 {
     local IFS
     IFS='.'
 
-    if  [ $2 != -ge ] && [ $2 != -le ]
-    then
-       fatal "Syntax error"
-    fi
-
-    _test_version $1 $2 $3
+    _test_version $1 $2
 }
 
 version_of ()
@@ -192,7 +192,7 @@ require_FLTK ()
 
     FLTK_VERSION=`fltk-config --version`
 
-    if ! test_version $FLTK_VERSION -ge $1
+    if ! test_version $FLTK_VERSION $1
     then
         failed
         fatal "The installed FLTK version ($FLTK_VERSION) is too old."

@@ -32,29 +32,31 @@ warnf ( warning_t level,
 		"assertion", "\033[1;31m"
 	};
 
+        FILE *fp = W_MESSAGE == level ? stdout : stderr;
+
 	if ( module )
-		fprintf( stderr, "[%s] ", module );
+		fprintf( fp, "[%s] ", module );
 #ifndef NDEBUG
 	if ( file )
-		fprintf( stderr, "%s", file );
+		fprintf( fp, "%s", file );
 	if ( line )
-		fprintf( stderr, ":%i", line );
+		fprintf( fp, ":%i", line );
 	if ( function )
-		fprintf( stderr, " %s()", function );
+		fprintf( fp, " %s()", function );
 
-	fprintf( stderr, ": " );
+	fprintf( fp, ": " );
 #endif
 
 	if ( unsigned( ( level << 1 ) + 1 ) <
 		 ( sizeof( level_tab ) / sizeof( level_tab[0] ) ) )
-		fprintf( stderr, "%s", level_tab[( level << 1 ) + 1] );
+		fprintf( fp, "%s", level_tab[( level << 1 ) + 1] );
 
 	if ( fmt )
 	{
 		va_start( args, fmt );
-		vfprintf( stderr, fmt, args );
+		vfprintf( fp, fmt, args );
 		va_end( args );
 	}
 
-	fprintf( stderr, "\033[0m\n" );
+	fprintf( fp, "\033[0m\n" );
 }

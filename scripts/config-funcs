@@ -7,47 +7,116 @@
 
 # support functions for 'configure' scripts.
 
-
 fatal ()
 {
     echo "$BOLD$RED$*$SGR0" > /dev/stderr
     exit 255
 }
 
-[ $# -gt 0 ] && fatal "This is not an autoconf script. Run it without any options and you will be prompted."
+UPDATE=no
+HELP=no
+
+split ()
+{
+    while [ $# -gt 0 ]
+    do
+        echo $1
+        shift 1
+    done
+}
+
+if [ $# -gt 0 ]
+then
+    case "$1" in
+        --update)
+            UPDATE=yes
+            shift 1
+            ;;
+        --help)
+            HELP=yes
+            shift 1
+            ;;
+        *)
+#            fatal "This is not an autoconf script. Run it without any options and you will be prompted."
+            ;;
+    esac
+
+    if [ $# -gt 0 ]
+    then
+        echo "## options" > .config
+
+        split "$@" | sed '
+s/--\(enable\|disable\)-\([^ =]\+\)/--\1-\U\2/g;
+s/--enable-\([^ =]\+\)=\(.*\)/USE_\1=\2/g;
+s/--enable-\([^ =]\+\)/USE_\1=yes/g;
+s/--disable-\([^ =]\+\)/USE_\1=no/g;
+s/--\([^ =]\+\)/\1/g;
+' | sed -n '/^[^ =]\+=./p' >> .config
+        UPDATE=yes;
+    fi
+fi
+
+if [ $HELP != yes ] && [ $UPDATE != yes ]
+then
+    if ! ( [ -t 0 ] && [ -t 1 ] )
+    then
+        fatal "not a terminal!"
+    fi
+fi
 
 ask ()
 {
-   local A D
+    local A D O
 
-   D="`eval echo \\$$2`"
-   D=${D:-$3}
+    D="`eval echo \\$$2`"
+    D=${D:-$3}
 
-   echo -n "$BLACK$BOLD::$SGR0 $1 [$BOLD${D}$SGR0] "
-   read A
-   A=${A:-$D}
+    if [ $HELP = yes ]
+    then
+        if [ "$3" = yes ] || [ "$3" = no ]
+        then
+            O=`echo -n "$2" | sed s/^USE_/--enable-/ | tr '[[:upper:]]' '[[:lower:]]'`
+        else
+            O=`echo -n "--$2" | tr '[[:upper:]]' '[[:lower:]]'`
+        fi
 
-   if [ "$3" = yes ] || [ "$3" = no ]
-     then
-       case "$A" in
-           no | n | N) A=no ;;
-           yes | y | Y) A=yes ;;
-           * ) fatal "Invalid response. Must be 'yes' or 'no'" ;;
-       esac
-   fi
+        printf "    ${BOLD}${GREEN}%-15s${SGR0}\t%-40s (currently: ${BOLD}%s${SGR0})\n" "$O" "$1" "$D"
 
-   append "${2}=${A:-$D}"
+        return
+    fi
+
+    echo -n "$BLACK$BOLD::$SGR0 ${1}? [$BOLD${D}$SGR0] "
+
+    if [ $UPDATE = yes ]
+    then
+        A="$D"
+        echo
+    else
+        read A
+        A=${A:-$D}
+    fi
+
+    if [ "$3" = yes ] || [ "$3" = no ]
+    then
+        case "$A" in
+            no | n | N) A=no ;;
+            yes | y | Y) A=yes ;;
+            * ) fatal "Invalid response. Must be 'yes' or 'no'" ;;
+        esac
+    fi
+
+    append "${2}=${A:-$D}"
 }
 
 ok ()
 {
-    echo "$BOLD${GREEN}ok${SGR0}"
+    echo -e '\r'`tput cuf 30`"$BOLD${GREEN}ok${SGR0} ${*:+${BOLD}${BLACK}($*)${SGR0}}"
 }
 
 failed ()
 {
     echo "$BOLD${RED}failed!${SGR0}" > /dev/stderr
-    rm -f make.conf
+    rm -f .config
 }
 
 using ()
@@ -66,7 +135,7 @@ extract_options ()
 {
     local line name value
 
-    if [ -f make.conf ]
+    if [ -f .config ]
     then
         {
             while read line
@@ -85,7 +154,7 @@ extract_options ()
                     eval "$name='$value'"
                 fi
             done
-        } < make.conf
+        } < .config
     fi
 }
 
@@ -93,7 +162,18 @@ begin ()
 {
     echo -n "Checking sanity..."
     require_command pkg-config pkg-config > /dev/null
+    require_command sed sed > /dev/null
     ok
+}
+
+warn ()
+{
+    echo " ${BOLD}${YELLOW}* ${SGR0}$*"
+}
+
+info ()
+{
+    echo "${BOLD}${CYAN}--- ${SGR0}$*"
 }
 
 begin_options ()
@@ -101,28 +181,50 @@ begin_options ()
     # get the old values
     extract_options
 
-    echo > make.conf
-    append "# This file was automatically generated on `date`. Any changes may be lost!"
-    append "## options"
+    if [ $HELP = yes ]
+    then
+        echo
+        warn "This is a ${BOLD}non-configure${SGR0} script. Run without any arguments and you will be prompted"
+        warn "with configuration choices. Alternatively, you may use the following autoconf style"
+        warn "arguments for non-interactive configuration."
+        echo
+        echo " Available options:"
+        echo
+    else
+        echo > .config
+        append "# This file was automatically generated on `date`. Any changes may be lost!"
+        append "## options"
 
-    echo "--- Configuration required ---"
+        if [ $UPDATE = yes ]
+        then
+            info "Updating configuration"
+        else
+            info "Configuration required"
+        fi
+    fi
 }
 
 begin_tests ()
 {
+    if [ $HELP = yes ]
+    then
+        echo
+        exit 0;
+    fi
+
     append "## libs"
     extract_options
 }
 
 append ()
 {
-    echo "$1" >> make.conf
+    echo "$1" >> .config
 }
 
 end ()
 {
-    echo "--- Configuration complete ---"
-    touch make.conf
+    info "Configuration complete"
+    touch .config
 }
 
 require_command ()
@@ -157,7 +259,7 @@ require_package ()
     append "${name}_LIBS=`pkg-config --libs $3`"
     append "${name}_CFLAGS=-DHAVE_${1} `pkg-config --cflags $3`"
 
-    ok
+    ok `pkg-config --modversion "$3"`
     return 0
 }
 
@@ -197,7 +299,7 @@ require_FLTK ()
         failed
         fatal "The installed FLTK version ($FLTK_VERSION) is too old."
     else
-        ok
+        ok $FLTK_VERSION
     fi
 
     use=

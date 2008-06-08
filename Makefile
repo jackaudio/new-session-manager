@@ -9,18 +9,23 @@
 
 VERSION := 1.9.2
 
-all: make.conf non-sequencer
+all: .config non-sequencer
 
-make.conf: configure
+.config: configure
 	@ ./configure
 
 config:
 	@ ./configure
 
--include make.conf
+-include .config
 
 SYSTEM_PATH=$(prefix)/share/non-sequencer/
 DOCUMENT_PATH=$(prefix)/share/doc/non-sequencer/
+
+# a bit of a hack to make sure this runs before any rules
+ifneq ($(CALCULATING),yes)
+TOTAL := $(shell $(MAKE) CALCULATING=yes -n 2>/dev/null | sed -n 's/^.*Compiling: \([^"]\+\)"/\1/p' > .files )
+endif
 
 ifeq ($(USE_DEBUG),yes)
 	CXXFLAGS := -pipe -ggdb -Wall -Wextra -Wnon-virtual-dtor -Wno-missing-field-initializers -O0 -fno-rtti -fno-exceptions
@@ -44,31 +49,11 @@ endif
 # uncomment this line to print each playback event to the console (not RT safe)
 # CXXFLAGS+= -DDEBUG_EVENTS
 
-SRCS= \
-     canvas.C \
-     debug.C \
-     event.C \
-     event_list.C \
-     grid.C \
-     gui/draw.C \
-     gui/event_edit.C \
-     gui/input.C \
-     gui/ui.C \
-     gui/widgets.C \
-     instrument.C \
-     jack.C \
-     lash.C \
-     main.C \
-     mapping.C \
-     midievent.C \
-     pattern.C \
-     phrase.C \
-     scale.C \
-     sequence.C \
-     smf.C \
-     transport.C
+SRCS:=$(wildcard *.C gui/*.fl gui/*.C)
 
-OBJS=$(SRCS:.C=.o)
+SRCS:=$(SRCS:.fl=.C)
+SRCS:=$(sort $(SRCS))
+OBJS:=$(SRCS:.C=.o)
 
 .PHONEY: all clean install dist valgrind config
 
@@ -81,14 +66,20 @@ valgrind:
 
 include scripts/colors
 
+ifneq ($(CALCULATING),yes)
+	COMPILING="$(BOLD)$(BLACK)[$(SGR0)$(CYAN)`scripts/percent-complete .files "$<"`$(SGR0)$(BOLD)$(BLACK)]$(SGR0) Compiling: $(BOLD)$(YELLOW)$<$(SGR0)"
+else
+	COMPILING="Compiling: $<"
+endif
+
 .C.o:
-	@ echo "Compiling: $(BOLD)$(YELLOW)$<$(SGR0)"
+	@ echo $(COMPILING)
 	@ $(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.C : %.fl
 	@ cd `dirname $<` && fluid -c ../$<
 
-$(OBJS): make.conf
+$(OBJS): .config
 
 DONE:=$(BOLD)$(GREEN)done$(SGR0)
 
@@ -118,8 +109,8 @@ dist:
 TAGS: $(SRCS)
 	etags $(SRCS)
 
-makedepend: make.conf $(SRCS)
+.deps: .config $(SRCS)
 	@ echo -n Calculating dependencies...
-	@ makedepend -f- -- $(CXXFLAGS) -- $(SRCS) > makedepend 2>/dev/null && echo "$(DONE)"
+	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) > makedepend 2>/dev/null && echo $(DONE)
 
 -include makedepend

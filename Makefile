@@ -58,7 +58,7 @@ OBJS:=$(SRCS:.C=.o)
 .PHONEY: all clean install dist valgrind config
 
 clean:
-	rm -f non-sequencer makedepend $(OBJS)
+	rm -f non-sequencer .deps $(OBJS)
 	@ echo "$(DONE)"
 
 valgrind:
@@ -111,6 +111,6 @@ TAGS: $(SRCS)
 
 .deps: .config $(SRCS)
 	@ echo -n Calculating dependencies...
-	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) > makedepend 2>/dev/null && echo $(DONE)
+	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) > .deps 2>/dev/null && echo $(DONE)
 
--include makedepend
+-include .deps

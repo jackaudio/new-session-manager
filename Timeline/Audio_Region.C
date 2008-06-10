@@ -370,6 +370,8 @@ Audio_Region::handle ( int m )
                 if ( test_press( FL_BUTTON2 | FL_CTRL ) )
                 {
                     normalize();
+                    /* FIXME: wrong place for this? */
+                    sequence()->handle_widget_change( start(), length() );
                     redraw();
                     return 1;
                 }

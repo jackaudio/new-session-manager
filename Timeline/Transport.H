@@ -35,6 +35,9 @@ struct Transport : public jack_position_t, public Fl_Pack
 
 private:
 
+    static void cb_button ( Fl_Widget *w, void *arg );
+    void cb_button ( Fl_Widget *w );
+
     /* not permitted */
     Transport ( const Transport &rhs );
     Transport & operator = ( const Transport &rhs );
@@ -44,104 +47,13 @@ private:
     Fl_Button *_play_button;
     Fl_Button *_record_button;
 
-    static
-    void
-    cb_button ( Fl_Widget *w, void *v )
-        {
-            ((Transport*)v)->cb_button( w );
-        }
-
-    void
-    cb_button ( Fl_Widget *w )
-        {
-            if ( w == _home_button )
-                locate( 0 );
-            if ( w == _end_button )
-                locate( timeline->length() );
-            else if ( w == _play_button )
-                toggle();
-            else if ( w == _record_button )
-            {
-                if ( _record_button->value() )
-                    w->labelcolor( FL_RED );
-                else
-                    w->labelcolor( fl_color_average( FL_RED, FL_WHITE, 0.25f ) );
-
-                redraw();
-
-                if ( rolling )
-                    if ( _record_button->value() )
-                        timeline->record();
-                    else
-                        timeline->stop();
-            }
-        }
-
 public:
 
-    void toggle_record ( void )
-        {
-            if ( _record_button->value() )
-                _record_button->value( 0 );
-            else
-                _record_button->value( 1 );
-
-            _record_button->do_callback();
-        }
+    Transport ( int X, int Y, int W, int H, const char *L=0 );
 
 
-    Transport ( int X, int Y, int W, int H, const char *L=0 )
-        : Fl_Pack( X, Y, W, H, L )
-        {
-            recording = false;
-            rolling = false;
-
-            const int bw = W / 3;
-
-            type( HORIZONTAL );
-
-            Fl_Button *o;
-
-            _home_button = o = new Fl_Button( 0, 0, bw, 0, "@|<" );
-            o->labeltype( FL_EMBOSSED_LABEL );
-            o->callback( cb_button, this );
-            o->shortcut( FL_Home );
-            o->box( FL_UP_BOX );
-
-            _end_button = o = new Fl_Button( 0, 0, bw, 0, "@>|" );
-            o->labeltype( FL_EMBOSSED_LABEL );
-            o->callback( cb_button, this );
-            o->shortcut( FL_End );
-
-            _play_button = o = new Fl_Button( 0, 0, bw, 0, "@>" );
-            o->labeltype( FL_EMBOSSED_LABEL );
-            o->callback( cb_button, this );
-            o->shortcut( ' ' );
-            o->box( FL_UP_BOX );
-
-            _record_button = o = new Fl_Button( 0, 0, bw, 0, "@circle" );
-            o->type( FL_TOGGLE_BUTTON );
-            o->labeltype( FL_EMBOSSED_LABEL );
-            o->labelcolor( fl_color_average( FL_RED, FL_WHITE, 0.25f ) );
-            o->shortcut( 'R' );
-            o->callback( cb_button, this );
-            o->when( FL_WHEN_CHANGED );
-            o->box( FL_UP_BOX );
-
-            end();
-        }
-
-    int
-    handle ( int m )
-        {
-            /* FIXME: hack to avoid stealing focus */
-
-            if ( m == FL_FOCUS  )
-                return 0;
-            else
-                return Fl_Pack::handle( m );
-
-        }
+    void toggle_record ( void );
+    int handle ( int m );
 
     bool rolling;
     bool recording;

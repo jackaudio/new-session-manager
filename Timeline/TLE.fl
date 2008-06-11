@@ -160,10 +160,10 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   Function {make_window()} {open
   } {
     Fl_Window main_window {
-      label Timeline open
+      label Timeline
       xywh {254 189 1025 770} type Double resizable xclass Non_DAW visible
     } {
-      Fl_Menu_Bar menubar {open
+      Fl_Menu_Bar menubar {
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -715,8 +715,7 @@ if ( engine->zombified() && ! zombie )
 
 ((TLE*)v)->update_status();} {}
   }
-  Function {make_about_dialog()} {open
-  } {
+  Function {make_about_dialog()} {} {
     Fl_Window about_dialog_window {
       label About open
       private xywh {758 335 495 600} type Double xclass {Non-DAW} visible
@@ -811,7 +810,8 @@ project_name->redraw();} {}
 
 save();
 
-exit( 0 );} {}
+while ( Fl::first_window() ) Fl::first_window()->hide();} {selected
+    }
   }
   Function {progress_cb( int p, void *arg )} {open return_type {static void}
   } {
@@ -933,7 +933,7 @@ while ( _window->shown() )
   Function {make_window()} {open
   } {
     Fl_Window _window {
-      label {Project info} open selected
+      label {Project info} open
       xywh {623 64 550 625} type Double visible
     } {
       Fl_Value_Output {} {

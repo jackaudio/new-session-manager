@@ -161,9 +161,9 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   } {
     Fl_Window main_window {
       label Timeline open
-      xywh {894 189 1025 770} type Double resizable xclass Non_DAW visible
+      xywh {254 189 1025 770} type Double resizable xclass Non_DAW visible
     } {
-      Fl_Menu_Bar menubar {
+      Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -172,6 +172,9 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
         } {
           MenuItem {} {
             label {&Info}
+            callback {Project_Info_Dialog pi;
+
+pi.run();}
             xywh {0 0 40 25} deactivate
           }
           MenuItem {} {
@@ -704,8 +707,7 @@ if ( engine->zombified() && ! zombie )
 {
 	zombie = true;
 	fl_alert( "Disconnected from JACK!" );
-}} {selected
-    }
+}} {}
   }
   Function {update_cb( void *v )} {return_type {static void}
   } {
@@ -855,7 +857,7 @@ while ( _window->shown() )
   } {
     Fl_Window _window {
       label {New Project} open
-      xywh {619 742 550 195} type Double modal xclass Non_DAW visible
+      xywh {384 630 550 195} type Double modal xclass Non_DAW visible
     } {
       Fl_File_Input _name {
         label {Named:}
@@ -913,4 +915,75 @@ Function {new_project_chooser()} {open C return_type void
   code {New_Project_Dialog nsd;
 
 nsd.run();} {}
+} 
+
+class Project_Info_Dialog {open
+} {
+  Function {Project_Info_Dialog()} {open
+  } {
+    code {make_window();} {}
+  }
+  Function {run()} {open return_type void
+  } {
+    code {_window->show();
+
+while ( _window->shown() )
+	Fl::wait();} {}
+  }
+  Function {make_window()} {open
+  } {
+    Fl_Window _window {
+      label {Project info} open selected
+      xywh {623 64 550 625} type Double visible
+    } {
+      Fl_Value_Output {} {
+        label {Sample Rate}
+        xywh {25 35 90 25} labeltype SHADOW_LABEL align 1
+        code0 {o->value( timeline->sample_rate() );}
+      }
+      Fl_Text_Editor notes_field {
+        label {Notes:}
+        private xywh {20 395 510 185} color 47 selection_color 31 textsize 18 textcolor 92
+        code0 {o->buffer( new Fl_Text_Buffer() );}
+        code1 {o->buffer()->loadfile( "notes" );}
+      }
+      Fl_Group {} {open
+        xywh {145 95 260 75} hide
+      } {
+        Fl_Input {} {
+          label {Engineer:}
+          xywh {145 95 260 25} align 1
+        }
+        Fl_Input {} {
+          label {Performer:}
+          xywh {145 145 260 25} align 1
+        }
+      }
+      Fl_Output {} {
+        label {Size of Journal}
+        xywh {220 35 100 25} box UP_BOX labeltype SHADOW_LABEL align 1
+        code0 {static char pat[40];}
+        code1 {snprintf( pat, sizeof( pat ), "%.1fK", size( "history" ) / (float)1024 );}
+        code2 {o->value( pat );}
+        code3 {\#include "util/file.h"}
+      }
+      Fl_Output {} {
+        label {Created On}
+        xywh {380 35 135 25} box UP_BOX labeltype SHADOW_LABEL align 1
+      }
+      Fl_Box {} {
+        label {<LOGO>}
+        xywh {52 194 445 153} box ROUNDED_BOX color 53 labelfont 1 labelsize 18 align 16
+        code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo2.png" ) );}
+        code1 {o->label( NULL );}
+      }
+      Fl_Button {} {
+        label Save
+        callback {notes_field->buffer()->savefile( "notes" );
+
+_window->hide();}
+        xywh {455 590 74 25}
+      }
+    }
+  }
 } 

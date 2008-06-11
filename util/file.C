@@ -21,7 +21,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-long
+unsigned long
 mtime ( const char *file )
 {
     struct stat st;
@@ -37,4 +37,15 @@ bool
 newer ( const char *file1, const char *file2 )
 {
     return mtime( file1 ) > mtime( file2 );
+}
+
+unsigned long
+size ( const char *file )
+{
+    struct stat st;
+
+    if ( stat( file, &st ) )
+        return 0;
+
+    return st.st_size;
 }

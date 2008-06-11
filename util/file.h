@@ -17,5 +17,6 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-long mtime ( const char *file );
+unsigned long mtime ( const char *file );
 bool newer ( const char *file1, const char *file2 );
+unsigned long size ( const char *file );

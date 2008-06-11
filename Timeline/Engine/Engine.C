@@ -33,6 +33,7 @@
 Engine::Engine ( ) : _thread( "RT" )
 {
     _freewheeling = false;
+    _zombified = false;
     _client = NULL;
     _buffers_dropped = 0;
     _xruns = 0;
@@ -254,6 +255,19 @@ Engine::thread_init ( void )
     _thread.set( "RT" );
 }
 
+
+void
+Engine::shutdown ( void *arg )
+{
+    ((Engine*)arg)->shutdown();
+}
+
+void
+Engine::shutdown ( void )
+{
+    _zombified = true;
+}
+
 int
 Engine::init ( void )
 {
@@ -273,6 +287,8 @@ Engine::init ( void )
     set_callback( sync );
 
     jack_set_timebase_callback( _client, 0, &Engine::timebase, this );
+
+    jack_on_shutdown( _client, &Engine::shutdown, this );
 
     jack_activate( _client );
 

@@ -49,7 +49,11 @@ class Engine : public Mutex
     nframes_t _sample_rate;
     volatile int _xruns;
     volatile bool _freewheeling;
+    volatile bool _zombified;
 
+
+    static void shutdown ( void *arg );
+    void shutdown ( void );
     static int process ( nframes_t nframes, void *arg );
     int process ( nframes_t nframes );
     static int sync ( jack_transport_state_t state, jack_position_t *pos, void *arg );
@@ -90,6 +94,7 @@ public:
     int dropped ( void ) const { return _buffers_dropped; }
     bool freewheeling ( void ) const { return _freewheeling; }
     void freewheeling ( bool yes );
+    bool zombified ( void ) const { return _zombified; }
 
     float cpu_load ( void ) const { return jack_cpu_load( _client ); }
 };

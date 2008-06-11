@@ -161,9 +161,9 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   } {
     Fl_Window main_window {
       label Timeline open
-      xywh {177 137 1025 770} type Double resizable xclass Non_DAW visible
+      xywh {894 189 1025 770} type Double resizable xclass Non_DAW visible
     } {
-      Fl_Menu_Bar menubar {open
+      Fl_Menu_Bar menubar {
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -696,7 +696,16 @@ if ( timeline->total_playback_xruns() )
 
 
 
-xruns_output->value( engine->xruns() );} {}
+xruns_output->value( engine->xruns() );
+
+static bool zombie = false;
+
+if ( engine->zombified() && ! zombie )
+{
+	zombie = true;
+	fl_alert( "Disconnected from JACK!" );
+}} {selected
+    }
   }
   Function {update_cb( void *v )} {return_type {static void}
   } {
@@ -825,8 +834,7 @@ update_progress( progress, pat, p );
 
 progress->redraw();
 
-Fl::check();} {selected
-    }
+Fl::check();} {}
   }
 } 
 

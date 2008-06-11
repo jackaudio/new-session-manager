@@ -22,7 +22,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
 
 #include "util/file.h"
@@ -30,8 +29,6 @@
 #include <algorithm>
 using std::min;
 using std::max;
-
-#include <FL/Fl.H> // for Fl::check()
 
 
 
@@ -50,6 +47,24 @@ progress_func *Loggable::_progress_callback = NULL;
 void *Loggable::_progress_callback_arg = NULL;
 
 
+
+/** ensure that _loggables array is big enough for /n/ elements */
+void
+Loggable::ensure_size ( size_t n )
+{
+    if ( n > _loggables_size )
+    {
+        size_t p = 0;
+        while ( ( (unsigned)1 << p ) < n ) ++p;
+
+        size_t os = _loggables_size;
+        _loggables_size = 1 << p ;
+
+        _loggables = (Loggable**) realloc( _loggables, sizeof( Loggable ** ) * _loggables_size );
+
+        memset( _loggables + os, 0, _loggables_size - os );
+    }
+}
 
 /** Open the journal /filename/ and replay it, bringing the end state back into RAM */
 bool
@@ -449,7 +464,6 @@ Loggable::compact ( void )
         FATAL( "Could not write snapshot!" );
 
     fseek( _fp, 0, SEEK_END );
-//    _undo_index = 1;
 }
 
 /** Buffered sprintf wrapper */

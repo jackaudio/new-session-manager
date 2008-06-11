@@ -69,8 +69,6 @@ class Loggable
     static int _log_id;
     static int _level;
 
-/*     static int _undo_index; */
-
     static off_t _undo_offset;
 
     static size_t _loggables_size;
@@ -88,25 +86,10 @@ private:
     int _id;
 
     Log_Entry *_old_state;
-//    Log_Entry *_new_state;
 
     int _nest;
 
-    static void ensure_size ( size_t n )
-        {
-            if ( n > _loggables_size )
-            {
-                size_t p = 0;
-                while ( ( (unsigned)1 << p ) < n ) ++p;
-
-                size_t os = _loggables_size;
-                _loggables_size = 1 << p ;
-
-                _loggables = (Loggable**) realloc( _loggables, sizeof( Loggable ** ) * _loggables_size );
-
-                memset( _loggables + os, 0, _loggables_size - os );
-            }
-        }
+    static void ensure_size ( size_t n );
 
     void log_print( const Log_Entry *o, const Log_Entry *n ) const;
     static void log ( const char *fmt, ... );
@@ -151,8 +134,6 @@ public:
     static bool open ( const char *filename );
     static bool close ( void );
     static void undo ( void );
-
-/*     static int undo_index ( void ) { return _undo_index; } */
 
     static void compact ( void );
 
@@ -199,8 +180,6 @@ public:
     void
     register_create ( const char *name, create_func *func )
         {
-//            printf( "registering %s to %p\n", name, func );
-
             _class_map[ std::string( name ) ] = func;
         }
 
@@ -226,14 +205,9 @@ protected:
     Loggable ( const Loggable & )
         {
             init( true );
-            /* FIXME: get a real id here!!! */
-//            _id = 0;
         }
 
 public:
-
-//    virtual const char *class_name ( void ) const = 0;
-
 
     friend class Logger;
 };
@@ -275,7 +249,5 @@ public:
             assert( _this->_nest );
         }
 };
-
-
 
 #include "Log_Entry.H"

@@ -324,6 +324,12 @@ Timeline::menu_cb ( Fl_Menu_ *m )
         WARNING( "programming error: Unknown menu item" );
 }
 
+int
+Timeline::ntracks ( void ) const
+{
+    return tracks->children();
+}
+
 
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Window( X, Y, W, H, L )
 {

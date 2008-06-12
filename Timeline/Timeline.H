@@ -190,6 +190,7 @@ public:
     void add_track ( Track *track );
     void remove_track ( Track *track );
 
+    int ntracks ( void ) const;
 
     void zoom ( float secs );
     void zoom_in ( void );

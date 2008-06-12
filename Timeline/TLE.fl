@@ -810,8 +810,7 @@ project_name->redraw();} {}
 
 save();
 
-while ( Fl::first_window() ) Fl::first_window()->hide();} {selected
-    }
+while ( Fl::first_window() ) Fl::first_window()->hide();} {}
   }
   Function {progress_cb( int p, void *arg )} {open return_type {static void}
   } {
@@ -933,7 +932,7 @@ while ( _window->shown() )
   Function {make_window()} {open
   } {
     Fl_Window _window {
-      label {Project info} open
+      label {Project info} open selected
       xywh {623 64 550 625} type Double visible
     } {
       Fl_Value_Output {} {
@@ -961,7 +960,7 @@ while ( _window->shown() )
       }
       Fl_Output {} {
         label {Size of Journal}
-        xywh {220 35 100 25} box UP_BOX labeltype SHADOW_LABEL align 1
+        xywh {215 35 100 25} box UP_BOX labeltype SHADOW_LABEL align 1
         code0 {static char pat[40];}
         code1 {snprintf( pat, sizeof( pat ), "%.1fK", size( "history" ) / (float)1024 );}
         code2 {o->value( pat );}
@@ -983,6 +982,18 @@ while ( _window->shown() )
 
 _window->hide();}
         xywh {455 590 74 25}
+      }
+      Fl_Output {} {
+        label Length
+        xywh {15 85 115 25} align 1
+        code0 {char pat[40];}
+        code1 {Clock::frame_to_HMS( pat, sizeof( pat ), timeline->length() );}
+        code2 {o->value( pat );}
+      }
+      Fl_Value_Output {} {
+        label Tracks
+        xywh {40 135 60 25} align 1
+        code0 {o->value( timeline->ntracks() );}
       }
     }
   }

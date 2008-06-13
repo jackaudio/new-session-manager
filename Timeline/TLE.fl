@@ -933,34 +933,16 @@ while ( _window->shown() )
   } {
     Fl_Window _window {
       label {Project info} open selected
-      xywh {623 64 550 625} type Double visible
+      xywh {394 254 520 625} type Double visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}
-        xywh {25 35 90 25} labeltype SHADOW_LABEL align 1
+        xywh {40 80 90 25} labeltype SHADOW_LABEL align 1
         code0 {o->value( timeline->sample_rate() );}
-      }
-      Fl_Text_Editor notes_field {
-        label {Notes:}
-        private xywh {20 395 510 185} color 47 selection_color 31 textsize 18 textcolor 92
-        code0 {o->buffer( new Fl_Text_Buffer() );}
-        code1 {o->buffer()->loadfile( "notes" );}
-      }
-      Fl_Group {} {open
-        xywh {145 95 260 75} hide
-      } {
-        Fl_Input {} {
-          label {Engineer:}
-          xywh {145 95 260 25} align 1
-        }
-        Fl_Input {} {
-          label {Performer:}
-          xywh {145 145 260 25} align 1
-        }
       }
       Fl_Output {} {
         label {Size of Journal}
-        xywh {215 35 100 25} box UP_BOX labeltype SHADOW_LABEL align 1
+        xywh {210 80 100 25} box UP_BOX labeltype SHADOW_LABEL align 1
         code0 {static char pat[40];}
         code1 {snprintf( pat, sizeof( pat ), "%.1fK", size( "history" ) / (float)1024 );}
         code2 {o->value( pat );}
@@ -968,32 +950,46 @@ while ( _window->shown() )
       }
       Fl_Output {} {
         label {Created On}
-        xywh {380 35 135 25} box UP_BOX labeltype SHADOW_LABEL align 1
-      }
-      Fl_Box {} {
-        label {<LOGO>}
-        xywh {52 194 445 153} box ROUNDED_BOX color 53 labelfont 1 labelsize 18 align 16
-        code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo2.png" ) );}
-        code1 {o->label( NULL );}
-      }
-      Fl_Button {} {
-        label Save
-        callback {notes_field->buffer()->savefile( "notes" );
-
-_window->hide();}
-        xywh {455 590 74 25}
+        xywh {350 80 135 25} box UP_BOX labeltype SHADOW_LABEL align 1
       }
       Fl_Output {} {
         label Length
-        xywh {15 85 115 25} align 1
+        xywh {25 130 115 25} align 1
         code0 {char pat[40];}
         code1 {Clock::frame_to_HMS( pat, sizeof( pat ), timeline->length() );}
         code2 {o->value( pat );}
       }
       Fl_Value_Output {} {
         label Tracks
-        xywh {40 135 60 25} align 1
+        xywh {230 130 60 25} align 1
         code0 {o->value( timeline->ntracks() );}
+      }
+      Fl_Box {} {
+        label {<LOGO>}
+        xywh {51 194 418 154} box ROUNDED_BOX color 53 labelfont 1 labelsize 18 align 16
+        code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo2.png" ) );}
+        code1 {o->label( NULL );}
+      }
+      Fl_Text_Editor notes_field {
+        label {Notes:}
+        private xywh {20 395 480 185} color 47 selection_color 31 textsize 18 textcolor 92
+        code0 {o->buffer( new Fl_Text_Buffer() );}
+        code1 {o->buffer()->loadfile( "notes" );}
+      }
+      Fl_Button {} {
+        label Save
+        callback {notes_field->buffer()->savefile( "notes" );
+
+_window->hide();}
+        xywh {425 590 74 25}
+      }
+      Fl_Box {} {
+        label {Project Info}
+        xywh {40 18 405 27} box RSHADOW_BOX color 95 labeltype SHADOW_LABEL labelsize 18
+      }
+      Fl_Box {} {
+        label {Project Info}
+        xywh {25 18 470 33} box RSHADOW_BOX color 133 labelsize 20 labelcolor 32
       }
     }
   }

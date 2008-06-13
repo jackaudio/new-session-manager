@@ -949,7 +949,6 @@ Timeline::draw ( void )
         update_child( *vscroll );
 
         draw_cursors();
-
     }
 
 done:
@@ -1008,7 +1007,7 @@ void
 Timeline::draw_playhead ( void )
 {
     draw_cursor( transport->frame, FL_RED, draw_full_arrow_symbol );
-    draw_cursor( length(), FL_BLACK, draw_full_arrow_symbol );
+//    draw_cursor( length(), FL_BLACK, draw_full_arrow_symbol );
 }
 
 void

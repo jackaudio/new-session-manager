@@ -339,7 +339,9 @@ else
             label {&Compacted}
             callback {int val = o->menu()[ o->value() ].value();
 
-pattern_c->row_compact( val ? Canvas::ON : Canvas::OFF );}
+pattern_c->row_compact( val ? Canvas::ON : Canvas::OFF );
+
+pattern_canvas_widget->redraw();} selected
             xywh {10 10 40 25} type Toggle value 1
           }
           MenuItem {} {
@@ -1538,8 +1540,7 @@ fl_line_style( FL_DASH );
 fl_rect( x(), y(), w(), h() );
 fl_line_style( FL_SOLID );
 
-_border_drawn = true;} {selected
-    }
+_border_drawn = true;} {}
   }
 } 
 

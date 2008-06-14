@@ -484,6 +484,7 @@ event_list::insert_time ( tick_t start, tick_t l )
             continue;
 
         if ( ts >= start )
+        {
             if ( e->is_note_on() )
             {
                 /* only notes ENTIRELY WITHIN the range will be moved */
@@ -492,6 +493,7 @@ event_list::insert_time ( tick_t start, tick_t l )
             }
             else
                 e->timestamp( e->timestamp() + l );
+        }
     }
 }
 

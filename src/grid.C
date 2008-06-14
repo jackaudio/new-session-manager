@@ -464,10 +464,12 @@ Grid::toggle_select ( int x, int y )
     event *e = _event( x, y, true );
 
     if ( e )
+    {
         if ( e->selected() )
             e->deselect();
         else
             e->select();
+    }
 
     unlock();
 }

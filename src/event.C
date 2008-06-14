@@ -45,6 +45,7 @@ event::~event ( void )
 event::event ( const event &e ) : midievent( e )
 {
     _link = _next = _prev = NULL;
+    _selected = e._selected;
 }
 
 event::event ( const midievent &e ) : midievent( e )

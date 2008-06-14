@@ -49,7 +49,7 @@ endif
 # uncomment this line to print each playback event to the console (not RT safe)
 # CXXFLAGS+= -DDEBUG_EVENTS
 
-SRCS:=$(wildcard *.C gui/*.fl gui/*.C)
+SRCS:=$(wildcard src/*.C src/gui/*.fl src/gui/*.C)
 
 SRCS:=$(SRCS:.fl=.C)
 SRCS:=$(sort $(SRCS))

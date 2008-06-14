@@ -98,8 +98,7 @@ if ( transport.rolling )
 
 }
 
-ui->transport_state->do_callback();} {selected
-  }
+ui->transport_state->do_callback();} {}
 } 
 
 class UI {open
@@ -157,7 +156,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {272 103 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
+      xywh {394 40 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
@@ -1370,21 +1369,16 @@ int processed = 0;
 return processed;} {}
 } 
 
-decl {\#include <FL/Fl_Single_Window.H>} {public
-} 
-
-class O_Canvas {open : {public Fl_Double_Window}
+class O_Canvas {open : {public Fl_Widget}
 } {
   decl {Canvas *_c;} {}
   decl {bool _border_drawn;} {}
   decl {uint _flags;} {}
-  Function {O_Canvas( int X, int Y, int W, int H, const char*L=0) : Fl_Double_Window(X,Y,W,H,L)} {open
+  Function {O_Canvas( int X, int Y, int W, int H, const char*L=0) : Fl_Widget(X,Y,W,H,L)} {open
   } {
     code {_c = NULL;
 _border_drawn = false;
-_flags = 0;
-
-end();} {}
+_flags = 0;} {}
   }
   Function {handle( int m )} {open return_type int
   } {
@@ -1402,7 +1396,7 @@ if ( m == FL_PUSH )
 		take_focus();
 
 
-if ( Fl_Window::handle( m ) )
+if ( Fl_Widget::handle( m ) )
 	return 1;
 
 // Ignore events unless we have the focus.
@@ -1422,12 +1416,12 @@ return p;} {}
   }
   Function {resize( int x, int y, int w, int h )} {open
   } {
-    code {Fl_Double_Window::resize( x, y, w, h );
+    code {Fl_Widget::resize( x, y, w, h );
 
 if ( _c )
 {
 	DMESSAGE( "Resizing canvas." );
-	_c->resize( 0 + 1, 0 + 1, w - 1, h - 1 );
+	_c->resize( x + 1, y + 1, w - 1, h - 1 );
 }
 
 
@@ -1457,14 +1451,14 @@ if ( _c )
 
 	if ( damage() & FL_DAMAGE_EXPOSE )
 	{
-		draw_box( FL_FLAT_BOX, 0, 0, w(), h(), canvas_background_color );
+		draw_box( FL_FLAT_BOX, x(), y(), w(), h(), canvas_background_color );
 		_c->redraw();
 		return;
 	}
 	
 	if ( damage() & (FL_DAMAGE_ALL | FL_DAMAGE_USER2) )
 	{
-		draw_box( FL_FLAT_BOX, 0, 0, w(), h(), canvas_background_color );
+		draw_box( FL_FLAT_BOX, x(), y(), w(), h(), canvas_background_color );
 		_c->redraw();
 	}
 	
@@ -1483,7 +1477,7 @@ if ( _c )
 	else
 	if ( damage() & FL_DAMAGE_ALL )
 	{
-		draw_box( FL_FLAT_BOX, 0, 0, w(), h(), canvas_background_color );
+		draw_box( FL_FLAT_BOX, x(), y(), w(), h(), canvas_background_color );
 		_border_drawn = false;
 		draw_border();
 		_c->redraw();
@@ -1541,10 +1535,11 @@ else
 	fl_color( FL_BLACK );
 	
 fl_line_style( FL_DASH );
-fl_rect( 0, 0, w(), h() );
+fl_rect( x(), y(), w(), h() );
 fl_line_style( FL_SOLID );
 
-_border_drawn = true;} {}
+_border_drawn = true;} {selected
+    }
   }
 } 
 

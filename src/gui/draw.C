@@ -34,15 +34,15 @@ struct color_table {
 };
 
 struct color_table color_defs[] = {
- { EMPTY,     38,  38,  38  },
- { FULL,      255, 69,  0   },
- { PARTIAL,   0,   0,   0   },
- { CONTINUED, 80,  80,  80  },
- { LINE,      26,  26,  26  },
- { HIT,       255, 255, 255 },
- { PLAYHEAD,  10,  69,  10  },
- { SELECTED,  255, 10,  255 },
- };
+    { EMPTY,     38,  38,  38  },
+    { FULL,      255, 69,  0   },
+    { PARTIAL,   0,   0,   0   },
+    { CONTINUED, 80,  80,  80  },
+    { LINE,      26,  26,  26  },
+    { HIT,       255, 255, 255 },
+    { PLAYHEAD,  10,  69,  10  },
+    { SELECTED,  255, 10,  255 },
+};
 
 Fl_Color *state_colors;
 
@@ -225,7 +225,7 @@ static
 void
 clear_status ( void * )
 {
-    ui->status->value( "" );
+    ui->status->label( NULL );
 }
 
 /** inform the user of something via a status bar */
@@ -236,14 +236,14 @@ gui_status ( const char *fmt, ... )
 
     static char pat[256];
 
-	if ( fmt )
-	{
-		va_start( args, fmt );
-		vsnprintf( pat, 256, fmt, args );
-		va_end( args );
-	}
+    if ( fmt )
+    {
+        va_start( args, fmt );
+        vsnprintf( pat, 256, fmt, args );
+        va_end( args );
+    }
 
-    ui->status->value( pat );
+    ui->status->label( pat );
 
     Fl::add_timeout( 5.0f, clear_status );
 }

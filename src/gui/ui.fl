@@ -341,7 +341,7 @@ else
 
 pattern_c->row_compact( val ? Canvas::ON : Canvas::OFF );
 
-pattern_canvas_widget->redraw();} selected
+pattern_canvas_widget->redraw();}
             xywh {10 10 40 25} type Toggle value 1
           }
           MenuItem {} {
@@ -966,8 +966,10 @@ else
       Fl_Group {} {open
         xywh {-1 772 869 33}
       } {
-        Fl_Output status {
-          xywh {-1 776 783 25} box UP_BOX color 32 labeltype NO_LABEL textcolor 55 resizable
+        Fl_Box status {
+          label status selected
+          xywh {0 776 783 25} box UP_BOX align 84
+          code0 {o->label( NULL );}
         }
         Fl_Box transport_state {
           label state
@@ -986,7 +988,7 @@ if ( s != o->label() )
 	else
 		o->color( FL_GREEN );
 }}
-          xywh {781 776 87 25} box UP_BOX
+          xywh {781 776 87 25} box UP_BOX align 64
         }
       }
     }

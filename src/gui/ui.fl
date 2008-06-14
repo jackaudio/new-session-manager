@@ -967,7 +967,7 @@ else
         xywh {-1 772 869 33}
       } {
         Fl_Box status {
-          label status selected
+          label status
           xywh {0 776 783 25} box UP_BOX align 84
           code0 {o->label( NULL );}
         }
@@ -1279,7 +1279,7 @@ help->show();
   } {
     code {if ( song.dirty() )
 {
-	int c = fl_choice( "Song has been modified since last save. What shall I do?", "Cancel", "Save", "Discard" );
+	int c = fl_choice( "Song has been modified since last save. What shall I do?", "&Cancel", "&Save", "&Discard" );
 
 	switch ( c )
 	{
@@ -1294,7 +1294,8 @@ help->show();
 	}	
 }
 
-return true;} {}
+return true;} {selected
+    }
   }
   Function {switch_to_pattern( int n )} {return_type void
   } {

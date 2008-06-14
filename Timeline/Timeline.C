@@ -686,6 +686,11 @@ Timeline::render_tempomap( nframes_t start, nframes_t length, measure_line_callb
 
     BBT &bbt = pos.bbt;
 
+    /* default values */
+    pos.beat_type = 4;
+    pos.beats_per_bar = 4;
+    pos.tempo = 120.0;
+
     const nframes_t samples_per_minute = sample_rate() * 60;
 
     float bpm = 120.0f;

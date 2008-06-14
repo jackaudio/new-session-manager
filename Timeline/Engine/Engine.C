@@ -174,6 +174,7 @@ Engine::timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t *pos,
     position_info pi = timeline->solve_tempomap( pos->frame );
 
     pos->valid = JackPositionBBT;
+
     pos->beats_per_bar = pi.beats_per_bar;
     pos->beat_type = pi.beat_type;
     pos->beats_per_minute = pi.tempo;

@@ -161,7 +161,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   } {
     Fl_Window main_window {
       label Timeline
-      xywh {254 189 1025 770} type Double resizable xclass Non_DAW visible
+      xywh {174 117 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {
         xywh {0 0 1024 25}
@@ -933,7 +933,7 @@ while ( _window->shown() )
   } {
     Fl_Window _window {
       label {Project info} open selected
-      xywh {394 254 520 625} type Double visible
+      xywh {215 260 520 625} type Double visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}

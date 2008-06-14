@@ -77,7 +77,7 @@ endif
 	@ $(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.C : %.fl
-	@ cd `dirname $<` && fluid -c ../$<
+	@ cd $(dir $<) && fluid -c $(notdir $<)
 
 $(OBJS): .config
 

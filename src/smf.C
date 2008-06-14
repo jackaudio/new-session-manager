@@ -723,7 +723,7 @@ smf::read_phrase_info ( phrase *p )
                 break;
             case smf::NAME:
                 p->name( read_text() );
-                MESSAGE( "Track name: %s", p->name() );
+                DMESSAGE( "Track name: %s", p->name() );
                 break;
             case smf::INSTRUMENT:
                 skip( read_var() );
@@ -805,7 +805,7 @@ smf::read_pattern_info ( pattern *p )
                 break;
             case smf::NAME:
                 p->name( read_text() );
-                MESSAGE( "Track name: %s", p->name() );
+                DMESSAGE( "Track name: %s", p->name() );
                 name_set = true;
                 break;
             case smf::INSTRUMENT:
@@ -1105,7 +1105,7 @@ smf::read_track_events ( tick_t *length )
                             }
                         }
 
-                        MESSAGE( "converting MIDI cue to note-on/off n: %d", e.note() );
+                        DMESSAGE( "converting MIDI cue to note-on/off n: %d", e.note() );
 
                         /* just in case */
                         skip( l );

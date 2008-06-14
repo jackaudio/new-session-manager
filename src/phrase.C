@@ -46,7 +46,7 @@ phrase::phrase ( void )
 
 phrase::~phrase ( void )
 {
-    MESSAGE( "deleting phrase %d", number() );
+    DMESSAGE( "deleting phrase %d", number() );
     signal_create_destroy();
 }
 

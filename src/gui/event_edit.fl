@@ -1,5 +1,5 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0107 
+version 1.0108 
 header_name {.H} 
 code_name {.C}
 comment {//
@@ -52,8 +52,8 @@ _el = _old = NULL;
 
 o->hide();
 
-Fl::delete_widget( o );} open selected
-      xywh {704 82 659 803} type Double box DOWN_BOX resizable
+Fl::delete_widget( o );} open
+      xywh {620 82 655 800} type Double box DOWN_BOX resizable
       code0 {\#include "event_edit.H"}
       code1 {\#include "../grid.H"}
       code2 {\#include "../event_list.H"} modal size_range {0 0 659 803} visible
@@ -203,11 +203,12 @@ update_widgets();} {}
   }
   Function {sync( void )} {open return_type void
   } {
-    code {MESSAGE( "syncing events to grid" );
+    code {DMESSAGE( "syncing events to grid" );
 
 _grid->events( _el );
 
-update_widgets();} {}
+update_widgets();} {selected
+    }
   }
   Function {update_widgets( void )} {open return_type void
   } {
@@ -292,7 +293,7 @@ while( w->shown() )
 } 
 
 widget_class Event_Widget {user_data_type {void *} open
-  xywh {969 357 594 31} type Single
+  xywh {685 357 590 30} type Single
   code0 {\#include "../event.H"}
   code1 {_event = NULL;}
   class Fl_Group size_range {400 24 0 24} visible

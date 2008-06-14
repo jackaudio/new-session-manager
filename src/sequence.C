@@ -299,7 +299,7 @@ sequence::load ( const char *name )
 
     f.next_track();
 
-    MESSAGE( "reading song info" );
+    DMESSAGE( "reading song info" );
 
     /* read song info */
 
@@ -324,7 +324,7 @@ sequence::load ( const char *name )
     /* tear it down */
     reset();
 
-    MESSAGE( "reading playlist" );
+    DMESSAGE( "reading playlist" );
 
 //    f.read_playlist( this );
 
@@ -342,7 +342,7 @@ sequence::load ( const char *name )
 
     /* read playlist */
 
-    MESSAGE( "reading phrases" );
+    DMESSAGE( "reading phrases" );
 
     while ( phrases-- && f.next_track() )
     {
@@ -351,7 +351,7 @@ sequence::load ( const char *name )
         p->load( &f );
     }
 
-    MESSAGE( "reading patterns" );
+    DMESSAGE( "reading patterns" );
 
     while ( patterns-- && f.next_track() )
     {
@@ -378,11 +378,11 @@ sequence::save ( const char *name ) const
 
     f.write_header( 2 );
 
-    MESSAGE( "saving playlist" );
+    DMESSAGE( "saving playlist" );
 
     f.open_track( NULL, -1 );
 
-    MESSAGE( "saving song info" );
+    DMESSAGE( "saving song info" );
 
     f.write_song_info( song.play_mode, phrase::phrases(), pattern::patterns(), this->name(), notes() );
 
@@ -399,7 +399,7 @@ sequence::save ( const char *name ) const
 
     f.close_track( 0 );
 
-    MESSAGE( "saving phrases" );
+    DMESSAGE( "saving phrases" );
 
     for ( int i = 0; i < phrase::phrases(); i++ )
     {
@@ -408,7 +408,8 @@ sequence::save ( const char *name ) const
         p->dump( &f );
     }
 
-    MESSAGE( "saving patterns" );
+    DMESSAGE( "saving patterns" );
+
     for ( int i = 0; i < pattern::patterns(); i++ )
     {
         pattern *p = pattern::pattern_by_number( i + 1 );

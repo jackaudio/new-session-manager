@@ -109,6 +109,8 @@ class Canvas : public trackable
     bool viewable_x ( int x );
     void draw_line ( int x, int flags );
 
+    void update_mapping ( void );
+
 public:
 
     enum { OFF, ON, TOGGLE };

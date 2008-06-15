@@ -109,7 +109,7 @@ Canvas::grid ( Grid *g )
 
     resize_grid();
 
-    changed_mapping();
+    update_mapping();
 
     m.shape = m.grid->draw_shape();
 
@@ -152,15 +152,13 @@ Canvas::_update_row_mapping ( void )
     m.vp->h = min( m.vp->h, m.maxh );
 }
 
-/** change grid mapping */
+/** update everything about mapping, leaving the viewport alone */
 void
-Canvas::changed_mapping ( void )
+Canvas::update_mapping ( void )
 {
     _update_row_mapping();
 
     m.mapping_drawn = false;
-
-    m.vp->y = (m.maxh / 2) - (m.vp->h / 2);
 
     resize();
 
@@ -179,6 +177,18 @@ Canvas::changed_mapping ( void )
     }
     else
         signal_draw();
+}
+
+/** change grid mapping */
+void
+Canvas::changed_mapping ( void )
+{
+    update_mapping();
+
+    m.vp->h = min( m.vp->h, m.maxh );
+
+    if ( m.vp->y + m.vp->h > m.maxh )
+        m.vp->y = (m.maxh / 2) - (m.vp->h / 2);
 }
 
 Grid *

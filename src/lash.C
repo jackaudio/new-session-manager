@@ -68,7 +68,9 @@ Lash::process ( void )
     {
         asprintf( &name, "%s/%s", lash_event_get_string( e ), "song.non" );
 
-        switch ( lash_event_get_type( e )  )
+        const int t = lash_event_get_type ( e );
+
+        switch ( t )
         {
             case LASH_Save_File:
             {
@@ -97,7 +99,7 @@ Lash::process ( void )
                 quit();
                 break;
             default:
-                WARNING( "unhandled LASH event" );
+                WARNING( "unhandled LASH event (%d)", t );
         }
 
         lash_event_destroy( e );

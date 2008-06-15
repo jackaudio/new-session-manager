@@ -5,7 +5,6 @@
 
 ; General
 
-* TODO: {3} fix transport seeking to the middle of a phrase/pattern in Sequence Mode.
 * TODO: {3} deal with dropped ticks from timebase master better when running as slave.
 * TODO: {2} move keybindings into menus for discoverability (like in Non-DAW)
 * TODO: {2} improve or get rid of the transport.valid test at initialization time.

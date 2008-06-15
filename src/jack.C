@@ -202,6 +202,48 @@ midi_all_sound_off ( void )
         }
 }
 
+static void
+stop_all_patterns ( void )
+{
+    for ( uint i = pattern::patterns(); i--; )
+    {
+        pattern *p = pattern::pattern_by_number( i + 1 );
+
+        p->stop();
+    }
+}
+
+static int
+sync ( jack_transport_state_t state, jack_position_t *pos, void * )
+{
+    static bool seeking = false;
+
+    switch ( state )
+    {
+        case JackTransportStopped:           /* new position requested */
+            /* JACK docs lie. This is only called when the transport
+               is *really* stopped, not when starting a slow-sync
+               cycle */
+            stop_all_patterns();
+            return 1;
+        case JackTransportStarting:          /* this means JACK is polling slow-sync clients */
+        {
+            stop_all_patterns();
+            return 1;
+        }
+        case JackTransportRolling:           /* JACK's timeout has expired */
+            /* FIXME: what's the right thing to do here? */
+//            request_locate( pos->frame );
+            return 1;
+            break;
+        default:
+            WARNING( "unknown transport state" );
+    }
+
+    return 0;
+}
+
+
 static int
 process ( jack_nframes_t nframes, void *arg )
 {
@@ -246,29 +288,12 @@ process ( jack_nframes_t nframes, void *arg )
     {
         case PATTERN:
         case TRIGGER:
-        {
-            // stop all patterns.
-            for ( uint i = pattern::patterns(); i--; )
-            {
-                pattern *p = pattern::pattern_by_number( i + 1 );
-
-                p->stop();
-            }
-
+            stop_all_patterns();
             break;
-        }
     }
     switch ( song.play_mode )
     {
         case SEQUENCE:
-            // first handle patterns already playing
-            for ( uint i = pattern::patterns(); i--; )
-            {
-                pattern *p = pattern::pattern_by_number( i + 1 );
-                if ( p && p->playing() )
-                    p->play( ph, nph );
-            }
-
             playlist->play( ph, nph );
             break;
         case PATTERN:
@@ -435,7 +460,7 @@ midi_init ( void )
 
 //1    jack_set_buffer_size_callback( client, bufsize, 0 );
     jack_set_process_callback( client, process, 0 );
-
+    jack_set_sync_callback( client, sync, 0 );
 
 /*     /\* initialize buffer size *\/ */
 /*     transport_poll(); */

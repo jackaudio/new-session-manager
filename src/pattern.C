@@ -300,8 +300,7 @@ pattern::draw_row_names ( Canvas *c ) const
 void
 pattern::trigger ( tick_t start, tick_t end )
 {
-    if ( start > end )
-        ASSERTION( "programming error: invalid loop trigger! (%lu-%lu)", start, end );
+    ASSERT( start <= end, "programming error: invalid loop trigger! (%lu-%lu)", start, end );
 
     _start = start;
     _end   = end;
@@ -402,8 +401,6 @@ pattern::play ( tick_t start, tick_t end ) const
     if ( end > _end )
         end = _end;
 
-    _playing = true;
-
     // where we are in the absolute time
     tick_t tick = start - _start;
     int num_played = tick / d->length;
@@ -415,13 +412,15 @@ pattern::play ( tick_t start, tick_t end ) const
 
     if ( _index < end - start )
     {
-        DMESSAGE( "Triggered pattern %d at tick %lu (ls: %lu, le: %lu, o: %lu)", number(), start, _start, _end, offset  );
+        DMESSAGE( "%s pattern %d at tick %lu (ls: %lu, le: %lu, o: %lu)", _playing ? "Looped" : "Triggered", number(), start, _start, _end, offset  );
 
         _cleared = false;
     }
 
+    _playing = true;
+
     if ( mode() == MUTE )
-        return;
+        goto done;
 
 try_again:
 
@@ -475,7 +474,15 @@ try_again:
 
     DMESSAGE( "out of events, resetting to satisfy loop" );
 
-done: ;
+done:
+
+    if ( _end == end )
+    {
+        /* we're doing playing this trigger */
+        DMESSAGE( "Pattern %d ended at tick %lu (ls: %lu, le: %lu, o: %lu)", number(), end, _start, _end, offset  );
+
+        stop();
+    }
 
 }
 

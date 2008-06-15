@@ -186,7 +186,6 @@ phrase::play ( tick_t start, tick_t end )
             // not ready yet
             return;
 
-
     if ( start < _start )
         start = _start;
 
@@ -203,7 +202,7 @@ phrase::play ( tick_t start, tick_t end )
     _index = tick % d->length;
 
     if ( _index < end - start )
-        MESSAGE( "Triggered phrase %d at tick %lu (ls: %lu, le: %lu, o: %lu)", number(), start, _start, _end, offset  );
+        DMESSAGE( "Triggered phrase %d at tick %lu (ls: %lu, le: %lu, o: %lu)", number(), start, _start, _end, offset  );
 
 try_again:
 
@@ -215,36 +214,27 @@ try_again:
     {
         //    MESSAGE( "s[%ld] -> t[%ld] : %ld, len %ld", start, end, e->timestamp(), _length ); // (*e).print();
 
-        tick_t ts = e->timestamp() + offset;
+        const tick_t ts = e->timestamp() + offset;
 
         if ( ts >= end )
             goto done;
 
-        if ( ts >= start )
+        if ( e->is_note_on() )
         {
-            event ne = *e;
-            if ( ne.is_note_on() || ne.is_note_off() )
+            const tick_t tse = offset + e->link()->timestamp();
+
+            if ( tse > start )
             {
-                int ev_note = e->note();
+                pattern *p = pattern::pattern_by_number( 1 + note_to_y( e->note() ) );
 
-//                d->mapping.translate( &ne );
+                if ( ! p->playing() )
+                    p->trigger( ts, offset + e->link()->timestamp() );
 
-                pattern *p = pattern::pattern_by_number( 1 + note_to_y( ev_note ) );
-
-                if ( p )
-                {
-                    if ( e->is_note_on() )
-                    {
-                        p->trigger( ts, offset + e->link()->timestamp() );
-                        p->play( ts, end );
-                    }
-                    else
-                        if ( e->is_note_off() )
-                            p->stop();
-                }
+                p->play( start, end );
             }
         }
     }
+
     // ran out of events, but there's still some loop left to play.
     offset += d->length;
     goto try_again;

@@ -924,16 +924,16 @@ class Project_Info_Dialog {open
   }
   Function {run()} {open return_type void
   } {
-    code {_window->show();
+    code {window->show();
 
-while ( _window->shown() )
+while ( window->shown() )
 	Fl::wait();} {}
   }
   Function {make_window()} {open
   } {
-    Fl_Window _window {
+    Fl_Window window {
       label {Project info} open selected
-      xywh {215 260 520 625} type Double visible
+      private xywh {649 226 520 625} type Double modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}
@@ -954,7 +954,7 @@ while ( _window->shown() )
       }
       Fl_Output {} {
         label Length
-        xywh {25 130 115 25} align 1
+        xywh {30 130 115 25} align 1
         code0 {char pat[40];}
         code1 {Clock::frame_to_HMS( pat, sizeof( pat ), timeline->length() );}
         code2 {o->value( pat );}
@@ -977,10 +977,10 @@ while ( _window->shown() )
         code1 {o->buffer()->loadfile( "notes" );}
       }
       Fl_Button {} {
-        label Save
+        label {&Save}
         callback {notes_field->buffer()->savefile( "notes" );
 
-_window->hide();}
+window->hide();}
         xywh {425 590 74 25}
       }
       Fl_Box {} {
@@ -990,6 +990,11 @@ _window->hide();}
       Fl_Box {} {
         label {Project Info}
         xywh {25 18 470 33} box RSHADOW_BOX color 133 labelsize 20 labelcolor 32
+      }
+      Fl_Button {} {
+        label {&Discard}
+        callback {window->hide();}
+        xywh {330 590 74 25}
       }
     }
   }

@@ -76,4 +76,7 @@ clean: FL_clean Timeline_clean
 dist:
 	git archive --prefix=non-daw-$(VERSION)/ v$(VERSION) | bzip2 > non-daw-$(VERSION).tar.bz2
 
+scan-gpl:
+	@ scripts/scan-gpl $(SRCS) || echo $(BOLD)$(RED)Some source files do not contain proper license information!
+
 -include .deps

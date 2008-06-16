@@ -107,7 +107,7 @@ LASH::handle_restore_file ( const char *path )
 
     fclose( fp );
 
-    return Project::open( project_path );
+    return Project::open( project_path ) == 0;
 }
 
 void

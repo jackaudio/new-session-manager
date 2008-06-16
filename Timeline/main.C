@@ -140,7 +140,7 @@ main ( int argc, char **argv )
     tle->run();
 
     if ( argc > 1 )
-        if ( ! Project::open( argv[ 1 ] ) )
+        if ( Project::open( argv[ 1 ] ) != 0 )
             FATAL( "Could not open project specified on command line" );
 
     /* FIXME: open project in /tmp if none is given? */

@@ -160,10 +160,10 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   Function {make_window()} {open
   } {
     Fl_Window main_window {
-      label Timeline
+      label Timeline open
       xywh {174 117 1025 770} type Double resizable xclass Non_DAW visible
     } {
-      Fl_Menu_Bar menubar {
+      Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -198,16 +198,29 @@ if ( ! name )
 	return;
 	
 
-if ( ! Project::validate( name ) )
-{
-	fl_alert( "The path \\"%s\\"\\ndoes not refer to a valid Non-DAW project!", name );
-}
-else if ( ! Project::open( name ) )
-{
-	fl_alert( "Could not open \\"%s\\" as a Non-DAW project!", name );
+int r = Project::open( name );
 	
+if ( r < 0 )
+{
+	const char *s = "";
+	
+	switch ( r )
+	{
+		case Project::E_LOCKED:
+			s = "Locked by another process";
+			break;
+		case Project::E_PERM:
+			s = "Access denied";
+			break;
+		case Project::E_INVALID:
+			s = "Not a Non-DAW project";
+			break;
+	}
+			
+
+	fl_alert( "Could not open project \\"%s\\":\\n\\n\\t%s", name, s );
 	// we are in a somewhar ambiguous state now with no project open.
-}}
+}} selected
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -932,7 +945,7 @@ while ( window->shown() )
   Function {make_window()} {open
   } {
     Fl_Window window {
-      label {Project info} open selected
+      label {Project info} open
       private xywh {649 226 520 625} type Double modal visible
     } {
       Fl_Value_Output {} {

@@ -209,11 +209,12 @@ Project::validate ( const char *name )
     return r;
 }
 
-bool
+/** try to open project /name/. Returns 0 if sucsessful, an error code otherwise */
+int
 Project::open ( const char *name )
 {
     if ( ! validate( name ) )
-        return false;
+        return E_INVALID;
 
     close();
 
@@ -222,7 +223,7 @@ Project::open ( const char *name )
     if ( ! get_lock( ".lock" ) )
     {
         WARNING( "Could not open project: locked by another process!" );
-        return false;
+        return Project::E_LOCKED;
     }
 
     if ( ! Loggable::open( "history" ) )
@@ -241,7 +242,7 @@ Project::open ( const char *name )
 
     timeline->zoom_fit();
 
-    return true;
+    return 0;
 }
 
 bool
@@ -271,7 +272,7 @@ Project::create ( const char *name, const char *template_name )
 
     /* TODO: copy template */
 
-    if ( open( name ) )
+    if ( open( name ) == 0 )
     {
         write_info();
 

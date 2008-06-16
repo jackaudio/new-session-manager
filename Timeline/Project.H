@@ -33,13 +33,20 @@ class Project
 
 public:
 
+    enum
+    {
+        E_INVALID = -1,
+        E_LOCKED = -2,
+        E_PERM = -3,
+    };
+
     static bool write_info ( void );
     static bool read_info ( void );
     static const char *name ( void ) { return Project::_name; }
     static void set_name ( const char *name );
     static bool close ( void );
     static bool validate ( const char *name );
-    static bool open ( const char *name );
+    static int open ( const char *name );
     static bool open ( void ) { return _is_open; }
     static bool create ( const char *name, const char *template_name );
 

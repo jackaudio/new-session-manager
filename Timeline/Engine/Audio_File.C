@@ -23,6 +23,8 @@
 
 #include "util/debug.h"
 
+#include <string.h>
+
 std::map <std::string, Audio_File*> Audio_File::_open_files;
 
 Audio_File::~Audio_File ( )
@@ -30,6 +32,16 @@ Audio_File::~Audio_File ( )
     _open_files[ std::string( _filename ) ] = NULL;
     if ( _filename )
         free( _filename );
+}
+
+const Audio_File::format_desc *
+Audio_File::find_format ( const format_desc *fd, const char *name )
+{
+    for ( ; fd->name; ++fd )
+        if ( ! strcmp( fd->name, name ) )
+            return fd;
+
+    return NULL;
 }
 
 void

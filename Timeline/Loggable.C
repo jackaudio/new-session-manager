@@ -466,6 +466,8 @@ Loggable::compact ( void )
     fseek( _fp, 0, SEEK_END );
 }
 
+#include <stdarg.h>
+
 /** Buffered sprintf wrapper */
 void
 Loggable::log ( const char *fmt, ... )

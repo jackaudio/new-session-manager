@@ -80,7 +80,8 @@ protected:
     void block_processed ( void ) { sem_post( &_blocks ); }
     bool wait_for_block ( void )
         {
-            while ( ! sem_wait( &_blocks ) && errno == EINTR );
+            while ( ! sem_wait( &_blocks ) && errno == EINTR )
+            {}
 
             return ! _terminate;
         }

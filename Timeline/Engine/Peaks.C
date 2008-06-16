@@ -372,11 +372,13 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chu
     if ( ! transport->recording )
     {
         if ( ! current() )
+        {
             /* Build peaks asyncronously */
             if ( ! fork() )
                 exit( make_peaks() );
             else
                 return 0;
+        }
     }
 
     Peakfile _peakfile;

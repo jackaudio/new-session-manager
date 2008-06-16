@@ -579,7 +579,7 @@ Audio_Region::draw ( void )
     int ox = timeline->ts_to_x( _r->start );
 
     if ( ox > OX + sequence()->w() ||
-         ox < OX && ox + abs_w() < OX )
+         ( ox < OX && ox + abs_w() < OX ) )
         /* not in viewport */
         return;
 

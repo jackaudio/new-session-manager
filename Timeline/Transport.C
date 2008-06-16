@@ -143,10 +143,12 @@ Transport::cb_button ( Fl_Widget *w )
         redraw();
 
         if ( rolling )
+        {
             if ( _record_button->value() )
                 timeline->record();
             else
                 timeline->stop();
+        }
     }
 }
 

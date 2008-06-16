@@ -56,16 +56,7 @@ protected:
 
     Peaks _peaks;
 
-    static const format_desc *
-    find_format ( const format_desc *fd, const char *name )
-        {
-            for ( ; fd->name; ++fd )
-                if ( ! strcmp( fd->name, name ) )
-                    return fd;
-
-            return NULL;
-        }
-
+    static const format_desc * find_format ( const format_desc *fd, const char *name );
 
 public:
 

@@ -33,6 +33,8 @@
 
 #include "util/debug.h"
 
+
+
 const Audio_File::format_desc Audio_File_SF::supported_formats[] =
 {
     {      "Wav 24",       "wav",   SF_FORMAT_WAV    | SF_FORMAT_PCM_24    | SF_ENDIAN_FILE },
@@ -46,6 +48,8 @@ const Audio_File::format_desc Audio_File_SF::supported_formats[] =
 #endif
     {      0,            0          }
 };
+
+
 
 Audio_File_SF *
 Audio_File_SF::from_file ( const char *filename )

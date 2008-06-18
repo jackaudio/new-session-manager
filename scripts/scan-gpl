@@ -44,7 +44,7 @@ do
 
             if echo "$HEAD" | grep -q 'any later version'
             then
-                S="${S} (or later)"
+                S="${S}+"
             fi
         else
             S="Not GPL!"

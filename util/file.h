@@ -20,3 +20,6 @@
 unsigned long mtime ( const char *file );
 bool newer ( const char *file1, const char *file2 );
 unsigned long size ( const char *file );
+int exists ( const char *name );
+bool acquire_lock ( int *lockfd, const char *filename );
+void release_lock ( int *lockfd, const char *filename );

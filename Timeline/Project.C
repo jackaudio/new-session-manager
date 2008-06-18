@@ -24,9 +24,9 @@ project state belongs to Timeline and other classes. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <sys/types.h>
-#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/fcntl.h>
 #include <errno.h>
 
 #include "Loggable.H"
@@ -46,6 +46,7 @@ extern TLE *tle;
 #define PROJECT_VERSION "0.28.0"
 
 #include "util/debug.h"
+#include "util/file.h"
 
 
 
@@ -53,46 +54,6 @@ char Project::_name[256];
 char Project::_path[512];
 bool Project::_is_open = false;
 int Project::_lockfd = 0;
-
-
-
-bool
-Project::get_lock ( const char *filename )
-{
-    struct flock fl;
-
-    fl.l_type = F_WRLCK;
-    fl.l_whence = SEEK_SET;
-    fl.l_start = 0;
-    fl.l_len = 0;
-
-    assert( ! _lockfd );
-
-    _lockfd = ::creat( filename, 0777 );
-
-    if ( fcntl( _lockfd, F_SETLK, &fl ) != 0 )
-        return false;
-
-    return true;
-}
-
-void
-Project::release_lock ( const char *filename )
-{
-    unlink( filename );
-
-    ::close( _lockfd );
-
-    _lockfd = 0;
-}
-
-static int
-exists ( const char *name )
-{
-    struct stat st;
-
-    return 0 == stat( name, &st );
-}
 
 
 
@@ -131,7 +92,7 @@ Project::close ( void )
 
     *Project::_name = '\0';
 
-    release_lock( ".lock" );
+    release_lock( &_lockfd, ".lock" );
 
     return true;
 }
@@ -220,7 +181,7 @@ Project::open ( const char *name )
 
     chdir( name );
 
-    if ( ! get_lock( ".lock" ) )
+    if ( ! acquire_lock( &_lockfd, ".lock" ) )
     {
         WARNING( "Could not open project: locked by another process!" );
         return Project::E_LOCKED;
@@ -241,6 +202,8 @@ Project::open ( const char *name )
     tle->load_timeline_settings();
 
     timeline->zoom_fit();
+
+    MESSAGE( "Loaded project \"%s\"", name );
 
     return 0;
 }
@@ -280,8 +243,12 @@ Project::create ( const char *name, const char *template_name )
         timeline->beats_per_minute( 0, 120 );
         timeline->time( 0, 4, 4 );
 
+        MESSAGE( "Created project \"%s\" from template \"%s\"", name, template_name );
         return true;
     }
     else
+    {
+        WARNING( "Failed to open newly created project" );
         return false;
+    }
 }

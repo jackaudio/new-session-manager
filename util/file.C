@@ -17,6 +17,7 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -48,4 +49,40 @@ size ( const char *file )
         return 0;
 
     return st.st_size;
+}
+
+int
+exists ( const char *name )
+{
+    struct stat st;
+
+    return 0 == stat( name, &st );
+}
+
+bool
+acquire_lock ( int *lockfd, const char *filename )
+{
+    struct flock fl;
+
+    fl.l_type = F_WRLCK;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0;
+
+    *lockfd = ::creat( filename, 0777 );
+
+    if ( fcntl( *lockfd, F_SETLK, &fl ) != 0 )
+        return false;
+
+    return true;
+}
+
+void
+release_lock ( int *lockfd, const char *filename )
+{
+    unlink( filename );
+
+    ::close( *lockfd );
+
+    *lockfd = 0;
 }

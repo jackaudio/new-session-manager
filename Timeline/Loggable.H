@@ -238,13 +238,11 @@ public:
 
     void hold ( void )
         {
-            printf( "hold\n" );
             _this->_nest++;
         }
 
     void release ( void )
         {
-            printf( "release\n" );
             _this->_nest--;
             assert( _this->_nest );
         }

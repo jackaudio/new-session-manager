@@ -28,9 +28,6 @@ class Project
     static char _name[256];
     static char _path[512];
 
-    static bool get_lock ( const char *filename );
-    static void release_lock ( const char *filename );
-
 public:
 
     enum

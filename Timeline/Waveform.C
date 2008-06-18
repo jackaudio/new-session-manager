@@ -17,30 +17,26 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include <stdio.h>
-
-#include <FL/Enumerations.H>
-#include <FL/Fl.H>
 #include <FL/fl_draw.H>
-
-#include "Timeline.H"
 
 #include "Waveform.H"
 
 #include <math.h>
-
 #include <algorithm>
 using std::min;
 using std::max;
+
+
 
 bool Waveform::fill = true;
 bool Waveform::outline = true;
 bool Waveform::vary_color = true;
 bool Waveform::logarithmic = true;
 
+
+
 /* TODO: split the variations into separate functions. eg, plain,
  * outlined, filled, polygonal, rectified. */
-
 
 void
 Waveform::scale ( Peak *pbuf, int npeaks, float gain )

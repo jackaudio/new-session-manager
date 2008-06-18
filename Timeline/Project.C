@@ -18,8 +18,7 @@
 /*******************************************************************************/
 
 /* Routings for opening/closing/creation of projects. All the actual
-project state belongs to Timeline and other classes. */
-
+   project state belongs to Timeline and other classes. */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,15 +37,15 @@ project state belongs to Timeline and other classes. */
 
 #include <FL/filename.H>
 
+#include "util/debug.h"
+#include "util/file.h"
+
 extern TLE *tle;
 
 /* FIXME: wrong place for this */
 #define APP_TITLE "Non-DAW"
 
 #define PROJECT_VERSION "0.28.0"
-
-#include "util/debug.h"
-#include "util/file.h"
 
 
 

@@ -26,7 +26,6 @@
 #include "../FL/Fl_Sometimes_Input.H"
 #include <FL/fl_ask.H>
 #include <FL/Fl_Color_Chooser.H>
-// #include <FL/fl_draw.H>
 #include <FL/Fl.H>
 
 #include "Engine/Engine.H" // for lock()
@@ -34,9 +33,13 @@
 #include "Control_Sequence.H"
 #include "Annotation_Sequence.H"
 
+
+
 int Track::_soloing = 0;
 
 const char *Track::capture_format = "Wav 24";
+
+
 
 void
 Track::cb_input_field ( Fl_Widget *, void *v )

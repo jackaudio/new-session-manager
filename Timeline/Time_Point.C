@@ -17,10 +17,11 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-
 #include "Time_Point.H"
 #include "Time_Sequence.H"
 #include "Timeline.H" // for timeline->time_track
+
+
 
 void
 Time_Point::get ( Log_Entry &e ) const

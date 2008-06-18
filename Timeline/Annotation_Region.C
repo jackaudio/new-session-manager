@@ -23,6 +23,8 @@
 
 #include "Annotation_Region.H"
 
+
+
 void
 Annotation_Region::get ( Log_Entry &e ) const
 {

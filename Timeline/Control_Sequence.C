@@ -18,14 +18,15 @@
 /*******************************************************************************/
 
 #include <FL/fl_ask.H>
-#include <list>
-using std::list;
 
 #include "Control_Sequence.H"
 #include "Track.H"
 #include "Engine/Port.H"
 
 #include "Engine/Engine.H" // for lock()
+
+#include <list>
+using std::list;
 
 
 

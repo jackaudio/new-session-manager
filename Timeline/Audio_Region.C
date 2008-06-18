@@ -19,12 +19,9 @@
 
 #include <FL/fl_draw.H>
 #include <FL/Fl.H>
-#include <FL/Fl_Group.H>
 #include <FL/Fl_Widget.H>
-#include <FL/Fl_Box.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/fl_show_colormap.H>
-#include <stdio.h>
 
 #include "Sequence.H"
 #include "Audio_Region.H"

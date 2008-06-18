@@ -23,9 +23,6 @@
 #include <FL/Fl_Scrollbar.H>
 #include <FL/Fl_Widget.H>
 #include <FL/fl_draw.H>
-#include <FL/Fl_Scrollbar.H>
-
-
 #include <FL/Fl_Menu_Button.H>
 
 #include "Timeline.H"
@@ -40,7 +37,6 @@
 #include "Transport.H"
 
 #include "Engine/Engine.H" // for lock()
-
 
 #include "FL/menu_popup.H"
 

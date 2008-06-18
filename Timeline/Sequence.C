@@ -21,8 +21,6 @@
 #include "Sequence.H"
 #include "Timeline.H"
 
-#include "Audio_Region.H"
-
 #include <FL/fl_draw.H>
 
 #include "Track.H"

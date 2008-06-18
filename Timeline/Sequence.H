@@ -59,6 +59,7 @@ protected:
 
     friend class Timeline; // for draw_measure
     std::list <Sequence_Widget *> _widgets;
+    Sequence_Widget *widget_at ( nframes_t ts, int Y );
     Sequence_Widget *event_widget ( void );
 
 

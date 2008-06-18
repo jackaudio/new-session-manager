@@ -204,15 +204,21 @@ Sequence::length ( void ) const
 }
 
 Sequence_Widget *
-Sequence::event_widget ( void )
+Sequence::widget_at ( nframes_t ts, int Y )
 {
-    nframes_t ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() );
-    for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); ++r )
-        if ( ets > (*r)->start() && ets < (*r)->start() + (*r)->length()
-             && Fl::event_y() >= (*r)->y() && Fl::event_y() <= (*r)->y() + (*r)->h() )
+    for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin(); r != _widgets.rend(); ++r )
+        if ( ts >= (*r)->start() && ts <= (*r)->start() + (*r)->length()
+             && Y >= (*r)->y() && Y <= (*r)->y() + (*r)->h() )
             return (*r);
 
     return NULL;
+}
+
+Sequence_Widget *
+Sequence::event_widget ( void )
+{
+    nframes_t ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() );
+    return widget_at( ets, Fl::event_y() );
 }
 
 void
@@ -354,6 +360,18 @@ Sequence::handle ( int m )
             {
                 transport->locate( prev( transport->frame ) );
                 return 1;
+            }
+            else if ( Fl::test_shortcut( FL_CTRL + ' ' ) )
+            {
+                Sequence_Widget *r = widget_at( transport->frame, y() );
+
+                if ( r )
+                {
+                    if ( r->selected() )
+                        r->deselect();
+                    else
+                        r->select();
+                }
             }
             else
             {

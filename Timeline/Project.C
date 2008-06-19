@@ -56,6 +56,10 @@ int Project::_lockfd = 0;
 
 
 
+/***********/
+/* Private */
+/***********/
+
 void
 Project::set_name ( const char *name )
 {
@@ -73,27 +77,6 @@ Project::set_name ( const char *name )
     for ( s = Project::_name; *s; ++s )
         if ( *s == '_' || *s == '-' )
             *s = ' ';
-}
-
-bool
-Project::close ( void )
-{
-    if ( ! open() )
-        return true;
-
-    tle->save_timeline_settings();
-
-    Loggable::close();
-
-    write_info();
-
-    _is_open = false;
-
-    *Project::_name = '\0';
-
-    release_lock( &_lockfd, ".lock" );
-
-    return true;
 }
 
 bool
@@ -139,7 +122,33 @@ Project::read_info ( void )
     return true;
 }
 
-/** ensure a project is valid before opening it... */
+/**********/
+/* Public */
+/**********/
+
+/** Close the project (reclaiming all memory) */
+bool
+Project::close ( void )
+{
+    if ( ! open() )
+        return true;
+
+    tle->save_timeline_settings();
+
+    Loggable::close();
+
+    write_info();
+
+    _is_open = false;
+
+    *Project::_name = '\0';
+
+    release_lock( &_lockfd, ".lock" );
+
+    return true;
+}
+
+/** Ensure a project is valid before opening it... */
 bool
 Project::validate ( const char *name )
 {
@@ -169,7 +178,8 @@ Project::validate ( const char *name )
     return r;
 }
 
-/** try to open project /name/. Returns 0 if sucsessful, an error code otherwise */
+/** Try to open project /name/. Returns 0 if sucsessful, an error code
+ * otherwise */
 int
 Project::open ( const char *name )
 {
@@ -207,6 +217,8 @@ Project::open ( const char *name )
     return 0;
 }
 
+/** Create a new project /name/ from existing template
+ * /template_name/ */
 bool
 Project::create ( const char *name, const char *template_name )
 {
@@ -250,4 +262,11 @@ Project::create ( const char *name, const char *template_name )
         WARNING( "Failed to open newly created project" );
         return false;
     }
+}
+
+/** Replace the journal with a snapshot of the current state */
+void
+Project::compact ( void )
+{
+    Loggable::compact();
 }

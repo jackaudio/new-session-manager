@@ -20,6 +20,23 @@
 #include "Sequence_Region.H"
 #include "Track.H"
 
+
+
+Sequence_Region::Sequence_Region ( )
+{
+    color( FL_CYAN );
+}
+
+Sequence_Region::Sequence_Region ( const Sequence_Region &rhs ) : Sequence_Widget( rhs )
+{
+}
+
+Sequence_Region::~Sequence_Region ( )
+{
+}
+
+
+
 void
 Sequence_Region::get ( Log_Entry &e ) const
 {
@@ -28,7 +45,6 @@ Sequence_Region::get ( Log_Entry &e ) const
 
     Sequence_Widget::get( e );
 }
-
 
 void
 Sequence_Region::set ( Log_Entry &e )
@@ -47,18 +63,6 @@ Sequence_Region::set ( Log_Entry &e )
     }
 
     Sequence_Widget::set( e );
-}
-
-
-void
-Sequence_Region::draw_box ( void )
-{
-    fl_draw_box( box(), line_x(), y(), abs_w(), h(), box_color() );
-}
-
-void
-Sequence_Region::draw ( void )
-{
 }
 
 void
@@ -231,4 +235,15 @@ Sequence_Region::handle ( int m )
 
     return 0;
 
+}
+
+void
+Sequence_Region::draw_box ( void )
+{
+    fl_draw_box( box(), line_x(), y(), abs_w(), h(), box_color() );
+}
+
+void
+Sequence_Region::draw ( void )
+{
 }

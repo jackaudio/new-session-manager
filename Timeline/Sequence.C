@@ -17,7 +17,6 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-
 #include "Sequence.H"
 #include "Timeline.H"
 
@@ -25,11 +24,19 @@
 
 #include "Track.H"
 
+#include "FL/event_name.H"
+
+#include "Transport.H" // for locate()
+
 #include "../FL/Boxtypes.H"
 
 using namespace std;
 
+
+
 queue <Sequence_Widget *> Sequence::_delete_queue;
+
+
 
 Sequence::Sequence ( Track *track ) : Fl_Widget( 0, 0, 0, 0 ), Loggable( true  )
 {
@@ -59,22 +66,6 @@ Sequence::init ( void )
 //    clear_visible_focus();
 }
 
-void
-Sequence::clear ( void )
-{
-    for ( std::list <Sequence_Widget*>::iterator i = _widgets.begin();
-          i != _widgets.end(); ++i )
-    {
-        Sequence_Widget *w = *i;
-
-        *i = NULL;
-
-        delete w;
-    }
-
-    _widgets.clear();
-}
-
 Sequence::~Sequence (  )
 {
     DMESSAGE( "destroying sequence" );
@@ -86,12 +77,37 @@ Sequence::~Sequence (  )
         FATAL( "programming error: leaf destructor must call Sequence::clear()!" );
 }
 
+
+
+/** remove all widgets from this sequence */
+void
+Sequence::clear ( void )
+{
+    Loggable::block_start();
+
+    for ( std::list <Sequence_Widget*>::iterator i = _widgets.begin();
+          i != _widgets.end(); ++i )
+    {
+        Sequence_Widget *w = *i;
+
+        *i = NULL;
+
+        delete w;
+    }
+
+    _widgets.clear();
+
+    Loggable::block_end();
+}
+
+/** given screen pixel coordinate X, return an absolute frame offset into this sequence */
 nframes_t
 Sequence::x_to_offset ( int X )
 {
     return timeline->xoffset + timeline->x_to_ts( X - x() );
 }
 
+/** sort the widgets in this sequence by position */
 void
 Sequence::sort ( void )
 {
@@ -113,92 +129,9 @@ Sequence::overlaps ( Sequence_Widget *r )
 }
 
 void
-Sequence::draw ( void )
-{
-
-    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
-        return;
-
-    fl_push_clip( x(), y(), w(), h() );
-
-    /* draw the box with the ends cut off. */
-    draw_box( box(), x() - Fl::box_dx( box() ) - 1, y(), w() + Fl::box_dw( box() ) + 2, h(), color() );
-
-    int X, Y, W, H;
-
-    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
-
-/*     if ( Sequence_Widget::pushed() && Sequence_Widget::pushed()->sequence() == this ) */
-/*     { */
-/*         /\* make sure the Sequence_Widget::pushed widget is above all others *\/ */
-/*         remove( Sequence_Widget::pushed() ); */
-/*         add( Sequence_Widget::pushed() ); */
-/*     } */
-
-//    printf( "track::draw %d,%d %dx%d\n", X,Y,W,H );
-
-    timeline->draw_measure_lines( X, Y, W, H, color() );
-
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
-        (*r)->draw_box();
-
-
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
-        (*r)->draw();
-
-    fl_pop_clip();
-
-}
-
-void
-Sequence::remove ( Sequence_Widget *r )
-{
-    timeline->wrlock();
-
-    _widgets.remove( r );
-
-    timeline->unlock();
-
-    handle_widget_change( r->start(), r->length() );
-}
-
-
-void
-Sequence::remove_selected ( void )
-{
-    Loggable::block_start();
-
-    for ( list <Sequence_Widget *>::iterator r = _widgets.begin(); r != _widgets.end(); )
-        if ( (*r)->selected() )
-        {
-            Sequence_Widget *t = *r;
-            _widgets.erase( r++ );
-            delete t;
-        }
-        else
-            ++r;
-
-    Loggable::block_end();
-}
-
-
-void
 Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
 //    timeline->update_length( start + length );
-}
-
-/** calculate the length of this sequence by looking at the end of the
- * least widget it contains */
-nframes_t
-Sequence::length ( void ) const
-{
-    nframes_t l = 0;
-
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin(); r != _widgets.end(); ++r )
-        l = max( l, (*r)->start() + (*r)->length() );
-
-    return l;
 }
 
 Sequence_Widget *
@@ -212,22 +145,13 @@ Sequence::widget_at ( nframes_t ts, int Y )
     return NULL;
 }
 
+/** return a pointer to the widget under the current mouse event, or
+ * NULL if no widget intersects the event coordinates */
 Sequence_Widget *
 Sequence::event_widget ( void )
 {
     nframes_t ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() );
     return widget_at( ets, Fl::event_y() );
-}
-
-void
-Sequence::select_range ( int X, int W )
-{
-    nframes_t sts = x_to_offset( X );
-    nframes_t ets = sts + timeline->x_to_ts( W );
-
-    for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); ++r )
-        if ( ! ( (*r)->start() > ets || (*r)->start() + (*r)->length() < sts ) )
-            (*r)->select();
 }
 
 void
@@ -254,13 +178,25 @@ Sequence::add ( Sequence_Widget *r )
     handle_widget_change( r->start(), r->length() );
 }
 
+void
+Sequence::remove ( Sequence_Widget *r )
+{
+    timeline->wrlock();
+
+    _widgets.remove( r );
+
+    timeline->unlock();
+
+    handle_widget_change( r->start(), r->length() );
+}
+
 static nframes_t
 abs_diff ( nframes_t n1, nframes_t n2 )
 {
     return n1 > n2 ? n1 - n2 : n2 - n1;
 }
 
-/* snap /r/ to nearest edge */
+/** snap widget /r/ to nearest edge */
 void
 Sequence::snap ( Sequence_Widget *r )
 {
@@ -306,37 +242,44 @@ Sequence::snap ( Sequence_Widget *r )
         r->start( f );
 }
 
-/** return the location of the next widget from frame /from/ */
-nframes_t
-Sequence::next ( nframes_t from ) const
+
+void
+Sequence::draw ( void )
 {
-    for ( list <Sequence_Widget*>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
-        if ( (*i)->start() > from )
-            return (*i)->start();
 
-    if ( _widgets.size() )
-        return _widgets.back()->start();
-    else
-        return 0;
+    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
+        return;
+
+    fl_push_clip( x(), y(), w(), h() );
+
+    /* draw the box with the ends cut off. */
+    draw_box( box(), x() - Fl::box_dx( box() ) - 1, y(), w() + Fl::box_dw( box() ) + 2, h(), color() );
+
+    int X, Y, W, H;
+
+    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
+
+/*     if ( Sequence_Widget::pushed() && Sequence_Widget::pushed()->sequence() == this ) */
+/*     { */
+/*         /\* make sure the Sequence_Widget::pushed widget is above all others *\/ */
+/*         remove( Sequence_Widget::pushed() ); */
+/*         add( Sequence_Widget::pushed() ); */
+/*     } */
+
+//    printf( "track::draw %d,%d %dx%d\n", X,Y,W,H );
+
+    timeline->draw_measure_lines( X, Y, W, H, color() );
+
+    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
+        (*r)->draw_box();
+
+
+    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
+        (*r)->draw();
+
+    fl_pop_clip();
+
 }
-
-/** return the location of the next widget from frame /from/ */
-nframes_t
-Sequence::prev ( nframes_t from ) const
-{
-    for ( list <Sequence_Widget*>::const_reverse_iterator i = _widgets.rbegin(); i != _widgets.rend(); i++ )
-        if ( (*i)->start() < from )
-            return (*i)->start();
-
-    if ( _widgets.size() )
-        return _widgets.front()->start();
-    else
-        return 0;
-}
-
-#include "FL/event_name.H"
-
-#include "Transport.H" // for locate()
 
 int
 Sequence::handle ( int m )
@@ -508,4 +451,86 @@ Sequence::handle ( int m )
                 return Fl_Widget::handle( m );
         }
     }
+}
+
+
+
+/**********/
+/* Public */
+/**********/
+
+/** calculate the length of this sequence by looking at the end of the
+ * least widget it contains */
+
+/** return the length in frames of this sequence calculated from the
+ * right edge of the rightmost widget */
+nframes_t
+Sequence::length ( void ) const
+{
+    nframes_t l = 0;
+
+    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin(); r != _widgets.end(); ++r )
+        l = max( l, (*r)->start() + (*r)->length() );
+
+    return l;
+}
+
+/** return the location of the next widget from frame /from/ */
+nframes_t
+Sequence::next ( nframes_t from ) const
+{
+    for ( list <Sequence_Widget*>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
+        if ( (*i)->start() > from )
+            return (*i)->start();
+
+    if ( _widgets.size() )
+        return _widgets.back()->start();
+    else
+        return 0;
+}
+
+/** return the location of the next widget from frame /from/ */
+nframes_t
+Sequence::prev ( nframes_t from ) const
+{
+    for ( list <Sequence_Widget*>::const_reverse_iterator i = _widgets.rbegin(); i != _widgets.rend(); i++ )
+        if ( (*i)->start() < from )
+            return (*i)->start();
+
+    if ( _widgets.size() )
+        return _widgets.front()->start();
+    else
+        return 0;
+}
+
+/** delete all selected widgets in this sequence */
+void
+Sequence::remove_selected ( void )
+{
+    Loggable::block_start();
+
+    for ( list <Sequence_Widget *>::iterator r = _widgets.begin(); r != _widgets.end(); )
+        if ( (*r)->selected() )
+        {
+            Sequence_Widget *t = *r;
+            _widgets.erase( r++ );
+            delete t;
+        }
+        else
+            ++r;
+
+    Loggable::block_end();
+}
+
+/** select all widgets intersecting with the range defined by the
+ * pixel coordinates X through W */
+void
+Sequence::select_range ( int X, int W )
+{
+    nframes_t sts = x_to_offset( X );
+    nframes_t ets = sts + timeline->x_to_ts( W );
+
+    for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); ++r )
+        if ( ! ( (*r)->start() > ets || (*r)->start() + (*r)->length() < sts ) )
+            (*r)->select();
 }

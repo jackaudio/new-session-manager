@@ -17,9 +17,14 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include <stdio.h>
+
 unsigned long mtime ( const char *file );
 bool newer ( const char *file1, const char *file2 );
 unsigned long size ( const char *file );
 int exists ( const char *name );
 bool acquire_lock ( int *lockfd, const char *filename );
 void release_lock ( int *lockfd, const char *filename );
+int backwards_fgetc ( FILE *fp );
+char * backwards_fgets ( char *s, int size, FILE *fp );
+void touch ( int fd );

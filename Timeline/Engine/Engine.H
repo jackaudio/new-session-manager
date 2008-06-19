@@ -35,22 +35,11 @@ class Engine : public Mutex
 
     Thread _thread;                                            /* only used for thread checking */
 
-
-    /* I know locking out the process callback is cheating, even
-       though we use trylock... The thing is, every other DAW does
-       this too and you can hear it in the glitches Ardour and friends
-       produce when reconfiguring I/O... Working out a message queue
-       system would obviously be better, but a DAW isn't a performance
-       instrument anyway, so I think these drop-outs are a reasonable
-       compromise. Obviously, this lock should never be held during
-       blocking operations. */
-
     int _buffers_dropped;                                       /* buffers dropped because of locking */
     nframes_t _sample_rate;
     volatile int _xruns;
     volatile bool _freewheeling;
     volatile bool _zombified;
-
 
     static void shutdown ( void *arg );
     void shutdown ( void );
@@ -72,6 +61,8 @@ class Engine : public Mutex
     Engine ( const Engine &rhs );
     Engine & operator = ( const Engine &rhs );
 
+    void request_locate ( nframes_t frame );
+
 private:
 
     friend class Port;
@@ -84,8 +75,6 @@ public:
     Engine ( );
 
     int init ( void );
-
-    void request_locate ( nframes_t frame );
 
     nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
     float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }

@@ -305,44 +305,6 @@ Loggable::do_this ( const char *s, bool reverse )
     return true;
 }
 
-
-static int
-backwards_fgetc ( FILE *fp )
-{
-    int c;
-
-    if ( fseek( fp, -1, SEEK_CUR ) != 0 )
-        return -1;
-
-    c = fgetc( fp );
-
-    fseek( fp, -1, SEEK_CUR );
-
-    return c;
-}
-
-static char *
-backwards_fgets ( char *s, int size, FILE *fp )
-{
-    if ( fseek( fp, -1, SEEK_CUR ) != 0 )
-        return NULL;
-
-    int c;
-    while ( ( c = backwards_fgetc( fp ) ) >= 0 )
-        if ( '\n' == c )
-            break;
-
-    long here = ftell( fp );
-
-    fseek( fp, 1, SEEK_CUR );
-
-    char *r = fgets( s, size, fp );
-
-    fseek( fp, here, SEEK_SET );
-
-    return r;
-}
-
 /** Reverse the last journal transaction */
 void
 Loggable::undo ( void )
@@ -386,6 +348,9 @@ Loggable::undo ( void )
     _undo_offset = uo;
 }
 
+/** Make all loggable ids consecutive. This invalidates any existing
+ * journal or snapshot, so you *must* write out a new one after
+ * performing this operation*/
 void
 Loggable::compact_ids ( void )
 {
@@ -406,9 +371,8 @@ Loggable::compact_ids ( void )
     _log_id = id;
 }
 
-/* FIXME: we need a version of this that is fully const, right? */
-/** write a snapshot of the state of all loggable objects, sufficient
- * for later reconstruction, to /fp/ */
+/** write a snapshot of the current state of all loggable objects to
+ * file handle /fp/ */
 bool
 Loggable::snapshot ( FILE *fp )
 {
@@ -437,6 +401,8 @@ Loggable::snapshot ( FILE *fp )
     return true;
 }
 
+/** write a snapshot of the current state of all loggable objects to
+ * file /name/ */
 bool
 Loggable::snapshot ( const char *name )
 {
@@ -574,7 +540,6 @@ Loggable::log_print( const Log_Entry *o, const Log_Entry *n ) const
 
     log( "\n" );
 }
-
 
 /** Remember current object state for later comparison. *Must* be
  * called before any user action that might change one of the object's

@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdio.h>
 
 unsigned long
 mtime ( const char *file )
@@ -85,4 +86,53 @@ release_lock ( int *lockfd, const char *filename )
     ::close( *lockfd );
 
     *lockfd = 0;
+}
+
+int
+backwards_fgetc ( FILE *fp )
+{
+    int c;
+
+    if ( fseek( fp, -1, SEEK_CUR ) != 0 )
+        return -1;
+
+    c = fgetc( fp );
+
+    fseek( fp, -1, SEEK_CUR );
+
+    return c;
+}
+
+char *
+backwards_fgets ( char *s, int size, FILE *fp )
+{
+    if ( fseek( fp, -1, SEEK_CUR ) != 0 )
+        return NULL;
+
+    int c;
+    while ( ( c = backwards_fgetc( fp ) ) >= 0 )
+        if ( '\n' == c )
+            break;
+
+    long here = ftell( fp );
+
+    fseek( fp, 1, SEEK_CUR );
+
+    char *r = fgets( s, size, fp );
+
+    fseek( fp, here, SEEK_SET );
+
+    return r;
+}
+
+
+/** update the modification time of file referred to by /fd/ */
+void
+touch ( int fd )
+{
+    struct stat st;
+
+    fstat( fd, &st );
+
+    fchmod( fd, st.st_mode );
 }

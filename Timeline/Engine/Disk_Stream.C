@@ -17,7 +17,6 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-
 #include "../Track.H"
 // #include "Audio_Sequence.H"
 class Audio_Sequence;
@@ -27,6 +26,8 @@ class Audio_Sequence;
 
 #include "Disk_Stream.H"
 #include "dsp.h"
+
+
 
 /**********/
 /* Engine */
@@ -40,18 +41,14 @@ class Audio_Sequence;
    that is, at startup time. The default is 5 seconds, which may or
    may not be excessive depending on various external factors. */
 
-/* FIXME: deal with (jack) buffer size changes */
-/* FIXME: needs error handling everywhere! */
-/* TODO: read/write data from/to disk in larger chunks to avoid
- * excessive seeking. 256k is supposedly the sweetspot. */
-
-//float Disk_Stream::seconds_to_buffer = 5.0f;
 float Disk_Stream::seconds_to_buffer = 2.0f;
 /* this is really only a rough estimate. The actual amount of data
  read depends on many factors.  Overlapping regions, for example, will
  require more data to be read from disk, as will varying channel
  counts.*/
 size_t Disk_Stream::disk_io_kbytes = 256;
+
+
 
 Disk_Stream::Disk_Stream ( Track *track, float frame_rate, nframes_t nframes, int channels ) : _track( track )
 {
@@ -85,6 +82,7 @@ Disk_Stream::~Disk_Stream ( )
     engine->unlock();
 }
 
+
 
 /** flush buffers and reset. Must only be called from the RT thread. */
 void

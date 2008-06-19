@@ -63,6 +63,8 @@ Sequence_Widget::~Sequence_Widget ( )
     _selection.remove( this );
 }
 
+
+
 void
 Sequence_Widget::get ( Log_Entry &e ) const
 {

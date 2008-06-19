@@ -23,6 +23,39 @@
 
 
 
+Time_Point::Time_Point ( ) : _time( 4, 4 )
+{
+    timeline->time_track->add( this );
+}
+
+Time_Point::Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
+{
+    _make_label();
+
+    timeline->time_track->add( this );
+
+    start( when );
+
+    log_create();
+}
+
+Time_Point::Time_Point ( const Time_Point &rhs ) : Sequence_Point( rhs )
+{
+    _time = rhs._time;
+
+    log_create();
+
+}
+
+Time_Point::~Time_Point ( )
+{
+    timeline->time_track->remove( this );
+
+    log_destroy();
+}
+
+
+
 void
 Time_Point::get ( Log_Entry &e ) const
 {
@@ -60,39 +93,6 @@ Time_Point::set ( Log_Entry &e )
     _make_label();
 }
 
-
-Time_Point::Time_Point ( ) : _time( 4, 4 )
-{
-    timeline->time_track->add( this );
-}
-
-Time_Point::Time_Point ( nframes_t when, int bpb, int note ) : _time( bpb, note )
-{
-    _make_label();
-
-    timeline->time_track->add( this );
-
-    start( when );
-
-    log_create();
-}
-
-Time_Point::Time_Point ( const Time_Point &rhs ) : Sequence_Point( rhs )
-{
-    _time = rhs._time;
-
-    log_create();
-
-}
-
-Time_Point::~Time_Point ( )
-{
-    timeline->time_track->remove( this );
-
-    log_destroy();
-}
-
-
 int
 Time_Point::handle ( int m )
 {
@@ -113,11 +113,8 @@ Time_Point::handle ( int m )
     return Sequence_Point::handle( m );
 }
 
-
-
 #include <FL/Fl_Int_Input.H>
 #include <FL/Fl_Menu_Window.H>
-
 
 class Time_Point_Editor : public Fl_Menu_Window
 {
@@ -195,7 +192,6 @@ public:
             return _sucess;
         }
 };
-
 
 bool
 Time_Point::edit ( time_sig *sig )

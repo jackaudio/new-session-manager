@@ -23,6 +23,32 @@
 
 
 
+Tempo_Point::Tempo_Point ( )
+{
+    timeline->tempo_track->add( this );
+}
+
+Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
+{
+    _tempo = bpm;
+
+    _make_label();
+
+    timeline->tempo_track->add( this );
+
+    start( when );
+
+    log_create();
+}
+
+Tempo_Point::~Tempo_Point ( )
+{
+    timeline->tempo_track->remove( this );
+    log_destroy();
+}
+
+
+
 void
 Tempo_Point::get ( Log_Entry &e ) const
 {
@@ -55,33 +81,6 @@ Tempo_Point::set ( Log_Entry &e )
     sequence()->handle_widget_change( start(), length() );
 
     _make_label();
-}
-
-
-Tempo_Point::Tempo_Point ( )
-{
-    timeline->tempo_track->add( this );
-}
-
-Tempo_Point::Tempo_Point ( nframes_t when, float bpm )
-{
-    _tempo = bpm;
-
-    _make_label();
-
-    timeline->tempo_track->add( this );
-
-    start( when );
-
-    log_create();
-}
-
-
-
-Tempo_Point::~Tempo_Point ( )
-{
-    timeline->tempo_track->remove( this );
-    log_destroy();
 }
 
 

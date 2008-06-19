@@ -22,6 +22,8 @@
   peakfile reading/writing.
 */
 
+/* Code for peakfile reading, resampling, generation and streaming */
+
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -39,6 +41,7 @@
 #include "assert.h"
 #include "util/debug.h"
 #include "util/Thread.H"
+#include "util/file.h"
 
 #include <errno.h>
 
@@ -47,6 +50,7 @@
 using std::min;
 using std::max;
 
+
 
 /* whether to cache peaks at multiple resolutions on disk to
  * drastically improve performance */
@@ -55,7 +59,6 @@ bool Peaks::mipmapped_peakfiles = true;
 const int Peaks::cache_minimum = 256;          /* minimum chunksize to build peakfiles for */
 const int Peaks::cache_levels  = 8;           /* number of sampling levels in peak cache */
 const int Peaks::cache_step    = 1;            /* powers of two between each level. 4 == 256, 2048, 16384, ... */
-
 
 Peaks::peakbuffer Peaks::_peakbuf;
 
@@ -72,17 +75,6 @@ peakname ( const char *filename )
     return (const char*)&file;
 }
 
-/** update the modification time of file referred to by /fd/ */
-static void
-touch ( int fd )
-{
-    struct stat st;
-
-    fstat( fd, &st );
-
-    fchmod( fd, st.st_mode );
-}
-
 
 
 Peaks::Peaks ( Audio_File *c )
@@ -96,6 +88,8 @@ Peaks::~Peaks ( )
     if ( _peak_writer )
         delete _peak_writer;
 }
+
+
 
 /** Prepare a buffer of peaks from /s/ to /e/ for reading. Must be
  * called before any calls to operator[] */
@@ -389,7 +383,6 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chu
     return _peakfile.read_peaks( peaks, s, npeaks, chunksize );
 }
 
-
 int
 Peaks::read_source_peaks ( Peak *peaks, int npeaks, nframes_t chunksize ) const
 {
@@ -472,26 +465,8 @@ Peaks::read_peaks ( nframes_t s, int npeaks, nframes_t chunksize ) const
 bool
 Peaks::current ( void ) const
 {
-    int sfd, pfd;
-
-    if ( ( sfd = ::open( _clip->name(), O_RDONLY ) ) < 0 )
-        return true;
-
-    if ( ( pfd = ::open( peakname( _clip->name() ), O_RDONLY ) ) < 0 )
-        return false;
-
-    struct stat sst, pst;
-
-    fstat( sfd, &sst );
-    fstat( pfd, &pst );
-
-    close( sfd );
-    close( pfd );
-
-    return sst.st_mtime <= pst.st_mtime;
+    return ! newer( _clip->name(), peakname( _clip->name() ) );
 }
-
-
 
 bool
 Peaks::make_peaks ( void ) const
@@ -816,7 +791,6 @@ Peaks::Builder::make_peaks ( void )
 
     return true;
 }
-
 
 Peaks::Builder::Builder ( const Peaks *peaks ) : _peaks( peaks )
 {

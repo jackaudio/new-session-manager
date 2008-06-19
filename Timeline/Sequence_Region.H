@@ -33,20 +33,13 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
 
-    Sequence_Region ( )
-        {
-            color( FL_CYAN );
-        }
+    Sequence_Region ( );
+    Sequence_Region ( const Sequence_Region &rhs );
+    virtual ~Sequence_Region ( );
 
-    virtual ~Sequence_Region ( )
-        {
-
-        }
-
-    Sequence_Region ( const Sequence_Region &rhs ) : Sequence_Widget( rhs )
-        {
-
-        }
+    virtual int handle ( int m );
+    virtual void draw_box( void );
+    virtual void draw ( void );
 
 public:
 
@@ -54,9 +47,5 @@ public:
 
     enum trim_e { NO, LEFT, RIGHT };
     void trim ( enum trim_e t, int X );
-
-    virtual int handle ( int m );
-    virtual void draw_box( void );
-    virtual void draw ( void );
 
 };

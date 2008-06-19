@@ -30,6 +30,8 @@
 
 #include "util/Thread.H"
 
+
+
 Engine::Engine ( ) : _thread( "RT" )
 {
     _freewheeling = false;
@@ -38,6 +40,8 @@ Engine::Engine ( ) : _thread( "RT" )
     _buffers_dropped = 0;
     _xruns = 0;
 }
+
+
 
 /*******************/
 /* Static Wrappers */
@@ -79,14 +83,23 @@ Engine::buffer_size ( nframes_t nframes, void *arg )
     return ((Engine*)arg)->buffer_size( nframes );
 }
 
-
+void
+Engine::thread_init ( void *arg )
+{
+    ((Engine*)arg)->thread_init();
+}
 
 void
-Engine::request_locate ( nframes_t frame )
+Engine::shutdown ( void *arg )
 {
-    if ( timeline )
-        timeline->seek( frame );
+    ((Engine*)arg)->shutdown();
 }
+
+
+
+/*************/
+/* Callbacks */
+/*************/
 
 /* THREAD: RT */
 /** This is the jack xrun callback */
@@ -114,7 +127,6 @@ Engine::freewheel ( bool starting )
 int
 Engine::buffer_size ( nframes_t nframes )
 {
-    /* TODO: inform all disktreams the the buffer size has changed */
     timeline->resize_buffers( nframes );
 
     return 0;
@@ -166,7 +178,6 @@ Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
     return 0;
 }
 
-
 /* THREAD: RT */
 void
 Engine::timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t *pos, int )
@@ -188,7 +199,6 @@ Engine::timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t *pos,
     pos->bar_start_tick = 0;
 
 }
-
 
 /* THREAD: RT */
 int
@@ -235,7 +245,7 @@ Engine::process ( nframes_t nframes )
     return 0;
 }
 
-
+/* THREAD: RT */
 /** enter or leave freehweeling mode */
 void
 Engine::freewheeling ( bool yes )
@@ -244,31 +254,22 @@ Engine::freewheeling ( bool yes )
         WARNING( "Unkown error while setting freewheeling mode" );
 }
 
-void
-Engine::thread_init ( void *arg )
-{
-    ((Engine*)arg)->thread_init();
-}
-
+/* TRHEAD: RT */
 void
 Engine::thread_init ( void )
 {
     _thread.set( "RT" );
 }
 
-
-void
-Engine::shutdown ( void *arg )
-{
-    ((Engine*)arg)->shutdown();
-}
-
+/* THREAD: RT */
 void
 Engine::shutdown ( void )
 {
     _zombified = true;
 }
 
+
+/** Connect to JACK */
 int
 Engine::init ( void )
 {
@@ -299,4 +300,11 @@ Engine::init ( void )
 
     /* we don't need to create any ports until tracks are created */
     return 1;
+}
+
+void
+Engine::request_locate ( nframes_t frame )
+{
+    if ( timeline )
+        timeline->seek( frame );
 }

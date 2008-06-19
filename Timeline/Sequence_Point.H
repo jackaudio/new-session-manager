@@ -33,11 +33,13 @@ protected:
     void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
-    Sequence_Point ( const Sequence_Point &rhs ) : Sequence_Widget( rhs )
-        {
-            if ( _label )
-                _label = strdup( rhs._label );
-        }
+
+    virtual void draw_box ( void );
+    virtual void draw ( void );
+
+    Sequence_Point ( const Sequence_Point &rhs );
+    Sequence_Point ( );
+    ~Sequence_Point ( );
 
 public:
 
@@ -67,22 +69,5 @@ public:
         }
 
     nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
-
-    Sequence_Point ( )
-        {
-            _label = NULL;
-
-            color( FL_CYAN );
-        }
-
-
-    virtual ~Sequence_Point ( )
-        {
-            if ( _label )
-                free( _label );
-        }
-
-    virtual void draw_box ( void );
-    virtual void draw ( void );
 
 };

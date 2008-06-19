@@ -57,6 +57,7 @@ static Fl_Color fl_invert_color ( Fl_Color c )
     return fl_rgb_color( 255 - r, 255 - g, 255 - b );
 }
 
+
 
 void
 Audio_Region::get ( Log_Entry &e ) const
@@ -154,7 +155,6 @@ Audio_Region::Audio_Region ( Audio_File *c )
     log_create();
 }
 
-
 /* used when DND importing */
 Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
 {
@@ -189,11 +189,12 @@ Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
     log_create();
 }
 
-const char *
-Audio_Region::source_name ( void ) const
+Audio_Region::~Audio_Region ( )
 {
-    return _clip->name();
+    log_destroy();
 }
+
+
 
 void
 Audio_Region::menu_cb ( Fl_Widget *w, void *v )
@@ -308,123 +309,6 @@ Audio_Region::menu ( void )
 
     return m;
 }
-
-int
-Audio_Region::handle ( int m )
-{
-    static int ox, oy;
-
-    static bool copied = false;
-    static nframes_t os;
-
-    int X = Fl::event_x();
-    int Y = Fl::event_y();
-
-    Logger _log( this );
-
-    switch ( m )
-    {
-        case FL_FOCUS:
-        case FL_UNFOCUS:
-            return 1;
-        case FL_KEYBOARD:
-            return menu().test_shortcut() != 0;
-        case FL_ENTER:
-            return Sequence_Region::handle( m );
-        case FL_LEAVE:
-            return Sequence_Region::handle( m );
-        case FL_PUSH:
-        {
-            /* splitting  */
-            if ( test_press( FL_BUTTON2 | FL_SHIFT ) )
-            {
-                /* split */
-                if ( ! copied )
-                {
-                    Loggable::block_start();
-
-                    Audio_Region *copy = new Audio_Region( *this );
-
-                    trim( RIGHT, X );
-                    copy->trim( LEFT, X );
-
-                    sequence()->add( copy );
-
-                    log_end();
-
-                    Loggable::block_end();
-                }
-
-                return 0;
-            }
-            else
-            {
-                ox = x() - X;
-                oy = y() - Y;
-                /* for panning */
-                os = _r->offset;
-
-                if ( test_press( FL_BUTTON2 | FL_CTRL ) )
-                {
-                    normalize();
-                    /* FIXME: wrong place for this? */
-                    sequence()->handle_widget_change( start(), length() );
-                    redraw();
-                    return 1;
-                }
-                else if ( test_press( FL_BUTTON3 ) )
-                {
-                    /* context menu */
-                    menu_popup( &menu() );
-
-                    return 1;
-                }
-                else
-                    return Sequence_Region::handle( m );
-            }
-
-            break;
-        }
-        case FL_RELEASE:
-        {
-            Sequence_Region::handle( m );
-
-            copied = false;
-
-            return 1;
-        }
-        case FL_DRAG:
-            if ( ! _drag )
-            {
-                begin_drag( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
-                _log.hold();
-            }
-
-            if ( test_press( FL_BUTTON1 | FL_SHIFT | FL_CTRL ) )
-            {
-                /* panning */
-                int d = (ox + X) - x();
-                long td = timeline->x_to_ts( d );
-
-                if ( td > 0 && os < (nframes_t)td )
-                    _r->offset = 0;
-                else
-                    _r->offset = os - td;
-
-                redraw();
-                return 1;
-            }
-
-            return Sequence_Region::handle( m );
-
-        default:
-            return Sequence_Region::handle( m );
-            break;
-    }
-
-    return 0;
-}
-
 
 /** Draws the curve for a single fade. /X/ and /W/ repersent the
     portion of the region covered by this draw, which may or may not
@@ -705,7 +589,137 @@ Audio_Region::draw ( void )
 
 }
 
+int
+Audio_Region::handle ( int m )
+{
+    static int ox, oy;
 
+    static bool copied = false;
+    static nframes_t os;
+
+    int X = Fl::event_x();
+    int Y = Fl::event_y();
+
+    Logger _log( this );
+
+    switch ( m )
+    {
+        case FL_FOCUS:
+        case FL_UNFOCUS:
+            return 1;
+        case FL_KEYBOARD:
+            return menu().test_shortcut() != 0;
+        case FL_ENTER:
+            return Sequence_Region::handle( m );
+        case FL_LEAVE:
+            return Sequence_Region::handle( m );
+        case FL_PUSH:
+        {
+            /* splitting  */
+            if ( test_press( FL_BUTTON2 | FL_SHIFT ) )
+            {
+                /* split */
+                if ( ! copied )
+                {
+                    Loggable::block_start();
+
+                    Audio_Region *copy = new Audio_Region( *this );
+
+                    trim( RIGHT, X );
+                    copy->trim( LEFT, X );
+
+                    sequence()->add( copy );
+
+                    log_end();
+
+                    Loggable::block_end();
+                }
+
+                return 0;
+            }
+            else
+            {
+                ox = x() - X;
+                oy = y() - Y;
+                /* for panning */
+                os = _r->offset;
+
+                if ( test_press( FL_BUTTON2 | FL_CTRL ) )
+                {
+                    normalize();
+                    /* FIXME: wrong place for this? */
+                    sequence()->handle_widget_change( start(), length() );
+                    redraw();
+                    return 1;
+                }
+                else if ( test_press( FL_BUTTON3 ) )
+                {
+                    /* context menu */
+                    menu_popup( &menu() );
+
+                    return 1;
+                }
+                else
+                    return Sequence_Region::handle( m );
+            }
+
+            break;
+        }
+        case FL_RELEASE:
+        {
+            Sequence_Region::handle( m );
+
+            copied = false;
+
+            return 1;
+        }
+        case FL_DRAG:
+            if ( ! _drag )
+            {
+                begin_drag( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
+                _log.hold();
+            }
+
+            if ( test_press( FL_BUTTON1 | FL_SHIFT | FL_CTRL ) )
+            {
+                /* panning */
+                int d = (ox + X) - x();
+                long td = timeline->x_to_ts( d );
+
+                if ( td > 0 && os < (nframes_t)td )
+                    _r->offset = 0;
+                else
+                    _r->offset = os - td;
+
+                redraw();
+                return 1;
+            }
+
+            return Sequence_Region::handle( m );
+
+        default:
+            return Sequence_Region::handle( m );
+            break;
+    }
+
+    return 0;
+}
+
+
+
+/**********/
+/* Public */
+/**********/
+
+/** return the name of the audio source this region represents */
+const char *
+Audio_Region::source_name ( void ) const
+{
+    return _clip->name();
+}
+
+/** set the amplitude scaling for this region from the normalization
+ * factor for the range of samples represented by this region */
 void
 Audio_Region::normalize ( void )
 {

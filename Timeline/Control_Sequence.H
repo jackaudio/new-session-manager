@@ -28,7 +28,6 @@
 
 class Control_Sequence : public Sequence
 {
-
     /* not permitted */
     Control_Sequence ( const Control_Sequence &rhs );
     Control_Sequence & operator = ( const Control_Sequence &rhs );
@@ -47,6 +46,7 @@ private:
 
     void init ( void );
 
+    void draw_curve ( bool flip, bool filled );
 
 protected:
 
@@ -59,9 +59,9 @@ protected:
             init();
         }
 
-private:
 
-    void draw_curve ( bool flip, bool filled );
+    void draw ( void );
+    int handle ( int m );
 
 public:
 
@@ -75,12 +75,6 @@ public:
     ~Control_Sequence ( );
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_CROSS; }
-
-//    const char *class_name ( void ) { return "Control_Sequence"; }
-
-    void draw ( void );
-    int handle ( int m );
-
 
     /* Engine */
     void output ( Port *p ) { _output = p; }

@@ -63,8 +63,10 @@ TAGS: $(SRCS)
 	etags $(SRCS)
 
 .deps: .config $(SRCS)
+ifneq ($(CALCULATING),yes)
 	@ echo -n Calculating dependencies...
-	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) > .deps 2>/dev/null && echo $(DONE)
+	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) 2>/dev/null > .deps  && echo $(DONE)
+endif
 
 clean_deps:
 	@ rm -f .deps

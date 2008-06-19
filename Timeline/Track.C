@@ -21,8 +21,6 @@
 
 #include "Transport.H"
 
-/* #include "Port.H" */
-
 #include "../FL/Fl_Sometimes_Input.H"
 #include <FL/fl_ask.H>
 #include <FL/Fl_Color_Chooser.H>
@@ -41,76 +39,54 @@ const char *Track::capture_format = "Wav 24";
 
 
 
-void
-Track::cb_input_field ( Fl_Widget *, void *v )
+Track::Track ( const char *L, int channels ) :
+    Fl_Group ( 0, 0, 0, 0, 0 )
 {
-    ((Track*)v)->cb_input_field();
+    init();
+
+    if ( L )
+        name( L );
+
+    color( (Fl_Color)rand() );
+
+    configure_inputs( channels );
+    configure_outputs( channels );
+
+    log_create();
 }
 
-void
-Track::cb_button ( Fl_Widget *w, void *v )
+
+Track::Track ( ) : Fl_Group( 0, 0, 1, 1 )
 {
-    ((Track*)v)->cb_button( w );
+    init();
+
+    timeline->add_track( this );
 }
 
-
-void
-Track::cb_input_field ( void )
+Track::~Track ( )
 {
-    log_start();
+    Loggable::block_start();
 
-    name( name_field->value() );
+    takes = NULL;
+    control = NULL;
+    annotation = NULL;
 
-    log_end();
-}
+    Fl_Group::clear();
 
-void
-Track::cb_button ( Fl_Widget *w )
-{
+    log_destroy();
 
-    if ( w == record_button )
-    {
+    timeline->remove_track( this );
 
-    }
-    if ( w == mute_button )
-    {
+    /* give up our ports */
+    configure_inputs( 0 );
+    configure_outputs( 0 );
 
-    }
-    if ( w == solo_button )
-    {
-        if ( solo_button->value() )
-            ++_soloing;
-        else
-            --_soloing;
-    }
-    else
-        if ( w == take_menu )
-        {
-            int v = take_menu->value();
+    _sequence = NULL;
 
-            switch ( v )
-            {
-                case 0:                                         /* show all takes */
-                    show_all_takes( take_menu->menu()[ v ].value() );
-                    return;
-                case 1:                                         /* new */
-                    sequence( (Audio_Sequence*)sequence()->clone_empty() );
-                    return;
-            }
+    if ( _name )
+        free( _name );
 
-            const char *s = take_menu->menu()[ v ].text;
-
-            for ( int i = takes->children(); i--; )
-            {
-                Audio_Sequence *t = (Audio_Sequence*)takes->child( i );
-                if ( ! strcmp( s, t->name() ) )
-                {
-                    sequence( t );
-                    redraw();
-                    break;
-                }
-            }
-        }
+    Loggable::block_end();
 }
 
 void
@@ -231,49 +207,148 @@ Track::init ( void )
 
 }
 
+
 
-Track::Track ( const char *L, int channels ) :
-    Fl_Group ( 0, 0, 0, 0, 0 )
+void
+Track::set ( Log_Entry &e )
 {
-    init();
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
 
-    if ( L )
-        name( L );
+        e.get( i, &s, &v );
 
-    color( (Fl_Color)rand() );
+        if ( ! strcmp( s, ":height" ) )
+        {
+            size( atoi( v ) );
 
-    configure_inputs( channels );
-    configure_outputs( channels );
+//                    Fl_Widget::size( w(), height() );
+            resize();
+        }
+        else if ( ! strcmp( s, ":selected" ) )
+            _selected = atoi( v );
+//                else if ( ! strcmp( s, ":armed"
+        else if ( ! strcmp( s, ":name" ) )
+            name( v );
+        else if ( ! strcmp( s, ":inputs" ) )
+            configure_inputs( atoi( v ) );
+        else if ( ! strcmp( s, ":outputs" ) )
+            configure_outputs( atoi( v ) );
+        else if ( ! strcmp( s, ":color" ) )
+        {
+            color( (Fl_Color)atoll( v ) );
+            redraw();
+        }
+        else if ( ! strcmp( s, ":sequence" ) )
+        {
+            int i;
+            sscanf( v, "%X", &i );
 
-    log_create();
+            if ( i )
+            {
+                Audio_Sequence *t = (Audio_Sequence*)Loggable::find( i );
+
+                /* FIXME: our track might not have been
+                 * defined yet... what should we do about this
+                 * chicken/egg problem? */
+                if ( t )
+                {
+//                        assert( t );
+
+                    sequence( t );
+                }
+
+            }
+
+        }
+
+    }
 }
 
-Track::~Track ( )
+
+void
+Track::get ( Log_Entry &e ) const
 {
-    Loggable::block_start();
-
-    takes = NULL;
-    control = NULL;
-    annotation = NULL;
-
-    Fl_Group::clear();
-
-    log_destroy();
-
-    timeline->remove_track( this );
-
-    /* give up our ports */
-    configure_inputs( 0 );
-    configure_outputs( 0 );
-
-    _sequence = NULL;
-
-    if ( _name )
-        free( _name );
-
-    Loggable::block_end();
+    e.add( ":name",            _name            );
+    e.add( ":sequence",        sequence()          );
+    e.add( ":selected",        _selected        );
+    e.add( ":height",          size()           );
+    e.add( ":inputs",          input.size()     );
+    e.add( ":outputs",         output.size()    );
+    e.add( ":color",           (unsigned long)color());
 }
 
+
+void
+Track::cb_input_field ( Fl_Widget *, void *v )
+{
+    ((Track*)v)->cb_input_field();
+}
+
+void
+Track::cb_button ( Fl_Widget *w, void *v )
+{
+    ((Track*)v)->cb_button( w );
+}
+
+void
+Track::cb_input_field ( void )
+{
+    log_start();
+
+    name( name_field->value() );
+
+    log_end();
+}
+
+void
+Track::cb_button ( Fl_Widget *w )
+{
+
+    if ( w == record_button )
+    {
+
+    }
+    if ( w == mute_button )
+    {
+
+    }
+    if ( w == solo_button )
+    {
+        if ( solo_button->value() )
+            ++_soloing;
+        else
+            --_soloing;
+    }
+    else
+        if ( w == take_menu )
+        {
+            int v = take_menu->value();
+
+            switch ( v )
+            {
+                case 0:                                         /* show all takes */
+                    show_all_takes( take_menu->menu()[ v ].value() );
+                    return;
+                case 1:                                         /* new */
+                    sequence( (Audio_Sequence*)sequence()->clone_empty() );
+                    return;
+            }
+
+            const char *s = take_menu->menu()[ v ].text;
+
+            for ( int i = takes->children(); i--; )
+            {
+                Audio_Sequence *t = (Audio_Sequence*)takes->child( i );
+                if ( ! strcmp( s, t->name() ) )
+                {
+                    sequence( t );
+                    redraw();
+                    break;
+                }
+            }
+        }
+}
 
 static int pack_visible( Fl_Pack *p )
 {
@@ -341,7 +416,6 @@ Track::size ( int v )
 
     resize();
 }
-
 
 void
 Track::add ( Audio_Sequence * t )
@@ -471,22 +545,6 @@ Track::select ( int X, int Y, int W, int H,
         }
 }
 
-void
-Track::draw ( void )
-{
-    if ( _selected )
-    {
-        Fl_Color c = color();
-
-        color( FL_RED );
-
-        Fl_Group::draw();
-
-        color( c );
-    }
-    else
-        Fl_Group::draw();
-}
 
 #include <FL/Fl_Menu_Button.H>
 
@@ -600,6 +658,23 @@ Track::menu ( void ) const
 
 #include "FL/event_name.H"
 #include "FL/test_press.H"
+
+void
+Track::draw ( void )
+{
+    if ( _selected )
+    {
+        Fl_Color c = color();
+
+        color( FL_RED );
+
+        Fl_Group::draw();
+
+        color( c );
+    }
+    else
+        Fl_Group::draw();
+}
 
 int
 Track::handle ( int m )

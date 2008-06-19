@@ -97,15 +97,13 @@ private:
     void update_port_names ( void );
     const char *name_for_port( Port::type_e type, int n );
 
-
-    Track ( ) : Fl_Group( 0, 0, 1, 1 )
-        {
-            init();
-
-            timeline->add_track( this );
-        }
-
+    Track ( );
     void init ( void );
+
+protected:
+
+    void get ( Log_Entry &e ) const;
+    void set ( Log_Entry &e );
 
 public:
 
@@ -127,76 +125,6 @@ public:
 
     Playback_DS    *playback_ds;
     Record_DS      *record_ds;
-
-//    const char *class_name ( void ) { return "Track"; }
-
-    void
-    set ( Log_Entry &e )
-        {
-            for ( int i = 0; i < e.size(); ++i )
-            {
-                const char *s, *v;
-
-                e.get( i, &s, &v );
-
-                if ( ! strcmp( s, ":height" ) )
-                {
-                    size( atoi( v ) );
-
-//                    Fl_Widget::size( w(), height() );
-                    resize();
-                }
-                else if ( ! strcmp( s, ":selected" ) )
-                    _selected = atoi( v );
-//                else if ( ! strcmp( s, ":armed"
-                else if ( ! strcmp( s, ":name" ) )
-                    name( v );
-                else if ( ! strcmp( s, ":inputs" ) )
-                    configure_inputs( atoi( v ) );
-                else if ( ! strcmp( s, ":outputs" ) )
-                    configure_outputs( atoi( v ) );
-                else if ( ! strcmp( s, ":color" ) )
-                {
-                    color( (Fl_Color)atoll( v ) );
-                    redraw();
-                }
-                else if ( ! strcmp( s, ":sequence" ) )
-                {
-                    int i;
-                    sscanf( v, "%X", &i );
-
-                    if ( i )
-                    {
-                        Audio_Sequence *t = (Audio_Sequence*)Loggable::find( i );
-
-                        /* FIXME: our track might not have been
-                         * defined yet... what should we do about this
-                         * chicken/egg problem? */
-                        if ( t )
-                        {
-//                        assert( t );
-
-                            sequence( t );
-                        }
-
-                    }
-
-                }
-
-            }
-        }
-
-
-    virtual void get ( Log_Entry &e ) const
-        {
-            e.add( ":name",            _name            );
-            e.add( ":sequence",        sequence()          );
-            e.add( ":selected",        _selected        );
-            e.add( ":height",          size()           );
-            e.add( ":inputs",          input.size()     );
-            e.add( ":outputs",         output.size()    );
-            e.add( ":color",           (unsigned long)color());
-        }
 
     /* for loggable */
     LOG_CREATE_FUNC( Track );
@@ -269,7 +197,6 @@ public:
 
     void draw ( void );
     int handle ( int m );
-
 
     /* Engine */
     const Audio_Region *capture_region ( void ) const;

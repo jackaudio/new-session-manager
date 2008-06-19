@@ -41,16 +41,17 @@ protected:
 
     void handle_widget_change ( nframes_t start, nframes_t length );
 
+    void draw ( void );
+    int handle ( int m );
+
 public:
 
     LOG_CREATE_FUNC( Audio_Sequence );
 
-    Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }
-
-
     Audio_Sequence ( Track *track );
     ~Audio_Sequence ( );
 
+    Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }
 
     Sequence * clone_empty ( void )
         {
@@ -58,13 +59,6 @@ public:
 
             return t;
         }
-
-//    const char *class_name ( void ) { return "Audio_Sequence"; }
-
-    void draw ( void );
-    int handle ( int m );
-    void dump ( void );
-    void remove_selected ( void );
 
     const Audio_Region *capture_region ( void ) const;
 

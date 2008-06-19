@@ -61,7 +61,9 @@ Audio_Sequence::~Audio_Sequence ( )
     Loggable::block_end();
 }
 
+
 
+/** return a pointer to the current capture region for this sequence */
 const Audio_Region *
 Audio_Sequence::capture_region ( void ) const
 {
@@ -128,7 +130,6 @@ deurlify ( char *url )
 
     *w = NULL;
 }
-
 
 void
 Audio_Sequence::handle_widget_change ( nframes_t start, nframes_t length )

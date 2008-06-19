@@ -106,6 +106,7 @@ Timeline::adjust_vscroll ( void )
     vscroll->value( _yposition, h() - rulers->h() - hscroll->h(), 0, pack_visible_height( tracks ) );
 }
 
+/** recalculate the size of horizontal scrolling area and inform scrollbar */
 void
 Timeline::adjust_hscroll ( void )
 {
@@ -157,6 +158,7 @@ Timeline::menu_cb ( Fl_Widget *w, void *v )
     ((Timeline*)v)->menu_cb( (Fl_Menu_*)w );
 }
 
+/** ensure that p1 is less than p2 */
 void
 Timeline::fix_range ( void )
 {
@@ -466,24 +468,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
 
 }
 
-
-
-/* float */
-/* Timeline::beats_per_minute ( nframes_t when ) const */
-/* { */
-
-/* /\*     return tempo_track->beats_per_minute( when ); *\/ */
-
-/* } */
-
-/* int */
-/* Timeline::beats_per_bar ( nframes_t when ) const */
-/* { */
-/*     time_sig t = time_track->time( when ); */
-
-/*     return t.beats_per_bar; */
-/* } */
-
 void
 Timeline::beats_per_minute ( nframes_t when, float bpm )
 {
@@ -495,7 +479,6 @@ Timeline::time ( nframes_t when, int bpb, int note_type )
 {
     time_track->add( new Time_Point( when, bpb, note_type ) );
 }
-
 
 /************/
 /* Snapping */
@@ -590,7 +573,6 @@ Timeline::next_line ( nframes_t *frame, bool bar ) const
     }
 }
 
-
 /** Set the value pointed to by /frame/ to the frame number of the of
     the nearest measure line to *less than* /when/. Returns true if
     the new value of *frame is valid, false otherwise. */
@@ -612,16 +594,16 @@ Timeline::prev_line ( nframes_t *frame, bool bar ) const
     }
 }
 
-
-
 
 
+/** given screen pixel coordinate /x/ return frame offset into
+ * timeline, taking into account the current scroll position, widget
+ * layout, etc. */
 nframes_t
 Timeline::x_to_offset ( int x ) const
 {
     return x_to_ts( max( 0, x - Track::width() ) ) + xoffset;
 }
-
 
 /** draws a single measure line */
 static void
@@ -647,6 +629,7 @@ draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
 /* FIXME: wrong place for this */
 const float ticks_per_beat = 1920.0;
 
+/** re-render the unified tempomap based on the current contents of the Time and Tempo sequences */
 void
 Timeline::update_tempomap ( void )
 {
@@ -664,6 +647,7 @@ Timeline::update_tempomap ( void )
     _tempomap.sort( Sequence_Widget::sort_func );
 }
 
+/** return a stucture containing the BBT info which applies at /frame/ */
 position_info
 Timeline::solve_tempomap ( nframes_t frame ) const
 {
@@ -782,6 +766,7 @@ done:
     return pos;
 }
 
+/** maybe draw appropriate measure lines in rectangle defined by X, Y, W, and H, using color /color/ as a base */
 void
 Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 {
@@ -802,36 +787,6 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
 
     fl_pop_clip();
 
-}
-
-/* /\** just like draw mesure lines except that it also draws the BBT values.  *\/ */
-/* void */
-/* Timeline::draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color ) */
-/* { */
-/* //    render_tempomap( X, Y, W, H, color, true ); */
-/* } */
-
-void
-Timeline::xposition ( int X )
-{
-//    _old_xposition = xoffset;
-
-/*     /\* FIXME: shouldn't have to do this... *\/ */
-/*     X = min( X, ts_to_x( length() ) - tracks->w() - Track::width() ); */
-
-    xoffset = x_to_ts( X );
-
-    damage( FL_DAMAGE_SCROLL );
-}
-
-void
-Timeline::yposition ( int Y )
-{
-//    _old_yposition = _yposition;
-
-    _yposition = Y;
-
-    damage( FL_DAMAGE_SCROLL );
 }
 
 void
@@ -855,6 +810,7 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
     fl_pop_clip();
 }
 
+/** handle resize event */
 void
 Timeline::resize ( int X, int Y, int W, int H )
 {
@@ -868,6 +824,7 @@ Timeline::resize ( int X, int Y, int W, int H )
     vscroll->size( vscroll->w(), H - 18 );
 }
 
+/** draw ancillary cursors (not necessarily in the overlay plane) */
 void
 Timeline::draw_cursors ( void ) const
 {
@@ -960,7 +917,7 @@ done:
 
 }
 
-
+/** draw a single cursor line at /frame/ with color /color/ using symbol routine /symbol/ for the cap */
 void
 Timeline::draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color) ) const
 {
@@ -1031,8 +988,7 @@ Timeline::redraw_playhead ( void )
     }
 }
 
-
-/** called so many times a second to redraw the playhead etc.  */
+/** called so many times a second to redraw the playhead etc. */
 void
 Timeline::update_cb ( void *arg )
 {
@@ -1043,6 +999,7 @@ Timeline::update_cb ( void *arg )
     tl->redraw_playhead();
 }
 
+/** draw cursors in overlay plane */
 void
 Timeline::draw_overlay ( void )
 {
@@ -1075,9 +1032,7 @@ Timeline::draw_overlay ( void )
 
 }
 
-// #include "Sequence_Widget.H"
-
-/** select all widgets in inside rectangle /r/ */
+/** select sequence widgets within rectangle /r/ */
 void
 Timeline::select ( const Rectangle &r )
 {
@@ -1092,18 +1047,19 @@ Timeline::select ( const Rectangle &r )
     }
 }
 
+/** delete all selected sequence widgets */
 void
 Timeline::delete_selected ( void )
 {
     Sequence_Widget::delete_selected();
 }
 
+/** clear the selection of seqeunce widgets */
 void
 Timeline::select_none ( void )
 {
     Sequence_Widget::select_none();
 }
-
 
 /** An unfortunate necessity for implementing our own DND aside from
  * the (bogus) native FLTK system */
@@ -1135,19 +1091,6 @@ Timeline::handle_scroll ( int m )
         return menu->test_shortcut() || hscroll->handle( m ) || vscroll->handle( m );
     else
         return 0;
-}
-
-nframes_t
-Timeline::length ( void ) const
-{
-    nframes_t l = 0;
-
-    for ( int i = tracks->children(); i--; )
-        l = max( l, ((Track*)tracks->child( i ))->sequence()->length() );
-
-//    adjust_hscroll();
-
-    return l;
 }
 
 int
@@ -1293,13 +1236,82 @@ Timeline::handle ( int m )
     }
 }
 
+/** retrun a pointer to the track named /name/, or NULL if no track is named /name/ */
+Track *
+Timeline::track_by_name ( const char *name )
+{
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
 
+        if ( ! strcmp( name, t->name() ) )
+            return t;
+    }
+
+    return NULL;
+}
+
+/** return a malloc'd string representing a unique name for a new track */
+char *
+Timeline::get_unique_track_name ( const char *name )
+{
+    char pat[256];
+
+    strcpy( pat, name );
+
+    for ( int i = 1; track_by_name( pat ); ++i )
+        snprintf( pat, sizeof( pat ), "%s.%d", name, i );
+
+    return strdup( pat );
+}
+
+/**********/
+/* Public */
+/**********/
+
+/** return the current length of the timeline, which is arrived at by
+ * calculating the end frame of the rightmost audio region on an
+ * active audio sequence. Control_Points, etc. do not factor into this
+ * calcaulation. */
+nframes_t
+Timeline::length ( void ) const
+{
+    nframes_t l = 0;
+
+    for ( int i = tracks->children(); i--; )
+        l = max( l, ((Track*)tracks->child( i ))->sequence()->length() );
+
+//    adjust_hscroll();
+
+    return l;
+}
+
+/** set horizontal scroll postion to absolute pixel coordinate /X/ */
+void
+Timeline::xposition ( int X )
+{
+    xoffset = x_to_ts( X );
+
+    damage( FL_DAMAGE_SCROLL );
+}
+
+/** set vertical scroll position to absolute pixel coordinate /Y/ */
+void
+Timeline::yposition ( int Y )
+{
+    _yposition = Y;
+
+    damage( FL_DAMAGE_SCROLL );
+}
+
+/** zoom in by one zoom step */
 void
 Timeline::zoom_in ( void )
 {
     hscroll->zoom_in();
 }
 
+/** zoom out by one zoom step */
 void
 Timeline::zoom_out ( void )
 {
@@ -1322,6 +1334,7 @@ Timeline::zoom ( float secs )
     redraw();
 }
 
+/** fit the zoom to the current length of the timeline (subject to nearest power of two) */
 void
 Timeline::zoom_fit ( void )
 {
@@ -1329,33 +1342,7 @@ Timeline::zoom_fit ( void )
     zoom( length() / (float)sample_rate() );
 }
 
-Track *
-Timeline::track_by_name ( const char *name )
-{
-    for ( int i = tracks->children(); i-- ; )
-    {
-        Track *t = (Track*)tracks->child( i );
-
-        if ( ! strcmp( name, t->name() ) )
-            return t;
-    }
-
-    return NULL;
-}
-
-char *
-Timeline::get_unique_track_name ( const char *name )
-{
-    char pat[256];
-
-    strcpy( pat, name );
-
-    for ( int i = 1; track_by_name( pat ); ++i )
-        snprintf( pat, sizeof( pat ), "%s.%d", name, i );
-
-    return strdup( pat );
-}
-
+/** add /track/ to the timeline */
 void
 Timeline::add_track ( Track *track )
 {
@@ -1372,6 +1359,7 @@ Timeline::add_track ( Track *track )
 
 }
 
+/** remove /track/ from the timeline */
 void
 Timeline::remove_track ( Track *track )
 {

@@ -111,12 +111,23 @@ private:
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( const Fl_Menu_ *m );
 
+    void draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool filled, int X, int W );
+
 protected:
 
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
 
+    int handle ( int m );
+    void draw_box( void );
+    void draw ( void );
+    void resize ( void );
+
 public:
+
+    LOG_CREATE_FUNC( Audio_Region );
+
+    SEQUENCE_WIDGET_CLONE_FUNC( Audio_Region );
 
     static Fl_Boxtype _box;
     static Fl_Color _selection_color;
@@ -132,36 +143,17 @@ public:
 
     bool current ( void ) const { return this == belowmouse(); }
 
-public:
-
     const char * source_name ( void ) const;
-
-    LOG_CREATE_FUNC( Audio_Region );
-
-    SEQUENCE_WIDGET_CLONE_FUNC( Audio_Region );
-
-    ~Audio_Region ( )
-        {
-            log_destroy();
-        }
-
-    Fl_Boxtype box ( void ) const { return Audio_Region::_box; }
-    Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE); }
 
     Audio_Region ( const Audio_Region & rhs );
     Audio_Region ( Audio_File *c );
     Audio_Region ( Audio_File *c, Sequence *t, nframes_t o );
+    ~Audio_Region ( );
 
-    void draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool filled, int X, int W );
-
-
-    int handle ( int m );
-    void draw_box( void );
-    void draw ( void );
-    void resize ( void );
+    Fl_Boxtype box ( void ) const { return Audio_Region::_box; }
+    Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE); }
 
     void normalize ( void );
-
 
     /* Engine */
     nframes_t read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const;

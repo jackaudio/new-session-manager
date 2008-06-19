@@ -17,6 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* Wrapper for a JACK audio port */
+
 #include "Port.H"
 
 #include <string.h>
@@ -24,6 +26,8 @@
 #include "Engine.H"
 
 #include <stdio.h> // sprintf
+
+static const char *name_for_port ( Port::type_e dir, const char *base, int n, const char *type );
 
 
 
@@ -39,6 +43,22 @@ Port::Port ( const char *name, type_e dir )
     activate( name, dir );
 }
 
+Port::Port ( type_e dir, const char *base, int n, const char *type )
+{
+    const char *name = name_for_port( dir, base, n, type );
+
+    activate( name, dir );
+}
+
+Port::~Port ( )
+{
+/*    if ( _port ) */
+/*         jack_port_unregister( engine->client(), _port ); */
+
+}
+
+
+
 static const char *
 name_for_port ( Port::type_e dir, const char *base, int n, const char *type )
 {
@@ -52,27 +72,6 @@ name_for_port ( Port::type_e dir, const char *base, int n, const char *type )
         snprintf( pname, sizeof( pname ), "%s/%s-%d", base, dir_s, n + 1 );
 
     return pname;
-}
-
-Port::Port ( type_e dir, const char *base, int n, const char *type )
-{
-    const char *name = name_for_port( dir, base, n, type );
-
-    activate( name, dir );
-}
-
-/* Port::Port ( ) */
-/* { */
-/*     _name = NULL; */
-/*     _port = NULL; */
-/* } */
-
-Port::~Port ( )
-{
-
-/*    if ( _port ) */
-/*         jack_port_unregister( engine->client(), _port ); */
-
 }
 
 void

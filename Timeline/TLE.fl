@@ -220,7 +220,7 @@ if ( r < 0 )
 
 	fl_alert( "Could not open project \\"%s\\":\\n\\n\\t%s", name, s );
 	// we are in a somewhar ambiguous state now with no project open.
-}} selected
+}}
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -868,8 +868,8 @@ while ( _window->shown() )
   Function {make_window()} {open
   } {
     Fl_Window _window {
-      label {New Project} open
-      xywh {384 630 550 195} type Double modal xclass Non_DAW visible
+      label {New Project} open selected
+      xywh {615 414 550 195} type Double modal xclass Non_DAW visible
     } {
       Fl_File_Input _name {
         label {Named:}
@@ -911,7 +911,7 @@ while ( _window->shown() )
       }
       Fl_Choice _template {
         label {Template:}
-        private xywh {310 60 225 25} down_box BORDER_BOX
+        private xywh {310 60 225 25} down_box BORDER_BOX hide
       } {
         MenuItem {} {
           label Default

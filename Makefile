@@ -68,6 +68,24 @@ ifneq ($(CALCULATING),yes)
 	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) 2>/dev/null > .deps  && echo $(DONE)
 endif
 
+install: all
+	@ echo -n "Installing..."
+	@ install Timeline/timeline $(prefix)/bin/non-daw
+#	@ install Mixer/mixer $(prefix)/bin/non-mixer
+	@ mkdir -p $(prefix)/share/non-daw
+	@ mkdir -p $(prefix)/share/pixmaps/non-daw
+	@ mkdir -p $(prefix)/doc/non-daw
+	@ cp pixmaps/*.png $(prefix)/share/pixmaps/non-daw
+	@ cp doc/*.html doc/*.png $(prefix)/doc/non-daw
+	@ cp COPYING $(prefix)/doc/non-daw
+	@ echo "$(DONE)"
+ifneq ($(USE_DEBUG),yes)
+	@ echo -n "Stripping..."
+	@ strip $(prefix)/bin/non-daw
+	@ strip $(prefix)/bin/non-mixer
+	@ echo "$(DONE)"
+endif
+
 clean_deps:
 	@ rm -f .deps
 

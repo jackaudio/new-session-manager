@@ -353,7 +353,7 @@ Peaks::ready ( nframes_t s, int npeaks, nframes_t chunksize ) const
 {
     Peakfile _peakfile;
 
-    if ( ! _peakfile.open( _clip->name(), _clip->channels(), chunksize ) )
+    if ( ! _peakfile.open( _clip->filename(), _clip->channels(), chunksize ) )
         return false;
 
     return _peakfile.ready( s, npeaks );
@@ -377,7 +377,7 @@ Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chu
 
     Peakfile _peakfile;
 
-    if ( ! _peakfile.open( _clip->name(),  _clip->channels(), chunksize ) )
+    if ( ! _peakfile.open( _clip->filename(),  _clip->channels(), chunksize ) )
         return 0;
 
     return _peakfile.read_peaks( peaks, s, npeaks, chunksize );
@@ -465,7 +465,7 @@ Peaks::read_peaks ( nframes_t s, int npeaks, nframes_t chunksize ) const
 bool
 Peaks::current ( void ) const
 {
-    return ! newer( _clip->name(), peakname( _clip->name() ) );
+    return ! newer( _clip->filename(), peakname( _clip->filename() ) );
 }
 
 bool
@@ -507,7 +507,7 @@ Peaks::prepare_for_writing ( void )
 
     assert( ! _peak_writer );
 
-    _peak_writer = new Peaks::Streamer( _clip->name(), _clip->channels(), cache_minimum );
+    _peak_writer = new Peaks::Streamer( _clip->filename(), _clip->channels(), cache_minimum );
 }
 
 void
@@ -678,7 +678,7 @@ Peaks::Builder::make_peaks_mipmap ( void )
 
     Audio_File *_clip = _peaks->_clip;
 
-    const char *filename = _clip->name();
+    const char *filename = _clip->filename();
 
     FILE *rfp;
 
@@ -728,7 +728,7 @@ Peaks::Builder::make_peaks_mipmap ( void )
         /* open the peakfile for the previous cache level */
         pf.open( rfp, _clip->channels(), cs >> Peaks::cache_step );
 
-//        pf.open( _clip->name(), _clip->channels(), cs >> Peaks::cache_step );
+//        pf.open( _clip->filename(), _clip->channels(), cs >> Peaks::cache_step );
 
         write_block_header( cs );
 
@@ -758,7 +758,7 @@ Peaks::Builder::make_peaks ( void )
 {
     Audio_File *_clip = _peaks->_clip;
 
-    const char *filename = _clip->name();
+    const char *filename = _clip->filename();
 
     DMESSAGE( "building peaks for \"%s\"", filename );
 

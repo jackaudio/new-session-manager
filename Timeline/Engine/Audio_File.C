@@ -55,6 +55,30 @@ Audio_File::all_supported_formats ( std::list <const char *> &formats )
         formats.push_back( fd->name );
 }
 
+static bool
+is_absolute ( const char *name )
+{
+    return *name == '/';
+}
+
+/** return a static pointer to /name/ corrected for relative path. */
+const char *Audio_File::realname ( const char *name )
+{
+    static char rname[512];
+
+    if ( is_absolute( name ) )
+        strncpy( rname, name, sizeof( rname ) );
+    else
+        snprintf( rname, sizeof( rname ), "sources/%s", name );
+
+    return rname;
+}
+
+const char *
+Audio_File::filename ( void ) const
+{
+    return realname( _filename );
+}
 
 /** attmpet to open any supported filetype */
 Audio_File *

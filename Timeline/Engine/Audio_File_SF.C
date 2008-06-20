@@ -61,7 +61,7 @@ Audio_File_SF::from_file ( const char *filename )
 
     memset( &si, 0, sizeof( si ) );
 
-    if ( ! ( in = sf_open( filename, SFM_READ, &si ) ) )
+    if ( ! ( in = sf_open( realname( filename ), SFM_READ, &si ) ) )
         return NULL;
 
 /*     if ( si.samplerate != timeline->sample_rate() ) */
@@ -110,7 +110,7 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
     char *name;
     asprintf( &name, "%s.%s", filename, fd->extension );
 
-    if ( ! ( out = sf_open( name, SFM_WRITE, &si ) ) )
+    if ( ! ( out = sf_open( realname( name ), SFM_WRITE, &si ) ) )
     {
         printf( "couldn't create soundfile.\n" );
         free( name );
@@ -140,7 +140,7 @@ Audio_File_SF::open ( void )
 
     memset( &si, 0, sizeof( si ) );
 
-    if ( ! ( _in = sf_open( _filename, SFM_READ, &si ) ) )
+    if ( ! ( _in = sf_open( realname( _filename ), SFM_READ, &si ) ) )
         return false;
 
     _current_read = 0;

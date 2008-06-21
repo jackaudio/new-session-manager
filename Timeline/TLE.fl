@@ -161,7 +161,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   } {
     Fl_Window main_window {
       label Timeline open
-      xywh {174 117 1025 770} type Double resizable xclass Non_DAW visible
+      xywh {279 117 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
@@ -194,33 +194,7 @@ main_window->redraw();}
             label {&Open}
             callback {const char *name = fl_dir_chooser( "Open Project", NULL, NULL );
 
-if ( ! name )
-	return;
-	
-
-int r = Project::open( name );
-	
-if ( r < 0 )
-{
-	const char *s = "";
-	
-	switch ( r )
-	{
-		case Project::E_LOCKED:
-			s = "Locked by another process";
-			break;
-		case Project::E_PERM:
-			s = "Access denied";
-			break;
-		case Project::E_INVALID:
-			s = "Not a Non-DAW project";
-			break;
-	}
-			
-
-	fl_alert( "Could not open project \\"%s\\":\\n\\n\\t%s", name, s );
-	// we are in a somewhar ambiguous state now with no project open.
-}}
+open( name );}
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -230,7 +204,7 @@ if ( r < 0 )
 if ( n != 2 )
 	return;
 	
-Project::compact();} selected
+Project::compact();}
             xywh {20 20 40 25}
           }
           Submenu {} {
@@ -849,6 +823,21 @@ update_progress( progress, pat, p );
 progress->redraw();
 
 Fl::check();} {}
+  }
+  Function {open( const char *name )} {open
+  } {
+    code {if ( ! name )
+	return;
+
+int r =	Project::open( name );
+
+if ( r < 0 )
+{
+	const char *s = Project::errstr( r );
+	
+	fl_alert( "Could not open project \\"%s\\":\\n\\n\\t%s", name, s );
+}} {selected
+    }
   }
 } 
 

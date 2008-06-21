@@ -33,8 +33,8 @@
 #include "Loggable.H"
 #include "Project.H"
 
-#include "Timeline.H" // for sample_rate();
-
+#include "Timeline.H" // for sample_rate()
+#include "Engine/Engine.H" // for sample_rate()
 #include "TLE.H" // all this just for load and save...
 
 #include <FL/filename.H>
@@ -50,6 +50,15 @@ extern TLE *tle;
 const int PROJECT_VERSION = 1;
 
 
+
+const char *Project::_errstr[] =
+{
+    "Not a Non-DAW project",
+    "Locked by another process",
+    "Access denied",
+    "Samplerate mismatch",
+    "Incompatible project version"
+};
 
 char Project::_name[256];
 char Project::_path[512];
@@ -107,7 +116,7 @@ Project::write_info ( void )
 }
 
 bool
-Project::read_info ( void )
+Project::read_info ( int *version, nframes_t *sample_rate )
 {
     FILE *fp;
 
@@ -124,27 +133,9 @@ Project::read_info ( void )
         MESSAGE( "Info: %s = %s", name, value );
 
         if ( ! strcmp( name, "sample rate" ) )
-        {
-            nframes_t rate = atoll( value );
-
-            if ( rate != timeline->sample_rate() )
-                WARNING( "incorrect samplerate" );
-        }
+            *sample_rate = atoll( value );
         else if ( ! strcmp( name, "version" ) )
-        {
-            int version = atoi( value );
-
-            if ( version < PROJECT_VERSION )
-            {
-                WARNING( "Incompatible project version. You must to use \"non-project-convert %d-%d\" to update this project's version", version, PROJECT_VERSION );
-                return false;
-            }
-            else if ( version > PROJECT_VERSION )
-            {
-                WARNING( "Incompatible project version (%d).", version );
-                return false;
-            }
-        }
+            *version = atoi( value );
 
         free( name );
         free( value );
@@ -224,16 +215,21 @@ Project::open ( const char *name )
     chdir( name );
 
     if ( ! acquire_lock( &_lockfd, ".lock" ) )
-    {
-        WARNING( "Could not open project: locked by another process!" );
-        return Project::E_LOCKED;
-    }
+        return E_LOCKED;
 
-    if ( ! read_info() )
+    int version;
+    nframes_t rate;
+
+    if ( ! read_info( &version, &rate ) )
         return E_INVALID;
 
+    if ( version != PROJECT_VERSION )
+        return E_VERSION;
+
     if ( ! Loggable::open( "history" ) )
-        FATAL( "error opening journal" );
+        return E_INVALID;
+
+    timeline->sample_rate( rate );
 
     set_name( name );
 

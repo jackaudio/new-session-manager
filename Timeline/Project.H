@@ -20,6 +20,8 @@
 const char template_dir[] = "share/non-daw/templates";
 const char user_template_dir[] = "~/.non-daw/templates";
 
+#include "types.h"
+
 class Project
 {
 
@@ -29,8 +31,10 @@ class Project
     static char _path[512];
 
     static bool write_info ( void );
-    static bool read_info ( void );
+    static bool read_info ( int *version, nframes_t *sample_rate );
     static void set_name ( const char *name );
+
+    static const char *_errstr[];
 
 public:
 
@@ -39,7 +43,11 @@ public:
         E_INVALID = -1,
         E_LOCKED = -2,
         E_PERM = -3,
+        E_SAMPLERATE = -4,
+        E_VERSION = -5
     };
+
+    static const char *errstr ( int n ) { return _errstr[ ( 0 - n ) - 1 ]; }
 
     static const char *name ( void ) { return Project::_name; }
     static void compact ( void );

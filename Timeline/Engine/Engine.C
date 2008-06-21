@@ -296,6 +296,8 @@ Engine::init ( void )
 
     _sample_rate = frame_rate();
 
+    MESSAGE( "Jack sample rate is %lu", (unsigned long)_sample_rate );
+
     timeline->_sample_rate = frame_rate();
 
     /* we don't need to create any ports until tracks are created */

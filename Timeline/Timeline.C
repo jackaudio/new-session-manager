@@ -17,6 +17,9 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* This is the Timeline widget, which contains all the tracks and
+ * provides cursor overlays, scrolling, zooming, measure lines, tempo
+ * map and just about everything else. */
 
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Pack.H>

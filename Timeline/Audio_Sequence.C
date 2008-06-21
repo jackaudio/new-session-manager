@@ -17,6 +17,9 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* An Audio_Sequence is a sequence of Audio_Regions. Takes and 'track
+ * contents' consist of these objects */
+
 #include <Fl/fl_ask.H>
 
 #include "Audio_Sequence.H"

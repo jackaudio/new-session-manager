@@ -17,6 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* routines to draw a waveform from peak data */
+
 #include <FL/fl_draw.H>
 
 #include "Waveform.H"

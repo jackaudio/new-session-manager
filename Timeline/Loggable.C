@@ -17,6 +17,13 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* This class handles all journaling. All journaled objects must
+   inherit from Loggable as well as define a few special methods (via
+   macros), get and set methods, and have contructors and destructors
+   that call log_create() and log_destroy() in the appropriate
+   order. Any action that might affect multiple loggable objects
+   *must* be braced by calls to Loggable::block_start() and
+   Loggable::block_end() in order for Undo to work properly. */
 
 #include "Loggable.H"
 

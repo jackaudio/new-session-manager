@@ -17,6 +17,7 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* Controls the audio transport */
 
 #include "Transport.H"
 
@@ -26,56 +27,7 @@
 
 #define client engine->client()
 
-void
-Transport::poll ( void )
-{
-    jack_transport_state_t ts;
-
-    ts = jack_transport_query( client, this );
-
-    rolling = ts == JackTransportRolling;
-}
-
-void
-Transport::locate ( nframes_t frame )
-{
-    jack_transport_locate( client, frame );
-}
-
-
-void
-Transport::start ( void )
-{
-//    MESSAGE( "Starting transport" );
-    if ( _record_button->value() )
-        timeline->record();
-
-    jack_transport_start( client );
-}
-
-void
-Transport::stop ( void )
-{
-//    MESSAGE( "Stopping transport" );
-    if ( _record_button->value() )
-        toggle_record();
-
-    jack_transport_stop( client );
-}
-
-void
-Transport::toggle ( void )
-{
-    if ( rolling )
-        stop();
-    else
-        start();
-}
-
-
-/*******/
-/* GUI */
-/*******/
+
 
 Transport::Transport ( int X, int Y, int W, int H, const char *L )
     : Fl_Pack( X, Y, W, H, L )
@@ -117,6 +69,8 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
 
     end();
 }
+
+
 
 void
 Transport::cb_button ( Fl_Widget *w, void *v )
@@ -173,4 +127,54 @@ Transport::handle ( int m )
     else
         return Fl_Pack::handle( m );
 
+}
+
+/***********/
+/* Control */
+/***********/
+
+void
+Transport::poll ( void )
+{
+    jack_transport_state_t ts;
+
+    ts = jack_transport_query( client, this );
+
+    rolling = ts == JackTransportRolling;
+}
+
+void
+Transport::locate ( nframes_t frame )
+{
+    jack_transport_locate( client, frame );
+}
+
+
+void
+Transport::start ( void )
+{
+//    MESSAGE( "Starting transport" );
+    if ( _record_button->value() )
+        timeline->record();
+
+    jack_transport_start( client );
+}
+
+void
+Transport::stop ( void )
+{
+//    MESSAGE( "Stopping transport" );
+    if ( _record_button->value() )
+        toggle_record();
+
+    jack_transport_stop( client );
+}
+
+void
+Transport::toggle ( void )
+{
+    if ( rolling )
+        stop();
+    else
+        start();
 }

@@ -17,7 +17,7 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-/* actual implementation of our side of the LASH protocol */
+/* Actual implementation of our side of the LASH protocol */
 
 /* NOTES: Since LASH doesn't provide us with the information we
  * need--when we need it--we just punt and only use LASH to save and

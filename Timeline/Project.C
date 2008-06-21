@@ -20,6 +20,8 @@
 /* Routings for opening/closing/creation of projects. All the actual
    project state belongs to Timeline and other classes. */
 
+/* Project management routines. */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

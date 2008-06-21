@@ -17,10 +17,13 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* Handler based wrapper for LASH */
+
 #include "LASH_Client.H"
 
-
 #include "util/debug.h"
+
+
 
 LASH_Client::LASH_Client ( )
 {
@@ -31,6 +34,8 @@ LASH_Client::~LASH_Client ( )
 {
     /* TODO: anything? */
 }
+
+
 
 #ifdef HAVE_LASH
 

@@ -17,6 +17,12 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* A Track is a container for various sequences; the sequence, the
+ * takes (inactive sequences), annotation sequences, control
+ * sequences */
+/* TODO: split into Track and Audio_Track (and maybe later Video_Track
+ * and MIDI_Track */
+
 #include "Track.H"
 
 #include "Transport.H"

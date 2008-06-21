@@ -47,7 +47,7 @@ extern TLE *tle;
 /* FIXME: wrong place for this */
 #define APP_TITLE "Non-DAW"
 
-#define PROJECT_VERSION "0.28.0"
+const int PROJECT_VERSION = 1;
 
 
 
@@ -96,7 +96,7 @@ Project::write_info ( void )
         return false;
     }
 
-    fprintf( fp, "created by\n\t%s\nversion\n\t%s\nsample rate\n\t%lu\n",
+    fprintf( fp, "created by\n\t%s\nversion\n\t%d\nsample rate\n\t%lu\n",
              APP_TITLE " " VERSION,
              PROJECT_VERSION,
              (unsigned long)timeline->sample_rate() );
@@ -117,7 +117,38 @@ Project::read_info ( void )
         return false;
     }
 
-    /* TODO: something */
+    char *name, *value;
+
+    while ( fscanf( fp, "%a[^\n]\n\t%a[^\n]\n", &name, &value ) == 2 )
+    {
+        MESSAGE( "Info: %s = %s", name, value );
+
+        if ( ! strcmp( name, "sample rate" ) )
+        {
+            nframes_t rate = atoll( value );
+
+            if ( rate != timeline->sample_rate() )
+                WARNING( "incorrect samplerate" );
+        }
+        else if ( ! strcmp( name, "version" ) )
+        {
+            int version = atoi( value );
+
+            if ( version < PROJECT_VERSION )
+            {
+                WARNING( "Incompatible project version. You must to use \"non-project-convert %d-%d\" to update this project's version", version, PROJECT_VERSION );
+                return false;
+            }
+            else if ( version > PROJECT_VERSION )
+            {
+                WARNING( "Incompatible project version (%d).", version );
+                return false;
+            }
+        }
+
+        free( name );
+        free( value );
+    }
 
     fclose( fp );
 
@@ -198,6 +229,9 @@ Project::open ( const char *name )
         return Project::E_LOCKED;
     }
 
+    if ( ! read_info() )
+        return E_INVALID;
+
     if ( ! Loggable::open( "history" ) )
         FATAL( "error opening journal" );
 
@@ -205,8 +239,6 @@ Project::open ( const char *name )
 
     *_path = '\0';
     fl_filename_absolute( _path, sizeof( _path ), "." );
-
-    read_info();
 
     _is_open = true;
 

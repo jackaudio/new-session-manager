@@ -168,6 +168,10 @@ Log_Entry::parse_alist( const char *s )
 bool
 Log_Entry::diff ( Log_Entry *e1, Log_Entry *e2 )
 {
+
+    if ( ! e1 )
+        return true;
+
     char **sa1 = e1->_sa;
     char **sa2 = e2->_sa;
 

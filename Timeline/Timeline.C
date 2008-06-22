@@ -1342,7 +1342,11 @@ void
 Timeline::zoom_fit ( void )
 {
     xposition( 0 );
-    zoom( length() / (float)sample_rate() );
+
+    if ( length() )
+        zoom( length() / (float)sample_rate() );
+    else
+        zoom( 60 );
 }
 
 /** add /track/ to the timeline */

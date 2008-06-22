@@ -234,9 +234,15 @@ main_window->redraw();}
           }
           MenuItem {} {
             label {&Open}
-            callback {const char *name = fl_dir_chooser( "Open Project", NULL, NULL );
+            callback {char *path;
 
-open( name );}
+read_line( user_config_dir, "default_path", &path );
+
+const char *name = fl_dir_chooser( "Open Project", path, NULL );
+
+free( path );
+
+open( name );} selected
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -647,8 +653,7 @@ else
 }
 
 m->redraw();
-project_name->redraw();} {selected
-    }
+project_name->redraw();} {}
   }
   Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
   } {
@@ -829,7 +834,8 @@ if ( r < 0 )
   }
 } 
 
-class New_Project_Dialog {} {
+class New_Project_Dialog {open
+} {
   Function {New_Project_Dialog()} {open
   } {
     code {make_window();} {}
@@ -877,9 +883,15 @@ while ( _window->shown() )
 {
 	fl_alert( "Must be a directory" );
 	o->value( "" );
-}}
+	return;
+}
+
+write_line( user_config_dir, "default_path", o->value() );}
         xywh {75 100 375 35}
         code0 {\#include <FL/filename.H>}
+        code1 {char *v;}
+        code2 {read_line( user_config_dir, "default_path", &v );}
+        code3 {o->value( v );}
       }
       Fl_Box {} {
         label {New Project}

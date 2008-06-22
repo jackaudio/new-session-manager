@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 unsigned long
 mtime ( const char *file )
@@ -135,4 +137,44 @@ touch ( int fd )
     fstat( fd, &st );
 
     fchmod( fd, st.st_mode );
+}
+
+/** write a single string to a file */
+void
+write_line ( const char *dir, const char *name, const char *value )
+{
+    char path[512];
+
+    snprintf( path, sizeof( path ), "%s/%s", dir, name );
+
+    FILE *fp = fopen( path, "w" );
+
+    if ( ! fp )
+        return;
+
+    fputs( value, fp );
+
+    fclose( fp );
+}
+
+/** write a single string to a file */
+void
+read_line ( const char *dir, const char *name, char **value )
+{
+    char path[512];
+
+    *value = 0;
+
+    snprintf( path, sizeof( path ), "%s/%s", dir, name );
+
+    FILE *fp = fopen( path, "r" );
+
+    if ( ! fp )
+        return;
+
+    *value = (char*)malloc( 512 );
+
+    fgets( *value, 512, fp );
+
+    fclose( fp );
 }

@@ -57,6 +57,8 @@ decl {\#include "Engine/Engine.H"} {}
 
 decl {\#include "Engine/Audio_File.H" // for supported formats} {} 
 
+decl {class About_Dialog;} {} 
+
 decl {extern char project_display_name[256];} {global
 } 
 
@@ -65,16 +67,8 @@ decl {extern char *user_config_dir;} {global
 
 class TLE {open
 } {
-  decl {Fl_Color system_colors[3];} {public
-  }
-  decl {static void menubar_cb ( void *v )} {}
-  decl {void menubar_cb ( void )} {}
-  Function {menu_picked_value( const Fl_Menu_ *m )} {open return_type {static int}
-  } {
-    code {return m->menu()[ m->value() ].flags & FL_MENU_VALUE;} {}
-  }
-  Function {save()} {open
-  } {
+  decl {Fl_Color system_colors[3];} {}
+  Function {save()} {} {
     code {const char options_filename[] = "options";
 // const char state_filename[] = "state";
 
@@ -85,18 +79,45 @@ asprintf( &path, "%s/%s", user_config_dir, options_filename );
 ((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Options" ), path );
 free( path );} {}
   }
-  Function {capture_format_cb( Fl_Widget *w, void *v )} {open private return_type {static void}
-  } {
-    code {((TLE*)v)->capture_format_cb();} {}
-  }
-  Function {capture_format_cb()} {open private return_type void
-  } {
-    code {Fl_Menu_ *o = menubar;
+  Function {quit()} {} {
+    code {Project::close();
 
-Track::capture_format = o->menu()[ o->value() ].label();} {}
+save();
+
+while ( Fl::first_window() ) Fl::first_window()->hide();} {}
   }
-  Function {run()} {open
-  } {
+  Function {open( const char *name )} {} {
+    code {if ( ! name )
+	return;
+
+int r =	Project::open( name );
+
+if ( r < 0 )
+{
+	const char *s = Project::errstr( r );
+	
+	fl_alert( "Could not open project \\"%s\\":\\n\\n\\t%s", name, s );
+}} {}
+  }
+  Function {save_timeline_settings()} {} {
+    code {if ( Project::open() )
+{
+	// save project local options (Timeline menu)
+	((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Project/Se&ttings" ), "options" );
+}} {}
+  }
+  Function {load_timeline_settings()} {} {
+    code {if ( Project::open() )
+{
+	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), "options" );
+}
+
+
+update_menu();
+
+project_name->redraw();} {}
+  }
+  Function {run()} {} {
     code {update_menu();
 
 main_window->show();
@@ -105,8 +126,7 @@ Fl::lock();
 
 // Fl::run();} {}
   }
-  Function {TLE()} {open
-  } {
+  Function {TLE()} {} {
     code {Fl::visual( FL_DOUBLE | FL_RGB8 );
 
 make_window();
@@ -158,11 +178,11 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   Function {make_window()} {open
   } {
     Fl_Window main_window {
-      label Timeline open
-      xywh {254 117 1025 770} type Double resizable xclass Non_DAW visible
+      label Timeline
+      private xywh {254 117 1025 770} type Double resizable xclass Non_DAW visible
     } {
-      Fl_Menu_Bar menubar {open
-        xywh {0 0 1024 25}
+      Fl_Menu_Bar menubar {selected
+        private xywh {0 0 1024 25}
       } {
         Submenu {} {
           label {&Project} open
@@ -242,7 +262,7 @@ const char *name = fl_dir_chooser( "Open Project", path, NULL );
 
 free( path );
 
-open( name );} selected
+open( name );}
             xywh {10 10 40 25}
           }
           MenuItem {} {
@@ -518,14 +538,9 @@ Fl::scheme( Fl::scheme() );}
         } {
           MenuItem {} {
             label {&About}
-            callback {Fl_Window *win = make_about_dialog();
+            callback {About_Dialog ab;
 
-win->show();
-
-while ( win->shown() )
-	Fl::wait();
-	
-delete win;}
+ab.run();}
             xywh {0 0 40 25}
           }
         }
@@ -544,13 +559,13 @@ delete win;}
             code1 {o->labeltype( FL_NO_LABEL );}
             class Transport
           }
-          Fl_Pack clocks_pack {open
-            xywh {195 23 288 46} type HORIZONTAL
+          Fl_Pack clocks_pack {
+            private xywh {195 23 288 46} type HORIZONTAL
             code0 {o->spacing( 2 );}
           } {
-            Fl_Box playhead_clock {
+            Fl_Box {} {
               label PLAYHEAD
-              xywh {195 29 137 40} box BORDER_BOX color 40
+              private xywh {195 29 137 40} box BORDER_BOX color 40
               code0 {o->type( Clock::HMS );}
               code1 {o->run( &transport->frame );}
               class Clock
@@ -586,21 +601,21 @@ delete win;}
           }
           Fl_Progress capture_buffer_progress {
             label {50%}
-            xywh {921 26 104 14} labelsize 10
+            private xywh {921 26 104 14} labelsize 10
           }
           Fl_Progress cpu_load_progress {
             label {50%}
-            xywh {921 56 104 14} labelsize 9
+            private xywh {921 56 104 14} labelsize 9
           }
           Fl_Progress playback_buffer_progress {
             label {50%}
-            xywh {921 41 104 14} labelsize 10
+            private xywh {921 41 104 14} labelsize 10
           }
         }
       }
       Fl_Progress progress {
         label {0%}
-        xywh {15 394 995 41} hide
+        private xywh {15 394 995 41} hide
       }
       Fl_Box {} {
         label {<Timeline>}
@@ -610,20 +625,26 @@ delete win;}
       }
       Fl_Box project_name {
         label {<project name>}
-        xywh {450 0 475 22} labeltype SHADOW_LABEL labelfont 2
+        private xywh {450 0 475 22} labeltype SHADOW_LABEL labelfont 2
         code0 {o->label( Project::name() );}
       }
       Fl_Value_Output xruns_output {
         label {xruns:}
-        xywh {980 2 44 20} maximum 40000 step 1
+        private xywh {980 2 44 20} maximum 40000 step 1
       }
     }
   }
-  Function {find_item( Fl_Menu_ *menu, const char *path )} {open return_type {static Fl_Menu_Item *}
+  Function {menu_picked_value( const Fl_Menu_ *m )} {private return_type {static int}
+  } {
+    code {return m->menu()[ m->value() ].flags & FL_MENU_VALUE;} {}
+  }
+  Function {find_item( Fl_Menu_ *menu, const char *path )} {private return_type {static Fl_Menu_Item *}
   } {
     code {return const_cast<Fl_Menu_Item*>(menu->find_item( path ));} {}
   }
-  Function {update_menu()} {open
+  decl {static void menubar_cb ( void *v )} {}
+  decl {void menubar_cb ( void )} {}
+  Function {update_menu()} {private
   } {
     code {Fl_Menu_Bar *m = menubar;
 
@@ -655,7 +676,7 @@ else
 m->redraw();
 project_name->redraw();} {}
   }
-  Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
+  Function {update_progress( Fl_Progress *p, char *s, float v )} {private return_type {static void}
   } {
     code {p->value( v );
 
@@ -663,7 +684,7 @@ snprintf( s, 5, "%d%%", (int)v );
 
 p->label( s );} {}
   }
-  Function {update_status()} {open
+  Function {update_status()} {private
   } {
     code {static char cbp[5], pbp[5], clp[5];
 
@@ -690,114 +711,27 @@ if ( engine->zombified() && ! zombie )
 	fl_alert( "Disconnected from JACK!" );
 }} {}
   }
-  Function {update_cb( void *v )} {return_type {static void}
+  Function {update_cb( void *v )} {private return_type {static void}
   } {
     code {Fl::repeat_timeout( STATUS_UPDATE_FREQ, update_cb, v );
 
 ((TLE*)v)->update_status();} {}
   }
-  Function {make_about_dialog()} {} {
-    Fl_Window about_dialog_window {
-      label About open
-      private xywh {664 192 495 655} type Double xclass {Non-DAW} visible
-    } {
-      Fl_Tabs {} {open
-        xywh {0 264 497 392}
-      } {
-        Fl_Group {} {
-          label Credits open
-          xywh {2 293 492 362}
-        } {
-          Fl_Box {} {
-            label {Non-DAW was written from scratch by
- Jonathan Moore Liles for his own use
- (see the manual).
-
-Nobody planned. Nobody helped.
- You can help now by donating time, money,
-and/or replacing the rest of Linux Audio
-with fast, light, reliable alternatives.}
-            xywh {39 322 418 262} box ROUNDED_BOX color 46 labelsize 18
-          }
-        }
-        Fl_Group {} {
-          label License open
-          xywh {2 288 492 311} hide
-        } {
-          Fl_Box {} {
-            label {Copyright (C) 2008 Jonathan Moore Liles}
-            xywh {43 302 410 37} labeltype SHADOW_LABEL labelfont 1 labelsize 18
-          }
-          Fl_Box {} {
-            label {This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.}
-            xywh {10 351 475 233} box ROUNDED_BOX color 46 labelfont 1 labelsize 12 labelcolor 53 align 144
-          }
-        }
-      }
-      Fl_Box {} {
-        label VERSION
-        xywh {25 20 445 180} box ROUNDED_BOX color 48 labelfont 1 labelsize 18 align 16
-        code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo.png" ) );}
-        code1 {o->label( VERSION );}
-      }
-      Fl_Return_Button {} {
-        label Rock
-        callback {about_dialog_window->hide();}
-        xywh {400 614 76 30}
-      }
-      Fl_Button {} {
-        label {http://non-daw.tuxfamily.org}
-        callback {\#if ! ( FL_MAJOR_VERSION >= 1 && FL_MINOR_VERSION >= 1 && FL_PATCH_VERSION >= 8 )
-	// FIXME: got a better idea?
-	system( "x-www-browser http://non-daw.tuxfamily.org &" );
-\#else
-	fl_open_uri( "http://non-daw.tuxfamily.org" );
-\#endif}
-        xywh {125 614 245 30} color 14 labeltype SHADOW_LABEL labelcolor 6
-      }
-      Fl_Box {} {
-        label {The Non DAW (Digital Audio Workstation)}
-        xywh {32 221 430 29} labeltype SHADOW_LABEL labelfont 3 labelsize 17
-      }
-    }
-  }
-  Function {save_timeline_settings()} {open
+  Function {capture_format_cb( Fl_Widget *w, void *v )} {private return_type {static void}
   } {
-    code {if ( Project::open() )
-{
-	// save project local options (Timeline menu)
-	((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Project/Se&ttings" ), "options" );
-}} {}
+    code {((TLE*)v)->capture_format_cb();} {}
   }
-  Function {load_timeline_settings()} {open
+  Function {capture_format_cb()} {private return_type void
   } {
-    code {if ( Project::open() )
-{
-	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), "options" );
-}
+    code {Fl_Menu_ *o = menubar;
 
-
-update_menu();
-
-project_name->redraw();} {}
+Track::capture_format = o->menu()[ o->value() ].label();} {}
   }
-  Function {quit()} {open
-  } {
-    code {Project::close();
-
-save();
-
-while ( Fl::first_window() ) Fl::first_window()->hide();} {}
-  }
-  Function {progress_cb( int p, void *arg )} {open return_type {static void}
+  Function {progress_cb( int p, void *arg )} {private return_type {static void}
   } {
     code {((TLE*)arg)->progress_cb( p );} {}
   }
-  Function {progress_cb( int p )} {open return_type void
+  Function {progress_cb( int p )} {private return_type void
   } {
     code {if ( ! progress->visible() )
 {
@@ -818,24 +752,9 @@ progress->redraw();
 
 Fl::check();} {}
   }
-  Function {open( const char *name )} {open
-  } {
-    code {if ( ! name )
-	return;
-
-int r =	Project::open( name );
-
-if ( r < 0 )
-{
-	const char *s = Project::errstr( r );
-	
-	fl_alert( "Could not open project \\"%s\\":\\n\\n\\t%s", name, s );
-}} {}
-  }
 } 
 
-class New_Project_Dialog {open
-} {
+class New_Project_Dialog {} {
   Function {New_Project_Dialog()} {open
   } {
     code {make_window();} {}
@@ -932,7 +851,14 @@ while ( window->shown() )
   Function {make_window()} {open
   } {
     Fl_Window window {
-      label {Project info} open
+      label {Project info}
+      callback {o->hide();
+
+if ( logo_box->image() )
+{
+	((Fl_Shared_Image*)logo_box->image())->release();
+	logo_box->image( NULL );
+}} open
       private xywh {649 226 520 740} type Double modal visible
     } {
       Fl_Value_Output {} {
@@ -964,9 +890,9 @@ while ( window->shown() )
         xywh {230 130 60 25} align 1
         code0 {o->value( timeline->ntracks() );}
       }
-      Fl_Box {} {
+      Fl_Box logo_box {
         label {<LOGO>}
-        xywh {51 180 418 235} box ROUNDED_BOX color 53 labelfont 1 labelsize 18 align 16
+        private xywh {51 180 418 235} box ROUNDED_BOX color 53 labelfont 1 labelsize 18 align 16
         code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo2.png" ) );}
         code1 {o->label( NULL );}
       }
@@ -980,7 +906,7 @@ while ( window->shown() )
         label {&Save}
         callback {notes_field->buffer()->savefile( "notes" );
 
-window->hide();}
+window->do_callback();}
         xywh {425 700 74 25}
       }
       Fl_Box {} {
@@ -993,8 +919,101 @@ window->hide();}
       }
       Fl_Button {} {
         label {&Discard}
-        callback {window->hide();}
+        callback {window->do_callback();}
         xywh {330 700 74 25}
+      }
+    }
+  }
+} 
+
+class About_Dialog {} {
+  Function {About_Dialog()} {open
+  } {
+    code {make_window();} {}
+  }
+  Function {run()} {return_type void
+  } {
+    code {window->show();
+
+while ( window->shown() )
+	Fl::wait();
+	
+delete window;} {}
+  }
+  Function {make_window()} {open private
+  } {
+    Fl_Window window {
+      label About
+      callback {o->hide();
+
+if ( logo_box->image() )
+{
+	((Fl_Shared_Image*)logo_box->image())->release();
+	logo_box->image( NULL );
+}} open
+      private xywh {669 197 495 655} type Double xclass {Non-DAW} visible
+    } {
+      Fl_Tabs {} {open
+        xywh {0 264 497 392}
+      } {
+        Fl_Group {} {
+          label Credits open
+          xywh {2 293 492 362}
+        } {
+          Fl_Box {} {
+            label {Non-DAW was written from scratch by
+ Jonathan Moore Liles for his own use
+ (see the manual).
+
+Nobody planned. Nobody helped.
+ You can help now by donating time, money,
+and/or replacing the rest of Linux Audio
+with fast, light, reliable alternatives.}
+            xywh {39 322 418 262} box ROUNDED_BOX color 46 labelsize 18
+          }
+        }
+        Fl_Group {} {
+          label License open
+          xywh {2 288 492 311} hide
+        } {
+          Fl_Box {} {
+            label {Copyright (C) 2008 Jonathan Moore Liles}
+            xywh {43 302 410 37} labeltype SHADOW_LABEL labelfont 1 labelsize 18
+          }
+          Fl_Box {} {
+            label {This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.}
+            xywh {10 351 475 233} box ROUNDED_BOX color 46 labelfont 1 labelsize 12 labelcolor 53 align 144
+          }
+        }
+      }
+      Fl_Box logo_box {
+        label VERSION
+        private xywh {25 20 445 180} box ROUNDED_BOX color 48 labelfont 1 labelsize 18 align 16
+        code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo.png" ) );}
+        code1 {o->label( VERSION );}
+      }
+      Fl_Return_Button {} {
+        label Rock
+        callback {o->window()->do_callback();}
+        xywh {400 614 76 30}
+      }
+      Fl_Button {} {
+        label {http://non-daw.tuxfamily.org}
+        callback {\#if ! ( FL_MAJOR_VERSION >= 1 && FL_MINOR_VERSION >= 1 && FL_PATCH_VERSION >= 8 )
+	// FIXME: got a better idea?
+	system( "x-www-browser http://non-daw.tuxfamily.org &" );
+\#else
+	fl_open_uri( "http://non-daw.tuxfamily.org" );
+\#endif}
+        xywh {125 614 245 30} color 14 labeltype SHADOW_LABEL labelcolor 6
+      }
+      Fl_Box {} {
+        label {The Non DAW (Digital Audio Workstation)}
+        xywh {32 221 430 29} labeltype SHADOW_LABEL labelfont 3 labelsize 17
       }
     }
   }

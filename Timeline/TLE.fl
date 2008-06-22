@@ -82,7 +82,7 @@ class TLE {open
 
 char *path;
 asprintf( &path, "%s/%s", user_config_dir, options_filename );
-((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Options/&Global" ), path );
+((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Options" ), path );
 free( path );} {}
   }
   Function {capture_format_cb( Fl_Widget *w, void *v )} {open private return_type {static void}
@@ -137,18 +137,16 @@ for ( std::list <const char *>::const_iterator f = formats.begin(); f != formats
 //	capture_format_menu->add( *f, FL_MENU_RADIO, 0, 0, 0 );
 //;
 	char pat[256];
-	snprintf( pat, sizeof( pat ), "&Options/&Project/&Timeline/Capture Format/%s", *f );	
+	snprintf( pat, sizeof( pat ), "&Project/Se&ttings/Capture Format/%s", *f );	
 
 	menubar->add( pat, 0, &TLE::capture_format_cb, this, FL_MENU_RADIO );
 }
 
-menubar->picked( menubar->find_item( "&Options/&Project/&Timeline/Capture Format/Wav 24" ) );
-
-
+menubar->picked( menubar->find_item( "&Project/Se&ttings/Capture Format/Wav 24" ) );
 
 char *path;
 asprintf( &path, "%s/options", user_config_dir );
-((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options/&Global" ), path );
+((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options" ), path );
 free( path );
 
 
@@ -176,6 +174,50 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
 
 pi.run();}
             xywh {0 0 40 25} deactivate
+          }
+          Submenu {} {
+            label {Se&ttings} open
+            xywh {20 20 74 25}
+          } {
+            MenuItem {} {
+              label {&Follow Playhead}
+              callback {Timeline::follow_playhead = menu_picked_value( o );}
+              xywh {40 40 40 25} type Toggle value 1
+            }
+            MenuItem {} {
+              label {&Center Playhead}
+              callback {Timeline::center_playhead = menu_picked_value( o );}
+              xywh {50 50 40 25} type Toggle value 1
+            }
+            Submenu {} {
+              label {&Snap to} open
+              xywh {20 20 74 25}
+            } {
+              MenuItem {} {
+                label Bars
+                callback {Timeline::snap_to = Timeline::Bars;}
+                xywh {20 20 40 25} type Radio value 1
+              }
+              MenuItem {} {
+                label Beats
+                callback {Timeline::snap_to = Timeline::Beats;}
+                xywh {30 30 40 25} type Radio
+              }
+              MenuItem {} {
+                label Off
+                callback {Timeline::snap_to = Timeline::None;}
+                xywh {40 40 40 25} type Radio
+              }
+            }
+            MenuItem {} {
+              label {Magnetic snap}
+              callback {Timeline::snap_magnetic = menu_picked_value( o );}
+              xywh {30 30 40 25} type Toggle value 1
+            }
+            Submenu {} {
+              label {Capture Format} open
+              xywh {20 20 74 25}
+            } {}
           }
           MenuItem {} {
             label {&New}
@@ -320,115 +362,111 @@ Project::compact();}
           xywh {0 0 74 25} divider
         } {
           Submenu {} {
-            label {&Global} open
-            xywh {0 0 74 25}
+            label {&Display} open
+            xywh {10 10 74 25}
           } {
             Submenu {} {
-              label {&Display} open
-              xywh {5 5 74 25}
+              label {&Timeline} open
+              xywh {10 10 74 25}
             } {
-              Submenu {} {
-                label {&Timeline} open
-                xywh {5 5 74 25}
-              } {
-                MenuItem {} {
-                  label {&Measure lines}
-                  callback {Timeline::draw_with_measure_lines = menu_picked_value( o );
+              MenuItem {} {
+                label {&Measure lines}
+                callback {Timeline::draw_with_measure_lines = menu_picked_value( o );
 
 timeline->redraw();}
-                  xywh {5 5 40 25} type Toggle value 1
-                }
+                xywh {10 10 40 25} type Toggle value 1
               }
-              Submenu {} {
-                label {&Waveform} open
-                xywh {5 5 74 25}
-              } {
-                MenuItem {} {
-                  label Fill
-                  callback {Waveform::fill = menu_picked_value( o );
+            }
+            Submenu {} {
+              label {&Waveform} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label Fill
+                callback {Waveform::fill = menu_picked_value( o );
 
 timeline->redraw();}
-                  xywh {15 15 40 25} type Toggle value 1
-                }
-                MenuItem {} {
-                  label Outline
-                  callback {Waveform::outline = menu_picked_value( o );
-
-timeline->redraw();}
-                  xywh {35 35 40 25} type Toggle value 1
-                }
-                MenuItem {} {
-                  label {Vary color}
-                  callback {Waveform::vary_color = menu_picked_value( o );
-
-timeline->redraw();}
-                  xywh {25 25 40 25} type Toggle value 1
-                }
+                xywh {20 20 40 25} type Toggle value 1
               }
-              Submenu {} {
-                label {&Region} open
-                xywh {5 5 74 25}
-              } {
-                MenuItem {} {
-                  label {Filled fades}
-                  xywh {35 35 40 25} type Toggle value 1
-                }
-                MenuItem {} {
-                  label {Inherit track color}
-                  callback {Audio_Region::inherit_track_color = menu_picked_value( o );
+              MenuItem {} {
+                label Outline
+                callback {Waveform::outline = menu_picked_value( o );
 
 timeline->redraw();}
-                  xywh {45 45 40 25} type Toggle value 1
-                }
+                xywh {40 40 40 25} type Toggle value 1
               }
-              Submenu {} {
-                label {&Control Sequence} open
-                xywh {5 5 74 25}
-              } {
-                MenuItem {} {
-                  label Polygon
-                  callback {Control_Sequence::draw_with_polygon = menu_picked_value( o );
+              MenuItem {} {
+                label {Vary color}
+                callback {Waveform::vary_color = menu_picked_value( o );
 
 timeline->redraw();}
-                  xywh {25 25 40 25} type Toggle value 1
-                }
-                MenuItem {} {
-                  label Graded
-                  callback {Control_Sequence::draw_with_gradient = menu_picked_value( o );
-
-timeline->redraw();}
-                  xywh {35 35 40 25} type Toggle value 1
-                }
-                MenuItem {} {
-                  label Ruled
-                  callback {Control_Sequence::draw_with_grid = menu_picked_value( o );
-
-timeline->redraw();}
-                  xywh {45 45 40 25} type Toggle value 1
-                }
+                xywh {30 30 40 25} type Toggle value 1
               }
-              Submenu {} {
-                label {&Style} open
-                xywh {5 5 74 25}
-              } {
-                MenuItem {} {
-                  label Default
-                  callback {Fl::scheme( "plastic" );}
-                  xywh {5 5 40 25} type Radio value 1
-                }
-                MenuItem {} {
-                  label Flat
-                  callback {Fl::scheme( "gtk+" );}
-                  xywh {15 15 40 25} type Radio
-                }
+            }
+            Submenu {} {
+              label {&Region} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label {Filled fades}
+                xywh {40 40 40 25} type Toggle value 1
               }
-              Submenu {} {
-                label {C&olors} open
-                xywh {5 5 74 25}
-              } {
-                MenuItem {} {
-                  label System
-                  callback {//Fl::get_system_colors();
+              MenuItem {} {
+                label {Inherit track color}
+                callback {Audio_Region::inherit_track_color = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {50 50 40 25} type Toggle value 1
+              }
+            }
+            Submenu {} {
+              label {&Control Sequence} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label Polygon
+                callback {Control_Sequence::draw_with_polygon = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {30 30 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label Graded
+                callback {Control_Sequence::draw_with_gradient = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {40 40 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label Ruled
+                callback {Control_Sequence::draw_with_grid = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {50 50 40 25} type Toggle value 1
+              }
+            }
+            Submenu {} {
+              label {&Style} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label Default
+                callback {Fl::scheme( "plastic" );}
+                xywh {10 10 40 25} type Radio value 1
+              }
+              MenuItem {} {
+                label Flat
+                callback {Fl::scheme( "gtk+" );}
+                xywh {20 20 40 25} type Radio
+              }
+            }
+            Submenu {} {
+              label {C&olors} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label System
+                callback {//Fl::get_system_colors();
 
 unsigned char r, g, b;
 
@@ -445,76 +483,26 @@ Fl::get_color( system_colors[ 2 ], r, g, b );
 Fl::background2( r, g, b );
 
 Fl::scheme( Fl::scheme() );}
-                  xywh {5 5 40 25} type Radio
-                }
-                MenuItem {} {
-                  label Dark
-                  callback {Fl::background2( 100, 100, 100 );
+                xywh {10 10 40 25} type Radio
+              }
+              MenuItem {} {
+                label Dark
+                callback {Fl::background2( 100, 100, 100 );
 Fl::background( 50, 50, 50 );
 Fl::foreground( 255, 255, 255 );
 
 Fl::scheme( Fl::scheme() );}
-                  xywh {15 15 40 25} type Radio value 1
-                }
-                MenuItem {} {
-                  label Light
-                  callback {Fl::background2( 192, 192, 192 );
+                xywh {20 20 40 25} type Radio value 1
+              }
+              MenuItem {} {
+                label Light
+                callback {Fl::background2( 192, 192, 192 );
 Fl::background( 220, 220, 220 );
 Fl::foreground( 0, 0, 0 );
 
 Fl::scheme( Fl::scheme() );}
-                  xywh {25 25 40 25} type Radio
-                }
+                xywh {30 30 40 25} type Radio
               }
-            }
-          }
-          Submenu {} {
-            label {&Project} open
-            xywh {0 0 74 25}
-          } {
-            Submenu {} {
-              label {&Timeline} open
-              xywh {10 10 74 25}
-            } {
-              MenuItem {} {
-                label {&Follow Playhead}
-                callback {Timeline::follow_playhead = menu_picked_value( o );}
-                xywh {30 30 40 25} type Toggle value 1
-              }
-              MenuItem {} {
-                label {&Center Playhead}
-                callback {Timeline::center_playhead = menu_picked_value( o );}
-                xywh {40 40 40 25} type Toggle value 1
-              }
-              Submenu {} {
-                label {&Snap to} open
-                xywh {10 10 74 25}
-              } {
-                MenuItem {} {
-                  label Bars
-                  callback {Timeline::snap_to = Timeline::Bars;}
-                  xywh {10 10 40 25} type Radio value 1
-                }
-                MenuItem {} {
-                  label Beats
-                  callback {Timeline::snap_to = Timeline::Beats;}
-                  xywh {20 20 40 25} type Radio
-                }
-                MenuItem {} {
-                  label Off
-                  callback {Timeline::snap_to = Timeline::None;}
-                  xywh {30 30 40 25} type Radio
-                }
-              }
-              MenuItem {} {
-                label {Magnetic snap}
-                callback {Timeline::snap_magnetic = menu_picked_value( o );}
-                xywh {20 20 40 25} type Toggle value 1
-              }
-              Submenu {} {
-                label {Capture Format} open
-                xywh {10 10 74 25}
-              } {}
             }
           }
         }
@@ -639,7 +627,7 @@ if ( ! Project::open() )
 	find_item( m, "&Project/&Compact" )->deactivate();
 	find_item( m, "&Project/&Info" )->deactivate();
 	
- 	find_item( m, "&Options/&Project/&Timeline" )->deactivate();
+ 	find_item( m, "&Project/Se&ttings" )->deactivate();
  	find_item( m, "&Timeline" )->deactivate();
 
 	timeline->deactivate();
@@ -651,7 +639,7 @@ else
 	find_item( m, "&Project/&Compact" )->activate();
 	find_item( m, "&Project/&Info" )->activate();
 
-	find_item( m, "&Options/&Project/&Timeline" )->activate();
+ 	find_item( m, "&Project/Se&ttings" )->activate();
  	find_item( m, "&Timeline" )->activate();
 	
 	timeline->activate();
@@ -659,7 +647,8 @@ else
 }
 
 m->redraw();
-project_name->redraw();} {}
+project_name->redraw();} {selected
+    }
   }
   Function {update_progress( Fl_Progress *p, char *s, float v )} {open private return_type {static void}
   } {
@@ -776,14 +765,14 @@ You should have received a copy of the GNU General Public License along with thi
     code {if ( Project::open() )
 {
 	// save project local options (Timeline menu)
-	((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Options/&Project" ), "options" );
+	((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Project/Se&ttings" ), "options" );
 }} {}
   }
   Function {load_timeline_settings()} {open
   } {
     code {if ( Project::open() )
 {
-	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options/&Project" ), "options" );
+	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), "options" );
 }
 
 
@@ -916,8 +905,7 @@ Function {new_project_chooser()} {C return_type void
 nsd.run();} {}
 } 
 
-class Project_Info_Dialog {open
-} {
+class Project_Info_Dialog {} {
   Function {Project_Info_Dialog()} {open
   } {
     code {make_window();} {}
@@ -971,7 +959,7 @@ while ( window->shown() )
         code1 {o->label( NULL );}
       }
       Fl_Text_Editor notes_field {
-        label {Notes:} selected
+        label {Notes:}
         private xywh {20 445 480 245} color 47 selection_color 31 textsize 18 textcolor 92
         code0 {o->buffer( new Fl_Text_Buffer() );}
         code1 {o->buffer()->loadfile( "notes" );}

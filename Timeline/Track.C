@@ -227,8 +227,6 @@ Track::set ( Log_Entry &e )
         if ( ! strcmp( s, ":height" ) )
         {
             size( atoi( v ) );
-
-//                    Fl_Widget::size( w(), height() );
             resize();
         }
         else if ( ! strcmp( s, ":selected" ) )
@@ -245,6 +243,8 @@ Track::set ( Log_Entry &e )
             color( (Fl_Color)atoll( v ) );
             redraw();
         }
+        else if ( ! strcmp( s, ":show-all-takes" ) )
+            show_all_takes( atoi( v ) );
         else if ( ! strcmp( s, ":sequence" ) )
         {
             int i;
@@ -271,17 +271,17 @@ Track::set ( Log_Entry &e )
     }
 }
 
-
 void
 Track::get ( Log_Entry &e ) const
 {
     e.add( ":name",            _name            );
-    e.add( ":sequence",        sequence()          );
+    e.add( ":sequence",        sequence()       );
     e.add( ":selected",        _selected        );
     e.add( ":height",          size()           );
     e.add( ":inputs",          input.size()     );
     e.add( ":outputs",         output.size()    );
     e.add( ":color",           (unsigned long)color());
+    e.add( ":show-all-takes",  _show_all_takes  );
 }
 
 
@@ -335,24 +335,28 @@ Track::cb_button ( Fl_Widget *w )
             {
                 case 0:                                         /* show all takes */
                     show_all_takes( take_menu->menu()[ v ].value() );
-                    return;
+                    break;
                 case 1:                                         /* new */
                     sequence( (Audio_Sequence*)sequence()->clone_empty() );
-                    return;
-            }
-
-            const char *s = take_menu->menu()[ v ].text;
-
-            for ( int i = takes->children(); i--; )
-            {
-                Audio_Sequence *t = (Audio_Sequence*)takes->child( i );
-                if ( ! strcmp( s, t->name() ) )
-                {
-                    sequence( t );
-                    redraw();
                     break;
-                }
+                case 2:                                         /* remove */
+                    if ( takes->children() )
+                    {
+                        Loggable::block_start();
+
+                        Sequence *s = sequence();
+
+                        sequence( (Audio_Sequence*)takes->child( 0 ) );
+
+                        delete s;
+
+                        Loggable::block_end();
+                    }
+                    break;
+                default:
+                    sequence( (Audio_Sequence*)take_menu->menu()[ v ].user_data() );
             }
+
         }
 }
 
@@ -424,19 +428,36 @@ Track::size ( int v )
 }
 
 void
+Track::update_take_menu ( void )
+{
+    take_menu->clear();
+
+    take_menu->add( "Show all takes", 0, 0, 0, FL_MENU_TOGGLE );
+    take_menu->add( "New", 0, 0, 0 );
+    take_menu->add( "Remove", 0, 0, 0, FL_MENU_DIVIDER );
+
+    for ( int i = 0; i < takes->children(); ++i )
+    {
+        Sequence *s = (Sequence *)takes->child( i );
+
+        take_menu->add( s->name(), 0, 0, s );
+    }
+}
+
+void
 Track::add ( Audio_Sequence * t )
 {
     takes->insert( *t, 0 );
     if ( ! t->name() )
     {
         char pat[20];
-        snprintf( pat, sizeof( pat ), "%d", takes->children() );
+        snprintf( pat, sizeof( pat ), "%d", 1 + takes->children() );
         t->name( strdup( pat ) );
     }
 
-    take_menu->add( t->name() );
-
     t->labeltype( FL_ENGRAVED_LABEL );
+
+    update_take_menu();
 }
 
 void
@@ -449,11 +470,13 @@ Track::remove ( Audio_Sequence *t )
 
     takes->remove( t );
 
+/*     delete t; */
+
     timeline->unlock();
 
     resize();
 
-//            take_menu->remove( t->name() );
+    update_take_menu();
 }
 
 void

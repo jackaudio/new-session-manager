@@ -96,9 +96,11 @@ private:
 
     void update_port_names ( void );
     const char *name_for_port( Port::type_e type, int n );
+    void update_take_menu ( void );
 
     Track ( );
     void init ( void );
+
 
 protected:
 

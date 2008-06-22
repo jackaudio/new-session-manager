@@ -93,10 +93,6 @@ Project::set_name ( const char *name )
 bool
 Project::write_info ( void )
 {
-
-    if ( ! open() )
-        return true;
-
     FILE *fp;
 
     if ( ! ( fp = fopen( "info", "w" ) ) )
@@ -270,16 +266,14 @@ Project::create ( const char *name, const char *template_name )
         FATAL( "WTF? Cannot change to new project directory" );
 
     mkdir( "sources", 0777 );
-
-    creat( "info", 0666 );
     creat( "history", 0666 );
 
     /* TODO: copy template */
 
+    write_info();
+
     if ( open( name ) == 0 )
     {
-        write_info();
-
         /* add the bare essentials */
         timeline->beats_per_minute( 0, 120 );
         timeline->time( 0, 4, 4 );

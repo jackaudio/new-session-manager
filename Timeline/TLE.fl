@@ -161,7 +161,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   } {
     Fl_Window main_window {
       label Timeline open
-      xywh {279 117 1025 770} type Double resizable xclass Non_DAW visible
+      xywh {254 117 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         xywh {0 0 1024 25}
@@ -705,14 +705,14 @@ if ( engine->zombified() && ! zombie )
   Function {make_about_dialog()} {} {
     Fl_Window about_dialog_window {
       label About open
-      private xywh {758 335 495 600} type Double xclass {Non-DAW} visible
+      private xywh {664 192 495 655} type Double xclass {Non-DAW} visible
     } {
       Fl_Tabs {} {open
-        xywh {0 213 497 392}
+        xywh {0 264 497 392}
       } {
         Fl_Group {} {
           label Credits open
-          xywh {2 237 492 362}
+          xywh {2 293 492 362}
         } {
           Fl_Box {} {
             label {Non-DAW was written from scratch by
@@ -723,16 +723,16 @@ Nobody planned. Nobody helped.
  You can help now by donating time, money,
 and/or replacing the rest of Linux Audio
 with fast, light, reliable alternatives.}
-            xywh {39 266 418 262} box ROUNDED_BOX color 46 labelsize 18
+            xywh {39 322 418 262} box ROUNDED_BOX color 46 labelsize 18
           }
         }
         Fl_Group {} {
           label License open
-          xywh {2 237 492 362} hide
+          xywh {2 288 492 311} hide
         } {
           Fl_Box {} {
             label {Copyright (C) 2008 Jonathan Moore Liles}
-            xywh {43 246 410 37} labeltype SHADOW_LABEL labelfont 1 labelsize 18
+            xywh {43 302 410 37} labeltype SHADOW_LABEL labelfont 1 labelsize 18
           }
           Fl_Box {} {
             label {This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
@@ -740,20 +740,20 @@ with fast, light, reliable alternatives.}
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.}
-            xywh {10 295 475 233} box ROUNDED_BOX color 46 labelfont 1 labelsize 12 labelcolor 53 align 144
+            xywh {10 351 475 233} box ROUNDED_BOX color 46 labelfont 1 labelsize 12 labelcolor 53 align 144
           }
         }
       }
       Fl_Box {} {
         label VERSION
-        xywh {25 11 445 151} box ROUNDED_BOX color 48 labelfont 1 labelsize 18 align 16
+        xywh {25 20 445 180} box ROUNDED_BOX color 48 labelfont 1 labelsize 18 align 16
         code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo.png" ) );}
         code1 {o->label( VERSION );}
       }
       Fl_Return_Button {} {
         label Rock
         callback {about_dialog_window->hide();}
-        xywh {400 558 76 30}
+        xywh {400 614 76 30}
       }
       Fl_Button {} {
         label {http://non-daw.tuxfamily.org}
@@ -763,11 +763,11 @@ You should have received a copy of the GNU General Public License along with thi
 \#else
 	fl_open_uri( "http://non-daw.tuxfamily.org" );
 \#endif}
-        xywh {125 558 245 30} color 14 labeltype SHADOW_LABEL labelcolor 6
+        xywh {125 614 245 30} color 14 labeltype SHADOW_LABEL labelcolor 6
       }
       Fl_Box {} {
         label {The Non DAW (Digital Audio Workstation)}
-        xywh {32 176 430 29} labeltype SHADOW_LABEL labelfont 3 labelsize 17
+        xywh {32 221 430 29} labeltype SHADOW_LABEL labelfont 3 labelsize 17
       }
     }
   }
@@ -836,13 +836,11 @@ if ( r < 0 )
 	const char *s = Project::errstr( r );
 	
 	fl_alert( "Could not open project \\"%s\\":\\n\\n\\t%s", name, s );
-}} {selected
-    }
+}} {}
   }
 } 
 
-class New_Project_Dialog {open
-} {
+class New_Project_Dialog {} {
   Function {New_Project_Dialog()} {open
   } {
     code {make_window();} {}
@@ -911,7 +909,7 @@ while ( _window->shown() )
   }
 } 
 
-Function {new_project_chooser()} {open C return_type void
+Function {new_project_chooser()} {C return_type void
 } {
   code {New_Project_Dialog nsd;
 
@@ -935,7 +933,7 @@ while ( window->shown() )
   } {
     Fl_Window window {
       label {Project info} open
-      private xywh {649 226 520 625} type Double modal visible
+      private xywh {649 226 520 740} type Double modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}
@@ -968,13 +966,13 @@ while ( window->shown() )
       }
       Fl_Box {} {
         label {<LOGO>}
-        xywh {51 194 418 154} box ROUNDED_BOX color 53 labelfont 1 labelsize 18 align 16
+        xywh {51 180 418 235} box ROUNDED_BOX color 53 labelfont 1 labelsize 18 align 16
         code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo2.png" ) );}
         code1 {o->label( NULL );}
       }
       Fl_Text_Editor notes_field {
-        label {Notes:}
-        private xywh {20 395 480 185} color 47 selection_color 31 textsize 18 textcolor 92
+        label {Notes:} selected
+        private xywh {20 445 480 245} color 47 selection_color 31 textsize 18 textcolor 92
         code0 {o->buffer( new Fl_Text_Buffer() );}
         code1 {o->buffer()->loadfile( "notes" );}
       }
@@ -983,7 +981,7 @@ while ( window->shown() )
         callback {notes_field->buffer()->savefile( "notes" );
 
 window->hide();}
-        xywh {425 590 74 25}
+        xywh {425 700 74 25}
       }
       Fl_Box {} {
         label {Project Info}
@@ -996,7 +994,7 @@ window->hide();}
       Fl_Button {} {
         label {&Discard}
         callback {window->hide();}
-        xywh {330 590 74 25}
+        xywh {330 700 74 25}
       }
     }
   }

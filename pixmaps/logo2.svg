@@ -9,8 +9,8 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="744.09448819"
-   height="1052.3622047"
+   width="552.5625"
+   height="435.375"
    id="svg2"
    sodipodi:version="0.32"
    inkscape:version="0.46"
@@ -18,7 +18,8 @@
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    inkscape:export-filename="/home/male/prog/non-daw/logo2.png"
    inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-ydpi="90"
+   version="1.0">
   <defs
      id="defs4">
     <linearGradient
@@ -78,9 +79,9 @@
        inkscape:collect="always"
        id="filter3524"
        x="-0.13575824"
-       width="1.2715165"
-       y="-0.82689117"
-       height="2.6537823">
+       width="1.2715164"
+       y="-0.82689118"
+       height="2.6537824">
       <feGaussianBlur
          inkscape:collect="always"
          stdDeviation="27.070841"
@@ -95,19 +96,19 @@
      gridtolerance="10000"
      guidetolerance="10"
      objecttolerance="10"
-     inkscape:pageopacity="0.0"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
      inkscape:cx="309.77943"
-     inkscape:cy="558.00983"
+     inkscape:cy="272.29554"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:window-width="1678"
-     inkscape:window-height="1029"
-     inkscape:window-x="0"
+     inkscape:window-width="1278"
+     inkscape:window-height="1003"
+     inkscape:window-x="1680"
      inkscape:window-y="19" />
   <metadata
      id="metadata7">
@@ -122,7 +123,8 @@
   </metadata>
   <g
      inkscape:groupmode="layer"
-     id="layer3">
+     id="layer3"
+     transform="translate(-95.15625,-223.25)">
     <path
        sodipodi:type="arc"
        style="opacity:1;fill:#ceb027;fill-opacity:1;stroke:none;stroke-width:7.0999999;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -148,7 +150,8 @@
      inkscape:label="Text"
      inkscape:groupmode="layer"
      id="layer1"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(-95.15625,-223.25)">
     <path
        style="fill:none;fill-opacity:0.75;fill-rule:evenodd;stroke:#000000;stroke-width:7.0999999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 373.75644,435.15898 L 490.93414,294.74777"
@@ -178,7 +181,8 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Frame"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(-95.15625,-223.25)">
     <path
        style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:9.10000038;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="M 371.4375,223.25 C 218.93275,223.25 95.15625,320.77382 95.15625,440.9375 C 95.15625,561.10119 218.93276,658.62499 371.4375,658.625 C 523.94225,658.625 647.71873,561.1012 647.71875,440.9375 C 647.71875,320.77381 523.94226,223.25001 371.4375,223.25 z M 372.75,243.21875 C 510.47823,243.21875 622.25,332.62317 622.25,442.75 C 622.24999,476.05825 612.0135,507.44916 593.9375,535.0625 C 549.94393,488.68496 466.89947,457.37499 371.75,457.375 C 277.46299,457.375 195.04438,488.12767 150.75,533.8125 C 133.17883,506.5023 123.25,475.55745 123.25,442.75 C 123.25,332.62316 235.02176,243.21875 372.75,243.21875 z"

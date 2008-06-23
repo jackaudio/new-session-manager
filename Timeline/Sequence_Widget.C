@@ -48,6 +48,35 @@ Sequence_Widget::Sequence_Widget ( )
     _color     = FL_FOREGROUND_COLOR;
 }
 
+/* careful with this, it doesn't journal */
+Sequence_Widget::Sequence_Widget ( const Sequence_Widget &rhs ) : Loggable( rhs )
+{
+    _drag = NULL;
+
+    _sequence = rhs._sequence;
+
+    _range = rhs._range;
+    _r = &_range;
+
+    _color = rhs._color;
+    _box_color = rhs._box_color;
+};
+
+const Sequence_Widget &
+Sequence_Widget::operator= ( const Sequence_Widget &rhs )
+{
+    if ( this == &rhs )
+        return *this;
+
+    _r         = &_range;
+    _range     = rhs._range;
+    _sequence     = rhs._sequence;
+    _box_color = rhs._box_color;
+    _color     = rhs._color;
+
+    return *this;
+}
+
 Sequence_Widget::~Sequence_Widget ( )
 {
     redraw();
@@ -336,8 +365,7 @@ Sequence_Widget::handle ( int m )
             /* deletion */
             if ( test_press( FL_BUTTON3 + FL_CTRL ) )
             {
-                redraw();
-                sequence()->queue_delete( this );
+                remove();
                 return 1;
             }
             else if ( test_press( FL_BUTTON1 ) || test_press( FL_BUTTON1 + FL_CTRL ) )
@@ -449,4 +477,69 @@ Sequence_Widget::handle ( int m )
         default:
             return 0;
     }
+}
+
+
+/**********/
+/* Public */
+/**********/
+
+/** add this widget to the selection */
+void
+Sequence_Widget::select ( void )
+{
+    if ( selected() )
+        return;
+
+    _selection.push_back( this );
+    _selection.sort( sort_func );
+
+    redraw();
+}
+
+/** remove this widget from the selection */
+void
+Sequence_Widget::deselect ( void )
+{
+    _selection.remove( this );
+    redraw();
+}
+
+bool
+Sequence_Widget::selected ( void ) const
+{
+    return std::find( _selection.begin(), _selection.end(), this ) != _selection.end();
+}
+
+/** remove this widget from its sequence */
+void
+Sequence_Widget::remove ( void )
+{
+    redraw();
+    sequence()->queue_delete( this );
+}
+
+void
+Sequence_Widget::delete_selected ( void )
+{
+    Loggable::block_start();
+
+    while ( _selection.size() )
+        delete _selection.front();
+
+    Loggable::block_end();
+}
+
+void
+Sequence_Widget::select_none ( void )
+{
+    Loggable::block_start();
+
+    while ( _selection.size() )
+    {
+        _selection.front()->redraw();
+        _selection.pop_front();
+    }
+
+    Loggable::block_end();
 }

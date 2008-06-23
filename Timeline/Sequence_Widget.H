@@ -43,7 +43,7 @@ struct Drag
 };
 
 /* most common position description. /offset/ is only used by Regions,
-but it's more convenient to have it here  */
+   but it's more convenient to have it here  */
 struct Range
 {
     nframes_t start;                       /* where on the timeline */
@@ -84,8 +84,8 @@ struct Range
 };
 
 /* Used by time/tempo points or any other child of Sequence_Widget
- which must be locked to a point in musical time rather than wallclock
- time. Bar and beat start at 1. */
+   which must be locked to a point in musical time rather than wallclock
+   time. Bar and beat start at 1. */
 struct BBT
 {
     unsigned short bar;
@@ -109,6 +109,12 @@ struct position_info
 
     BBT bbt;
 };
+
+#define SEQUENCE_WIDGET_CLONE_FUNC(class)               \
+    virtual Sequence_Widget *clone ( void ) const       \
+    {                                                   \
+        return new class ( *this );                     \
+    }
 
 
 /* Base class for virtual widget on a track */
@@ -144,113 +150,32 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
 
-    /* careful with this, it doesn't journal */
-    Sequence_Widget ( const Sequence_Widget &rhs ) : Loggable( rhs )
-        {
-            _drag = NULL;
-
-            _sequence = rhs._sequence;
-
-            _range = rhs._range;
-            _r = &_range;
-
-            _color = rhs._color;
-            _box_color = rhs._box_color;
-        };
-
+    Sequence_Widget ( const Sequence_Widget &rhs );
     Sequence_Widget ( );
+
+    const Sequence_Widget &
+    operator= ( const Sequence_Widget &rhs );
 
 public:
 
     virtual ~Sequence_Widget ( );
 
-    const Sequence_Widget &
-    operator= ( const Sequence_Widget &rhs )
-        {
-            if ( this == &rhs )
-                return *this;
-
-            _r         = &_range;
-            _range     = rhs._range;
-            _sequence     = rhs._sequence;
-            _box_color = rhs._box_color;
-            _color     = rhs._color;
-
-            return *this;
-        }
-
-
-/*     Sequence_Widget ( const Sequence_Widget &rhs ) */
-/*         { */
-/*             *this = rhs; */
-/*         } */
-
-#define SEQUENCE_WIDGET_CLONE_FUNC(class)                               \
-    virtual Sequence_Widget *clone ( void ) const                       \
-        {                                                               \
-            return new class ( *this );                                 \
-        }                                                               \
-                                                                        \
-//    virtual Sequence_Widget *clone ( const Sequence_Widget *r ) = 0;
     virtual Sequence_Widget *clone ( void ) const = 0;
 
-    bool selected ( void ) const
-        {
-            return std::find( _selection.begin(), _selection.end(), this ) != _selection.end();
-        }
+    bool selected ( void ) const;
+    void select ( void );
+    void deselect ( void );
+    void remove ( void );
 
-    void select ( void )
-        {
-            if ( selected() )
-                return;
-
-            _selection.push_back( this );
-            _selection.sort( sort_func );
-
-            redraw();
-        }
-
-    void deselect ( void )
-        {
-            _selection.remove( this );
-            redraw();
-        }
-
-
-    static void
-    delete_selected ( void )
-        {
-            Loggable::block_start();
-
-            while ( _selection.size() )
-                delete _selection.front();
-
-            Loggable::block_end();
-        }
-
-    static void
-    select_none ( void )
-        {
-            Loggable::block_start();
-
-            while ( _selection.size() )
-            {
-                _selection.front()->redraw();
-                _selection.pop_front();
-            }
-
-            Loggable::block_end();
-        }
+    static void delete_selected ( void );
+    static void select_none ( void );
 
     static Sequence_Widget *current    ( void ) { return Sequence_Widget::_current; }
-
     static Sequence_Widget *pushed     ( void ) { return Sequence_Widget::_pushed; }
     static Sequence_Widget *belowmouse ( void ) { return Sequence_Widget::_belowmouse; }
 
     static void pushed     ( Sequence_Widget *w ) { Sequence_Widget::_pushed     = w; }
     static void belowmouse ( Sequence_Widget *w ) { Sequence_Widget::_belowmouse = w; }
-
-//    static void pushed ( Sequence_Widget *w ) { Sequence_Widget::_pushed = w; }
 
     void begin_drag ( const Drag &d );
     void end_drag ( void );
@@ -321,9 +246,6 @@ public:
         }
 
     int active_r ( void ) const { return _sequence->active_r(); }
-
-
-
 
 /** returns true if widget /w/ begins and ends completely within the range of this widget */
     bool contains ( const Sequence_Widget *w ) const

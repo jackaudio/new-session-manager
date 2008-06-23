@@ -261,6 +261,10 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
     }
     else if ( ! strcmp( picked, "/Clear loop point" ) )
         _loop = 0;
+    else if ( ! strcmp( picked, "/Normalize" ) )
+        normalize();
+    else if ( ! strcmp( picked, "/Remove" ) )
+        remove();
     else
         FATAL( "Unknown menu choice \"%s\"", picked );
 
@@ -300,6 +304,8 @@ Audio_Region::menu ( void )
             { "Fade out to mouse", FL_F + 4, 0, 0 },
             { "Loop point to mouse", 'l', 0, 0 },
             { "Clear loop point", FL_SHIFT + 'l', 0, 0 },
+            { "Normalize", 'n', 0, 0 },
+            { "Remove", 0, 0, 0 },
             { 0 },
         };
 
@@ -647,9 +653,6 @@ Audio_Region::handle ( int m )
                 if ( test_press( FL_BUTTON2 | FL_CTRL ) )
                 {
                     normalize();
-                    /* FIXME: wrong place for this? */
-                    sequence()->handle_widget_change( start(), length() );
-                    redraw();
                     return 1;
                 }
                 else if ( test_press( FL_BUTTON3 ) )
@@ -729,4 +732,8 @@ Audio_Region::normalize ( void )
     if ( _clip->read_peaks( length(), offset(), offset() + length(), &peaks, &pbuf, &channels ) &&
          peaks )
         _scale = pbuf->normalization_factor();
+
+    /* FIXME: wrong place for this? */
+    sequence()->handle_widget_change( start(), length() );
+    redraw();
 }

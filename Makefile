@@ -49,8 +49,7 @@ else
 	CXXFLAGS := -pipe -O2 -fno-rtti -fno-exceptions -DNDEBUG
 endif
 
-CFLAGS+=-DVERSION=\"$(VERSION)\" \
-	-DINSTALL_PREFIX=\"$(prefix)\" \
+CFLAGS+=-DINSTALL_PREFIX=\"$(prefix)\" \
 	-DSYSTEM_PATH=\"$(SYSTEM_PATH)\" \
 	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\"
 
@@ -102,7 +101,9 @@ DONE:=$(BOLD)$(GREEN)done$(SGR0)
 non-sequencer: $(OBJS)
 	@ echo -n "Linking..."
 	@ rm -f $@
-	@ $(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@ || echo "$(BOLD)$(RED)Error!$(SGR0)"
+	@ scripts/build_id .version.c $(VERSION)
+	@ $(CXX) -c .version.c
+	@ $(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) .version.o -o $@ || echo "$(BOLD)$(RED)Error!$(SGR0)"
 	@ if test -x $@; then echo "$(DONE)"; test -x "$(prefix)/bin/$@" || echo "You must now run 'make install' (as the appropriate user) to install the executable, documentation and other support files in order for the program to function properly."; fi
 
 install: all

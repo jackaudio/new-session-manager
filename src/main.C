@@ -30,7 +30,8 @@
 #include "pattern.H"
 #include "phrase.H"
 
-
+extern const char *BUILD_ID;
+extern const char *VERSION;
 
 Canvas *pattern_c, *phrase_c, *trigger_c;
 
@@ -152,7 +153,7 @@ main ( int argc, char **argv )
     asprintf( &config.user_config_dir, "%s/%s", getenv( "HOME" ), USER_CONFIG_DIR );
     mkdir( config.user_config_dir, 0777 );
 
-    printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
+    printf( "%s %s %s -- %s\n", APP_TITLE, VERSION, BUILD_ID, COPYRIGHT );
 
     playlist = new sequence;
 

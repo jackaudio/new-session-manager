@@ -37,6 +37,11 @@ decl {\#include "../jack.H"} {}
 
 decl {\#include "../lash.H"} {} 
 
+decl {extern const char *BUILD_ID;} {} 
+
+decl {extern const char *VERSION;} {selected
+} 
+
 decl {extern UI *ui;} {} 
 
 decl {class O_Canvas;} {} 
@@ -1011,21 +1016,21 @@ detach_button->value( 0 );} open
   } {
     Fl_Window about_popup {
       label About open
-      xywh {626 238 535 605} type Single non_modal size_range {539 608 539 608} visible
+      xywh {697 224 535 620} type Single non_modal size_range {539 608 539 608} visible
     } {
       Fl_Box {} {
         label VERSION
-        xywh {10 29 515 209}
+        xywh {10 16 515 228} box ROUNDED_BOX
         code0 {o->label( VERSION );}
         code1 {o->image( Fl_Shared_Image::get( DOCUMENT_PATH "/logo.png" ) );}
         code2 {o->redraw();}
       }
       Fl_Group {} {open
-        xywh {26 272 488 272} box ROUNDED_BOX color 51
+        xywh {26 286 488 272} box ROUNDED_BOX color 51
       } {
         Fl_Box {} {
           label {Copyright (C) 2007-2008 Jonathan Moore Liles}
-          xywh {26 272 488 32} labeltype SHADOW_LABEL labelfont 1 labelsize 18
+          xywh {26 286 488 32} labeltype SHADOW_LABEL labelfont 1 labelsize 18
         }
         Fl_Box {} {
           label {This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
@@ -1033,7 +1038,7 @@ detach_button->value( 0 );} open
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.}
-          xywh {41 311 463 233} labelfont 1 labelsize 12 align 144
+          xywh {41 325 463 233} labelfont 1 labelsize 12 align 144
         }
       }
       Fl_Button {} {
@@ -1044,12 +1049,17 @@ You should have received a copy of the GNU General Public License along with thi
 \#else
 	fl_open_uri( "http://non.tuxfamily.org" );
 \#endif}
-        xywh {178 554 188 30} color 14 labeltype SHADOW_LABEL labelcolor 6
+        xywh {178 568 188 30} color 14 labeltype SHADOW_LABEL labelcolor 6
       }
       Fl_Return_Button {} {
         label rock
         callback {about_popup->hide();}
-        xywh {453 570 78 31}
+        xywh {453 584 78 31}
+      }
+      Fl_Box {} {
+        label label
+        xywh {191 262 153 22} color 51 labelfont 4 labelcolor 52
+        code2 {o->label( BUILD_ID );}
       }
     }
   }
@@ -1294,8 +1304,7 @@ help->show();
 	}	
 }
 
-return true;} {selected
-    }
+return true;} {}
   }
   Function {switch_to_pattern( int n )} {return_type void
   } {

@@ -181,7 +181,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label Timeline
       private xywh {254 117 1025 770} type Double resizable xclass Non_DAW visible
     } {
-      Fl_Menu_Bar menubar {selected
+      Fl_Menu_Bar menubar {
         private xywh {0 0 1024 25}
       } {
         Submenu {} {
@@ -754,7 +754,8 @@ Fl::check();} {}
   }
 } 
 
-class New_Project_Dialog {} {
+class New_Project_Dialog {open
+} {
   Function {New_Project_Dialog()} {open
   } {
     code {make_window();} {}
@@ -769,7 +770,7 @@ while ( _window->shown() )
   Function {make_window()} {open
   } {
     Fl_Window _window {
-      label {New Project} open
+      label {New Project} open selected
       xywh {615 414 550 195} type Double modal xclass Non_DAW visible
     } {
       Fl_File_Input _name {
@@ -818,7 +819,7 @@ write_line( user_config_dir, "default_path", o->value() );}
       }
       Fl_Choice _template {
         label {Template:}
-        private xywh {310 60 225 25} down_box BORDER_BOX hide
+        private xywh {310 60 225 25} down_box BORDER_BOX
       } {
         MenuItem {} {
           label Default

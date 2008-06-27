@@ -1,10 +1,9 @@
 
-
-SRCS=OVERVIEW.mu KEYS.mu MANUAL.mu
+SRCS=$(wildcard *.mu)
 OBJS=$(SRCS:.mu=.html)
 
 %.html: %.mu
-	mup html < $< > $@
+	mup.wrapper html $<
 
 .PHONY: all clean
 

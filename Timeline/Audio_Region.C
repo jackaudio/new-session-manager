@@ -458,112 +458,120 @@ Audio_Region::draw ( void )
         /* no coverage */
         return;
 
+    const int scroll_x = this->scroll_x();
+    const int start_x = timeline->ts_to_x( _r->start );
+
+    if ( start_x > scroll_x + sequence()->w() ||
+         start_x + abs_w() < scroll_x )
+        /* not in viewport */
+        return;
+
     /* account for waveform outlines... */
     X -= 2;
     W += 4;
 
-    int OX = scroll_x();
-    int ox = timeline->ts_to_x( _r->start );
-
-    if ( ox > OX + sequence()->w() ||
-         ( ox < OX && ox + abs_w() < OX ) )
-        /* not in viewport */
-        return;
-
-    int rw = timeline->ts_to_x( _r->length );
+    /* start with region length... */
+    int rw = min( abs_w(), sequence()->w() );
 
     /* calculate waveform offset due to scrolling */
     nframes_t offset = 0;
-    if ( ox < OX )
+    if ( start_x < scroll_x )
     {
-        offset = timeline->x_to_ts( OX - ox );
+        offset = timeline->x_to_ts( scroll_x - start_x );
 
-        rw -= OX - ox;
+        rw -= scroll_x - start_x;
     }
 
-    rw = min( rw, sequence()->w() );
-
-    int rx = x();
+    const int rx = x();
 
     fl_push_clip( rx, Y, rw, H );
 
-    /* get actual peak data */
-    int channels;
-    int peaks;
-    Peak *pbuf;
+    /* draw fade curve outlines--this is only here because of crossfades */
+    draw_fade( _fade_in, Fade::In, true, X, W );
+    draw_fade( _fade_out, Fade::Out, true, X, W );
 
+    int xo = 0;
 
-//    const nframes_t start = _r->start + offset + timeline->x_to_ts( X - rx );
-//    nframes_t start = _r->start + offset;
-    nframes_t start = _r->offset + offset;
+    do {
 
-    /* compensate for ??? */
-    if ( X - rx > 0 )
-        start += timeline->x_to_ts( X - rx );
+        int channels;
+        int peaks;
+        Peak *pbuf;
 
-    const int peaks_needed = min( timeline->ts_to_x( _clip->length() - start ), W );
+        nframes_t start = _r->offset;
 
-    const nframes_t end = start + timeline->x_to_ts( peaks_needed );
+/*         int loop_peaks_needed = min( _loop ? timeline->ts_to_x( _loop ) : timeline->ts_to_x( _clip->length() ), rw ); */
 
-    if ( _clip->read_peaks( timeline->fpp(),
-                            start,
-                            end,
-                            &peaks, &pbuf, &channels ) &&
-         peaks )
-    {
+        int loop_peaks_needed = _loop ? timeline->ts_to_x( _loop ) : timeline->ts_to_x( _clip->length() );
 
-        assert( pbuf );
-
-        /* draw fade curve outlines--this is only here because of crossfades */
-        draw_fade( _fade_in, Fade::In, true, X, W );
-        draw_fade( _fade_out, Fade::Out, true, X, W );
-
-        int ch = (h() - Fl::box_dh( box() ))  / channels;
-
-        Waveform::scale( pbuf, peaks * channels, _scale );
-
-
-        for ( int i = 0; i < channels; ++i )
+        if ( ! xo )
         {
-//            Peak *pb = pbuf + (peaks * i);
 
-/*         int fw = timeline->ts_to_x( fade.length ); */
+            if ( _loop )
+                start += offset % _loop;
+            else
+                start += offset;
 
-/*         /\* if ( draw_fade_waveform ) *\/ */
-/*         for ( int j = min( fw, peaks ); j--; ) */
-/*         { */
-/*             const float g = fade.gain( j * timeline->fpp() ); */
-/*             pb[ j ].min *= g; */
-/*             pb[ j ].max *= g; */
-/*         } */
+            /* compensate for ??? */
+            /* compensate for scrolling */
+            if ( X - rx > 0 )
+                start += timeline->x_to_ts( X - rx );
 
-            Waveform::draw( X,
-                            (y() + Fl::box_dy( box() )) + (i * ch),
-                            W,
-                            ch,
-                            pbuf + i, peaks, channels,
-                            selected() ? fl_invert_color( _color ) : _color );
+            loop_peaks_needed -= timeline->ts_to_x( offset ) % loop_peaks_needed;
+
+            assert( loop_peaks_needed > 0 );
+
+            if ( _loop && offset < _loop )
+            {
+                const int x = loop_peaks_needed;
+
+                /* FIXME: is there no way to draw these symbols direclty? */
+                fl_font( FL_SYMBOL, 14 );
+                fl_color( FL_WHITE );
+                fl_draw( "@2>", X + x - 7, y(), 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
+                fl_color( FL_WHITE );
+                fl_draw( "@2<", X + x - 7, y() + h() - 14, 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
+            }
+
         }
-    }
 
-    if ( peaks < peaks_needed )
-    {
-        /* couldn't read peaks--perhaps they're being generated. Try again later. */
-        Fl::add_timeout( 0.1f, &Audio_Region::peaks_pending_cb,
-                         new Peaks_Redraw_Request( this, start + timeline->x_to_ts( peaks ), end ) );
-    }
+        const int total_peaks_needed = min( timeline->ts_to_x( _clip->length() - start ), rw );
+        const nframes_t end = start + timeline->x_to_ts( loop_peaks_needed );
 
-    if ( _loop )
-    {
-        const int x = timeline->ts_to_x( _loop - offset );
+        if ( _clip->read_peaks( timeline->fpp(),
+                                start,
+                                end,
+                                &peaks, &pbuf, &channels ) &&
+             peaks )
+        {
+            assert( pbuf );
 
-        /* FIXME: is there no way to draw these symbols direclty? */
-        fl_font( FL_SYMBOL, 14 );
-        fl_color( FL_WHITE );
-        fl_draw( "@2>", X + x - 7, y(), 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
-        fl_color( FL_WHITE );
-        fl_draw( "@2<", X + x - 7, y() + h() - 14, 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
+            int ch = (h() - Fl::box_dh( box() ))  / channels;
+
+            Waveform::scale( pbuf, peaks * channels, _scale );
+
+            for ( int i = 0; i < channels; ++i )
+            {
+                Waveform::draw( X + xo,
+                                (y() + Fl::box_dy( box() )) + (i * ch),
+                                loop_peaks_needed,
+                                ch,
+                                pbuf + i, peaks, channels,
+                                selected() ? fl_invert_color( _color ) : _color );
+            }
+        }
+
+        if ( peaks < loop_peaks_needed )
+        {
+            /* couldn't read peaks--perhaps they're being generated. Try again later. */
+            Fl::add_timeout( 0.1f, &Audio_Region::peaks_pending_cb,
+                             new Peaks_Redraw_Request( this, start + timeline->x_to_ts( peaks ), end ) );
+        }
+
+        xo += loop_peaks_needed;
+
     }
+    while ( _loop && xo < W );
 
     timeline->draw_measure_lines( X, Y, W, H, _box_color );
 

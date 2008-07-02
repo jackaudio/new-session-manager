@@ -253,7 +253,7 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
         {
             nframes_t f = offset + _r->start;
 
-            if ( timeline->nearest_line( &f ) )
+            if ( timeline->nearest_line( &f, false ) )
                 _loop = f - _r->start;
             else
                 _loop = offset;

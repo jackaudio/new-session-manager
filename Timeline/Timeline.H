@@ -156,7 +156,7 @@ public:
     int beats_per_bar ( nframes_t when ) const;
     void beats_per_minute ( nframes_t when, float bpm );
     void time ( nframes_t when, int bpb, int beat_type );
-    bool nearest_line ( nframes_t *f ) const;
+    bool nearest_line ( nframes_t *f, bool snap=true ) const;
     bool next_line ( nframes_t *f, bool bar=false ) const;
     bool prev_line ( nframes_t *f, bool bar=false ) const;
 

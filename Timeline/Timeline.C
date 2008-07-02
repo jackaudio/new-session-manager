@@ -503,7 +503,7 @@ abs_diff ( nframes_t n1, nframes_t n2 )
 }
 
 static void
-nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
+nearest_line_snap_cb ( nframes_t frame, const BBT &bbt, void *arg )
 {
     nearest_line_arg *n = (nearest_line_arg *)arg;
 
@@ -512,6 +512,18 @@ nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
 
     if ( Timeline::snap_magnetic &&
          abs_diff( frame, n->original ) > timeline->x_to_ts( snap_pixel ) )
+        return;
+
+    if ( abs_diff( frame, n->original ) < abs_diff( n->original, n->closest ) )
+        n->closest = frame;
+}
+
+static void
+nearest_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
+{
+    nearest_line_arg *n = (nearest_line_arg *)arg;
+
+    if ( n->bar && bbt.beat )
         return;
 
     if ( abs_diff( frame, n->original ) < abs_diff( n->original, n->closest ) )
@@ -534,17 +546,17 @@ prev_next_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
     the nearest measure line to /when/. Returns true if the new value of
     *frame is valid, false otherwise. */
 bool
-Timeline::nearest_line ( nframes_t *frame ) const
+Timeline::nearest_line ( nframes_t *frame, bool snap ) const
 {
-    if ( None == Timeline::snap_to )
+    if ( snap && None == Timeline::snap_to )
         return false;
 
     nframes_t when = *frame;
 
-    nearest_line_arg n = { when, -1, Timeline::Bars == Timeline::snap_to };
+    nearest_line_arg n = { when, -1, snap && Timeline::Bars == Timeline::snap_to };
 
     render_tempomap( when > x_to_ts( w() >> 1 ) ? when - x_to_ts( w() >> 1 ) : 0,
-                     when + x_to_ts( w() >> 1 ), nearest_line_cb, &n );
+                     when + x_to_ts( w() >> 1 ), snap ? nearest_line_snap_cb : nearest_line_cb, &n );
 
     if ( n.closest == (nframes_t)-1 )
         return false;

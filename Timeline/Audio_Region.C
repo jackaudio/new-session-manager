@@ -492,6 +492,8 @@ Audio_Region::draw ( void )
 
     int xo = 0;
 
+    nframes_t ostart = 0, oend = 0;
+
     do {
 
         int channels;
@@ -538,17 +540,30 @@ Audio_Region::draw ( void )
         const int total_peaks_needed = min( timeline->ts_to_x( _clip->length() - start ), rw );
         const nframes_t end = start + timeline->x_to_ts( loop_peaks_needed );
 
-        if ( _clip->read_peaks( timeline->fpp(),
-                                start,
-                                end,
-                                &peaks, &pbuf, &channels ) &&
-             peaks )
+        if ( start != ostart || end != oend )
+        {
+            if ( _clip->read_peaks( timeline->fpp(),
+                                          start,
+                                          end,
+                                    &peaks, &pbuf, &channels ) )
+            {
+                Waveform::scale( pbuf, peaks * channels, _scale );
+
+                ostart = start;
+                oend = end;
+            }
+        }
+        else
+        {
+//            DMESSAGE( "using cached peaks" );
+        }
+
+        if ( peaks )
         {
             assert( pbuf );
 
             int ch = (h() - Fl::box_dh( box() ))  / channels;
 
-            Waveform::scale( pbuf, peaks * channels, _scale );
 
             for ( int i = 0; i < channels; ++i )
             {

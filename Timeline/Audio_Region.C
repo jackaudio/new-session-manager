@@ -458,33 +458,36 @@ Audio_Region::draw ( void )
         /* no coverage */
         return;
 
-    const int scroll_x = this->scroll_x();
-    const int start_x = timeline->ts_to_x( _r->start );
-
-    if ( start_x > scroll_x + sequence()->w() ||
-         start_x + abs_w() < scroll_x )
+    if ( start() > timeline->xoffset + timeline->x_to_ts( sequence()->w() ) ||
+         start() + length() < timeline->xoffset )
         /* not in viewport */
         return;
+
+    fl_push_clip( X, Y, W, H );
 
     /* account for waveform outlines... */
     X -= 2;
     W += 4;
 
     /* start with region length... */
-    int rw = min( abs_w(), sequence()->w() );
+//    int rw = timeline->ts_to_x( min( length(), timeline->x_to_ts( sequence()->w() ) ) );
+    int rw = W;
 
     /* calculate waveform offset due to scrolling */
     nframes_t offset = 0;
-    if ( start_x < scroll_x )
+    if ( start() < timeline->xoffset )
     {
-        offset = timeline->x_to_ts( scroll_x - start_x );
+        offset = timeline->xoffset - start();
 
-        rw -= scroll_x - start_x;
+//        rw -= timeline->ts_to_x( offset );
     }
+
+/*     DMESSAGE( "rw = %d", rw ); */
 
     const int rx = x();
 
-    fl_push_clip( rx, Y, rw, H );
+/*     fl_color( FL_RED ); */
+/*     fl_line( rx + rw, y(), rx + rw, y() + h() ); */
 
     /* draw fade curve outlines--this is only here because of crossfades */
     draw_fade( _fade_in, Fade::In, true, X, W );
@@ -494,6 +497,13 @@ Audio_Region::draw ( void )
 
     nframes_t ostart = 0, oend = 0;
 
+    const int total_peaks_needed = rw;
+
+    /* compensate for scrolling */
+    if ( X - rx > 0 )
+        offset += timeline->x_to_ts( X - rx );
+
+
     do {
 
         int channels;
@@ -502,30 +512,29 @@ Audio_Region::draw ( void )
 
         nframes_t start = _r->offset;
 
-/*         int loop_peaks_needed = min( _loop ? timeline->ts_to_x( _loop ) : timeline->ts_to_x( _clip->length() ), rw ); */
-
         int loop_peaks_needed = _loop ? timeline->ts_to_x( _loop ) : timeline->ts_to_x( _clip->length() );
 
-        if ( ! xo )
+        if ( ! xo )                                             /* first loop... */
         {
-
             if ( _loop )
                 start += offset % _loop;
             else
                 start += offset;
 
-            /* compensate for ??? */
-            /* compensate for scrolling */
-            if ( X - rx > 0 )
-                start += timeline->x_to_ts( X - rx );
+/*             DMESSAGE( "offset = %lu", (unsigned long) offset ); */
+/*             DMESSAGE( "loop peaks needed = %d", loop_peaks_needed ); */
 
-            loop_peaks_needed -= timeline->ts_to_x( offset ) % loop_peaks_needed;
+            loop_peaks_needed -= timeline->ts_to_x( offset % timeline->x_to_ts( loop_peaks_needed ) );
 
-            assert( loop_peaks_needed > 0 );
+            loop_peaks_needed = min( loop_peaks_needed, total_peaks_needed );
+
+/*             DMESSAGE( "loop peaks needed = %d", loop_peaks_needed ); */
+
+            assert( loop_peaks_needed >= 0 );
 
             if ( _loop && offset < _loop )
             {
-                const int x = loop_peaks_needed;
+                const int x = timeline->ts_to_x( _loop - offset );
 
                 /* FIXME: is there no way to draw these symbols direclty? */
                 fl_font( FL_SYMBOL, 14 );
@@ -534,17 +543,23 @@ Audio_Region::draw ( void )
                 fl_color( FL_WHITE );
                 fl_draw( "@2<", X + x - 7, y() + h() - 14, 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
             }
-
         }
 
-        const int total_peaks_needed = min( timeline->ts_to_x( _clip->length() - start ), rw );
+        if ( xo + loop_peaks_needed > total_peaks_needed )
+        {
+            loop_peaks_needed -= ( xo + loop_peaks_needed ) - total_peaks_needed;
+        }
+
+        if ( 0 == loop_peaks_needed )
+            break;
+
         const nframes_t end = start + timeline->x_to_ts( loop_peaks_needed );
 
         if ( start != ostart || end != oend )
         {
             if ( _clip->read_peaks( timeline->fpp(),
-                                          start,
-                                          end,
+                                    start,
+                                    end,
                                     &peaks, &pbuf, &channels ) )
             {
                 Waveform::scale( pbuf, peaks * channels, _scale );

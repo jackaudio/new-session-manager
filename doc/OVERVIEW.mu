@@ -34,7 +34,7 @@
   /free/ part of /free software/ doesn't refer to price any more than the
   /free/ in /free speech/ does.
 
-  To learn why free software is so important to us (any why it should be
+  To learn why free software is so important to us (and why it should be
   important to you), please see the Free Software Foundation's website:
 
   #(url,http:\/\/www.fsf.org\/licensing\/essays\/free-sw.html,What is Free Software?)
@@ -43,14 +43,13 @@
 ; Donations
 
   Donations can take many forms. You can donate your time in code, either by
-  sending it to me for review, or cloning the git repository and publishing your
-  changes (to be eventually merged back into my tree). You can donate your time
-  in testing, documentation, artwork, indexing, etc. Or, if you don't feel that
-  you possess the time or skills required for the above forms of donation, you
-  can donate money instead. Money donated will help to ensure that I have the
-  free-time, good nutrition, and enthusiasm required to implement new features.
-  It can also be a more palpable way of saying "Thanks for caring." or "Job
-  well done!"
+  sending it to me for review or cloning the git repository and publishing one
+  containing your changes. You can donate your time in testing, documentation,
+  artwork, indexing, etc. Or, if you don't feel that you possess the time or
+  skills required for the above forms of donation, you can donate money
+  instead. Money donated will help to ensure that I have the free time, good
+  nutrition and enthusiasm required to implement new features.  It can also be
+  a more palpable way of saying "Thanks for caring." or "Job well done!"
 
   If you don't love this software, don't feel guilty about not contributing. If
   you do love it, then please help me improve it--in whatever manner you think

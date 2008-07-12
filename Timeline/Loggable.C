@@ -89,7 +89,7 @@ Loggable::open ( const char *filename )
 
     if ( newer( "snapshot", filename ) )
     {
-        DMESSAGE( "Loading snapshot" );
+        MESSAGE( "Loading snapshot" );
 
         FILE *fp = fopen( "snapshot", "r" );
 
@@ -99,7 +99,7 @@ Loggable::open ( const char *filename )
     }
     else
     {
-        DMESSAGE( "Replaying journal" );
+        MESSAGE( "Replaying journal" );
 
         replay( fp );
     }
@@ -166,7 +166,8 @@ Loggable::close ( void )
 
     _fp = NULL;
 
-    snapshot( "snapshot" );
+    if ( ! snapshot( "snapshot" ) )
+        WARNING( "Failed to create snapshot" );
 
     for ( int i = 0; i < _log_id - 1; ++i )
     {
@@ -192,7 +193,7 @@ Loggable::update_id ( int id )
     assert( _id == _log_id );
     assert( _loggables[ _id - 1 ] == this );
 
-    _loggables[ _id - 1 ]  = NULL;
+    _loggables[ _id - 1 ] = NULL;
 
     _log_id = max( _log_id, id );
 
@@ -204,7 +205,8 @@ Loggable::update_id ( int id )
     /* make sure it'll fit */
     ensure_size( _id );
 
-    ASSERT( ! _loggables[ _id - 1 ], "Attempt to create object with an ID (0x%X) that already exists. The existing object is of type \"%s\", the new one is \"%s\". Corrupt journal?", _id, _loggables[ _id - 1 ]->class_name(), class_name() );
+    if ( _loggables[ _id - 1 ] )
+        FATAL( "Attempt to create object with an ID (0x%X) that already exists. The existing object is of type \"%s\", the new one is \"%s\". Corrupt journal?", _id, _loggables[ _id - 1 ]->class_name(), class_name() );
 
     _loggables[ _id - 1 ] = this;
 }
@@ -418,11 +420,11 @@ Loggable::snapshot ( const char *name )
     if ( ! ( fp = fopen( name, "w" ) ))
         return false;
 
-    snapshot( fp );
+    bool r = snapshot( fp );
 
     fclose( fp );
 
-    return true;
+    return r;
 }
 
 /** Replace the journal with a snapshot of the current state */

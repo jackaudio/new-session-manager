@@ -148,7 +148,9 @@ public:
     void
     block_end ( void )
         {
-            assert( --Loggable::_level >= 0 );
+            --Loggable::_level;
+
+            ASSERT( Loggable::_level >= 0, "Programming error" );
 
             if ( Loggable::_level == 0 )
                 flush();

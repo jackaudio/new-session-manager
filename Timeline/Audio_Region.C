@@ -514,6 +514,9 @@ Audio_Region::draw ( void )
 
         int loop_peaks_needed = _loop ? timeline->ts_to_x( _loop ) : timeline->ts_to_x( _clip->length() );
 
+        if ( ! loop_peaks_needed )
+            break;
+
         if ( ! xo )                                             /* first loop... */
         {
             if ( _loop )

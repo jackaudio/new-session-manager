@@ -69,7 +69,8 @@ Loggable::ensure_size ( size_t n )
 
         _loggables = (Loggable**) realloc( _loggables, sizeof( Loggable ** ) * _loggables_size );
 
-        memset( _loggables + os, 0, _loggables_size - os );
+        for ( int i = os; i < _loggables_size; ++i )
+            _loggables[ i ] = 0;
     }
 }
 
@@ -243,7 +244,8 @@ Loggable::escape ( const char *s )
 bool
 Loggable::do_this ( const char *s, bool reverse )
 {
-    int id;
+    int id = 0;
+
     if ( ! ( sscanf( s, "%*s %X ", &id ) > 0 ) )
         return false;
 

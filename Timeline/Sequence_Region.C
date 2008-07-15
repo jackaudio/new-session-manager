@@ -187,12 +187,14 @@ Sequence_Region::handle ( int m )
                 redraw();
                 return 1;
             }
-            else if ( test_press( FL_CTRL + FL_BUTTON1 ) )
-            {
-                /* duplication */
-                fl_cursor( FL_CURSOR_MOVE );
-                return 1;
-            }
+
+/*             else if ( test_press( FL_CTRL + FL_BUTTON1 ) ) */
+/*             { */
+/*                 /\* duplication *\/ */
+/*                 fl_cursor( FL_CURSOR_MOVE ); */
+/*                 return 1; */
+/*             } */
+
             else
                 return Sequence_Widget::handle( m );
         }

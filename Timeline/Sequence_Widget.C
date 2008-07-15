@@ -370,6 +370,15 @@ Sequence_Widget::handle ( int m )
             }
             else if ( test_press( FL_BUTTON1 ) || test_press( FL_BUTTON1 + FL_CTRL ) )
             {
+                /* traditional selection model */
+                if ( Fl::event_ctrl() )
+                    select();
+                else if ( ! selected() )
+                {
+                    select_none();
+                    select();
+                }
+
                 fl_cursor( FL_CURSOR_MOVE );
 
                 /* movement drag */
@@ -450,7 +459,7 @@ Sequence_Widget::handle ( int m )
                     timeline->redraw();
                 }
 
-                if ( ! selected() )
+                if ( ! selected() || _selection.size() == 1 )
                 {
                     /* track jumping */
                     if ( Y > y() + h() || Y < y() )
@@ -537,8 +546,14 @@ Sequence_Widget::select_none ( void )
 
     while ( _selection.size() )
     {
+        Sequence_Widget *w = _selection.front();
+
+        w->log_start();
+
         _selection.front()->redraw();
         _selection.pop_front();
+
+        w->log_end();
     }
 
     Loggable::block_end();

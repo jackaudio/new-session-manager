@@ -1177,13 +1177,16 @@ Timeline::handle ( int m )
             {
                 case FL_PUSH:
                 {
-                    if ( test_press( FL_BUTTON1 ) )
+                    if ( test_press( FL_BUTTON1 ) || test_press( FL_BUTTON1 + FL_CTRL ) )
                     {
                         assert( ! drag );
 
                         drag = new Drag( X - x(), Y - y() );
                         _selection.x = drag->x;
                         _selection.y = drag->y;
+
+                        if ( ! Fl::event_ctrl() )
+                            select_none();
 
                         return 1;
                     }

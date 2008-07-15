@@ -281,6 +281,8 @@ Sequence::draw ( void )
 
 }
 
+#include "FL/test_press.H"
+
 int
 Sequence::handle ( int m )
 {
@@ -448,12 +450,20 @@ Sequence::handle ( int m )
                     return retval;
             }
             else
+            {
+                if ( test_press( FL_BUTTON1 ) )
+                {
+                    /* traditional selection model */
+                    Sequence_Widget::select_none();
+                }
+
                 return Fl_Widget::handle( m );
+            }
         }
     }
 }
 
-
+
 
 /**********/
 /* Public */
@@ -464,73 +474,73 @@ Sequence::handle ( int m )
 
 /** return the length in frames of this sequence calculated from the
  * right edge of the rightmost widget */
-nframes_t
-Sequence::length ( void ) const
-{
-    nframes_t l = 0;
+    nframes_t
+        Sequence::length ( void ) const
+    {
+        nframes_t l = 0;
 
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin(); r != _widgets.end(); ++r )
-        l = max( l, (*r)->start() + (*r)->length() );
+        for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin(); r != _widgets.end(); ++r )
+            l = max( l, (*r)->start() + (*r)->length() );
 
-    return l;
-}
-
-/** return the location of the next widget from frame /from/ */
-nframes_t
-Sequence::next ( nframes_t from ) const
-{
-    for ( list <Sequence_Widget*>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
-        if ( (*i)->start() > from )
-            return (*i)->start();
-
-    if ( _widgets.size() )
-        return _widgets.back()->start();
-    else
-        return 0;
-}
+        return l;
+    }
 
 /** return the location of the next widget from frame /from/ */
-nframes_t
-Sequence::prev ( nframes_t from ) const
-{
-    for ( list <Sequence_Widget*>::const_reverse_iterator i = _widgets.rbegin(); i != _widgets.rend(); i++ )
-        if ( (*i)->start() < from )
-            return (*i)->start();
+    nframes_t
+        Sequence::next ( nframes_t from ) const
+    {
+        for ( list <Sequence_Widget*>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
+            if ( (*i)->start() > from )
+                return (*i)->start();
 
-    if ( _widgets.size() )
-        return _widgets.front()->start();
-    else
-        return 0;
-}
+        if ( _widgets.size() )
+            return _widgets.back()->start();
+        else
+            return 0;
+    }
+
+/** return the location of the next widget from frame /from/ */
+    nframes_t
+        Sequence::prev ( nframes_t from ) const
+    {
+        for ( list <Sequence_Widget*>::const_reverse_iterator i = _widgets.rbegin(); i != _widgets.rend(); i++ )
+            if ( (*i)->start() < from )
+                return (*i)->start();
+
+        if ( _widgets.size() )
+            return _widgets.front()->start();
+        else
+            return 0;
+    }
 
 /** delete all selected widgets in this sequence */
-void
-Sequence::remove_selected ( void )
-{
-    Loggable::block_start();
+    void
+        Sequence::remove_selected ( void )
+    {
+        Loggable::block_start();
 
-    for ( list <Sequence_Widget *>::iterator r = _widgets.begin(); r != _widgets.end(); )
-        if ( (*r)->selected() )
-        {
-            Sequence_Widget *t = *r;
-            _widgets.erase( r++ );
-            delete t;
-        }
-        else
-            ++r;
+        for ( list <Sequence_Widget *>::iterator r = _widgets.begin(); r != _widgets.end(); )
+            if ( (*r)->selected() )
+            {
+                Sequence_Widget *t = *r;
+                _widgets.erase( r++ );
+                delete t;
+            }
+            else
+                ++r;
 
-    Loggable::block_end();
-}
+        Loggable::block_end();
+    }
 
 /** select all widgets intersecting with the range defined by the
  * pixel coordinates X through W */
-void
-Sequence::select_range ( int X, int W )
-{
-    nframes_t sts = x_to_offset( X );
-    nframes_t ets = sts + timeline->x_to_ts( W );
+    void
+        Sequence::select_range ( int X, int W )
+    {
+        nframes_t sts = x_to_offset( X );
+        nframes_t ets = sts + timeline->x_to_ts( W );
 
-    for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); ++r )
-        if ( ! ( (*r)->start() > ets || (*r)->start() + (*r)->length() < sts ) )
-            (*r)->select();
-}
+        for ( list <Sequence_Widget *>::const_reverse_iterator r = _widgets.rbegin();  r != _widgets.rend(); ++r )
+            if ( ! ( (*r)->start() > ets || (*r)->start() + (*r)->length() < sts ) )
+                (*r)->select();
+    }

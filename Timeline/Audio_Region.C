@@ -134,7 +134,7 @@ Audio_Region::Audio_Region ( const Audio_Region & rhs ) : Sequence_Region( rhs )
 {
 //    *((Sequence_Region*)this) = (Sequence_Region &)rhs;
 
-    _clip      = rhs._clip;
+    _clip      = rhs._clip->duplicate();
     _scale     = rhs._scale;
 
     _fade_in   = rhs._fade_in;
@@ -192,6 +192,8 @@ Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
 Audio_Region::~Audio_Region ( )
 {
     log_destroy();
+
+    _clip->release();
 }
 
 

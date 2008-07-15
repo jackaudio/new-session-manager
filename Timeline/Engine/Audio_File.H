@@ -34,6 +34,8 @@ class Peak_Writer;
 
 class Audio_File : protected Mutex
 {
+    int _refs;
+
     static std::map <std::string, Audio_File*> _open_files;
 
     /* not permitted */
@@ -67,6 +69,7 @@ public:
             _filename = NULL;
             _samplerate = 0;
             _length = _channels = 0;
+            _refs = 0;
         }
 
     virtual ~Audio_File ( );
@@ -77,6 +80,8 @@ public:
 
     static Audio_File *from_file ( const char *filename );
 
+    void release ( void );
+    Audio_File *duplicate ( void );
 
     Peaks const * peaks ( ) { return &_peaks; }
     const char *filename ( void ) const;

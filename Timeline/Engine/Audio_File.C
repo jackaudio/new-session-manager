@@ -29,7 +29,10 @@ std::map <std::string, Audio_File*> Audio_File::_open_files;
 
 Audio_File::~Audio_File ( )
 {
+    DMESSAGE( "Freeing Audio_File object for \"%s\"", _filename );
+
     _open_files[ std::string( _filename ) ] = NULL;
+
     if ( _filename )
         free( _filename );
 }
@@ -80,7 +83,7 @@ Audio_File::filename ( void ) const
     return realname( _filename );
 }
 
-/** attmpet to open any supported filetype */
+/** attempt to open any supported filetype */
 Audio_File *
 Audio_File::from_file ( const char * filename )
 {
@@ -88,7 +91,11 @@ Audio_File::from_file ( const char * filename )
     Audio_File *a;
 
     if ( ( a = _open_files[ std::string( filename ) ] ) )
+    {
+        ++a->_refs;
+
         return a;
+    }
 
     if ( ( a = Audio_File_SF::from_file( filename ) ) )
         goto done;
@@ -105,9 +112,29 @@ Audio_File::from_file ( const char * filename )
 
 done:
 
+    ASSERT( ! _open_files[ std::string( filename ) ], "Programming errror" );
+
     _open_files[ std::string( filename ) ] = a;
 
+    a->_refs = 1;
+
     return a;
+}
+
+Audio_File *
+Audio_File::duplicate ( void )
+{
+    ++_refs;
+    return this;
+}
+
+/** release the resources assoicated with this audio file if no other
+ * references to it exist */
+void
+Audio_File::release ( void )
+{
+    if ( --_refs == 0 )
+        delete this;
 }
 
 

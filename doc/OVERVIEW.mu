@@ -1,6 +1,6 @@
 
 ! title		The Non Sequencer
-! author	Jonathan Moore Liles #(email,wantingwaiting@users.sf.net)
+! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
 ! extra		#(image,logo,logo.png)
 
 --
@@ -85,3 +85,11 @@
 ; Community
 
   Feel free to drop by the `#non` channel on irc.freenode.net.
+
+  There is a mailing list `non-sequencer@lists.tuxfamily.org`.
+
+  To subscribe, send a message with the subject 'subscribe' to
+  #(email,non-sequencer-request@lists.tuxfamily.org). 
+
+  You can also browse the #(url,http:\/\/listengine.tuxfamily.org\/lists.tuxfamily.org\/non-sequencer\/,archive).
+

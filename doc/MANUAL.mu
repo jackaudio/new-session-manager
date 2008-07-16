@@ -1,6 +1,6 @@
 
 ! title		The Non Sequencer
-! author	Jonathan Moore Liles #(email,wantingwaiting@users.sf.net)
+! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
 ! date		Oct 13 2007
 ! keywords	Non Jack ALSA FLTK
 ! extra		#(url,http://non.tuxfamily.org,Home)

@@ -26,7 +26,7 @@
 #include <stdlib.h>
 
 unsigned long
-mtime ( const char *file )
+modification_time ( const char *file )
 {
     struct stat st;
 
@@ -40,7 +40,7 @@ mtime ( const char *file )
 bool
 newer ( const char *file1, const char *file2 )
 {
-    return mtime( file1 ) > mtime( file2 );
+    return modification_time( file1 ) > modification_time( file2 );
 }
 
 unsigned long

@@ -19,7 +19,8 @@
 
 #include <stdio.h>
 
-unsigned long mtime ( const char *file );
+unsigned long modification_time ( const char *file );
+
 bool newer ( const char *file1, const char *file2 );
 unsigned long size ( const char *file );
 int exists ( const char *name );

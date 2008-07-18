@@ -837,7 +837,8 @@ Function {new_project_chooser()} {C return_type void
 nsd.run();} {}
 } 
 
-class Project_Info_Dialog {} {
+class Project_Info_Dialog {open
+} {
   Function {Project_Info_Dialog()} {open
   } {
     code {make_window();} {}
@@ -869,7 +870,7 @@ if ( logo_box->image() )
       }
       Fl_Output {} {
         label {Size of Journal}
-        xywh {210 80 100 25} box UP_BOX labeltype SHADOW_LABEL align 1
+        xywh {180 80 100 25} box UP_BOX labeltype SHADOW_LABEL align 1
         code0 {static char pat[40];}
         code1 {snprintf( pat, sizeof( pat ), "%.1fK", size( "history" ) / (float)1024 );}
         code2 {o->value( pat );}
@@ -877,18 +878,19 @@ if ( logo_box->image() )
       }
       Fl_Output {} {
         label {Created On}
-        xywh {350 80 135 25} box UP_BOX labeltype SHADOW_LABEL align 1
+        xywh {320 80 180 25} box UP_BOX labeltype SHADOW_LABEL align 1 textfont 11 textsize 12
+        code0 {o->value( Project::created_on() );}
       }
       Fl_Output {} {
         label Length
-        xywh {30 130 115 25} align 1
+        xywh {30 130 115 25} box BORDER_BOX color 47 align 1 textcolor 71
         code0 {char pat[40];}
         code1 {Clock::frame_to_HMS( pat, sizeof( pat ), timeline->length() );}
         code2 {o->value( pat );}
       }
       Fl_Value_Output {} {
         label Tracks
-        xywh {230 130 60 25} align 1
+        xywh {200 130 55 25} align 1
         code0 {o->value( timeline->ntracks() );}
       }
       Fl_Box logo_box {
@@ -923,6 +925,14 @@ window->do_callback();}
         callback {window->do_callback();}
         xywh {330 700 74 25}
       }
+      Fl_Output {} {
+        label {Last Modified On} selected
+        xywh {320 130 180 25} box UP_BOX labeltype SHADOW_LABEL align 1 textfont 11 textsize 12
+        code0 {time_t t = modification_time( "history" );}
+        code1 {static char s[40];}
+        code2 {ctime_r( &t, s ); s[ strlen( s ) - 1 ] = 0;}
+        code3 {o->value( s );}
+      }
     }
   }
 } 
@@ -952,7 +962,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {669 197 495 655} type Double xclass {Non-DAW} visible
+      private xywh {349 201 495 655} type Double xclass {Non-DAW} visible
     } {
       Fl_Tabs {} {open
         xywh {0 264 497 392}

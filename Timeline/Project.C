@@ -61,6 +61,7 @@ const char *Project::_errstr[] =
 };
 
 char Project::_name[256];
+char Project::_created_on[40];
 char Project::_path[512];
 bool Project::_is_open = false;
 int Project::_lockfd = 0;
@@ -101,8 +102,20 @@ Project::write_info ( void )
         return false;
     }
 
-    fprintf( fp, "created by\n\t%s\nversion\n\t%d\nsample rate\n\t%lu\n",
+    char s[40];
+
+    if ( ! *_created_on )
+    {
+        time_t t = time( NULL );
+        ctime_r( &t, s );
+        s[ strlen( s ) - 1 ] = '\0';
+    }
+    else
+        strcpy( s, _created_on );
+
+    fprintf( fp, "created by\n\t%s\ncreated on\n\t%s\nversion\n\t%d\nsample rate\n\t%lu\n",
              APP_TITLE " " VERSION,
+             s,
              PROJECT_VERSION,
              (unsigned long)timeline->sample_rate() );
 
@@ -112,7 +125,7 @@ Project::write_info ( void )
 }
 
 bool
-Project::read_info ( int *version, nframes_t *sample_rate )
+Project::read_info ( int *version, nframes_t *sample_rate, char **creation_date )
 {
     FILE *fp;
 
@@ -121,6 +134,10 @@ Project::read_info ( int *version, nframes_t *sample_rate )
         WARNING( "could not open project info file for reading." );
         return false;
     }
+
+    *version = 0;
+    *sample_rate = 0;
+    *creation_date = 0;
 
     char *name, *value;
 
@@ -132,6 +149,8 @@ Project::read_info ( int *version, nframes_t *sample_rate )
             *sample_rate = atoll( value );
         else if ( ! strcmp( name, "version" ) )
             *version = atoi( value );
+        else if ( ! strcmp( name, "created on" ) )
+            *creation_date = strdup( value );
 
         free( name );
         free( value );
@@ -157,11 +176,12 @@ Project::close ( void )
 
     Loggable::close();
 
-    write_info();
+//    write_info();
 
     _is_open = false;
 
     *Project::_name = '\0';
+    *Project::_created_on = '\0';
 
     release_lock( &_lockfd, ".lock" );
 
@@ -215,8 +235,9 @@ Project::open ( const char *name )
 
     int version;
     nframes_t rate;
+    char *creation_date;
 
-    if ( ! read_info( &version, &rate ) )
+    if ( ! read_info( &version, &rate, &creation_date ) )
         return E_INVALID;
 
     if ( version != PROJECT_VERSION )
@@ -226,6 +247,14 @@ Project::open ( const char *name )
         return E_INVALID;
 
     timeline->sample_rate( rate );
+
+    if ( creation_date )
+    {
+        strcpy( _created_on, creation_date );
+        free( creation_date );
+    }
+    else
+        *_created_on = 0;
 
     set_name( name );
 

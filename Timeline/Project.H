@@ -29,11 +29,11 @@ class Project
     static bool _is_open;
     static char _name[256];
     static char _path[512];
+    static char _created_on[40];
 
     static bool write_info ( void );
-    static bool read_info ( int *version, nframes_t *sample_rate );
+    static bool read_info ( int *version, nframes_t *sample_rate, char **creation_date );
     static void set_name ( const char *name );
-
     static const char *_errstr[];
 
 public:
@@ -57,4 +57,5 @@ public:
     static bool open ( void ) { return _is_open; }
     static bool create ( const char *name, const char *template_name );
 
+    static const char *created_on ( void ) { return _created_on; }
 };

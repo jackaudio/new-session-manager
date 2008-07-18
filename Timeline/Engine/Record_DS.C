@@ -198,11 +198,14 @@ Record_DS::disk_thread ( void )
 
     DMESSAGE( "finalzing capture" );
 
-    /* now finalize the recording */
-    track()->finalize( _capture, _stop_frame );
+    Track::Capture *c = _capture;
 
-    delete _capture;
     _capture = NULL;
+
+    /* now finalize the recording */
+    track()->finalize( c, _stop_frame );
+
+    delete c;
 
     _terminate = false;
     DMESSAGE( "capture thread gone" );

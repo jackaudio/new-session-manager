@@ -35,18 +35,32 @@ config:
 
 -include .config
 
+export SYSTEM_PATH:=$(prefix)/share/non-daw/
+export DOCUMENT_PATH:=$(prefix)/share/doc/non-daw/
+export PIXMAP_PATH:=$(prefix)/share/pixmaps/non-daw/
+
 # a bit of a hack to make sure this runs before any rules
 ifneq ($(CALCULATING),yes)
 TOTAL := $(shell $(MAKE) CALCULATING=yes -n 2>/dev/null | sed -n 's/^.*Compiling: \([^"]\+\)"/\1/p' > .files )
 endif
 
 ifeq ($(USE_DEBUG),yes)
-	CXXFLAGS := -pipe -ggdb -Wall -Wextra -Wnon-virtual-dtor -Wno-missing-field-initializers -O0 -fno-rtti -fno-exceptions
+	CFLAGS := -pipe -ggdb -Wall -Wextra -O0
+	CXXFLAGS := -Wnon-virtual-dtor -Wno-missing-field-initializers -fno-rtti -fno-exceptions
 else
-	CXXFLAGS := -pipe -O2 -fno-rtti -fno-exceptions -DNDEBUG
+	CFLAGS := -pipe -O2 -DNDEBUG
+	CXXFLAGS := -fno-rtti -fno-exceptions
 endif
 
-CXXFLAGS += $(SNDFILE_CFLAGS) $(LASH_CFLAGS) $(FLTK_CFLAGS) -DINSTALL_PREFIX="\"$(prefix)\"" -DVERSION=\"$(VERSION)\"
+CFLAGS+=-DVERSION=\"$(VERSION)\" \
+	-DINSTALL_PREFIX=\"$(prefix)\" \
+	-DSYSTEM_PATH=\"$(SYSTEM_PATH)\" \
+	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\" \
+	-DPIXMAP_PATH=\"$(PIXMAP_PATH)\"
+
+CXXFLAGS += $(SNDFILE_CFLAGS) $(LASH_CFLAGS) $(FLTK_CFLAGS)
+CXXFLAGS := $(CFLAGS) $(CXXFLAGS)
+
 INCLUDES := -I. -Iutil -IFL
 
 include scripts/colors
@@ -84,16 +98,15 @@ ifneq ($(CALCULATING),yes)
 	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) 2>/dev/null > .deps  && echo $(DONE)
 endif
 
+
 install: all
 	@ echo -n "Installing..."
 	@ install Timeline/timeline $(prefix)/bin/non-daw
 #	@ install Mixer/mixer $(prefix)/bin/non-mixer
-	@ mkdir -p $(prefix)/share/non-daw
-	@ mkdir -p $(prefix)/share/pixmaps/non-daw
-	@ mkdir -p $(prefix)/doc/non-daw
-	@ cp pixmaps/*.png $(prefix)/share/pixmaps/non-daw
-	@ cp doc/*.html doc/*.png $(prefix)/doc/non-daw
-	@ cp COPYING $(prefix)/doc/non-daw
+	@ mkdir -p $(SYSTEM_PATH)
+	@ mkdir -p $(PIXMAP_PATH)
+	@ cp pixmaps/*.png $(PIXMAP_PATH)
+	@ $(MAKE) -s -C doc install
 	@ echo "$(DONE)"
 ifneq ($(USE_DEBUG),yes)
 	@ echo -n "Stripping..."

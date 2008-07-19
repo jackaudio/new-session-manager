@@ -15,7 +15,7 @@ ask "Build for debugging" USE_DEBUG no
 
 begin_tests
 
-require_FLTK 1.1.7 images
+require_FLTK 1.1.8 images
 require_command FLUID fluid
 require_package JACK 0.103.0 jack
 require_package sndfile 1.0.17 sndfile

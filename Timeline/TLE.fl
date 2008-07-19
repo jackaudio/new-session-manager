@@ -45,13 +45,13 @@ decl {\#include "Audio_Region.H" // for options} {}
 
 decl {\#include "Control_Sequence.H" // for options} {} 
 
-decl {\#include <FL/fl_ask.H>} {} 
-
 decl {\#include <FL/Fl_File_Chooser.H>} {} 
+
+decl {\#include <Fl/Fl_Shared_Image.H>} {} 
 
 decl {\#include <FL/Fl.H>} {} 
 
-decl {\#include <Fl/Fl_Shared_Image.H>} {} 
+decl {\#include <FL/fl_ask.H>} {} 
 
 decl {\#include "Engine/Engine.H"} {} 
 
@@ -557,6 +557,11 @@ Fl::scheme( Fl::scheme() );}
           xywh {0 0 74 25}
         } {
           MenuItem {} {
+            label {&Manual}
+            callback {show_help_dialog( "MANUAL" );}
+            xywh {10 10 40 25} divider
+          }
+          MenuItem {} {
             label {&About}
             callback {About_Dialog ab;
 
@@ -771,6 +776,14 @@ update_progress( progress, pat, p );
 progress->redraw();
 
 Fl::check();} {}
+  }
+  Function {show_help_dialog( const char *file )} {open private return_type {static void}
+  } {
+    code {char pat[256];
+
+snprintf( pat, 256, "file://%s%s.html", DOCUMENT_PATH, file );
+
+fl_open_uri( pat );} {}
   }
 } 
 

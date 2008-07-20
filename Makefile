@@ -111,7 +111,7 @@ install: all
 ifneq ($(USE_DEBUG),yes)
 	@ echo -n "Stripping..."
 	@ strip $(prefix)/bin/non-daw
-	@ strip $(prefix)/bin/non-mixer
+#	@ strip $(prefix)/bin/non-mixer
 	@ echo "$(DONE)"
 endif
 

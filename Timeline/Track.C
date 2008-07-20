@@ -145,6 +145,7 @@ Track::init ( void )
             {
                 Fl_Button *o = mute_button =
                     new Fl_Button( 35, 28, 26, 24, "m" );
+                o->selection_color( fl_color_average( FL_YELLOW, FL_RED, 0.50 ) );
                 o->type( 1 );
                 o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );
@@ -154,6 +155,7 @@ Track::init ( void )
             {
                 Fl_Button *o = solo_button =
                     new Fl_Button( 66, 28, 26, 24, "s" );
+                o->selection_color( fl_color_average( FL_YELLOW, FL_RED, 0.50 ) );
                 o->type( 1 );
                 o->box( FL_THIN_UP_BOX );
                 o->color( FL_LIGHT1 );

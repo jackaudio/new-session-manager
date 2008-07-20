@@ -192,8 +192,7 @@ menubar->add( "&Timeline", 0, 0, const_cast< Fl_Menu_Item *>( timeline->menu->me
 }
 
 
-Loggable::progress_callback( &TLE::progress_cb, this );} {selected
-    }
+Loggable::progress_callback( &TLE::progress_cb, this );} {}
   }
   Function {make_window()} {open
   } {
@@ -783,7 +782,8 @@ Fl::check();} {}
 
 snprintf( pat, 256, "file://%s%s.html", DOCUMENT_PATH, file );
 
-fl_open_uri( pat );} {}
+open_url( pat );} {selected
+    }
   }
 } 
 
@@ -970,7 +970,8 @@ window->do_callback();}
   }
 } 
 
-class About_Dialog {} {
+class About_Dialog {open
+} {
   Function {About_Dialog()} {open
   } {
     code {make_window();} {}
@@ -1047,12 +1048,7 @@ You should have received a copy of the GNU General Public License along with thi
       }
       Fl_Button {} {
         label {http://non-daw.tuxfamily.org}
-        callback {\#if ! ( FL_MAJOR_VERSION >= 1 && FL_MINOR_VERSION >= 1 && FL_PATCH_VERSION >= 8 )
-	// FIXME: got a better idea?
-	system( "x-www-browser http://non-daw.tuxfamily.org &" );
-\#else
-	fl_open_uri( "http://non-daw.tuxfamily.org" );
-\#endif}
+        callback {open_url( o->label() );}
         xywh {125 614 245 30} color 14 labeltype SHADOW_LABEL labelcolor 6
       }
       Fl_Box {} {
@@ -1061,4 +1057,17 @@ You should have received a copy of the GNU General Public License along with thi
       }
     }
   }
+} 
+
+Function {open_url( const char *url )} {open return_type void
+} {
+  code {\#if ! ( FL_MAJOR_VERSION >= 1 && FL_MINOR_VERSION >= 1 && FL_PATCH_VERSION >= 8 )
+	
+	// FIXME: got a better idea?
+	char cmd[256];
+	snprintf( cmd, sizeof( cmd ), "x-www-browser '%s' &", url );
+	system( cmd );
+\#else
+	fl_open_uri( url );
+\#endif} {}
 } 

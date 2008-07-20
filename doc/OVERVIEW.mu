@@ -363,7 +363,7 @@
 
   The following libraries are required to build Non-DAW
 
-* FLTK >= 1.1.8 (with `fluid`)
+* FLTK >= 1.1.7 (with `fluid`)
 * JACK >= 0.103.0
 * libsndfile >= 0.18.0
 

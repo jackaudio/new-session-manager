@@ -1181,9 +1181,9 @@ Timeline::handle ( int m )
                     {
                         assert( ! drag );
 
-                        drag = new Drag( X - x(), Y - y() );
-                        _selection.x = drag->x;
-                        _selection.y = drag->y;
+                        drag = new Drag( X, Y );
+                        _selection.x = X;
+                        _selection.y = Y;
 
                         if ( ! Fl::event_ctrl() )
                             select_none();
@@ -1238,8 +1238,7 @@ Timeline::handle ( int m )
                     else
                         select( _selection );
 
-                    _selection.w = _selection.h = 0;
-
+                    _selection.x = _selection.y =_selection.w = _selection.h = 0;
 
                     redraw_overlay();
                     return 1;

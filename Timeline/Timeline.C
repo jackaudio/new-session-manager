@@ -1121,10 +1121,6 @@ Timeline::handle ( int m )
 
     switch ( m )
     {
-        case FL_FOCUS:
-        case FL_UNFOCUS:
-//            redraw();
-            return 1;
         case FL_ENTER:
             return 1;
         case FL_LEAVE:

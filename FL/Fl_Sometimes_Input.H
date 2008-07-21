@@ -48,6 +48,14 @@ public:
             }
         }
 
+    virtual void
+    take_focus ( void )
+        {
+            set_visible_focus();
+            Fl_Widget::take_focus();
+            clear_visible_focus();
+        }
+
     virtual int
     handle ( int m )
         {
@@ -59,11 +67,9 @@ public:
                     redraw();
                     return 1;
                 case FL_PUSH:
-                    set_visible_focus();
                     take_focus();
-                    clear_visible_focus();
                     redraw();
-                    return r;
+                    return 1;
                 case FL_UNFOCUS:
 
                     if ( window() )

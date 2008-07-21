@@ -653,6 +653,10 @@ Track::menu_cb ( const Fl_Menu_ *m )
            Fl::delete_widget( this );
        }
    }
+   else if ( ! strcmp( picked, "/Rename" ) )
+   {
+       ((Fl_Sometimes_Input*)name_field)->take_focus();
+   }
 }
 
 #include "FL/menu_popup.H"
@@ -676,6 +680,7 @@ Track::menu ( void ) const
             { "Add Control",     0, 0, 0 },
             { "Add Annotation",  0, 0, 0 },
             { "Color",           0, 0, 0 },
+            { "Rename",          FL_CTRL + 'n', 0, 0 },
             { "Remove",          0, 0, 0 }, // transport->rolling ? FL_MENU_INACTIVE : 0 },
             { 0 },
         };

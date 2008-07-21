@@ -48,7 +48,6 @@ class Port;
 class Audio_Region;
 class Audio_File;
 
-
 //class Audio_Sequence;
 
 #include "Audio_Sequence.H"

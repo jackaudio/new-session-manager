@@ -38,6 +38,8 @@ public:
 
     enum type_e { Output, Input };
 
+    static int max_name ( void );
+
     Port ( jack_port_t *port );
     Port ( const char *name, type_e dir );
     Port ( type_e dir, const char *base, int n, const char *type=0 );

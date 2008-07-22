@@ -31,6 +31,12 @@ static const char *name_for_port ( Port::type_e dir, const char *base, int n, co
 
 
 
+int
+Port::max_name ( void )
+{
+    return jack_port_name_size() - jack_client_name_size() - 6;
+}
+
 /* nframes is the number of frames to buffer */
 Port::Port ( jack_port_t *port )
 {
@@ -62,14 +68,19 @@ Port::~Port ( )
 static const char *
 name_for_port ( Port::type_e dir, const char *base, int n, const char *type )
 {
-    static char pname[256];
+    static char pname[ 512 ];
 
     const char *dir_s = dir == Port::Output ? "out" : "in";
 
+    strncpy( pname, base, Port::max_name() );
+    pname[ Port::max_name() - 1 ] = '\0';
+
+    int l = strlen( pname );
+
     if ( type )
-        snprintf( pname, sizeof( pname ), "%s/%s-%s-%d", base, type, dir_s, n + 1 );
+        snprintf( pname + l, sizeof( pname ) - l, "/%s-%s-%d", type, dir_s, n + 1 );
     else
-        snprintf( pname, sizeof( pname ), "%s/%s-%d", base, dir_s, n + 1 );
+        snprintf( pname + l, sizeof( pname ) - l, "/%s-%d", dir_s, n + 1 );
 
     return pname;
 }

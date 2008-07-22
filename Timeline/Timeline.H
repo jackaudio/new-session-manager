@@ -144,7 +144,7 @@ public:
     void update_tempomap ( void );
 
     nframes_t fpp ( void ) const { return 1 << _fpp; }
-
+    void range ( nframes_t start, nframes_t length );
     nframes_t length ( void ) const;
     void sample_rate ( nframes_t r ) { _sample_rate = r; }
     nframes_t sample_rate ( void ) const { return _sample_rate; }

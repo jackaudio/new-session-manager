@@ -173,6 +173,16 @@ Timeline::fix_range ( void )
     }
 }
 
+/** set the range to /start/ + /length/ */
+void
+Timeline::range ( nframes_t start, nframes_t length )
+{
+    p1 = start;
+    p2 = start + length;
+
+    redraw();
+}
+
 void
 Timeline::menu_cb ( Fl_Menu_ *m )
 {

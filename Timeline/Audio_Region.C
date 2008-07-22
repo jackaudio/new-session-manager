@@ -265,6 +265,8 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
         _loop = 0;
     else if ( ! strcmp( picked, "/Normalize" ) )
         normalize();
+    else if ( ! strcmp( picked, "/Range from" ) )
+        timeline->range( start(), length() );
     else if ( ! strcmp( picked, "/Remove" ) )
         remove();
     else
@@ -307,6 +309,7 @@ Audio_Region::menu ( void )
             { "Loop point to mouse", 'l', 0, 0 },
             { "Clear loop point", FL_SHIFT + 'l', 0, 0 },
             { "Normalize", 'n', 0, 0 },
+            { "Range from", FL_CTRL + 'r', 0, 0 },
             { "Remove", 0, 0, 0 },
             { 0 },
         };

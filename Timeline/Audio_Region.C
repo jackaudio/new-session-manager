@@ -775,7 +775,9 @@ Audio_Region::normalize ( void )
     int peaks, channels;
     Peak *pbuf;
 
-    if ( _clip->read_peaks( length(), offset(), offset() + length(), &peaks, &pbuf, &channels ) &&
+    const nframes_t npeaks = _loop ? _loop : length();
+
+    if ( _clip->read_peaks( npeaks, offset(), offset() + npeaks, &peaks, &pbuf, &channels ) &&
          peaks )
         _scale = pbuf->normalization_factor();
 

@@ -69,6 +69,17 @@ Track::Track ( ) : Fl_Group( 0, 0, 1, 1 )
     timeline->add_track( this );
 }
 
+void
+Track::solo ( bool b )
+{
+    if ( b && ! solo_button->value() )
+        ++_soloing;
+    else if ( ! b && solo_button->value() )
+        --_soloing;
+
+    solo_button->value( b );
+}
+
 Track::~Track ( )
 {
     Loggable::block_start();
@@ -88,6 +99,8 @@ Track::~Track ( )
     configure_outputs( 0 );
 
     _sequence = NULL;
+
+    solo( false );
 
     if ( _name )
         free( _name );

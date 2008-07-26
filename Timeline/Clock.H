@@ -115,7 +115,7 @@ public:
 
     ~Clock ( )
         {
-            Fl::remove_timeout( update_cb );
+            Fl::remove_timeout( update_cb, this );
         }
 
     void run ( nframes_t *v )

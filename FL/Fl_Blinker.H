@@ -17,53 +17,53 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-
-#pragma once
-
-#include <jack/transport.h>
-#include "types.h"
-
-#include "Timeline.H"
-
-#include <FL/Fl_Pack.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl.H>
 
-#include <stdio.h>
+const float BLINK_FREQ = 0.5f;
 
-struct Transport : public jack_position_t, public Fl_Pack
+class Fl_Blinker : public Fl_Button
 {
 
-private:
+    bool _on;
 
-    static void cb_button ( Fl_Widget *w, void *arg );
-    void cb_button ( Fl_Widget *w );
+    static void
+    update_cb ( void *v )
+        {
+            ((Fl_Blinker*)v)->update_cb();
+        }
 
-    /* not permitted */
-    Transport ( const Transport &rhs );
-    Transport & operator = ( const Transport &rhs );
+    void
+    update_cb ( void )
+        {
+            Fl::repeat_timeout( BLINK_FREQ, update_cb, this );
 
-    Fl_Button *_home_button;
-    Fl_Button *_end_button;
-    Fl_Button *_play_button;
-    Fl_Button *_record_button;
+            _on = ! _on;
+
+            redraw();
+        }
 
 public:
 
-    Transport ( int X, int Y, int W, int H, const char *L=0 );
+    Fl_Blinker ( int X, int Y, int W, int H, const char *L )
+        : Fl_Button( X, Y, W, H, L )
+        {
+            _on = false;
+            Fl::add_timeout( BLINK_FREQ, update_cb, this );
 
-    bool rec_enabled ( void ) const;
+            type( FL_TOGGLE_BUTTON );
+        }
 
-    void toggle_record ( void );
-    int handle ( int m );
+    virtual
+    ~Fl_Blinker ()
+        {
+            Fl::remove_timeout( update_cb, this );
+        }
 
-    bool rolling;
-    bool recording;
-
-    void poll ( void );
-    void locate ( nframes_t frame );
-    void start ( void );
-    void stop ( void );
-    void toggle ( void );
+    virtual void
+    draw ( void )
+        {
+            draw_box( value() ? box() : down_box(), x(), y(), w(), h(), ( value() != 0 && _on ) ? selection_color() : color() );
+            draw_label();
+        }
 };
-
-extern Transport* transport;

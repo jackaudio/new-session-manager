@@ -179,6 +179,8 @@ public:
     bool armed ( void ) const { return record_button->value(); }
     bool selected ( void ) const { return _selected; }
 
+    void solo ( bool b );
+
     static void cb_input_field ( Fl_Widget *w, void *v );
     void cb_input_field ( void );
     static void cb_button ( Fl_Widget *w, void *v );

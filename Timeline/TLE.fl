@@ -198,7 +198,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   } {
     Fl_Window main_window {
       label Timeline open
-      private xywh {254 117 1025 770} type Double resizable xclass Non_DAW visible
+      private xywh {133 113 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         private xywh {0 0 1024 25}
@@ -605,7 +605,7 @@ ab.run();}
         }
         Fl_Box {} {
           label {<empty>}
-          xywh {487 27 378 42} resizable
+          xywh {487 27 308 42} resizable
           code0 {o->labeltype( FL_NO_LABEL );}
         }
         Fl_Group {} {open
@@ -635,6 +635,18 @@ ab.run();}
             label {50%}
             private xywh {921 41 104 14} labelsize 10
           }
+        }
+        Fl_Button solo_blinker {
+          label SOLO
+          xywh {810 30 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 74 selection_color 92 labelfont 2 labelcolor 39 deactivate
+          code0 {\#include "FL/Fl_Blinker.H"}
+          class Fl_Blinker
+        }
+        Fl_Button rec_blinker {
+          label REC
+          xywh {810 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 72 selection_color 88 labelfont 2 labelcolor 39 deactivate
+          code0 {\#include "FL/Fl_Blinker.H"}
+          class Fl_Blinker
         }
       }
       Fl_Progress progress {
@@ -708,7 +720,7 @@ snprintf( s, 5, "%d%%", (int)v );
 
 p->label( s );} {}
   }
-  Function {update_status()} {private
+  Function {update_status()} {open private
   } {
     code {static char cbp[5], pbp[5], clp[5];
 
@@ -733,9 +745,13 @@ if ( engine->zombified() && ! zombie )
 {
 	zombie = true;
 	fl_alert( "Disconnected from JACK!" );
-}} {}
+}
+
+solo_blinker->value( Track::soloing() );
+rec_blinker->value( transport->rolling && transport->rec_enabled() );} {selected
+    }
   }
-  Function {update_cb( void *v )} {private return_type {static void}
+  Function {update_cb( void *v )} {open private return_type {static void}
   } {
     code {Fl::repeat_timeout( STATUS_UPDATE_FREQ, update_cb, v );
 
@@ -782,8 +798,7 @@ Fl::check();} {}
 
 snprintf( pat, 256, "file://%s%s.html", DOCUMENT_PATH, file );
 
-open_url( pat );} {selected
-    }
+open_url( pat );} {}
   }
 } 
 

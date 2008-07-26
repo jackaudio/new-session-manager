@@ -106,6 +106,12 @@ Transport::cb_button ( Fl_Widget *w )
     }
 }
 
+bool
+Transport::rec_enabled ( void ) const
+{
+    return _record_button->value();
+}
+
 void
 Transport::toggle_record ( void )
 {

@@ -271,8 +271,11 @@ shade_round ( int x, int y, int w, int h, const char *c, Fl_Color bc )
             fl_pie( x, y, h, h, 225.0 + i * na, 270.0 );
             fl_color( shade_color( g[c[clen - i] - 2], bc ) );
             fl_pie( x, y, h, h, 135.0 + i * na, 225.0 + i * na );
+
+
         }
-        fl_color( shade_color( g[c[chalf]], bc ) );
+//        fl_color( shade_color( g[c[chalf]], bc ) );
+        fl_color( bc );
         fl_rectf( x + d, y, w - h + 1, h + 1 );
         fl_pie( x, y, h, h, 90.0, 270.0 );
         fl_pie( x + w - h, y, h, h, 270.0, 90.0 );
@@ -296,7 +299,8 @@ shade_round ( int x, int y, int w, int h, const char *c, Fl_Color bc )
             fl_yxline( x, y + d, y + h - d );
             fl_pie( x, y, w, w, 135.0 + i * na, 180.0 );
         }
-        fl_color( shade_color( g[c[chalf]], bc ) );
+//        fl_color( shade_color( g[c[chalf]], bc ) );
+        fl_color( bc );
         fl_rectf( x, y + d, w + 1, h - w + 1 );
         fl_pie( x, y, w, w, 0.0, 180.0 );
         fl_pie( x, y + h - w, w, w, 180.0, 360.0 );
@@ -426,8 +430,7 @@ init_boxtypes ( void )
     Fl::set_boxtype(  FL_PLASTIC_DOWN_FRAME,     down_frame,  2,2,4,4 );
     Fl::set_boxtype(  FL_PLASTIC_THIN_UP_BOX,    thin_up_box, 1,1,2,2 );
     Fl::set_boxtype(  FL_PLASTIC_THIN_DOWN_BOX,  down_box,    1,1,2,2 );
-
-/*     Fl::set_boxtype(  FL_CRYSTAL_ROUND_UP_BOX,   up_round    ); */
-/*     Fl::set_boxtype(  FL_CRYSTAL_ROUND_DOWN_BOX, down_round  ); */
+    Fl::set_boxtype(  FL_CRYSTAL_ROUND_UP_BOX,   up_round,    1,1,2,2 );
+    Fl::set_boxtype(  FL_CRYSTAL_ROUND_DOWN_BOX, down_round,  1,1,2,2 );
 
 }

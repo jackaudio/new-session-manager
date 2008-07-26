@@ -94,6 +94,7 @@ Track::~Track ( )
 
     Loggable::block_end();
 }
+#include "FL/Boxtypes.H"
 
 void
 Track::init ( void )
@@ -136,20 +137,22 @@ Track::init ( void )
                 Fl_Button *o = record_button =
                     new Fl_Button( 6, 28, 26, 24, "@circle" );
                 o->type( 1 );
-                o->box( FL_THIN_UP_BOX );
+                o->box( FL_ROUNDED_BOX );
+                o->down_box( FL_ROUNDED_BOX );
                 o->color( FL_LIGHT1 );
                 o->selection_color( FL_RED );
-                o->labelsize( 8 );
+                o->labelsize( 9 );
                 o->callback( cb_button, this );
             }
             {
                 Fl_Button *o = mute_button =
                     new Fl_Button( 35, 28, 26, 24, "m" );
-                o->selection_color( fl_color_average( FL_YELLOW, FL_RED, 0.50 ) );
+                o->selection_color( fl_color_average( FL_YELLOW, FL_GREEN, 0.50 ) );
                 o->type( 1 );
-                o->box( FL_THIN_UP_BOX );
+                o->box( FL_ROUNDED_BOX );
+                o->down_box( FL_ROUNDED_BOX );
                 o->color( FL_LIGHT1 );
-                o->labelsize( 11 );
+                o->labelsize( 15 );
                 o->callback( cb_button, this );
             }
             {
@@ -157,9 +160,10 @@ Track::init ( void )
                     new Fl_Button( 66, 28, 26, 24, "s" );
                 o->selection_color( fl_color_average( FL_YELLOW, FL_RED, 0.50 ) );
                 o->type( 1 );
-                o->box( FL_THIN_UP_BOX );
+                o->box( FL_ROUNDED_BOX );
+                o->down_box( FL_ROUNDED_BOX );
                 o->color( FL_LIGHT1 );
-                o->labelsize( 11 );
+                o->labelsize( 15 );
                 o->callback( cb_button, this );
             }
             {

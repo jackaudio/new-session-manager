@@ -88,6 +88,8 @@ Track::~Track ( )
     control = NULL;
     annotation = NULL;
 
+    solo( false );
+
     Fl_Group::clear();
 
     log_destroy();
@@ -99,8 +101,6 @@ Track::~Track ( )
     configure_outputs( 0 );
 
     _sequence = NULL;
-
-    solo( false );
 
     if ( _name )
         free( _name );

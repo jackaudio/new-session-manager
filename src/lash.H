@@ -34,7 +34,7 @@ class Lash
 
 public:
     Lash ( );
-    bool init ( int *argc, char ***argv );
+    bool init ( int *argc, char ***argv, const char *jack_name );
     void process ( void );
 
 };

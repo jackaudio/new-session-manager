@@ -27,7 +27,7 @@
 #ifndef HAVE_LASH
 
 Lash::Lash ( ) {}
-bool Lash::init ( int *argc, char ***argv ) { return true; }
+bool Lash::init ( int *argc, char ***argv, const char *jack_name ) { return true; }
 void Lash::process ( void ) {}
 
 #else
@@ -38,7 +38,7 @@ Lash::Lash ( )
 }
 
 bool
-Lash::init ( int *argc, char ***argv )
+Lash::init ( int *argc, char ***argv, const char *jack_name )
 {
     MESSAGE( "Initializing LASH" );
 
@@ -47,7 +47,7 @@ Lash::init ( int *argc, char ***argv )
         return false;
 
     /* register name */
-    lash_jack_client_name( _client, APP_NAME );
+    lash_jack_client_name( _client, jack_name );
 
     lash_event_t *e = lash_event_new_with_type( LASH_Client_Name );
     lash_event_set_string( e, APP_TITLE );

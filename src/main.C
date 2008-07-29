@@ -167,17 +167,10 @@ main ( int argc, char **argv )
     pattern::signal_create_destroy.connect( mem_fun( song, &song_settings::set_dirty ) );
     phrase::signal_create_destroy.connect( mem_fun( song, &song_settings::set_dirty ) );
 
-    if ( ! lash.init( &argc, &argv ) )
-        WARNING( "error initializing LASH" );
+    const char *jack_name;
 
-    if ( argc > 1 )
-    {
-        /* maybe a filename on the commandline */
-        if ( ! load_song( argv[ 1 ] ) )
-            ASSERTION( "Could not load song \"%s\" specified on command line", argv[ 1 ] );
-    }
-
-    if ( ! midi_init() )
+    jack_name = midi_init();
+    if ( ! jack_name )
         ASSERTION( "Could not initialize MIDI system! (is Jack running and with MIDI ports enabled?)" );
 
     if ( ! transport.valid )
@@ -186,6 +179,16 @@ main ( int argc, char **argv )
             ASSERTION( "The version of JACK you are using does not appear to be capable of passing BBT positional information." );
         else
             ASSERTION( "Either the version of JACK you are using does pass BBT information, or the current timebase master does not provide it." );
+    }
+
+    if ( ! lash.init( &argc, &argv, jack_name ) )
+        WARNING( "error initializing LASH" );
+
+    if ( argc > 1 )
+    {
+        /* maybe a filename on the commandline */
+        if ( ! load_song( argv[ 1 ] ) )
+            ASSERTION( "Could not load song \"%s\" specified on command line", argv[ 1 ] );
     }
 
     song.dirty( false );

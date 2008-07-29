@@ -412,7 +412,7 @@ schedule:
     return 0;
 }
 
-int
+const char *
 midi_init ( void )
 {
     MESSAGE( "Initializing Jack MIDI" );
@@ -421,7 +421,7 @@ midi_init ( void )
 /*         return 0; */
 
     if (( client = jack_client_open ( APP_NAME, (jack_options_t)0, NULL )) == 0 )
-        return 0;
+        return NULL;
 
     /* create output ports */
     for ( int i = 0; i < MAX_PORT; i++ )
@@ -484,7 +484,7 @@ midi_init ( void )
     MESSAGE( "Waiting for JACK..." );
     usleep( 500000 );
 
-    return 1;
+    return (const char *) jack_get_client_name(client);
 }
 
 void

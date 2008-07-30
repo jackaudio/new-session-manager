@@ -197,7 +197,9 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   Function {make_window()} {open
   } {
     Fl_Window main_window {
-      label Timeline open
+      label Timeline
+      callback {if ( Fl::event_key() != FL_Escape )
+	o->hide();} open selected
       private xywh {133 113 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
@@ -748,8 +750,7 @@ if ( engine->zombified() && ! zombie )
 }
 
 solo_blinker->value( Track::soloing() );
-rec_blinker->value( transport->rolling && transport->rec_enabled() );} {selected
-    }
+rec_blinker->value( transport->rolling && transport->rec_enabled() );} {}
   }
   Function {update_cb( void *v )} {open private return_type {static void}
   } {

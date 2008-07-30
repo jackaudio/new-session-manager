@@ -270,11 +270,11 @@ Engine::shutdown ( void )
 
 
 /** Connect to JACK */
-int
+const char *
 Engine::init ( void )
 {
     if (( _client = jack_client_open ( APP_NAME, (jack_options_t)0, NULL )) == 0 )
-        return 0;
+        return NULL;
 
 #define set_callback( name ) jack_set_ ## name ## _callback( _client, &Engine:: name , this )
 
@@ -301,7 +301,7 @@ Engine::init ( void )
     timeline->_sample_rate = frame_rate();
 
     /* we don't need to create any ports until tracks are created */
-    return 1;
+    return jack_get_client_name( _client );
 }
 
 void

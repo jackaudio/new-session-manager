@@ -74,7 +74,7 @@ public:
 
     Engine ( );
 
-    int init ( void );
+    const char * init ( void );
 
     nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
     float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }

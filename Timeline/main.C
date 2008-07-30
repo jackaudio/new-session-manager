@@ -123,7 +123,10 @@ main ( int argc, char **argv )
 
     /* we don't really need a pointer for this */
     engine = new Engine;
-    if ( ! engine->init() )
+
+    const char *jack_name;
+
+    if ( ! ( jack_name = engine->init() ) )
         FATAL( "Could not connect to JACK!" );
 
     /* always start stopped (please imagine for me a realistic
@@ -133,7 +136,7 @@ main ( int argc, char **argv )
     MESSAGE( "Initializing LASH" );
     lash = new LASH;
 
-    lash->init( APP_NAME, APP_TITLE, &argc, &argv );
+    lash->init( jack_name, APP_TITLE, &argc, &argv );
 
     MESSAGE( "Starting GUI" );
 

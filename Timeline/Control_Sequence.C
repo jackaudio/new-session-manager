@@ -343,4 +343,5 @@ Control_Sequence::handle ( int m )
         default:
             return 0;
     }
+#include "const.h"
 }

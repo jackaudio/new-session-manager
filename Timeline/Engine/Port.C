@@ -139,4 +139,5 @@ void
 Port::silence ( nframes_t nframes )
 {
     memset( buffer( nframes ), 0, nframes * sizeof( sample_t ) );
+#include "const.h"
 }

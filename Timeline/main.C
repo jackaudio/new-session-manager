@@ -65,6 +65,7 @@ const char COPYRIGHT[]  = "Copyright (C) 2008 Jonathan Moore Liles";
 #define PACKAGE "non"
 
 
+#include "const.h"
 #include "util/debug.h"
 
 char *user_config_dir;

@@ -21,6 +21,8 @@
 
 #include "../Transport.H" // for ->frame
 
+#include "const.h"
+#include "util/debug.h"
 #include "util/Thread.H"
 
 #include <list>
@@ -100,4 +102,5 @@ Control_Sequence::process ( nframes_t nframes )
     }
     else
         return nframes;
+#include "const.h"
 }

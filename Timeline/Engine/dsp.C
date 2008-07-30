@@ -94,4 +94,5 @@ void
 buffer_fill_with_silence ( sample_t *buf, nframes_t nframes )
 {
     memset( buf, 0, nframes * sizeof( sample_t ) );
+#include "const.h"
 }

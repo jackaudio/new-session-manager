@@ -31,6 +31,7 @@
 
 // #define HAS_SF_FORMAT_VORBIS
 
+#include "const.h"
 #include "util/debug.h"
 
 

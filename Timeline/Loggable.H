@@ -33,8 +33,6 @@
 
 #include "types.h"
 
-#include "util/debug.h"
-
 typedef void (progress_func)( int, void * );
 
 class Log_Entry;
@@ -137,34 +135,10 @@ public:
 
     static void compact ( void );
 
-    static
-    void
-    block_start ( void )
-        {
-            ++Loggable::_level;
-        }
+    static void block_start ( void );
+    static void block_end ( void );
 
-    static
-    void
-    block_end ( void )
-        {
-            --Loggable::_level;
-
-            ASSERT( Loggable::_level >= 0, "Programming error" );
-
-            if ( Loggable::_level == 0 )
-                flush();
-        }
-
-    static
-    Loggable *
-    find ( int id )
-        {
-            if ( id > _log_id )
-                return NULL;
-
-            return _loggables[ id - 1 ];
-        }
+    static Loggable * find ( int id );
 
     Loggable ( bool loggable=true )
         {

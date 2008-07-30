@@ -43,6 +43,9 @@
 
 #include "FL/menu_popup.H"
 
+#include "const.h"
+#include "util/debug.h"
+
 
 
 bool Timeline::draw_with_measure_lines = true;
@@ -1401,4 +1404,5 @@ Timeline::remove_track ( Track *track )
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
+#include "const.h"
 }

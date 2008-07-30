@@ -39,6 +39,7 @@
 
 #include <FL/filename.H>
 
+#include "const.h"
 #include "util/debug.h"
 #include "util/file.h"
 

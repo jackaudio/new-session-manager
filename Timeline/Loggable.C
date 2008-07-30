@@ -33,6 +33,9 @@
 
 #include "util/file.h"
 
+#include "const.h"
+#include "util/debug.h"
+
 #include <algorithm>
 using std::min;
 using std::max;
@@ -73,6 +76,33 @@ Loggable::ensure_size ( size_t n )
             _loggables[ i ] = 0;
     }
 }
+
+void
+Loggable::block_start ( void )
+{
+    ++Loggable::_level;
+}
+
+void
+Loggable::block_end ( void )
+{
+    --Loggable::_level;
+
+    ASSERT( Loggable::_level >= 0, "Programming error" );
+
+    if ( Loggable::_level == 0 )
+        flush();
+}
+
+Loggable *
+Loggable::find ( int id )
+{
+    if ( id > _log_id )
+        return NULL;
+
+    return _loggables[ id - 1 ];
+}
+
 
 /** Open the journal /filename/ and replay it, bringing the end state back into RAM */
 bool

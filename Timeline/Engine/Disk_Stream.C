@@ -27,6 +27,10 @@ class Audio_Sequence;
 #include "Disk_Stream.H"
 #include "dsp.h"
 
+#include "const.h"
+#include "util/debug.h"
+
+
 
 
 /**********/
@@ -231,4 +235,5 @@ Disk_Stream::buffer_percent ( void )
     sem_getvalue( &_blocks, &n );
 
     return 100 - (n * 100 / _total_blocks);
+#include "const.h"
 }

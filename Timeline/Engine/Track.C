@@ -254,4 +254,5 @@ Track::finalize ( Capture *c, nframes_t frame )
     c->audio_file->finalize();
 
     delete c->audio_file;
+#include "const.h"
 }

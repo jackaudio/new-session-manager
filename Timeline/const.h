@@ -17,15 +17,4 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Audio_File_Dummy.H"
-
-#include <string.h>
-
-Audio_File_Dummy *
-Audio_File_Dummy::from_file ( const char *filename )
-{
-    Audio_File_Dummy *d = new Audio_File_Dummy;
-    d->_filename = strdup( filename );
-    return d;
-#include "const.h"
-}
+#define __MODULE__ "non-daw"

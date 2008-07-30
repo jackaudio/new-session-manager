@@ -57,4 +57,5 @@ Time_Sequence::handle ( int m )
 
     }
 
+#include "const.h"
 }

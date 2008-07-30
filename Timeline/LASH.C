@@ -31,6 +31,7 @@
 
 extern TLE *tle;
 
+#include "const.h"
 #include "util/debug.h"
 
 const float lash_poll_interval = 0.2f;

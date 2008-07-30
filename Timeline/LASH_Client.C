@@ -21,6 +21,7 @@
 
 #include "LASH_Client.H"
 
+#include "const.h"
 #include "util/debug.h"
 
 

@@ -22,6 +22,9 @@
 #include "Sequence_Widget.H"
 #include "Track.H"
 
+#include "const.h"
+#include "util/debug.h"
+
 using namespace std;
 
 

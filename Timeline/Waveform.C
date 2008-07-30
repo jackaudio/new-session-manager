@@ -117,4 +117,5 @@ Waveform::draw ( int X, int Y, int W, int H,
 
         fl_line_style( FL_SOLID, 0 );
     }
+#include "const.h"
 }

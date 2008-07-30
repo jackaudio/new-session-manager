@@ -30,6 +30,9 @@
 
 #include "../FL/Boxtypes.H"
 
+#include "const.h"
+#include "util/debug.h"
+
 using namespace std;
 
 

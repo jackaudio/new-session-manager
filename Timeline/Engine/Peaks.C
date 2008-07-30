@@ -39,6 +39,7 @@
 #include "Peaks.H"
 
 #include "assert.h"
+#include "const.h"
 #include "util/debug.h"
 #include "util/Thread.H"
 #include "util/file.h"

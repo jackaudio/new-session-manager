@@ -28,6 +28,8 @@
 /* This is the home of the JACK process callback (does this *really*
    need to be a class?) */
 
+#include "const.h"
+#include "util/debug.h"
 #include "util/Thread.H"
 
 
@@ -309,4 +311,5 @@ Engine::request_locate ( nframes_t frame )
 {
     if ( timeline )
         timeline->seek( frame );
+#include "const.h"
 }

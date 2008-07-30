@@ -22,8 +22,6 @@
 /* simple wrapper for pthreads with thread role checking */
 #include <pthread.h>
 
-#include "debug.h"
-
 #define THREAD_ASSERT( n ) ASSERT( Thread::is( #n ), "Function called from wrong thread! (is %s, should be %s)", Thread::current()->name(), #n )
 
 class Thread

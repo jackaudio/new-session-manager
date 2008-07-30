@@ -28,6 +28,8 @@
 
 #include "types.h"
 #include "util/Mutex.H"
+#include "const.h"
+#include "util/debug.h"
 #include "util/Thread.H"
 
 class Track;

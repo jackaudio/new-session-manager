@@ -32,6 +32,9 @@
 
 #include "Engine/Audio_File.H"
 
+#include "const.h"
+#include "util/debug.h"
+
 #include <algorithm>
 using std::min;
 using std::max;

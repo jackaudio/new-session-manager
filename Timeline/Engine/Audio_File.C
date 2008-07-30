@@ -21,6 +21,7 @@
 #include "Audio_File_SF.H"
 #include "Audio_File_Dummy.H"
 
+#include "const.h"
 #include "util/debug.h"
 
 #include <string.h>

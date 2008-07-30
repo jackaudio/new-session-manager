@@ -29,6 +29,7 @@
 #include "Engine.H"
 #include "dsp.h"
 
+#include "const.h"
 #include "util/debug.h"
 #include "util/Thread.H"
 

@@ -199,4 +199,5 @@ Time_Point::edit ( time_sig *sig )
     Time_Point_Editor ti( sig );
 
     return ti.sucess();
+#include "const.h"
 }

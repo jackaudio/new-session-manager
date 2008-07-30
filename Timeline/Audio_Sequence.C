@@ -282,4 +282,5 @@ Audio_Sequence::handle ( int m )
         default:
             return Sequence::handle( m );
     }
+#include "const.h"
 }

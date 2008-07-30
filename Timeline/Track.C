@@ -37,6 +37,9 @@
 #include "Control_Sequence.H"
 #include "Annotation_Sequence.H"
 
+#include "const.h"
+#include "util/debug.h"
+
 
 
 int Track::_soloing = 0;
@@ -776,4 +779,5 @@ Track::handle ( int m )
     }
 
     return 0;
+#include "const.h"
 }

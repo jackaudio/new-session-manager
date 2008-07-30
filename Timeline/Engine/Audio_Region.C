@@ -26,6 +26,9 @@
 #include "Audio_File.H"
 #include "dsp.h"
 
+#include "const.h"
+#include "const.h"
+#include "util/debug.h"
 #include "util/Thread.H"
 
 

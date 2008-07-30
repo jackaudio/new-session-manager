@@ -199,7 +199,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
     Fl_Window main_window {
       label Timeline
       callback {if ( Fl::event_key() != FL_Escape )
-	o->hide();} open selected
+	o->hide();} open
       private xywh {133 113 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
@@ -606,12 +606,12 @@ ab.run();}
           }
         }
         Fl_Box {} {
-          label {<empty>}
-          xywh {487 27 308 42} resizable
+          label {<empty>} selected
+          xywh {487 27 258 42} resizable
           code0 {o->labeltype( FL_NO_LABEL );}
         }
         Fl_Group {} {open
-          xywh {865 26 160 44}
+          xywh {745 26 280 44}
         } {
           Fl_Box {} {
             label {capture:}
@@ -637,16 +637,24 @@ ab.run();}
             label {50%}
             private xywh {921 41 104 14} labelsize 10
           }
+          Fl_Box {} {
+            label {disk:}
+            xywh {810 27 55 18} labelsize 10 align 16
+          }
+          Fl_Progress disk_usage_progress {
+            label {50%}
+            private xywh {810 43 55 26} labelsize 10
+          }
         }
         Fl_Button solo_blinker {
           label SOLO
-          xywh {810 30 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 74 selection_color 92 labelfont 2 labelcolor 39 deactivate
+          xywh {750 30 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 74 selection_color 92 labelfont 2 labelcolor 39 deactivate
           code0 {\#include "FL/Fl_Blinker.H"}
           class Fl_Blinker
         }
         Fl_Button rec_blinker {
           label REC
-          xywh {810 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 72 selection_color 88 labelfont 2 labelcolor 39 deactivate
+          xywh {750 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 72 selection_color 88 labelfont 2 labelcolor 39 deactivate
           code0 {\#include "FL/Fl_Blinker.H"}
           class Fl_Blinker
         }
@@ -724,12 +732,13 @@ p->label( s );} {}
   }
   Function {update_status()} {open private
   } {
-    code {static char cbp[5], pbp[5], clp[5];
+    code {static char cbp[5], pbp[5], clp[5], dup[5];
 
 update_progress( capture_buffer_progress, cbp, timeline->total_input_buffer_percent() );
 update_progress( playback_buffer_progress, pbp, timeline->total_output_buffer_percent() );
 update_progress( cpu_load_progress, clp, engine->cpu_load() );
 
+update_progress( disk_usage_progress, dup, percent_used( "." ) );
 
 if ( timeline->total_capture_xruns() )
 	capture_buffer_progress->selection_color( FL_RED );

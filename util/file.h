@@ -31,3 +31,6 @@ char * backwards_fgets ( char *s, int size, FILE *fp );
 void touch ( int fd );
 void write_line ( const char *dir, const char *name, const char *value );
 void read_line ( const char *dir, const char *name, char **value );
+size_t free_space ( const char *file );
+size_t total_space ( const char *file );
+int percent_used ( const char *file );

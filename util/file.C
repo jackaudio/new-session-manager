@@ -178,3 +178,38 @@ read_line ( const char *dir, const char *name, char **value )
 
     fclose( fp );
 }
+
+#include <sys/statvfs.h>
+
+/** return the number of blocks free on filesystem containing file named /file/ */
+unsigned long
+free_space ( const char *file )
+{
+    struct statvfs st;
+    memset( &st, 0, sizeof( st ) );
+
+    statvfs( file, &st );
+
+    return st.f_bfree;
+}
+
+/** return the total number of blocks on filesystem containing file named /file/ */
+unsigned long
+total_space ( const char *file )
+{
+    struct statvfs st;
+    memset( &st, 0, sizeof( st ) );
+
+    statvfs( file, &st );
+
+    return st.f_blocks;
+}
+
+/** return the percentage of usage on filesystem containing file named /file/ */
+int
+percent_used ( const char *file )
+{
+    const size_t ts = total_space( file );
+
+    return 100 - ( ts ? free_space( file ) * 100 / ts : 0 );
+}

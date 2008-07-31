@@ -678,16 +678,25 @@ Audio_Region::handle ( int m )
                 {
                     Loggable::block_start();
 
+                    nframes_t old_fade_in = _fade_in.length;
+                    _fade_in.length = 256;
+
                     Audio_Region *copy = new Audio_Region( *this );
+
+                    _fade_in.length = old_fade_in;
 
                     trim( RIGHT, X );
                     copy->trim( LEFT, X );
+
+                    _fade_out.length = 256;
 
                     sequence()->add( copy );
 
                     log_end();
 
                     Loggable::block_end();
+
+                    log_start();
                 }
 
                 return 0;

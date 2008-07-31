@@ -601,6 +601,8 @@ Loggable::log_start ( void )
 void
 Loggable::log_end ( void )
 {
+    ASSERT( _old_state, "Programming error: log_end() called before log_start()" );
+
     if ( --_nest > 0 )
         return;
 
@@ -617,11 +619,8 @@ Loggable::log_end ( void )
         log_print( _old_state, new_state );
     }
 
-    if ( new_state )
-        delete new_state;
-
-    if ( _old_state )
-        delete _old_state;
+    delete new_state;
+    delete _old_state;
 
     _old_state = NULL;
 

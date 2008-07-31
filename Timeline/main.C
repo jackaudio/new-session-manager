@@ -148,5 +148,7 @@ main ( int argc, char **argv )
 
     Fl::run();
 
+    delete engine;
+
     MESSAGE( "Your fun is over" );
 }

@@ -43,6 +43,12 @@ Engine::Engine ( ) : _thread( "RT" )
     _xruns = 0;
 }
 
+Engine::~Engine ( )
+{
+    jack_deactivate( _client );
+    jack_client_close( _client );
+}
+
 
 
 /*******************/

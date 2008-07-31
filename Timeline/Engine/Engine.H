@@ -73,6 +73,7 @@ private:
 public:
 
     Engine ( );
+    ~Engine ( );
 
     const char * init ( void );
 

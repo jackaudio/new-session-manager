@@ -366,11 +366,21 @@ Track::cb_button ( Fl_Widget *w )
                     {
                         Loggable::block_start();
 
-                        Sequence *s = sequence();
+                        Audio_Sequence *s = sequence();
 
                         sequence( (Audio_Sequence*)takes->child( 0 ) );
 
                         delete s;
+
+                        Loggable::block_end();
+                    }
+                    break;
+                case 3:
+                    if ( takes->children() )
+                    {
+                        Loggable::block_start();
+
+                        takes->clear();
 
                         Loggable::block_end();
                     }
@@ -456,13 +466,18 @@ Track::update_take_menu ( void )
 
     take_menu->add( "Show all takes", 0, 0, 0, FL_MENU_TOGGLE );
     take_menu->add( "New", 0, 0, 0 );
-    take_menu->add( "Remove", 0, 0, 0, FL_MENU_DIVIDER );
 
-    for ( int i = 0; i < takes->children(); ++i )
+    if ( takes->children() )
     {
-        Sequence *s = (Sequence *)takes->child( i );
+        take_menu->add( "Remove", 0, 0, 0 );
+        take_menu->add( "Remove others", 0, 0, 0, FL_MENU_DIVIDER );
 
-        take_menu->add( s->name(), 0, 0, s );
+        for ( int i = 0; i < takes->children(); ++i )
+        {
+            Sequence *s = (Sequence *)takes->child( i );
+
+            take_menu->add( s->name(), 0, 0, s );
+        }
     }
 }
 

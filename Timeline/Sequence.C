@@ -78,6 +78,9 @@ Sequence::~Sequence (  )
 
     if ( _widgets.size() )
         FATAL( "programming error: leaf destructor must call Sequence::clear()!" );
+
+    if ( parent() )
+        parent()->remove( this );
 }
 
 

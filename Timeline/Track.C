@@ -490,7 +490,18 @@ Track::remove ( Audio_Sequence *t )
 
     timeline->wrlock();
 
-    takes->remove( t );
+    if ( sequence() == t )
+    {
+        pack->remove( t );
+
+        if ( takes->children() )
+            sequence( (Audio_Sequence*)takes->child( 0 ) );
+        else
+            /* FIXME: should this ever happen? */
+            _sequence = NULL;
+    }
+    else
+        takes->remove( t );
 
 /*     delete t; */
 

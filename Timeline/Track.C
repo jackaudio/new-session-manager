@@ -481,7 +481,7 @@ Track::update_take_menu ( void )
 {
     take_menu->clear();
 
-    take_menu->add( "Show all takes", 0, 0, 0, FL_MENU_TOGGLE );
+    take_menu->add( "Show all takes", 0, 0, 0, FL_MENU_TOGGLE | ( _show_all_takes ? FL_MENU_VALUE : 0 ) );
     take_menu->add( "New", 0, 0, 0 );
 
     if ( takes->children() )

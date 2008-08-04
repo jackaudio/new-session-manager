@@ -248,5 +248,4 @@ Sequence_Region::draw_box ( void )
 void
 Sequence_Region::draw ( void )
 {
-#include "const.h"
 }

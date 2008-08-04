@@ -225,5 +225,4 @@ Timeline::total_capture_xruns ( void )
     }
 
     return r;
-#include "const.h"
 }

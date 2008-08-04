@@ -115,5 +115,4 @@ Control_Point::handle ( int m )
     }
 
     return r;
-#include "const.h"
 }

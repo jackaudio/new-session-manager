@@ -1404,5 +1404,4 @@ Timeline::remove_track ( Track *track )
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
-#include "const.h"
 }

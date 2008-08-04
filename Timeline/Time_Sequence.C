@@ -56,6 +56,4 @@ Time_Sequence::handle ( int m )
             return 0;
 
     }
-
-#include "const.h"
 }

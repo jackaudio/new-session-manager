@@ -171,5 +171,4 @@ Tempo_Point::edit ( float *tempo )
     Tempo_Point_Editor ti( tempo );
 
     return ti.sucess();
-#include "const.h"
 }

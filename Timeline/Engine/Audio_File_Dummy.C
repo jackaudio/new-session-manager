@@ -27,5 +27,4 @@ Audio_File_Dummy::from_file ( const char *filename )
     Audio_File_Dummy *d = new Audio_File_Dummy;
     d->_filename = strdup( filename );
     return d;
-#include "const.h"
 }

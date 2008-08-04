@@ -317,5 +317,4 @@ Engine::request_locate ( nframes_t frame )
 {
     if ( timeline )
         timeline->seek( frame );
-#include "const.h"
 }

@@ -130,5 +130,4 @@ Sequence_Point::draw ( void )
 //            Sequence_Widget::draw();
 
     draw_label( _label, align() );
-#include "const.h"
 }

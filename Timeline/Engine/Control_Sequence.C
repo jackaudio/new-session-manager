@@ -102,5 +102,4 @@ Control_Sequence::process ( nframes_t nframes )
     }
     else
         return nframes;
-#include "const.h"
 }

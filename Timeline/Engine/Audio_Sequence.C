@@ -69,5 +69,4 @@ Audio_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int ch
 
     /* FIXME: bogus */
     return nframes;
-#include "const.h"
 }

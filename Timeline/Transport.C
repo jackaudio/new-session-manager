@@ -183,5 +183,4 @@ Transport::toggle ( void )
         stop();
     else
         start();
-#include "const.h"
 }

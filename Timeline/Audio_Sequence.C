@@ -75,10 +75,10 @@ Audio_Sequence::capture_region ( void ) const
 
 void
 Audio_Sequence::get ( Log_Entry &e ) const
-        {
-            e.add( ":track", _track );
-            e.add( ":name", name() );
-        }
+{
+    e.add( ":track", _track );
+    e.add( ":name", name() );
+}
 
 void
 Audio_Sequence::set ( Log_Entry &e )
@@ -177,9 +177,9 @@ Audio_Sequence::draw ( void )
                 ++xfades;
 
                 Rectangle b( (*r)->x(),
-                               o->y(),
-                               (o->x() + o->w()) - (*r)->x(),
-                               o->h() );
+                             o->y(),
+                             (o->x() + o->w()) - (*r)->x(),
+                             o->h() );
 
                 Fl_Color c = fl_color_average( o->box_color(), (*r)->box_color(), 0.50f );
                 c = fl_color_average( c, FL_YELLOW, 0.30f );

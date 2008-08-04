@@ -62,8 +62,9 @@ protected:
     Sequence_Widget *widget_at ( nframes_t ts, int Y );
     Sequence_Widget *event_widget ( void );
 
-
 public:
+
+    virtual void log_children ( void ) const;
 
     /* child classes should implement this if they need to take
      special action when a widget is changed/moved/resized. /start/

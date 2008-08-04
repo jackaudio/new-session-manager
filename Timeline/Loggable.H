@@ -34,6 +34,7 @@
 #include "types.h"
 
 typedef void (progress_func)( int, void * );
+typedef void (snapshot_func)( void * );
 
 class Log_Entry;
 class Loggable;
@@ -78,6 +79,9 @@ class Loggable
 
     static progress_func *_progress_callback;
     static void *_progress_callback_arg;
+
+    static snapshot_func *_snapshot_callback;
+    static void *_snapshot_callback_arg;
 
 private:
 
@@ -124,6 +128,7 @@ private:
 
 public:
 
+    static void snapshot_callback ( snapshot_func *p, void *arg ) { _snapshot_callback = p; _snapshot_callback_arg = arg; }
     static void progress_callback ( progress_func *p, void *arg ) { _progress_callback = p; _progress_callback_arg = arg;}
     static const char *escape ( const char *s );
 
@@ -165,16 +170,17 @@ public:
 
     virtual const char *class_name ( void ) const = 0;
 
+    virtual void log_children ( void ) const { return; }
 
     static bool do_this ( const char *s, bool reverse );
 
+    void log_create  ( void ) const;
 
 protected:
 
     void log_start ( void );
     void log_end ( void );
 
-    void log_create  ( void ) const;
     void log_destroy ( void ) const;
 
     /* leaf subclasses *must* call log_create() at the end of their copy contructors */

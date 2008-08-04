@@ -135,7 +135,7 @@ Sequence_Widget::set ( Log_Entry &e )
             sscanf( v, "%X", &i );
             Sequence *t = (Sequence*)Loggable::find( i );
 
-            assert( t );
+            ASSERT( t, "No such object ID (%s)", v );
 
             t->add( this );
         }
@@ -144,8 +144,10 @@ Sequence_Widget::set ( Log_Entry &e )
     }
 
     if ( _sequence )
+    {
+        _sequence->handle_widget_change( _r->start, _r->length );
         _sequence->redraw();
-
+    }
 }
 
 void

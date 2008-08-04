@@ -44,6 +44,7 @@ protected:
 
     virtual void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
+    void log_children ( void ) const;
 
     Tempo_Point ( );
 

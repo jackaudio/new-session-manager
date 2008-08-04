@@ -72,16 +72,6 @@ Track::Track ( ) : Fl_Group( 0, 0, 1, 1 )
     timeline->add_track( this );
 }
 
-void
-Track::solo ( bool b )
-{
-    if ( b && ! solo_button->value() )
-        ++_soloing;
-    else if ( ! b && solo_button->value() )
-        --_soloing;
-
-    solo_button->value( b );
-}
 
 Track::~Track ( )
 {
@@ -306,6 +296,33 @@ Track::get ( Log_Entry &e ) const
     e.add( ":show-all-takes",  _show_all_takes  );
 }
 
+void
+Track::log_children ( void ) const
+{
+    log_create();
+
+    for ( int i = control->children(); i--; )
+        ((Sequence*)control->child( i ))->log_children();
+
+    for ( int i = annotation->children(); i--; )
+        ((Sequence*)annotation->child( i ))->log_children();
+
+    for ( int i = takes->children(); i--; )
+        ((Sequence*)takes->child( i ))->log_children();
+
+    sequence()->log_children();
+}
+
+void
+Track::solo ( bool b )
+{
+    if ( b && ! solo_button->value() )
+        ++_soloing;
+    else if ( ! b && solo_button->value() )
+        --_soloing;
+
+    solo_button->value( b );
+}
 
 void
 Track::cb_input_field ( Fl_Widget *, void *v )

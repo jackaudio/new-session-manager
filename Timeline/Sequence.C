@@ -85,23 +85,25 @@ Sequence::~Sequence (  )
 
 
 
+void
+Sequence::log_children ( void ) const
+{
+    if ( id() > 0 )
+        log_create();
+
+    for ( std::list <Sequence_Widget*>::const_iterator i = _widgets.begin();
+          i != _widgets.end(); ++i )
+        (*i)->log_create();
+}
+
 /** remove all widgets from this sequence */
 void
 Sequence::clear ( void )
 {
     Loggable::block_start();
 
-    for ( std::list <Sequence_Widget*>::iterator i = _widgets.begin();
-          i != _widgets.end(); ++i )
-    {
-        Sequence_Widget *w = *i;
-
-        *i = NULL;
-
-        delete w;
-    }
-
-    _widgets.clear();
+    while ( _widgets.size() )
+        delete _widgets.front();
 
     Loggable::block_end();
 }
@@ -137,6 +139,11 @@ Sequence::overlaps ( Sequence_Widget *r )
 void
 Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
+    timeline->wrlock();
+
+    sort();
+
+    timeline->unlock();
 //    timeline->update_length( start + length );
 }
 
@@ -176,8 +183,6 @@ Sequence::add ( Sequence_Widget *r )
 
     r->sequence( this );
     _widgets.push_back( r );
-
-    sort();
 
     timeline->unlock();
 

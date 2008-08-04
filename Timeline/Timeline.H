@@ -213,6 +213,9 @@ public:
 
 private:
 
+    static void snapshot ( void *v ) { ((Timeline*)v)->snapshot(); }
+    void snapshot ( void );
+
     friend class Engine; // FIXME: only Engine::process() needs to be friended.x
 
     Track * track_by_name ( const char *name );

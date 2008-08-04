@@ -105,6 +105,20 @@ draw_full_arrow_symbol ( Fl_Color color )
 
 
 
+/** callback used by Loggable class to create a snapshot of system
+ * state. */
+void
+Timeline::snapshot ( void )
+{
+    tempo_track->log_children();
+    time_track->log_children();
+
+    for ( int i = 0; i < tracks->children(); ++i )
+    {
+        ((Track*)tracks->child( i ))->log_children();
+    }
+}
+
 /** recalculate the size of vertical scrolling area and inform scrollbar */
 void
 Timeline::adjust_vscroll ( void )
@@ -347,6 +361,8 @@ Timeline::ntracks ( void ) const
 
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Window( X, Y, W, H, L )
 {
+    Loggable::snapshot_callback( &Timeline::snapshot, this );
+
     _sample_rate = 0;
 
     box( FL_FLAT_BOX );

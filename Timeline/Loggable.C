@@ -56,6 +56,9 @@ std::queue <char *> Loggable::_transaction;
 progress_func *Loggable::_progress_callback = NULL;
 void *Loggable::_progress_callback_arg = NULL;
 
+snapshot_func *Loggable::_snapshot_callback = NULL;
+void *Loggable::_snapshot_callback_arg = NULL;
+
 
 
 /** ensure that _loggables array is big enough for /n/ elements */
@@ -419,6 +422,12 @@ Loggable::snapshot ( FILE *fp )
 {
     FILE *ofp = _fp;
 
+    if ( ! Loggable::_snapshot_callback )
+    {
+        DWARNING( "No snapshot callback defined" );
+        return false;
+    }
+
     if ( ! ( _fp = fp ) )
     {
         _fp = ofp;
@@ -427,13 +436,7 @@ Loggable::snapshot ( FILE *fp )
 
     block_start();
 
-    for ( int i = 0; i < _log_id; ++i )
-    {
-        const Loggable * l = _loggables[ i ];
-
-        if ( l && _class_map[ std::string( l->class_name() ) ] )
-            l->log_create();
-    }
+    Loggable::_snapshot_callback( _snapshot_callback_arg );
 
     block_end();
 

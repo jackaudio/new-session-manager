@@ -108,6 +108,8 @@ protected:
 
 public:
 
+    virtual void log_children ( void ) const;
+
     Fl_Input       *name_field;
     Fl_Button      *record_button;
     Fl_Button      *mute_button;

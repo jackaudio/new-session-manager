@@ -39,8 +39,7 @@ decl {\#include "../lash.H"} {}
 
 decl {extern const char *BUILD_ID;} {} 
 
-decl {extern const char *VERSION;} {selected
-} 
+decl {extern const char *VERSION;} {} 
 
 decl {extern UI *ui;} {} 
 
@@ -160,8 +159,8 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	return;
 	 
 if ( maybe_save_song() )
-	quit();} open
-      xywh {394 40 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {869 801 0 0} visible
+	quit();} open selected
+      xywh {394 40 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37

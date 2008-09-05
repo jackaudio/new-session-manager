@@ -108,15 +108,16 @@ non-sequencer: $(OBJS)
 
 install: all
 	@ echo -n "Installing..."
-	@ install non-sequencer $(prefix)/bin
-	@ mkdir -p "$(SYSTEM_PATH)"
-	@ cp -r instruments "$(SYSTEM_PATH)"
-	@ mkdir -p "$(DOCUMENT_PATH)"
-	@ cp doc/*.html doc/*.png "$(DOCUMENT_PATH)"
+	@ install -d $(DESTDIR)$(prefix)/bin
+	@ install -m 755 non-sequencer $(DESTDIR)$(prefix)/bin
+	@ install -d "$(DESTDIR)$(SYSTEM_PATH)/instruments"
+	@ install -m 644 instruments/* "$(DESTDIR)$(SYSTEM_PATH)/instruments"
+	@ install -d "$(DESTDIR)$(DOCUMENT_PATH)"
+	@ install -m 644 doc/*.html doc/*.png "$(DESTDIR)$(DOCUMENT_PATH)"
 	@ echo "$(DONE)"
 ifneq ($(USE_DEBUG),yes)
 	@ echo -n "Stripping..."
-	@ strip $(prefix)/bin/non-sequencer
+	@ strip $(DESTDIR)$(prefix)/bin/non-sequencer
 	@ echo "$(DONE)"
 endif
 

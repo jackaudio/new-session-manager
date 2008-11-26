@@ -181,6 +181,12 @@ main ( int argc, char **argv )
             ASSERTION( "Either the version of JACK you are using does pass BBT information, or the current timebase master does not provide it." );
     }
 
+    song.dirty( false );
+
+    init_colors();
+
+    ui = new UI;
+
     if ( ! lash.init( &argc, &argv, jack_name ) )
         WARNING( "error initializing LASH" );
 
@@ -191,13 +197,7 @@ main ( int argc, char **argv )
             ASSERTION( "Could not load song \"%s\" specified on command line", argv[ 1 ] );
     }
 
-    song.dirty( false );
-
     MESSAGE( "Initializing GUI" );
-
-    init_colors();
-
-    ui = new UI;
 
     ui->run();
 

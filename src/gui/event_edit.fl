@@ -59,14 +59,14 @@ Fl::delete_widget( o );} open
       code2 {\#include "../event_list.H"} modal size_range {0 0 659 803} visible
     } {
       Fl_Pack {} {
-        label {Event List} open
-        xywh {10 23 640 738} type HORIZONTAL
+        label {Event List} open selected
+        xywh {10 23 640 738} type HORIZONTAL resizable
       } {
-        Fl_Scroll scroll_w {open
-          xywh {10 24 620 737} type HORIZONTAL box DOWN_BOX labeltype NO_LABEL resizable
+        Fl_Group {} {open
+          xywh {10 24 620 737} box DOWN_FRAME resizable
         } {
           Fl_Pack pack {open
-            xywh {10 24 620 737} when 6 resizable
+            xywh {14 28 612 727} color 47 when 6 resizable
           } {}
         }
         Fl_Scrollbar scroll_bar {
@@ -177,24 +177,19 @@ _el = g->events();
 _grid = g;
 _y = 0;
 
-_h = scroll_w->h() / 24;
+_h = pack->h() / 24;
 
 // create widgets.
 
 for ( int n = _h; n--; )
 {
-	Event_Widget *ew = new Event_Widget( 0, 0, pack->w(), 24, 0 );
+	Event_Widget *ew = new Event_Widget( 0, 0, pack->w() - Fl::box_dw( pack->box() ), 24, 0 );
 	
 	ew->callback( cb_changed, (void*)this );
 	ew->when( FL_WHEN_CHANGED );
 	
 	pack->add( ew );
 }
-
-pack->end();
-
-// Fl_Pack has a bug--it doesn't resize children until we resize it.
-pack->resize( scroll_w->x(), scroll_w->y(), scroll_w->w(), scroll_w->h() );
 
 scroll_bar->minimum( 0 );
 scroll_bar->maximum( _el->size() - _h );
@@ -207,8 +202,7 @@ update_widgets();} {}
 
 _grid->events( _el );
 
-update_widgets();} {selected
-    }
+update_widgets();} {}
   }
   Function {update_widgets( void )} {open return_type void
   } {
@@ -243,13 +237,16 @@ if ( sbmax > 0 )
 	scroll_bar->maximum( sbmax );
 	scroll_bar->show();
 
-	scroll_w->size( scroll_w->parent()->w() - scroll_bar->w(), scroll_w->parent()->h() );
+//	scroll_w->size( scroll_w->parent()->w() - scroll_bar->w(), scroll_w->parent()->h() );
 }
 else
 {
+	scroll_bar->maximum( 0 );
 	scroll_bar->hide();
-	scroll_w->size( scroll_w->parent()->w(), scroll_w->parent()->h() );
-}} {}
+//	scroll_w->size( scroll_w->parent()->w(), scroll_w->parent()->h() );
+}
+
+pack->parent()->redraw();} {}
   }
   Function {scroll( int y )} {open return_type void
   } {
@@ -293,7 +290,7 @@ while( w->shown() )
 } 
 
 widget_class Event_Widget {user_data_type {void *} open
-  xywh {685 357 590 30} type Single
+  xywh {685 357 590 30} type Single box NO_BOX
   code0 {\#include "../event.H"}
   code1 {_event = NULL;}
   class Fl_Group size_range {400 24 0 24} visible

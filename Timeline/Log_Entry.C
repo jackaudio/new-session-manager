@@ -103,62 +103,82 @@ Log_Entry::parse_alist( const char *s )
     int tl = strlen( s );
     char **r = (char**)malloc( sizeof( char* ) * tl );
 
-//    const char *e = s + tl;
-
+    bool quote = false;
+    bool value = false;
     const char *c = NULL;
     int i = 0;
     for ( ; ; s++ )
     {
-
-/*         if ( *s == '\n' ) */
-/*             break; */
-
-//        if ( *s == ':' || s == e )
-        if ( *s == ':' || *s == '\0' )
+        switch ( *s )
         {
-            if ( c )
-            {
-                int l = s - c;
-
-                char *pair = (char*)malloc( l + 1 );
-
-                /* remove trailing space */
-                if ( c[ l  - 1 ] == ' ' )
-                    --l;
-
-                strncpy( pair, c, l );
-
-                pair[ l ] = '\0';
-
-                r[ i++ ] = pair;
-
-                /* split */
-
-                strtok( pair, " " );
-
-                /* remove quotes */
-                char *v = pair + strlen( pair ) + 1;
-
-                unescape( v );
-
-                if  ( *v == '"' )
+            case '\0':
+            case ' ':
+                if ( ! quote && c )
                 {
-//                    v++;
-                    if ( v[ strlen( v ) - 1 ] != '"' )
-                        WARNING( "invalid quoting in log entry!" );
-                    else
+                    if ( ! value )
                     {
-                        v[ strlen( v ) - 1 ] = '\0';
-                        memmove( v, v + 1, strlen( v ) + 1 );
+                        value = true;
+                        break;
                     }
+
+                    int l = s - c;
+
+                    char *pair = (char*)malloc( l + 1 );
+
+                    /* remove trailing space */
+                    if ( c[ l  - 1 ] == ' ' )
+                        --l;
+
+                    strncpy( pair, c, l );
+
+                    pair[ l ] = '\0';
+
+                    r[ i++ ] = pair;
+
+                    /* split */
+
+                    strtok( pair, " " );
+
+                    /* remove quotes */
+                    char *v = pair + strlen( pair ) + 1;
+
+                    unescape( v );
+
+                    if  ( *v == '"' )
+                    {
+//                    v++;
+                        if ( v[ strlen( v ) - 1 ] != '"' )
+                            WARNING( "invalid quoting in log entry!" );
+                        else
+                        {
+                            v[ strlen( v ) - 1 ] = '\0';
+                            memmove( v, v + 1, strlen( v ) + 1 );
+                        }
+                    }
+
+                    printf( "%s\n", v );
+
+                    c = NULL;
                 }
-            }
-
-            c = s;
-
-            if ( *s == '\0' )
+                break;
+            case ':':                                           /* this is a key */
+                if ( ! quote && ! c )
+                {
+                    c = s;
+                    value = false;
+                }
+                break;
+            case '"':
+                quote = !quote;
+                break;
+            case '\\':
+                s++;
                 break;
         }
+
+        if ( *s == '\0' )
+            break;
+
     }
 
     r[ i ] = NULL;

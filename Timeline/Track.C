@@ -23,6 +23,7 @@
 /* TODO: split into Track and Audio_Track (and maybe later Video_Track
  * and MIDI_Track */
 
+#include <sys/time.h>
 #include "Track.H"
 
 #include "Transport.H"
@@ -502,12 +503,6 @@ void
 Track::add ( Audio_Sequence * t )
 {
     takes->insert( *t, 0 );
-    if ( ! t->name() )
-    {
-        char pat[20];
-        snprintf( pat, sizeof( pat ), "%d", 1 + takes->children() );
-        t->name( strdup( pat ) );
-    }
 
     t->labeltype( FL_ENGRAVED_LABEL );
 
@@ -582,6 +577,8 @@ Track::sequence ( Audio_Sequence * t )
     pack->insert( *t, 1 );
 
     t->labeltype( FL_NO_LABEL );
+
+    update_take_menu();
 
     resize();
 }

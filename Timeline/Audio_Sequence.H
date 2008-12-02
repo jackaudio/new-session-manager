@@ -48,14 +48,14 @@ public:
 
     LOG_CREATE_FUNC( Audio_Sequence );
 
-    Audio_Sequence ( Track *track );
+    Audio_Sequence ( Track *track, const char *name = 0 );
     ~Audio_Sequence ( );
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }
 
-    Sequence * clone_empty ( void )
+    Sequence * clone_empty ( const char *name = 0 )
         {
-            Audio_Sequence *t = new Audio_Sequence( track() );
+            Audio_Sequence *t = new Audio_Sequence( track(), name );
 
             return t;
         }

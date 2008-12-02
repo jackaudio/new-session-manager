@@ -41,11 +41,14 @@ queue <Sequence_Widget *> Sequence::_delete_queue;
 
 
 
-Sequence::Sequence ( Track *track ) : Fl_Widget( 0, 0, 0, 0 ), Loggable( true  )
+Sequence::Sequence ( Track *track, const char *name ) : Fl_Widget( 0, 0, 0, 0 ), Loggable( true  )
 {
     init();
 
     _track = track;
+
+    if ( name )
+        _name = strdup( name );
 
 //    log_create();
 }

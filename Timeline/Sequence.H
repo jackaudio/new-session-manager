@@ -74,7 +74,7 @@ public:
     /* welcome to C++ */
     LOG_NAME_FUNC( Sequence );
 
-    Sequence ( Track *track=0 );
+    Sequence ( Track *track=0, const char *name = 0 );
 
     Sequence ( int X, int Y, int W, int H );
 
@@ -89,7 +89,7 @@ public:
     void name ( const char *s )
         {
             if ( _name ) free( _name );
-            _name = strdup( s );
+            _name = s ? strdup( s ) : NULL;
             label( _name );
         }
 

@@ -20,6 +20,7 @@
 /* An Audio_Sequence is a sequence of Audio_Regions. Takes and 'track
  * contents' consist of these objects */
 
+#include <sys/time.h>
 #include <Fl/fl_ask.H>
 
 #include "Audio_Sequence.H"
@@ -35,10 +36,28 @@ using namespace std;
 
 
 
-Audio_Sequence::Audio_Sequence ( Track *track ) : Sequence( track )
+Audio_Sequence::Audio_Sequence ( Track *track, const char *name ) : Sequence( track )
 {
-
     _track = track;
+
+    if ( name )
+        Audio_Sequence::name( name );
+    else
+    {
+        struct timeval tv;
+
+        gettimeofday( &tv, NULL );
+
+        time_t t = tv.tv_sec;
+
+        char s[40];
+
+        ctime_r( &t, s );
+
+        s[ strlen( s ) - 1 ] = 0;
+
+        Audio_Sequence::name( s );
+    }
 
     if ( track )
         track->add( this );

@@ -156,8 +156,6 @@ Log_Entry::parse_alist( const char *s )
                         }
                     }
 
-                    printf( "%s\n", v );
-
                     c = NULL;
                 }
                 break;

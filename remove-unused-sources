@@ -56,17 +56,32 @@ set_diff ()
 
 remove_sources ()
 {
+    local TOTAL=0
     local FILE
+    local SIZE
     while read FILE
     do
-        if [ $DRY_RUN = yes ]
+
+        SIZE=`stat -c '%s' "${FILE}" 2>/dev/null`
+
+        if [ $? -ne 0 ]
         then
-            echo "Would remove: ${FILE}"
+            echo "Would remove \"${FILE}\", if it existed."
         else
-            echo "Removing unused source \"${FILE}\"..."
-            rm -f ./"${FILE}" ./"${FILE}-"*.peak
+            if [ $DRY_RUN = yes ]
+            then
+                echo "Would remove: ${FILE}"
+            else
+                echo "Removing unused source \"${FILE}\"..."
+                rm -f ./"${FILE}" ./"${FILE}-"*.peak
+            fi
+
+            TOTAL=$(( $TOTAL + $SIZE ))
         fi
+
     done
+
+    echo "...Freeing a total of $(($TOTAL / ( 1024 * 1024 ) ))MB"
 }
 
 [ $# -gt 0 ] || fatal "Usage: $0 [--dry-run] path/to/project"

@@ -59,10 +59,12 @@ remove_sources ()
     local TOTAL=0
     local FILE
     local SIZE
+    local PSIZE
     while read FILE
     do
 
         SIZE=`stat -c '%s' "${FILE}" 2>/dev/null`
+        PSIZE=`stat -c '%s' "${FILE}.peak" 2>/dev/null`
 
         if [ $? -ne 0 ]
         then
@@ -73,10 +75,10 @@ remove_sources ()
                 echo "Would remove: ${FILE}"
             else
                 echo "Removing unused source \"${FILE}\"..."
-                rm -f ./"${FILE}" ./"${FILE}-"*.peak
+                rm -f ./"${FILE}" ./"${FILE}".peak
             fi
 
-            TOTAL=$(( $TOTAL + $SIZE ))
+            TOTAL=$(( $TOTAL + $SIZE + $PSIZE ))
         fi
 
     done

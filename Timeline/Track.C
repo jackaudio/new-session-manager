@@ -504,6 +504,8 @@ Track::add ( Audio_Sequence * t )
 {
     takes->insert( *t, 0 );
 
+    t->color( fl_color_average( FL_BLACK, FL_GRAY, 0.25f ) );
+
     t->labeltype( FL_ENGRAVED_LABEL );
 
     update_take_menu();
@@ -576,6 +578,7 @@ Track::sequence ( Audio_Sequence * t )
     _sequence = t;
     pack->insert( *t, 1 );
 
+    t->color( FL_GRAY );
     t->labeltype( FL_NO_LABEL );
 
     update_take_menu();

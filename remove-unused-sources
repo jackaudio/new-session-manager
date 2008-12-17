@@ -33,8 +33,9 @@
 #     delete all unused sources! You have been warned.
 #
 
-DRY_RUN=no
-ONLY_COMPACTED=no
+DRY_RUN=
+ONLY_COMPACTED=
+MOVE=1
 
 fatal ()
 {
@@ -63,19 +64,27 @@ remove_sources ()
     while read FILE
     do
 
-        SIZE=`stat -c '%s' "${FILE}" 2>/dev/null`
         PSIZE=`stat -c '%s' "${FILE}.peak" 2>/dev/null`
+        SIZE=`stat -c '%s' "${FILE}" 2>/dev/null`
 
-        if [ $? -ne 0 ]
+        PSIZE=${PSIZE:-0}
+
+        if ! [ -f "${FILE}" ]
         then
             echo "Would remove \"${FILE}\", if it existed."
         else
-            if [ $DRY_RUN = yes ]
+            if [ "$DRY_RUN" = 1 ]
             then
                 echo "Would remove: ${FILE}"
             else
-                echo "Removing unused source \"${FILE}\"..."
-                rm -f ./"${FILE}" ./"${FILE}".peak
+                if [ "$MOVE" = 1 ]
+                then
+                    echo "Moving unused source \"${FILE}\"..."
+                    mv -f ./"${FILE}" ./"${FILE}".peak ../unused-sources
+                else
+                    echo "Removing unused source \"${FILE}\"..."
+                    rm -f ./"${FILE}" ./"${FILE}".peak
+                fi
             fi
 
             TOTAL=$(( $TOTAL + $SIZE + $PSIZE ))
@@ -86,15 +95,28 @@ remove_sources ()
     echo "...Freeing a total of $(($TOTAL / ( 1024 * 1024 ) ))MB"
 }
 
-[ $# -gt 0 ] || fatal "Usage: $0 [--dry-run] path/to/project"
+usage ()
+{
+    fatal "Usage: $0 [-n] [-c] [-m|-d] path/to/project"
+}
 
-if [ "$1" = --dry-run ]
-then
-    DRY_RUN=yes
-    shift 1
-fi
 
+while getopts "dmnc" o
+do
+    case "$o" in
+	d) MOVE= ;;
+        m) MOVE=1 ;;
+        n) DRY_RUN=1 ;;
+        c) ONLY_COMPACTED=1 ;;
+	\?) usage ;;
+        *) echo "$o" && usage ;;
+    esac
+done
+
+shift $(( $OPTIND - 1 ))
 PROJECT="$1"
+
+[ $# -eq 1 ] || usage
 
 cd "$PROJECT" || fatal "No such project"
 
@@ -102,16 +124,18 @@ cd "$PROJECT" || fatal "No such project"
 
 [ -f .lock ] && fatal "Project appears to be in use"
 
-if [ $ONLY_COMPACTED = yes ]
+if [ "$ONLY_COMPACTED" = 1 ]
 then
     grep -v '\(^\{\|\}$\)\|create' history && fatal "Not a compacted project"
 fi
 
 echo "Scanning \"${PROJECT}\"..."
 
-sed -n 's/^\s\+Audio_Region.* :source "\([^"]\+\)".*$/\1/p' history | sort | uniq > "${TEMP}/used-sources"
+sed -n 's/^\s*Audio_Region.* :source "\([^"]\+\)".*$/\1/p' history | sort | uniq > "${TEMP}/used-sources"
 
 cd sources || fatal "Can't change to source directory"
+
+[ "$MOVE" = 1 ] && mkdir ../unused-sources 2>/dev/null
 
 ls -1 | grep -v '\.peak$' | sort > "${TEMP}/all-sources"
 

@@ -336,8 +336,7 @@ Loggable::do_this ( const char *s, bool reverse )
 
         {
             /* create */
-            Loggable *l = _class_map[ std::string( classname ) ]( e );
-            l->update_id( id );
+            Loggable *l = _class_map[ std::string( classname ) ]( e, id );
             l->log_create();
         }
 

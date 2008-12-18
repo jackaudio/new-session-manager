@@ -38,7 +38,7 @@ typedef void (snapshot_func)( void * );
 
 class Log_Entry;
 class Loggable;
-typedef Loggable *(create_func)(Log_Entry &);
+typedef Loggable *(create_func)(Log_Entry &, int id);
 
 #define LOG_REGISTER_CREATE( class ) \
     Loggable::register_create( #class, & class ::create  );
@@ -48,9 +48,10 @@ typedef Loggable *(create_func)(Log_Entry &);
 
 #define LOG_CREATE_FUNC( class )                                        \
     static Loggable *                                                   \
-    create ( Log_Entry &e )                                             \
+    create ( Log_Entry &e, int id )                                     \
     {                                                                   \
         class *r = new class;                                           \
+        r->update_id( id );                                             \
         r->set( e );                                                    \
         return (Loggable *)r;                                           \
     }                                                                   \

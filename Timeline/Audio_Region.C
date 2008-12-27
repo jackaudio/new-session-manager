@@ -584,10 +584,8 @@ Audio_Region::draw ( void )
 //            DMESSAGE( "using cached peaks" );
         }
 
-        if ( peaks )
+        if ( peaks && pbuf )
         {
-            assert( pbuf );
-
             int ch = (h() - Fl::box_dh( box() ))  / channels;
 
 

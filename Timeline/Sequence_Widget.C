@@ -231,28 +231,17 @@ Sequence_Widget::start ( nframes_t where )
 }
 
 void
-Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color )
+Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color, int xo, int yo )
 {
-    int X, Y;
+    int X = x();
+    int Y = y();
+    int W = w();
+    int H = h();
 
-    X = x();
-    Y = y();
+    if ( align & FL_ALIGN_CLIP ) fl_push_clip( X, Y, W, H );
 
-    /* FIXME: why do we have to do this here? why doesn't Fl_Label::draw take care of this stuff? */
-    if ( ! (align & FL_ALIGN_INSIDE) )
-    {
-        if ( align & FL_ALIGN_RIGHT )
-        {
-            X += abs_w();
-            align = (Fl_Align)((align & ~FL_ALIGN_RIGHT) | FL_ALIGN_LEFT);
-        }
-        if ( align & FL_ALIGN_BOTTOM  )
-        {
-            Y += h();
-            align = (Fl_Align)((align & ~FL_ALIGN_BOTTOM) | FL_ALIGN_TOP);
-        }
-    }
-
+    X += xo;
+    Y += yo;
 
     Fl_Label lab;
 
@@ -268,43 +257,52 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color 
     fl_font( lab.font, lab.size );
     fl_measure( lab.value, lw, lh );
 
-    int W = w();
-    int H = h();
-
-    if ( align & FL_ALIGN_INSIDE )
-    {
-        X += Fl::box_dx( box() );
-        Y += Fl::box_dy( box() );
-        W -= Fl::box_dw( box() );
-        H -= Fl::box_dh( box() );
-    }
-
-    if ( align & FL_ALIGN_CLIP ) fl_push_clip( X, Y, W, H );
-
     int dx = 0;
 
     /* adjust for scrolling */
     if ( abs_x() < scroll_x() )
         dx = min( 32767, scroll_x() - abs_x() );
 
-//        const Fl_Boxtype b = FL_ROUND_UP_BOX;
     const Fl_Boxtype b = FL_ROUNDED_BOX;
     const int bx = Fl::box_dx( b ) + 1;
     const int bw = Fl::box_dw( b ) + 1;
+//    const int by = Fl::box_dy( b ) + 1;
+    const int bh = Fl::box_dh( b ) + 1;
 
-    if ( align & FL_ALIGN_BOTTOM )
-        fl_draw_box( b, X - dx - bx, Y + H - lh, lw + bw, lh, FL_GRAY );
-    else if ( align & FL_ALIGN_LEFT )
-        fl_draw_box( b, X - dx, Y + ((H >> 1) - (lh >> 1)), lw + bw, lh, FL_GRAY );
-    else if ( align & FL_ALIGN_TOP )
-        fl_draw_box( b, X - dx - bx + ((W >> 1) - (lw >> 1)), Y + ((H >> 1) - (lh >> 1)), lw + bw, lh, FL_GRAY );
+    /* FIXME: why do we have to do this here? why doesn't Fl_Label::draw take care of this stuff? */
+    if ( align & FL_ALIGN_INSIDE )
+    {
+        X += Fl::box_dx( box() );
+        Y += Fl::box_dy( box() );
+        W -= Fl::box_dw( box() );
+        H -= Fl::box_dh( box() );
 
-//    lab.draw( X - dx, Y, W, H, align );
+
+        if ( align & FL_ALIGN_RIGHT )
+            X += abs_w() - (lw + bw);
+
+        if ( align & FL_ALIGN_BOTTOM  )
+            Y += h() - (lh + (bh << 1));
+    }
+    else
+    {
+        if ( align & FL_ALIGN_RIGHT )
+            X += abs_w();
+        else if ( align & FL_ALIGN_LEFT )
+            X -= lw + bw;
+
+        if ( align & FL_ALIGN_BOTTOM  )
+            Y += h();
+        else if ( align & FL_ALIGN_TOP )
+            Y -= lh + bh;
+    }
+
+    fl_draw_box( b, ( X - dx ), Y, lw + bw, lh, FL_GRAY );
+
     fl_color( color );
-    fl_draw( label, ( X - dx ) + bx, Y, W, H, align );
+    fl_draw( label, ( X - dx ) + bx, Y, lw, lh, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_CENTER ) );
 
     if ( align & FL_ALIGN_CLIP ) fl_pop_clip();
-
 }
 
 int

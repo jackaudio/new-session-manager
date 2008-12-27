@@ -80,6 +80,15 @@ Control_Point::draw_box ( void )
     fl_color( box_color() );
 
     fl_arc( x(), y(), w(), h(), 0, 360 );
+
+    if ( this == Sequence_Widget::belowmouse() ||
+         this == Sequence_Widget::pushed() )
+    {
+        char val[10];
+        snprintf( val, sizeof( val ), "%+.2f", 1.0 - _y * 2 );
+
+        draw_label( val, (Fl_Align)( FL_ALIGN_TOP | FL_ALIGN_LEFT ), FL_FOREGROUND_COLOR );
+    }
 }
 
 
@@ -93,6 +102,10 @@ Control_Point::handle ( int m )
 
         case FL_RELEASE:
             sequence()->sort();
+            redraw();
+            break;
+        case FL_ENTER:
+        case FL_LEAVE:
             redraw();
             break;
         case FL_DRAG:

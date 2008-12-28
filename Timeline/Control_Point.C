@@ -112,7 +112,8 @@ Control_Point::handle ( int m )
         {
             sequence()->sort();
 
-            if ( selected() )
+            if ( nselected() > 1 )
+                // only allow horizontal movement when part of a selection...
                 break;
 
             int Y = Fl::event_y() - parent()->y();

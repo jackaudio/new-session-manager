@@ -72,7 +72,6 @@ Record_DS::disk_thread ( void )
 
     DMESSAGE( "capture thread running..." );
 
-
     const nframes_t nframes = _nframes * _disk_io_blocks;
 
     /* buffer to hold the interleaved data returned by the track reader */
@@ -83,18 +82,14 @@ Record_DS::disk_thread ( void )
 
     const size_t block_size = nframes * sizeof( sample_t );
 
-    int blocks_ready = 1;
+    int blocks_ready = 0;
 
     while ( wait_for_block() )
     {
-
-        if ( blocks_ready < _disk_io_blocks )
-        {
-            ++blocks_ready;
+        if ( ++blocks_ready < _disk_io_blocks )
             continue;
-        }
-
-        blocks_ready = 1;
+        else
+            blocks_ready = 0;
 
         /* pull data from the per-channel ringbuffers and interlace it */
         for ( int i = channels(); i--; )
@@ -204,6 +199,7 @@ Record_DS::disk_thread ( void )
     _capture = NULL;
 
     /* now finalize the recording */
+
     track()->finalize( c, _stop_frame );
 
     delete c;
@@ -227,6 +223,8 @@ Record_DS::start ( nframes_t frame )
 
 /*     /\* FIXME: safe to do this here? *\/ */
 /*     flush(); */
+
+    DMESSAGE( "recording started at frame %lu", (unsigned long)frame);
 
     _frame = frame;
 
@@ -260,6 +258,9 @@ Record_DS::stop ( nframes_t frame )
 }
 
 
+#include "../Transport.H"
+extern Transport *transport;
+
 /** read from the attached track's ports and stuff the ringbuffers */
 nframes_t
 Record_DS::process ( nframes_t nframes )
@@ -269,13 +270,40 @@ Record_DS::process ( nframes_t nframes )
     if ( ! _recording )
         return 0;
 
-    const size_t block_size = nframes * sizeof( sample_t );
+     if ( transport->frame < _frame  )
+         return 0;
+
+/*    DMESSAGE( "recording actually happening at %lu (start frame %lu)", (unsigned long)transport->frame, (unsigned long)_frame); */
+
+    nframes_t offset = 0;
+
+    if ( _frame > transport->frame &&
+         _frame < transport->frame + nframes )
+    {
+        /* The record start frame falls somewhere within the current
+           buffer.  We must discard the unneeded portion and only
+           stuff the part requested into the ringbuffer. */
+
+        offset = _frame - transport->frame;
+
+/*         DMESSAGE( "offset = %lu", (unsigned long)offset ); */
+    }
+
+    const size_t offset_size = offset * sizeof( sample_t );
+    const size_t block_size = ( nframes * sizeof( sample_t ) ) - offset_size;
 
     for ( int i = channels(); i--;  )
     {
+        /* read the entire input buffer */
         void *buf = track()->input[ i ].buffer( nframes );
 
-        if ( jack_ringbuffer_write( _rb[ i ], (char*)buf, block_size ) < block_size )
+/*         if ( buffer_is_digital_black( (sample_t*)buf, nframes ) ) */
+/*              DWARNING( "recording an entirely blank buffer" ); */
+
+        /* FIXME: this results in a ringbuffer size that is no longer
+         necessarily a multiple of nframes...  how will the other side
+         handle that? */
+        if ( jack_ringbuffer_write( _rb[ i ], (char*)buf + offset, block_size ) < block_size )
         {
             ++_xruns;
             memset( buf, 0, block_size );

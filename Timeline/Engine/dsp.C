@@ -95,3 +95,15 @@ buffer_fill_with_silence ( sample_t *buf, nframes_t nframes )
 {
     memset( buf, 0, nframes * sizeof( sample_t ) );
 }
+
+bool
+buffer_is_digital_black ( sample_t *buf, nframes_t nframes )
+{
+    while ( nframes-- )
+    {
+        if ( 0 != buf[nframes] )
+            return false;
+    }
+
+    return true;
+}

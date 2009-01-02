@@ -49,7 +49,8 @@ Playback_DS::seek ( nframes_t frame )
 {
     THREAD_ASSERT( RT );
 
-    DMESSAGE( "requesting seek" );
+    /* FIXME: non-RT-safe IO */
+    DMESSAGE( "requesting seek to frame %lu", (unsigned long)frame );
 
     if ( seek_pending() )
         printf( "seek error, attempt to seek while seek is pending\n" );
@@ -104,7 +105,7 @@ Playback_DS::disk_thread ( void )
     sample_t *cbuf = new sample_t[ _nframes * _disk_io_blocks ];
 #endif
 
-    int blocks_ready = 1;
+    int blocks_ready = 0;
 
     const nframes_t nframes = _nframes * _disk_io_blocks;
 
@@ -115,27 +116,22 @@ Playback_DS::disk_thread ( void )
 
         if ( seek_pending() )
         {
-            DMESSAGE( "performing seek" );
+            /* FIXME: non-RT-safe IO */
+            DMESSAGE( "performing seek to frame %lu", (unsigned long)_pending_seek );
 
             _frame = _pending_seek;
             _pending_seek = -1;
-            blocks_ready = 1;
-            /* finish flushing the buffer */
-
-/*             for ( int i = channels(); i-- ) */
-/*                 jack_ringbuffer_write_advance( _rb[ i ], jack_ringbuffer_write_space( _rb[ i ] ) ); */
-
+            blocks_ready = 0;
         }
 
-        if ( blocks_ready < _disk_io_blocks )
+        if ( ++blocks_ready < _disk_io_blocks )
         {
-            ++blocks_ready;
             /* wait for more space */
             continue;
         }
 
         /* reset */
-        blocks_ready = 1;
+        blocks_ready = 0;
 
         read_block( buf, nframes );
 
@@ -210,6 +206,7 @@ nframes_t
 Playback_DS::process ( nframes_t nframes )
 {
     THREAD_ASSERT( RT );
+
 
     const size_t block_size = nframes * sizeof( sample_t );
 

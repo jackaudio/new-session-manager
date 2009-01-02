@@ -151,7 +151,27 @@ Track::configure_inputs ( int n )
 }
 
 nframes_t
-Track::process ( nframes_t nframes )
+Track::process_input ( nframes_t nframes )
+{
+    THREAD_ASSERT( RT );
+
+    if ( ! transport->rolling )
+    {
+        for ( int i = input.size(); i--; )
+            input[ i ].silence( nframes );
+
+        return 0;
+    }
+
+    if ( record_ds )
+        return record_ds->process( nframes );
+    else
+        return 0;
+
+}
+
+nframes_t
+Track::process_output ( nframes_t nframes )
 {
     THREAD_ASSERT( RT );
 
@@ -160,23 +180,20 @@ Track::process ( nframes_t nframes )
         for ( int i = output.size(); i--; )
             output[ i ].silence( nframes );
 
-        for ( int i = input.size(); i--; )
-            input[ i ].silence( nframes );
-
         return 0;
     }
 
+    /* FIXME: should we blank the control output here or leave it floating? */
     for ( int i = control->children(); i--; )
         ((Control_Sequence*)control->child( i ))->process( nframes );
 
     if ( playback_ds )
-    {
-        record_ds->process( nframes );
         return playback_ds->process( nframes );
-    }
     else
         return 0;
 }
+
+
 
 void
 Track::seek ( nframes_t frame )

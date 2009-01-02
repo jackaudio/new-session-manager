@@ -29,3 +29,4 @@ void buffer_interleave_one_channel ( sample_t *dst, sample_t *src, int channel, 
 void buffer_interleave_one_channel_and_mix ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes );
 void buffer_deinterleave_one_channel ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes );
 void buffer_fill_with_silence ( sample_t *buf, nframes_t nframes );
+bool buffer_is_digital_black ( sample_t *buf, nframes_t nframes );

@@ -38,6 +38,8 @@ Timeline::record ( void )
 
     nframes_t frame = transport->frame;
 
+    DMESSAGE( "Going to record starting at frame %lu", (unsigned long)frame );
+
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
@@ -85,7 +87,14 @@ Timeline::process ( nframes_t nframes )
     {
         Track *t = (Track*)tracks->child( i );
 
-        t->process( nframes );
+        t->process_output( nframes );
+    }
+
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        t->process_input( nframes );
     }
 
     /* FIXME: BOGUS */

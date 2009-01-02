@@ -207,7 +207,8 @@ public:
     const Audio_Region *capture_region ( void ) const;
 
     void resize_buffers ( nframes_t nframes );
-    nframes_t process ( nframes_t nframes );
+    nframes_t process_input ( nframes_t nframes );
+    nframes_t process_output ( nframes_t nframes );
     void seek ( nframes_t frame );
 
     void record ( Capture *c, nframes_t frame );

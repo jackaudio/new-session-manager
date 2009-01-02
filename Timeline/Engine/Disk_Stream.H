@@ -51,7 +51,6 @@ protected:
 
     nframes_t _nframes;                              /* buffer size */
 
-    nframes_t _frame;                      /* location of disk read */
 
     std::vector < jack_ringbuffer_t * >_rb; /* one ringbuffer for each channel */
 
@@ -63,6 +62,7 @@ protected:
 
     nframes_t _frame_rate;      /* used for buffer size calculations */
 
+    volatile nframes_t _frame;             /* location of disk read */
     volatile nframes_t _pending_seek; /* absolute transport position to seek to */
     volatile int _terminate;
 

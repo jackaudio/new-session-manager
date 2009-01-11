@@ -38,7 +38,7 @@ typedef void (snapshot_func)( void * );
 
 class Log_Entry;
 class Loggable;
-typedef Loggable *(create_func)(Log_Entry &, int id);
+typedef Loggable *(create_func)(Log_Entry &, unsigned int id);
 
 #define LOG_REGISTER_CREATE( class ) \
     Loggable::register_create( #class, & class ::create  );
@@ -48,7 +48,7 @@ typedef Loggable *(create_func)(Log_Entry &, int id);
 
 #define LOG_CREATE_FUNC( class )                                        \
     static Loggable *                                                   \
-    create ( Log_Entry &e, int id )                                     \
+    create ( Log_Entry &e, unsigned int id )                                     \
     {                                                                   \
         class *r = new class;                                           \
         r->update_id( id );                                             \
@@ -66,7 +66,7 @@ class Loggable
 {
 
     static FILE *_fp;
-    static int _log_id;
+    static unsigned int _log_id;
     static int _level;
 
     static off_t _undo_offset;
@@ -86,7 +86,7 @@ class Loggable
 
 private:
 
-    int _id;
+    unsigned int _id;
 
     Log_Entry *_old_state;
 
@@ -133,7 +133,7 @@ public:
     static void progress_callback ( progress_func *p, void *arg ) { _progress_callback = p; _progress_callback_arg = arg;}
     static const char *escape ( const char *s );
 
-    int id ( void ) const { return _id; }
+    unsigned int id ( void ) const { return _id; }
 
     static bool open ( const char *filename );
     static bool close ( void );
@@ -144,14 +144,14 @@ public:
     static void block_start ( void );
     static void block_end ( void );
 
-    static Loggable * find ( int id );
+    static Loggable * find ( unsigned int id );
 
     Loggable ( bool loggable=true )
         {
             init( loggable );
         }
 
-    void update_id ( int id );
+    void update_id ( unsigned int id );
 
     virtual ~Loggable (  )
         {

@@ -43,7 +43,7 @@ using std::max;
 
 
 FILE *Loggable::_fp;
-int Loggable::_log_id = 0;
+unsigned int Loggable::_log_id = 0;
 int Loggable::_level = 0;
 
 off_t Loggable::_undo_offset = 0;
@@ -75,7 +75,7 @@ Loggable::ensure_size ( size_t n )
 
         _loggables = (Loggable**) realloc( _loggables, sizeof( Loggable ** ) * _loggables_size );
 
-        for ( int i = os; i < _loggables_size; ++i )
+        for ( unsigned int i = os; i < _loggables_size; ++i )
             _loggables[ i ] = 0;
     }
 }
@@ -98,7 +98,7 @@ Loggable::block_end ( void )
 }
 
 Loggable *
-Loggable::find ( int id )
+Loggable::find ( unsigned int id )
 {
     if ( id > _log_id )
         return NULL;
@@ -203,7 +203,7 @@ Loggable::close ( void )
     if ( ! snapshot( "snapshot" ) )
         WARNING( "Failed to create snapshot" );
 
-    for ( int i = 0; i < _log_id - 1; ++i )
+    for ( unsigned int i = 0; i < _log_id - 1; ++i )
     {
         Loggable ** l = &_loggables[ i ];
 
@@ -221,7 +221,7 @@ Loggable::close ( void )
 
 /** must be called after construction in create() methods */
 void
-Loggable::update_id ( int id )
+Loggable::update_id ( unsigned int id )
 {
     /* make sure we're the last one */
     assert( _id == _log_id );
@@ -277,7 +277,7 @@ Loggable::escape ( const char *s )
 bool
 Loggable::do_this ( const char *s, bool reverse )
 {
-    int id = 0;
+    unsigned int id = 0;
 
     if ( ! ( sscanf( s, "%*s %X ", &id ) > 0 ) )
         return false;
@@ -397,8 +397,8 @@ Loggable::undo ( void )
 void
 Loggable::compact_ids ( void )
 {
-    int id = 0;
-    for ( int i = 0; i < _log_id; ++i )
+    unsigned int id = 0;
+    for ( unsigned int i = 0; i < _log_id; ++i )
         if ( _loggables[ i ] )
         {
             ++id;

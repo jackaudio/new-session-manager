@@ -71,8 +71,7 @@ class Loggable
 
     static off_t _undo_offset;
 
-    static size_t _loggables_size;
-    static Loggable ** _loggables;
+    static std::map <unsigned int, Loggable *> _loggables;
     static std::map <unsigned int, Log_Entry *> _loggables_unjournaled;
 
     static std::map <std::string, create_func*> _class_map;
@@ -115,9 +114,7 @@ private:
             {
                 _id = ++_log_id;
 
-                ensure_size( _id );
-
-                _loggables[ _id - 1 ] = this;
+                _loggables[ _id ] = this;
             }
             else
                 _id = 0;

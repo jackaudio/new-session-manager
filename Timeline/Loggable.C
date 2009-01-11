@@ -143,7 +143,10 @@ Loggable::load_unjournaled_state ( void )
     fp = fopen( "unjournaled", "r" );
 
     if ( ! fp )
+    {
+        DWARNING( "Could not open unjournaled state file for reading" );
         return false;
+    }
 
     unsigned int id;
     char buf[BUFSIZ];
@@ -239,12 +242,16 @@ Loggable::close ( void )
 bool
 Loggable::save_unjournaled_state ( void )
 {
+    FILE *fp;
 
-    /* FIXME: check for errors */
-    FILE *fp = fopen( "unjournaled", "w" );
+    fp = fopen( "unjournaled", "w" );
 
-    /* write out the unjournaled state of all currently active
-     * loggables */
+    if ( ! fp )
+    {
+        DWARNING( "Could not open unjournaled state file for writing!" );
+        return false;
+    }
+
     for ( std::map <unsigned int, Log_Entry *>::iterator i = _loggables_unjournaled.begin();
           i != _loggables_unjournaled.end(); ++i )
     {
@@ -257,8 +264,6 @@ Loggable::save_unjournaled_state ( void )
             free( s );
         }
     }
-
-    /* write out the remembered state of inactive loggables. */
 
     fclose( fp );
 

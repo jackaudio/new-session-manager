@@ -73,6 +73,7 @@ class Loggable
 
     static size_t _loggables_size;
     static Loggable ** _loggables;
+    static std::map <unsigned int, Log_Entry *> _loggables_unjournaled;
 
     static std::map <std::string, create_func*> _class_map;
 
@@ -94,13 +95,14 @@ private:
 
     static void ensure_size ( size_t n );
 
-    void log_print( const Log_Entry *o, const Log_Entry *n ) const;
+    void log_print ( const Log_Entry *o, const Log_Entry *n ) const;
     static void log ( const char *fmt, ... );
 
     static void flush ( void );
 
-    static bool snapshot( FILE * fp );
-    static bool snapshot( const char *name );
+    static bool snapshot ( FILE * fp );
+    static bool snapshot ( const char *name );
+    static bool save_unjournaled_state ( void );
     static bool replay ( FILE *fp );
 
     void init ( bool loggable=true )
@@ -125,7 +127,8 @@ private:
     /* not implemented */
     const Loggable & operator= ( const Loggable &rhs );
 
-    static void compact_ids ( void );
+    void record_unjournaled ( void ) const;
+    static bool load_unjournaled_state ( void );
 
 public:
 
@@ -153,10 +156,7 @@ public:
 
     void update_id ( unsigned int id );
 
-    virtual ~Loggable (  )
-        {
-            _loggables[ _id - 1 ] = NULL;
-        }
+    virtual ~Loggable (  );
 
     static
     void
@@ -167,6 +167,10 @@ public:
 
     /* log messages for journal */
     virtual void get ( Log_Entry &e ) const = 0;
+    virtual void get_unjournaled ( Log_Entry & ) const
+        {
+            /* implementation optional */
+        }
     virtual void set ( Log_Entry &e ) = 0;
 
     virtual const char *class_name ( void ) const = 0;

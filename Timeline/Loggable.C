@@ -50,6 +50,8 @@ off_t Loggable::_undo_offset = 0;
 
 size_t Loggable::_loggables_size = 0;
 Loggable ** Loggable::_loggables;
+std::map <unsigned int, Log_Entry *> Loggable::_loggables_unjournaled;
+
 std::map <std::string, create_func*> Loggable::_class_map;
 std::queue <char *> Loggable::_transaction;
 
@@ -58,6 +60,14 @@ void *Loggable::_progress_callback_arg = NULL;
 
 snapshot_func *Loggable::_snapshot_callback = NULL;
 void *Loggable::_snapshot_callback_arg = NULL;
+
+
+
+Loggable::~Loggable ( )
+{
+    _loggables[ _id - 1 ] = NULL;
+}
+
 
 
 
@@ -121,6 +131,8 @@ Loggable::open ( const char *filename )
         return false;
     }
 
+    load_unjournaled_state();
+
     if ( newer( "snapshot", filename ) )
     {
         MESSAGE( "Loading snapshot" );
@@ -142,6 +154,33 @@ Loggable::open ( const char *filename )
     _undo_offset = ftell( fp );
 
     Loggable::_fp = fp;
+
+    return true;
+}
+
+bool
+Loggable::load_unjournaled_state ( void )
+{
+    FILE *fp;
+
+    fp = fopen( "unjournaled", "r" );
+
+    if ( ! fp )
+        return false;
+
+    unsigned int id;
+    char buf[BUFSIZ];
+
+    while ( fscanf( fp, "%X set %[^\n]\n", &id, buf ) == 2 )
+    {
+        Log_Entry *e = new Log_Entry( buf );
+
+        _loggables_unjournaled[ id - 1 ] = e;
+
+        Loggable *l = Loggable::find( id );
+    }
+
+    fclose( fp );
 
     return true;
 }
@@ -214,7 +253,41 @@ Loggable::close ( void )
         }
     }
 
+    save_unjournaled_state();
+
     _log_id = 0;
+
+    return true;
+}
+
+
+/** save out unjournaled state for all loggables */
+bool
+Loggable::save_unjournaled_state ( void )
+{
+
+    /* FIXME: check for errors */
+    FILE *fp = fopen( "unjournaled", "w" );
+
+    /* write out the unjournaled state of all currently active
+     * loggables */
+    for ( int i = 0; i < _log_id - 1; ++i )
+    {
+        Log_Entry *e = _loggables_unjournaled[ i ];
+
+        if ( e )
+        {
+            char *s = e->print();
+
+            fprintf( fp, "0x%X set %s\n", i + 1, s );
+
+            free( s );
+        }
+    }
+
+    /* write out the remembered state of inactive loggables. */
+
+    fclose( fp );
 
     return true;
 }
@@ -338,6 +411,12 @@ Loggable::do_this ( const char *s, bool reverse )
             /* create */
             Loggable *l = _class_map[ std::string( classname ) ]( e, id );
             l->log_create();
+
+            /* we're now creating a loggable. Apply any unjournaled
+             * state it may have had in the past under this log ID */
+
+            if ( _loggables_unjournaled[ id - 1 ] )
+                l->set( *_loggables_unjournaled[ id - 1 ] );
         }
 
     }
@@ -389,29 +468,6 @@ Loggable::undo ( void )
     block_end();
 
     _undo_offset = uo;
-}
-
-/** Make all loggable ids consecutive. This invalidates any existing
- * journal or snapshot, so you *must* write out a new one after
- * performing this operation*/
-void
-Loggable::compact_ids ( void )
-{
-    unsigned int id = 0;
-    for ( unsigned int i = 0; i < _log_id; ++i )
-        if ( _loggables[ i ] )
-        {
-            ++id;
-
-            if ( _loggables[ id - 1 ] )
-                continue;
-
-            _loggables[ id - 1 ] = _loggables[ i ];
-            _loggables[ i ] = NULL;
-            _loggables[ id - 1 ]->_id = id;
-        }
-
-    _log_id = id;
 }
 
 /** write a snapshot of the current state of all loggable objects to
@@ -468,7 +524,6 @@ Loggable::compact ( void )
     fseek( _fp, 0, SEEK_SET );
     ftruncate( fileno( _fp ), 0 );
 
-    compact_ids();
     if ( ! snapshot( _fp ) )
         FATAL( "Could not write snapshot!" );
 
@@ -654,11 +709,37 @@ Loggable::log_create ( void ) const
         Loggable::flush();
 }
 
+/** record this loggable's unjournaled state in memory */
+void
+Loggable::record_unjournaled ( void ) const
+{
+    Log_Entry *e = new Log_Entry();
+
+    get_unjournaled( *e );
+
+    Log_Entry **le = &_loggables_unjournaled[ _id - 1 ];
+
+    if ( *le )
+        delete *le;
+
+    if ( e->size() )
+    {
+        *le = e;
+        DMESSAGE( "logging %s", (*le)->print() );
+    }
+    else
+        /* don't waste space on loggables with no unjournaled properties */
+        *le = NULL;
+}
+
 /** Log object destruction. *Must* be called at the beginning of the
  * destructors of leaf classes */
 void
 Loggable::log_destroy ( void ) const
 {
+    /* the unjournaled state may have changed: make a note of it. */
+    record_unjournaled();
+
     if ( ! _fp )
         /* tearing down... don't bother */
         return;

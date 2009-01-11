@@ -104,6 +104,7 @@ private:
 protected:
 
     void get ( Log_Entry &e ) const;
+    void get_unjournaled ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
 public:
@@ -177,11 +178,15 @@ public:
 
     const char * name ( void ) const { return _name; }
     bool mute ( void ) const { return mute_button->value(); }
+    void mute ( bool b ) { mute_button->value( b ); }
     bool solo ( void ) const { return solo_button->value(); }
+    void solo ( bool b );
+
     bool armed ( void ) const { return record_button->value(); }
+    void armed ( bool b ) { record_button->value( b ); }
+
     bool selected ( void ) const { return _selected; }
 
-    void solo ( bool b );
 
     static void cb_input_field ( Fl_Widget *w, void *v );
     void cb_input_field ( void );

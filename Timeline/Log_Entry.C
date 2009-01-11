@@ -90,6 +90,35 @@ unescape ( char *s )
     *r = '\0';
 }
 
+/** return a dynamically allocated string representing this log entry */
+char *
+Log_Entry::print ( void ) const
+{
+    /* FIXME: gross over-allocation */
+    char *r = (char*)malloc( 1024 );
+
+    r[0] = 0;
+
+    for ( int i = 0; i < size(); ++i )
+    {
+        const char *s, *v;
+
+        get( i, &s, &v );
+
+        /* FIXME: arbitrary limit */
+        char t[1024];
+        snprintf( t, sizeof( t ), "%s %s%s", s, v, size() == i + 1 ? "" : " " );
+
+        strcat( r, t );
+    }
+
+    char *r2 = (char*)malloc( strlen( r ) + 1 );
+
+    strcpy( r2, r );
+
+    return r2;
+}
+
 /** sigh. parse a string of ":name value :name value" pairs into an
  * array of strings, one per pair */
 // FIXME: doesn't handle the case of :name ":foo bar", nested quotes

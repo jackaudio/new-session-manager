@@ -73,20 +73,24 @@ Track::Track ( ) : Fl_Group( 0, 0, 1, 1 )
     timeline->add_track( this );
 }
 
-
 Track::~Track ( )
 {
     Loggable::block_start();
+
+    /* must destroy sequences first to preserve proper log order */
+    takes->clear();
+    control->clear();
+    annotation->clear();
+    delete sequence();
 
     takes = NULL;
     control = NULL;
     annotation = NULL;
 
-    solo( false );
-
-    Fl_Group::clear();
-
     log_destroy();
+
+    /* ensure that soloing accounting is performed */
+    solo( false );
 
     timeline->remove_track( this );
 
@@ -101,6 +105,7 @@ Track::~Track ( )
 
     Loggable::block_end();
 }
+
 #include "FL/Boxtypes.H"
 
 void
@@ -258,6 +263,12 @@ Track::set ( Log_Entry &e )
         }
         else if ( ! strcmp( s, ":show-all-takes" ) )
             show_all_takes( atoi( v ) );
+        else if ( ! strcmp( s, ":solo" ) )
+            solo( atoi( v ) );
+        else if ( ! strcmp( s, ":mute" ) )
+            mute( atoi( v ) );
+        else if ( ! strcmp( s, ":arm" ) )
+            armed( atoi( v ) );
         else if ( ! strcmp( s, ":sequence" ) )
         {
             int i;
@@ -290,11 +301,19 @@ Track::get ( Log_Entry &e ) const
     e.add( ":name",            _name            );
     e.add( ":sequence",        sequence()       );
     e.add( ":selected",        _selected        );
+    e.add( ":color",           (unsigned long)color());
+}
+
+void
+Track::get_unjournaled ( Log_Entry &e ) const
+{
     e.add( ":height",          size()           );
     e.add( ":inputs",          input.size()     );
     e.add( ":outputs",         output.size()    );
-    e.add( ":color",           (unsigned long)color());
     e.add( ":show-all-takes",  _show_all_takes  );
+    e.add( ":armed",           armed()          );
+    e.add( ":mute",            mute()           );
+    e.add( ":solo",            solo()           );
 }
 
 void

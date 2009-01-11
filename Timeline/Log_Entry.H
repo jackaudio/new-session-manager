@@ -67,6 +67,8 @@ public:
     void get ( int n, const char **name, const char **value ) const;
     char **sa ( void );
 
+    char *print ( void ) const;
+
 /* #define ADD ( type, format, exp )             \ */
 /*     void add ( const char *name, type v ) \ */
 /*         { \ */

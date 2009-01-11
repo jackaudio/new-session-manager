@@ -176,7 +176,6 @@ Project::close ( void )
     tle->save_timeline_settings();
 
     Loggable::close();
-
 //    write_info();
 
     _is_open = false;

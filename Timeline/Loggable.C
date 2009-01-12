@@ -695,10 +695,7 @@ Loggable::record_unjournaled ( void ) const
         delete le;
 
     if ( e->size() )
-    {
         _loggables[ _id ].unjournaled_state = e;
-        DMESSAGE( "logging %s", e->print() );
-    }
     else
         /* don't waste space on loggables with no unjournaled properties */
         _loggables[ _id ].unjournaled_state = NULL;

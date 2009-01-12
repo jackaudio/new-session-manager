@@ -152,13 +152,7 @@ Loggable::load_unjournaled_state ( void )
     char buf[BUFSIZ];
 
     while ( fscanf( fp, "%X set %[^\n]\n", &id, buf ) == 2 )
-    {
-        Log_Entry *e = new Log_Entry( buf );
-
-        _loggables_unjournaled[ id ] = e;
-
-        Loggable *l = Loggable::find( id );
-    }
+        _loggables_unjournaled[ id ] = new Log_Entry( buf );
 
     fclose( fp );
 

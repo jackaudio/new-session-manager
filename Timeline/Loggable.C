@@ -48,8 +48,7 @@ int Loggable::_level = 0;
 
 off_t Loggable::_undo_offset = 0;
 
-std::map <unsigned int, Loggable *> Loggable::_loggables;
-std::map <unsigned int, Log_Entry *> Loggable::_loggables_unjournaled;
+std::map <unsigned int, Loggable::log_pair > Loggable::_loggables;
 
 std::map <std::string, create_func*> Loggable::_class_map;
 std::queue <char *> Loggable::_transaction;
@@ -64,7 +63,7 @@ void *Loggable::_snapshot_callback_arg = NULL;
 
 Loggable::~Loggable ( )
 {
-    _loggables[ _id ] = NULL;
+    _loggables[ _id ].loggable = NULL;
 }
 
 
@@ -90,7 +89,7 @@ Loggable::block_end ( void )
 Loggable *
 Loggable::find ( unsigned int id )
 {
-    return _loggables[ id ];
+    return _loggables[ id ].loggable;
 }
 
 
@@ -152,7 +151,7 @@ Loggable::load_unjournaled_state ( void )
     char buf[BUFSIZ];
 
     while ( fscanf( fp, "%X set %[^\n]\n", &id, buf ) == 2 )
-        _loggables_unjournaled[ id ] = new Log_Entry( buf );
+        _loggables[ id ].unjournaled_state = new Log_Entry( buf );
 
     fclose( fp );
 
@@ -216,17 +215,19 @@ Loggable::close ( void )
     if ( ! snapshot( "snapshot" ) )
         WARNING( "Failed to create snapshot" );
 
-
-    for ( std::map <unsigned int, Loggable *>::iterator i = _loggables.begin();
+    for ( std::map <unsigned int, Loggable::log_pair >::iterator i = _loggables.begin();
           i != _loggables.end(); ++i )
-    {
-        if ( i->second )
-        {
-            delete i->second;
-        }
-    }
+        if ( i->second.loggable )
+            delete i->second.loggable;
 
     save_unjournaled_state();
+
+    for ( std::map <unsigned int, Loggable::log_pair >::iterator i = _loggables.begin();
+          i != _loggables.end(); ++i )
+        if ( i->second.unjournaled_state )
+            delete i->second.unjournaled_state;
+
+    _loggables.clear();
 
     return true;
 }
@@ -246,12 +247,12 @@ Loggable::save_unjournaled_state ( void )
         return false;
     }
 
-    for ( std::map <unsigned int, Log_Entry *>::iterator i = _loggables_unjournaled.begin();
-          i != _loggables_unjournaled.end(); ++i )
+    for ( std::map <unsigned int, Loggable::log_pair >::iterator i = _loggables.begin();
+          i != _loggables.end(); ++i )
     {
-        if ( i->second )
+        if ( i->second.unjournaled_state )
         {
-            char *s = i->second->print();
+            char *s = i->second.unjournaled_state->print();
 
             fprintf( fp, "0x%X set %s\n", i->first, s );
 
@@ -270,9 +271,9 @@ Loggable::update_id ( unsigned int id )
 {
     /* make sure we're the last one */
     assert( _id == _log_id );
-    assert( _loggables[ _id ] == this );
+    assert( _loggables[ _id ].loggable == this );
 
-    _loggables[ _id ] = NULL;
+    _loggables[ _id ].loggable = NULL;
 
     _log_id = max( _log_id, id );
 
@@ -281,10 +282,10 @@ Loggable::update_id ( unsigned int id )
 
     _id = id;
 
-    if ( _loggables[ _id ] )
-        FATAL( "Attempt to create object with an ID (0x%X) that already exists. The existing object is of type \"%s\", the new one is \"%s\". Corrupt journal?", _id, _loggables[ _id ]->class_name(), class_name() );
+    if ( _loggables[ _id ].loggable )
+        FATAL( "Attempt to create object with an ID (0x%X) that already exists. The existing object is of type \"%s\", the new one is \"%s\". Corrupt journal?", _id, _loggables[ _id ].loggable->class_name(), class_name() );
 
-    _loggables[ _id ] = this;
+    _loggables[ _id ].loggable = this;
 }
 
 /** return a pointer to a static copy of /s/ with all special characters escaped */
@@ -384,7 +385,7 @@ Loggable::do_this ( const char *s, bool reverse )
             /* we're now creating a loggable. Apply any unjournaled
              * state it may have had in the past under this log ID */
 
-            Log_Entry *e = _loggables_unjournaled[ id ];
+            Log_Entry *e = _loggables[ id ].unjournaled_state;
 
             if ( e )
                 l->set( *e );
@@ -688,19 +689,19 @@ Loggable::record_unjournaled ( void ) const
 
     get_unjournaled( *e );
 
-    Log_Entry *le = _loggables_unjournaled[ _id ];
+    Log_Entry *le = _loggables[ _id ].unjournaled_state;
 
     if ( le )
         delete le;
 
     if ( e->size() )
     {
-        _loggables_unjournaled[ _id ] = e;
+        _loggables[ _id ].unjournaled_state = e;
         DMESSAGE( "logging %s", e->print() );
     }
     else
         /* don't waste space on loggables with no unjournaled properties */
-        _loggables_unjournaled[ _id ] = NULL;
+        _loggables[ _id ].unjournaled_state = NULL;
 }
 
 /** Log object destruction. *Must* be called at the beginning of the

@@ -64,6 +64,10 @@ typedef Loggable *(create_func)(Log_Entry &, unsigned int id);
 class Logger;
 class Loggable
 {
+    struct log_pair {
+        Loggable * loggable;
+        Log_Entry * unjournaled_state;
+    };
 
     static FILE *_fp;
     static unsigned int _log_id;
@@ -71,8 +75,7 @@ class Loggable
 
     static off_t _undo_offset;
 
-    static std::map <unsigned int, Loggable *> _loggables;
-    static std::map <unsigned int, Log_Entry *> _loggables_unjournaled;
+    static std::map <unsigned int, Loggable::log_pair > _loggables;
 
     static std::map <std::string, create_func*> _class_map;
 
@@ -114,7 +117,7 @@ private:
             {
                 _id = ++_log_id;
 
-                _loggables[ _id ] = this;
+                _loggables[ _id ].loggable = this;
             }
             else
                 _id = 0;

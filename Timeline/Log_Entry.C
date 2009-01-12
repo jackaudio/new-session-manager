@@ -116,6 +116,8 @@ Log_Entry::print ( void ) const
 
     strcpy( r2, r );
 
+    free( r );
+
     return r2;
 }
 

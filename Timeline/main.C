@@ -86,6 +86,17 @@ ensure_dirs ( void )
 
 #include <signal.h>
 
+void
+shift ( char **argv, int *argc, int n )
+{
+    int i;
+
+    for ( i = 0; i < *argc; ++i )
+        argv[ i ] = argv[ i + n ];
+
+    argv[ i ] = 0;
+    argc -= n;
+}
 
 int
 main ( int argc, char **argv )
@@ -137,7 +148,13 @@ main ( int argc, char **argv )
     MESSAGE( "Initializing LASH" );
     lash = new LASH;
 
-    lash->init( jack_name, APP_TITLE, &argc, &argv );
+    if ( argc > 1 && ! strcmp( argv[1], "--no-lash" ) )
+    {
+        MESSAGE( "--no-lash specified on command-line: LASH disabled." );
+        shift( argv, &argc, 1 );
+    }
+    else
+        lash->init( jack_name, APP_TITLE, &argc, &argv );
 
     MESSAGE( "Starting GUI" );
 

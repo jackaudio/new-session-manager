@@ -24,6 +24,8 @@ comment {//
 
 decl {const float STATUS_UPDATE_FREQ = 0.5f;} {} 
 
+decl {\#include "LASH.H"} {} 
+
 decl {\#include "Fl_Menu_Settings.H"} {} 
 
 decl {\#include "Timeline.H"} {} 
@@ -63,6 +65,9 @@ decl {extern char project_display_name[256];} {global
 } 
 
 decl {extern char *user_config_dir;} {global
+} 
+
+decl {extern LASH *lash;} {selected global
 } 
 
 class TLE {open
@@ -606,8 +611,8 @@ ab.run();}
           }
         }
         Fl_Box {} {
-          label {<empty>} selected
-          xywh {487 27 258 42} resizable
+          label {<empty>}
+          xywh {487 27 203 42} resizable
           code0 {o->labeltype( FL_NO_LABEL );}
         }
         Fl_Group {} {open
@@ -655,6 +660,12 @@ ab.run();}
         Fl_Button rec_blinker {
           label REC
           xywh {750 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 72 selection_color 88 labelfont 2 labelcolor 39 deactivate
+          code0 {\#include "FL/Fl_Blinker.H"}
+          class Fl_Blinker
+        }
+        Fl_Button lash_blinker {
+          label LASH
+          xywh {695 30 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 75 selection_color 86 labelfont 2 labelcolor 39 deactivate
           code0 {\#include "FL/Fl_Blinker.H"}
           class Fl_Blinker
         }
@@ -759,7 +770,8 @@ if ( engine->zombified() && ! zombie )
 }
 
 solo_blinker->value( Track::soloing() );
-rec_blinker->value( transport->rolling && transport->rec_enabled() );} {}
+rec_blinker->value( transport->rolling && transport->rec_enabled() );
+lash_blinker->value( lash->enabled() );} {}
   }
   Function {update_cb( void *v )} {open private return_type {static void}
   } {

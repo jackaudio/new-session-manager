@@ -63,7 +63,9 @@ public:
     const char * name ( void ) const { return _name; }
     bool name ( const char *name );
     bool name ( const char *base, int n, const char *type=0 );
-
+    nframes_t total_latency ( void ) const;
+    nframes_t latency ( void ) const;
+    void latency ( nframes_t frames );
 
     void activate ( const char *name, type_e dir );
     void shutdown ( void );

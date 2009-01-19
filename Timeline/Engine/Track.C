@@ -204,6 +204,15 @@ Track::seek ( nframes_t frame )
         return playback_ds->seek( frame );
 }
 
+void
+Track::delay ( nframes_t frames )
+{
+//    THREAD_ASSERT( RT );
+
+    if ( playback_ds )
+        playback_ds->delay( frames );
+}
+
 /* THREAD: RT (non-RT) */
 void
 Track::resize_buffers ( nframes_t nframes )
@@ -266,9 +275,29 @@ Track::finalize ( Capture *c, nframes_t frame )
 {
     THREAD_ASSERT( Capture );
 
+    /* adjust region start for latency */
+    /* FIXME: is just looking at the first channel good enough? */
+
     c->region->finalize( frame );
     DMESSAGE( "finalizing audio file" );
     c->audio_file->finalize();
+
+    nframes_t capture_offset = 0;
+
+    /* Add the system latency twice. Once for the input (usually
+     * required) and again for the output latency of whatever we're
+     * playing along to (should only apply when overdubbing) */
+
+    /* Limitations in the JACK latency reporting API prevent us from
+     * compensating from any software latency introduced by other
+     * clients in our graph... Oh well */
+
+    capture_offset += engine->system_latency();
+    capture_offset += engine->system_latency();
+
+    DMESSAGE( "Adjusting capture by %lu frames.", (unsigned long)capture_offset );
+
+    c->region->offset( capture_offset );
 
     delete c->audio_file;
 }

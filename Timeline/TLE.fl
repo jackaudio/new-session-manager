@@ -205,7 +205,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label Timeline
       callback {if ( Fl::event_key() != FL_Escape )
 	o->hide();} open
-      private xywh {133 113 1025 770} type Double resizable xclass Non_DAW visible
+      private xywh {102 111 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         private xywh {0 0 1024 25}
@@ -577,7 +577,7 @@ ab.run();}
         }
       }
       Fl_Group {} {open
-        xywh {0 23 1025 51}
+        xywh {0 1 1025 73}
       } {
         Fl_Pack {} {open
           xywh {0 23 483 46} type HORIZONTAL
@@ -669,6 +669,10 @@ ab.run();}
           code0 {\#include "FL/Fl_Blinker.H"}
           class Fl_Blinker
         }
+        Fl_Box stats_box {
+          label {<stats>} selected
+          xywh {810 1 215 21} labelsize 13 labelcolor 53 align 88
+        }
       }
       Fl_Progress progress {
         label {0%}
@@ -682,12 +686,8 @@ ab.run();}
       }
       Fl_Box project_name {
         label {<project name>}
-        private xywh {450 0 475 22} labeltype SHADOW_LABEL labelfont 2
+        private xywh {450 0 365 22} labeltype SHADOW_LABEL labelfont 2
         code0 {o->label( Project::name() );}
-      }
-      Fl_Value_Output xruns_output {
-        label {xruns:}
-        private xywh {980 2 44 20} maximum 40000 step 1
       }
     }
   }
@@ -757,9 +757,13 @@ if ( timeline->total_capture_xruns() )
 if ( timeline->total_playback_xruns() )
 	playback_buffer_progress->selection_color( FL_RED );
 
+static char stats[100];
 
+snprintf( stats, sizeof( stats ), "latency: %.1fms, xruns: %d",
+	engine->frames_to_milliseconds( timeline->total_output_latency() ),
+	engine->xruns() );
 
-xruns_output->value( engine->xruns() );
+stats_box->label( stats );
 
 static bool zombie = false;
 

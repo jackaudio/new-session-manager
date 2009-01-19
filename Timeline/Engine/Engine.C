@@ -205,7 +205,6 @@ Engine::timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t *pos,
 
     /* FIXME: fill this in */
     pos->bar_start_tick = 0;
-
 }
 
 /* THREAD: RT */

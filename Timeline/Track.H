@@ -215,6 +215,7 @@ public:
     nframes_t process_input ( nframes_t nframes );
     nframes_t process_output ( nframes_t nframes );
     void seek ( nframes_t frame );
+    void delay ( nframes_t frames );
 
     void record ( Capture *c, nframes_t frame );
     void write ( Capture *c, sample_t *buf, nframes_t nframes );

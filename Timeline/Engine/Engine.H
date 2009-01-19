@@ -86,7 +86,14 @@ public:
     void freewheeling ( bool yes );
     bool zombified ( void ) const { return _zombified; }
 
+    nframes_t system_latency ( void ) const { return nframes(); }
+
     float cpu_load ( void ) const { return jack_cpu_load( _client ); }
+
+    float frames_to_milliseconds ( nframes_t frames )
+        {
+            return ( frames * 1000 ) / (float)frame_rate();
+        }
 };
 
 

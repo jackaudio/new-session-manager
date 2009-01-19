@@ -27,16 +27,22 @@ class Playback_DS : public Disk_Stream
 
     void flush ( void ) { base_flush( true ); }
 
+    volatile nframes_t _delay; /* number of frames this diskstream should be delayed by */
+
 public:
 
     Playback_DS ( Track *th, float frame_rate, nframes_t nframes, int channels ) :
         Disk_Stream( th, frame_rate, nframes, channels )
         {
+            _delay = 0;
+
             run();
         }
 
     bool seek_pending ( void );
     void seek ( nframes_t frame );
     nframes_t process ( nframes_t nframes );
+
+    void delay ( nframes_t v );
 
 };

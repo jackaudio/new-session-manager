@@ -95,6 +95,33 @@ Port::activate ( const char *name, type_e dir )
                                 0 );
 }
 
+/** returns the sum of latency of all ports between this one and a
+    terminal port. */
+/* FIMXE: how does JACK know that input A of client Foo connects to
+output Z of the same client in order to draw the line through Z to a
+terminal port? And, if this determination cannot be made, what use is
+this function? */
+
+nframes_t
+Port::total_latency ( void ) const
+{
+    return jack_port_get_total_latency( engine->client(), _port );
+}
+
+/** returns the number of frames of latency assigned to this port */
+nframes_t
+Port::latency ( void ) const
+{
+    return jack_port_get_latency( _port );
+}
+
+/** inform JACK that port has /frames/ frames of latency */
+void
+Port::latency ( nframes_t frames )
+{
+    jack_port_set_latency( _port, frames );
+}
+
 void
 Port::shutdown ( void )
 {

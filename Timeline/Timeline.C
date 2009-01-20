@@ -229,6 +229,8 @@ Timeline::menu_cb ( Fl_Menu_ *m )
 
         t->sequence( o );
 
+        t->take_focus();
+
         Loggable::block_end();
     }
     else if ( ! strcmp( picked, "Tempo from range (beat)" ) )

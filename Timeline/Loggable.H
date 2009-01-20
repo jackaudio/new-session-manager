@@ -104,7 +104,6 @@ private:
 
     static bool snapshot ( FILE * fp );
     static bool snapshot ( const char *name );
-    static bool save_unjournaled_state ( void );
     static bool replay ( FILE *fp );
 
     void init ( bool loggable=true )
@@ -138,6 +137,7 @@ public:
 
     unsigned int id ( void ) const { return _id; }
 
+    static bool save_unjournaled_state ( void );
     static bool open ( const char *filename );
     static bool close ( void );
     static void undo ( void );

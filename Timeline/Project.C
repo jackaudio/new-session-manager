@@ -166,6 +166,19 @@ Project::read_info ( int *version, nframes_t *sample_rate, char **creation_date 
 /* Public */
 /**********/
 
+/** Save out any settings and unjournaled state... */
+bool
+Project::save ( void )
+{
+    if ( ! open() )
+        return true;
+
+    tle->save_timeline_settings();
+
+    return Loggable::save_unjournaled_state();
+}
+
+
 /** Close the project (reclaiming all memory) */
 bool
 Project::close ( void )
@@ -173,7 +186,8 @@ Project::close ( void )
     if ( ! open() )
         return true;
 
-    tle->save_timeline_settings();
+    if ( ! save() )
+        return false;
 
     Loggable::close();
 //    write_info();

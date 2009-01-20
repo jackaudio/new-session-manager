@@ -80,7 +80,7 @@ LASH::handle_save_file ( const char *path )
 
     fclose( fp );
 
-    return true;
+    return Project::save();
 }
 
 bool

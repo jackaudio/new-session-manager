@@ -52,6 +52,7 @@ public:
     static const char *name ( void ) { return Project::_name; }
     static void compact ( void );
     static bool close ( void );
+    static bool save ( void );
     static bool validate ( const char *name );
     static int open ( const char *name );
     static bool open ( void ) { return _is_open; }

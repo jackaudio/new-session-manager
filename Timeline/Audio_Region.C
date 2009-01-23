@@ -645,6 +645,22 @@ Audio_Region::draw ( void )
 
 }
 
+/** split region at absolute frame /where/ */
+void
+Audio_Region::split ( nframes_t where )
+{
+    nframes_t old_fade_in = _fade_in.length;
+
+    _fade_in.length = 256;
+
+    Audio_Region *copy = new Audio_Region( *this );
+
+    _fade_in.length = old_fade_in;
+    _fade_out.length = 256;
+
+    Sequence_Region::split( copy, where );
+}
+
 int
 Audio_Region::handle ( int m )
 {
@@ -679,19 +695,7 @@ Audio_Region::handle ( int m )
                 {
                     Loggable::block_start();
 
-                    nframes_t old_fade_in = _fade_in.length;
-                    _fade_in.length = 256;
-
-                    Audio_Region *copy = new Audio_Region( *this );
-
-                    _fade_in.length = old_fade_in;
-
-                    trim( RIGHT, X );
-                    copy->trim( LEFT, X );
-
-                    _fade_out.length = 256;
-
-                    sequence()->add( copy );
+                    split( timeline->x_to_offset( X ) );
 
                     log_end();
 

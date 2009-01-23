@@ -124,6 +124,17 @@ Sequence_Region::trim ( enum trim_e t, int X )
     }
 }
 
+/** split region at absolute frame /where/. due to inheritance issues,
+ * the copy must be made in the derived classed and passed in */
+void
+Sequence_Region::split ( Sequence_Region * copy, nframes_t where )
+{
+    trim_right( where );
+    copy->trim_left( where );
+    sequence()->add( copy );
+}
+
+
 #include "FL/test_press.H"
 
 int

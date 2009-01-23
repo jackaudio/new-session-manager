@@ -51,4 +51,5 @@ public:
     enum trim_e { NO, LEFT, RIGHT };
     void trim ( enum trim_e t, int X );
 
+    void split ( Sequence_Region *copy, nframes_t where );
 };

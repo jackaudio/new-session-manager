@@ -154,6 +154,7 @@ public:
     Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE); }
 
     void normalize ( void );
+    void split ( nframes_t where );
 
     /* Engine */
     nframes_t read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const;

@@ -66,70 +66,61 @@ Sequence_Region::set ( Log_Entry &e )
 }
 
 void
+Sequence_Region::trim_left ( nframes_t where )
+{
+    long td = where - _r->start;
+
+    if ( td < 0 && _r->offset < (nframes_t)( 0 - td ) )
+        td = 0 - _r->offset;
+
+    if ( td > 0 && (nframes_t)td >= _r->length )
+        td = _r->length - timeline->x_to_ts( 1 );
+
+    _r->trim_left( 0 - td );
+
+    nframes_t f = _r->start;
+
+    /* snap to beat/bar lines */
+    if ( timeline->nearest_line( &f ) )
+        _r->set_left( f );
+
+}
+
+void
+Sequence_Region::trim_right ( nframes_t where )
+{
+    long td =  ( _r->start + _r->length ) - where;
+
+    if ( td >= 0 && _r->length < (nframes_t)td )
+        td = _r->length - timeline->x_to_ts( 1 );
+
+    _r->trim_right( 0 - td );
+
+    nframes_t f = _r->start + _r->length;
+
+    /* snap to beat/bar lines */
+    if ( timeline->nearest_line( &f ) )
+        _r->set_right( f );
+
+}
+
+void
 Sequence_Region::trim ( enum trim_e t, int X )
 {
-
-    X -= sequence()->x();
     redraw();
+
+    nframes_t where = timeline->x_to_offset( X );
 
     switch ( t )
     {
         case LEFT:
-        {
-/*             if ( d < 0 ) */
-/* //                _track->damage( FL_DAMAGE_EXPOSE, x() + d, y(), 1 - d, h() ); */
-/*                 _track->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() ); */
-/*             else */
-/*                 _track->damage( FL_DAMAGE_EXPOSE, x(), y(), d, h() ); */
-
-            int d = X - ( abs_x() - scroll_x() );
-
-            long td = timeline->x_to_ts( d );
-
-            if ( td < 0 && _r->offset < (nframes_t)( 0 - td ) )
-                td = 0 - _r->offset;
-
-            if ( td > 0 && (nframes_t)td >= _r->length )
-                td = _r->length - timeline->x_to_ts( 1 );
-
-//                td = _r->length - timeline->x_to_ts( 1 );
-
-            _r->trim_left( 0 - td );
-
-            nframes_t f = _r->start;
-
-            /* snap to beat/bar lines */
-            if ( timeline->nearest_line( &f ) )
-                _r->set_left( f );
-
+            trim_left( where );
             break;
-        }
         case RIGHT:
-        {
-            int d = (( abs_x() - scroll_x() ) + abs_w() ) - X;
-
-/*             _track->damage( FL_DAMAGE_EXPOSE, x() + w(), y(), d, h() ); */
-
-            long td = timeline->x_to_ts( d );
-
-//            printf( "%li %li\n", td, _r->length - _r->offset );
-
-            if ( td >= 0 && _r->length < (nframes_t)td )
-                td = _r->length - timeline->x_to_ts( 1 );
-
-            _r->trim_right( 0 - td );
-
-            nframes_t f = _r->start + _r->length;
-
-            /* snap to beat/bar lines */
-            if ( timeline->nearest_line( &f ) )
-                _r->set_right( f );
-
+            trim_right( where );
             break;
-        }
         default:
-            return;
-
+            break;
     }
 }
 

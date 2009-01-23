@@ -45,6 +45,9 @@ public:
 
     LOG_NAME_FUNC( Region );
 
+    void trim_right ( nframes_t where );
+    void trim_left ( nframes_t where );
+
     enum trim_e { NO, LEFT, RIGHT };
     void trim ( enum trim_e t, int X );
 

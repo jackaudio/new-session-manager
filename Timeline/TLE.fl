@@ -67,13 +67,14 @@ decl {extern char project_display_name[256];} {global
 decl {extern char *user_config_dir;} {global
 } 
 
-decl {extern LASH *lash;} {selected global
+decl {extern LASH *lash;} {global
 } 
 
 class TLE {open
 } {
   decl {Fl_Color system_colors[3];} {}
-  Function {save()} {} {
+  Function {save()} {open
+  } {
     code {const char options_filename[] = "options";
 // const char state_filename[] = "state";
 
@@ -106,29 +107,32 @@ if ( r < 0 )
   }
   Function {save_timeline_settings()} {open
   } {
-    code {if ( Project::open() )
-{
-	// save project local options (Timeline menu)
-	((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Project/Se&ttings" ), "options" );
+    code {if ( ! Project::open() )
+	return;
 	
 
-	char path[256];
-	snprintf( path, sizeof( path ), "%s/%s", user_config_dir, ".default_project_settings" );
+// save project local options (Timeline menu)
+((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Project/Se&ttings" ), "options" );} {}
+  }
+  Function {reset_timeline_settings( void )} {open private return_type void
+  } {
+    code {char path[256];
+snprintf( path, sizeof( path ), "%s/%s", user_config_dir, ".default_project_settings" );
 
-	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), path );
-}} {}
+((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), path );} {}
   }
   Function {load_timeline_settings()} {open
   } {
-    code {if ( Project::open() )
-{
-	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), "options" );
-}
+    code {reset_timeline_settings();
 
+
+if ( Project::open() )
+	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), "options" );
 
 update_menu();
 
-project_name->redraw();} {}
+project_name->redraw();} {selected
+    }
   }
   Function {run()} {} {
     code {update_menu();
@@ -670,7 +674,7 @@ ab.run();}
           class Fl_Blinker
         }
         Fl_Box stats_box {
-          label {<stats>} selected
+          label {<stats>}
           xywh {810 1 215 21} labelsize 13 labelcolor 53 align 88
         }
       }

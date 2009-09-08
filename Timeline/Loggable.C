@@ -322,15 +322,13 @@ Loggable::do_this ( const char *s, bool reverse )
 {
     unsigned int id = 0;
 
-    if ( ! ( sscanf( s, "%*s %X ", &id ) > 0 ) )
-        return false;
-
-    Loggable *l = find( id );
-//    assert( l );
-
     char classname[40];
     char command[40];
     char *arguments = NULL;
+
+    int found = sscanf( s, "%s %X %s ", classname, &id, command );
+
+    ASSERT( 3 == found,  "Invalid journal entry format \"%s\"", s );
 
     const char *create, *destroy;
 
@@ -352,6 +350,8 @@ Loggable::do_this ( const char *s, bool reverse )
 
     if ( ! strcmp( command, destroy ) )
     {
+        Loggable *l = find( id );
+
         /* deleting eg. a track, which contains a list of other
            widgets, causes destroy messages to be emitted for all those
            widgets, but when replaying the journal the destroy message
@@ -364,6 +364,10 @@ Loggable::do_this ( const char *s, bool reverse )
     else if ( ! strcmp( command, "set" ) )
     {
 //        printf( "got set command (%s).\n", arguments );
+
+        Loggable *l = find( id );
+
+        ASSERT( l, "Unable to find object 0x%X referenced by command \"%s\"", id, s );
 
         Log_Entry e( arguments );
 
@@ -687,8 +691,8 @@ Loggable::log_create ( void ) const
 {
     if ( ! _fp )
         /* replaying, don't bother */
-
         return;
+
     log( "%s 0x%X create ", class_name(), _id );
 
     Log_Entry e;

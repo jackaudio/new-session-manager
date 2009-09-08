@@ -504,27 +504,50 @@ Loggable::compact ( void )
 
 #include <stdarg.h>
 
-/** Buffered sprintf wrapper */
+/** Writes (part of) a line to the journal. Each separate line will be
+ * stored separately in _transaction until transaction is closed.
+ */
 void
 Loggable::log ( const char *fmt, ... )
 {
+    static char * buf = NULL;
+    static size_t i = 0;
+    static size_t buf_size = 0;
+
     if ( ! _fp )
         return;
 
-    /* FIXME: bogus limit  */
-    static char buf[1024];
-    static int i = 0;
+    if ( NULL == buf )
+    {
+        buf_size = 1024;
+        buf = (char*)malloc( buf_size );
+    }
 
     va_list args;
 
     if ( fmt )
     {
         va_start( args, fmt );
-        i += vsprintf( buf + i, fmt, args );
+
+        for ( ;; )
+        {
+            size_t l = vsnprintf( buf + i, buf_size - i, fmt, args );
+
+            if ( l >= buf_size - i )
+            {
+                buf = (char*)realloc( buf, buf_size += (l + 1) + buf_size );
+            }
+            else
+            {
+                i += l;
+                break;
+            }
+        }
+
         va_end( args );
     }
 
-    if ( rindex( buf, '\n' ) )
+    if ( '\n' == buf[i-1] )
     {
         _transaction.push( strdup( buf ) );
         i = 0;

@@ -79,48 +79,62 @@ Transport::cb_button ( Fl_Widget *w, void *v )
 }
 
 void
+Transport::update_record_state ( void )
+{
+    Fl_Button *w = _record_button;
+
+    /* handle display */
+    if ( w->value() )
+        w->labelcolor( FL_RED );
+    else
+        w->labelcolor( fl_color_average( FL_RED, FL_WHITE, 0.25f ) );
+
+    w->redraw();
+
+    /* this covers the case where the record toggle button is
+     * pressed while the transport is already rolling. Recording
+     * should begin or end on the next frame */
+    if ( rolling )
+    {
+        if ( w->value() )
+        {
+            timeline->record();
+            recording = true;
+        }
+        else
+        {
+            timeline->stop();
+            recording = false;
+        }
+    }
+}
+
+/** cb_button
+ * common handler for all transport buttons */
+void
 Transport::cb_button ( Fl_Widget *w )
 {
     if ( w == _home_button )
         locate( 0 );
-    if ( w == _end_button )
+    else if ( w == _end_button )
         locate( timeline->length() );
     else if ( w == _play_button )
         toggle();
     else if ( w == _record_button )
-    {
-        if ( _record_button->value() )
-            w->labelcolor( FL_RED );
-        else
-            w->labelcolor( fl_color_average( FL_RED, FL_WHITE, 0.25f ) );
+        update_record_state();
+}
 
-        redraw();
-
-        if ( rolling )
-        {
-            if ( _record_button->value() )
-                timeline->record();
-            else
-                timeline->stop();
-        }
-    }
+void
+Transport::toggle_record ( void )
+{
+    _record_button->value( ! _record_button->value() );
+     update_record_state();
 }
 
 bool
 Transport::rec_enabled ( void ) const
 {
     return _record_button->value();
-}
-
-void
-Transport::toggle_record ( void )
-{
-    if ( _record_button->value() )
-        _record_button->value( 0 );
-    else
-        _record_button->value( 1 );
-
-    _record_button->do_callback();
 }
 
 int
@@ -132,7 +146,6 @@ Transport::handle ( int m )
         return 0;
     else
         return Fl_Pack::handle( m );
-
 }
 
 /***********/
@@ -152,7 +165,9 @@ Transport::poll ( void )
 void
 Transport::locate ( nframes_t frame )
 {
-    jack_transport_locate( client, frame );
+    if ( ! recording )
+        // don't allow seeking while record is in progress
+        jack_transport_locate( client, frame );
 }
 
 
@@ -161,7 +176,10 @@ Transport::start ( void )
 {
 //    MESSAGE( "Starting transport" );
     if ( _record_button->value() )
-        timeline->record();
+    {
+        rolling = true;
+        update_record_state();
+    }
 
     jack_transport_start( client );
 }
@@ -171,7 +189,10 @@ Transport::stop ( void )
 {
 //    MESSAGE( "Stopping transport" );
     if ( _record_button->value() )
-        toggle_record();
+    {
+        _record_button->value( 0 );
+        update_record_state();
+    }
 
     jack_transport_stop( client );
 }

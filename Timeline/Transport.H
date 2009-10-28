@@ -47,6 +47,8 @@ private:
     Fl_Button *_play_button;
     Fl_Button *_record_button;
 
+    void update_record_state ( void );
+
 public:
 
     Transport ( int X, int Y, int W, int H, const char *L=0 );

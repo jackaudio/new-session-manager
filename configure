@@ -17,6 +17,7 @@ begin_tests
 
 require_FLTK 1.1.7 images
 require_command FLUID fluid
+require_command makedepend makedepend
 require_package JACK 0.103.0 jack
 require_package sndfile 1.0.17 sndfile
 

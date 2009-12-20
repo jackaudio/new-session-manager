@@ -45,6 +45,7 @@ Fl_Arc_Dial::handle ( int m )
                 v = maximum();
 
             value( v );
+            do_callback();
 
             return 1;
         }

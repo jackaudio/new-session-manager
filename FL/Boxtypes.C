@@ -48,10 +48,10 @@ burnished_oval_box ( int x, int y, int w, int h, Fl_Color c )
     const int a1 = 10;
     const int a2 = 90;
 
-    fl_color( fl_lighter( c ) );
+    fl_color( fl_color_average( FL_WHITE, c, 0.15f ) );
     fl_pie( x, y, w, h, a1, a2 );
     fl_pie( x, y, w, h, 180 + a1, 180 + a2 );
-    fl_color( fl_lighter( fl_lighter( c ) ) );
+    fl_color( fl_color_average( FL_WHITE, c, 0.25f ) );
 
     const int d = (a2 - a1) / 2;
     fl_pie( x, y, w, h, a1 + (d / 2), a2 - (d / 2) );

@@ -471,6 +471,8 @@ Chain::build_process_queue ( void )
         {
             m->audio_output[j].connect_to( &port[j] );
         }
+
+        m->handle_port_connection_change();
     }
 
     DMESSAGE( "Process queue looks like:" );

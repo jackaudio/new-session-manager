@@ -135,28 +135,6 @@ Meter_Indicator_Module::connect_to ( Port *p )
 
         dpm_pack->add( o );
     }
-
-//        control = o;
-//        w = o;
-
-//        o->value( p->control_value() );
-/*     } */
-
-/*     w->align(FL_ALIGN_TOP); */
-/*     w->labelsize( 10 ); */
-
-/*     if ( _pad ) */
-/*     { */
-/*         Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( w ); */
-/*         size( flg->w(), flg->h() ); */
-/*         add( flg ); */
-/*     } */
-/*     else */
-/*     { */
-/*         w->resize( x(), y(), this->w(), h() ); */
-/*         add( w ); */
-/*         resizable( w ); */
-/*     } */
 }
 
 int

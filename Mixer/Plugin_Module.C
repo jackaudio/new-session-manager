@@ -48,7 +48,7 @@ struct Plugin_Module::ImplementationData
 {
     const LADSPA_Descriptor     *descriptor;
 //    std::vector<LADSPA_Data*>    m_LADSPABufVec;
-    LADSPA_Handle               handle;
+    std::vector<LADSPA_Handle>   handle;
 };
 
 
@@ -63,7 +63,7 @@ Plugin_Module::Plugin_Module ( int , int , const char *L ) : Module( 50, 50, L )
 
 Plugin_Module::~Plugin_Module ( )
 {
-
+    plugin_instances( 0 );
 }
 
 
@@ -81,7 +81,6 @@ Plugin_Module::~Plugin_Module ( )
 Plugin_Module *
 Plugin_Module::pick_plugin ( void )
 {
-
     /**************/
     /* build menu */
     /**************/
@@ -109,8 +108,6 @@ Plugin_Module::pick_plugin ( void )
 
     Plugin_Module *m = new Plugin_Module( 50, 50 );
 
-//    Plugin_Module *plugin = new Plugin_Module();
-
     m->load( pi );
 
     const char *plugin_name = pi->path;
@@ -129,12 +126,10 @@ void
 Plugin_Module::init ( void )
 {
     _idata = new Plugin_Module::ImplementationData();
+    _idata->handle.clear();
     _active = false;
-    _crosswire = true;
+    _crosswire = false;
 
-    _instances = 1;
-//    box( FL_ROUNDED_BOX );
-//    box( FL_NO_BOX );
     align( (Fl_Align)FL_ALIGN_CENTER | FL_ALIGN_INSIDE );
     color( (Fl_Color)fl_color_average( FL_BLUE, FL_GREEN, 0.5f ) );
     int tw, th, tx, ty;
@@ -198,10 +193,9 @@ Plugin_Module::can_support_inputs ( int n )
     /* e.g. STEREO going into MONO */
     /* we'll run multiple instances of the plugin */
     else if ( n > plugin_ins() &&
-              plugin_ins() == 1 && plugin_outs() == 1 )
+              ( plugin_ins() == 1 && plugin_outs() == 1 ) )
     {
-        return plugin_outs() * n;
-//            instances( i );
+        return n;
     }
 
     return -1;
@@ -210,45 +204,56 @@ Plugin_Module::can_support_inputs ( int n )
 bool
 Plugin_Module::configure_inputs( int n )
 {
+
+    int inst = 1;
+    _crosswire = false;
+
     if ( 1 == n && plugin_ins() > 1 )
     {
+        DMESSAGE( "Cross-wiring plugin inputs" );
         _crosswire = true;
+
         audio_input.clear();
-        audio_input.push_back( Port( this, Port::INPUT, Port::AUDIO ) );
+
+        for ( int i = n; i--; )
+            audio_input.push_back( Port( this, Port::INPUT, Port::AUDIO ) );
+    }
+    else if ( n > plugin_ins() &&
+              ( plugin_ins() == 1 && plugin_outs() == 1 ) )
+    {
+        DMESSAGE( "Running multiple instances of plugin" );
+
+        audio_input.clear();
+        audio_output.clear();
+
+        for ( int i = n; i--; )
+        {
+            add_port( Port( this, Port::INPUT, Port::AUDIO ) );
+            add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
+        }
+
+        inst = n;
+    }
+    else if ( n == plugin_ins() )
+    {
+
+    }
+    else
+    {
+        // unsupported configuration
+        return false;
     }
 
-/*     audio_input.clear(); */
-/*     audio_output.clear(); */
+    if ( _active )
+        deactivate();
 
-/*     for ( int i = 0; i < n; ++i ) */
-/*     { */
-/*         add_port( Port(  Port::INPUT, Port::AUDIO  ) ); */
-/*     } */
-
-/*     if ( n > plugin_ins() ) */
-/*     { */
-/*         /\* multiple instances *\/ */
-/*         instances( n / plugin_ins() ); */
-/*     } */
-/*     else if ( n < plugin_ins() ) */
-/*     { */
-/*         /\* duplication of input *\/ */
-
-
-/*     } */
-
-/*     for ( int i = 0; i < plugin_outs() * instances(); ++i ) */
-/*     { */
-/*         add_port( Port( this, Port::OUTPUT, Port::AUDIO ) ); */
-/*     } */
+    if ( plugin_instances( inst ) )
+        instances( inst );
+    else
+        return false;
 
     if ( ! _active )
         activate();
-/* //    _plugin->deactivate(); */
-/* /\*     if ( _plugin->active() ) *\/ */
-/* /\*         _plugin->activate(); *\/ */
-
-    /* FIXME: do controls */
 
     return true;
 }
@@ -276,6 +281,67 @@ Plugin_Module::discover ( void )
 }
 
 bool
+Plugin_Module::plugin_instances ( unsigned int n )
+{
+    if ( _idata->handle.size() > n )
+    {
+        for ( int i = _idata->handle.size() - n; i--; )
+        {
+            LADSPA_Handle h = _idata->handle.back();
+
+            if ( _idata->descriptor->deactivate )
+                _idata->descriptor->deactivate( h );
+            if ( _idata->descriptor->cleanup )
+                _idata->descriptor->cleanup( h );
+
+            _idata->handle.pop_back();
+        }
+    }
+    else if ( _idata->handle.size() < n )
+    {
+        for ( int i = n - _idata->handle.size(); i--; )
+        {
+            LADSPA_Handle h;
+
+            DMESSAGE( "Instantiating plugin..." );
+
+            if ( ! (h = _idata->descriptor->instantiate( _idata->descriptor, engine->sample_rate() ) ) )
+            {
+                WARNING( "Failed to instantiate plugin" );
+                return false;
+            }
+
+            DMESSAGE( "Instantiated: %p", h );
+
+            _idata->handle.push_back( h );
+
+            DMESSAGE( "Connecting control ports..." );
+
+            int ij = 0;
+            int oj = 0;
+            for ( unsigned int k = 0; k < _idata->descriptor->PortCount; ++k )
+            {
+                if ( LADSPA_IS_PORT_CONTROL( _idata->descriptor->PortDescriptors[k] ) )
+                {
+                    if ( LADSPA_IS_PORT_INPUT( _idata->descriptor->PortDescriptors[k] ) )
+                        _idata->descriptor->connect_port( h, k, (LADSPA_Data*)control_input[ij++].buffer() );
+                    else if ( LADSPA_IS_PORT_OUTPUT( _idata->descriptor->PortDescriptors[k] ) )
+                        _idata->descriptor->connect_port( h, k, (LADSPA_Data*)control_output[oj++].buffer() );
+                }
+            }
+
+            // connect ports to magic bogus value to aid debugging.
+            for ( unsigned int k = 0; k < _idata->descriptor->PortCount; ++k )
+                if ( LADSPA_IS_PORT_AUDIO( _idata->descriptor->PortDescriptors[k] ) )
+                    _idata->descriptor->connect_port( h, k, (LADSPA_Data*)0x42 );
+
+        }
+    }
+
+    return true;
+}
+
+bool
 Plugin_Module::load ( Plugin_Module::Plugin_Info *pi )
 {
     _idata->descriptor = ladspainfo->GetDescriptorByID( pi->id );
@@ -294,14 +360,6 @@ Plugin_Module::load ( Plugin_Module::Plugin_Info *pi )
             WARNING( "Cannot use this plugin because it is incapable of hard real-time operation" );
             return false;
         }
-
-        /* FIXME: bogus rate */
-        if ( ! (_idata->handle = _idata->descriptor->instantiate( _idata->descriptor, engine->sample_rate() ) ) )
-        {
-            WARNING( "Failed to load plugin" );
-            return false;
-        }
-//        _idata->descriptor->activate( _idata->handle );
 
         MESSAGE( "Name: %s", _idata->descriptor->Name );
 
@@ -328,7 +386,7 @@ Plugin_Module::load ( Plugin_Module::Plugin_Info *pi )
         {
             if ( LADSPA_IS_PORT_CONTROL( _idata->descriptor->PortDescriptors[i] ) )
             {
-                Port::Direction d;
+                Port::Direction d = Port::INPUT;
 
                 if ( LADSPA_IS_PORT_INPUT( _idata->descriptor->PortDescriptors[i] ) )
                 {
@@ -474,8 +532,6 @@ Plugin_Module::load ( Plugin_Module::Plugin_Info *pi )
 
                 add_port( p );
 
-                _idata->descriptor->connect_port( _idata->handle, i, (LADSPA_Data*)control_input.back().buffer() );
-
                 DMESSAGE( "Plugin has control port \"%s\" (default: %f)", _idata->descriptor->PortNames[ i ], p.hints.default_value );
             }
         }
@@ -486,44 +542,47 @@ Plugin_Module::load ( Plugin_Module::Plugin_Info *pi )
         return false;
     }
 
-
-    return true;
+    return plugin_instances( 1 );
 }
-
-/* const char * */
-/* Plugin_Module::name ( void ) const */
-/* { */
-/*     return _idata->descriptor->Name; */
-/* } */
 
 void
 Plugin_Module::set_input_buffer ( int n, void *buf )
 {
+    LADSPA_Handle h;
+
+    if ( instances() > 1 )
+    {
+        h = _idata->handle[n];
+        n = 0;
+    }
+    else
+        h = _idata->handle[0];
+
     for ( unsigned int i = 0; i < _idata->descriptor->PortCount; ++i )
         if ( LADSPA_IS_PORT_INPUT( _idata->descriptor->PortDescriptors[i] ) &&
              LADSPA_IS_PORT_AUDIO( _idata->descriptor->PortDescriptors[i] ) )
             if ( n-- == 0 )
-                _idata->descriptor->connect_port( _idata->handle, i, (LADSPA_Data*)buf );
+                _idata->descriptor->connect_port( h, i, (LADSPA_Data*)buf );
 }
 
 void
 Plugin_Module::set_output_buffer ( int n, void *buf )
 {
+    LADSPA_Handle h;
+
+    if ( instances() > 1 )
+    {
+        h = _idata->handle[n];
+        n = 0;
+    }
+    else
+        h = _idata->handle[0];
+
     for ( unsigned int i = 0; i < _idata->descriptor->PortCount; ++i )
         if ( LADSPA_IS_PORT_OUTPUT( _idata->descriptor->PortDescriptors[i] ) &&
              LADSPA_IS_PORT_AUDIO( _idata->descriptor->PortDescriptors[i] ) )
             if ( n-- == 0 )
-                _idata->descriptor->connect_port( _idata->handle, i, (LADSPA_Data*)buf );
-}
-
-void
-Plugin_Module::set_control_buffer ( int n, void *buf )
-{
-    for ( unsigned int i = 0; i < _idata->descriptor->PortCount; ++i )
-        if ( LADSPA_IS_PORT_INPUT( _idata->descriptor->PortDescriptors[i] ) &&
-             LADSPA_IS_PORT_CONTROL( _idata->descriptor->PortDescriptors[i] ) )
-            if ( n-- == 0 )
-                _idata->descriptor->connect_port( _idata->handle, i, (LADSPA_Data*)buf );
+                _idata->descriptor->connect_port( h, i, (LADSPA_Data*)buf );
 }
 
 void
@@ -533,7 +592,9 @@ Plugin_Module::activate ( void )
         FATAL( "Attempt to activate already active plugin" );
 
     if ( _idata->descriptor->activate )
-        _idata->descriptor->activate( _idata->handle );
+        for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
+            _idata->descriptor->activate( _idata->handle[i] );
+
     _active = true;
 }
 
@@ -541,37 +602,43 @@ void
 Plugin_Module::deactivate( void )
 {
     if ( _idata->descriptor->deactivate )
-        _idata->descriptor->deactivate( _idata->handle );
+        for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
+            _idata->descriptor->activate( _idata->handle[i] );
+
     _active = false;
+}
+
+void
+Plugin_Module::handle_port_connection_change ( void )
+{
+//    DMESSAGE( "Connecting audio ports" );
+
+    if ( _crosswire )
+    {
+        for ( int i = 0; i < plugin_ins(); ++i )
+            set_input_buffer( i, audio_input[0].buffer() );
+    }
+    else
+    {
+        for ( unsigned int i = 0; i < audio_input.size(); ++i )
+            set_input_buffer( i, audio_input[i].buffer() );
+    }
+
+    for ( unsigned int i = 0; i < audio_output.size(); ++i )
+        set_output_buffer( i, audio_output[i].buffer() );
 }
 
 void
 Plugin_Module::process ( )
 {
-    if ( _crosswire )
-    {
-        for ( int i = 0; i < plugin_ins(); ++i )
-        {
-            set_input_buffer( i, audio_input[0].buffer() );
-        }
-    }
-    else
-    {
-        for ( unsigned int i = 0; i < audio_input.size(); ++i )
-        {
-            set_input_buffer( i, audio_input[i].buffer() );
-        }
-    }
-
-    for ( unsigned int i = 0; i < audio_output.size(); ++i )
-    {
-        set_output_buffer( i, audio_output[i].buffer() );
-    }
+    handle_port_connection_change();
 
     if ( _active )
-    {
-        _idata->descriptor->run( _idata->handle, nframes() );
-    }
+        for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
+        {
+            volatile int n = i;
+            _idata->descriptor->run( _idata->handle[n], nframes() );
+        }
 }
 
 

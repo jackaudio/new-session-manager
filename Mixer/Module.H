@@ -228,6 +228,7 @@ public:
 
 
     int instances ( void ) const { return _instances; }
+    void instances ( int i ) { _instances = i; }
 
     bool is_being_controlled ( void ) const
         {
@@ -308,6 +309,8 @@ public:
     /* called whenever the name of the chain changes (usually because
      * the name of the mixer strip changed). */
     virtual void handle_chain_name_changed () {}
+
+    virtual void handle_port_connection_change () {}
 
 protected:
 

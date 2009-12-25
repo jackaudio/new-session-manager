@@ -25,10 +25,6 @@ class Plugin_Module : Module {
 
     void init ( void );
 
-    int _ins;
-    int _outs;
-    int _instances;
-
     void bbox ( int &X, int &Y, int &W, int &H )
         {
             X = x();
@@ -47,8 +43,6 @@ class Plugin_Module : Module {
     ImplementationData *_idata;
 
     bool _active;
-
-
     int _plugin_ins;
     int _plugin_outs;
     bool _crosswire;
@@ -77,6 +71,10 @@ class Plugin_Module : Module {
     void process ( unsigned long nframes );
     bool active ( void ) const { return _active; }
 
+    bool plugin_instances ( unsigned int );
+
+    void connect_ports ( void );
+
 public:
 
     Plugin_Module( int W, int H, const char *L = 0 );
@@ -88,15 +86,6 @@ public:
     int plugin_ins ( void ) const { return _plugin_ins; }
     int plugin_outs ( void ) const { return _plugin_outs; }
 
-    bool ins ( int i );
-    int ins ( void ) const { return _ins; }
-    int outs ( void ) const { return plugin_outs() * _instances; }
-
-    bool controllable ( void ) const { return false; }
-
-    int instances ( void ) const { return _instances; }
-    void instances ( int i ) { _instances = i; }
-
     void select_plugin ( unsigned long id );
 
     const char *name ( void ) const { return "Plugin"; }
@@ -106,9 +95,10 @@ public:
 
     void process ( void );
 
+    void handle_port_connection_change ( void );
+
 protected:
 
-//    virtual void draw ( void );
     virtual int handle ( int );
 
 };

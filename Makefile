@@ -45,7 +45,7 @@ TOTAL := $(shell $(MAKE) CALCULATING=yes -n 2>/dev/null | sed -n 's/^.*Compiling
 endif
 
 ifeq ($(USE_DEBUG),yes)
-	CFLAGS := -pipe -ggdb -Wall -Wextra -O0
+	CFLAGS := -pipe -ggdb -fno-inline -Wall -Wextra -O0
 	CXXFLAGS := -Wnon-virtual-dtor -Wno-missing-field-initializers -fno-rtti -fno-exceptions
 else
 	CFLAGS := -pipe -O2 -DNDEBUG

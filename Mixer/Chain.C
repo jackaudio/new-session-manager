@@ -71,6 +71,8 @@
 #include "FL/Fl_Scroll.H"
 #include <string.h>
 
+#include <dsp.h>
+
 Chain::Chain ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L)
 {
@@ -214,13 +216,14 @@ Chain::configure_ports ( void )
     if ( port.size() != req_buffers )
     {
         for ( unsigned int i = port.size(); i--; )
-            delete[] port[i].buffer();
+            delete[] (sample_t*)port[i].buffer();
         port.clear();
 
         for ( unsigned int i = 0; i < req_buffers; ++i )
         {
             Module::Port p( NULL, Module::Port::OUTPUT, Module::Port::AUDIO );
             p.connect_to( new sample_t[engine->nframes()] );
+            buffer_fill_with_silence( (sample_t*)p.buffer(), engine->nframes() );
             port.push_back( p );
         }
     }

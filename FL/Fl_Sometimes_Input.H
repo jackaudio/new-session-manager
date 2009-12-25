@@ -17,12 +17,13 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-
+#pragma once
 
 /* Just like an Fl_Input, except that when not being edited it
  * displays just like a label. */
 
 #include <FL/Fl.H>
+#include <FL/Fl_Window.H>
 
 class Fl_Sometimes_Input : public Fl_Input
 {
@@ -42,6 +43,7 @@ public:
                 Fl_Input::draw();
             else
             {
+                fl_draw_box( FL_ROUNDED_BOX, x(), y(), w(), h(), color() );
                 fl_color( FL_FOREGROUND_COLOR /* textcolor() */ );
                 fl_font( textfont(), textsize() );
                 fl_draw( value(), x(), y(), w(), h(), FL_ALIGN_CENTER );

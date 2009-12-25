@@ -23,10 +23,7 @@
 #include "../Timeline.H" // for process()
 #include "../Sequence_Widget.H" // for BBT and position info.
 
-#define APP_NAME "Non-DAW" // FIXME: wrong place for this!
-
-/* This is the home of the JACK process callback (does this *really*
-   need to be a class?) */
+/* This is the home of the JACK process callback */
 
 #include "const.h"
 #include "util/debug.h"
@@ -36,71 +33,11 @@
 
 Engine::Engine ( ) : _thread( "RT" )
 {
-    _freewheeling = false;
-    _zombified = false;
-    _client = NULL;
     _buffers_dropped = 0;
-    _xruns = 0;
 }
 
 Engine::~Engine ( )
 {
-    jack_deactivate( _client );
-    jack_client_close( _client );
-}
-
-
-
-/*******************/
-/* Static Wrappers */
-/*******************/
-
-int
-Engine::process ( nframes_t nframes, void *arg )
-{
-    return ((Engine*)arg)->process( nframes );
-}
-
-int
-Engine::sync ( jack_transport_state_t state, jack_position_t *pos, void *arg )
-{
-    return ((Engine*)arg)->sync( state, pos );
-}
-
-int
-Engine::xrun ( void *arg )
-{
-    return ((Engine*)arg)->xrun();
-}
-
-void
-Engine::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos, void *arg )
-{
-    ((Engine*)arg)->timebase( state, nframes, pos, new_pos );
-}
-
-void
-Engine::freewheel ( int starting, void *arg )
-{
-    ((Engine*)arg)->freewheel( starting );
-}
-
-int
-Engine::buffer_size ( nframes_t nframes, void *arg )
-{
-    return ((Engine*)arg)->buffer_size( nframes );
-}
-
-void
-Engine::thread_init ( void *arg )
-{
-    ((Engine*)arg)->thread_init();
-}
-
-void
-Engine::shutdown ( void *arg )
-{
-    ((Engine*)arg)->shutdown();
 }
 
 
@@ -114,8 +51,6 @@ Engine::shutdown ( void *arg )
 int
 Engine::xrun ( void )
 {
-    ++_xruns;
-
     return 0;
 }
 
@@ -123,8 +58,6 @@ Engine::xrun ( void )
 void
 Engine::freewheel ( bool starting )
 {
-    _freewheeling = starting;
-
     if ( starting )
         DMESSAGE( "entering freewheeling mode" );
     else
@@ -252,14 +185,6 @@ Engine::process ( nframes_t nframes )
     return 0;
 }
 
-/* THREAD: RT */
-/** enter or leave freehweeling mode */
-void
-Engine::freewheeling ( bool yes )
-{
-    if ( jack_set_freewheel( _client, yes ) )
-        WARNING( "Unkown error while setting freewheeling mode" );
-}
 
 /* TRHEAD: RT */
 void
@@ -272,43 +197,6 @@ Engine::thread_init ( void )
 void
 Engine::shutdown ( void )
 {
-    _zombified = true;
-}
-
-
-/** Connect to JACK */
-const char *
-Engine::init ( void )
-{
-    if (( _client = jack_client_open ( APP_NAME, (jack_options_t)0, NULL )) == 0 )
-        return NULL;
-
-#define set_callback( name ) jack_set_ ## name ## _callback( _client, &Engine:: name , this )
-
-    set_callback( thread_init );
-    set_callback( process );
-    set_callback( xrun );
-    set_callback( freewheel );
-    set_callback( buffer_size );
-
-    /* FIXME: should we wait to register this until after the project
-     has been loaded (and we have disk threads running)? */
-    set_callback( sync );
-
-    jack_set_timebase_callback( _client, 0, &Engine::timebase, this );
-
-    jack_on_shutdown( _client, &Engine::shutdown, this );
-
-    jack_activate( _client );
-
-    _sample_rate = frame_rate();
-
-    MESSAGE( "Jack sample rate is %lu", (unsigned long)_sample_rate );
-
-    timeline->_sample_rate = frame_rate();
-
-    /* we don't need to create any ports until tracks are created */
-    return jack_get_client_name( _client );
 }
 
 void

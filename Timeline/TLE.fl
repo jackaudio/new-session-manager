@@ -1,5 +1,5 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0108 
+version 1.0108
 header_name {.H} 
 code_name {.C}
 comment {//
@@ -24,7 +24,7 @@ comment {//
 
 decl {const float STATUS_UPDATE_FREQ = 0.5f;} {} 
 
-decl {\#include "LASH.H"} {} 
+decl {\#include "LASH_Engine.H"} {} 
 
 decl {\#include "Fl_Menu_Settings.H"} {} 
 
@@ -67,7 +67,7 @@ decl {extern char project_display_name[256];} {global
 decl {extern char *user_config_dir;} {global
 } 
 
-decl {extern LASH *lash;} {global
+decl {extern LASH_Engine *lash;} {global
 } 
 
 class TLE {open

@@ -77,7 +77,7 @@ Track::configure_outputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            Port p( Port::Output, name(), i );
+            JACK::Port p( engine->client(), JACK::Port::Output, name(), i );
 
             if ( p.valid() )
                 output.push_back( p );
@@ -124,7 +124,7 @@ Track::configure_inputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            Port p( Port::Input, name(), i );
+            JACK::Port p( engine->client(), JACK::Port::Input, name(), i );
 
             if ( p.valid() )
                 input.push_back( p );

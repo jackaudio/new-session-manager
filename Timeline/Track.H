@@ -36,7 +36,7 @@
 #include <vector>
 using std::vector;
 
-#include "Engine/Port.H"
+#include "JACK/Port.H"
 
 #include "Timeline.H"
 
@@ -44,7 +44,7 @@ class Control_Sequence;
 class Annotation_Sequence;
 class Playback_DS;
 class Record_DS;
-class Port;
+// class JACK::Port;
 class Audio_Region;
 class Audio_File;
 
@@ -94,7 +94,7 @@ private:
     bool configure_inputs ( int n );
 
     void update_port_names ( void );
-    const char *name_for_port( Port::type_e type, int n );
+    const char *name_for_port( JACK::Port::type_e type, int n );
     void update_take_menu ( void );
 
     Track ( );
@@ -124,8 +124,8 @@ public:
     Fl_Pack        *takes;
 
 
-    vector<Port>   input;                        /* input ports... */
-    vector<Port>   output;                       /* output ports... */
+    vector<JACK::Port>   input;                        /* input ports... */
+    vector<JACK::Port>   output;                       /* output ports... */
 
     Playback_DS    *playback_ds;
     Record_DS      *record_ds;

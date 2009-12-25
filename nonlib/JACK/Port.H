@@ -19,33 +19,35 @@
 
 #pragma once
 
-#include <jack/jack.h>
+// #include <jack/jack.h>
+#include "Client.H"
 
-#include "types.h"
-
-class Port
+namespace JACK
 {
-    jack_port_t *_port;
-    const char *_name;
+    class Port
+    {
+        jack_port_t *_port;
+        const char *_name;
+        jack_client_t *_client;
 
-    /* FIXME: reference count? */
+        /* FIXME: reference count? */
 
 /*     /\* not permitted  *\/ */
 /*     Port ( const Port &rhs ); */
 /*     Port & operator= ( const Port &rhs ); */
 
-public:
+    public:
 
-    enum type_e { Output, Input };
+        enum type_e { Output, Input };
 
-    static int max_name ( void );
+        static int max_name ( void );
 
-    Port ( jack_port_t *port );
-    Port ( const char *name, type_e dir );
-    Port ( type_e dir, const char *base, int n, const char *type=0 );
+        Port ( jack_client_t *client, jack_port_t *port );
+        Port ( jack_client_t *client, const char *name, type_e dir );
+        Port ( jack_client_t *client, type_e dir, const char *base, int n, const char *type=0 );
 
 //    Port ( );
-    ~Port ( );
+        ~Port ( );
 
 /*     Port ( const Port & rhs ) */
 /*         { */
@@ -54,23 +56,26 @@ public:
 /*         } */
 
 
-    bool valid ( void ) const { return _port; }
-    bool connected ( void ) const { return jack_port_connected( _port ); }
-    type_e type ( void ) const
-        {
-            return jack_port_flags( _port ) == JackPortIsOutput ? Output : Input;
-        }
-    const char * name ( void ) const { return _name; }
-    bool name ( const char *name );
-    bool name ( const char *base, int n, const char *type=0 );
-    nframes_t total_latency ( void ) const;
-    nframes_t latency ( void ) const;
-    void latency ( nframes_t frames );
+        bool valid ( void ) const { return _port; }
+        bool connected ( void ) const { return jack_port_connected( _port ); }
+        type_e type ( void ) const
+            {
+                return jack_port_flags( _port ) == JackPortIsOutput ? Output : Input;
+            }
+        const char * name ( void ) const { return _name; }
+        bool name ( const char *name );
+        bool name ( const char *base, int n, const char *type=0 );
 
-    void activate ( const char *name, type_e dir );
-    void shutdown ( void );
-    void write ( sample_t *buf, nframes_t nframes );
-    void read ( sample_t *buf, nframes_t nframes );
-    void *buffer ( nframes_t nframes );
-    void silence ( nframes_t nframes );
-};
+        nframes_t total_latency ( void ) const;
+        nframes_t latency ( void ) const;
+        void latency ( nframes_t frames );
+
+        void activate ( const char *name, type_e dir );
+        void shutdown ( void );
+        void write ( sample_t *buf, nframes_t nframes );
+        void read ( sample_t *buf, nframes_t nframes );
+        void *buffer ( nframes_t nframes );
+        void silence ( nframes_t nframes );
+    };
+
+}

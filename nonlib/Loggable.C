@@ -33,7 +33,7 @@
 
 #include "util/file.h"
 
-#include "const.h"
+// #include "const.h"
 #include "util/debug.h"
 
 #include <algorithm>
@@ -66,7 +66,6 @@ Loggable::~Loggable ( )
     _loggables[ _id ].loggable = NULL;
 }
 
-
 
 
 void
@@ -91,7 +90,6 @@ Loggable::find ( unsigned int id )
 {
     return _loggables[ id ].loggable;
 }
-
 
 /** Open the journal /filename/ and replay it, bringing the end state back into RAM */
 bool
@@ -160,6 +158,17 @@ Loggable::load_unjournaled_state ( void )
 
 #include <sys/stat.h>
 #include <unistd.h>
+
+/** replay journal or snapshot */
+bool
+Loggable::replay ( const char *file )
+{
+    FILE *fp = fopen( file, "r" );
+
+    replay( fp );
+
+    fclose( fp );
+}
 
 /** replay journal or snapshot */
 bool

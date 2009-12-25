@@ -17,13 +17,13 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-/* Actual implementation of our side of the LASH protocol */
+/* Actual implementation of our side of the LASH_Engine protocol */
 
 /* NOTES: Since LASH doesn't provide us with the information we
  * need--when we need it--we just punt and only use LASH to save and
  * load the path to the *real* project data. */
 
-#include "LASH.H"
+#include "LASH_Engine.H"
 #include "Project.H"
 #include "TLE.H" // all this just for quit()
 
@@ -37,24 +37,24 @@ extern TLE *tle;
 const float lash_poll_interval = 0.2f;
 
 void
-LASH::timer_cb ( void *v )
+LASH_Engine::timer_cb ( void *v )
 {
-    ((LASH*)v)->poll();
-    Fl::repeat_timeout( lash_poll_interval, &LASH::timer_cb, v );
+    ((LASH_Engine*)v)->poll();
+    Fl::repeat_timeout( lash_poll_interval, &LASH_Engine::timer_cb, v );
 }
 
-LASH::LASH ( )
+LASH_Engine::LASH_Engine ( )
 {
-    Fl::add_timeout( lash_poll_interval, &LASH::timer_cb, this );
+    Fl::add_timeout( lash_poll_interval, &LASH_Engine::timer_cb, this );
 }
 
-LASH::~LASH ( )
+LASH_Engine::~LASH_Engine ( )
 {
-    Fl::remove_timeout( &LASH::timer_cb );
+    Fl::remove_timeout( &LASH_Engine::timer_cb );
 }
 
 bool
-LASH::handle_save_file ( const char *path )
+LASH_Engine::handle_save_file ( const char *path )
 {
     MESSAGE( "LASH wants us to save \"%s\"", path );
 
@@ -84,7 +84,7 @@ LASH::handle_save_file ( const char *path )
 }
 
 bool
-LASH::handle_restore_file ( const char *path )
+LASH_Engine::handle_restore_file ( const char *path )
 {
     MESSAGE( "LASH wants us to load \"%s\"", path );
 
@@ -112,7 +112,7 @@ LASH::handle_restore_file ( const char *path )
 }
 
 void
-LASH::handle_quit ( void )
+LASH_Engine::handle_quit ( void )
 {
     MESSAGE( "LASH wants us to quit" );
     tle->quit();

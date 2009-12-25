@@ -19,7 +19,7 @@
 
 #include "Log_Entry.H"
 
-#include "const.h"
+// #include "const.h"
 #include "util/debug.h"
 
 Log_Entry::Log_Entry ( )

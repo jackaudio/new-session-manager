@@ -45,9 +45,6 @@
 
 extern TLE *tle;
 
-/* FIXME: wrong place for this */
-#define APP_TITLE "Non-DAW"
-
 const int PROJECT_VERSION = 1;
 
 

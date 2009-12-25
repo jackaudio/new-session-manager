@@ -33,28 +33,35 @@ buffer_apply_gain ( sample_t *buf, nframes_t nframes, float g )
 }
 
 void
-buffer_apply_gain_buffer ( sample_t *buf, sample_t *gainbuf, nframes_t nframes )
+buffer_apply_gain_buffer ( sample_t *buf, const sample_t *gainbuf, nframes_t nframes )
 {
     while ( nframes-- )
         *(buf++) *= *(gainbuf++);
 }
 
 void
-buffer_mix ( sample_t *dst, sample_t *src, nframes_t nframes )
+buffer_copy_and_apply_gain_buffer ( sample_t *dst, const sample_t *src, const sample_t *gainbuf, nframes_t nframes )
+{
+    while ( nframes-- )
+        *(dst++) = *(src++) * *(gainbuf++);
+}
+
+void
+buffer_mix ( sample_t *dst, const sample_t *src, nframes_t nframes )
 {
     while ( nframes-- )
         *(dst++) += *(src++);
 }
 
 void
-buffer_mix_with_gain ( sample_t *dst, sample_t *src, nframes_t nframes, float g )
+buffer_mix_with_gain ( sample_t *dst, const sample_t *src, nframes_t nframes, float g )
 {
     while ( nframes-- )
         *(dst++) += *(src++) * g;
 }
 
 void
-buffer_interleave_one_channel ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes )
+buffer_interleave_one_channel ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes )
 {
     dst += channel;
 
@@ -66,7 +73,7 @@ buffer_interleave_one_channel ( sample_t *dst, sample_t *src, int channel, int c
 }
 
 void
-buffer_interleave_one_channel_and_mix ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes )
+buffer_interleave_one_channel_and_mix ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes )
 {
     dst += channel;
 
@@ -78,7 +85,7 @@ buffer_interleave_one_channel_and_mix ( sample_t *dst, sample_t *src, int channe
 }
 
 void
-buffer_deinterleave_one_channel ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes )
+buffer_deinterleave_one_channel ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes )
 {
     src += channel;
 
@@ -106,4 +113,17 @@ buffer_is_digital_black ( sample_t *buf, nframes_t nframes )
     }
 
     return true;
+}
+
+void
+buffer_copy ( sample_t *dst, const sample_t *src, nframes_t nframes )
+{
+    memcpy( dst, src, nframes * sizeof( sample_t ) );
+}
+
+void
+buffer_copy_and_apply_gain ( sample_t *dst, const sample_t *src, nframes_t nframes, float gain )
+{
+    memcpy( dst, src, nframes * sizeof( sample_t ) );
+    buffer_apply_gain( dst, nframes, gain );
 }

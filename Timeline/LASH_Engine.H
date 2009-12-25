@@ -19,14 +19,20 @@
 
 #pragma once
 
-#include "types.h"
+#include "LASH/Client.H"
 
-void buffer_apply_gain ( sample_t *buf, nframes_t nframes, float g );
-void buffer_apply_gain_buffer ( sample_t *buf, sample_t *gainbuf, nframes_t nframes );
-void buffer_mix ( sample_t *dst, sample_t *src, nframes_t nframes );
-void buffer_mix_with_gain ( sample_t *dst, sample_t *src, nframes_t nframes, float g );
-void buffer_interleave_one_channel ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes );
-void buffer_interleave_one_channel_and_mix ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes );
-void buffer_deinterleave_one_channel ( sample_t *dst, sample_t *src, int channel, int channels, nframes_t nframes );
-void buffer_fill_with_silence ( sample_t *buf, nframes_t nframes );
-bool buffer_is_digital_black ( sample_t *buf, nframes_t nframes );
+class LASH_Engine : public LASH::Client
+{
+
+    static void timer_cb ( void *v );
+
+public:
+
+    LASH_Engine ( );
+    ~LASH_Engine ( );
+
+    bool handle_save_file ( const char *path );
+    bool handle_restore_file ( const char *path );
+    void handle_quit ( void );
+
+};

@@ -19,20 +19,23 @@
 
 #pragma once
 
-#include "LASH_Client.H"
+#include "JACK/Client.H"
+#include <math.h>
 
-class LASH : public LASH_Client
-{
+void buffer_apply_gain ( sample_t *buf, nframes_t nframes, float g );
+void buffer_apply_gain_buffer ( sample_t *buf, const sample_t *gainbuf, nframes_t nframes );
+void buffer_copy_and_apply_gain_buffer ( sample_t *dst, const sample_t *src, const sample_t *gainbuf, nframes_t nframes );
+void buffer_mix ( sample_t *dst, const sample_t *src, nframes_t nframes );
+void buffer_mix_with_gain ( sample_t *dst, const sample_t *src, nframes_t nframes, float g );
+void buffer_interleave_one_channel ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes );
+void buffer_interleave_one_channel_and_mix ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes );
+void buffer_deinterleave_one_channel ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes );
+void buffer_fill_with_silence ( sample_t *buf, nframes_t nframes );
+bool buffer_is_digital_black ( sample_t *buf, nframes_t nframes );
+void buffer_copy ( sample_t *dst, const sample_t *src, nframes_t nframes );
+void buffer_copy_and_apply_gain ( sample_t *dst, const sample_t *src, nframes_t nframes, float gain );
 
-    static void timer_cb ( void *v );
-
-public:
-
-    LASH ( );
-    ~LASH ( );
-
-    bool handle_save_file ( const char *path );
-    bool handle_restore_file ( const char *path );
-    void handle_quit ( void );
-
-};
+// from SWH plugins.
+// Convert a value in dB's to a coefficent
+#define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)
+#define CO_DB(v) (20.0f * log10f(v))

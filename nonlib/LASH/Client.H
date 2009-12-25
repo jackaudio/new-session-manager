@@ -17,69 +17,36 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+/* generic master class for interfacing with LASH... */
 
 #pragma once
 
-#include "Sequence.H"
-#include "Control_Point.H"
-
-#include "JACK/Port.H"
-
-// class JACK::Port;
-
-class Control_Sequence : public Sequence
+namespace LASH
 {
-    /* not permitted */
-    Control_Sequence ( const Control_Sequence &rhs );
-    Control_Sequence & operator = ( const Control_Sequence &rhs );
+    class Client
+    {
+        /* to avoid including the lash header here... */
+        void *_void;
 
-public:
+    protected:
 
-    enum curve_type_e { Linear, Quadratic };
+        virtual bool handle_save_file ( const char *path ) = 0;
+        virtual bool handle_restore_file ( const char *path ) = 0;
+        virtual void handle_quit ( void ) = 0;
 
-private:
+    public:
 
-    JACK::Port *_output;
+        Client ( );
+        virtual ~Client ( );
 
-    bool _highlighted;
+        bool init ( const char *jack_name, const char *full_name, int *argc, char ***argv );
+        bool enabled ( void );
+        void poll ( void );
 
-    curve_type_e _type;
+        void project_save ( void );
+        void project_quit ( void );
 
-    void init ( void );
+        /* TODO: project_add, project_remove, project_dir, project_name, percentage */
 
-    void draw_curve ( bool flip, bool filled );
-
-protected:
-
-
-    virtual void get ( Log_Entry &e ) const;
-    void set ( Log_Entry &e );
-
-    Control_Sequence (  ) : Sequence( 0 )
-        {
-            init();
-        }
-
-
-    void draw ( void );
-    int handle ( int m );
-
-public:
-
-    static bool draw_with_gradient;
-    static bool draw_with_polygon;
-    static bool draw_with_grid;
-
-    LOG_CREATE_FUNC( Control_Sequence );
-
-    Control_Sequence ( Track * );
-    ~Control_Sequence ( );
-
-    Fl_Cursor cursor ( void ) const { return FL_CURSOR_CROSS; }
-
-    /* Engine */
-    void output ( JACK::Port *p ) { _output = p; }
-    nframes_t play ( sample_t *buf, nframes_t frame, nframes_t nframes );
-    nframes_t process ( nframes_t nframes );
-
-};
+    };
+}

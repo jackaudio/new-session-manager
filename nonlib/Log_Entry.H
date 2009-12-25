@@ -20,6 +20,7 @@
 #pragma once
 
 #include "Loggable.H"
+
 #include "types.h"
 
 class Log_Entry

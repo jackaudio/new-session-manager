@@ -21,7 +21,6 @@
 
 #include "Control_Sequence.H"
 #include "Track.H"
-#include "Engine/Port.H"
 
 #include "Engine/Engine.H" // for lock()
 
@@ -42,7 +41,7 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 
     _track = track;
 
-   _output = new Port( Port::Output, track->name(), track->ncontrols(), "cv" );
+    _output = new JACK::Port( engine->client(), JACK::Port::Output, track->name(), track->ncontrols(), "cv" );
 
     if ( track )
         track->add( this );
@@ -111,7 +110,7 @@ Control_Sequence::set ( Log_Entry &e )
 
             assert( t );
 
-            _output = new Port( Port::Output, t->name(), t->ncontrols(), "cv" );
+            _output = new JACK::Port( engine->client(), JACK::Port::Output, t->name(), t->ncontrols(), "cv" );
 
             t->add( this );
         }

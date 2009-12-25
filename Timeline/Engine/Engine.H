@@ -21,41 +21,26 @@
 
 #include "util/Mutex.H"
 
-#include <jack/jack.h>
-
-typedef jack_nframes_t nframes_t;
-
 class Port;
+
+#include "JACK/Client.H"
 
 #include "Thread.H"
 
-class Engine : public Mutex
+class Engine : public JACK::Client, public Mutex
 {
-    jack_client_t *_client;
-
     Thread _thread;                                            /* only used for thread checking */
 
     int _buffers_dropped;                                       /* buffers dropped because of locking */
-    nframes_t _sample_rate;
-    volatile int _xruns;
-    volatile bool _freewheeling;
-    volatile bool _zombified;
+/*     int _buffers_dropped;                                       /\* buffers dropped because of locking *\/ */
 
-    static void shutdown ( void *arg );
     void shutdown ( void );
-    static int process ( nframes_t nframes, void *arg );
     int process ( nframes_t nframes );
-    static int sync ( jack_transport_state_t state, jack_position_t *pos, void *arg );
     int sync ( jack_transport_state_t state, jack_position_t *pos );
-    static int xrun ( void *arg );
     int xrun ( void );
-    static void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos, void *arg );
     void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos );
-    static void freewheel ( int yes, void *arg );
     void freewheel ( bool yes );
-    static int buffer_size ( nframes_t nframes, void *arg );
     int buffer_size ( nframes_t nframes );
-    static void thread_init ( void *arg );
     void thread_init ( void );
 
     Engine ( const Engine &rhs );
@@ -67,34 +52,20 @@ private:
 
     friend class Port;
     friend class Transport;
-    jack_client_t * client ( void ) { return _client; }
-
 
 public:
 
     Engine ( );
     ~Engine ( );
 
-    const char * init ( void );
-
-    nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
-    float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }
-    nframes_t sample_rate ( void ) const { return _sample_rate; }
-    int xruns ( void ) const { return _xruns; };
     int dropped ( void ) const { return _buffers_dropped; }
-    bool freewheeling ( void ) const { return _freewheeling; }
-    void freewheeling ( bool yes );
-    bool zombified ( void ) const { return _zombified; }
 
     nframes_t system_latency ( void ) const { return nframes(); }
-
-    float cpu_load ( void ) const { return jack_cpu_load( _client ); }
 
     float frames_to_milliseconds ( nframes_t frames )
         {
             return ( frames * 1000 ) / (float)frame_rate();
         }
 };
-
 
 extern Engine * engine;

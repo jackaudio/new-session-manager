@@ -31,7 +31,7 @@
 #include <string>
 #include <queue>
 
-#include "types.h"
+// #include "types.h"
 
 typedef void (progress_func)( int, void * );
 typedef void (snapshot_func)( void * );
@@ -102,9 +102,6 @@ private:
 
     static void flush ( void );
 
-    static bool snapshot ( FILE * fp );
-    static bool snapshot ( const char *name );
-    static bool replay ( FILE *fp );
 
     void init ( bool loggable=true )
         {
@@ -129,7 +126,14 @@ private:
     void record_unjournaled ( void ) const;
     static bool load_unjournaled_state ( void );
 
+    static bool replay ( FILE *fp );
+    static bool replay ( const char *name );
+
 public:
+
+
+    static bool snapshot( FILE * fp );
+    static bool snapshot( const char *name );
 
     static void snapshot_callback ( snapshot_func *p, void *arg ) { _snapshot_callback = p; _snapshot_callback_arg = arg; }
     static void progress_callback ( progress_func *p, void *arg ) { _progress_callback = p; _progress_callback_arg = arg;}

@@ -43,7 +43,7 @@
 #include "../FL/Boxtypes.H"
 
 #include "Project.H"
-#include "LASH.H"
+#include "LASH_Engine.H"
 #include "Transport.H"
 #include "Engine/Engine.H"
 
@@ -52,7 +52,7 @@
 Engine *engine;
 Timeline *timeline;
 Transport *transport;
-LASH *lash;
+LASH_Engine *lash;
 TLE *tle;
 
 /* TODO: put these in a header */
@@ -138,15 +138,17 @@ main ( int argc, char **argv )
 
     const char *jack_name;
 
-    if ( ! ( jack_name = engine->init() ) )
+    if ( ! ( jack_name = engine->init( APP_NAME ) ) )
         FATAL( "Could not connect to JACK!" );
+
+    timeline->sample_rate( engine->sample_rate() );
 
     /* always start stopped (please imagine for me a realistic
      * scenario requiring otherwise */
     transport->stop();
 
     MESSAGE( "Initializing LASH" );
-    lash = new LASH;
+    lash = new LASH_Engine;
 
     if ( argc > 1 && ! strcmp( argv[1], "--no-lash" ) )
     {

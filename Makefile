@@ -25,7 +25,7 @@
 
 VERSION := 0.5.0
 
-all: .config FL Timeline
+all: .config
 
 .config: configure
 	@ ./configure
@@ -58,10 +58,10 @@ CFLAGS+=-DVERSION=\"$(VERSION)\" \
 	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\" \
 	-DPIXMAP_PATH=\"$(PIXMAP_PATH)\"
 
-CXXFLAGS += $(SNDFILE_CFLAGS) $(LASH_CFLAGS) $(FLTK_CFLAGS)
+CXXFLAGS += $(SNDFILE_CFLAGS) $(LASH_CFLAGS) $(FLTK_CFLAGS) $(JACK_CFLAGS)
 CXXFLAGS := $(CFLAGS) $(CXXFLAGS)
 
-INCLUDES := -I. -Iutil -IFL
+INCLUDES := -I. -Iutil -IFL -Inonlib
 
 include scripts/colors
 
@@ -81,10 +81,11 @@ endif
 DONE := $(BOLD)$(GREEN)done$(SGR0)
 
 include FL/makefile.inc
+include nonlib/makefile.inc
 include Timeline/makefile.inc
 
-SRCS:=$(Timeline_SRCS) $(FL_SRCS)
-OBJS:=$(FL_OBJS) $(Timeline_OBJS)
+SRCS:=$(FL_SRCS) $(nonlib_SRCS) $(Timeline_SRCS)
+OBJS:=$(FL_OBJS) $(nonlib_OBJS) $(Timeline_OBJS)
 
 # FIXME: isn't there a better way?
 $(OBJS): .config Makefile
@@ -120,7 +121,7 @@ clean_deps:
 
 .PHONEY: clean config depend clean_deps
 
-clean: FL_clean Timeline_clean
+clean: FL_clean nonlib_clean Timeline_clean
 
 dist:
 	git archive --prefix=non-daw-$(VERSION)/ v$(VERSION) | bzip2 > non-daw-$(VERSION).tar.bz2

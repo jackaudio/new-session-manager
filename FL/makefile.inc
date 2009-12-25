@@ -1,5 +1,7 @@
 # -*- mode: makefile; -*-
 
+all: FL
+
 FL_SRCS := $(wildcard FL/*.C FL/*.fl)
 
 FL_SRCS:=$(FL_SRCS:.fl=.C)

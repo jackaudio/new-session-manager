@@ -1,0 +1,180 @@
+
+/*******************************************************************************/
+/* Copyright (C) 2009 Jonathan Moore Liles                                     */
+/*                                                                             */
+/* This program is free software; you can redistribute it and/or modify it     */
+/* under the terms of the GNU General Public License as published by the       */
+/* Free Software Foundation; either version 2 of the License, or (at your      */
+/* option) any later version.                                                  */
+/*                                                                             */
+/* This program is distributed in the hope that it will be useful, but WITHOUT */
+/* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       */
+/* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for   */
+/* more details.                                                               */
+/*                                                                             */
+/* You should have received a copy of the GNU General Public License along     */
+/* with This program; see the file COPYING.  If not,write to the Free Software */
+/* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+/*******************************************************************************/
+
+#include "Meter_Indicator_Module.H"
+
+#include <FL/Fl.H>
+#include <FL/Fl_Value_Slider.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Counter.H>
+#include "FL/Fl_Arc_Dial.H"
+#include "FL/Fl_Light_Button.H"
+#include "FL/Boxtypes.H"
+#include <FL/fl_draw.H>
+#include "FL/Fl_Labelpad_Group.H"
+#include <stdio.h>
+#include "Engine/Engine.H"
+#include "Chain.H"
+#include "DPM.H"
+#include "FL/Fl_Scalepack.H"
+
+
+
+const float CONTROL_UPDATE_FREQ = 0.1f;
+
+
+
+Meter_Indicator_Module::Meter_Indicator_Module ( int W, int H, const char *L )
+    : Module ( W, 100, L )
+{
+    box( FL_NO_BOX );
+
+    _pad = true;
+    control = 0;
+    control_value = 0;
+
+    add_port( Port( this, Port::INPUT, Port::CONTROL ) );
+
+    dpm_pack = new Fl_Scalepack( x(), y(), w(), h() );
+    dpm_pack->type( FL_HORIZONTAL );
+
+    control_value = new float[1];
+
+    end();
+
+    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
+}
+
+Meter_Indicator_Module::~Meter_Indicator_Module ( )
+{
+
+}
+
+
+
+void
+Meter_Indicator_Module::update_cb ( void *v )
+{
+    ((Meter_Indicator_Module*)v)->update_cb();
+}
+
+void
+Meter_Indicator_Module::update_cb ( void )
+{
+    Fl::repeat_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
+
+    if ( control_input[0].connected() )
+    {
+        // A little hack to detect that the connected module's number
+        // of control outs has changed.
+        Port *p = control_input[0].connected_port();
+
+        if ( dpm_pack->children() != p->hints.dimensions )
+        {
+            engine->lock();
+
+            dpm_pack->clear();
+
+            control_value = new float[p->hints.dimensions];
+
+            for ( int i = p->hints.dimensions; i--; )
+            {
+
+                DPM *dpm = new DPM( x(), y(), w(), h() );
+                dpm->type( FL_VERTICAL );
+                align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
+
+                dpm_pack->add( dpm );
+
+                control_value[i] = -70.0f;
+                dpm->value( -70.0f );
+            }
+
+            engine->unlock();
+        }
+        else
+        {
+            for ( int i = 0; i < dpm_pack->children(); ++i )
+            {
+                ((DPM*)dpm_pack->child( i ))->value( control_value[i] );
+            }
+        }
+    }
+
+
+    redraw();
+}
+
+void
+Meter_Indicator_Module::connect_to ( Port *p )
+{
+    control_input[0].connect_to( p );
+
+/*     else if ( p->hints.type == Module::Port::Hints::LOGARITHMIC ) */
+/*     { */
+    {
+        DPM *o = new DPM( x(), y(), this->w(), h() );
+        o->type( FL_VERTICAL );
+        align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
+
+        dpm_pack->add( o );
+    }
+
+//        control = o;
+//        w = o;
+
+//        o->value( p->control_value() );
+/*     } */
+
+/*     w->align(FL_ALIGN_TOP); */
+/*     w->labelsize( 10 ); */
+
+/*     if ( _pad ) */
+/*     { */
+/*         Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( w ); */
+/*         size( flg->w(), flg->h() ); */
+/*         add( flg ); */
+/*     } */
+/*     else */
+/*     { */
+/*         w->resize( x(), y(), this->w(), h() ); */
+/*         add( w ); */
+/*         resizable( w ); */
+/*     } */
+}
+
+int
+Meter_Indicator_Module::handle ( int m )
+{
+    return Fl_Group::handle( m );
+}
+
+
+
+void
+Meter_Indicator_Module::process ( void )
+{
+    if ( control_input[0].connected() )
+    {
+        Port *p = control_input[0].connected_port();
+
+        for ( int i = 0; i < p->hints.dimensions; ++i )
+            control_value[i] = ((float*)control_input[0].buffer())[i];
+    }
+}

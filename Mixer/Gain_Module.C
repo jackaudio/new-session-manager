@@ -1,0 +1,98 @@
+
+/*******************************************************************************/
+/* Copyright (C) 2009 Jonathan Moore Liles                                     */
+/*                                                                             */
+/* This program is free software; you can redistribute it and/or modify it     */
+/* under the terms of the GNU General Public License as published by the       */
+/* Free Software Foundation; either version 2 of the License, or (at your      */
+/* option) any later version.                                                  */
+/*                                                                             */
+/* This program is distributed in the hope that it will be useful, but WITHOUT */
+/* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       */
+/* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for   */
+/* more details.                                                               */
+/*                                                                             */
+/* You should have received a copy of the GNU General Public License along     */
+/* with This program; see the file COPYING.  If not,write to the Free Software */
+/* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+/*******************************************************************************/
+
+#include "Gain_Module.H"
+#include <FL/Fl_Single_Window.H>
+#include <math.h>
+#include <dsp.h>
+
+Gain_Module::Gain_Module ( int W, int H, const char *L )
+    : Module ( W, 24, L )
+{
+    add_port( Port( this, Port::INPUT, Port::AUDIO ) );
+    add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
+
+    Port p( this, Port::INPUT, Port::CONTROL, "gain" );
+    p.hints.type = Port::Hints::LOGARITHMIC;
+    p.hints.ranged = true;
+    p.hints.minimum = 0.0f;
+//    p.hints.maximum = HUGE;
+    p.hints.maximum = 10.0f;
+    p.hints.default_value = 1.0f;
+
+    p.connect_to( new float );
+    p.control_value( 1.0f );
+
+    add_port( p );
+
+    color( FL_BLACK );
+
+    end();
+}
+
+Gain_Module::~Gain_Module ( )
+{
+}
+
+
+
+bool
+Gain_Module::configure_inputs ( int n )
+{
+    audio_input.clear();
+    audio_output.clear();
+//    control_input.clear();
+
+    for ( int i = 0; i < n; ++i )
+    {
+        add_port( Port( this, Port::INPUT, Port::AUDIO ) );
+        add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
+//        add_port( Port( this, Port::INPUT, Port::CONTROL ) );
+
+/*         Port p( Port::OUTPUT, Port::CONTROL, "dB level" ); */
+/*         p.hints.type = Port::Hints::LOGARITHMIC; */
+/*         add_port( p ); */
+    }
+
+    return true;
+}
+
+
+
+void
+Gain_Module::process ( void )
+{
+    if ( control_input[0].connected() )
+    {
+        float g = control_input[0].control_value();
+
+        for ( int i = audio_input.size(); i--; )
+        {
+            if ( audio_input[i].connected() && audio_output[i].connected() )
+            {
+                buffer_apply_gain( (sample_t*)audio_input[i].buffer(), nframes(), g );
+
+/*             buffer_copy_and_apply_gain( (sample_t*)audio_output[0].buffer(), */
+/*                                         (sample_t*)audio_input[0].buffer(), */
+/*                                         nframes(), */
+/*                                         g ); */
+            }
+        }
+    }
+}

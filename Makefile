@@ -96,9 +96,10 @@ DONE := $(BOLD)$(GREEN)done$(SGR0)
 include FL/makefile.inc
 include nonlib/makefile.inc
 include Timeline/makefile.inc
+include Mixer/makefile.inc
 
-SRCS:=$(FL_SRCS) $(nonlib_SRCS) $(Timeline_SRCS)
-OBJS:=$(FL_OBJS) $(nonlib_OBJS) $(Timeline_OBJS)
+SRCS:=$(FL_SRCS) $(nonlib_SRCS) $(Timeline_SRCS) $(Mixer_SRCS)
+OBJS:=$(FL_OBJS) $(nonlib_OBJS) $(Timeline_OBJS) $(Mixer_OBJS)
 
 # FIXME: isn't there a better way?
 $(OBJS): .config Makefile
@@ -110,13 +111,14 @@ TAGS: $(SRCS)
 ifneq ($(CALCULATING),yes)
 	@ echo -n Calculating dependencies...
 	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) 2>/dev/null > .deps  && echo $(DONE)
+	# @ gcc -M $(CXXFLAGS) $(INCLUDES) $(SRCS) > .deps && echo $(DONE)
 endif
 
 
 install: all
 	@ echo -n "Installing..."
 	@ install Timeline/timeline $(prefix)/bin/non-daw
-#	@ install Mixer/mixer $(prefix)/bin/non-mixer
+	@ install Mixer/mixer $(prefix)/bin/non-mixer
 	@ mkdir -p $(SYSTEM_PATH)
 	@ mkdir -p $(PIXMAP_PATH)
 	@ cp pixmaps/*.png $(PIXMAP_PATH)
@@ -125,7 +127,7 @@ install: all
 ifneq ($(USE_DEBUG),yes)
 	@ echo -n "Stripping..."
 	@ strip $(prefix)/bin/non-daw
-#	@ strip $(prefix)/bin/non-mixer
+	@ strip $(prefix)/bin/non-mixer
 	@ echo "$(DONE)"
 endif
 
@@ -134,7 +136,7 @@ clean_deps:
 
 .PHONEY: clean config depend clean_deps
 
-clean: FL_clean nonlib_clean Timeline_clean
+clean: FL_clean nonlib_clean Timeline_clean Mixer_clean
 
 dist:
 	git archive --prefix=non-daw-$(VERSION)/ v$(VERSION) | bzip2 > non-daw-$(VERSION).tar.bz2

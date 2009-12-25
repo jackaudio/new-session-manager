@@ -178,21 +178,25 @@ Module_Parameter_Editor::make_controls ( void )
             {
                 Fl_Value_Slider *o = new Fl_Value_Slider( 0, 0, 120, 24, p->name() );
                 w = o;
-                if ( p->hints.ranged )
-                {
-                    o->minimum( p->hints.minimum );
-                    o->maximum( p->hints.maximum );
-                }
 
                 if ( mode_choice->value() == 1 )
                 {
                     o->type( FL_HORIZONTAL );
                     o->size( 120, 24 );
+                    if ( p->hints.ranged )
+                    {
+                        o->minimum( p->hints.minimum );
+                        o->maximum( p->hints.maximum );
+                    }
                 }
                 else
                 {
                     o->type( FL_VERTICAL );
                     o->size( 24, 120 );
+                    /* have to reverse the meaning of these to get the
+                     * orientation of the slider right */
+                    o->maximum( p->hints.minimum );
+                    o->minimum( p->hints.maximum );
                 }
 
                 o->slider( FL_THIN_UP_BOX );

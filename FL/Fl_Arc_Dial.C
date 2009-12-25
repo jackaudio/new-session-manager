@@ -22,6 +22,8 @@
 
 #include <Fl/fl_draw.H>
 #include <Fl/Fl.H>
+#include <string.h>
+#include <stdio.h>
 
 int
 Fl_Arc_Dial::handle ( int m )
@@ -88,6 +90,8 @@ Fl_Arc_Dial::draw ( void )
     }
 
     fl_color( selection_color() );
+//    fl_color( fl_color_average( FL_RED, selection_color(), ( value() - minimum() ) / ( maximum() - minimum() ) ) );
+
 
     if ( type() == FL_FILL_DIAL )
         fl_arc( X, Y, W, H, 270 - angle1(), 270 - angle  );
@@ -100,7 +104,16 @@ Fl_Arc_Dial::draw ( void )
         angle = angle > angle2() - d ? angle2() - d : angle;
 
         fl_arc( X, Y, W, H, 270 - (angle - d), 270 - (angle + d) );
-
-        fl_line_style( FL_SOLID, 0 );
     }
+
+    fl_line_style( FL_SOLID, 0 );
+
+    fl_color( labelcolor() );
+
+    char s[10];
+
+    fl_font( FL_HELVETICA, 8 );
+
+    snprintf( s, sizeof( s ), "%.1f", value() );
+    fl_draw( s, X, Y, W, H, FL_ALIGN_BOTTOM );
 }

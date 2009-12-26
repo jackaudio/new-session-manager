@@ -143,25 +143,8 @@ Meter_Module::configure_inputs ( int n )
 int
 Meter_Module::handle ( int m )
 {
-    switch ( m )
-    {
-        case FL_PUSH:
-        {
-/*             Fl_Single_Window *win = new Fl_Single_Window( 0, 0, 400, 400 ); */
-
-/*             win->add( dpm ); */
-/*             win->resizable( dpm ); */
-
-/*             win->end(); */
-
-/*             win->show(); */
-/*             break; */
-        }
-    }
-
-    return Module::handle( m );
- }
-
+    return Fl_Group::handle( m );
+}
 
 
 static float

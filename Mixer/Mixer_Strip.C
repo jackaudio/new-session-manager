@@ -372,6 +372,7 @@ Mixer_Strip::init ( )
             o->labelsize( 10 );
             o->label( "Pan" );
         }
+#if 0
         { Panner* o = new Panner(0, 0, 110, 90);
             o->box(FL_THIN_UP_BOX);
             o->color(FL_GRAY0);
@@ -383,6 +384,7 @@ Mixer_Strip::init ( )
             o->align(FL_ALIGN_TOP);
             o->when(FL_WHEN_RELEASE);
         } // Panner* o
+#endif
         {
             Controller_Module *m = new Controller_Module( 100, 24, "Inputs" );
             m->chain( chain );

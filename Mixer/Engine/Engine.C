@@ -65,26 +65,27 @@ Engine::freewheel ( bool starting )
 
 /* THREAD: RT (non-RT) */
 int
-Engine::buffer_size ( nframes_t nframes )
+Engine::buffer_size ( nframes_t )
 {
     // timeline->resize_buffers( nframes );
 
     return 0;
 }
 
-int Engine::sync ( jack_transport_state_t state, jack_position_t *pos )
+int Engine::sync ( jack_transport_state_t, jack_position_t * )
 {
+    return 0;
 }
 
 void
-Engine::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos )
+Engine::timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t *, int )
 {
 
 
 }
 
 void
-Engine::timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos )
+Engine::timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t * )
 {
 
 }

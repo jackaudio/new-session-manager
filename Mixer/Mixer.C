@@ -46,14 +46,17 @@ static void update_cb( void *v ) {
 Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
 {
-        label( "Non-Mixer" );
-        align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE) );
-        labelsize( 96 );
+    box( FL_NO_BOX );
+    labelsize( 96 );
     {
-        Fl_Scroll *o = scroll = new Fl_Scroll( 0, 0, W, H );
+        Fl_Scroll *o = scroll = new Fl_Scroll( X, Y, W, H );
+        o->box( FL_NO_BOX );
         o->type( Fl_Scroll::HORIZONTAL_ALWAYS );
         {
-            Fl_Pack *o = mixer_strips = new Fl_Pack( 0, 4, W, H - 24 );
+            Fl_Pack *o = mixer_strips = new Fl_Pack( X, Y, W, H - 18 );
+            label( "Non-Mixer" );
+            align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE) );
+            o->box( FL_NO_BOX );
             o->type( Fl_Pack::HORIZONTAL );
             o->spacing( 2 );
             o->end();
@@ -79,11 +82,11 @@ Mixer::~Mixer ( )
 
 void Mixer::resize ( int X, int Y, int W, int H )
 {
-    mixer_strips->size( W, H - 24 );
+    Fl_Group::resize( X, Y, W, H );
+
+    mixer_strips->resize( X, Y, W, H - 18 );
 
     scroll->resize( X, Y, W, H );
-
-    Fl_Group::resize( X, Y, W, H );
 }
 
 void Mixer::add ( Mixer_Strip *ms )
@@ -97,7 +100,9 @@ void Mixer::add ( Mixer_Strip *ms )
 
     engine->unlock();
 
-    redraw();
+    scroll->redraw();
+
+//    redraw();
 }
 
 void Mixer::remove ( Mixer_Strip *ms )

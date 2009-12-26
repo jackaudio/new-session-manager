@@ -28,13 +28,19 @@
 class Fl_Sometimes_Input : public Fl_Input
 {
 
+    Fl_Boxtype _up_box;
+
 public:
 
     Fl_Sometimes_Input ( int X, int Y, int W, int H, const char *L=0 )
         : Fl_Input( X, Y, W, H, L )
         {
             clear_visible_focus();
+            up_box( FL_NO_BOX );
         }
+
+    void up_box ( Fl_Boxtype b ) { _up_box = b;  }
+    Fl_Boxtype up_box ( void ) const { return _up_box; }
 
     virtual void
     draw ( void )
@@ -43,7 +49,7 @@ public:
                 Fl_Input::draw();
             else
             {
-                fl_draw_box( FL_ROUNDED_BOX, x(), y(), w(), h(), color() );
+                fl_draw_box( up_box(), x(), y(), w(), h(), color() );
                 fl_color( FL_FOREGROUND_COLOR /* textcolor() */ );
                 fl_font( textfont(), textsize() );
                 fl_draw( value(), x(), y(), w(), h(), FL_ALIGN_CENTER );

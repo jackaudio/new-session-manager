@@ -65,6 +65,8 @@ Meter_Indicator_Module::~Meter_Indicator_Module ( )
 {
     if ( control_value )
         delete[] control_value;
+
+    Fl::remove_timeout( update_cb, this );
 }
 
 

@@ -60,7 +60,7 @@ Controller_Module::Controller_Module ( int W, int H, const char *L )
 
 Controller_Module::~Controller_Module ( )
 {
-
+    Fl::remove_timeout( update_cb, this );
 }
 
 

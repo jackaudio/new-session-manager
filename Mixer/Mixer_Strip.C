@@ -296,6 +296,7 @@ Mixer_Strip::init ( )
                 o->color( FL_LIGHT1 );
                 o->selection_color( FL_RED );
                 o->labelsize(10);
+                o->when( FL_WHEN_RELEASE );
                 o->callback( ((Fl_Callback*)cb_handle), this );
             } // Fl_Button* o
             o->end();

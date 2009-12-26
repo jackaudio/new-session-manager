@@ -73,6 +73,13 @@
 
 #include <dsp.h>
 
+
+
+std::vector <Module::Port> Chain::port;
+std::list <Chain*> Chain::chain;
+
+
+
 Chain::Chain ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L)
 {
@@ -118,6 +125,13 @@ Chain::Chain ( int X, int Y, int W, int H, const char *L ) :
     }
 
     end();
+
+    chain.push_back( this );
+}
+
+Chain::~Chain ( )
+{
+    chain.remove( this );
 }
 
 /* Fill this chain with JACK I/O, Gain, and Meter modules. */
@@ -213,7 +227,7 @@ Chain::configure_ports ( void )
 
     DMESSAGE( "required_buffers = %i", req_buffers );
 
-    if ( port.size() != req_buffers )
+    if ( port.size() < req_buffers )
     {
         for ( unsigned int i = port.size(); i--; )
             delete[] (sample_t*)port[i].buffer();
@@ -229,6 +243,15 @@ Chain::configure_ports ( void )
     }
 
     build_process_queue();
+
+    /* let the other chains know we mess with their buffers */
+    for ( std::list<Chain*>::iterator i = chain.begin();
+          i != chain.end();
+          ++i )
+    {
+        if ( *i != this )
+            (*i)->build_process_queue();
+    }
 
     engine->unlock();
 

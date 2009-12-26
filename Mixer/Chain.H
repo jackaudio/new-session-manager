@@ -56,9 +56,11 @@ class Chain : public Fl_Group {
     void build_process_queue ( void );
     void add_to_process_queue ( Module *m );
 
+    static std::vector <Module::Port> port;
+    static std::list <Chain*> chain;
+
 public:
 
-    std::vector <Module::Port> port;
 
     const char *name ( void ) const { return _name; }
     void name ( const char *name );
@@ -67,6 +69,7 @@ public:
     int required_buffers ( void );
 
     Chain ( int X, int Y, int W, int H, const char *L = 0 );
+    virtual ~Chain ( );
 
     bool can_support_input_channels ( int n );
 

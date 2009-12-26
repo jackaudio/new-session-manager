@@ -27,7 +27,6 @@ class Meter : public Fl_Valuator
 {
 
     float _peak;
-    float _old_value;
     float _value;
 
 protected:
@@ -41,8 +40,8 @@ protected:
 //                if ( Fl::event_button3() )
 //                    hide();
 //                else
-                    reset();
-                    return 1;
+                reset();
+                return 1;
             }
 
             return Fl_Widget::handle( m );
@@ -73,31 +72,24 @@ protected:
             return def / 115.0f;
         }
 
-    float old_value ( void ) const { return _old_value; }
-
 public:
 
     Meter ( int X, int Y, int W, int H,  const char *L = 0 ) :
         Fl_Valuator( X, Y, W, H, L )
         {
             _peak = _value = -80.0f;
-            _old_value = 4.0f;
         }
 
     virtual ~Meter ( ) { }
 
     void value ( float v )
         {
-            if ( _value != v )
-            {
-                damage( FL_DAMAGE_USER1 );
+            damage( FL_DAMAGE_USER1 );
 
-                _old_value = _value;
-                _value = v;
+            _value = v;
 
-                if ( _value > _peak )
-                    _peak = _value;
-            }
+            if ( _value > _peak )
+                _peak = _value;
         }
 
     float value ( void ) const { return _value; }

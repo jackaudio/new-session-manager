@@ -103,6 +103,8 @@ DPM::resize ( int X, int Y, int W, int H )
     else
         _segments = H / _pixels_per_segment;
 
+//    _last_drawn_hi_segment = 0;
+
     Fl_Widget::resize( X, Y, W, H );
 }
 
@@ -125,15 +127,15 @@ DPM::draw ( void )
     /* only draw as many segments as necessary */
     if ( damage() == FL_DAMAGE_USER1 )
     {
-        if ( _last_drawn_hi_segment > pos( value() ) )
-        {
-            hi = _last_drawn_hi_segment;
-            lo = v;
-        }
-        else
+        if ( v > _last_drawn_hi_segment )
         {
             hi = v;
             lo = _last_drawn_hi_segment;
+        }
+        else
+        {
+            hi = _last_drawn_hi_segment;
+            lo = v;
         }
     }
     else
@@ -142,9 +144,9 @@ DPM::draw ( void )
         hi = _segments;
     }
 
-    _last_drawn_hi_segment = hi;
+    _last_drawn_hi_segment = v;
 
-    for ( int p = hi; p > lo; p-- )
+    for ( int p = lo; p <= hi; p++ )
     {
         Fl_Color c = DPM::div_color( p );
 

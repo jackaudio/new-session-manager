@@ -63,7 +63,8 @@ Meter_Indicator_Module::Meter_Indicator_Module ( int W, int H, const char *L )
 
 Meter_Indicator_Module::~Meter_Indicator_Module ( )
 {
-
+    if ( control_value )
+        delete[] control_value;
 }
 
 
@@ -117,8 +118,7 @@ Meter_Indicator_Module::update_cb ( void )
         }
     }
 
-
-    redraw();
+//    redraw();
 }
 
 void

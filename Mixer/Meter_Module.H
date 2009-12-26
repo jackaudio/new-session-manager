@@ -27,6 +27,11 @@ class Meter_Module : public Module
 {
     Fl_Scalepack *dpm_pack;
 
+    volatile float *control_value;
+
+    static void update_cb ( void *v );
+    void update_cb ( void );
+
 public:
 
     Meter_Module ( int W, int H, const char *L=0 );
@@ -37,15 +42,8 @@ public:
     int can_support_inputs ( int n ) { return n > 0 ? n : -1; }
     bool configure_inputs ( int n );
 
-    static void update_cb ( void *v );
-    void update_cb ( void );
-
 protected:
 
-
-    //   virtual void draw ( void );
     virtual int handle ( int m );
     virtual void process ( void );
-
-
 };

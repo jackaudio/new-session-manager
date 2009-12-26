@@ -31,12 +31,14 @@ const float METER_UPDATE_FREQ = 0.1f;
 
 
 
-Meter_Module::Meter_Module ( int W, int H, const char *L )
+Meter_Module::Meter_Module ( int W, int, const char *L )
     : Module ( W, 100, L )
 {
     box( FL_THIN_UP_FRAME );
     dpm_pack = new Fl_Scalepack( x(), y(), w(), h() );
     dpm_pack->type( FL_HORIZONTAL );
+
+    control_value = 0;
 
     color( FL_BLACK );
 
@@ -59,6 +61,8 @@ Meter_Module::Meter_Module ( int W, int H, const char *L )
 
 Meter_Module::~Meter_Module ( )
 {
+    if ( control_value )
+        delete[] control_value;
 }
 
 void
@@ -73,7 +77,7 @@ Meter_Module::update_cb ( void )
     Fl::repeat_timeout( METER_UPDATE_FREQ, update_cb, this );
 
     for ( int i = dpm_pack->children(); i--; )
-        dpm_pack->child( i )->redraw();
+        ((DPM*)dpm_pack->child( i ))->value( control_value[i] );
 }
 
 bool
@@ -127,6 +131,12 @@ Meter_Module::configure_inputs ( int n )
         control_output[0].connect_to( f);
     }
 
+    if ( control_value )
+        delete [] control_value;
+
+    control_value = new float[n];
+
+
     return true;
 }
 
@@ -179,23 +189,14 @@ get_peak_sample ( const sample_t* buf, nframes_t nframes )
 void
 Meter_Module::process ( void )
 {
-    for ( int i = 0; i < audio_input.size(); ++i )
+    for ( unsigned int i = 0; i < audio_input.size(); ++i )
     {
-        DPM *dpm = (DPM*)dpm_pack->child( i );
         if ( audio_input[i].connected() )
         {
-            dpm->activate();
-
             float dB = 20 * log10( get_peak_sample( (float*)audio_input[i].buffer(), nframes() ) / 2.0f );
 
-            dpm->value( dB );
-
-/*             if ( control_output[i].connected() ) */
-/*             { */
             ((float*)control_output[0].buffer())[i] = dB;
-/*             } */
+            control_value[i] = dB;
         }
-        else
-            dpm->deactivate();
     }
 }

@@ -83,7 +83,6 @@ public:
 
     LOG_CREATE_FUNC( Mixer_Strip );
 
-    Fl_Counter *inputs_counter;
     void process ( unsigned int nframes );
 
     static void configure_outputs ( Fl_Widget *o, void *v );

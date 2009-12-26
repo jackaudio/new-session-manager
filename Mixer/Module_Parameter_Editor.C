@@ -38,7 +38,6 @@
 
 
 
-
 Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_Window( 0, 0, 800, 600 )
 {
     _module = module;

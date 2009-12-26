@@ -131,15 +131,8 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
     // parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
     if ( o == close_button )
         ((Mixer*)parent())->remove( this );
-    else if ( o == inputs_counter )
-        configure_ports( ((Fl_Counter*)o)->value() );
     else if ( o == name_field )
         name( name_field->value() );
-/*     else if ( o == controllable_button ) */
-/*     { */
-/*         controllable( controllable_button->value() ); */
-/* //        configure_ports( channels() ); */
-/*     } */
     else if ( o == prepost_button )
     {
         if ( ((Fl_Button*)o)->value() )
@@ -454,14 +447,14 @@ Mixer_Strip::handle ( int m )
     switch ( m )
     {
         case FL_ENTER:
-//            orig_color = color();
-//            color( FL_BLACK );
-            redraw();
+            orig_color = name_field->color();
+            color( FL_BLACK );
+            name_field->redraw();
             return 1;
             break;
         case FL_LEAVE:
-//            color( orig_color );
-            redraw();
+            name_field->color( orig_color );
+            name_field->redraw();
             return 1;
             break;
         default:

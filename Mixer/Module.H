@@ -289,6 +289,8 @@ public:
     Chain *chain ( void ) const { return _chain; }
     void chain ( Chain * v ) { _chain = v; }
 
+    char *describe_inputs ( void ) const;
+
     virtual bool initialize ( void ) { return true; }
 
     /* for the given number of inputs, return how many outputs this
@@ -311,6 +313,8 @@ public:
     virtual void handle_chain_name_changed () {}
 
     virtual void handle_port_connection_change () {}
+
+
 
 protected:
 

@@ -44,8 +44,8 @@ public:
 
     const char *name ( void ) const { return "Meter Indicator"; }
 
-    int can_support_inputs ( int n ) { return 0; }
-    bool configure_inputs ( int n ) { return false; }
+    int can_support_inputs ( int ) { return 0; }
+    bool configure_inputs ( int ) { return false; }
 
     void pad ( bool v ) { _pad = v; }
 

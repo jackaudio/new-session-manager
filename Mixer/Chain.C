@@ -487,6 +487,14 @@ Chain::build_process_queue ( void )
             DMESSAGE( "\t%s -->", (*i)->name() );
         else if ( m->control_input.size() )
             DMESSAGE( "\t%s <--", (*i)->name() );
+
+        {
+            char *s = m->describe_inputs();
+
+            DMESSAGE( "(%s)", s );
+
+            delete[] s;
+        }
     }
 }
 

@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "Module_Parameter_Editor.H"
 
@@ -42,6 +43,30 @@ Module::~Module ( )
     audio_output.clear();
     control_input.clear();
     control_output.clear();
+}
+
+
+
+/* return a string serializing this module's parameter settings.  The
+   format is 1.0:2.0:... Where 1.0 is the value of the first control
+   input, 2.0 is the value of the second control input etc.
+ */
+char *
+Module::describe_inputs ( void ) const
+{
+    char *s = new char[1024];
+    s[0] = 0;
+    char *sp = s;
+
+    if ( control_input.size() )
+    {
+    for ( unsigned int i = 0; i < control_input.size(); ++i )
+        sp += snprintf( sp, 1024 - (sp - s),"%f:", control_input[i].control_value() );
+
+    *(sp - 1) = '\0';
+    }
+
+    return s;
 }
 
 

@@ -20,7 +20,7 @@
 #include "Controller_Module.H"
 
 #include <FL/Fl.H>
-#include <FL/Fl_Value_Slider.H>
+#include "FL/Fl_Value_SliderX.H"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Counter.H>
 #include "FL/Fl_Arc_Dial.H"
@@ -151,7 +151,7 @@ Controller_Module::connect_to ( Port *p )
     }
     else if ( p->hints.type == Module::Port::Hints::LOGARITHMIC )
     {
-        Fl_Value_Slider *o = new Fl_Value_Slider(0, 0, 30, 250, p->name() );
+        Fl_Value_SliderX *o = new Fl_Value_SliderX(0, 0, 30, 250, p->name() );
         control = o;
         w = o;
 
@@ -160,7 +160,6 @@ Controller_Module::connect_to ( Port *p )
         o->selection_color((Fl_Color)1);
         o->minimum(1.5);
         o->maximum(0);
-        o->step(0.01);
         o->value(1);
         o->textsize(14);
 
@@ -192,7 +191,6 @@ Controller_Module::connect_to ( Port *p )
             o->color( fl_darker( fl_darker( FL_GRAY ) ) );
             o->selection_color( FL_WHITE );
             o->value( p->control_value() );
-
         }
 
     }

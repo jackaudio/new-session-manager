@@ -19,7 +19,7 @@
 
 #include <FL/fl_draw.H>
 #include <FL/Fl_Pack.H>
-#include <FL/Fl_Value_Slider.H>
+#include "FL/Fl_Value_SliderX.H"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Counter.H>
 #include "FL/Fl_Arc_Dial.H"
@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <util/debug.h>
+#include <math.h>
 
 
 
@@ -172,10 +173,11 @@ Module_Parameter_Editor::make_controls ( void )
                 o->selection_color( FL_WHITE );
                 o->value( p->control_value() );
 
+//                o->step( fabs( ( o->maximum() - o->minimum() ) ) / 32.0f );
             }
             else
             {
-                Fl_Value_Slider *o = new Fl_Value_Slider( 0, 0, 120, 24, p->name() );
+                Fl_Value_SliderX *o = new Fl_Value_SliderX( 0, 0, 120, 24, p->name() );
                 w = o;
 
                 if ( mode_choice->value() == 1 )
@@ -198,6 +200,7 @@ Module_Parameter_Editor::make_controls ( void )
                     o->minimum( p->hints.maximum );
                 }
 
+//                o->step( fabs( ( o->maximum() - o->minimum() ) ) / 32.0f );
                 o->slider( FL_THIN_UP_BOX );
                 o->color( fl_darker( fl_darker( FL_GRAY ) ) );
                 o->selection_color( FL_WHITE );

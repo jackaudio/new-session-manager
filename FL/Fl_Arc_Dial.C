@@ -24,6 +24,7 @@
 #include <Fl/Fl.H>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 int
 Fl_Arc_Dial::handle ( int m )
@@ -37,14 +38,31 @@ Fl_Arc_Dial::handle ( int m )
             if ( this != Fl::belowmouse() )
                 return 0;
 
-            int d = Fl::event_dy();
+            int steps = 16;
 
-            double v = increment( value(), d );
+            if ( Fl::event_ctrl() )
+                steps = 128;
 
-            if ( v < minimum() )
-                v = minimum();
-            else if ( v > maximum() )
-                v = maximum();
+            float step = fabs( maximum() - minimum() ) / (float)steps;
+
+            float d = ((float)Fl::event_dy()) * step;
+
+            double v = value() + d;
+
+            if ( maximum() > minimum() )
+            {
+                if ( v < minimum() )
+                    v = minimum();
+                else if ( v > maximum() )
+                    v = maximum();
+            }
+            else
+            {
+                if ( v > minimum() )
+                    v = minimum();
+                else if ( v < maximum() )
+                    v = maximum();
+            }
 
             value( v );
             do_callback();

@@ -17,6 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#pragma once
+
 #include <FL/Fl.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Button.H>
@@ -25,11 +27,13 @@
 #include "JACK/Port.H"
 #include <vector>
 #include <list>
+#include "Loggable.H"
 
+class Mixer_Strip;
 class Fl_Flowpack;
 class Fl_Tabs;
 
-class Chain : public Fl_Group {
+class Chain : public Fl_Group, public Loggable {
 
     Fl_Pack *modules_pack;
     Fl_Flowpack *controls_pack;
@@ -38,8 +42,10 @@ class Chain : public Fl_Group {
     void cb_handle(Fl_Widget*);
     static void cb_handle(Fl_Widget*, void*);
 
-    int _ins;
-    int _outs;
+/*     int _ins; */
+/*     int _outs; */
+
+    Mixer_Strip *_strip;
 
 //    sample_t **_buffer;
 //    int _nbuffers;
@@ -59,9 +65,20 @@ class Chain : public Fl_Group {
     static std::vector <Module::Port> port;
     static std::list <Chain*> chain;
 
+protected:
+
+    void get ( Log_Entry &e ) const;
+    void set ( Log_Entry &e );
+
+    int handle ( int m );
+    void draw ( void );
+
 public:
 
+    void resize ( int X, int Y, int W, int H );
 
+    Mixer_Strip *strip ( void ) const { return _strip; }
+    void strip ( Mixer_Strip *v );
     const char *name ( void ) const { return _name; }
     void name ( const char *name );
 
@@ -69,18 +86,20 @@ public:
     int required_buffers ( void );
 
     Chain ( int X, int Y, int W, int H, const char *L = 0 );
+    Chain ( );
     virtual ~Chain ( );
 
     bool can_support_input_channels ( int n );
 
-    void ins ( int i ) { _ins = i; }
-    void outs ( int i ) { _outs = i; }
-    int ins ( void ) const { return _ins; }
-    int outs ( void ) const { return _outs; }
+/*     void ins ( int i ) { _ins = i; } */
+/*     void outs ( int i ) { _outs = i; } */
+/*     int ins ( void ) const { return _ins; } */
+/*     int outs ( void ) const { return _outs; } */
 
     int modules ( void ) const { return modules_pack->children(); }
     Module *module ( int n ) const { return (Module*)modules_pack->child( n ); }
     void remove ( Module *m );
+    bool add ( Module *m );
     bool insert ( Module *m, Module *n );
     void add_control ( Module *m );
 
@@ -98,10 +117,7 @@ public:
 
     void process ( nframes_t );
 
-protected:
+    void log_children ( void );
 
-    int handle ( int m );
-    void draw ( void );
-    void resize ( int X, int Y, int W, int H );
-
+    LOG_CREATE_FUNC( Chain );
 };

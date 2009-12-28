@@ -25,6 +25,7 @@ class Gain_Module : public Module
 {
 public:
 
+    Gain_Module ( );
     Gain_Module ( int W, int H, const char *L=0 );
     virtual ~Gain_Module ( );
 
@@ -32,6 +33,8 @@ public:
 
     int can_support_inputs ( int n ) { return n; }
     bool configure_inputs ( int n );
+
+    LOG_CREATE_FUNC( Gain_Module );
 
 protected:
 

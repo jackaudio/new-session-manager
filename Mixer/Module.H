@@ -30,41 +30,43 @@
 
 #include "util/Thread.H"
 
+#include "Loggable.H"
+
 class Chain;
 class Module_Parameter_Editor;
 
-class Module : public Fl_Group {
-
-    void init ( void )
-        {
-            _editor = 0;
-            _chain = 0;
-            _instances = 1;
-            box( FL_UP_BOX );
-            labeltype( FL_NO_LABEL );
-            clip_children( 1 );
-        }
+class Module : public Fl_Group, public Loggable {
 
     int _ins;
     int _outs;
     int _instances;
     unsigned long _nframes;
     Chain *_chain;
+    bool _is_default;
 
     Module_Parameter_Editor *_editor;
 
     void cb_handle(Fl_Widget*);
     static void cb_handle(Fl_Widget*, void*);
 
-
+    void init ( void );
 
 public:
+
+    /* true if this module was added by default and not under normal user control */
+    bool is_default ( void ) const { return _is_default; }
+    void is_default ( bool v ) { _is_default = v; }
 
     class Port
     {
         /* char *type_names[] = { "Audio", "Control" }; */
         /* char *direction_names[] = { "Input", "Output" }; */
 
+        void update_connected_port_buffer ( void )
+            {
+                if ( connected() )
+                    connected_port()->_buf = _buf;
+            }
 
     public:
 
@@ -175,7 +177,7 @@ public:
         void connect_to ( void *buf )
             {
                 _buf = buf;
-//                _connected = (Port*)0x01;
+                update_connected_port_buffer();
             }
 
         void disconnect ( void )
@@ -210,15 +212,13 @@ public:
             H = h() - 10;
         }
 
-    Module ( int W, int H, const char *L = 0 ) : Fl_Group( 0, 0, W, H, L )
-        {
-            init();
-        }
-    Module ( ) : Fl_Group( 0, 0, 0, 50, "Unnamed" )
-        {
-            init();
-        }
+    Module ( int W, int H, const char *L = 0 );
+    Module ( );
+    Module ( bool is_default, int W, int H, const char *L = 0 );
+
     virtual ~Module ( );
+
+    LOG_NAME_FUNC( Module );
 
 //    static Module * pick_plugin ( void );
 
@@ -286,10 +286,29 @@ public:
         }
 
 
+    int control_input_port_index ( Port *p )
+        {
+            for ( unsigned int i = control_input.size(); i--; )
+                if ( &control_input[i] == p )
+                    return i;
+
+            return -1;
+        }
+
+    int control_output_port_index ( Port *p )
+        {
+            for ( unsigned int i = control_output.size(); i--; )
+                if ( &control_output[i] == p )
+                    return i;
+
+            return -1;
+        }
+
     Chain *chain ( void ) const { return _chain; }
     void chain ( Chain * v ) { _chain = v; }
 
-    char *describe_inputs ( void ) const;
+    char *get_parameters ( void ) const;
+    void set_parameters ( const char * );
 
     virtual bool initialize ( void ) { return true; }
 
@@ -314,8 +333,6 @@ public:
 
     virtual void handle_port_connection_change () {}
 
-
-
 protected:
 
     void draw_connections ( void );
@@ -324,5 +341,8 @@ protected:
 
     virtual void draw ( void ) { Module::draw_box(); Module::draw_label(); }
     virtual int handle ( int m );
+
+    virtual void get ( Log_Entry &e ) const;
+    virtual void set ( Log_Entry &e );
 
 };

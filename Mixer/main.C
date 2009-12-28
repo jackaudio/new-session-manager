@@ -34,6 +34,7 @@
 #include "Engine/Engine.H"
 #include "util/Thread.H"
 #include "util/debug.h"
+#include "Project.H"
 
 Engine *engine;
 Mixer *mixer;
@@ -43,6 +44,20 @@ Fl_Single_Window *main_window;
 #include <FL/Boxtypes.H>
 #include "Loggable.H"
 #include <FL/Fl_Tooltip.H>
+
+
+/* for registration */
+#include "Module.H"
+#include "Gain_Module.H"
+#include "Plugin_Module.H"
+#include "JACK_Module.H"
+#include "Meter_Module.H"
+#include "Meter_Indicator_Module.H"
+#include "Controller_Module.H"
+#include "Chain.H"
+
+
+#include <signal.h>
 
 int
 main ( int argc, char **argv )
@@ -57,11 +72,20 @@ main ( int argc, char **argv )
     Fl_Tooltip::size( 14 );
     Fl_Tooltip::hoverdelay( 0.1f );
 
-    Fl::visible_focus( 0 );
+//    Fl::visible_focus( 0 );
 
     LOG_REGISTER_CREATE( Mixer_Strip );
+    LOG_REGISTER_CREATE( Chain );
+    LOG_REGISTER_CREATE( Plugin_Module );
+    LOG_REGISTER_CREATE( Gain_Module );
+    LOG_REGISTER_CREATE( Meter_Module );
+    LOG_REGISTER_CREATE( JACK_Module );
+    LOG_REGISTER_CREATE( Meter_Indicator_Module );
+    LOG_REGISTER_CREATE( Controller_Module );
 
     init_boxtypes();
+
+    signal( SIGPIPE, SIG_IGN );
 
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
@@ -91,11 +115,13 @@ main ( int argc, char **argv )
 
         if ( argc > 1 )
         {
-            char name[1024];
+/*             char name[1024]; */
 
-            snprintf( name, sizeof( name ), "%s/history", argv[1] );
+/*             snprintf( name, sizeof( name ), "%s/history", argv[1] ); */
 
-            Loggable::open( name );
+/*             Loggable::open( name ); */
+            MESSAGE( "Loading \"%s\"", argv[1] );
+            Project::open( argv[1] );
         }
         else
         {

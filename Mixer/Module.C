@@ -25,8 +25,32 @@
 #include <stdio.h>
 
 #include "Module_Parameter_Editor.H"
+#include "Chain.H"
 
 
+
+Module::Module ( int W, int H, const char *L ) : Fl_Group( 0, 0, W, H, L )
+{
+    init();
+
+    log_create();
+}
+
+Module::Module ( bool is_default, int W, int H, const char *L ) : Fl_Group( 0, 0, W, H, L ), Loggable( !is_default )
+{
+    this->is_default( is_default );
+
+    init();
+
+    log_create();
+}
+
+Module::Module ( ) : Fl_Group( 0, 0, 0, 50, "Unnamed" )
+{
+    init();
+
+    log_create();
+}
 
 Module::~Module ( )
 {
@@ -47,12 +71,95 @@ Module::~Module ( )
 
 
 
+void
+Module::init ( void )
+{
+    _is_default = false;
+    _editor = 0;
+    _chain = 0;
+    _instances = 1;
+    box( FL_UP_BOX );
+    labeltype( FL_NO_LABEL );
+    clip_children( 1 );
+}
+
+
+void
+Module::get ( Log_Entry &e ) const
+{
+//    e.add( ":name",            label()           );
+//    e.add( ":color",           (unsigned long)color());
+    {
+        char *s = get_parameters();
+        if ( strlen( s ) )
+            e.add( ":parameter_values", s );
+        delete[] s;
+    }
+    e.add( ":is_default", is_default() );
+    e.add( ":chain", chain() );
+}
+
+void
+Module::set ( Log_Entry &e )
+{
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! strcmp( s, ":chain" ) )
+        {
+            /* This trickiness is because we may need to know the name of
+             our chain before we actually get added to it. */
+            int i;
+            sscanf( v, "%X", &i );
+            Chain *t = (Chain*)Loggable::find( i );
+
+            assert( t );
+
+            chain( t );
+        }
+    }
+
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+/*         if ( ! strcmp( s, ":name" ) ) */
+/*             label( v ); */
+        if ( ! strcmp( s, ":parameter_values" ) )
+        {
+            set_parameters( v );
+        }
+        else if ( ! ( strcmp( s, ":is_default" ) ) )
+        {
+            is_default( atoi( v ) );
+        }
+        else if ( ! strcmp( s, ":chain" ) )
+        {
+            int i;
+            sscanf( v, "%X", &i );
+            Chain *t = (Chain*)Loggable::find( i );
+
+            assert( t );
+
+            t->add( this );
+        }
+    }
+}
+
+
+
+
 /* return a string serializing this module's parameter settings.  The
    format is 1.0:2.0:... Where 1.0 is the value of the first control
    input, 2.0 is the value of the second control input etc.
- */
+*/
 char *
-Module::describe_inputs ( void ) const
+Module::get_parameters ( void ) const
 {
     char *s = new char[1024];
     s[0] = 0;
@@ -60,13 +167,51 @@ Module::describe_inputs ( void ) const
 
     if ( control_input.size() )
     {
-    for ( unsigned int i = 0; i < control_input.size(); ++i )
-        sp += snprintf( sp, 1024 - (sp - s),"%f:", control_input[i].control_value() );
+        for ( unsigned int i = 0; i < control_input.size(); ++i )
+            sp += snprintf( sp, 1024 - (sp - s),"%f:", control_input[i].control_value() );
 
-    *(sp - 1) = '\0';
+        *(sp - 1) = '\0';
     }
 
     return s;
+}
+
+void
+Module::set_parameters ( const char *parameters )
+{
+    char *s = strdup( parameters );
+    char *sp = s;
+
+    char *start = s;
+    int i = 0;
+    for ( char *sp = s; ; ++sp )
+    {
+        if ( ':' == *sp || '\0' == *sp )
+        {
+            char was = *sp;
+
+            *sp = '\0';
+
+            DMESSAGE( start );
+
+            if ( i < control_input.size() )
+                control_input[i].control_value( atof( start ) );
+            else
+            {
+                WARNING( "Module has no parameter at index %i", i );
+                break;
+            }
+
+            i++;
+
+            if ( '\0' == was  )
+                break;
+
+            start = sp + 1;
+        }
+    }
+
+    free( s );
 }
 
 
@@ -87,10 +232,14 @@ Module::draw_box ( void )
 
     fl_push_clip( tx, ty, tw, th );
 
+
+    Fl_Color c = is_default() ? FL_BLACK : color();
+
+
     int spacing = w() / instances();
     for ( int i = instances(); i--; )
     {
-        fl_draw_box( box(), tx + (spacing * i), ty, tw / instances(), th, Fl::belowmouse() == this ? fl_lighter( color() ) : color() );
+        fl_draw_box( box(), tx + (spacing * i), ty, tw / instances(), th, Fl::belowmouse() == this ? fl_lighter( c ) : c );
     }
 
     if ( audio_input.size() && audio_output.size() )

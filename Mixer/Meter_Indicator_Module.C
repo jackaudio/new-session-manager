@@ -40,8 +40,58 @@ const float CONTROL_UPDATE_FREQ = 0.1f;
 
 
 
-Meter_Indicator_Module::Meter_Indicator_Module ( int W, int H, const char *L )
-    : Module ( W, 100, L )
+
+void
+Meter_Indicator_Module::get ( Log_Entry &e ) const
+{
+
+    Port *p = control_input[0].connected_port();
+    Module *m = p->module();
+
+    e.add( ":module", m );
+    e.add( ":port", m->control_output_port_index( p ) );
+
+    Module::get( e );
+}
+
+void
+Meter_Indicator_Module::set ( Log_Entry &e )
+{
+    Module::set( e );
+
+    int port;
+    Module *module = NULL;
+
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! strcmp( s, ":port" ) )
+        {
+            port = atoi( v );
+        }
+        else if ( ! strcmp( s, ":module" ) )
+        {
+            int i;
+            sscanf( v, "%X", &i );
+            Module *t = (Module*)Loggable::find( i );
+
+            assert( t );
+
+            module = t;
+        }
+    }
+
+    if ( port >= 0 && module )
+        control_input[0].connect_to( &module->control_output[port] );
+}
+
+
+
+Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
+    : Module ( is_default, 50, 100, name() )
 {
     box( FL_NO_BOX );
 
@@ -55,6 +105,7 @@ Meter_Indicator_Module::Meter_Indicator_Module ( int W, int H, const char *L )
     dpm_pack->type( FL_HORIZONTAL );
 
     control_value = new float[1];
+    *control_value = -70.0f;
 
     end();
 
@@ -64,9 +115,14 @@ Meter_Indicator_Module::Meter_Indicator_Module ( int W, int H, const char *L )
 Meter_Indicator_Module::~Meter_Indicator_Module ( )
 {
     if ( control_value )
+    {
         delete[] control_value;
+        control_value = NULL;
+    }
 
     Fl::remove_timeout( update_cb, this );
+
+    log_destroy();
 }
 
 

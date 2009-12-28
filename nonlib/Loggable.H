@@ -127,10 +127,10 @@ private:
     static bool load_unjournaled_state ( void );
 
     static bool replay ( FILE *fp );
-    static bool replay ( const char *name );
 
 public:
 
+    static bool replay ( const char *name );
 
     static bool snapshot( FILE * fp );
     static bool snapshot( const char *name );

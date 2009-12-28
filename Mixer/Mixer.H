@@ -56,6 +56,8 @@ public:
     void remove ( Mixer_Strip *ms );
     bool contains ( Mixer_Strip *ms );
 
+    bool save ( void );
+
     Mixer ( int X, int Y, int W, int H, const char *L );
     virtual ~Mixer();
 };

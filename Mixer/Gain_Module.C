@@ -22,8 +22,8 @@
 #include <math.h>
 #include <dsp.h>
 
-Gain_Module::Gain_Module ( int W, int H, const char *L )
-    : Module ( W, 24, L )
+Gain_Module::Gain_Module ( )
+    : Module ( 50, 24, name() )
 {
     add_port( Port( this, Port::INPUT, Port::AUDIO ) );
     add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
@@ -41,13 +41,16 @@ Gain_Module::Gain_Module ( int W, int H, const char *L )
 
     add_port( p );
 
-    color( FL_BLACK );
+//    color( FL_BLACK );
 
     end();
+
+    log_create();
 }
 
 Gain_Module::~Gain_Module ( )
 {
+    log_destroy();
 }
 
 

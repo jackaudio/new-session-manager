@@ -38,8 +38,56 @@ const float CONTROL_UPDATE_FREQ = 0.1f;
 
 
 
-Controller_Module::Controller_Module ( int W, int H, const char *L )
-    : Module ( W, 100, L )
+void
+Controller_Module::get ( Log_Entry &e ) const
+{
+
+    Port *p = control_output[0].connected_port();
+    Module *m = p->module();
+
+    e.add( ":module", m );
+    e.add( ":port", m->control_input_port_index( p ) );
+
+    Module::get( e );
+}
+
+void
+Controller_Module::set ( Log_Entry &e )
+{
+    Module::set( e );
+
+    int port = -1;
+    Module *module = NULL;
+
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! strcmp( s, ":port" ) )
+        {
+            port = atoi( v );
+        }
+        else if ( ! strcmp( s, ":module" ) )
+        {
+            int i;
+            sscanf( v, "%X", &i );
+            Module *t = (Module*)Loggable::find( i );
+
+            assert( t );
+
+            module = t;
+        }
+    }
+
+    if ( port >= 0 && module )
+        control_output[0].connect_to( &module->control_input[port] );
+}
+
+
+
+Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 50, 100, name() )
 {
 //    label( "" );
     box( FL_NO_BOX );
@@ -47,6 +95,7 @@ Controller_Module::Controller_Module ( int W, int H, const char *L )
     _pad = true;
     control = 0;
     control_value =0.0f;
+
     add_port( Port( this, Port::OUTPUT, Port::CONTROL ) );
 
     mode( GUI );
@@ -56,11 +105,15 @@ Controller_Module::Controller_Module ( int W, int H, const char *L )
     end();
 
     Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
+
+    log_create();
+
 }
 
 Controller_Module::~Controller_Module ( )
 {
     Fl::remove_timeout( update_cb, this );
+    log_destroy();
 }
 
 

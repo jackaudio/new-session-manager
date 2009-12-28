@@ -42,7 +42,8 @@ public:
     Mode mode ( void ) const { return _mode; }
     void mode ( Mode v ) { _mode = v; }
 
-    Controller_Module ( int W, int H, const char *L=0 );
+    Controller_Module ( bool is_default = false );
+//    Controller_Module ( int W, int H, const char *L=0 );
     virtual ~Controller_Module ( );
 
     const char *name ( void ) const { return "Controller"; }
@@ -57,8 +58,13 @@ public:
 
     void connect_to ( Port *p );
 
+    LOG_CREATE_FUNC( Controller_Module );
+
+
 protected:
 
+    void get ( Log_Entry &e ) const;
+    void set ( Log_Entry &e );
 
     //   virtual void draw ( void );
     virtual void process ( void );

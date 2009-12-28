@@ -34,13 +34,15 @@ class Meter_Module : public Module
 
 public:
 
-    Meter_Module ( int W, int H, const char *L=0 );
+    Meter_Module ( );
     virtual ~Meter_Module ( );
 
     const char *name ( void ) const { return "Meter"; }
 
     int can_support_inputs ( int n ) { return n > 0 ? n : -1; }
     bool configure_inputs ( int n );
+
+    LOG_CREATE_FUNC( Meter_Module );
 
 protected:
 

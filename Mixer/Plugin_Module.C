@@ -54,26 +54,54 @@ struct Plugin_Module::ImplementationData
 
 
 
-Plugin_Module::Plugin_Module ( int , int , const char *L ) : Module( 50, 50, L )
+Plugin_Module::Plugin_Module ( ) : Module( 50, 50, name() )
 {
     init();
 
     end();
+
+    log_create();
 }
 
 Plugin_Module::~Plugin_Module ( )
 {
+    log_destroy();
     plugin_instances( 0 );
 }
 
 
 
 
-/* void */
-/* Plugin_Module::detect_plugins ( void ) */
-/* { */
-/*     LADPSAInfo *li = new LADSPAInfo(); */
-/* } */
+void
+Plugin_Module::get ( Log_Entry &e ) const
+{
+//    char s[512];
+//    snprintf( s, sizeof( s ), "ladspa:%lu", _idata->descriptor->UniqueID );
+    e.add( ":plugin_id", _idata->descriptor->UniqueID );
+
+    Module::get( e );
+}
+
+void
+Plugin_Module::set ( Log_Entry &e )
+{
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! strcmp( s, ":plugin_id" ) )
+        {
+            load( (unsigned long) atoll ( v ) );
+        }
+    }
+
+    Module::set( e );
+}
+
+
+
 
 #include <FL/Fl_Menu_Button.H>
 
@@ -106,15 +134,9 @@ Plugin_Module::pick_plugin ( void )
 
     Plugin_Module::Plugin_Info *pi = (Plugin_Module::Plugin_Info*)menu->menu()[ menu->value() ].user_data();
 
-    Plugin_Module *m = new Plugin_Module( 50, 50 );
+    Plugin_Module *m = new Plugin_Module();
 
-    m->load( pi );
-
-    const char *plugin_name = pi->path;
-
-    char *label = strdup( rindex(plugin_name, '/') + 1 );
-
-    m->label( label );
+    m->load( pi->id );
 
     delete[] pia;
 
@@ -342,9 +364,14 @@ Plugin_Module::plugin_instances ( unsigned int n )
 }
 
 bool
-Plugin_Module::load ( Plugin_Module::Plugin_Info *pi )
+Plugin_Module::load ( unsigned long id )
 {
-    _idata->descriptor = ladspainfo->GetDescriptorByID( pi->id );
+    if ( !ladspainfo )
+        ladspainfo = new LADSPAInfo();
+
+    _idata->descriptor = ladspainfo->GetDescriptorByID( id );
+
+    label( _idata->descriptor->Name );
 
     _plugin_ins = _plugin_outs = 0;
 
@@ -488,9 +515,9 @@ Plugin_Module::load ( Plugin_Module::Plugin_Info *pi )
                                         bool neg_max = max < 0.0f ? true : false;
 
                                         if (!neg_min && !neg_max) {
-                                            Default = exp(log(min) * lp + log(max) * up);
+                                            Default = exp(::log(min) * lp + ::log(max) * up);
                                         } else if (neg_min && neg_max) {
-                                            Default = -exp(log(-min) * lp + log(-max) * up);
+                                            Default = -exp(::log(-min) * lp + ::log(-max) * up);
                                         } else {
                                             // Logarithmic range has asymptote
                                             // so just use linear scale

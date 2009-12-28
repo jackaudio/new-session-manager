@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2009 Jonathan Moore Liles                                     */
+/* Copyright (C) 2008, 2010 Jonathan Moore Liles                               */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -17,40 +17,46 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
+const char template_dir[] = "share/non-daw/templates";
+const char user_template_dir[] = "~/.non-daw/templates";
 
+#include "types.h"
 
-#include "Module.H"
-#include "JACK/Port.H"
-#include <vector>
-
-class JACK_Module : public Module
+class Project
 {
-    std::vector<JACK::Port> jack_input;
-    std::vector<JACK::Port> jack_output;
+
+    static int _lockfd;
+    static bool _is_open;
+    static char _name[256];
+    static char _path[512];
+    static char _created_on[40];
+
+    static bool write_info ( void );
+    static bool read_info ( int *version, char **creation_date );
+    static void set_name ( const char *name );
+    static const char *_errstr[];
 
 public:
 
-    JACK_Module ( );
-    virtual ~JACK_Module ( );
+    enum
+    {
+        E_INVALID = -1,
+        E_LOCKED = -2,
+        E_PERM = -3,
+        E_SAMPLERATE = -4,
+        E_VERSION = -5
+    };
 
-    const char *name ( void ) const { return "JACK"; }
+    static const char *errstr ( int n ) { return _errstr[ ( 0 - n ) - 1 ]; }
 
-    bool initialize ( void );
+    static const char *name ( void ) { return Project::_name; }
+    static void compact ( void );
+    static bool close ( void );
+    static bool save ( void );
+    static bool validate ( const char *name );
+    static int open ( const char *name );
+    static bool open ( void ) { return _is_open; }
+    static bool create ( const char *name, const char *template_name );
 
-    int can_support_inputs ( int );
-    bool configure_inputs ( int n );
-    bool configure_outputs ( int n );
-
-    void add_output ( void );
-
-    void handle_control_changed ( Port *p );
-    void handle_chain_name_changed ();
-
-    LOG_CREATE_FUNC( JACK_Module );
-
-protected:
-
-    virtual void process ( void );
-
+    static const char *created_on ( void ) { return _created_on; }
 };

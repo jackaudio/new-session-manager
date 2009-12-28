@@ -163,11 +163,16 @@ Loggable::load_unjournaled_state ( void )
 bool
 Loggable::replay ( const char *file )
 {
-    FILE *fp = fopen( file, "r" );
+    if ( FILE *fp = fopen( file, "r" ) )
+    {
+        bool r = replay( fp );
 
-    replay( fp );
+        fclose( fp );
 
-    fclose( fp );
+        return r;
+    }
+    else
+        return false;
 }
 
 /** replay journal or snapshot */
@@ -279,7 +284,7 @@ void
 Loggable::update_id ( unsigned int id )
 {
     /* make sure we're the last one */
-    assert( _id == _log_id );
+    ASSERT( _id == _log_id, "%u != %u", _id, _log_id );
     assert( _loggables[ _id ].loggable == this );
 
     _loggables[ _id ].loggable = NULL;

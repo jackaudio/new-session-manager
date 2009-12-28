@@ -31,8 +31,8 @@ const float METER_UPDATE_FREQ = 0.1f;
 
 
 
-Meter_Module::Meter_Module ( int W, int, const char *L )
-    : Module ( W, 100, L )
+Meter_Module::Meter_Module ( )
+    : Module ( 50, 100, name() )
 {
     box( FL_THIN_UP_FRAME );
     dpm_pack = new Fl_Scalepack( x(), y(), w(), h() );
@@ -57,6 +57,7 @@ Meter_Module::Meter_Module ( int W, int, const char *L )
 
     Fl::add_timeout( METER_UPDATE_FREQ, update_cb, this );
 
+    log_create();
 }
 
 Meter_Module::~Meter_Module ( )
@@ -65,6 +66,8 @@ Meter_Module::~Meter_Module ( )
         delete[] control_value;
 
     Fl::remove_timeout( update_cb, this );
+
+    log_destroy();
 }
 
 void
@@ -117,8 +120,6 @@ Meter_Module::configure_inputs ( int n )
             audio_input.pop_back();
             audio_output.back().disconnect();
             audio_output.pop_back();
-            control_output.back().disconnect();
-            control_output.pop_back();
         }
     }
 
@@ -130,14 +131,15 @@ Meter_Module::configure_inputs ( int n )
         for ( int i = n; i--; )
             f[i] = -70.0f;
 
-        control_output[0].connect_to( f);
+        control_output[0].connect_to( f );
     }
 
     if ( control_value )
         delete [] control_value;
 
     control_value = new float[n];
-
+    for ( int i = n; i--; )
+        control_value[i] = -70.0f;
 
     return true;
 }

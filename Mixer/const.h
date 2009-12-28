@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2009 Jonathan Moore Liles                                     */
+/* Copyright (C) 2008 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -17,40 +17,6 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
-
-
-#include "Module.H"
-#include "JACK/Port.H"
-#include <vector>
-
-class JACK_Module : public Module
-{
-    std::vector<JACK::Port> jack_input;
-    std::vector<JACK::Port> jack_output;
-
-public:
-
-    JACK_Module ( );
-    virtual ~JACK_Module ( );
-
-    const char *name ( void ) const { return "JACK"; }
-
-    bool initialize ( void );
-
-    int can_support_inputs ( int );
-    bool configure_inputs ( int n );
-    bool configure_outputs ( int n );
-
-    void add_output ( void );
-
-    void handle_control_changed ( Port *p );
-    void handle_chain_name_changed ();
-
-    LOG_CREATE_FUNC( JACK_Module );
-
-protected:
-
-    virtual void process ( void );
-
-};
+#define APP_NAME "Non-Mixer"
+#define APP_TITLE "The Non-Mixer"
+#define __MODULE__ "non-mixer"

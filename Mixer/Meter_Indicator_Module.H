@@ -39,7 +39,7 @@ class Meter_Indicator_Module : public Module
 
 public:
 
-    Meter_Indicator_Module ( int W, int H, const char *L=0 );
+    Meter_Indicator_Module ( bool is_default = false );
     virtual ~Meter_Indicator_Module ( );
 
     const char *name ( void ) const { return "Meter Indicator"; }
@@ -54,8 +54,12 @@ public:
 
     void connect_to ( Port *p );
 
+    LOG_CREATE_FUNC( Meter_Indicator_Module );
+
 protected:
 
+    void get ( Log_Entry &e ) const;
+    void set ( Log_Entry &e );
 
     //   virtual void draw ( void );
     virtual void process ( void );

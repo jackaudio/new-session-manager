@@ -25,8 +25,10 @@
 #include <string.h>
 #include "Chain.H"
 
-JACK_Module::JACK_Module ( int W, int H, const char *L )
-    : Module ( W, 24, L )
+
+
+JACK_Module::JACK_Module ( )
+    : Module ( 50, 24, name() )
 {
     /* FIXME: how do Controls find out that a connected value has changed? How does this work in ladspa? */
     {
@@ -54,7 +56,17 @@ JACK_Module::JACK_Module ( int W, int H, const char *L )
     }
 
     end();
+
+    log_create();
 }
+
+JACK_Module::~JACK_Module ( )
+{
+    log_destroy();
+    configure_inputs( 0 );
+}
+
+
 
 int
 JACK_Module::can_support_inputs ( int n )
@@ -137,11 +149,6 @@ JACK_Module::initialize ( void )
     return true;
 }
 
-JACK_Module::~JACK_Module ( )
-{
-    configure_inputs( 0 );
-}
-
 void
 JACK_Module::handle_control_changed ( Port *p )
 {
@@ -149,16 +156,20 @@ JACK_Module::handle_control_changed ( Port *p )
     {
         DMESSAGE( "Adjusting number of inputs (JACK outputs)" );
         configure_inputs( p->control_value() );
-        chain()->configure_ports();
+        if ( chain() )
+            chain()->configure_ports();
     }
     else if ( 0 == strcmp( p->name(), "Outputs" ) )
     {
         DMESSAGE( "Adjusting number of outputs (JACK inputs)" );
-        if ( chain()->can_configure_outputs( this, p->control_value() ) )
+        if ( chain() && chain()->can_configure_outputs( this, p->control_value() ) )
         {
             configure_outputs( p->control_value() );
             chain()->configure_ports();
         }
+        else
+            configure_outputs( p->control_value() );
+
     }
 }
 

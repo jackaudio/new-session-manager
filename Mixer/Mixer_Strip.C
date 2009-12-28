@@ -58,12 +58,8 @@ void
 Mixer_Strip::get ( Log_Entry &e ) const
 {
     e.add( ":name",            name()           );
-//    e.add( ":controllable",    controllable() );
-//    e.add( ":inputs",          _in.size()     );
-/*     e.add( ":gain",            gain_slider->value() ); */
-    e.add( ":meter_point",      prepost_button->value() ? "pre" : "post" );
+    e.add( ":width",      prepost_button->value() ? "wide" : "narrow" );
     e.add( ":color",           (unsigned long)color());
-
 }
 
 void
@@ -77,13 +73,7 @@ Mixer_Strip::set ( Log_Entry &e )
 
         if ( ! strcmp( s, ":name" ) )
             name( v );
-//        else if ( ! strcmp( s, ":controllable" ) )
-//            controllable( atoi( v ) );
-        else if ( ! strcmp( s, ":inputs" ) )
-            configure_ports( atoi( v ) );
-/*         else if ( ! strcmp( s, ":gain" ) ) */
-/*             gain_slider->value( atof( v ) ); */
-        else if ( ! strcmp( s, ":meter_point" ) )
+        else if ( ! strcmp( s, ":width" ) )
             prepost_button->value( strcmp( v, "pre" ) == 0 );
         else if ( ! strcmp( s, ":color" ) )
         {
@@ -96,23 +86,62 @@ Mixer_Strip::set ( Log_Entry &e )
         mixer->add( this );
 }
 
+void
+Mixer_Strip::log_children ( void )
+{
+    log_create();
 
+    _chain->log_children();
+}
+
+void
+Mixer_Strip::chain ( Chain *c )
+{
+    if ( _chain )
+        delete _chain;
+
+    _chain = c;
+
+    c->strip( this );
+
+    Fl_Group *g = signal_group;
+
+    c->resize( g->x(), g->y(), g->w(), g->h() );
+    g->add( c );
+    g->resizable( c );
+
+    c->labelsize( 10 );
+    c->align( FL_ALIGN_TOP );
+    c->color( FL_RED );
+    c->configure_outputs_callback( configure_outputs, this );
+    c->name( name() );
+
+    gain_controller->chain( c );
+    jack_input_controller->chain( c );
+    meter_indicator->chain( c );
+}
+
+/* add a new mixer strip (with default configuration) */
 Mixer_Strip::Mixer_Strip( const char *strip_name, int channels ) : Fl_Group( 0, 0, 120, 600 )
 {
-
     label( strdup( strip_name ) );
 
     init();
+
+    chain( new Chain() );
+
+    _chain->initialize_with_default();
+
+    _chain->configure_ports();
 
     color( (Fl_Color)rand() );
 
 //    name( strdup( strip_name ) );
 
-    configure_ports( channels );
-
     log_create();
 }
 
+/* virgin strip created from journal */
 Mixer_Strip::Mixer_Strip() : Fl_Group( 0, 0, 120, 600 )
 {
     init();
@@ -122,7 +151,7 @@ Mixer_Strip::Mixer_Strip() : Fl_Group( 0, 0, 120, 600 )
 
 Mixer_Strip::~Mixer_Strip ( )
 {
-    configure_ports( 0 );
+    log_destroy();
 }
 
 
@@ -154,7 +183,8 @@ Mixer_Strip::name ( const char *name ) {
     char *s = strdup( name );
     name_field->value( s );
     label( s );
-    chain->name( s );
+    if ( _chain )
+        _chain->name( s );
 }
 
 void
@@ -169,40 +199,30 @@ Mixer_Strip::configure_outputs ( void )
     DMESSAGE( "Got signal to configure outputs" );
 }
 
-bool
-Mixer_Strip::configure_ports ( int n )
+/* called by the chain to let us know that a module has been added */
+void
+Mixer_Strip::handle_module_added ( Module *m )
 {
-/*     /\* figure out how many buffers we have to create *\/ */
-/*     int required_buffers = chain->required_buffers(); */
+    if ( m->is_default() )
+    {
+        DMESSAGE( "Connecting controls to default module \"%s\"", m->name() );
 
-/*     engine->lock(); */
-
-/*     if ( chain_buffers > 0 ) */
-/*     { */
-/*         for ( int i = chain_buffers; --i; ) */
-/*         { */
-/*             delete chain_buffer[i]; */
-/*             chain_buffer[i] = NULL; */
-/*         } */
-/*         delete chain_buffer; */
-/*         chain_buffer = NULL; */
-/*         chain_buffers = 0; */
-/*     } */
-
-/*     sample_t **buf = new sample_t*[required_buffers]; */
-/*     for ( int i = 0; i < required_buffers; ++i ) */
-/*         buf[i] = new sample_t[nframes]; */
-
-/*     chain_buffers = required_buffers; */
-/*     chain_buffer = buf; */
-
-/*     engine->unlock(); */
-
-/*     /\* FIXME: bogus *\/ */
-/*     return true; */
-
+        /* connect default modules to their default controllers/indicators */
+        if ( ! strcmp( m->name(), "JACK" ) && m->ninputs() == 0 )
+        {
+            if ( !jack_input_controller->control_output[0].connected() )
+                jack_input_controller->connect_to( &m->control_input[1] );
+        }
+        else if ( ! strcmp( m->name(), "Gain" ) )
+        {
+            gain_controller->connect_to( &m->control_input[0] );
+        }
+        else if ( ! strcmp( m->name(), "Meter" ) )
+        {
+            meter_indicator->connect_to( &m->control_output[0] );
+        }
+    }
 }
-
 
 
 void
@@ -210,49 +230,7 @@ Mixer_Strip::process ( nframes_t nframes )
 {
     THREAD_ASSERT( RT );
 
-/*     sample_t *gain_buf = NULL; */
-/*     float g = gain_slider->value(); */
-
-/*     if ( _control && _control->connected() ) */
-/*     { */
-/*         gain_buf = (sample_t*)_control->buffer( nframes ); */
-
-/* /\*         // bring it up to 0.0-2.0f *\/ */
-/* /\*         for ( int i = nframes; i--; ) *\/ */
-/* /\*             gain_buf[i] += 1.0f; *\/ */
-
-/*         // apply gain from slider */
-/*         buffer_apply_gain( gain_buf, nframes, g ); */
-
-/*         /\* FIXME: bullshit! *\/ */
-/*         _control_peak = gain_buf[0]; */
-/*     } */
-/*     else */
-/*     { */
-/*         _control_peak = 0; */
-/*     } */
-
-/*     for ( int i = channels(); i--; ) */
-/*     { */
-/*         if ( _in[i].connected()) */
-/*         { */
-/*             if ( gain_buf ) */
-/*                 buffer_copy_and_apply_gain_buffer( (sample_t*)_out[i].buffer( nframes ), (sample_t*)_in[i].buffer( nframes ), gain_buf, nframes ); */
-/*             else */
-/*                 buffer_copy_and_apply_gain( (sample_t*)_out[i].buffer( nframes ), (sample_t*)_in[i].buffer( nframes ),  nframes, g ); */
-
-/*             sample_t *meter_buffer = prepost_button->value() == 1 ? (sample_t*)_in[i].buffer( nframes ) : (sample_t*)_out[i].buffer( nframes ); */
-
-/*             /\* set peak value (in dB) *\/ */
-/*             _peak[i] = 20 * log10( get_peak_sample( meter_buffer, nframes ) / 2.0f ); */
-/*         } */
-/*         else */
-/*         { */
-/*             buffer_fill_with_silence( (sample_t*)_out[i].buffer( nframes ), nframes ); */
-/*         } */
-/*     } */
-
-    chain->process( nframes );
+    _chain->process( nframes );
 }
 
 /* update GUI with values from RT thread */
@@ -265,6 +243,8 @@ Mixer_Strip::update ( void )
 void
 Mixer_Strip::init ( )
 {
+    _chain = 0;
+
     chain_buffers = 0;
     chain_buffer = NULL;
 
@@ -332,24 +312,31 @@ Mixer_Strip::init ( )
             { Fl_Pack* o = fader_pack = new Fl_Pack(4, 116, 103, 330 );
                 o->spacing( 20 );
                 o->type( Fl_Pack::HORIZONTAL );
+                { Controller_Module *o = gain_controller = new Controller_Module( true );
+//                    o->chain( _chain );
+                    o->pad( false );
+//           o->connect_to( &gain_module->control_input[0] );
+                    o->size( 33, 0 );
+                }
+                { Meter_Indicator_Module *o = meter_indicator = new Meter_Indicator_Module( true );
+//                    o->chain( _chain );
+                    o->pad( false );
+//            o->connect_to( &meter_module->control_output[0] );
+                    o->size( 58, 0 );
+                    o->clip_children( 0 );
+                    Fl_Group::current()->resizable(o);
+
+                }
+
                 o->end();
                 Fl_Group::current()->resizable(o);
             } // Fl_Group* o
             o->end();
             Fl_Group::current()->resizable(o);
         }
-        { Fl_Group *o = new Fl_Group( 4, 114, 110, 330, "Signal" );
+        { Fl_Group *o = signal_group = new Fl_Group( 4, 114, 110, 330, "Signal" );
             o->labelsize( 9 );
             o->hide();
-            { Chain *o = chain = new Chain( 4, 116, 110, 330 );
-                o->labelsize( 10 );
-                o->align( FL_ALIGN_TOP );
-                o->color( FL_RED );
-                o->configure_outputs_callback( configure_outputs, this );
-                o->name( name() );
-                o->initialize_with_default();
-                Fl_Group::current()->resizable(o);
-            }
             o->end();
         }
 
@@ -357,7 +344,9 @@ Mixer_Strip::init ( )
         Fl_Group::current()->resizable(o);
     }
 
-    { Fl_Pack *o = new Fl_Pack( 2, 440, 114, 40 );
+//    log_create();
+
+    { Fl_Pack *o = panner_pack = new Fl_Pack( 2, 440, 114, 40 );
         o->spacing( 2 );
         o->type( Fl_Pack::VERTICAL );
 
@@ -380,10 +369,11 @@ Mixer_Strip::init ( )
         } // Panner* o
 #endif
         {
-            Controller_Module *m = new Controller_Module( 100, 24, "Inputs" );
-            m->chain( chain );
+            Controller_Module *m = jack_input_controller = new Controller_Module( true );
+            m->label( "Inputs" );
+            m->chain( _chain );
             m->pad( false );
-            m->connect_to( &chain->module( 0 )->control_input[1] );
+//            m->connect_to( &_chain->module( 0 )->control_input[1] );
             m->size( 33, 24 );
         }
         o->end();
@@ -392,49 +382,8 @@ Mixer_Strip::init ( )
     end();
 
     color( FL_BLACK );
-//    controllable( true );
 
-    {
-        Module *gain_module;
-
-        {
-            Module *m = gain_module = new Gain_Module( 50, 50, "Gain" );
-            m->initialize();
-            chain->insert( chain->module( chain->modules() - 1 ), m );
-        }
-
-        {
-            Controller_Module *m = new Controller_Module( 100, 0, "Gain" );
-            m->chain( chain );
-            m->pad( false );
-            m->connect_to( &gain_module->control_input[0] );
-            m->size( 33, 0 );
-
-            fader_pack->add( m );
-        }
-
-        Module *meter_module;
-
-        {
-            Module *m = meter_module = new Meter_Module( 50, 50, "Meter" );
-            chain->insert( chain->module( chain->modules() - 1 ), m );
-        }
-        {
-            Meter_Indicator_Module *m = new Meter_Indicator_Module( 100, 0, "" );
-            m->chain( chain );
-            m->pad( false );
-            m->connect_to( &meter_module->control_output[0] );
-            m->size( 58, 0 );
-            m->clip_children( 0 );
-
-            fader_pack->add( m );
-
-            fader_pack->resizable( m );
-        }
-
-        chain->configure_ports();
-    }
-
+    //  _chain->configure_ports();
 }
 
 

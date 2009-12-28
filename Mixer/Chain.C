@@ -71,6 +71,7 @@
 #include "FL/Fl_Scroll.H"
 #include <string.h>
 
+#include "Mixer_Strip.H"
 #include <dsp.h>
 
 
@@ -80,15 +81,58 @@ std::list <Chain*> Chain::chain;
 
 
 
-Chain::Chain ( int X, int Y, int W, int H, const char *L ) :
-    Fl_Group( X, Y, W, H, L)
+void
+Chain::get ( Log_Entry &e ) const
 {
-    _outs = 1;
-    _ins = 1;
+    e.add( ":strip", strip() );
+}
+
+void
+Chain::set ( Log_Entry &e )
+{
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! strcmp( s, ":strip" ) )
+        {
+            int i;
+            sscanf( v, "%X", &i );
+            Mixer_Strip *t = (Mixer_Strip*)Loggable::find( i );
+
+            assert( t );
+
+            t->chain( this );
+        }
+    }
+}
+
+
+
+
+/* Chain::Chain ( int X, int Y, int W, int H, const char *L ) : */
+/*     Fl_Group( X, Y, W, H, L) */
+Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
+
+{
+    int X = 0;
+    int Y = 0;
+    int W = 100;
+    int H = 100;
+
+/*     _outs = 1; */
+/*     _ins = 1; */
 
     _configure_outputs_callback = NULL;
 
+    _strip = NULL;
+
     _name = NULL;
+
+    labelsize( 10 );
+    align( FL_ALIGN_TOP );
 
     { Fl_Tabs *o = tabs = new Fl_Tabs( X, Y, W, H );
         { Fl_Group *o = new Fl_Group( X, Y + 24, W, H - 24, "Chain" );
@@ -127,11 +171,27 @@ Chain::Chain ( int X, int Y, int W, int H, const char *L ) :
     end();
 
     chain.push_back( this );
+
+    log_create();
 }
 
 Chain::~Chain ( )
 {
     chain.remove( this );
+    log_destroy();
+}
+
+
+
+void
+Chain::log_children ( void )
+{
+    log_create();
+
+    for ( int i = 0; i < modules(); ++i )
+    {
+        module(i)->log_create();
+    }
 }
 
 /* Fill this chain with JACK I/O, Gain, and Meter modules. */
@@ -139,22 +199,30 @@ void
 Chain::initialize_with_default ( void )
 {
 
-    {
-        JACK_Module *jm = new JACK_Module( 50, 50, "JACK" );
-        jm->chain( this );
-        jm->configure_outputs( 1 );
-
-        jm->initialize();
-        jm->color( FL_BLACK );
-        insert( NULL, jm );
+    { JACK_Module *m = new JACK_Module();
+        m->is_default( true );
+        m->chain( this );
+        m->configure_outputs( 1 );
+        m->initialize();
+        add( m );
     }
 
-    {
-        JACK_Module *m = new JACK_Module( 50, 50, "JACK" );
+    { Module *m = new Gain_Module();
+        m->is_default( true );
+        m->initialize();
+        add( m );
+    }
+
+    { Module *m = new Meter_Module();
+        m->is_default( true );
+        add( m );
+    }
+
+    { JACK_Module *m = new JACK_Module();
+        m->is_default( true );
         m->chain( this );
         m->initialize();
-        m->color( FL_BLACK );
-        insert( NULL, m );
+        add( m );
     }
 }
 
@@ -204,8 +272,8 @@ Chain::remove ( Module *m )
 void
 Chain::configure_ports ( void )
 {
-    int old_outs = outs();
-    int nouts = 0;
+/*     int old_outs = outs(); */
+     int nouts = 0;
 
     engine->lock();
 
@@ -215,15 +283,15 @@ Chain::configure_ports ( void )
         nouts = module( i )->noutputs();
     }
 
-    outs( nouts );
+/*     outs( nouts ); */
 
     int req_buffers = required_buffers();
 
-    if ( outs() != old_outs )
-    {
-        if ( configure_outputs_callback() )
-            configure_outputs_callback()( this, _configure_outputs_userdata );
-    }
+/*     if ( outs() != old_outs ) */
+/*     { */
+/*         if ( configure_outputs_callback() ) */
+/*             configure_outputs_callback()( this, _configure_outputs_userdata ); */
+/*     } */
 
     DMESSAGE( "required_buffers = %i", req_buffers );
 
@@ -330,6 +398,12 @@ Chain::name ( const char *name )
 #include "FL/menu_popup.H"
 
 bool
+Chain::add ( Module *m )
+{
+    return insert( NULL, m );
+}
+
+bool
 Chain::insert ( Module *m, Module *n )
 {
 
@@ -388,6 +462,8 @@ Chain::insert ( Module *m, Module *n )
               n->noutputs(),
               n->ncontrol_inputs(),
               n->ncontrol_outputs() );
+
+    strip()->handle_module_added( n );
 
     configure_ports();
 
@@ -498,23 +574,23 @@ Chain::build_process_queue ( void )
         m->handle_port_connection_change();
     }
 
-    DMESSAGE( "Process queue looks like:" );
+/*     DMESSAGE( "Process queue looks like:" ); */
 
     for ( std::list<Module*>::const_iterator i = process_queue.begin(); i != process_queue.end(); ++i )
     {
         const Module* m = *i;
 
-        if ( m->audio_input.size() || m->audio_output.size() )
-            DMESSAGE( "\t%s", (*i)->name() );
-        else if ( m->control_output.size() )
-            DMESSAGE( "\t%s -->", (*i)->name() );
-        else if ( m->control_input.size() )
-            DMESSAGE( "\t%s <--", (*i)->name() );
+/*         if ( m->audio_input.size() || m->audio_output.size() ) */
+/*             DMESSAGE( "\t%s", (*i)->name() ); */
+/*         else if ( m->control_output.size() ) */
+/*             DMESSAGE( "\t%s -->", (*i)->name() ); */
+/*         else if ( m->control_input.size() ) */
+/*             DMESSAGE( "\t%s <--", (*i)->name() ); */
 
         {
-            char *s = m->describe_inputs();
+            char *s = m->get_parameters();
 
-            DMESSAGE( "(%s)", s );
+/*             DMESSAGE( "(%s)", s ); */
 
             delete[] s;
         }
@@ -564,10 +640,9 @@ Chain::handle ( int m )
                 {
                     if ( test_press( FL_BUTTON3 | FL_CTRL ) )
                     {
-                        if ( FL_BLACK == m->color() )
+                        if ( m->is_default() )
                         {
-                            /* FIXME: hack */
-                            fl_alert( "Cannot delete this module." );
+                            fl_alert( "Default modules may not be deleted." );
                         }
                         else
                         {
@@ -603,6 +678,11 @@ Chain::handle ( int m )
     }
 
     return Fl_Group::handle( m );
+}
+void
+Chain::strip ( Mixer_Strip * ms )
+{
+    _strip = ms;
 }
 
 void

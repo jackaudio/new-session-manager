@@ -24,8 +24,11 @@
 
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Scroll.H>
+#include <FL/Fl_Menu_Bar.H>
 
 #include "Engine/Engine.H"
+
+#include "Project.H"
 
 #include <string.h>
 #include "debug.h"
@@ -48,12 +51,18 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
 {
     box( FL_NO_BOX );
     labelsize( 96 );
-    {
-        Fl_Scroll *o = scroll = new Fl_Scroll( X, Y, W, H );
+    { Fl_Menu_Bar *o = new Fl_Menu_Bar( X, Y, W, 24 );
+        o->add( "&Project/&New" );
+        o->add( "&Project/&Open" );
+        o->add( "&Project/&Quit" );
+        o->add( "&Mixer/&Add Strip" );
+        o->add( "&Options" );
+    }
+    { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - 24 );
         o->box( FL_NO_BOX );
         o->type( Fl_Scroll::HORIZONTAL_ALWAYS );
         {
-            Fl_Pack *o = mixer_strips = new Fl_Pack( X, Y, W, H - 18 );
+            Fl_Pack *o = mixer_strips = new Fl_Pack( X, Y + 24, W, H - 18 - 24 );
             label( "Non-Mixer" );
             align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE) );
             o->box( FL_NO_BOX );
@@ -84,9 +93,9 @@ void Mixer::resize ( int X, int Y, int W, int H )
 {
     Fl_Group::resize( X, Y, W, H );
 
-    mixer_strips->resize( X, Y, W, H - 18 );
+    mixer_strips->resize( X, Y + 24, W, H - 18 - 24 );
 
-    scroll->resize( X, Y, W, H );
+    scroll->resize( X, Y + 24, W, H - 24 );
 }
 
 void Mixer::add ( Mixer_Strip *ms )
@@ -181,7 +190,7 @@ void
 Mixer::snapshot ( void )
 {
     for ( int i = 0; i < mixer_strips->children(); ++i )
-        ((Mixer_Strip*)mixer_strips->child( i ))->log_create();
+        ((Mixer_Strip*)mixer_strips->child( i ))->log_children();
 }
 
 
@@ -196,6 +205,16 @@ Mixer::new_strip ( void )
 
 //    scroll->size( mixer_strips->w(), scroll->h() );
 }
+
+bool
+Mixer::save ( void )
+{
+    MESSAGE( "Saving state" );
+    Loggable::snapshot_callback( &Mixer::snapshot, this );
+    Loggable::snapshot( "save.mix" );
+    return true;
+}
+
 
 int
 Mixer::handle ( int m )
@@ -216,9 +235,8 @@ Mixer::handle ( int m )
             }
             else if ( Fl::event_ctrl() && Fl::event_key() == 's' )
             {
-                MESSAGE( "Saving state" );
-                Loggable::snapshot_callback( &Mixer::snapshot, this );
-                Loggable::snapshot( "save.mix" );
+//                save();
+                Project::save();
                 return 1;
             }
             else

@@ -281,7 +281,8 @@ Module_Parameter_Editor::bind_control ( int i )
         /* can only bind once */
         return;
 
-    Controller_Module *o = new Controller_Module( 50, 50, p->name() );
+    Controller_Module *o = new Controller_Module();
+    o->label( p->name() );
     o->chain( _module->chain() );
 
     o->connect_to( p );

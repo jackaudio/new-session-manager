@@ -20,6 +20,7 @@
 #pragma once
 
 #include "Module.H"
+#include "Loggable.H"
 
 class Plugin_Module : Module {
 
@@ -61,7 +62,7 @@ class Plugin_Module : Module {
 
     static Plugin_Info* discover ( void );
 
-    bool load ( Plugin_Info * );
+    bool load ( unsigned long id );
 
     void set_input_buffer ( int n, void *buf );
     void set_output_buffer ( int n, void *buf );
@@ -77,7 +78,6 @@ class Plugin_Module : Module {
 
 public:
 
-    Plugin_Module( int W, int H, const char *L = 0 );
     Plugin_Module ( );
     virtual ~Plugin_Module();
 
@@ -97,8 +97,12 @@ public:
 
     void handle_port_connection_change ( void );
 
+    LOG_CREATE_FUNC( Plugin_Module );
+
 protected:
 
     virtual int handle ( int );
+    void get ( Log_Entry &e ) const;
+    void set ( Log_Entry &e );
 
 };

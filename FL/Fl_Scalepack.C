@@ -64,6 +64,9 @@ Fl_Scalepack::draw ( void )
         if ( child( i )->visible() )
             ++v;
 
+    if ( 0 == v )
+        return;
+
     int sz, pos;
 
     if ( type() == HORIZONTAL )

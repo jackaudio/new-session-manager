@@ -134,6 +134,15 @@ Fl::add_handler( shortcut_handler );
 // use old focus behavior
 Fl::visible_focus( 0 );
 
+// try to fill the screen
+{
+        int sx, sy, sw, sh;
+
+        Fl::screen_xywh( sx, sy, sw, sh );
+
+        main_window->resize( sx, sy, sw, sh );
+}
+
 main_window->show();
 
 Fl::add_timeout( TRANSPORT_POLL_INTERVAL, update_transport );

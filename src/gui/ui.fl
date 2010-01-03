@@ -1,5 +1,5 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0108 
+version 1.0110 
 header_name {.H} 
 code_name {.C}
 comment {//
@@ -168,8 +168,8 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	return;
 	 
 if ( maybe_save_song() )
-	quit();} open selected
-      xywh {394 40 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
+	quit();} open
+      xywh {209 100 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
@@ -558,7 +558,7 @@ if ( p )
     phrase_c->grid( p );
 
 o->maximum( phrase::phrases() );}
-              xywh {164 703 40 25} color 36 labeltype NO_LABEL when 1 value 1
+              xywh {164 703 40 25} color 36 labeltype NO_LABEL when 1
             }
             Fl_Light_Button phrase_mute_button {
               label Mute
@@ -604,7 +604,7 @@ if ( p )
     pattern_c->grid( p );
 
 o->maximum( pattern::patterns() );}
-              xywh {164 703 40 25} color 36 labeltype NO_LABEL when 1 value 1
+              xywh {164 703 40 25} color 36 labeltype NO_LABEL when 1
               code0 {o->maximum( 1 );}
               code1 {// pattern::signal_create_destroy.connect( sigc::mem_fun( o, static_cast<void (Fl_Spinner::*)(double)>(&Fl_Spinner::maximum) ) );}
             }
@@ -642,14 +642,14 @@ pattern_mute_button->value( 0 );}
               Fl_Spinner pattern_channel_spinner {
                 label Channel
                 callback {((pattern *)pattern_c->grid())->channel( o->value() - 1 );}
-                xywh {815 700 40 24} color 36 when 1 value 1
+                xywh {815 700 40 24} color 36 when 1
                 code0 {\#include "../pattern.H"}
                 code1 {o->maximum( 16 );}
               }
               Fl_Spinner pattern_port_spinner {
                 label Port
                 callback {((pattern *)pattern_c->grid())->port( o->value() - 1 );}
-                xywh {815 734 40 24} color 36 when 1 value 1
+                xywh {815 734 40 24} color 36 when 1
                 code0 {o->maximum( 16 );}
               }
               Fl_Output mapping_text {
@@ -849,68 +849,59 @@ pattern_c->changed_mapping();}
           }
         }
       }
-      Fl_Group {} {open
-        xywh {5 33 853 52}
+      Fl_Group {} {open selected
+        xywh {0 29 865 67}
       } {
-        Fl_Choice playback_mode_menu {
-          label {Playback &Mode} open
-          xywh {751 54 107 30} box PLASTIC_DOWN_BOX down_box BORDER_BOX color 37 align 1
+        Fl_Pack {} {
+          label Meter open
+          xywh {5 41 200 26} type HORIZONTAL labelsize 9
+          code0 {o->spacing( 3 );}
         } {
-          MenuItem {} {
-            label Pattern
-            callback {song.play_mode = PATTERN;}
-            xywh {0 0 40 25}
+          Fl_Box {} {
+            label {BPM:}
+            xywh {5 41 35 26} resizable
           }
-          MenuItem {} {
-            label Sequence
-            callback {song.play_mode = SEQUENCE;}
-            xywh {10 10 40 25}
+          Fl_Value_Input {} {
+            callback {transport.set_beats_per_minute( o->value() );}
+            xywh {45 41 55 24} when 8
+            code1 {transport.signal_tempo_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
+            code2 {o->value( transport.beats_per_minute );}
           }
-          MenuItem {} {
-            label Trigger
-            callback {song.play_mode = TRIGGER;}
-            xywh {20 20 40 25}
+          Fl_Value_Input {} {
+            callback {transport.set_beats_per_bar( o->value() );}
+            xywh {105 41 26 24}
+            code0 {transport.signal_bpb_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
+            code1 {o->value( transport.beats_per_bar );}
           }
-        }
-        Fl_Choice record_mode_menu {
-          label {&Record Mode}
-          callback {if ( ! transport.recording )
-	config.record_mode = (record_mode_e)o->value();
-else
-	o->value( config.record_mode );} open
-          xywh {634 54 107 30} box PLASTIC_DOWN_BOX down_box BORDER_BOX color 37 align 1
-        } {
-          MenuItem {} {
-            label Merge
-            xywh {10 10 40 25}
+          Fl_Box {} {
+            label {/}
+            xywh {126 41 19 24}
           }
-          MenuItem {} {
-            label Overwrite
-            xywh {20 20 40 25}
+          Fl_Value_Input {} {
+            callback {transport.set_beat_type( o->value() );}
+            xywh {140 41 24 24}
+            code0 {transport.signal_beat_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
+            code1 {o->value( transport.beat_type );}
           }
-          MenuItem {} {
-            label Layer
-            xywh {30 30 40 25}
-          }
-          MenuItem {} {
-            label New
-            xywh {40 40 40 25}
+          Fl_Box {} {
+            xywh {165 63 40 4} labeltype NO_LABEL
           }
         }
         Fl_Pack vmetro_widget {
-          label Metronome open
-          xywh {226 37 245 48} type HORIZONTAL box UP_BOX color 40 selection_color 48 labelsize 33 align 0 resizable
+          label Metronome
+          xywh {210 35 400 60} type HORIZONTAL box UP_BOX color 40 selection_color 48 labelsize 33 align 0 resizable
           code0 {\#include "widgets.H"}
           code1 {o->box( FL_NO_BOX );}
           class Visual_Metronome
         } {}
-        Fl_Group transport_controls_group {
-          xywh {481 37 143 48}
+        Fl_Pack transport_controls_group {
+          xywh {615 44 139 42} type HORIZONTAL
+          code0 {o->spacing( 2 );}
         } {
           Fl_Button play_button {
             label {@>}
             callback {transport.toggle();}
-            xywh {531 43 34 35} shortcut 0x20 labeltype ENGRAVED_LABEL
+            xywh {665 45 34 41} shortcut 0x20 labeltype ENGRAVED_LABEL
           }
           Fl_Button rec_button {
             label {@circle}
@@ -937,42 +928,57 @@ else
 	
 	o->labelcolor( FL_WHITE );
 }}
-            xywh {575 43 49 35} type Toggle shortcut 0x80072 selection_color 47 labeltype ENGRAVED_LABEL when 1
+            xywh {709 45 45 41} type Toggle shortcut 0x80072 selection_color 47 labeltype ENGRAVED_LABEL when 1
           }
           Fl_Button home_button {
             label {@|<}
             callback {transport.locate( 0 );}
-            xywh {481 43 40 35} shortcut 0xff50 labeltype ENGRAVED_LABEL
+            xywh {615 45 40 41} shortcut 0xff50 labeltype ENGRAVED_LABEL
           }
         }
-        Fl_Group {} {open
-          xywh {5 33 208 38}
+        Fl_Choice record_mode_menu {
+          label {&Record Mode}
+          callback {if ( ! transport.recording )
+	config.record_mode = (record_mode_e)o->value();
+else
+	o->value( config.record_mode );} open
+          xywh {760 40 100 20} box PLASTIC_DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
         } {
-          Fl_Box {} {
-            label {BPM:}
-            xywh {5 37 35 34}
+          MenuItem {} {
+            label Merge
+            xywh {15 15 40 25}
           }
-          Fl_Counter {} {
-            callback {transport.set_beats_per_minute( o->value() );}
-            xywh {43 41 97 24} labeltype NO_LABEL align 4 step 0.1
-            code1 {transport.signal_tempo_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Counter::*)(double)>(&Fl_Counter::value) ) );}
-            code2 {o->value( transport.beats_per_minute );}
+          MenuItem {} {
+            label Overwrite
+            xywh {25 25 40 25}
           }
-          Fl_Value_Input {} {
-            callback {transport.set_beats_per_bar( o->value() );}
-            xywh {149 41 26 24}
-            code0 {transport.signal_bpb_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
-            code1 {o->value( transport.beats_per_bar );}
+          MenuItem {} {
+            label Layer
+            xywh {35 35 40 25}
           }
-          Fl_Value_Input {} {
-            callback {transport.set_beat_type( o->value() );}
-            xywh {189 41 24 24}
-            code0 {transport.signal_beat_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
-            code1 {o->value( transport.beat_type );}
+          MenuItem {} {
+            label New
+            xywh {45 45 40 25}
           }
-          Fl_Box {} {
-            label {/}
-            xywh {170 41 19 24}
+        }
+        Fl_Choice playback_mode_menu {
+          label {Playback &Mode} open
+          xywh {760 74 100 21} box PLASTIC_DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
+        } {
+          MenuItem {} {
+            label Pattern
+            callback {song.play_mode = PATTERN;}
+            xywh {5 5 40 25}
+          }
+          MenuItem {} {
+            label Sequence
+            callback {song.play_mode = SEQUENCE;}
+            xywh {15 15 40 25}
+          }
+          MenuItem {} {
+            label Trigger
+            callback {song.play_mode = TRIGGER;}
+            xywh {25 25 40 25}
           }
         }
       }
@@ -1074,9 +1080,9 @@ You should have received a copy of the GNU General Public License along with thi
   Function {make_randomization_dialog()} {} {
     Fl_Window randomization_dialog {
       label {Randomization Settings} open
-      xywh {656 39 340 95} type Double
+      xywh {656 39 340 95} type Double hide
       code0 {// feel->value( )}
-      code1 {probability->value( song.random.probability );} non_modal visible
+      code1 {probability->value( song.random.probability );} non_modal
     } {
       Fl_Choice feel {
         label {Feel: 1/}
@@ -1576,7 +1582,7 @@ class Instrument_Editor {} {
     Fl_Window window {
       label {Instrument Editor}
       callback {done->do_callback();} open
-      xywh {670 458 335 190} type Double visible
+      xywh {670 458 335 190} type Double hide
     } {
       Fl_Box {} {
         label {Instrument Row}

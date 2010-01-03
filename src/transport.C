@@ -196,6 +196,7 @@ void
 Transport::set_beats_per_minute ( double n )
 {
     _master_beats_per_minute = n;
+    _done = false;
 }
 
 void
@@ -205,6 +206,7 @@ Transport::set_beats_per_bar ( int n )
         return;
 
     _master_beats_per_bar = n;
+    _done = false;
 }
 
 void
@@ -214,4 +216,5 @@ Transport::set_beat_type ( int n )
         return;
 
     _master_beat_type = n;
+    _done = false;
 }

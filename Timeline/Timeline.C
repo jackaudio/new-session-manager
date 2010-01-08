@@ -46,6 +46,11 @@
 #include "const.h"
 #include "util/debug.h"
 
+#ifdef USE_SINGLEBUFFERED_TIMELINE
+#warning Using singlebuffered timeline window. This may cause flicker and makes the cursors invisible.
+#define redraw_overlay()
+#endif
+
 
 
 bool Timeline::draw_with_measure_lines = true;

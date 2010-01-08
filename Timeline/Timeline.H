@@ -51,18 +51,11 @@ class Scalebar;
 class Sequence;
 class Sequence_Widget;
 
-// disables double-buffering to make unnecessary redrawing more apparent
-// #define DEBUG_TIMELINE_DRAWING
-
-#ifndef DEBUG_TIMELINE_DRAWING
-
+#ifndef USE_SINGLEBUFFERED_TIMELINE
 #include <Fl/Fl_Overlay_Window.H>
-
 #else
-
 #include <FL/Fl_Single_Window.H>
 #define Fl_Overlay_Window Fl_Single_Window
-#define redraw_overlay()
 #endif
 
 struct position_info;

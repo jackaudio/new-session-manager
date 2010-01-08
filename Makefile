@@ -52,6 +52,11 @@ else
 	CXXFLAGS := -fno-rtti -fno-exceptions
 endif
 
+
+ifeq ($(USE_UNOPTIMIZED_DRAWING),yes)
+	CFLAGS+=-DUSE_UNOPTIMIZED_DRAWING
+endif
+
 CFLAGS+=-DVERSION=\"$(VERSION)\" \
 	-DINSTALL_PREFIX=\"$(prefix)\" \
 	-DSYSTEM_PATH=\"$(SYSTEM_PATH)\" \

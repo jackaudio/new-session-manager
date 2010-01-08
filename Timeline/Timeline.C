@@ -896,7 +896,11 @@ Timeline::draw ( void )
 
     adjust_vscroll();
 
+#ifndef USE_UNOPTIMIZED_DRAWING
     if ( ( damage() & FL_DAMAGE_ALL ) || ( damage() & FL_DAMAGE_EXPOSE ) )
+#else
+    #warning Optimized drawing of timeline disabled. This will waste your CPU.
+#endif
     {
         DMESSAGE( "complete redraw" );
 

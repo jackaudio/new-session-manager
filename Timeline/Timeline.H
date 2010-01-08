@@ -55,7 +55,6 @@ class Sequence_Widget;
 #include <Fl/Fl_Overlay_Window.H>
 #else
 #include <FL/Fl_Single_Window.H>
-#define Fl_Overlay_Window Fl_Single_Window
 #endif
 
 struct position_info;
@@ -73,7 +72,16 @@ struct Rectangle
 
 #include "RWLock.H"
 
+#ifdef USE_WIDGET_FOR_TIMELINE
+class Timeline : public Fl_Group, public RWLock
+#else
+#ifndef USE_SINGLEBUFFERED_TIMELINE
 class Timeline : public Fl_Overlay_Window, public RWLock
+#else
+class Timeline : public Fl_Single_Window, public RWLock
+#endif
+#endif
+
 {
     static void draw_clip ( void * v, int X, int Y, int W, int H );
 

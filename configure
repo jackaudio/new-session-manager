@@ -13,10 +13,11 @@ ask "Installation prefix" prefix /usr/local
 ask "Use the LASH Audio Session Handler" USE_LASH yes
 ask "Build for debugging" USE_DEBUG no
 
-using DEBUG && 
+using DEBUG &&
 { 
     ask "Use unoptimized drawing routines" USE_UNOPTIMIZED_DRAWING no
-    ask "Use singlebuffered timeline" USE_SINGLEBUFFERED_TIMELINE no
+    ask "Use widget for timeline" USE_WIDGET_FOR_TIMELINE no
+    using WIDGET_FOR_TIMELINE || ask "Use singlebuffered timeline" USE_SINGLEBUFFERED_TIMELINE no
 }
 
 begin_tests

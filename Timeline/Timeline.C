@@ -46,9 +46,21 @@
 #include "const.h"
 #include "util/debug.h"
 
+#ifdef USE_WIDGET_FOR_TIMELINE
+#define BASE Fl_Group
+#define redraw_overlay()
+#define BX x()
+#define BY y()
+#else
 #ifdef USE_SINGLEBUFFERED_TIMELINE
 #warning Using singlebuffered timeline window. This may cause flicker and makes the cursors invisible.
+#define BASE Fl_Single_Window
 #define redraw_overlay()
+#else
+#define BASE Fl_Overlay_Window
+#endif
+#define BX 0
+#define BY 0
 #endif
 
 
@@ -366,7 +378,7 @@ Timeline::ntracks ( void ) const
 }
 
 
-Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Window( X, Y, W, H, L )
+Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W, H, L )
 {
     Loggable::snapshot_callback( &Timeline::snapshot, this );
 
@@ -378,7 +390,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     _old_yposition = 0;
     _old_xposition = 0;
 
+#ifndef USE_WIDGET_FOR_TIMELINE
     X = Y = 0;
+#endif
 
     p1 = p2 = 0;
 
@@ -504,7 +518,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : Fl_Overlay_Wi
     end();
 
     Fl::add_timeout( UPDATE_FREQ, update_cb, this );
-
 }
 
 void
@@ -865,13 +878,13 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
 void
 Timeline::resize ( int X, int Y, int W, int H )
 {
-    Fl_Overlay_Window::resize( X, Y, W, H );
+    BASE::resize( X, Y, W, H );
 
     /* why is this necessary? */
-    rulers->resize( Track::width(), 0, W - Track::width() - vscroll->w(), rulers->h() );
+    rulers->resize( BX + Track::width(), BY, W - Track::width() - vscroll->w(), rulers->h() );
 
     /* why is THIS necessary? */
-    hscroll->resize( 0, H - 18, hscroll->w(), 18 );
+    hscroll->resize( BX, BY + H - 18, hscroll->w(), 18 );
     vscroll->size( vscroll->w(), H - 18 );
 }
 
@@ -909,9 +922,9 @@ Timeline::draw ( void )
     {
         DMESSAGE( "complete redraw" );
 
-        draw_box( box(), 0, 0, w(), h(), color() );
+        draw_box( box(), BX, BY, w(), h(), color() );
 
-        fl_push_clip( 0, rulers->y(), w(), rulers->h() );
+        fl_push_clip( BX, rulers->y(), w(), rulers->h() );
         draw_child( *rulers );
         fl_pop_clip();
 
@@ -1157,7 +1170,7 @@ Timeline::handle ( int m )
 /*     if ( m != FL_NO_EVENT ) */
 /*         DMESSAGE( "%s", event_name( m ) ); */
 
-/*     int r = Fl_Overlay_Window::handle( m ); */
+/*     int r = BASE::handle( m ); */
 
     switch ( m )
     {
@@ -1194,14 +1207,14 @@ Timeline::handle ( int m )
                     /* keep scrollbar from eating these. */
                     return 0;
                 default:
-                    return Fl_Overlay_Window::handle( m );
+                    return BASE::handle( m );
             }
 
             return 0;
         }
         default:
         {
-            int r = Fl_Overlay_Window::handle( m );
+            int r = BASE::handle( m );
 
             if ( m != FL_RELEASE && r )
                 return r;

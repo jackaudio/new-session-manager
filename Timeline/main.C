@@ -60,7 +60,7 @@ TLE *tle;
 
 const char APP_NAME[]   = "Non-DAW";
 const char APP_TITLE[]  = "The Non-DAW";
-const char COPYRIGHT[]  = "Copyright (C) 2008 Jonathan Moore Liles";
+const char COPYRIGHT[]  = "Copyright (C) 2008-2010 Jonathan Moore Liles";
 
 #define PACKAGE "non"
 

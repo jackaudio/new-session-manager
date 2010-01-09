@@ -3,7 +3,7 @@ version 1.0108
 header_name {.H}
 code_name {.C}
 comment {//
-// Copyright (C) 2008 Jonathan Moore Liles
+// Copyright (C) 2008-2010 Jonathan Moore Liles
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1077,7 +1077,7 @@ with fast, light, reliable alternatives.}
           xywh {2 288 492 311} hide
         } {
           Fl_Box {} {
-            label {Copyright (C) 2008 Jonathan Moore Liles}
+            label {Copyright (C) 2008-2010 Jonathan Moore Liles}
             xywh {43 302 410 37} labeltype SHADOW_LABEL labelfont 1 labelsize 18
           }
           Fl_Box {} {

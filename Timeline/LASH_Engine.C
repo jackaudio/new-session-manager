@@ -28,6 +28,7 @@
 #include "TLE.H" // all this just for quit()
 
 #include <FL/Fl.H>
+#include <FL/filename.H>
 
 extern TLE *tle;
 

@@ -64,6 +64,7 @@ JACK_Module::~JACK_Module ( )
 {
     log_destroy();
     configure_inputs( 0 );
+    configure_outputs( 0 );
 }
 
 

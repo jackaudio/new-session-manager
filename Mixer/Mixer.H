@@ -64,6 +64,7 @@ public:
     bool contains ( Mixer_Strip *ms );
 
     bool save ( void );
+    void quit ( void );
 
     Mixer ( int X, int Y, int W, int H, const char *L );
     virtual ~Mixer();

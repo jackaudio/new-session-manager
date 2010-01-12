@@ -59,6 +59,10 @@ Fl_Single_Window *main_window;
 
 #include <signal.h>
 
+static void cb_main ( Fl_Widget *w, void *v )
+{
+}
+
 int
 main ( int argc, char **argv )
 {
@@ -98,17 +102,19 @@ main ( int argc, char **argv )
 
     engine = new Engine();
 
-
     engine->init( "Non-Mixer" );
 
-    Fl_Single_Window *o = main_window = new Fl_Single_Window( 1024, 768, "Mixer" );
     {
-        Fl_Widget *o = mixer = new Mixer( 0, 0, main_window->w(), main_window->h(), NULL );
-        Fl_Group::current()->resizable(o);
-    }
-    o->end();
+        Fl_Single_Window *o = main_window = new Fl_Single_Window( 1024, 768, "Mixer" );
+        {
+            Fl_Widget *o = mixer = new Mixer( 0, 0, main_window->w(), main_window->h(), NULL );
+            Fl_Group::current()->resizable(o);
+        }
+        o->end();
 
-    o->show( argc, argv );
+        o->callback( cb_main, main_window );
+        o->show( argc, argv );
+    }
 
     {
         engine->lock();
@@ -123,9 +129,9 @@ main ( int argc, char **argv )
             MESSAGE( "Loading \"%s\"", argv[1] );
 
             if ( int err = Project::open( argv[1] ) )
-                {
-                    fl_alert( "Error opening project specified on commandline: %s", Project::errstr( err ) );
-                }
+            {
+                fl_alert( "Error opening project specified on commandline: %s", Project::errstr( err ) );
+            }
         }
         else
         {

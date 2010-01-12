@@ -84,6 +84,10 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         Project::save();
     }
+    if (! strcmp( picked, "&Project/&Quit") )
+    {
+        quit();
+    }
     else if ( !strcmp( picked, "&Mixer/&Add Strip" ) )
     {
         new_strip();
@@ -163,6 +167,15 @@ void Mixer::add ( Mixer_Strip *ms )
 
 //    redraw();
 }
+
+void
+Mixer::quit ( void )
+{
+    /* TODO: save project? */
+
+    while ( Fl::first_window() ) Fl::first_window()->hide();
+}
+
 
 void
 Mixer::insert ( Mixer_Strip *ms, Mixer_Strip *before )

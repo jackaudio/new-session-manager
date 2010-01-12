@@ -37,6 +37,9 @@ private:
     void snapshot ( void );
     static void snapshot ( void *v ) { ((Mixer*)v)->snapshot(); }
 
+    void cb_menu(Fl_Widget*);
+    static void cb_menu(Fl_Widget*, void*);
+
     Fl_Scroll *scroll;
     Fl_Pack *pack;
 

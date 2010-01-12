@@ -208,16 +208,16 @@ Mixer_Strip::handle_module_added ( Module *m )
         DMESSAGE( "Connecting controls to default module \"%s\"", m->name() );
 
         /* connect default modules to their default controllers/indicators */
-        if ( ! strcmp( m->name(), "JACK" ) && m->ninputs() == 0 )
+        if ( 0 == strcmp( m->name(), "JACK" ) && m->ninputs() == 0 )
         {
             if ( !jack_input_controller->control_output[0].connected() )
                 jack_input_controller->connect_to( &m->control_input[1] );
         }
-        else if ( ! strcmp( m->name(), "Gain" ) )
+        else if ( 0 == strcmp( m->name(), "Gain" ) )
         {
             gain_controller->connect_to( &m->control_input[0] );
         }
-        else if ( ! strcmp( m->name(), "Meter" ) )
+        else if ( 0 == strcmp( m->name(), "Meter" ) )
         {
             meter_indicator->connect_to( &m->control_output[0] );
         }
@@ -327,7 +327,6 @@ Mixer_Strip::init ( )
                     Fl_Group::current()->resizable(o);
 
                 }
-
                 o->end();
                 Fl_Group::current()->resizable(o);
             } // Fl_Group* o

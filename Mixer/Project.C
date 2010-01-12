@@ -266,6 +266,8 @@ Project::open ( const char *name )
 
 //    timeline->zoom_fit();
 
+
+
     MESSAGE( "Loaded project \"%s\"", name );
 
     return 0;
@@ -293,7 +295,7 @@ Project::create ( const char *name, const char *template_name )
     if ( chdir( name ) )
         FATAL( "WTF? Cannot change to new project directory" );
 
-    mkdir( "sources", 0777 );
+//    mkdir( "sources", 0777 );
     creat( "snapshot", 0666 );
 
     /* TODO: copy template */

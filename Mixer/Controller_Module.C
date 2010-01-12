@@ -268,6 +268,17 @@ Controller_Module::connect_to ( Port *p )
     }
 }
 
+void
+Controller_Module::resize ( int X, int Y, int W, int H )
+{
+    Module::resize( X, Y, W, H );
+
+    if ( ! _pad && children() )
+    {
+        child( 0 )->resize( X, Y, W, H );
+    }
+}
+
 int
 Controller_Module::handle ( int m )
 {

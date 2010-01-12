@@ -25,7 +25,8 @@
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Menu_Bar.H>
-
+#include <FL/fl_ask.H>
+#include "New_Project_Dialog.H"
 #include "Engine/Engine.H"
 
 #include "Project.H"
@@ -46,6 +47,53 @@ static void update_cb( void *v ) {
     ((Mixer*)v)->update();
 }
 
+
+void Mixer::cb_menu(Fl_Widget* o) {
+    Fl_Menu_Bar *menu = (Fl_Menu_Bar*)o;
+
+/*     const Fl_Menu_Item *mi = &menu->menu()[menu->value()]; */
+
+     char picked[256];
+     // const char *picked = menu->text();
+
+    menu->item_pathname( picked, sizeof( picked ) );
+
+    if (! strcmp( picked, "&Project/&New") )
+    {
+        DMESSAGE( "New project" );
+        const char *templates[] = { "Default", NULL };
+
+        char *default_path;
+        char *selected_template;
+
+//        read_line( user_config_dir, "default_path", &default_path );
+
+        char *path = new_project_chooser( templates, &default_path, &selected_template );
+
+        if ( ! Project::create( path, selected_template ) )
+            fl_alert( "Error creating project!" );
+
+        free( path );
+        free( selected_template );
+        free( default_path );
+
+//        write_line( user_config_dir, "default_path", default_path );
+
+    }
+    else if (! strcmp( picked, "&Project/&Save" ) )
+    {
+        Project::save();
+    }
+    else if ( !strcmp( picked, "&Mixer/&Add Strip" ) )
+    {
+        new_strip();
+    }
+}
+
+void Mixer::cb_menu(Fl_Widget* o, void* v) {
+    ((Mixer*)(v))->cb_menu(o);
+}
+
 Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
 {
@@ -54,9 +102,11 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     { Fl_Menu_Bar *o = new Fl_Menu_Bar( X, Y, W, 24 );
         o->add( "&Project/&New" );
         o->add( "&Project/&Open" );
-        o->add( "&Project/&Quit" );
-        o->add( "&Mixer/&Add Strip" );
+        o->add( "&Project/&Save", FL_CTRL + 's', 0, 0 );
+        o->add( "&Project/&Quit", FL_CTRL + 'q', 0, 0 );
+        o->add( "&Mixer/&Add Strip", 'a', 0, 0 );
         o->add( "&Options" );
+        o->callback( cb_menu, this );
     }
     { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - 24 );
         o->box( FL_NO_BOX );
@@ -211,7 +261,7 @@ Mixer::save ( void )
 {
     MESSAGE( "Saving state" );
     Loggable::snapshot_callback( &Mixer::snapshot, this );
-    Loggable::snapshot( "save.mix" );
+    Loggable::snapshot( "snapshot" );
     return true;
 }
 
@@ -226,23 +276,6 @@ Mixer::handle ( int m )
         case FL_ENTER:
         case FL_LEAVE:
             return 1;
-        case FL_SHORTCUT:
-        {
-            if ( Fl::event_key() == 'a' )
-            {
-                new_strip();
-                return 1;
-            }
-            else if ( Fl::event_ctrl() && Fl::event_key() == 's' )
-            {
-//                save();
-                Project::save();
-                return 1;
-            }
-            else
-                return r;
-            break;
-        }
         default:
             return r;
             break;

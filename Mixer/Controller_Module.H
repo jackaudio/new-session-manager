@@ -77,6 +77,8 @@ protected:
 
     virtual int handle ( int m );
 
+    void resize ( int, int, int, int );
+
 private:
 
     std::vector<JACK::Port> jack_input;

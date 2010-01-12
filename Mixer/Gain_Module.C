@@ -50,6 +50,7 @@ Gain_Module::Gain_Module ( )
 
 Gain_Module::~Gain_Module ( )
 {
+    delete (float*)control_input[0].buffer();
     log_destroy();
 }
 

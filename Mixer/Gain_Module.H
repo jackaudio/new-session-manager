@@ -26,7 +26,6 @@ class Gain_Module : public Module
 public:
 
     Gain_Module ( );
-    Gain_Module ( int W, int H, const char *L=0 );
     virtual ~Gain_Module ( );
 
     const char *name ( void ) const { return "Gain"; }

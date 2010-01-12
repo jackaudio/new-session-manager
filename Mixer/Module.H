@@ -46,8 +46,8 @@ class Module : public Fl_Group, public Loggable {
 
     Module_Parameter_Editor *_editor;
 
-    void cb_handle(Fl_Widget*);
-    static void cb_handle(Fl_Widget*, void*);
+/*     void cb_handle(Fl_Widget*); */
+/*     static void cb_handle(Fl_Widget*, void*); */
 
     void init ( void );
 

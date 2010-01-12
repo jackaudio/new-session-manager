@@ -28,16 +28,16 @@ Gain_Module::Gain_Module ( )
     add_port( Port( this, Port::INPUT, Port::AUDIO ) );
     add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
 
-    Port p( this, Port::INPUT, Port::CONTROL, "gain" );
+    Port p( this, Port::INPUT, Port::CONTROL, "Gain (dB)" );
     p.hints.type = Port::Hints::LOGARITHMIC;
     p.hints.ranged = true;
-    p.hints.minimum = 0.0f;
+    p.hints.minimum = -70.0f;
 //    p.hints.maximum = HUGE;
-    p.hints.maximum = 10.0f;
-    p.hints.default_value = 1.0f;
+    p.hints.maximum = 6.0f;
+    p.hints.default_value = 0.0f;
 
     p.connect_to( new float );
-    p.control_value( 1.0f );
+    p.control_value( p.hints.default_value );
 
     add_port( p );
 
@@ -84,7 +84,7 @@ Gain_Module::process ( void )
 {
     if ( control_input[0].connected() )
     {
-        float g = control_input[0].control_value();
+        float g = DB_CO( control_input[0].control_value() );
 
         for ( int i = audio_input.size(); i--; )
         {

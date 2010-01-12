@@ -31,13 +31,17 @@
 
 class Mixer_Strip;
 class Fl_Flowpack;
-class Fl_Tabs;
+class Fl_Flip_Button;
 
 class Chain : public Fl_Group, public Loggable {
 
     Fl_Pack *modules_pack;
     Fl_Flowpack *controls_pack;
-    Fl_Tabs *tabs;
+
+
+    Fl_Flip_Button *tab_button;
+    Fl_Group *chain_tab;
+    Fl_Group *control_tab;
 
     void cb_handle(Fl_Widget*);
     static void cb_handle(Fl_Widget*, void*);

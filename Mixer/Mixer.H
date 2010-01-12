@@ -57,6 +57,10 @@ public:
     void process ( unsigned int nframes );
     void add ( Mixer_Strip *ms );
     void remove ( Mixer_Strip *ms );
+    void move_left ( Mixer_Strip *ms );
+    void move_right ( Mixer_Strip *ms );
+    void insert ( Mixer_Strip *ms, Mixer_Strip *before );
+    void insert ( Mixer_Strip *ms, int i );
     bool contains ( Mixer_Strip *ms );
 
     bool save ( void );

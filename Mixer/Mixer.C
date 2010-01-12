@@ -164,6 +164,44 @@ void Mixer::add ( Mixer_Strip *ms )
 //    redraw();
 }
 
+void
+Mixer::insert ( Mixer_Strip *ms, Mixer_Strip *before )
+{
+    engine->lock();
+
+    mixer_strips->remove( ms );
+    mixer_strips->insert( *ms, before );
+
+    engine->unlock();
+
+    scroll->redraw();
+}
+void
+Mixer::insert ( Mixer_Strip *ms, int i )
+{
+    Mixer_Strip *before = (Mixer_Strip*)mixer_strips->child( i );
+
+    insert( ms, before);
+}
+
+void
+Mixer::move_left ( Mixer_Strip *ms )
+{
+    int i = mixer_strips->find( ms );
+
+    if ( i > 0 )
+        insert( ms, i - 1 );
+}
+
+void
+Mixer::move_right ( Mixer_Strip *ms )
+{
+    int i = mixer_strips->find( ms );
+
+    if ( i < mixer_strips->children() - 1 )
+        insert( ms, i + 2 );
+}
+
 void Mixer::remove ( Mixer_Strip *ms )
 {
     MESSAGE( "Remove mixer strip \"%s\"", ms->name() );
@@ -175,6 +213,7 @@ void Mixer::remove ( Mixer_Strip *ms )
     engine->unlock();
 
     delete ms;
+
     parent()->redraw();
 }
 

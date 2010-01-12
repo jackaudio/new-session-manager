@@ -44,7 +44,7 @@ Fl_Single_Window *main_window;
 #include <FL/Boxtypes.H>
 #include "Loggable.H"
 #include <FL/Fl_Tooltip.H>
-
+#include <FL/fl_ask.H>
 
 /* for registration */
 #include "Module.H"
@@ -121,7 +121,11 @@ main ( int argc, char **argv )
 
 /*             Loggable::open( name ); */
             MESSAGE( "Loading \"%s\"", argv[1] );
-            Project::open( argv[1] );
+
+            if ( int err = Project::open( argv[1] ) )
+                {
+                    fl_alert( "Error opening project specified on commandline: %s", Project::errstr( err ) );
+                }
         }
         else
         {

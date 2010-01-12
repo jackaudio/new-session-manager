@@ -23,6 +23,8 @@
  * off label and "bar" the on. Obviously you should make sure that
  * each label will fit. */
 
+#pragma once
+
 #include <FL/Fl_Button.H>
 
 #include <stdlib.h>

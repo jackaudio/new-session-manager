@@ -74,6 +74,8 @@
 #include "Mixer_Strip.H"
 #include <dsp.h>
 
+#include <FL/Fl_Flip_Button.H>
+
 
 
 std::vector <Module::Port> Chain::port;
@@ -85,6 +87,7 @@ void
 Chain::get ( Log_Entry &e ) const
 {
     e.add( ":strip", strip() );
+    e.add( ":tab", tab_button->value() ? "controls" : "chain" );
 }
 
 void
@@ -96,7 +99,12 @@ Chain::set ( Log_Entry &e )
 
         e.get( i, &s, &v );
 
-        if ( ! strcmp( s, ":strip" ) )
+        if ( ! strcmp( s, ":tab" ) )
+        {
+            tab_button->value( strcmp( v, "controls" ) == 0 );
+            tab_button->do_callback();
+        }
+        else if ( ! strcmp( s, ":strip" ) )
         {
             int i;
             sscanf( v, "%X", &i );
@@ -134,30 +142,35 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
     labelsize( 10 );
     align( FL_ALIGN_TOP );
 
-    { Fl_Tabs *o = tabs = new Fl_Tabs( X, Y, W, H );
-        { Fl_Group *o = new Fl_Group( X, Y + 24, W, H - 24, "Chain" );
-            o->box( FL_FLAT_BOX );
-            o->labelsize( 9 );
-            { Fl_Pack *o = modules_pack = new Fl_Pack( X, Y + 24, W, H - 24 );
-                o->type( Fl_Pack::VERTICAL );
-                o->spacing( 10 );
-                o->end();
-            }
+    { Fl_Flip_Button* o  = tab_button = new Fl_Flip_Button( X, Y, W, 16, "chain/controls");
+        o->type(1);
+        o->labelsize( 12 );
+        o->callback( cb_handle, this );
+    }
+
+    Y += 18;
+    H -= 18;
+
+    { Fl_Group *o = chain_tab = new Fl_Group( X, Y, W, H, "" );
+        o->labeltype( FL_NO_LABEL );
+        o->box( FL_FLAT_BOX );
+        { Fl_Pack *o = modules_pack = new Fl_Pack( X, Y, W, H );
+            o->type( Fl_Pack::VERTICAL );
+            o->spacing( 10 );
             o->end();
         }
-        { Fl_Group *o = new Fl_Group( X, Y + 24, W, H - 24, "Controls" );
-            o->labelsize( 9 );
-            o->hide();
-            { Fl_Scroll *o = new Fl_Scroll( X, Y + 24, W, H - 24 );
-                o->type( Fl_Scroll::VERTICAL );
-                { Fl_Flowpack *o = controls_pack = new Fl_Flowpack( X, Y + 24, W, H - 24 );
-                    o->hspacing( 10 );
-                    o->vspacing( 10 );
+        o->end();
+    }
+    { Fl_Group *o = control_tab = new Fl_Group( X, Y, W, H, "" );
+        o->labeltype( FL_NO_LABEL );
+        o->hide();
+        { Fl_Scroll *o = new Fl_Scroll( X, Y, W, H );
+            o->type( Fl_Scroll::VERTICAL );
+            { Fl_Flowpack *o = controls_pack = new Fl_Flowpack( X, Y, W, H );
+                o->hspacing( 10 );
+                o->vspacing( 10 );
 //                    o->box( FL_FLAT_BOX );
 //                    o->color( FL_RED );
-                    o->end();
-                    Fl_Group::current()->resizable( o );
-                }
                 o->end();
                 Fl_Group::current()->resizable( o );
             }
@@ -165,6 +178,7 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
             Fl_Group::current()->resizable( o );
         }
         o->end();
+        o->hide();
         Fl_Group::current()->resizable( o );
     }
 
@@ -228,6 +242,22 @@ Chain::initialize_with_default ( void )
 
 
 void Chain::cb_handle(Fl_Widget* o) {
+    if ( o = tab_button )
+    {
+        Fl_Flip_Button *fb = (Fl_Flip_Button*)o;
+
+        if ( fb->value() == 0 )
+        {
+            control_tab->hide();
+            chain_tab->show();
+        }
+        else
+        {
+            chain_tab->hide();
+            control_tab->show();
+        }
+    }
+
     /* if ( o == head_button ) */
     /* { */
     /*     Module *m = Module::pick_plugin(); */
@@ -602,7 +632,8 @@ Chain::draw ( void )
 {
     Fl_Group::draw();
 
-    if ( 0 == strcmp( "Chain", tabs->value()->label() ) )
+/*     if ( 0 == strcmp( "Chain", tabs->value()->label() ) ) */
+    if ( chain_tab->visible() )
         for ( int i = 0; i < modules(); ++i )
             draw_connections( module( i ) );
 }

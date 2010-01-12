@@ -39,8 +39,8 @@
 #include "debug.h"
 
 
-#include <FL/Fl_Tabs.H>
 #include "FL/Fl_Flowpack.H"
+#include <FL/fl_ask.H>
 #include "Mixer.H"
 
 #include "Chain.H"
@@ -59,6 +59,7 @@ Mixer_Strip::get ( Log_Entry &e ) const
 {
     e.add( ":name",            name()           );
     e.add( ":width",      prepost_button->value() ? "wide" : "narrow" );
+    e.add( ":tab",      tab_button->value() ? "signal" : "fader" );
     e.add( ":color",           (unsigned long)color());
 }
 
@@ -74,7 +75,15 @@ Mixer_Strip::set ( Log_Entry &e )
         if ( ! strcmp( s, ":name" ) )
             name( v );
         else if ( ! strcmp( s, ":width" ) )
-            prepost_button->value( strcmp( v, "pre" ) == 0 );
+        {
+            prepost_button->value( strcmp( v, "wide" ) == 0 );
+            prepost_button->do_callback();
+        }
+        else if ( ! strcmp( s, ":tab" ) )
+        {
+            tab_button->value( strcmp( v, "signal" ) == 0 );
+            tab_button->do_callback();
+        }
         else if ( ! strcmp( s, ":color" ) )
         {
             color( (Fl_Color)atoll( v ) );
@@ -104,7 +113,7 @@ Mixer_Strip::chain ( Chain *c )
 
     c->strip( this );
 
-    Fl_Group *g = signal_group;
+    Fl_Group *g = signal_tab;
 
     c->resize( g->x(), g->y(), g->w(), g->h() );
     g->add( c );
@@ -154,12 +163,37 @@ Mixer_Strip::~Mixer_Strip ( )
     log_destroy();
 }
 
-
-
 void Mixer_Strip::cb_handle(Fl_Widget* o) {
     // parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
-    if ( o == close_button )
-        ((Mixer*)parent())->remove( this );
+    if ( o == tab_button )
+    {
+        if ( tab_button->value() == 0 )
+        {
+            fader_tab->show();
+            signal_tab->hide();
+        }
+        else
+        {
+            signal_tab->show();
+            fader_tab->hide();
+        }
+
+    }
+    else if ( o == left_button )
+    {
+        mixer->move_left( this );
+    }
+    else if ( o == right_button )
+    {
+        mixer->move_right( this );
+    }
+    else if ( o == close_button )
+    {
+        if ( Fl::event_shift() || 1 == fl_choice( "Are you sure you want to remove this strip?\n\n(this action cannot be undone)", "Cancel", "Remove", NULL ) )
+        {
+            ((Mixer*)parent())->remove( this );
+        }
+    }
     else if ( o == name_field )
         name( name_field->value() );
     else if ( o == prepost_button )
@@ -169,7 +203,8 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
         else
             size( 120, h() );
 
-        parent()->parent()->redraw();
+        if ( parent() )
+            parent()->parent()->redraw();
     }
 }
 
@@ -269,6 +304,14 @@ Mixer_Strip::init ( )
         }
         { Fl_Scalepack *o = new Fl_Scalepack( 7, 143, 110, 25 );
             o->type( Fl_Pack::HORIZONTAL );
+            { Fl_Button* o = left_button = new Fl_Button(7, 143, 35, 25, "@<-");
+                o->tooltip( "Move left" );
+                o->type(0);
+                o->labelsize(10);
+                o->when( FL_WHEN_RELEASE );
+                o->callback( ((Fl_Callback*)cb_handle), this );
+            } // Fl_Button* o
+
             { Fl_Button* o = close_button = new Fl_Button(7, 143, 35, 25, "X");
                 o->tooltip( "Remove strip" );
                 o->type(0);
@@ -279,22 +322,29 @@ Mixer_Strip::init ( )
                 o->when( FL_WHEN_RELEASE );
                 o->callback( ((Fl_Callback*)cb_handle), this );
             } // Fl_Button* o
+
+            { Fl_Button* o = right_button = new Fl_Button(7, 143, 35, 25, "@->");
+                o->tooltip( "Move right" );
+                o->type(0);
+                o->labelsize(10);
+                o->when( FL_WHEN_RELEASE );
+                o->callback( ((Fl_Callback*)cb_handle), this );
+            } // Fl_Button* o
+
             o->end();
         } // Fl_Group* o
         { Fl_Flip_Button* o = prepost_button = new Fl_Flip_Button(61, 183, 45, 22, "narrow/wide");
             o->type(1);
-//            o->box(FL_ROUNDED_BOX);
-            o->box( FL_THIN_DOWN_BOX );
-            o->color((Fl_Color)106);
-            o->selection_color((Fl_Color)65);
-            o->labeltype(FL_NORMAL_LABEL);
-            o->labelfont(0);
             o->labelsize(14);
-            o->labelcolor(FL_FOREGROUND_COLOR);
-            o->align(FL_ALIGN_CLIP);
             o->callback( ((Fl_Callback*)cb_handle), this );
             o->when(FL_WHEN_RELEASE);
         } // Fl_Flip_Button* o
+        { Fl_Flip_Button* o = tab_button = new Fl_Flip_Button(61, 183, 45, 22, "fader/signal");
+            o->type(1);
+            o->labelsize( 14 );
+            o->callback( cb_handle, this );
+            o->when(FL_WHEN_RELEASE);
+        }
 //    { Fl_Pack* o = new Fl_Pack(8, 208, 103, 471);
 //    { Fl_Pack* o = gain_pack = new Fl_Pack(8, 208, 103, 516 );
 
@@ -303,48 +353,33 @@ Mixer_Strip::init ( )
 
     Fl_Pack *fader_pack;
 
-    { Fl_Tabs *o = new Fl_Tabs( 4, 104, 110, 330 );
-        o->clip_children( 1 );
-        o->box( FL_NO_BOX );
-        { Fl_Group *o = new Fl_Group( 4, 114, 110, 330, "Fader" );
-            o->labelsize( 9 );
-            o->box( FL_NO_BOX );
-            { Fl_Pack* o = fader_pack = new Fl_Pack(4, 116, 103, 330 );
-                o->spacing( 20 );
-                o->type( Fl_Pack::HORIZONTAL );
-                { Controller_Module *o = gain_controller = new Controller_Module( true );
-//                    o->chain( _chain );
-                    o->pad( false );
-//           o->connect_to( &gain_module->control_input[0] );
-                    o->size( 33, 0 );
-                }
-                { Meter_Indicator_Module *o = meter_indicator = new Meter_Indicator_Module( true );
-//                    o->chain( _chain );
-                    o->pad( false );
-//            o->connect_to( &meter_module->control_output[0] );
-                    o->size( 58, 0 );
-                    o->clip_children( 0 );
-                    Fl_Group::current()->resizable(o);
-
-                }
-                o->end();
+    { Fl_Group *o = fader_tab = new Fl_Group( 7, 115, 105, 330, "Fader" );
+        o->labeltype( FL_NO_LABEL );
+        { Fl_Pack* o = fader_pack = new Fl_Pack(7, 116, 103, 330 );
+            o->spacing( 20 );
+            o->type( Fl_Pack::HORIZONTAL );
+            { Controller_Module *o = gain_controller = new Controller_Module( true );
+                o->pad( false );
+                o->size( 33, 0 );
+            }
+            { Meter_Indicator_Module *o = meter_indicator = new Meter_Indicator_Module( true );
+                o->pad( false );
+                o->size( 58, 0 );
+                o->clip_children( 0 );
                 Fl_Group::current()->resizable(o);
-            } // Fl_Group* o
+
+            }
             o->end();
             Fl_Group::current()->resizable(o);
-        }
-        { Fl_Group *o = signal_group = new Fl_Group( 4, 114, 110, 330, "Signal" );
-            o->labelsize( 9 );
-            o->hide();
-            o->end();
-        }
-
+        } // Fl_Group* o
         o->end();
         Fl_Group::current()->resizable(o);
     }
-
-//    log_create();
-
+    { Fl_Group *o = signal_tab = new Fl_Group( 7, 115, 105, 330 );
+        o->labeltype( FL_NO_LABEL );
+        o->hide();
+        o->end();
+    }
     { Fl_Pack *o = panner_pack = new Fl_Pack( 2, 440, 114, 40 );
         o->spacing( 2 );
         o->type( Fl_Pack::VERTICAL );

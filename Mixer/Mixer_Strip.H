@@ -46,6 +46,7 @@ class Fl_Flowpack;
 class Controller_Module;
 class Meter_Indicator_Module;
 class Module;
+class Fl_Flip_Button;
 
 class Mixer_Strip : public Fl_Group, public Loggable {
 
@@ -58,11 +59,15 @@ public:
 
 //    Fl_Value_Slider *gain_slider;
     Fl_Flip_Button *prepost_button;
+    Fl_Flip_Button *tab_button;
     Fl_Button *close_button;
+    Fl_Button *left_button;
+    Fl_Button *right_button;
     Fl_Input *name_field;
 
     Fl_Flowpack *controls_pack;
-    Fl_Group *signal_group;
+    Fl_Group *signal_tab;
+    Fl_Group *fader_tab;
     Fl_Pack *panner_pack;
 
     Chain *_chain;
@@ -83,6 +88,8 @@ private:
     void init ( );
     void cb_handle(Fl_Widget*);
     static void cb_handle(Fl_Widget*, void*);
+
+    void set_tab ( void );
 
     void update_port_names ( void );
 

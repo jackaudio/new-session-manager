@@ -185,7 +185,7 @@ public:
     void select( const Rectangle &r );
     Track * track_under ( int Y );
 
-
+    int nselected ( void ) const;
     void delete_selected ( void );
     void select_none ( void );
 

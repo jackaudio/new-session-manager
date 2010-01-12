@@ -163,7 +163,7 @@ public:
     virtual Sequence_Widget *clone ( void ) const = 0;
 
     bool selected ( void ) const;
-    int nselected ( void ) const
+    static int nselected ( void )
         { return _selection.size(); }
     void select ( void );
     void deselect ( void );

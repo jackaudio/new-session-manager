@@ -131,8 +131,7 @@ if ( Project::open() )
 
 update_menu();
 
-project_name->redraw();} {selected
-    }
+project_name->redraw();} {}
   }
   Function {run()} {} {
     code {update_menu();
@@ -683,6 +682,12 @@ ab.run();}
           code0 {\#include "FL/Fl_Blinker.H"}
           class Fl_Blinker
         }
+        Fl_Button selected_blinker {
+          label SEL
+          xywh {695 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 13 selection_color 5 labelfont 2 labelcolor 39 deactivate
+          code0 {\#include "FL/Fl_Blinker.H"}
+          class Fl_Blinker
+        }
         Fl_Box stats_box {
           label {<stats>}
           xywh {810 1 215 21} labelsize 13 labelcolor 53 align 88
@@ -789,7 +794,9 @@ if ( engine->zombified() && ! zombie )
 
 solo_blinker->value( Track::soloing() );
 rec_blinker->value( transport->rolling && transport->rec_enabled() );
-lash_blinker->value( lash->enabled() );} {}
+lash_blinker->value( lash->enabled() );
+selected_blinker->value( timeline->nselected() );} {selected
+    }
   }
   Function {update_cb( void *v )} {open private return_type {static void}
   } {

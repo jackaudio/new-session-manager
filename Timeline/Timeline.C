@@ -1129,6 +1129,12 @@ Timeline::select_none ( void )
     Sequence_Widget::select_none();
 }
 
+int
+Timeline::nselected ( void ) const
+{
+    return Sequence_Widget::nselected();
+}
+
 /** An unfortunate necessity for implementing our own DND aside from
  * the (bogus) native FLTK system */
 Track *

@@ -220,7 +220,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label Timeline
       callback {if ( Fl::event_key() != FL_Escape )
 	o->hide();} open
-      private xywh {104 122 1025 770} type Double resizable xclass Non_DAW visible
+      private xywh {701 103 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         private xywh {0 0 1024 25}
@@ -307,7 +307,7 @@ load_timeline_settings();
 
 update_menu();
 
-main_window->redraw();} selected
+main_window->redraw();}
             xywh {0 0 40 25}
           }
           MenuItem {} {
@@ -917,7 +917,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {651 237 520 740} type Double modal visible
+      private xywh {653 248 520 740} type Double modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}
@@ -1017,7 +1017,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {1342 76 495 655} type Double xclass {Non-DAW} visible
+      private xywh {1344 87 495 655} type Double xclass {Non-DAW} visible
     } {
       Fl_Tabs {} {open
         xywh {0 264 497 392}

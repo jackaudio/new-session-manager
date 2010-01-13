@@ -40,6 +40,7 @@
 
 
 #include "FL/Fl_Flowpack.H"
+#include <FL/Fl_Input.H>
 #include <FL/fl_ask.H>
 #include "Mixer.H"
 
@@ -101,6 +102,20 @@ Mixer_Strip::log_children ( void )
     log_create();
 
     _chain->log_children();
+}
+
+void
+Mixer_Strip::color ( Fl_Color c )
+{
+    _color = c;
+    name_field->color( _color );
+    name_field->redraw();
+}
+
+Fl_Color
+Mixer_Strip::color ( void ) const
+{
+    return _color;
 }
 
 void
@@ -426,18 +441,15 @@ Mixer_Strip::handle ( int m )
 {
     Logger log( this );
 
-    static Fl_Color orig_color;
-
     switch ( m )
     {
         case FL_ENTER:
-            orig_color = name_field->color();
-            color( FL_BLACK );
+            name_field->color( FL_BLACK );
             name_field->redraw();
             return 1;
             break;
         case FL_LEAVE:
-            name_field->color( orig_color );
+            name_field->color( _color );
             name_field->redraw();
             return 1;
             break;

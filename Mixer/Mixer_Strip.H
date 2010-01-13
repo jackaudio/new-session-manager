@@ -33,7 +33,6 @@
 #include <FL/Fl_Value_Slider.H>
 #include <FL/Fl_Counter.H>
 #include <FL/Fl_Progress.H>
-#include <FL/Fl_Input.H>
 //#include "Fader.H"
 #include <JACK/Port.H>
 
@@ -47,6 +46,7 @@ class Controller_Module;
 class Meter_Indicator_Module;
 class Module;
 class Fl_Flip_Button;
+class Fl_Input;
 
 class Mixer_Strip : public Fl_Group, public Loggable {
 
@@ -56,6 +56,33 @@ public:
     Mixer_Strip( const char *name, int channels );
     Mixer_Strip();                                              /* for log create */
     ~Mixer_Strip();
+
+
+    void chain ( Chain *c );
+
+    void log_children ( void );
+
+    virtual void color ( Fl_Color c );
+    virtual Fl_Color color ( void ) const;
+
+    LOG_CREATE_FUNC( Mixer_Strip );
+
+    void process ( unsigned int nframes );
+
+    static void configure_outputs ( Fl_Widget *o, void *v );
+    void configure_outputs ( void );
+
+    bool configure_ports ( int n );
+
+    void handle_module_added ( Module *m );
+
+    void update ( void );
+
+    // int channels ( void ) const { return _in.size(); }
+    void name ( const char *name );
+    const char *name ( void ) const { return label(); }
+
+private:
 
 //    Fl_Value_Slider *gain_slider;
     Fl_Flip_Button *prepost_button;
@@ -81,9 +108,9 @@ public:
 
     nframes_t nframes;
 
-private:
 
-    unsigned _color;
+    Fl_Color _color;
+//    unsigned _color;
 
     void init ( );
     void cb_handle(Fl_Widget*);
@@ -99,39 +126,4 @@ protected:
     void set ( Log_Entry &e );
 
     virtual int handle ( int m );
-
-public:
-
-    void chain ( Chain *c );
-
-    void log_children ( void );
-
-    void color ( Fl_Color c )
-        {
-            _color = c;
-            name_field->color( _color );
-            name_field->redraw();
-        }
-
-    Fl_Color color ( void ) const
-        {
-            return name_field->color();
-        }
-
-    LOG_CREATE_FUNC( Mixer_Strip );
-
-    void process ( unsigned int nframes );
-
-    static void configure_outputs ( Fl_Widget *o, void *v );
-    void configure_outputs ( void );
-
-    bool configure_ports ( int n );
-
-    void handle_module_added ( Module *m );
-
-    void update ( void );
-
-    // int channels ( void ) const { return _in.size(); }
-    void name ( const char *name );
-    const char *name ( void ) const { return label(); }
 };

@@ -97,6 +97,7 @@ Module::get ( Log_Entry &e ) const
     }
     e.add( ":is_default", is_default() );
     e.add( ":chain", chain() );
+    e.add( ":active", active() );
 }
 
 void
@@ -137,6 +138,13 @@ Module::set ( Log_Entry &e )
         else if ( ! ( strcmp( s, ":is_default" ) ) )
         {
             is_default( atoi( v ) );
+        }
+        else if ( ! ( strcmp( s, ":active" ) ) )
+        {
+            if ( atoi( v ) )
+                activate();
+            else
+                deactivate();
         }
         else if ( ! strcmp( s, ":chain" ) )
         {

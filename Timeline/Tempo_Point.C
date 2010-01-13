@@ -92,6 +92,8 @@ Tempo_Point::log_children ( void ) const
 int
 Tempo_Point::handle ( int m )
 {
+    Logger log( this );
+
     if ( m == FL_PUSH && Fl::event_button3() && ! ( Fl::event_state() & ( FL_ALT | FL_CTRL | FL_SHIFT ) ) )
     {
         float t = _tempo;

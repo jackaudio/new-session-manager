@@ -293,8 +293,7 @@ Module::draw_label ( void )
     else
         fl_font( FL_HELVETICA, 14 );
 
-    fl_draw( s ? s : lp, tx, ty, tw, th, (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE) );
-
+    fl_draw( s ? s : lp, tx, ty, tw, th, (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE | FL_ALIGN_CLIP ) );
 
     if ( s )
         delete[] s;

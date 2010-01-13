@@ -22,8 +22,8 @@
 #include <FL/Fl_Double_Window.H>
 class Fl_Pack;
 class Fl_Flowpack;
-class Fl_Choice;
 class Module;
+class Fl_Menu_Button;
 
 class Module_Parameter_Editor : public Fl_Double_Window
 {
@@ -50,7 +50,7 @@ class Module_Parameter_Editor : public Fl_Double_Window
 
     Fl_Pack *main_pack;
     Fl_Flowpack *control_pack;
-    Fl_Choice *mode_choice;
+    Fl_Menu_Button *mode_choice;
     bool _resized;
 
 

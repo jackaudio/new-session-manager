@@ -26,7 +26,7 @@
 #include "FL/Boxtypes.H"
 #include "FL/Fl_Flowpack.H"
 #include "FL/Fl_Labelpad_Group.H"
-#include "FL/Fl_Choice.H"
+#include "FL/Fl_Menu_Button.H"
 #include "Module.H"
 #include "Module_Parameter_Editor.H"
 #include "Controller_Module.H"
@@ -68,10 +68,11 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
         { Fl_Pack *o = new Fl_Pack( 0, 0, 50, 25 );
             o->type( FL_HORIZONTAL );
             o->spacing( 20 );
-            { Fl_Choice *o = mode_choice = new Fl_Choice( 0, 0, 200, 25 );
+            { Fl_Menu_Button *o = mode_choice = new Fl_Menu_Button( 0, 0, 25, 25 );
                 o->add( "Knobs" );
                 o->add( "Horizontal Sliders" );
                 o->add( "Vertical Sliders" );
+                o->label( NULL );
                 o->value( 0 );
                 o->when( FL_WHEN_CHANGED );
                 o->callback( cb_mode_handle, this );

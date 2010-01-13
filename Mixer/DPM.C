@@ -99,9 +99,9 @@ void
 DPM::resize ( int X, int Y, int W, int H )
 {
     if ( type() == FL_HORIZONTAL )
-        _segments = W / _pixels_per_segment;
+        _segments = floor( W / (double)_pixels_per_segment );
     else
-        _segments = H / _pixels_per_segment;
+        _segments = floor( H / (double)_pixels_per_segment );
 
 //    _last_drawn_hi_segment = 0;
 
@@ -161,14 +161,14 @@ DPM::draw ( void )
             if ( type() == FL_HORIZONTAL )
                 fl_rectf( x() + (p * bw), y(), bw, h(), c );
             else
-                fl_rectf( x(), y() + h() - (p * bh), w(), bh, c );
+                fl_rectf( x(), y() + h() - ((p + 1) * bh), w(), bh, c );
         }
         else
         {
             if ( type() == FL_HORIZONTAL )
                 fl_draw_box( box(), x() + (p * bw), y(), bw, h(), c );
             else
-                fl_draw_box( box(), x(), y() + h() - (p * bh), w(), bh, c );
+                fl_draw_box( box(), x(), y() + h() - ((p + 1) * bh), w(), bh, c );
         }
 
 /*         fl_color( c ); */

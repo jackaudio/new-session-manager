@@ -49,6 +49,9 @@ class Module : public Fl_Group, public Loggable {
 
     Module_Parameter_Editor *_editor;
 
+    static Module *_copied_module_empty;
+    static char *_copied_module_settings;
+
     void init ( void );
 
     void insert_menu_cb ( const Fl_Menu_ *m );
@@ -57,6 +60,9 @@ class Module : public Fl_Group, public Loggable {
     void menu_cb ( const Fl_Menu_ *m );
     static void menu_cb ( Fl_Widget *w, void *v );
     Fl_Menu_Button & menu ( void ) const;
+
+    void copy ( void ) const;
+    void paste_before ( void );
 
 public:
 
@@ -338,6 +344,16 @@ public:
     virtual void handle_chain_name_changed () {}
 
     virtual void handle_port_connection_change () {}
+
+#define MODULE_CLONE_FUNC(class)                                \
+    virtual Module *clone_empty ( void ) const                  \
+        {                                                       \
+            return new class ();                                \
+        }
+
+    virtual Module *clone_empty ( void ) const { return NULL; }
+    Module *clone ( Chain *dest ) const;
+    Module *clone ( void ) const;
 
 protected:
 

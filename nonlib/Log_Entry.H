@@ -49,14 +49,20 @@ public:
 
     void grow (  );
 
-#define ADD( type, format, exp )                                        \
-    void add ( const char *name, type v )                               \
-        {                                                               \
-            grow();                                                     \
-            if ( -1 == asprintf( &_sa[ _i ], "%s " format, name, (exp) ) ) \
-                abort();                                                \
-            strtok( _sa[ _i++ ], " " );                                 \
-        }                                                               \
+#define ADD( type, format, exp )                                \
+    void add ( const char *name, type v )                       \
+        {                                                       \
+            grow();                                             \
+            asprintf( &_sa[ _i ], "%s " format, name, (exp) );  \
+            strtok( _sa[ _i++ ], " " );                         \
+        }
+
+    void add_raw ( const char *name, const char *v )
+        {
+            grow();
+            asprintf( &_sa[ _i ], "%s %s", name, v );
+            strtok( _sa[ _i++ ], " " );
+        }
 
 /***************/
 /* Examination */

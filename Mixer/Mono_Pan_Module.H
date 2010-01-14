@@ -35,6 +35,8 @@ public:
 
     LOG_CREATE_FUNC( Mono_Pan_Module );
 
+    MODULE_CLONE_FUNC( Mono_Pan_Module );
+
 protected:
 
     virtual void process ( nframes_t nframes );

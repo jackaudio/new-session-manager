@@ -26,6 +26,7 @@ class Gain_Module : public Module
 public:
 
     Gain_Module ( );
+    Gain_Module ( const Gain_Module & rhs );
     virtual ~Gain_Module ( );
 
     const char *name ( void ) const { return "Gain"; }
@@ -34,6 +35,8 @@ public:
     bool configure_inputs ( int n );
 
     LOG_CREATE_FUNC( Gain_Module );
+
+    MODULE_CLONE_FUNC( Gain_Module );
 
 protected:
 

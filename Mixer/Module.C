@@ -40,6 +40,11 @@
 
 
 
+Module *Module::_copied_module_empty = 0;
+char *Module::_copied_module_settings = 0;
+
+
+
 Module::Module ( int W, int H, const char *L ) : Fl_Group( 0, 0, W, H, L )
 {
     init();
@@ -109,8 +114,69 @@ Module::get ( Log_Entry &e ) const
     }
     e.add( ":is_default", is_default() );
     e.add( ":chain", chain() );
-    e.add( ":active", bypass() );
+    e.add( ":active", ! bypass() );
 }
+
+void
+Module::copy ( void ) const
+{
+    Module *m = clone_empty();
+
+    if ( ! m )
+    {
+        DMESSAGE( "Module \"%s\" doesn't support cloning", name() );
+    }
+
+    Log_Entry *ne = new Log_Entry();
+
+    _copied_module_empty = m;
+
+    {
+        Log_Entry e;
+        get( e );
+
+        for ( int i = 0; i < e.size(); ++i )
+        {
+            const char *s, *v;
+
+            e.get( i, &s, &v );
+
+            /* we don't want this module to get added to the current
+               chain... */
+            if ( !( !strcmp( s, ":chain" ) ||
+                    !strcmp( s, ":is_default" ) ) )
+            {
+                DMESSAGE( "%s = %s", s, v );
+                ne->add_raw( s, v );
+            }
+        }
+    }
+
+    _copied_module_settings = ne->print();
+}
+
+void
+Module::paste_before ( void )
+{
+    Module *m = _copied_module_empty;
+
+    m->chain( chain() );
+    Log_Entry le( _copied_module_settings );
+    m->set( le );
+
+    if ( ! chain()->insert( this, m ) )
+    {
+        fl_alert( "Copied module cannot be inserted at this point in the chain" );
+    }
+
+    free( _copied_module_settings );
+    _copied_module_settings = NULL;
+    _copied_module_empty = NULL;
+
+    /* set up for another copy */
+    m->copy();
+}
+
 
 void
 Module::set ( Log_Entry &e )
@@ -153,7 +219,7 @@ Module::set ( Log_Entry &e )
         }
         else if ( ! ( strcmp( s, ":active" ) ) )
         {
-            bypass( atoi( v ) );
+            bypass( ! atoi( v ) );
         }
         else if ( ! strcmp( s, ":chain" ) )
         {
@@ -197,10 +263,9 @@ void
 Module::set_parameters ( const char *parameters )
 {
     char *s = strdup( parameters );
-    char *sp = s;
 
     char *start = s;
-    int i = 0;
+    unsigned int i = 0;
     for ( char *sp = s; ; ++sp )
     {
         if ( ':' == *sp || '\0' == *sp )
@@ -289,6 +354,7 @@ Module::draw_label ( void )
     Fl_Color c = FL_FOREGROUND_COLOR;
 
     if ( bypass() || ! active() )
+
         c = FL_BLACK;
 
     fl_color( c );
@@ -406,6 +472,21 @@ Module::menu_cb ( const Fl_Menu_ *m )
         command_activate();
     else if ( ! strcmp( picked, "Deactivate" ) )
         command_deactivate();
+    else if ( ! strcmp( picked, "Cut" ) )
+    {
+        copy();
+
+        chain()->remove( this );
+        Fl::delete_widget( this );
+    }
+    else if ( ! strcmp( picked, "Copy" ) )
+    {
+        copy();
+    }
+    else if ( ! strcmp( picked, "Paste" ) )
+    {
+        paste_before();
+    }
     else if ( ! strcmp( picked, "Remove" ) )
         command_remove();
 }
@@ -444,6 +525,9 @@ Module::menu ( void ) const
     m.add( "Edit Parameters", 0, &Module::menu_cb, (void*)this, 0 );
     m.add( "Activate",   0, &Module::menu_cb, (void*)this, ! bypass() ? FL_MENU_INACTIVE : 0 );
     m.add( "Deactivate", 0, &Module::menu_cb, (void*)this, bypass() ? FL_MENU_INACTIVE : 0 );
+    m.add( "Cut", FL_CTRL + 'x', &Module::menu_cb, (void*)this, is_default() ? FL_MENU_INACTIVE : 0 );
+    m.add( "Copy", FL_CTRL + 'c', &Module::menu_cb, (void*)this, is_default() ? FL_MENU_INACTIVE : 0 );
+    m.add( "Paste", FL_CTRL + 'v', &Module::menu_cb, (void*)this, _copied_module_empty ? 0 : FL_MENU_INACTIVE );
     m.add( "Remove",    0, &Module::menu_cb, (void*)this );
 
 //    menu_set_callback( menu, &Module::menu_cb, (void*)this );

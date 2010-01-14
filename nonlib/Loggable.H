@@ -46,20 +46,20 @@ typedef Loggable *(create_func)(Log_Entry &, unsigned int id);
 #define LOG_NAME_FUNC( class ) \
     virtual const char *class_name ( void ) const { return #class ; }
 
-#define LOG_CREATE_FUNC( class )                                        \
-    static Loggable *                                                   \
-    create ( Log_Entry &e, unsigned int id )                                     \
-    {                                                                   \
-        class *r = new class;                                           \
-        r->update_id( id );                                             \
-        r->set( e );                                                    \
-        return (Loggable *)r;                                           \
-    }                                                                   \
-    LOG_NAME_FUNC( class );                                             \
+#define LOG_CREATE_FUNC( class )                \
+    static Loggable *                           \
+    create ( Log_Entry &e, unsigned int id )    \
+    {                                           \
+        class *r = new class;                   \
+        r->update_id( id );                     \
+        r->set( e );                            \
+        return (Loggable *)r;                   \
+    }                                           \
+    LOG_NAME_FUNC( class );
 
 
 #define LOG_NOT_LOGGABLE_FUNC( class ) \
-    virtual const char *class_name ( void ) const { return #class ; } \
+    virtual const char *class_name ( void ) const { return #class ; }
 
 class Logger;
 class Loggable

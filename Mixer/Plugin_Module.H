@@ -114,6 +114,8 @@ public:
 
     LOG_CREATE_FUNC( Plugin_Module );
 
+    MODULE_CLONE_FUNC( Plugin_Module );
+
 protected:
 
     void get ( Log_Entry &e ) const;

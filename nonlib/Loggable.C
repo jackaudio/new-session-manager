@@ -699,6 +699,7 @@ Loggable::log_end ( void )
 
 /** Log object creation. *Must* be called at the end of all public
  * constructors for leaf classes  */
+
 void
 Loggable::log_create ( void ) const
 {

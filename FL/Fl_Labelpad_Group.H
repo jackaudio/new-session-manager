@@ -28,6 +28,12 @@ class Fl_Labelpad_Group : public Fl_Group
 {
 public:
 
+    static void measure_label ( Fl_Widget *o, int &W, int &H )
+        {
+            W = fl_width( o->label() );
+            H = fl_height();
+        }
+
     Fl_Labelpad_Group ( Fl_Widget *o ) : Fl_Group( 0, 0, 50, 50, 0 )
         {
             resizable( 0 );
@@ -36,13 +42,11 @@ public:
 
             add( o );
 
-            fl_font( FL_HELVETICA, o->labelsize() );
+            fl_font( o->labelfont(), o->labelsize() );
 
             int W, H;
 
-            W = fl_width( o->label() );
-            H = fl_height();
-//                    fl_measure( w->label(), H, W );
+            measure_label( o, W, H );
 
             // set size to contain widget
             size( W > o->w() ? W : o->w(), o->h() + H );

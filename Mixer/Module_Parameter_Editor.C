@@ -60,14 +60,16 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
 
     { Fl_Pack *o = main_pack = new Fl_Pack( 0, y(), w(), h() - 10 );
         o->type( FL_VERTICAL );
-        o->label( strdup( lab ) );
-                o->labeltype( FL_SHADOW_LABEL );
-                o->labelsize( 18 );
-                o->align( (Fl_Align)(FL_ALIGN_TOP | FL_ALIGN_RIGHT | FL_ALIGN_INSIDE ) );
+/*         o->label( strdup( lab ) ); */
+/*         o->labeltype( FL_SHADOW_LABEL ); */
+/*         o->labelsize( 18 ); */
+/*         o->align( FL_ALIGN_TOP | FL_ALIGN_RIGHT | FL_ALIGN_INSIDE ); */
+
 
         { Fl_Pack *o = new Fl_Pack( 0, 0, 50, 25 );
             o->type( FL_HORIZONTAL );
             o->spacing( 20 );
+
             { Fl_Menu_Button *o = mode_choice = new Fl_Menu_Button( 0, 0, 25, 25 );
                 o->add( "Knobs" );
                 o->add( "Horizontal Sliders" );
@@ -77,6 +79,7 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
                 o->when( FL_WHEN_CHANGED );
                 o->callback( cb_mode_handle, this );
             }
+
 /*             { Fl_Box *o = new Fl_Box( 0, 0, 300, 25 ); */
 /*                 o->box( FL_ROUNDED_BOX ); */
 /*                 o->color( FL_YELLOW ); */
@@ -243,8 +246,11 @@ Module_Parameter_Editor::make_controls ( void )
 
     }
 
-    main_pack->size( control_pack->max_width() + 100, control_pack->h() + 50 );
-    size( control_pack->max_width() + 100, control_pack->h() + 50 );
+    int width = control_pack->max_width() + 100;
+    int height = control_pack->h() + 50;
+
+    main_pack->size( width, height );
+    size( width, height );
 }
 
 void

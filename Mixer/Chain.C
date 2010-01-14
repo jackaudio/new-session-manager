@@ -53,6 +53,7 @@
 #include "JACK_Module.H"
 #include "Gain_Module.H"
 #include "Plugin_Module.H"
+#include "Controller_Module.H"
 
 #include <Fl/Fl_Box.H>
 #include <FL/Fl_Menu.H>
@@ -205,6 +206,13 @@ Chain::log_children ( void )
     for ( int i = 0; i < modules(); ++i )
     {
         module(i)->log_create();
+    }
+
+    for ( int i = 0; i < controls_pack->children(); ++i )
+    {
+        Controller_Module *cm = (Controller_Module*)controls_pack->child( i );
+
+        cm->log_create();
     }
 }
 
@@ -512,7 +520,13 @@ err:
 void
 Chain::add_control ( Module *m )
 {
+    engine->lock();
+
     controls_pack->add( m );
+
+    engine->unlock();
+
+    controls_pack->redraw();
 }
 
 void

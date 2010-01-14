@@ -82,7 +82,11 @@ Controller_Module::set ( Log_Entry &e )
     }
 
     if ( port >= 0 && module )
+    {
         control_output[0].connect_to( &module->control_input[port] );
+        module->chain()->add_control( this );
+        label( module->control_input[port].name() );
+    }
 }
 
 
@@ -290,6 +294,8 @@ Controller_Module::handle ( int m )
 void
 Controller_Module::process ( void )
 {
+    THREAD_ASSERT( RT );
+
     if ( control_output[0].connected() )
     {
         float f = control_value;

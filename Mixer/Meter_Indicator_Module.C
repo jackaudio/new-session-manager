@@ -59,7 +59,7 @@ Meter_Indicator_Module::set ( Log_Entry &e )
 {
     Module::set( e );
 
-    int port;
+    int port = -1;
     Module *module = NULL;
 
     for ( int i = 0; i < e.size(); ++i )
@@ -146,7 +146,7 @@ Meter_Indicator_Module::update_cb ( void )
 
         if ( dpm_pack->children() != p->hints.dimensions )
         {
-            engine->lock();
+/*             engine->lock(); */
 
             dpm_pack->clear();
 
@@ -165,7 +165,7 @@ Meter_Indicator_Module::update_cb ( void )
                 dpm->value( -70.0f );
             }
 
-            engine->unlock();
+/*             engine->unlock(); */
         }
         else
         {
@@ -202,6 +202,39 @@ Meter_Indicator_Module::handle ( int m )
 }
 
 
+
+void
+Meter_Indicator_Module::handle_control_changed ( Port *p )
+{
+    THREAD_ASSERT( UI );
+
+    /* The engine is already locked by the UI thread at this point in
+     the call-graph, so we can be sure that process() won't be
+     executed concurrently. */
+    if ( p->connected() )
+    {
+        p = p->connected_port();
+
+        if ( dpm_pack->children() != p->hints.dimensions )
+        {
+            dpm_pack->clear();
+
+            control_value = new float[p->hints.dimensions];
+
+            for ( int i = p->hints.dimensions; i--; )
+            {
+                DPM *dpm = new DPM( x(), y(), w(), h() );
+                dpm->type( FL_VERTICAL );
+                align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
+
+                dpm_pack->add( dpm );
+
+                control_value[i] = -70.0f;
+                dpm->value( -70.0f );
+            }
+        }
+    }
+}
 
 void
 Meter_Indicator_Module::process ( void )

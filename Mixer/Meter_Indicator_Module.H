@@ -39,6 +39,8 @@ class Meter_Indicator_Module : public Module
 
 public:
 
+    void handle_control_changed ( Port *p );
+
     Meter_Indicator_Module ( bool is_default = false );
     virtual ~Meter_Indicator_Module ( );
 

@@ -36,6 +36,7 @@ JACK_Module::JACK_Module ( )
         p.hints.type = Port::Hints::INTEGER;
         p.hints.minimum = 0;
         p.hints.maximum = 6;
+        p.hints.ranged = true;
 
         p.connect_to( new float );
         p.control_value_no_callback( 0 );
@@ -48,6 +49,7 @@ JACK_Module::JACK_Module ( )
         p.hints.type = Port::Hints::INTEGER;
         p.hints.minimum = 0;
         p.hints.maximum = 6;
+        p.hints.ranged = true;
 
         p.connect_to( new float );
         p.control_value_no_callback( 0 );
@@ -153,6 +155,8 @@ JACK_Module::initialize ( void )
 void
 JACK_Module::handle_control_changed ( Port *p )
 {
+    THREAD_ASSERT( UI );
+
     if ( 0 == strcmp( p->name(), "Inputs" ) )
     {
         DMESSAGE( "Adjusting number of inputs (JACK outputs)" );
@@ -163,14 +167,20 @@ JACK_Module::handle_control_changed ( Port *p )
     else if ( 0 == strcmp( p->name(), "Outputs" ) )
     {
         DMESSAGE( "Adjusting number of outputs (JACK inputs)" );
-        if ( chain() && chain()->can_configure_outputs( this, p->control_value() ) )
+
+        if ( ! chain() )
+        {
+            configure_outputs( p->control_value() );
+        }
+        else if ( chain()->can_configure_outputs( this, p->control_value() ) )
         {
             configure_outputs( p->control_value() );
             chain()->configure_ports();
         }
         else
-            configure_outputs( p->control_value() );
-
+        {
+            p->connected_port()->control_value( noutputs() );
+        }
     }
 }
 

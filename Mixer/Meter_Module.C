@@ -88,6 +88,8 @@ Meter_Module::update_cb ( void )
 bool
 Meter_Module::configure_inputs ( int n )
 {
+    THREAD_ASSERT( UI );
+
     int tx, ty, tw, th;
     bbox( tx,ty,tw,th );
 
@@ -140,6 +142,9 @@ Meter_Module::configure_inputs ( int n )
     control_value = new float[n];
     for ( int i = n; i--; )
         control_value[i] = -70.0f;
+
+    if ( control_output[0].connected() )
+        control_output[0].connected_port()->module()->handle_control_changed( control_output[0].connected_port() );
 
     return true;
 }

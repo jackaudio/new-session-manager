@@ -226,6 +226,8 @@ Plugin_Module::can_support_inputs ( int n )
 bool
 Plugin_Module::configure_inputs( int n )
 {
+    if ( ninputs() == n )
+        return true;
 
     int inst = 1;
     _crosswire = false;
@@ -240,7 +242,7 @@ Plugin_Module::configure_inputs( int n )
         for ( int i = n; i--; )
             audio_input.push_back( Port( this, Port::INPUT, Port::AUDIO ) );
     }
-    else if ( n > plugin_ins() &&
+    else if ( n >= plugin_ins() &&
               ( plugin_ins() == 1 && plugin_outs() == 1 ) )
     {
         DMESSAGE( "Running multiple instances of plugin" );
@@ -256,7 +258,7 @@ Plugin_Module::configure_inputs( int n )
 
         inst = n;
     }
-    else if ( n == plugin_ins() )
+    if ( n == plugin_ins() )
     {
 
     }
@@ -309,6 +311,8 @@ Plugin_Module::plugin_instances ( unsigned int n )
     {
         for ( int i = _idata->handle.size() - n; i--; )
         {
+            DMESSAGE( "Destroying plugin instance" );
+
             LADSPA_Handle h = _idata->handle.back();
 
             if ( _idata->descriptor->deactivate )

@@ -79,7 +79,6 @@
 
 
 
-std::vector <Module::Port> Chain::port;
 std::list <Chain*> Chain::chain;
 
 
@@ -126,6 +125,10 @@ Chain::set ( Log_Entry &e )
 Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
 
 {
+    _engine = new Engine( &Chain::process, this );
+
+    engine()->init( "Non-Mixer" );
+
     int X = 0;
     int Y = 0;
     int W = 100;
@@ -192,8 +195,19 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
 
 Chain::~Chain ( )
 {
+    DMESSAGE( "Destroying chain" );
+
     chain.remove( this );
+
     log_destroy();
+
+    /* if we leave this up to FLTK, it will happen after we've
+     already destroyed the engine */
+    modules_pack->clear();
+    controls_pack->clear();
+
+    delete _engine;
+    _engine = NULL;
 }
 
 
@@ -313,7 +327,7 @@ Chain::configure_ports ( void )
 /*     int old_outs = outs(); */
      int nouts = 0;
 
-    engine->lock();
+    engine()->lock();
 
     for ( int i = 0; i < modules(); ++i )
     {
@@ -333,18 +347,18 @@ Chain::configure_ports ( void )
 
     DMESSAGE( "required_buffers = %i", req_buffers );
 
-    if ( port.size() < req_buffers )
+    if ( scratch_port.size() < req_buffers )
     {
-        for ( unsigned int i = port.size(); i--; )
-            delete[] (sample_t*)port[i].buffer();
-        port.clear();
+        for ( unsigned int i = scratch_port.size(); i--; )
+            delete[] (sample_t*)scratch_port[i].buffer();
+        scratch_port.clear();
 
         for ( unsigned int i = 0; i < req_buffers; ++i )
         {
             Module::Port p( NULL, Module::Port::OUTPUT, Module::Port::AUDIO );
-            p.connect_to( new sample_t[engine->nframes()] );
-            buffer_fill_with_silence( (sample_t*)p.buffer(), engine->nframes() );
-            port.push_back( p );
+            p.connect_to( new sample_t[engine()->nframes()] );
+            buffer_fill_with_silence( (sample_t*)p.buffer(), engine()->nframes() );
+            scratch_port.push_back( p );
         }
     }
 
@@ -359,7 +373,7 @@ Chain::configure_ports ( void )
             (*i)->build_process_queue();
     }
 
-    engine->unlock();
+    engine()->unlock();
 
     parent()->redraw();
 }
@@ -445,7 +459,7 @@ bool
 Chain::insert ( Module *m, Module *n )
 {
 
-    engine->lock();
+    engine()->lock();
 
     if ( !m )
     {
@@ -505,13 +519,13 @@ Chain::insert ( Module *m, Module *n )
 
     configure_ports();
 
-    engine->unlock();
+    engine()->unlock();
 
     return true;
 
 err:
 
-    engine->unlock();
+    engine()->unlock();
 
     return false;
 }
@@ -520,11 +534,11 @@ err:
 void
 Chain::add_control ( Module *m )
 {
-    engine->lock();
+    engine()->lock();
 
     controls_pack->add( m );
 
-    engine->unlock();
+    engine()->unlock();
 
     controls_pack->redraw();
 }
@@ -608,11 +622,11 @@ Chain::build_process_queue ( void )
         Module *m = module( i );
         for ( unsigned int j = 0; j < m->audio_input.size(); ++j )
         {
-            m->audio_input[j].connect_to( &port[j] );
+            m->audio_input[j].connect_to( &scratch_port[j] );
         }
         for ( unsigned int j = 0; j < m->audio_output.size(); ++j )
         {
-            m->audio_output[j].connect_to( &port[j] );
+            m->audio_output[j].connect_to( &scratch_port[j] );
         }
 
         m->handle_port_connection_change();
@@ -728,6 +742,13 @@ void
 Chain::strip ( Mixer_Strip * ms )
 {
     _strip = ms;
+}
+
+
+void
+Chain::process ( nframes_t nframes, void *v )
+{
+    ((Chain*)v)->process( nframes );
 }
 
 void

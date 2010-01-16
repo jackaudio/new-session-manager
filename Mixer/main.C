@@ -31,12 +31,10 @@
 #include  "DPM.H"
 
 #include "Mixer.H"
-#include "Engine/Engine.H"
 #include "util/Thread.H"
 #include "util/debug.h"
 #include "Project.H"
 
-Engine *engine;
 Mixer *mixer;
 
 Fl_Single_Window *main_window;
@@ -98,12 +96,6 @@ main ( int argc, char **argv )
 /*     Fl::foreground( 0xFF, 0xFF, 0xFF ); */
 /*     Fl::background( 0x10, 0x10, 0x10 ); */
 
-    MESSAGE( "Initializing JACK" );
-
-    engine = new Engine();
-
-    engine->init( "Non-Mixer" );
-
     {
         Fl_Single_Window *o = main_window = new Fl_Single_Window( 1024, 768, "Mixer" );
         {
@@ -117,8 +109,6 @@ main ( int argc, char **argv )
     }
 
     {
-        engine->lock();
-
         if ( argc > 1 )
         {
 /*             char name[1024]; */
@@ -137,13 +127,12 @@ main ( int argc, char **argv )
         {
             WARNING( "Running without a project--nothing will be saved." );
         }
-
-        engine->unlock();
     }
 
     Fl::run();
 
-    delete engine;
+    delete main_window;
+    main_window = NULL;
 
     MESSAGE( "Your fun is over" );
 

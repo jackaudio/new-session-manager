@@ -86,7 +86,7 @@ JACK_Module::configure_inputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port po( engine->client(), JACK::Port::Output, chain()->name(), i );
+            JACK::Port po( chain()->engine()->client(), JACK::Port::Output, chain()->name(), i );
 
             if ( po.valid() )
             {
@@ -120,7 +120,7 @@ JACK_Module::configure_outputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port po( engine->client(), JACK::Port::Input, chain()->name(), i );
+            JACK::Port po( chain()->engine()->client(), JACK::Port::Input, chain()->name(), i );
 
             if ( po.valid() )
             {

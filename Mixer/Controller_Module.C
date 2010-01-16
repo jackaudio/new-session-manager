@@ -164,19 +164,19 @@ Controller_Module::connect_to ( Port *p )
 
     if( mode() == CV )
     {
-        engine->lock();
+        chain()->engine()->lock();
+
+        char name[256];
+        snprintf( name, sizeof( name ), "%s-CV", p->name() );
+
+        JACK::Port po( chain()->engine()->client(), JACK::Port::Input, chain()->name(), 0, name );
+
+        if ( po.valid() )
         {
-            char name[256];
-            snprintf( name, sizeof( name ), "%s-CV", p->name() );
-
-            JACK::Port po( engine->client(), JACK::Port::Input, chain()->name(), 0, name );
-
-            if ( po.valid() )
-            {
                 jack_input.push_back( po );
-            }
         }
-        engine->unlock();
+
+        chain()->engine()->unlock();
     }
 
     Fl_Widget *w;
@@ -302,7 +302,7 @@ Controller_Module::process ( void )
 
         if ( mode() == CV )
         {
-            f = *((float*)jack_input[0].buffer( engine->nframes() ));
+            f = *((float*)jack_input[0].buffer( chain()->engine()->nframes() ));
 
             const Port *p = control_output[0].connected_port();
 

@@ -175,6 +175,7 @@ Mixer_Strip::Mixer_Strip() : Fl_Group( 0, 0, 120, 600 )
 
 Mixer_Strip::~Mixer_Strip ( )
 {
+    DMESSAGE( "Destroying mixer strip" );
     log_destroy();
 }
 
@@ -272,15 +273,6 @@ Mixer_Strip::handle_module_added ( Module *m )
             meter_indicator->connect_to( &m->control_output[0] );
         }
     }
-}
-
-
-void
-Mixer_Strip::process ( nframes_t nframes )
-{
-    THREAD_ASSERT( RT );
-
-    _chain->process( nframes );
 }
 
 /* update GUI with values from RT thread */

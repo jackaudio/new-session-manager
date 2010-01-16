@@ -140,7 +140,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
 Mixer::~Mixer ( )
 {
     /* FIXME: teardown */
-
+    DMESSAGE( "Destroying mixer" );
 }
 
 void Mixer::resize ( int X, int Y, int W, int H )
@@ -156,16 +156,9 @@ void Mixer::add ( Mixer_Strip *ms )
 {
     MESSAGE( "Add mixer strip \"%s\"", ms->name() );
 
-    engine->lock();
-
     mixer_strips->add( ms );
-//    mixer_strips->insert( *ms, 0 );
-
-    engine->unlock();
 
     scroll->redraw();
-
-//    redraw();
 }
 
 void
@@ -180,12 +173,8 @@ Mixer::quit ( void )
 void
 Mixer::insert ( Mixer_Strip *ms, Mixer_Strip *before )
 {
-    engine->lock();
-
     mixer_strips->remove( ms );
     mixer_strips->insert( *ms, before );
-
-    engine->unlock();
 
     scroll->redraw();
 }
@@ -219,11 +208,7 @@ void Mixer::remove ( Mixer_Strip *ms )
 {
     MESSAGE( "Remove mixer strip \"%s\"", ms->name() );
 
-    engine->lock();
-
     mixer_strips->remove( ms );
-
-    engine->unlock();
 
     delete ms;
 
@@ -245,17 +230,6 @@ void Mixer::update ( void )
         ((Mixer_Strip*)mixer_strips->child( i ))->update();
     }
     // redraw();
-}
-
-void
-Mixer::process ( unsigned int nframes )
-{
-    THREAD_ASSERT( RT );
-
-    for ( int i = mixer_strips->children(); i--; )
-    {
-        ((Mixer_Strip*)mixer_strips->child( i ))->process( nframes );
-    }
 }
 
 /** retrun a pointer to the track named /name/, or NULL if no track is named /name/ */
@@ -299,13 +273,7 @@ Mixer::snapshot ( void )
 void
 Mixer::new_strip ( void )
 {
-    engine->lock();
-
     add( new Mixer_Strip( get_unique_track_name( "Unnamed" ), 1 ) );
-
-    engine->unlock();
-
-//    scroll->size( mixer_strips->w(), scroll->h() );
 }
 
 bool

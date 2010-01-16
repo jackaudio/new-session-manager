@@ -30,8 +30,10 @@
 
 
 
-Engine::Engine ( ) : _thread( "RT" )
+Engine::Engine ( void (*process_callback)(nframes_t nframes, void *), void *user_data  ) : _thread( "RT" )
 {
+    _process_callback = process_callback;
+    _user_data = user_data;
     _buffers_dropped = 0;
 }
 
@@ -120,12 +122,7 @@ Engine::process ( nframes_t nframes )
             return 0;
         }
 
-        /* handle chicken/egg problem */
-        if ( mixer )
-            /* this will initiate the process() call graph for the various
-             * number and types of tracks, which will in turn send data out
-             * the appropriate ports.  */
-            mixer->process( nframes );
+        _process_callback(nframes, _user_data);
 
         unlock();
     }

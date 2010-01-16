@@ -32,6 +32,7 @@
 class Mixer_Strip;
 class Fl_Flowpack;
 class Fl_Flip_Button;
+class Engine;
 
 class Chain : public Fl_Group, public Loggable {
 
@@ -66,8 +67,13 @@ class Chain : public Fl_Group, public Loggable {
     void build_process_queue ( void );
     void add_to_process_queue ( Module *m );
 
-    static std::vector <Module::Port> port;
+    std::vector <Module::Port> scratch_port;
     static std::list <Chain*> chain;
+
+    Engine *_engine;
+
+    static void process ( nframes_t, void * );
+    void process ( nframes_t );
 
 protected:
 
@@ -119,9 +125,9 @@ public:
 
     Fl_Callback * configure_outputs_callback ( void ) const { return _configure_outputs_callback; }
 
-    void process ( nframes_t );
-
     void log_children ( void );
+
+    Engine *engine ( void ) const { return _engine; }
 
     LOG_CREATE_FUNC( Chain );
 };

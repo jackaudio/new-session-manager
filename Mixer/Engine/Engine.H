@@ -34,6 +34,9 @@ class Engine : public JACK::Client, public Mutex
     int _buffers_dropped;                                       /* buffers dropped because of locking */
 /*     int _buffers_dropped;                                       /\* buffers dropped because of locking *\/ */
 
+    void ( * _process_callback ) ( nframes_t, void * );
+    void *_user_data;
+
     void shutdown ( void );
     int process ( nframes_t nframes );
     int sync ( jack_transport_state_t state, jack_position_t *pos );
@@ -56,11 +59,9 @@ private:
 
 public:
 
-    Engine ( );
+    Engine ( void (*process_callback) (nframes_t, void *), void *user_data );
     ~Engine ( );
 
     int dropped ( void ) const { return _buffers_dropped; }
 
 };
-
-extern Engine * engine;

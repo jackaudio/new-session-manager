@@ -134,6 +134,9 @@ Plugin_Module::pick_plugin ( void )
 
     Plugin_Module::Plugin_Info *pi = (Plugin_Module::Plugin_Info*)menu->menu()[ menu->value() ].user_data();
 
+    if ( ! pi )
+        return NULL;
+
     Plugin_Module *m = new Plugin_Module();
 
     m->load( pi->id );

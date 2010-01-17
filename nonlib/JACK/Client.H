@@ -24,10 +24,16 @@
 typedef jack_nframes_t nframes_t;
 typedef float sample_t;
 
+#include <list>
+
 namespace JACK
 {
+    class Port;
     class Client
     {
+
+        std::list <JACK::Port*> _active_ports;
+
         jack_client_t *_client;
 
         nframes_t _sample_rate;
@@ -55,6 +61,9 @@ namespace JACK
         Client ( const Client &rhs );
         Client & operator = ( const Client &rhs );
 
+        void freeze_ports ( void );
+        void thaw_ports ( void );
+
     protected:
 
         void deactivate ( void );
@@ -66,12 +75,16 @@ namespace JACK
 
     public:
 
-        jack_client_t * client ( void ) { return _client; }
+        jack_client_t * jack_client ( void ) { return _client; }
+
+        void port_added ( JACK::Port * p );
+        void port_removed ( JACK::Port *p );
 
         Client ( );
         virtual ~Client ( );
 
         const char * init ( const char *client_name );
+        const char * name ( const char * );
 
         nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
         float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }

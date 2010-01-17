@@ -77,6 +77,8 @@
 
 #include <FL/Fl_Flip_Button.H>
 
+#include "const.h"
+
 
 
 std::list <Chain*> Chain::chain;
@@ -437,7 +439,16 @@ Chain::can_support_input_channels ( int n )
 void
 Chain::name ( const char *name )
 {
+
+    char ename[512];
+    snprintf( ename, sizeof(ename), "%s/%s", APP_NAME, name );
+
+    _name = engine()->name( ename );
+
+    /* FIXME: discarding the name jack picked is technically wrong! */
+
     _name = name;
+
 
     for ( int i = 0; i < modules(); ++i )
         module( i )->handle_chain_name_changed();

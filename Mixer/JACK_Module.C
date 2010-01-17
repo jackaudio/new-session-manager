@@ -86,7 +86,7 @@ JACK_Module::configure_inputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port po( chain()->engine()->client(), JACK::Port::Output, chain()->name(), i );
+            JACK::Port po( chain()->engine(), JACK::Port::Output, i );
 
             if ( po.valid() )
             {
@@ -120,7 +120,7 @@ JACK_Module::configure_outputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port po( chain()->engine()->client(), JACK::Port::Input, chain()->name(), i );
+            JACK::Port po( chain()->engine(), JACK::Port::Input, i );
 
             if ( po.valid() )
             {
@@ -188,10 +188,10 @@ void
 JACK_Module::handle_chain_name_changed ( void )
 {
     for ( unsigned int i = 0; i < jack_output.size(); ++i )
-        jack_output[ i ].name( chain()->name(), i  );
+        jack_output[ i ].name( NULL, i  );
 
     for ( unsigned int i = 0; i < jack_input.size(); ++i )
-        jack_input[ i ].name( chain()->name(), i );
+        jack_input[ i ].name( NULL, i );
 }
 
 

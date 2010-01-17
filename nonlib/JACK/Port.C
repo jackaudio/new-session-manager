@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <stdio.h> // sprintf
+#include <errno.h>
 
 namespace JACK
 {
@@ -35,22 +36,36 @@ namespace JACK
         return jack_port_name_size() - jack_client_name_size() - 6;
     }
 
-/* nframes is the number of frames to buffer */
-    Port::Port ( jack_client_t *client, jack_port_t *port )
+
+    Port::Port ( const Port &rhs )
     {
-        _client = client;
-        _port = port;
-        _name = jack_port_name( _port );
+        _freezer = rhs._freezer;
+        _client = rhs._client;
+        _port = rhs._port;
+        _name = strdup( rhs._name );
+
+        _client->port_added( this );
     }
 
-    Port::Port ( jack_client_t *client, const char *name, type_e dir )
+/* nframes is the number of frames to buffer */
+    Port::Port ( JACK::Client *client, jack_port_t *port )
     {
+        _freezer = NULL;
+        _client = client;
+        _port = port;
+        _name = strdup( jack_port_name( _port ) );
+    }
+
+    Port::Port ( JACK::Client *client, const char *name, type_e dir )
+    {
+        _freezer = NULL;
         _client = client;
         activate( name, dir );
     }
 
-    Port::Port ( jack_client_t *client, type_e dir, const char *base, int n, const char *type )
+    Port::Port ( JACK::Client *client, type_e dir, const char *base, int n, const char *type )
     {
+        _freezer = NULL;
         _client = client;
 
         const char *name = name_for_port( dir, base, n, type );
@@ -58,8 +73,28 @@ namespace JACK
         activate( name, dir );
     }
 
+    Port::Port ( JACK::Client *client, type_e dir, int n, const char *type )
+    {
+        _freezer = NULL;
+        _client = client;
+
+        const char *name = name_for_port( dir, NULL, n, type );
+
+        activate( name, dir );
+    }
+
     Port::~Port ( )
     {
+        if ( _name )
+            free( _name );
+
+        _client->port_removed( this );
+/*         if ( _freezer ) */
+/*         { */
+/*             delete _freezer; */
+/*             _freezer = NULL; */
+/*         } */
+
 /*    if ( _port ) */
 /*         jack_port_unregister( _client, _port ); */
 
@@ -74,15 +109,22 @@ namespace JACK
 
         const char *dir_s = dir == Port::Output ? "out" : "in";
 
-        strncpy( pname, base, Port::max_name() );
+        pname[0] = '\0';
+
+        if ( base )
+        {
+            strncpy( pname, base, Port::max_name() );
+            strcat( pname, "/" );
+        }
+
         pname[ Port::max_name() - 1 ] = '\0';
 
         int l = strlen( pname );
 
         if ( type )
-            snprintf( pname + l, sizeof( pname ) - l, "/%s-%s-%d", type, dir_s, n + 1 );
+            snprintf( pname + l, sizeof( pname ) - l, "%s-%s-%d", type, dir_s, n + 1 );
         else
-            snprintf( pname + l, sizeof( pname ) - l, "/%s-%d", dir_s, n + 1 );
+            snprintf( pname + l, sizeof( pname ) - l, "%s-%d", dir_s, n + 1 );
 
         return pname;
     }
@@ -90,11 +132,13 @@ namespace JACK
     void
     Port::activate ( const char *name, type_e dir )
     {
-        _name = name;
-        _port = jack_port_register( _client, _name,
+        _name = strdup( name );
+        _port = jack_port_register( _client->jack_client(), _name,
                                     JACK_DEFAULT_AUDIO_TYPE,
                                     dir == Output ? JackPortIsOutput : JackPortIsInput,
                                     0 );
+
+        _client->port_added( this );
     }
 
 /** returns the sum of latency of all ports between this one and a
@@ -107,7 +151,7 @@ namespace JACK
     nframes_t
     Port::total_latency ( void ) const
     {
-        return jack_port_get_total_latency( _client, _port );
+        return jack_port_get_total_latency( _client->jack_client() , _port );
     }
 
 /** returns the number of frames of latency assigned to this port */
@@ -128,14 +172,16 @@ namespace JACK
     Port::shutdown ( void )
     {
         if ( _port )
-            jack_port_unregister( _client, _port );
+            jack_port_unregister( _client->jack_client(), _port );
+
+        _client->port_removed( this );
     }
 
 /** rename port */
     bool
     Port::name ( const char *name )
     {
-        _name = name;
+        _name = strdup( name );
 
         return 0 == jack_port_set_name( _port, name );
     }
@@ -170,4 +216,78 @@ namespace JACK
         memset( buffer( nframes ), 0, nframes * sizeof( sample_t ) );
     }
 
+    /** Return a malloc()'d null terminated array of strings
+     * representing all ports to which this port is connected. */
+    const char **
+    Port::connections ( void )
+    {
+        return jack_port_get_connections( _port );
+    }
+
+    /** Restore the connections returned by connections() */
+    bool
+    Port::connections ( const char **port_names )
+    {
+        if ( ! port_names )
+            return true;
+
+        for ( const char **port_name = port_names; *port_name; ++port_name )
+        {
+            const char *src;
+            const char *dst;
+            const char *name = jack_port_name( _port );
+
+            if ( type() == Output )
+            {
+                src = name;
+                dst = *port_name;
+            }
+            else
+            {
+                src = *port_name;
+                dst = name;
+            }
+
+            if ( int err = jack_connect( _client->jack_client(), src, dst ) )
+            {
+                if ( EEXIST == err )
+                {
+                    /* connection already exists, not a problem */
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+
+    void
+    Port::freeze ( void )
+    {
+        if ( _freezer )
+            delete _freezer;
+
+        freeze_state *f = new freeze_state();
+
+        f->connections = connections();
+        f->direction = type();
+        f->name = strdup( name() );
+
+        _freezer = f;
+    }
+
+    void
+    Port::thaw ( void )
+    {
+        activate( name(), _freezer->direction );
+
+        connections( _freezer->connections );
+
+        delete _freezer;
+        _freezer = NULL;
+    }
 }

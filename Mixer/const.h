@@ -17,6 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#pragma once
+
 #define APP_NAME "Non-Mixer"
 #define APP_TITLE "The Non-Mixer"
 #define __MODULE__ "non-mixer"

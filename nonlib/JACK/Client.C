@@ -18,6 +18,9 @@
 /*******************************************************************************/
 
 #include "Client.H"
+#include "Port.H"
+
+#include <algorithm>
 
 
 
@@ -146,4 +149,66 @@ namespace JACK
 //            WARNING( "Unkown error while setting freewheeling mode" );
     }
 
+
+    void
+    Client::port_added ( Port *p )
+    {
+        std::list < JACK::Port * >::iterator i = std::find( _active_ports.begin(), _active_ports.end(), p );
+
+        if ( i != _active_ports.end() )
+            return;
+
+        _active_ports.push_back( p );
+    }
+
+    void
+    Client::port_removed ( Port *p )
+    {
+        _active_ports.remove( p );
+    }
+
+
+    void
+    Client::freeze_ports ( void )
+    {
+        for ( std::list < JACK::Port * >::iterator i = _active_ports.begin();
+              i != _active_ports.end();
+              ++i )
+        {
+            (*i)->freeze();
+        }
+    }
+
+    void
+    Client::thaw_ports ( void )
+    {
+        for ( std::list < JACK::Port * >::iterator i = _active_ports.begin();
+              i != _active_ports.end();
+              ++i )
+        {
+            (*i)->thaw();
+        }
+    }
+
+    const char *
+    Client::name ( const char *s )
+    {
+        /* Because the JACK API does not provide a mechanism for renaming
+         * clients, we have to save connections, destroy our client,
+         * create a client with the new name, and restore our
+         * connections. Lovely. */
+
+        freeze_ports();
+
+        jack_deactivate( _client );
+        jack_client_close( _client );
+
+        _client = NULL;
+
+        s = init( s );
+
+        thaw_ports();
+
+        return s;
+    }
 }

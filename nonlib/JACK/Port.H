@@ -21,14 +21,15 @@
 
 // #include <jack/jack.h>
 #include "Client.H"
+#include <stdlib.h>
 
 namespace JACK
 {
     class Port
     {
         jack_port_t *_port;
-        const char *_name;
-        jack_client_t *_client;
+        char *_name;
+        JACK::Client *_client;
 
         /* FIXME: reference count? */
 
@@ -42,18 +43,15 @@ namespace JACK
 
         static int max_name ( void );
 
-        Port ( jack_client_t *client, jack_port_t *port );
-        Port ( jack_client_t *client, const char *name, type_e dir );
-        Port ( jack_client_t *client, type_e dir, const char *base, int n, const char *type=0 );
+        Port ( JACK::Client *client, jack_port_t *port );
+        Port ( JACK::Client *client, const char *name, type_e dir );
+        Port ( JACK::Client *client, type_e dir, const char *base, int n, const char *type=0 );
+        Port ( JACK::Client *client, type_e dir, int n, const char *type=0 );
 
 //    Port ( );
         ~Port ( );
 
-/*     Port ( const Port & rhs ) */
-/*         { */
-/*             _port = rhs.port; */
-/*             _name = rhs.name; */
-/*         } */
+        Port ( const Port & rhs );
 
 
         bool valid ( void ) const { return _port; }
@@ -76,6 +74,45 @@ namespace JACK
         void read ( sample_t *buf, nframes_t nframes );
         void *buffer ( nframes_t nframes );
         void silence ( nframes_t nframes );
+
+        /*  */
+        const char ** connections ( void );
+        bool connections ( const char **port_names );
+        void freeze ( void );
+        void thaw ( void );
+
+    private:
+
+        /* holds all we need to know about a jack port to recreate it on a
+         new client */
+        struct freeze_state
+        {
+            const char **connections;
+            type_e direction;
+            char *name;
+
+            freeze_state ( )
+                {
+                    connections = NULL;
+                    name = NULL;
+                }
+
+            ~freeze_state ( )
+                {
+                    if ( connections )
+                    {
+                        free( connections );
+                        connections = NULL;
+                    }
+                    if ( name )
+                    {
+                        free( name );
+                    }
+                }
+        };
+
+        freeze_state *_freezer;
+
     };
 
 }

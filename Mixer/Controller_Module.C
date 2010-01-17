@@ -166,10 +166,10 @@ Controller_Module::connect_to ( Port *p )
     {
         chain()->engine()->lock();
 
-        char name[256];
-        snprintf( name, sizeof( name ), "%s-CV", p->name() );
+//        char name[256];
+//        snprintf( name, sizeof( name ), "%s-CV", p->name() );
 
-        JACK::Port po( chain()->engine()->client(), JACK::Port::Input, chain()->name(), 0, name );
+        JACK::Port po( chain()->engine(), JACK::Port::Input, p->name(), 0, "CV" );
 
         if ( po.valid() )
         {

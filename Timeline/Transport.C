@@ -25,7 +25,7 @@
 
 // Transport transport;
 
-#define client engine->client()
+#define client engine->jack_client()
 
 
 

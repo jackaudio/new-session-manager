@@ -186,6 +186,11 @@ namespace JACK
     void
     Client::thaw_ports ( void )
     {
+        /* Sort ports for the sake of clients (e.g. patchage), for
+         * whom the order of creation may matter (for display) */
+
+        _active_ports.sort();
+
         for ( std::list < JACK::Port * >::iterator i = _active_ports.begin();
               i != _active_ports.end();
               ++i )

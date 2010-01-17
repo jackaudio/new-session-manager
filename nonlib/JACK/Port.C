@@ -100,6 +100,15 @@ namespace JACK
 
     }
 
+    /* sort input before output and then by alpha */
+    bool
+    Port::operator < ( const Port & rhs ) const
+    {
+        if ( type() == rhs.type() )
+            return strcmp( name(), rhs.name() );
+        else
+            return type() == Port::Input;
+    }
 
 
     static const char *
@@ -222,6 +231,15 @@ namespace JACK
     Port::connections ( void )
     {
         return jack_port_get_connections( _port );
+    }
+
+    Port::type_e
+    Port::type ( void ) const
+    {
+        if ( _freezer )
+            return _freezer->direction;
+        else
+            return jack_port_flags( _port ) == JackPortIsOutput ? Output : Input;
     }
 
     /** Restore the connections returned by connections() */

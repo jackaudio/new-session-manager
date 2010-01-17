@@ -39,6 +39,8 @@ namespace JACK
 
     public:
 
+        bool operator < ( const Port & rhs ) const;
+
         enum type_e { Output, Input };
 
         static int max_name ( void );
@@ -56,10 +58,7 @@ namespace JACK
 
         bool valid ( void ) const { return _port; }
         bool connected ( void ) const { return jack_port_connected( _port ); }
-        type_e type ( void ) const
-            {
-                return jack_port_flags( _port ) == JackPortIsOutput ? Output : Input;
-            }
+        type_e type ( void ) const;
         const char * name ( void ) const { return _name; }
         bool name ( const char *name );
         bool name ( const char *base, int n, const char *type=0 );

@@ -674,71 +674,75 @@ Track::menu_cb ( const Fl_Menu_ *m )
 
     m->item_pathname( picked, sizeof( picked ) );
 
-   Logger log( this );
+    Logger log( this );
 
-   if ( ! strcmp( picked, "Type/Mono" ) )
-   {
-       configure_inputs( 1 );
-       configure_outputs( 1 );
-   }
-   else if ( ! strcmp( picked, "Type/Stereo" ) )
-   {
-       configure_inputs( 2 );
-       configure_outputs( 2 );
-   }
-   else if ( ! strcmp( picked, "Type/Quad" ) )
-   {
-       configure_inputs( 4 );
-       configure_outputs( 4 );
-   }
-   else if ( ! strcmp( picked, "Type/..." ) )
-   {
-       const char *s = fl_input( "How many channels?", "3" );
-       int c = atoi( s );
+    if ( ! strcmp( picked, "Type/Mono" ) )
+    {
+        configure_inputs( 1 );
+        configure_outputs( 1 );
+    }
+    else if ( ! strcmp( picked, "Type/Stereo" ) )
+    {
+        configure_inputs( 2 );
+        configure_outputs( 2 );
+    }
+    else if ( ! strcmp( picked, "Type/Quad" ) )
+    {
+        configure_inputs( 4 );
+        configure_outputs( 4 );
+    }
+    else if ( ! strcmp( picked, "Type/..." ) )
+    {
+        const char *s = fl_input( "How many channels?", "3" );
+        if ( s )
+        {
 
-       if ( c <= 0 || c > 10 )
-           fl_alert( "Invalid number of channels." );
-       else
-       {
-                                configure_inputs( c );
-                                configure_outputs( c );
-       }
-   }
-   else if ( ! strcmp( picked, "/Add Control" ) )
-   {
-       new Control_Sequence( this );
-   }
-   else if ( ! strcmp( picked, "/Add Annotation" ) )
-   {
-       add( new Annotation_Sequence( this ) );
-   }
-   else if ( ! strcmp( picked, "/Color" ) )
-   {
-       unsigned char r, g, b;
+            int c = atoi( s );
 
-       Fl::get_color( color(), r, g, b );
+            if ( c <= 0 || c > 10 )
+                fl_alert( "Invalid number of channels." );
+            else
+            {
+                configure_inputs( c );
+                configure_outputs( c );
+            }
+        }
+    }
+    else if ( ! strcmp( picked, "/Add Control" ) )
+    {
+        new Control_Sequence( this );
+    }
+    else if ( ! strcmp( picked, "/Add Annotation" ) )
+    {
+        add( new Annotation_Sequence( this ) );
+    }
+    else if ( ! strcmp( picked, "/Color" ) )
+    {
+        unsigned char r, g, b;
 
-       if ( fl_color_chooser( "Track Color", r, g, b ) )
-       {
-           color( fl_rgb_color( r, g, b ) );
-       }
+        Fl::get_color( color(), r, g, b );
 
-       redraw();
-   }
-   else if ( ! strcmp( picked, "/Remove" ) )
-   {
-       int r = fl_choice( "Are you certain you want to remove track \"%s\"?", "Cancel", NULL, "Remove", name() );
+        if ( fl_color_chooser( "Track Color", r, g, b ) )
+        {
+            color( fl_rgb_color( r, g, b ) );
+        }
 
-       if ( r == 2 )
-       {
-           timeline->remove_track( this );
-           Fl::delete_widget( this );
-       }
-   }
-   else if ( ! strcmp( picked, "/Rename" ) )
-   {
-       ((Fl_Sometimes_Input*)name_field)->take_focus();
-   }
+        redraw();
+    }
+    else if ( ! strcmp( picked, "/Remove" ) )
+    {
+        int r = fl_choice( "Are you certain you want to remove track \"%s\"?", "Cancel", NULL, "Remove", name() );
+
+        if ( r == 2 )
+        {
+            timeline->remove_track( this );
+            Fl::delete_widget( this );
+        }
+    }
+    else if ( ! strcmp( picked, "/Rename" ) )
+    {
+        ((Fl_Sometimes_Input*)name_field)->take_focus();
+    }
 }
 
 #include "FL/menu_popup.H"

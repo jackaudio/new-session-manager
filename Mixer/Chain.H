@@ -68,7 +68,6 @@ class Chain : public Fl_Group, public Loggable {
     void add_to_process_queue ( Module *m );
 
     std::vector <Module::Port> scratch_port;
-    static std::list <Chain*> chain;
 
     Engine *_engine;
 

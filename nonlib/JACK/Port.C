@@ -53,11 +53,12 @@ namespace JACK
         _freezer = NULL;
         _client = client;
         _port = port;
-        _name = strdup( jack_port_name( _port ) );
+        _name = strdup( jack_port_name( port ) );
     }
 
     Port::Port ( JACK::Client *client, const char *name, type_e dir )
     {
+        _name = NULL;
         _freezer = NULL;
         _client = client;
         activate( name, dir );
@@ -65,6 +66,7 @@ namespace JACK
 
     Port::Port ( JACK::Client *client, type_e dir, const char *base, int n, const char *type )
     {
+        _name = NULL;
         _freezer = NULL;
         _client = client;
 
@@ -75,6 +77,7 @@ namespace JACK
 
     Port::Port ( JACK::Client *client, type_e dir, int n, const char *type )
     {
+        _name = NULL;
         _freezer = NULL;
         _client = client;
 

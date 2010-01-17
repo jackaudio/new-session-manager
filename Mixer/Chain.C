@@ -46,6 +46,8 @@
  * optimized out.
  */
 
+#include "const.h"
+
 #include "Chain.H"
 
 #include "Module.H"
@@ -76,12 +78,6 @@
 #include <dsp.h>
 
 #include <FL/Fl_Flip_Button.H>
-
-#include "const.h"
-
-
-
-std::list <Chain*> Chain::chain;
 
 
 
@@ -190,8 +186,6 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
 
     end();
 
-    chain.push_back( this );
-
     log_create();
 }
 
@@ -199,9 +193,9 @@ Chain::~Chain ( )
 {
     DMESSAGE( "Destroying chain" );
 
-    chain.remove( this );
-
     log_destroy();
+
+    engine()->lock();
 
     /* if we leave this up to FLTK, it will happen after we've
      already destroyed the engine */
@@ -266,7 +260,7 @@ Chain::initialize_with_default ( void )
 
 
 void Chain::cb_handle(Fl_Widget* o) {
-    if ( o = tab_button )
+    if ( o == tab_button )
     {
         Fl_Flip_Button *fb = (Fl_Flip_Button*)o;
 
@@ -326,7 +320,6 @@ Chain::remove ( Module *m )
 void
 Chain::configure_ports ( void )
 {
-/*     int old_outs = outs(); */
      int nouts = 0;
 
     engine()->lock();
@@ -337,15 +330,7 @@ Chain::configure_ports ( void )
         nouts = module( i )->noutputs();
     }
 
-/*     outs( nouts ); */
-
-    int req_buffers = required_buffers();
-
-/*     if ( outs() != old_outs ) */
-/*     { */
-/*         if ( configure_outputs_callback() ) */
-/*             configure_outputs_callback()( this, _configure_outputs_userdata ); */
-/*     } */
+    unsigned int req_buffers = required_buffers();
 
     DMESSAGE( "required_buffers = %i", req_buffers );
 
@@ -365,15 +350,6 @@ Chain::configure_ports ( void )
     }
 
     build_process_queue();
-
-    /* let the other chains know we mess with their buffers */
-    for ( std::list<Chain*>::iterator i = chain.begin();
-          i != chain.end();
-          ++i )
-    {
-        if ( *i != this )
-            (*i)->build_process_queue();
-    }
 
     engine()->unlock();
 
@@ -425,30 +401,22 @@ Chain::can_configure_outputs ( Module *m, int n ) const
     return true;
 }
 
-/* return true if this chain can be converted to support /n/ input channels  */
-bool
-Chain::can_support_input_channels ( int n )
-{
-    /* FIXME: implement */
-    return true;
-}
-
 /* rename chain... we have to let our modules know our name has
  * changed so they can take the appropriate action (in particular the
  * JACK module). */
 void
 Chain::name ( const char *name )
 {
-
     char ename[512];
     snprintf( ename, sizeof(ename), "%s/%s", APP_NAME, name );
+
+    DMESSAGE( "Renaming JACK client" );
 
     _name = engine()->name( ename );
 
     /* FIXME: discarding the name jack picked is technically wrong! */
 
     _name = name;
-
 
     for ( int i = 0; i < modules(); ++i )
         module( i )->handle_chain_name_changed();
@@ -645,9 +613,9 @@ Chain::build_process_queue ( void )
 
 /*     DMESSAGE( "Process queue looks like:" ); */
 
-    for ( std::list<Module*>::const_iterator i = process_queue.begin(); i != process_queue.end(); ++i )
-    {
-        const Module* m = *i;
+/*     for ( std::list<Module*>::const_iterator i = process_queue.begin(); i != process_queue.end(); ++i ) */
+/*     { */
+/*         const Module* m = *i; */
 
 /*         if ( m->audio_input.size() || m->audio_output.size() ) */
 /*             DMESSAGE( "\t%s", (*i)->name() ); */
@@ -656,14 +624,14 @@ Chain::build_process_queue ( void )
 /*         else if ( m->control_input.size() ) */
 /*             DMESSAGE( "\t%s <--", (*i)->name() ); */
 
-        {
-            char *s = m->get_parameters();
+/*         { */
+/*             char *s = m->get_parameters(); */
 
 /*             DMESSAGE( "(%s)", s ); */
 
-            delete[] s;
-        }
-    }
+/*             delete[] s; */
+/*         } */
+/*     } */
 }
 
 void

@@ -20,6 +20,8 @@
 /* Filter module. Can host LADPSA Plugins, or can be inherited from to make internal
    modules with special features and appearance. */
 
+#include "const.h"
+
 #include "Plugin_Module.H"
 
 #include <Fl/fl_draw.H>

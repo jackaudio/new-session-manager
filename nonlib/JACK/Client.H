@@ -36,7 +36,7 @@ namespace JACK
 
         jack_client_t *_client;
 
-        nframes_t _sample_rate;
+        static nframes_t _sample_rate;
         volatile int _xruns;
         volatile bool _freewheeling;
         volatile bool _zombified;
@@ -88,7 +88,7 @@ namespace JACK
 
         nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
         float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }
-        nframes_t sample_rate ( void ) const { return _sample_rate; }
+        static nframes_t sample_rate ( void ) { return _sample_rate; }
         int xruns ( void ) const { return _xruns; };
         bool freewheeling ( void ) const { return _freewheeling; }
         void freewheeling ( bool yes );

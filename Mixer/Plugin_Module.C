@@ -38,7 +38,6 @@
 #include <math.h>
 
 #include "Engine/Engine.H"
-#include "Chain.H"
 
 
 
@@ -332,7 +331,7 @@ Plugin_Module::plugin_instances ( unsigned int n )
 
             DMESSAGE( "Instantiating plugin..." );
 
-            if ( ! (h = _idata->descriptor->instantiate( _idata->descriptor, chain()->engine()->sample_rate() ) ) )
+            if ( ! (h = _idata->descriptor->instantiate( _idata->descriptor, Engine::sample_rate() ) ) )
             {
                 WARNING( "Failed to instantiate plugin" );
                 return false;
@@ -458,7 +457,7 @@ Plugin_Module::load ( unsigned long id )
                         Min=_idata->descriptor->PortRangeHints[Port].LowerBound;
                         if (LADSPA_IS_HINT_SAMPLE_RATE(HintDesc))
                         {
-                            Min*=chain()->engine()->sample_rate();
+                            Min*=Engine::sample_rate();
                         }
                     }
                     if (LADSPA_IS_HINT_BOUNDED_ABOVE(HintDesc))
@@ -466,7 +465,7 @@ Plugin_Module::load ( unsigned long id )
                         Max=_idata->descriptor->PortRangeHints[Port].UpperBound;
                         if (LADSPA_IS_HINT_SAMPLE_RATE(HintDesc))
                         {
-                            Max*=chain()->engine()->sample_rate();
+                            Max*=Engine::sample_rate();
                         }
                     }
 
@@ -534,7 +533,7 @@ Plugin_Module::load ( unsigned long id )
                                 }
                             }
                             if (LADSPA_IS_HINT_SAMPLE_RATE(HintDesc)) {
-                                Default *= chain()->engine()->sample_rate();
+                                Default *= Engine::sample_rate();
                             }
                             if (LADSPA_IS_HINT_INTEGER(HintDesc)) {
                                 if ( p.hints.ranged &&

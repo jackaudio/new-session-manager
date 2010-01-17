@@ -24,8 +24,12 @@
 
 
 
+
+
 namespace JACK
 {
+
+    nframes_t Client::_sample_rate = 0;
 
     Client::Client ( )
     {

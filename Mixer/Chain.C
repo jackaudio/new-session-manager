@@ -123,9 +123,7 @@ Chain::set ( Log_Entry &e )
 Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
 
 {
-    _engine = new Engine( &Chain::process, this );
-
-    engine()->init( "Non-Mixer" );
+    _engine = NULL;
 
     int X = 0;
     int Y = 0;
@@ -410,11 +408,21 @@ Chain::name ( const char *name )
     char ename[512];
     snprintf( ename, sizeof(ename), "%s/%s", APP_NAME, name );
 
-    DMESSAGE( "Renaming JACK client" );
 
-    _name = engine()->name( ename );
+    if ( ! _engine )
+    {
+        _engine = new Engine( &Chain::process, this );
 
-    /* FIXME: discarding the name jack picked is technically wrong! */
+        engine()->init( ename );
+    }
+    else
+    {
+        DMESSAGE( "Renaming JACK client from \"%s\" to \"%s\"", _name, ename );
+
+        _name = engine()->name( ename );
+        /* FIXME: discarding the name jack picked is technically wrong! */
+
+    }
 
     _name = name;
 

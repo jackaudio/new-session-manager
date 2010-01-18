@@ -52,6 +52,7 @@ Fl_Single_Window *main_window;
 #include "Meter_Module.H"
 #include "Meter_Indicator_Module.H"
 #include "Controller_Module.H"
+#include "Mono_Pan_Module.H"
 #include "Chain.H"
 
 
@@ -82,6 +83,7 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Gain_Module );
     LOG_REGISTER_CREATE( Meter_Module );
     LOG_REGISTER_CREATE( JACK_Module );
+    LOG_REGISTER_CREATE( Mono_Pan_Module );
     LOG_REGISTER_CREATE( Meter_Indicator_Module );
     LOG_REGISTER_CREATE( Controller_Module );
 

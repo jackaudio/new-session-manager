@@ -17,23 +17,19 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Gain_Module.H"
+#include "Mono_Pan_Module.H"
 
 #include <math.h>
 #include <dsp.h>
 
-Gain_Module::Gain_Module ( )
+Mono_Pan_Module::Mono_Pan_Module ( )
     : Module ( 50, 24, name() )
 {
-    add_port( Port( this, Port::INPUT, Port::AUDIO ) );
-    add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
-
-    Port p( this, Port::INPUT, Port::CONTROL, "Gain (dB)" );
+    Port p( this, Port::INPUT, Port::CONTROL, "Pan" );
     p.hints.type = Port::Hints::LOGARITHMIC;
     p.hints.ranged = true;
-    p.hints.minimum = -70.0f;
-//    p.hints.maximum = HUGE;
-    p.hints.maximum = 6.0f;
+    p.hints.minimum = -1.0f;
+    p.hints.maximum = 1.0f;
     p.hints.default_value = 0.0f;
 
     p.connect_to( new float );
@@ -41,14 +37,16 @@ Gain_Module::Gain_Module ( )
 
     add_port( p );
 
-//    color( FL_BLACK );
+    add_port( Port( this, Port::INPUT, Port::AUDIO ) );
+    add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
+    add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
 
     end();
 
     log_create();
 }
 
-Gain_Module::~Gain_Module ( )
+Mono_Pan_Module::~Mono_Pan_Module ( )
 {
     delete (float*)control_input[0].buffer();
     log_destroy();
@@ -57,46 +55,31 @@ Gain_Module::~Gain_Module ( )
 
 
 bool
-Gain_Module::configure_inputs ( int n )
+Mono_Pan_Module::configure_inputs ( int n )
 {
-    audio_input.clear();
-    audio_output.clear();
-//    control_input.clear();
-
-    for ( int i = 0; i < n; ++i )
-    {
-        add_port( Port( this, Port::INPUT, Port::AUDIO ) );
-        add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
-//        add_port( Port( this, Port::INPUT, Port::CONTROL ) );
-
-/*         Port p( Port::OUTPUT, Port::CONTROL, "dB level" ); */
-/*         p.hints.type = Port::Hints::LOGARITHMIC; */
-/*         add_port( p ); */
-    }
-
     return true;
 }
 
 
 
 void
-Gain_Module::process ( void )
+Mono_Pan_Module::process ( void )
 {
-    if ( control_input[0].connected() )
+    const float g = control_input[0].control_value();
+
+// this is obviously wrong, but it produces a strange false stereo effect.
+//    const float lg = (0.0f - g);
+//    const float rg = g;
+
+    const float lg = (0.0f - g) + 1.0f;
+    const float rg = g + 1.0f;
+
+    if ( audio_input[0].connected() &&
+         audio_output[0].connected() &&
+         audio_output[1].connected() )
     {
-        float g = DB_CO( control_input[0].control_value() );
+        buffer_copy_and_apply_gain( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes(), rg );
 
-        for ( int i = audio_input.size(); i--; )
-        {
-            if ( audio_input[i].connected() && audio_output[i].connected() )
-            {
-                buffer_apply_gain( (sample_t*)audio_input[i].buffer(), nframes(), g );
-
-/*             buffer_copy_and_apply_gain( (sample_t*)audio_output[0].buffer(), */
-/*                                         (sample_t*)audio_input[0].buffer(), */
-/*                                         nframes(), */
-/*                                         g ); */
-            }
-        }
+        buffer_apply_gain( (sample_t*)audio_output[0].buffer(), nframes(), lg );
     }
 }

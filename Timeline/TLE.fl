@@ -37,6 +37,8 @@ decl {\#include "Project.H"} {}
 decl {\#include "Clock.H"} {public
 } 
 
+decl {\#include "New_Project_Dialog.H"} {} 
+
 decl {\#include "Track.H" // for capture_format} {} 
 
 decl {\#include "Waveform.H" // for options} {} 
@@ -218,7 +220,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label Timeline
       callback {if ( Fl::event_key() != FL_Escape )
 	o->hide();} open
-      private xywh {102 111 1025 770} type Double resizable xclass Non_DAW visible
+      private xywh {104 122 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         private xywh {0 0 1024 25}
@@ -282,13 +284,30 @@ pi.run();}
             label {&New}
             callback {save_timeline_settings();
 
-new_project_chooser();
+const char *templates[] = { "Default", NULL };
+
+char *default_path;
+char *selected_template;
+
+read_line( user_config_dir, "default_path", &default_path );
+
+char *path = new_project_chooser( templates, &default_path, &selected_template );
+
+if ( ! Project::create( path, selected_template ) )
+	fl_alert( "Error creating project!" );
+
+free( path );
+free( selected_template );
+free( default_path );
+
+
+write_line( user_config_dir, "default_path", default_path );
 
 load_timeline_settings();
 
 update_menu();
 
-main_window->redraw();}
+main_window->redraw();} selected
             xywh {0 0 40 25}
           }
           MenuItem {} {
@@ -863,81 +882,7 @@ open_url( pat );} {}
   }
 } 
 
-class New_Project_Dialog {open
-} {
-  Function {New_Project_Dialog()} {open
-  } {
-    code {make_window();} {}
-  }
-  Function {run()} {open return_type void
-  } {
-    code {_window->show();
 
-while ( _window->shown() )
-	Fl::wait();} {}
-  }
-  Function {make_window()} {open
-  } {
-    Fl_Window _window {
-      label {New Project} open
-      xywh {615 414 550 195} type Double modal xclass Non_DAW visible
-    } {
-      Fl_File_Input _name {
-        label {Named:}
-        xywh {75 140 375 35}
-      }
-      Fl_Button {} {
-        label Browse
-        callback {_directory->value( fl_dir_chooser( "Directory for new project", NULL, 0 ) );}
-        xywh {455 100 80 35}
-      }
-      Fl_Return_Button {} {
-        label Create
-        callback {if ( strlen( _directory->value() ) && strlen( _name->value() ) )
-{
-	char pat[512];
-	
-	snprintf( pat, sizeof( pat ), "%s/%s", _directory->value(), _name->value() );
-
-	if ( ! Project::create( pat, _template->text( _template->value() ) ) )
-		fl_alert( "Error creating project!" );
-
-	_window->hide();
-}}
-        xywh {455 140 80 35}
-      }
-      Fl_File_Input _directory {
-        label {Where:}
-        callback {if ( ! fl_filename_isdir( o->value() ) )
-{
-	fl_alert( "Must be a directory" );
-	o->value( "" );
-	return;
-}
-
-write_line( user_config_dir, "default_path", o->value() );}
-        xywh {75 100 375 35}
-        code0 {\#include <FL/filename.H>}
-        code1 {char *v;}
-        code2 {read_line( user_config_dir, "default_path", &v );}
-        code3 {o->value( v );}
-      }
-      Fl_Box {} {
-        label {New Project}
-        xywh {15 8 520 33} box RSHADOW_BOX color 133 labelsize 20 labelcolor 32
-      }
-      Fl_Choice _template {
-        label {Template:}
-        private xywh {310 60 225 25} down_box BORDER_BOX
-      } {
-        MenuItem {} {
-          label Default
-          xywh {0 0 40 25}
-        }
-      }
-    }
-  }
-} 
 
 Function {set_theme_dark()} {C return_type void
 } {
@@ -947,13 +892,6 @@ Function {set_theme_dark()} {C return_type void
 
         Fl::scheme( Fl::scheme() ); } {}
 }
-
-Function {new_project_chooser()} {C return_type void
-} {
-  code {New_Project_Dialog nsd;
-
-nsd.run();} {}
-} 
 
 class Project_Info_Dialog {open
 } {
@@ -979,7 +917,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {649 226 520 740} type Double modal visible
+      private xywh {651 237 520 740} type Double modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}
@@ -1055,10 +993,8 @@ window->do_callback();}
   }
 } 
 
-class About_Dialog {open
-} {
-  Function {About_Dialog()} {open
-  } {
+class About_Dialog {} {
+  Function {About_Dialog()} {} {
     code {make_window();} {}
   }
   Function {run()} {return_type void
@@ -1081,7 +1017,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {349 201 495 655} type Double xclass {Non-DAW} visible
+      private xywh {1342 76 495 655} type Double xclass {Non-DAW} visible
     } {
       Fl_Tabs {} {open
         xywh {0 264 497 392}

@@ -1,0 +1,148 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0110 
+header_name {.H} 
+code_name {.C}
+comment {//
+// Copyright (C) 2008 Jonathan Moore Liles
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+} {in_source in_header
+} 
+
+decl {\#include <stdlib.h>} {} 
+
+decl {\#include <string.h>} {} 
+
+decl {\#include <stdio.h>} {} 
+
+decl {\#include <FL/Fl_File_Chooser.H>} {} 
+
+class New_Project_Dialog {open
+} {
+  Function {New_Project_Dialog()} {open
+  } {
+    code {make_window();} {}
+  }
+  Function {run()} {open return_type void
+  } {
+    code {_window->show();
+
+while ( _window->shown() )
+	Fl::wait();} {}
+  }
+  Function {make_window()} {open
+  } {
+    Fl_Window _window {
+      label {New Project} open
+      xywh {406 251 550 195} type Double hide modal xclass Non_DAW
+    } {
+      Fl_File_Input _name {
+        label {Named:}
+        xywh {75 140 375 35}
+      }
+      Fl_Button {} {
+        label Browse
+        callback {_directory->value( fl_dir_chooser( "Directory for new project", NULL, 0 ) );}
+        xywh {455 100 80 35}
+      }
+      Fl_Return_Button {} {
+        label Create
+        callback {if ( strlen( _directory->value() ) && strlen( _name->value() ) )
+{
+	char pat[1024];
+	
+	snprintf( pat, sizeof( pat ), "%s/%s", _directory->value(), _name->value() );
+	
+	path = strdup( pat );
+	
+	_default_path = strdup( _directory->value() );
+	
+
+	//if ( ! Project::create( pat, _template->text( _template->value() ) ) )
+	//	fl_alert( "Error creating project!" );
+
+	_window->hide();
+}}
+        xywh {455 140 80 35}
+      }
+      Fl_File_Input _directory {
+        label {Where:}
+        callback {if ( ! fl_filename_isdir( o->value() ) )
+{
+	fl_alert( "Must be a directory" );
+	o->value( "" );
+	return;
+}
+
+// write_line( user_config_dir, "default_path", o->value() );}
+        xywh {75 100 375 35}
+        code0 {\#include <FL/filename.H>}
+        code1 {char *v;}
+        code2 {// read_line( user_config_dir, "default_path", &v );}
+        code3 {o->value( v );}
+      }
+      Fl_Box {} {
+        label {New Project}
+        xywh {15 8 520 33} box RSHADOW_BOX color 133 labelsize 20 labelcolor 32
+      }
+      Fl_Choice _template {
+        label {Template:} open
+        private xywh {310 60 225 25} down_box BORDER_BOX
+      } {
+        MenuItem {} {
+          label Default
+          xywh {0 0 40 25}
+        }
+      }
+    }
+  }
+  decl {char *path;} {public
+  }
+  decl {char *_default_path} {}
+  Function {templates( const char **templates )} {open return_type void
+  } {
+    code {for ( const char **s = templates; *s; ++s )
+	_template->add( *s );} {}
+  }
+  Function {default_path( char *s )} {open return_type void
+  } {
+    code {_default_path = s;} {}
+  }
+  Function {default_path()} {open return_type {char *}
+  } {
+    code {return _default_path;} {}
+  }
+  Function {selected_template()} {open return_type {const char *}
+  } {
+    code {return _template->text( _template->value() );} {}
+  }
+} 
+
+Function {new_project_chooser( const char **templates, char **default_path, char **selected_template )} {open C return_type {char*}
+} {
+  code {New_Project_Dialog nsd;
+
+nsd.templates( templates );
+nsd.default_path( *default_path );
+
+nsd.run();
+
+*default_path = strdup( nsd.default_path() );
+*selected_template = strdup( nsd.selected_template() );
+
+return strdup( nsd.path );} {selected
+  }
+} 

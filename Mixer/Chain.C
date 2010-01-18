@@ -455,7 +455,11 @@ Chain::insert ( Module *m, Module *n )
             n->chain( this );
         }
         else
+        {
+            DMESSAGE( "Module says it can't support %i inputs", module( modules() - 1 )->noutputs() );
+
             goto err;
+        }
     }
     else
     {
@@ -488,7 +492,8 @@ Chain::insert ( Module *m, Module *n )
         n->chain( this );
     }
 
-    DMESSAGE( "Module has %i:%i audio and %i:%i control ports",
+    DMESSAGE( "Module \"%s\" has %i:%i audio and %i:%i control ports",
+              n->name(),
               n->ninputs(),
               n->noutputs(),
               n->ncontrol_inputs(),
@@ -503,6 +508,8 @@ Chain::insert ( Module *m, Module *n )
     return true;
 
 err:
+
+    DMESSAGE( "Insert failed" );
 
     engine()->unlock();
 

@@ -18,8 +18,7 @@
 /*******************************************************************************/
 
 #include <FL/Fl.H>
-#include <FL/Fl_Single_Window.H>
-#include <FL/Fl_Single_Window.H>
+#include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Pack.H>
 #include "Mixer_Strip.H"
@@ -36,8 +35,6 @@
 #include "Project.H"
 
 Mixer *mixer;
-
-Fl_Single_Window *main_window;
 
 #include <FL/Boxtypes.H>
 #include "Loggable.H"
@@ -98,8 +95,10 @@ main ( int argc, char **argv )
 /*     Fl::foreground( 0xFF, 0xFF, 0xFF ); */
 /*     Fl::background( 0x10, 0x10, 0x10 ); */
 
+    Fl_Double_Window *main_window;
+
     {
-        Fl_Single_Window *o = main_window = new Fl_Single_Window( 1024, 768, "Mixer" );
+        Fl_Double_Window *o = main_window = new Fl_Double_Window( 1024, 768, "Mixer" );
         {
             Fl_Widget *o = mixer = new Mixer( 0, 0, main_window->w(), main_window->h(), NULL );
             Fl_Group::current()->resizable(o);

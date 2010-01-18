@@ -42,6 +42,7 @@
 #include "const.h"
 #include "util/debug.h"
 #include "util/file.h"
+#include "util/Block_Timer.H"
 
 extern TLE *tle;
 
@@ -254,8 +255,11 @@ Project::open ( const char *name )
     if ( version != PROJECT_VERSION )
         return E_VERSION;
 
-    if ( ! Loggable::open( "history" ) )
-        return E_INVALID;
+    {
+        Block_Timer timer( "Replayed journal" );
+        if ( ! Loggable::open( "history" ) )
+            return E_INVALID;
+    }
 
     timeline->sample_rate( rate );
 
@@ -332,5 +336,6 @@ Project::create ( const char *name, const char *template_name )
 void
 Project::compact ( void )
 {
+    Block_Timer timer( "Compacted journal" );
     Loggable::compact();
 }

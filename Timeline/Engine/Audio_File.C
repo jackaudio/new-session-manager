@@ -23,6 +23,7 @@
 
 #include "const.h"
 #include "util/debug.h"
+#include "util/Block_Timer.H"
 
 #include <string.h>
 
@@ -88,6 +89,7 @@ Audio_File::filename ( void ) const
 Audio_File *
 Audio_File::from_file ( const char * filename )
 {
+    Block_Timer timer( "Opened audio file" );
 
     Audio_File *a;
 

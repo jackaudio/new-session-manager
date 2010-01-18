@@ -888,7 +888,7 @@ Timeline::resize ( int X, int Y, int W, int H )
     hscroll->resize( BX, BY + H - 18, hscroll->w(), 18 );
     vscroll->size( vscroll->w(), H - 18 );
 
-    tracks->resize( BX, rulers->h(), W - vscroll->w(), H - vscroll->h() );
+    tracks->resize( BX, BY + rulers->h(), W - vscroll->w(), H - vscroll->h() );
 }
 
 /** draw ancillary cursors (not necessarily in the overlay plane) */

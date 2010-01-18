@@ -117,7 +117,7 @@ Plugin_Module::add_plugins_to_menu ( Fl_Menu_Button *menu )
     {
         snprintf( path, sizeof( path ), "%s/%s", "Plugin", pi->path );
 
-        menu->add(path, 0, NULL, pi, 0 );
+        menu->add(path, 0, NULL, new unsigned long( pi->id ), 0 );
     }
 
     delete[] pia;

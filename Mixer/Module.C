@@ -322,9 +322,9 @@ Module::pick_module ( void )
     menu->type( Fl_Menu_Button::POPUP3 );
 
 //    menu->add( "JACK", 0, 0, (void*)1 );
-    menu->add( "Gain", 0, 0, (void*)2 );
-    menu->add( "Meter", 0, 0, (void*)3 );
-    menu->add( "Mono Pan", 0, 0, (void*)4 );
+    menu->add( "Gain", 0, 0, new unsigned long(-2) );
+    menu->add( "Meter", 0, 0, new unsigned long(-3) );
+    menu->add( "Mono Pan", 0, 0, new unsigned long(-4) );
 
     Plugin_Module::add_plugins_to_menu( menu );
 
@@ -338,22 +338,30 @@ Module::pick_module ( void )
     if ( ! v )
         return NULL;
 
-    switch ( (int)v )
+    unsigned long id = *((unsigned long *)v);
+
+    switch ( id )
     {
-        case 1:
+        case -1:
             return new JACK_Module();
-        case 2:
+        case -2:
             return new Gain_Module();
-        case 3:
+        case -3:
             return new Meter_Module();
-        case 4:
+        case -4:
             return new Mono_Pan_Module();
     }
 
-    Plugin_Module::Plugin_Info *pi = (Plugin_Module::Plugin_Info*)v;
+/*     Plugin_Module::Plugin_Info *pi = (Plugin_Module::Plugin_Info*)v; */
     Plugin_Module *m = new Plugin_Module();
 
-    m->load( pi->id );
+    m->load( id );
+
+    for ( const Fl_Menu_Item *mi = menu->menu(); mi->label(); ++mi )
+    {
+        if ( mi->user_data() )
+            delete mi->user_data();
+    }
 
     return m;
 }

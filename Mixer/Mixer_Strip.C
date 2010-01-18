@@ -290,7 +290,11 @@ Mixer_Strip::init ( )
     chain_buffers = 0;
     chain_buffer = NULL;
 
-    box(FL_THIN_UP_BOX);
+//    box(FL_THIN_UP_BOX);
+    box( FL_RFLAT_BOX );
+
+    Fl_Group::color( fl_darker( FL_BACKGROUND_COLOR ) );
+
     clip_children( 1 );
 
     Fl_Pack *gain_pack;
@@ -361,6 +365,7 @@ Mixer_Strip::init ( )
     Fl_Pack *fader_pack;
 
     { Fl_Group *o = fader_tab = new Fl_Group( 7, 115, 105, 330, "Fader" );
+        o->box( FL_NO_BOX );
         o->labeltype( FL_NO_LABEL );
         { Fl_Pack* o = fader_pack = new Fl_Pack(7, 116, 103, 330 );
             o->spacing( 20 );
@@ -383,20 +388,22 @@ Mixer_Strip::init ( )
         Fl_Group::current()->resizable(o);
     }
     { Fl_Group *o = signal_tab = new Fl_Group( 7, 115, 105, 330 );
+        o->box( FL_NO_BOX );
         o->labeltype( FL_NO_LABEL );
         o->hide();
         o->end();
     }
-    { Fl_Pack *o = panner_pack = new Fl_Pack( 2, 440, 114, 40 );
+    { Fl_Pack *o = panner_pack = new Fl_Pack( 2, 443, 114, 40 );
         o->spacing( 2 );
         o->type( Fl_Pack::VERTICAL );
+        o->box( FL_NO_BOX );
 
+#if 0
         { Fl_Box *o = new Fl_Box( 0, 0, 100, 24 );
             o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
             o->labelsize( 10 );
             o->label( "Pan" );
         }
-#if 0
         { Panner* o = new Panner(0, 0, 110, 90);
             o->box(FL_THIN_UP_BOX);
             o->color(FL_GRAY0);
@@ -409,9 +416,14 @@ Mixer_Strip::init ( )
             o->when(FL_WHEN_RELEASE);
         } // Panner* o
 #endif
+        { Fl_Box *o = new Fl_Box( 0, 0, 100, 24 );
+            o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
+            o->labelsize( 10 );
+            o->label( "Inputs" );
+        }
         {
             Controller_Module *m = jack_input_controller = new Controller_Module( true );
-            m->label( "Inputs" );
+            m->labeltype( FL_NO_LABEL );
             m->chain( _chain );
             m->pad( false );
 //            m->connect_to( &_chain->module( 0 )->control_input[1] );

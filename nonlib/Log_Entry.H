@@ -53,7 +53,8 @@ public:
     void add ( const char *name, type v )                               \
         {                                                               \
             grow();                                                     \
-            asprintf( &_sa[ _i ], "%s " format, name, (exp) );          \
+            if ( -1 == asprintf( &_sa[ _i ], "%s " format, name, (exp) ) ) \
+                abort();                                                \
             strtok( _sa[ _i++ ], " " );                                 \
         }                                                               \
 

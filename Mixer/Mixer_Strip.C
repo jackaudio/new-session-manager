@@ -303,9 +303,12 @@ Mixer_Strip::init ( )
         o->type( Fl_Pack::VERTICAL );
         o->spacing( 2 );
         {
-            Fl_Input *o = name_field = new Fl_Sometimes_Input( 2, 2, 144, 24 );
+            Fl_Sometimes_Input *o = new Fl_Sometimes_Input( 2, 2, 144, 24 );
+            name_field = o;
+
             o->color( color() );
-            o->box( FL_FLAT_BOX );
+            o->up_box( FL_ROUNDED_BOX );
+            o->box( FL_ROUNDED_BOX );
             o->labeltype( FL_NO_LABEL );
             o->labelcolor( FL_GRAY0 );
             o->textcolor( FL_FOREGROUND_COLOR );

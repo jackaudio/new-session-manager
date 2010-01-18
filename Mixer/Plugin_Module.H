@@ -22,7 +22,27 @@
 #include "Module.H"
 #include "Loggable.H"
 
-class Plugin_Module : Module {
+class Fl_Menu_Button;
+
+class Plugin_Module : public Module {
+
+public:
+
+    struct Plugin_Info
+    {
+        const char *path;
+        unsigned long id;
+
+        Plugin_Info ( )
+            {
+                path = 0;
+                id = 0;
+            }
+    };
+
+    bool load ( unsigned long id );
+
+private:
 
     void init ( void );
 
@@ -48,21 +68,8 @@ class Plugin_Module : Module {
     int _plugin_outs;
     bool _crosswire;
 
-    struct Plugin_Info
-    {
-        const char *path;
-        unsigned long id;
-
-        Plugin_Info ( )
-            {
-                path = 0;
-                id = 0;
-            }
-    };
-
     static Plugin_Info* discover ( void );
 
-    bool load ( unsigned long id );
 
     void set_input_buffer ( int n, void *buf );
     void set_output_buffer ( int n, void *buf );
@@ -82,6 +89,7 @@ public:
     virtual ~Plugin_Module();
 
     static Plugin_Module * pick_plugin ( void );
+    static void add_plugins_to_menu ( Fl_Menu_Button *menu );
 
     int plugin_ins ( void ) const { return _plugin_ins; }
     int plugin_outs ( void ) const { return _plugin_outs; }

@@ -692,9 +692,19 @@ Chain::handle ( int m )
                     }
                     else if ( test_press( FL_BUTTON1 | FL_SHIFT ) )
                     {
-                        Module *mod = (Module*)Plugin_Module::pick_plugin();
+//                        Module *mod = (Module*)Plugin_Module::pick_plugin();
+                        Module *mod = Module::pick_module();
                         if ( mod )
                         {
+                            if ( !strcmp( mod->name(), "JACK" ) )
+                            {
+                                DMESSAGE( "Special casing JACK module" );
+                                JACK_Module *jm = (JACK_Module*)mod;
+                                jm->chain( this );
+                                jm->configure_inputs( m->ninputs() );
+                                jm->configure_outputs( m->ninputs() );
+                            }
+
                             if ( ! insert( m, mod ) )
                                 fl_alert( "Cannot insert this module at this point in the chain" );
                             redraw();

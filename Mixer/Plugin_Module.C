@@ -107,6 +107,22 @@ Plugin_Module::set ( Log_Entry &e )
 
 #include <FL/Fl_Menu_Button.H>
 
+void
+Plugin_Module::add_plugins_to_menu ( Fl_Menu_Button *menu )
+{
+    Plugin_Module::Plugin_Info *pia = Plugin_Module::discover();
+
+    char path[1024];
+    for ( Plugin_Module::Plugin_Info *pi = pia; pi->path; ++pi )
+    {
+        snprintf( path, sizeof( path ), "%s/%s", "Plugin", pi->path );
+
+        menu->add(path, 0, NULL, pi, 0 );
+    }
+
+    delete[] pia;
+}
+
 /* allow the user to pick a plugin */
 Plugin_Module *
 Plugin_Module::pick_plugin ( void )

@@ -310,6 +310,8 @@ public:
     char *get_parameters ( void ) const;
     void set_parameters ( const char * );
 
+    static Module * pick_module ( void );
+
     virtual bool initialize ( void ) { return true; }
 
     /* for the given number of inputs, return how many outputs this

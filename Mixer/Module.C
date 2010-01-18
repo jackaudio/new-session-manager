@@ -27,6 +27,12 @@
 #include "Module_Parameter_Editor.H"
 #include "Chain.H"
 
+#include "JACK_Module.H"
+#include "Gain_Module.H"
+#include "Mono_Pan_Module.H"
+#include "Meter_Module.H"
+#include "Plugin_Module.H"
+
 
 
 Module::Module ( int W, int H, const char *L ) : Fl_Group( 0, 0, W, H, L )
@@ -305,6 +311,51 @@ Module::draw_label ( void )
 
     if ( s )
         delete[] s;
+}
+
+#include <FL/Fl_Menu_Button.H>
+
+Module *
+Module::pick_module ( void )
+{
+    Fl_Menu_Button *menu = new Fl_Menu_Button( 0, 0, 400, 400 );
+    menu->type( Fl_Menu_Button::POPUP3 );
+
+//    menu->add( "JACK", 0, 0, (void*)1 );
+    menu->add( "Gain", 0, 0, (void*)2 );
+    menu->add( "Meter", 0, 0, (void*)3 );
+    menu->add( "Mono Pan", 0, 0, (void*)4 );
+
+    Plugin_Module::add_plugins_to_menu( menu );
+
+    menu->popup();
+
+    if ( menu->value() < 0 )
+        return NULL;
+
+    void * v = menu->menu()[ menu->value() ].user_data();
+
+    if ( ! v )
+        return NULL;
+
+    switch ( (int)v )
+    {
+        case 1:
+            return new JACK_Module();
+        case 2:
+            return new Gain_Module();
+        case 3:
+            return new Meter_Module();
+        case 4:
+            return new Mono_Pan_Module();
+    }
+
+    Plugin_Module::Plugin_Info *pi = (Plugin_Module::Plugin_Info*)v;
+    Plugin_Module *m = new Plugin_Module();
+
+    m->load( pi->id );
+
+    return m;
 }
 
 #include "FL/test_press.H"

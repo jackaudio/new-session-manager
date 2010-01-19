@@ -249,6 +249,7 @@ Module::draw_box ( void )
 
     Fl_Color c = is_default() ? FL_BLACK : color();
 
+    c = active() ? c : fl_inactive( c );
 
     int spacing = w() / instances();
     for ( int i = instances(); i--; )
@@ -282,7 +283,13 @@ Module::draw_label ( void )
 
     int l = strlen( label() );
 
-    fl_color( FL_FOREGROUND_COLOR );
+    Fl_Color c = FL_FOREGROUND_COLOR;
+
+    if ( ! active() )
+        c = FL_BLACK;
+
+    fl_color( c );
+
     char *s = NULL;
 
     if ( l > 10 )

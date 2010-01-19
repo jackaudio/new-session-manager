@@ -22,7 +22,7 @@ comment {//
 } {in_source in_header
 } 
 
-decl {const float STATUS_UPDATE_FREQ = 0.5f;} {} 
+decl {const float STATUS_UPDATE_FREQ = 0.1f;} {} 
 
 decl {\#include "Fl_Menu_Settings.H"} {} 
 
@@ -220,7 +220,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label Timeline
       callback {if ( Fl::event_key() != FL_Escape )
 	o->hide();} open
-      private xywh {701 103 1025 770} type Double resizable xclass Non_DAW visible
+      private xywh {703 114 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         private xywh {0 0 1024 25}
@@ -657,7 +657,7 @@ ab.run();}
         }
         Fl_Box {} {
           label {<empty>}
-          xywh {487 27 203 42} resizable
+          xywh {487 27 148 42} resizable
           code0 {o->labeltype( FL_NO_LABEL );}
         }
         Fl_Group {} {open
@@ -718,6 +718,13 @@ ab.run();}
           label SEL
           xywh {695 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 13 selection_color 5 labelfont 2 labelcolor 39 deactivate
           code0 {\#include "FL/Fl_Blinker.H"}
+          class Fl_Blinker
+        }
+        Fl_Button seek_blinker {
+          label SEEK
+          xywh {640 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 10 selection_color 2 labelfont 2 labelcolor 39 deactivate
+          code0 {\#include "FL/Fl_Blinker.H"}
+          code1 {o->interval( Fl_Blinker::FAST );}
           class Fl_Blinker
         }
         Fl_Box stats_box {
@@ -829,6 +836,8 @@ rec_blinker->value( transport->rolling && transport->rec_enabled() );
 sm_blinker->value( timeline->session_manager_name() != NULL );
 sm_blinker->tooltip( timeline->session_manager_name() );
 selected_blinker->value( timeline->nselected() );} {selected
+seek_blinker->value( timeline->seek_pending() );
+project_name->redraw();} {selected
     }
   }
   Function {update_cb( void *v )} {open private return_type {static void}
@@ -917,7 +926,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {653 248 520 740} type Double modal visible
+      private xywh {655 259 520 740} type Double modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}
@@ -1017,7 +1026,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {1344 87 495 655} type Double xclass {Non-DAW} visible
+      private xywh {1346 98 495 655} type Double xclass {Non-DAW} visible
     } {
       Fl_Tabs {} {open
         xywh {0 264 497 392}

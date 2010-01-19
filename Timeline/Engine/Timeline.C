@@ -126,22 +126,22 @@ Timeline::resize_buffers ( nframes_t nframes )
     }
 }
 
-int
+/** return true if any playback stream's buffer is less than 50% full */
+bool
 Timeline::seek_pending ( void )
 {
-    THREAD_ASSERT( RT );
-
-    int r = 0;
+//    THREAD_ASSERT( RT );
 
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
 
         if ( t->playback_ds )
-            r += t->playback_ds->buffer_percent() < 50;
+            if ( t->playback_ds->buffer_percent() < 50 )
+                return true;
     }
 
-    return r;
+    return false;
 }
 
 

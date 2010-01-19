@@ -215,6 +215,7 @@ public:
     void stop ( void );
 
     void wait_for_buffers ( void );
+    bool seek_pending ( void );
 
 private:
 
@@ -230,5 +231,4 @@ private:
     void resize_buffers ( nframes_t nframes );
     nframes_t process ( nframes_t nframes );
     void seek ( nframes_t frame );
-    int seek_pending ( void );
 };

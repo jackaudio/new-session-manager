@@ -56,7 +56,7 @@ struct Plugin_Module::ImplementationData
 
 
 
-Plugin_Module::Plugin_Module ( ) : Module( 50, 50, name() )
+Plugin_Module::Plugin_Module ( ) : Module( 50, 35, name() )
 {
     init();
 

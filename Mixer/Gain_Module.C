@@ -82,21 +82,13 @@ Gain_Module::configure_inputs ( int n )
 void
 Gain_Module::process ( void )
 {
-    if ( control_input[0].connected() )
+    float g = DB_CO( control_input[0].control_value() );
+
+    for ( int i = audio_input.size(); i--; )
     {
-        float g = DB_CO( control_input[0].control_value() );
-
-        for ( int i = audio_input.size(); i--; )
+        if ( audio_input[i].connected() && audio_output[i].connected() )
         {
-            if ( audio_input[i].connected() && audio_output[i].connected() )
-            {
-                buffer_apply_gain( (sample_t*)audio_input[i].buffer(), nframes(), g );
-
-/*             buffer_copy_and_apply_gain( (sample_t*)audio_output[0].buffer(), */
-/*                                         (sample_t*)audio_input[0].buffer(), */
-/*                                         nframes(), */
-/*                                         g ); */
-            }
+            buffer_apply_gain( (sample_t*)audio_input[i].buffer(), nframes(), g );
         }
     }
 }

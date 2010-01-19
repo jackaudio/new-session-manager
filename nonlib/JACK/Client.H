@@ -31,7 +31,6 @@ namespace JACK
     class Port;
     class Client
     {
-
         std::list <JACK::Port*> _active_ports;
 
         jack_client_t *_client;
@@ -46,11 +45,11 @@ namespace JACK
         static int process ( nframes_t nframes, void *arg );
         virtual int process ( nframes_t nframes ) = 0;
         static int sync ( jack_transport_state_t state, jack_position_t *pos, void *arg );
-        virtual int sync ( jack_transport_state_t state, jack_position_t *pos ) = 0;
+        virtual int sync ( jack_transport_state_t, jack_position_t * ) { return 1; }
         static int xrun ( void *arg );
         virtual int xrun ( void ) = 0;
         static void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos, void *arg );
-        virtual void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos ) = 0;
+        virtual void timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t *, int ) { }
         static void freewheel ( int yes, void *arg );
         virtual void freewheel ( bool yes ) = 0;
         static int buffer_size ( nframes_t nframes, void *arg );
@@ -75,6 +74,10 @@ namespace JACK
 
     public:
 
+        enum options { DEFAULT = 0,
+                       SLOW_SYNC = 1 << 0,
+                       TIMEBASE_MASTER = 1 << 1 };
+
         jack_client_t * jack_client ( void ) { return _client; }
 
         void port_added ( JACK::Port * p );
@@ -83,7 +86,7 @@ namespace JACK
         Client ( );
         virtual ~Client ( );
 
-        const char * init ( const char *client_name );
+        const char * init ( const char *client_name, unsigned int opts = 0 );
         const char * name ( const char * );
 
         nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }

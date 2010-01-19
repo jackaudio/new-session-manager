@@ -39,10 +39,7 @@ class Engine : public JACK::Client, public Mutex
 
     void shutdown ( void );
     int process ( nframes_t nframes );
-    int sync ( jack_transport_state_t state, jack_position_t *pos );
     int xrun ( void );
-    void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos );
-    void timebase ( jack_transport_state_t state, jack_nframes_t nframes, jack_position_t *pos, int new_pos );
     void freewheel ( bool yes );
     int buffer_size ( nframes_t nframes );
     void thread_init ( void );

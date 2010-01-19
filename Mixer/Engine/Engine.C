@@ -74,24 +74,6 @@ Engine::buffer_size ( nframes_t )
     return 0;
 }
 
-int Engine::sync ( jack_transport_state_t, jack_position_t * )
-{
-    return 0;
-}
-
-void
-Engine::timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t *, int )
-{
-
-
-}
-
-void
-Engine::timebase ( jack_transport_state_t, jack_nframes_t, jack_position_t * )
-{
-
-}
-
 /* THREAD: RT */
 int
 Engine::process ( nframes_t nframes )

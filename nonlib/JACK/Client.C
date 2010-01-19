@@ -113,7 +113,7 @@ namespace JACK
 /** Connect to JACK using client name /client_name/. Return a static
  * pointer to actual name as reported by JACK */
     const char *
-    Client::init ( const char *client_name )
+    Client::init ( const char *client_name, unsigned int opts )
     {
         if (( _client = jack_client_open ( client_name, (jack_options_t)0, NULL )) == 0 )
             return NULL;
@@ -128,9 +128,11 @@ namespace JACK
 
         /* FIXME: should we wait to register this until after the project
            has been loaded (and we have disk threads running)? */
-        set_callback( sync );
+        if ( opts & SLOW_SYNC )
+            set_callback( sync );
 
-        jack_set_timebase_callback( _client, 0, &Client::timebase, this );
+        if ( opts & TIMEBASE_MASTER )
+            jack_set_timebase_callback( _client, 0, &Client::timebase, this );
 
         jack_on_shutdown( _client, &Client::shutdown, this );
 

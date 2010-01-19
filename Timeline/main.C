@@ -136,7 +136,7 @@ main ( int argc, char **argv )
 
     const char *jack_name;
 
-    if ( ! ( jack_name = engine->init( APP_NAME ) ) )
+    if ( ! ( jack_name = engine->init( APP_NAME, JACK::Client::SLOW_SYNC | JACK::Client::TIMEBASE_MASTER ) ) )
         FATAL( "Could not connect to JACK!" );
 
     timeline->sample_rate( engine->sample_rate() );

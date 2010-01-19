@@ -20,12 +20,10 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl.H>
 
-const float BLINK_FREQ = 0.5f;
-
 class Fl_Blinker : public Fl_Button
 {
-
     bool _on;
+    float _blink_interval;
 
     static void
     update_cb ( void *v )
@@ -36,7 +34,7 @@ class Fl_Blinker : public Fl_Button
     void
     update_cb ( void )
         {
-            Fl::repeat_timeout( BLINK_FREQ, update_cb, this );
+            Fl::repeat_timeout( _blink_interval, update_cb, this );
 
             _on = ! _on;
 
@@ -45,11 +43,20 @@ class Fl_Blinker : public Fl_Button
 
 public:
 
+    static const float SLOW = 0.5f;
+    static const float MEDIUM = 0.3f;
+    static const float FAST = 0.1f;
+    static const float DEFAULT = 0.5f;
+
     Fl_Blinker ( int X, int Y, int W, int H, const char *L )
         : Fl_Button( X, Y, W, H, L )
         {
             _on = false;
-            Fl::add_timeout( BLINK_FREQ, update_cb, this );
+
+            _blink_interval = DEFAULT;
+
+            Fl::add_timeout( _blink_interval, update_cb, this );
+
 
             type( FL_TOGGLE_BUTTON );
         }
@@ -58,6 +65,14 @@ public:
     ~Fl_Blinker ()
         {
             Fl::remove_timeout( update_cb, this );
+        }
+
+    void
+    interval ( float v )
+        {
+            _blink_interval = v;
+            Fl::remove_timeout( update_cb, this );
+            Fl::add_timeout( _blink_interval, update_cb, this );
         }
 
     virtual void

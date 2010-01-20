@@ -95,6 +95,8 @@ main ( int argc, char **argv )
 /*     Fl::foreground( 0xFF, 0xFF, 0xFF ); */
 /*     Fl::background( 0x10, 0x10, 0x10 ); */
 
+    Plugin_Module::spawn_discover_thread();
+
     Fl_Double_Window *main_window;
 
     {

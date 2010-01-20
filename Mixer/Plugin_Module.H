@@ -23,8 +23,11 @@
 #include "Loggable.H"
 
 class Fl_Menu_Button;
+class Thread;
 
 class Plugin_Module : public Module {
+
+    static Thread *plugin_discover_thread;
 
 public:
 
@@ -68,7 +71,8 @@ private:
     int _plugin_outs;
     bool _crosswire;
 
-    static Plugin_Info* discover ( void );
+    static void *discover_thread ( void * );
+    static Plugin_Info* get_all_plugins ( void );
 
 
     void set_input_buffer ( int n, void *buf );
@@ -83,7 +87,10 @@ private:
 
     void connect_ports ( void );
 
+
 public:
+
+    static void spawn_discover_thread ( void );
 
     Plugin_Module ( );
     virtual ~Plugin_Module();

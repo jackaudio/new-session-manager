@@ -44,6 +44,7 @@
 
 
 static LADSPAInfo *ladspainfo;
+Thread* Plugin_Module::plugin_discover_thread;
 
 /* keep this out of the header to avoid spreading ladspa.h dependency */
 struct Plugin_Module::ImplementationData
@@ -110,7 +111,7 @@ Plugin_Module::set ( Log_Entry &e )
 void
 Plugin_Module::add_plugins_to_menu ( Fl_Menu_Button *menu )
 {
-    Plugin_Module::Plugin_Info *pia = Plugin_Module::discover();
+    Plugin_Module::Plugin_Info *pia = Plugin_Module::get_all_plugins();
 
     char path[1024];
     for ( Plugin_Module::Plugin_Info *pi = pia; pi->path; ++pi )
@@ -134,7 +135,7 @@ Plugin_Module::pick_plugin ( void )
     Fl_Menu_Button *menu = new Fl_Menu_Button( 0, 0, 400, 400 );
     menu->type( Fl_Menu_Button::POPUP3 );
 
-    Plugin_Module::Plugin_Info *pia = Plugin_Module::discover();
+    Plugin_Module::Plugin_Info *pia = Plugin_Module::get_all_plugins();
 
     for ( Plugin_Module::Plugin_Info *pi = pia; pi->path; ++pi )
     {
@@ -307,12 +308,43 @@ Plugin_Module::configure_inputs( int n )
     return true;
 }
 
+void *
+Plugin_Module::discover_thread ( void * v )
+{
+    THREAD_ASSERT( Plugin_Discover );
+
+    DMESSAGE( "Discovering plugins in the background" );
+
+    ladspainfo = new LADSPAInfo();
+
+    return NULL;
+}
+
+/* Spawn a background thread for plugin discovery */
+void
+Plugin_Module::spawn_discover_thread ( void )
+{
+    if ( plugin_discover_thread )
+    {
+        FATAL( "Plugin discovery thread is already running or has completed" );
+    }
+
+    plugin_discover_thread = new Thread( "Plugin_Discover" );
+
+    plugin_discover_thread->clone( &Plugin_Module::discover_thread, NULL );
+}
+
 /* return a list of available plugins */
 Plugin_Module::Plugin_Info *
-Plugin_Module::discover ( void )
+Plugin_Module::get_all_plugins ( void )
 {
     if ( !ladspainfo )
-        ladspainfo = new LADSPAInfo();
+    {
+        if ( ! plugin_discover_thread )
+            ladspainfo = new LADSPAInfo();
+        else
+            plugin_discover_thread->join();
+    }
 
     std::vector<LADSPAInfo::PluginEntry> plugins = ladspainfo->GetMenuList();
 
@@ -396,7 +428,12 @@ bool
 Plugin_Module::load ( unsigned long id )
 {
     if ( !ladspainfo )
-        ladspainfo = new LADSPAInfo();
+    {
+        if ( ! plugin_discover_thread )
+            ladspainfo = new LADSPAInfo();
+        else
+            plugin_discover_thread->join();
+    }
 
     _idata->descriptor = ladspainfo->GetDescriptorByID( id );
 

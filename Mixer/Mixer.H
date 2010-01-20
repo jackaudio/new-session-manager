@@ -26,10 +26,14 @@
 #include <FL/Fl_Pack.H>
 #include "Mixer_Strip.H"
 
+class Fl_Flowpack;
+
 class Mixer : public Fl_Group
 {
 
 private:
+
+    int _rows;
 
     Mixer_Strip* track_by_name ( const char *name );
     char * get_unique_track_name ( const char *name );
@@ -42,6 +46,8 @@ private:
 
     Fl_Scroll *scroll;
     Fl_Pack *pack;
+    Fl_Flowpack *mixer_strips;
+
 
 protected:
 
@@ -49,6 +55,7 @@ protected:
 
 public:
 
+    void rows ( int n );
     virtual void resize ( int X, int Y, int W, int H );
 
     void update ( void );

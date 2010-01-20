@@ -28,15 +28,13 @@
 #include <FL/fl_ask.H>
 #include "New_Project_Dialog.H"
 #include "Engine/Engine.H"
-
+#include "FL/Fl_Flowpack.H"
 #include "Project.H"
 
 #include <string.h>
 #include "debug.h"
 
 const double STATUS_UPDATE_FREQ = 0.2f;
-
-static Fl_Pack *mixer_strips;
 
 
 #include "util/debug.h"
@@ -84,7 +82,7 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         Project::save();
     }
-    if (! strcmp( picked, "&Project/&Quit") )
+    else if (! strcmp( picked, "&Project/&Quit") )
     {
         quit();
     }
@@ -92,6 +90,19 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         new_strip();
     }
+    else if (! strcmp( picked, "&Mixer/&Rows/One") )
+    {
+        rows( 1 );
+    }
+    else if (! strcmp( picked, "&Mixer/&Rows/Two") )
+    {
+        rows( 2 );
+    }
+    else if (! strcmp( picked, "&Mixer/&Rows/Three") )
+    {
+        rows( 3 );
+    }
+
 }
 
 void Mixer::cb_menu(Fl_Widget* o, void* v) {
@@ -101,6 +112,7 @@ void Mixer::cb_menu(Fl_Widget* o, void* v) {
 Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
 {
+    _rows = 1;
     box( FL_NO_BOX );
     labelsize( 96 );
     { Fl_Menu_Bar *o = new Fl_Menu_Bar( X, Y, W, 24 );
@@ -109,19 +121,23 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "&Project/&Save", FL_CTRL + 's', 0, 0 );
         o->add( "&Project/&Quit", FL_CTRL + 'q', 0, 0 );
         o->add( "&Mixer/&Add Strip", 'a', 0, 0 );
-        o->add( "&Options" );
+        o->add( "&Mixer/&Rows/One", '1', 0, 0 );
+        o->add( "&Mixer/&Rows/Two", '2', 0, 0 );
+        o->add( "&Mixer/&Rows/Three", '3', 0, 0 );
         o->callback( cb_menu, this );
     }
     { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - 24 );
         o->box( FL_NO_BOX );
-        o->type( Fl_Scroll::HORIZONTAL_ALWAYS );
+//        o->type( Fl_Scroll::HORIZONTAL_ALWAYS );
+//        o->box( Fl_Scroll::BOTH );
         {
-            Fl_Pack *o = mixer_strips = new Fl_Pack( X, Y + 24, W, H - 18 - 24 );
+            Fl_Flowpack *o = mixer_strips = new Fl_Flowpack( X, Y + 24, W, H - 18 - 24 );
             label( "Non-Mixer" );
             align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE) );
             o->box( FL_NO_BOX );
             o->type( Fl_Pack::HORIZONTAL );
-            o->spacing( 2 );
+            o->hspacing( 2 );
+            o->vspacing( 2 );
             o->end();
             Fl_Group::current()->resizable( o );
         }
@@ -150,6 +166,8 @@ void Mixer::resize ( int X, int Y, int W, int H )
     mixer_strips->resize( X, Y + 24, W, H - 18 - 24 );
 
     scroll->resize( X, Y + 24, W, H - 24 );
+
+    rows( _rows );
 }
 
 void Mixer::add ( Mixer_Strip *ms )
@@ -157,6 +175,8 @@ void Mixer::add ( Mixer_Strip *ms )
     MESSAGE( "Add mixer strip \"%s\"", ms->name() );
 
     mixer_strips->add( ms );
+
+    rows( _rows );
 
     scroll->redraw();
 }
@@ -219,6 +239,38 @@ bool
 Mixer::contains ( Mixer_Strip *ms )
 {
     return ms->parent() == mixer_strips;
+}
+
+void
+Mixer::rows ( int n )
+{
+
+    int sh;
+
+    if ( n > 1 )
+        sh = (scroll->h() / n) - (mixer_strips->vspacing() * (n - 1));
+    else
+        sh = (scroll->h() - 18) / n;
+
+    int tw = 0;
+
+    for ( int i = 0; i < mixer_strips->children(); ++i )
+    {
+        Mixer_Strip *t = (Mixer_Strip*)mixer_strips->child( i );
+
+        t->size( t->w(), sh );
+
+        tw += t->w() + mixer_strips->hspacing();
+    }
+
+    if ( n > 1 )
+        mixer_strips->size( scroll->w() - 18, mixer_strips->h() );
+    else
+        mixer_strips->size( tw, mixer_strips->h() );
+
+    _rows = n;
+
+    scroll->redraw();
 }
 
 void Mixer::update ( void )

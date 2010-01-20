@@ -149,6 +149,7 @@ Mixer_Strip::chain ( Chain *c )
 Mixer_Strip::Mixer_Strip( const char *strip_name, int channels ) : Fl_Group( 0, 0, 120, 600 )
 {
     label( strdup( strip_name ) );
+    labeltype( FL_NO_LABEL );
 
     init();
 

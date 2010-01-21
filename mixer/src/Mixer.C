@@ -28,30 +28,38 @@
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl.H>
-#include <FL/Fl_File_Chooser.H>
 #include "New_Project_Dialog.H"
 #include "Engine/Engine.H"
 #include "FL/Fl_Flowpack.H"
 #include "Project.H"
 #include "FL/Fl_Menu_Settings.H"
 #include "About_Dialog.H"
+#include <FL/Fl_File_Chooser.H>
 
 #include "file.h"
 
 #include <string.h>
 #include "debug.h"
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "FL/color_scheme.H"
 #include "OSC/Endpoint.H"
 #include <lo/lo.h>
+#include "FL/Fl_Blinker.H"
 
 const double STATUS_UPDATE_FREQ = 0.2f;
 
-const double OSC_INTERVAL = 0.1f;
+const double OSC_INTERVAL = 0.2f;
 
 extern char *user_config_dir;
+extern char *instance_name;
 
 #include "debug.h"
+
+#include "NSM.H"
+
+extern NSM_Client *nsm;
 
 /* static void update_cb( void *v ) { */
 /*     Fl::repeat_timeout( STATUS_UPDATE_FREQ, update_cb, v ); */
@@ -65,69 +73,19 @@ extern char *user_config_dir;
 /* OSC Message Handlers */
 /************************/
 
+#undef OSC_REPLY_OK
+#undef OSC_REPLY_ERR
+#undef OSC_REPLY
 
-OSC_HANDLER( quit )
-{
-    OSC_DMSG();
-
-    ((Mixer*)user_data)->command_quit();
-
-    OSC_REPLY_OK();
-
-    return 0;
-}
-
-OSC_HANDLER( save )
-{
-    OSC_DMSG();
-
-    if ( ((Mixer*)user_data)->command_save() )
-        OSC_REPLY_OK();
-    else
-        OSC_REPLY_ERR();
-
-    return 0;
-}
-
-OSC_HANDLER( load )
-{
-   OSC_DMSG();
-
-   const char *project_path = &argv[0]->s;
-   const char *project_display_name = &argv[1]->s;
-
-   if ( ((Mixer*)user_data)->command_load( project_path, project_display_name ) )
-       OSC_REPLY_OK();
-   else
-       OSC_REPLY_ERR();
-
-    return 0;
-}
-
-OSC_HANDLER( new )
-{
-   OSC_DMSG();
-
-   const char *project_path = &argv[0]->s;
-   const char *project_display_name = &argv[1]->s;
-
-   if ( ((Mixer*)user_data)->command_new( project_path, project_display_name ) )
-       OSC_REPLY_OK();
-   else
-       OSC_REPLY_ERR();
-
-    return 0;
-}
-
-// OSC_HANDLER( root )
-// {
-// }
+#define OSC_REPLY_OK() ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path, 0, "OK" )
+#define OSC_REPLY( value ) ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path, value )
+#define OSC_REPLY_ERR(errcode, value) ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path,errcode, value )
 
 OSC_HANDLER( add_strip )
 {
    OSC_DMSG();
 
-   ((Mixer*)user_data)->command_add_strip();
+   ((Mixer*)(OSC_ENDPOINT())->owner)->command_add_strip();
 
    OSC_REPLY_OK();
 
@@ -138,20 +96,45 @@ OSC_HANDLER( finger )
 {
     OSC_DMSG();
 
-    lo_address src = lo_message_get_source( msg );
+    OSC::Endpoint *ep = ((OSC::Endpoint*)user_data);
+  
+    lo_address reply = lo_address_new_from_url( &argv[0]->s );
+    
+    ep->send( reply,
+              "/reply",
+              path,
+              ep->url(),
+              APP_NAME,
+              VERSION,
+              instance_name );
 
-    const char *s = "APP_TITLE\n";
-
-/*     if ( 1 >= lo_send_from( src, ((Mixer*)user_data)->osc_endpoint, LO_TT_IMMEDIATE, "/finger-reply", "s", s ) ) */
-/*     { */
-/*         DMESSAGE( "Failed to send reply" ); */
-/*     } */
+    lo_address_free( reply );
 
     return 0;
 }
 
+
 
 
+static 
+Fl_Menu_Item *
+find_item( Fl_Menu_ *menu, const char *path )
+ {
+     return const_cast<Fl_Menu_Item*>(menu->find_item( path ));
+ }
+
+void
+Mixer::sm_active ( bool b )
+{
+    sm_blinker->value( b );
+    sm_blinker->tooltip( nsm->session_manager_name() );
+
+    if ( b )
+    {
+        find_item( menubar, "&Project/&Open" )->deactivate();
+        find_item( menubar, "&Project/&New" )->deactivate();
+    }
+}
 
 void Mixer::cb_menu(Fl_Widget* o) {
     Fl_Menu_Bar *menu = (Fl_Menu_Bar*)o;
@@ -347,6 +330,19 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->align( FL_ALIGN_INSIDE | FL_ALIGN_CENTER );
         o->labeltype( FL_SHADOW_LABEL );
     }
+    { sm_blinker = new Fl_Blinker( ( X + W) - 52, Y + 4, 50, 15, "SM");
+        sm_blinker->box(FL_ROUNDED_BOX);
+        sm_blinker->down_box(FL_ROUNDED_BOX);
+        sm_blinker->color((Fl_Color)75);
+        sm_blinker->selection_color((Fl_Color)86);
+        sm_blinker->labeltype(FL_NORMAL_LABEL);
+        sm_blinker->labelfont(2);
+        sm_blinker->labelsize(14);
+        sm_blinker->labelcolor(FL_DARK3);
+        sm_blinker->align(Fl_Align(FL_ALIGN_CENTER));
+        sm_blinker->when(FL_WHEN_RELEASE);
+        sm_blinker->deactivate();
+      } // Fl_Blinker* sm_blinker
     { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - 24 );
         o->box( FL_NO_BOX );
 //        o->type( Fl_Scroll::HORIZONTAL_ALWAYS );
@@ -375,22 +371,20 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     load_options();
 }
 
-void
+int
 Mixer::init_osc ( const char *osc_port )
 {
-    osc_endpoint = new OSC::Endpoint(osc_port);
+    osc_endpoint = new OSC::Endpoint();
 
-    osc_endpoint->url();
+    if ( int r = osc_endpoint->init( osc_port ) )
+        return r;
 
-    // if ( 1 >= lo_send_from( src, ((Mixer*)user_data)->osc_endpoint, LO_TT_IMMEDIATE, "/finger-reply", "s", s ) )
+    osc_endpoint->owner = this;
+    
+    printf( "OSC=%s\n", osc_endpoint->url() );
 
-    osc_endpoint->add_method( "/nsm/quit", "", OSC_NAME( quit ), this, "" );
-    osc_endpoint->add_method( "/nsm/load", "ss", OSC_NAME( load ), this, "path,display_name" );
-    osc_endpoint->add_method( "/nsm/save", "", OSC_NAME( save ), this, "" );
-    osc_endpoint->add_method( "/nsm/new", "ss", OSC_NAME( new ), this, "path,display_name" );
-//    osc_endpoint->add_method( "/nsm/", "", OSC_NAME( root ), this );
-    osc_endpoint->add_method( "/finger", "", OSC_NAME( finger ), this, "" );
-    osc_endpoint->add_method( "/mixer/add_strip", "", OSC_NAME( add_strip ), this, "" );
+    osc_endpoint->add_method( "/non/finger", "s", OSC_NAME( finger ), osc_endpoint, "" );
+    osc_endpoint->add_method( "/non/mixer/add_strip", "", OSC_NAME( add_strip ), osc_endpoint, "" );
   
 //    osc_endpoint->start();
 
@@ -680,6 +674,8 @@ Mixer::command_save ( void )
 bool
 Mixer::command_load ( const char *path, const char *display_name )
 {
+    mixer->hide();
+
     if ( int err = Project::open( path ) )
     {
         // fl_alert( "Error opening project specified on commandline: %s", Project::errstr( err ) );
@@ -690,6 +686,8 @@ Mixer::command_load ( const char *path, const char *display_name )
         Project::name( display_name );
 
     update_menu();
+
+    mixer->show();
 
     return true;
 }

@@ -34,6 +34,8 @@
 Engine::Engine ( ) : _thread( "RT" )
 {
     _buffers_dropped = 0;
+
+    DMESSAGE( "Creating audio I/O engine" );
 }
 
 Engine::~Engine ( )

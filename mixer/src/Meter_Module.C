@@ -32,7 +32,7 @@
 
 
 
-const float METER_UPDATE_FREQ = 0.1f;
+const float METER_UPDATE_FREQ = 0.2f;
 
 
 

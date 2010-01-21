@@ -71,14 +71,14 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
 
     end();
 
-    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
+//    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
 
     log_create();
 }
 
 Controller_Module::~Controller_Module ( )
 {
-    Fl::remove_timeout( update_cb, this );
+//    Fl::remove_timeout( update_cb, this );
 
     log_destroy();
 

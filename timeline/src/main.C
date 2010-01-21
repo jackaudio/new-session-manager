@@ -39,7 +39,7 @@
 #include "Track.H"
 
 #include "TLE.H"
-
+#include "Timeline.H"
 #include "../FL/Boxtypes.H"
 
 #include "Project.H"
@@ -48,10 +48,15 @@
 
 #include "Thread.H"
 
+#include "NSM.H"
+
 Engine *engine;
 Timeline *timeline;
 Transport *transport;
 TLE *tle;
+NSM_Client *nsm;
+
+char *instance_name = NULL;
 
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-daw/"
@@ -59,6 +64,8 @@ TLE *tle;
 const char APP_NAME[]   = "Non-DAW";
 const char APP_TITLE[]  = "The Non-DAW";
 const char COPYRIGHT[]  = "Copyright (C) 2008-2010 Jonathan Moore Liles";
+
+#define OSC_INTERVAL 0.2f
 
 #define PACKAGE "non"
 
@@ -96,6 +103,34 @@ shift ( char **argv, int *argc, int n )
     argc -= n;
 }
 
+extern Timeline *timeline;
+
+void
+check_osc ( void * v )
+{
+    nsm->check();
+    Fl::repeat_timeout( OSC_INTERVAL, check_osc, v );
+}
+
+static int got_sigterm = 0;
+
+void
+sigterm_handler ( int )
+{
+    got_sigterm = 1;
+    Fl::awake();
+}
+
+void
+check_sigterm ( void * )
+{
+    if ( got_sigterm )
+    {
+        MESSAGE( "Got SIGTERM, quitting..." );
+        timeline->command_quit();
+    }
+}
+
 int
 main ( int argc, char **argv )
 {
@@ -103,6 +138,8 @@ main ( int argc, char **argv )
 
     Thread thread( "UI" );
     thread.set();
+
+    signal( SIGTERM, sigterm_handler );
 
     fl_register_images();
 
@@ -129,32 +166,85 @@ main ( int argc, char **argv )
 
     tle = new TLE;
 
-    MESSAGE( "Initializing JACK" );
+    instance_name = strdup( APP_NAME );
 
     /* we don't really need a pointer for this */
-    engine = new Engine;
+    // will be created on project new/open
+    engine = NULL;
 
-    const char *jack_name;
+    nsm = new NSM_Client;
 
-    if ( ! ( jack_name = engine->init( APP_NAME, JACK::Client::SLOW_SYNC | JACK::Client::TIMEBASE_MASTER ) ) )
-        FATAL( "Could not connect to JACK!" );
+    const char *osc_port = NULL;
 
-    timeline->sample_rate( engine->sample_rate() );
+    {
+        int r = argc - 1;
+        int i = 1;
+        for ( ; i < argc; ++i, --r )
 
-    /* always start stopped (please imagine for me a realistic
-     * scenario requiring otherwise */
-    transport->stop();
+            if ( !strcmp( argv[i], "--osc-port" ) )
+            {
+                if ( r > 1 )
+                {
+                    MESSAGE( "Using OSC port \"%s\"", argv[i+1] );
+                    osc_port = argv[i+1];
+                    --r;
+                    ++i;
+                }
+                else
+                {
+                    FATAL( "Missing OSC port" );
+                }
+            }
+    
 
-    MESSAGE( "Starting GUI" );
+        MESSAGE( "Starting GUI" );
 
-    tle->run();
+        tle->run();
 
-    if ( argc > 1 )
-        tle->open( argv[ 1 ] );
+        char *nsm_url = getenv( "NSM_URL" );
+
+        if ( nsm_url )
+        {
+            if ( ! nsm->init() );
+            {
+                nsm->announce( nsm_url, APP_NAME, ":progress:switch:", argv[0] );
+            }
+        }
+        else
+        {
+            if ( r >= 1 )
+            {
+                MESSAGE( "Loading \"%s\"", argv[i] );
+            
+                tle->open( argv[i] );
+
+                /* ) */
+                /*            { */
+                /*                fl_alert( "Error opening project specified on commandline" ); */
+                /*            } */
+            }
+        }
+    
+    }
+
+    /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
+    Fl::add_timeout( OSC_INTERVAL, check_osc, NULL );
+
+    Fl::add_check( check_sigterm );
 
     Fl::run();
+    
+    if ( engine )
+    {
+        delete engine;
+        engine = NULL;
+    }
 
-    delete engine;
+    delete tle;
+    tle = NULL;
 
+    delete nsm;
+    nsm = NULL;
+    
     MESSAGE( "Your fun is over" );
 }

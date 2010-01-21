@@ -46,6 +46,14 @@
 #include "const.h"
 #include "debug.h"
 
+/* these headers are just for the NSM support */
+#include "Project.H"
+#include "TLE.H"
+/*  */
+
+#include "NSM.H"
+extern NSM_Client *nsm;
+
 #ifdef USE_WIDGET_FOR_TIMELINE
 #define BASE Fl_Group
 #define redraw_overlay()
@@ -73,6 +81,9 @@ bool Timeline::follow_playhead = true;
 bool Timeline::center_playhead = true;
 
 const float UPDATE_FREQ = 0.02f;
+
+extern const char *instance_name;
+extern TLE *tle;
 
 
 
@@ -1471,4 +1482,67 @@ Timeline::remove_track ( Track *track )
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
+}
+
+/************/
+/* Commands */
+/************/
+
+void
+Timeline::command_quit ( )
+{
+  Project::close();
+  
+  command_save();
+  
+  while ( Fl::first_window() ) Fl::first_window()->hide();
+}
+
+bool
+Timeline::command_load ( const char *name, const char *display_name )
+{
+  if ( ! name )
+      return false;
+  
+  int r = Project::open( name );
+  
+  if ( r < 0 )
+  {
+  	const char *s = Project::errstr( r );
+  	
+  	fl_alert( "Could not open project \"%s\":\n\n\t%s", name, s );
+
+        return false;
+  }
+
+  Project::set_name ( display_name ? display_name : name );
+
+  return true;
+}
+
+bool
+Timeline::command_save ( )
+{
+    tle->save_options();
+
+    return true;
+}
+
+bool
+Timeline::command_new ( const char *name, const char *display_name )
+{
+    return Project::create( name, NULL );
+
+    Project::set_name ( display_name );
+
+    /* FIXME: there's other stuff that needs to be done here! */
+    /* tle->update_menu(); */
+
+    /* tle->main_window->redraw(); */
+}
+
+const char *
+Timeline::session_manager_name ( void )
+{
+    return nsm->session_manager_name();
 }

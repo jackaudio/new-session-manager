@@ -304,7 +304,7 @@ Project::create ( const char *name, const char *template_name )
 
     if ( mkdir( name, 0777 ) )
     {
-        WARNING( "Cannot create project directory" );
+        WARNING( "Cannot create project directory: %s", name );
         return false;
     }
 

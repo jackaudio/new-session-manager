@@ -26,6 +26,7 @@
 #include <FL/Fl_Pack.H>
 #include "Mixer_Strip.H"
 
+class Fl_Blinker;
 class Fl_Flowpack;
 class Fl_Menu_Bar;
 
@@ -37,9 +38,10 @@ class Mixer : public Fl_Group
 public:
 
     OSC::Endpoint *osc_endpoint;
+    Fl_Blinker *sm_blinker;
 
 private:
-
+    
     int _rows;
 
     Fl_Color system_colors[3];
@@ -93,9 +95,11 @@ public:
 
     static void check_osc ( void * v );
 
-    void announce ( const char *nash_url );
+    void announce ( const char *nash_url, const char *process_name );
 
-    void init_osc ( const char* osc_port );
+    int init_osc ( const char* osc_port );
+
+    void sm_active ( bool b );
 
 public:
 

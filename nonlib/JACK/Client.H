@@ -89,6 +89,7 @@ namespace JACK
         const char * init ( const char *client_name, unsigned int opts = 0 );
         const char * name ( const char * );
 
+        void close ( void );
         nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
         float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }
         static nframes_t sample_rate ( void ) { return _sample_rate; }
@@ -97,6 +98,13 @@ namespace JACK
         void freewheeling ( bool yes );
         bool zombified ( void ) const { return _zombified; }
         float cpu_load ( void ) const { return jack_cpu_load( _client ); }
+
+
+        void transport_stop ( void );
+        void transport_start ( void );
+        void transport_locate ( nframes_t frame );
+        jack_transport_state_t transport_query ( jack_position_t *pos );
+
 
         static int maximum_name_length ( void ) { return jack_client_name_size(); }
     };

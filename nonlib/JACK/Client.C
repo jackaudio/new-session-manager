@@ -44,7 +44,7 @@ namespace JACK
         jack_client_close( _client );
     }
 
-    /** Tell JACK to calling process callback. This MUST be called in
+    /** Tell JACK to stop calling process callback. This MUST be called in
      * an inheriting class' destructor */
     void
     Client::deactivate ( )
@@ -201,6 +201,15 @@ namespace JACK
         }
     }
 
+    void
+    Client::close ( void )
+    {
+        jack_deactivate( _client );
+        jack_client_close( _client );
+
+        _client = NULL;
+    }
+
     const char *
     Client::name ( const char *s )
     {
@@ -221,5 +230,29 @@ namespace JACK
         thaw_ports();
 
         return s;
+    }
+
+    void
+    Client::transport_stop ( )
+    {
+        jack_transport_stop( _client );
+    }
+
+    void
+    Client::transport_start ( )
+    {
+        jack_transport_start( _client );
+    }
+
+    void
+    Client::transport_locate ( nframes_t frame )
+    {
+        jack_transport_locate( _client, frame );
+    }
+
+    jack_transport_state_t
+    Client::transport_query ( jack_position_t *pos )
+    {
+        return jack_transport_query( _client, pos );
     }
 }

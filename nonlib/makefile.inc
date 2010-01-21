@@ -1,6 +1,6 @@
 # -*- mode: makefile; -*-
 
-nonlib_SRCS := $(wildcard nonlib/*.C nonlib/JACK/*.C nonlib/LASH/*.C nonlib/OSC/*.C)
+nonlib_SRCS := $(wildcard nonlib/*.C nonlib/JACK/*.C nonlib/LASH/*.C nonlib/OSC/*.C nonlib/NSM/*.C)
 
 nonlib_SRCS:=$(sort $(nonlib_SRCS))
 nonlib_OBJS:=$(nonlib_SRCS:.C=.o)

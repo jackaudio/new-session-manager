@@ -213,11 +213,9 @@ Module::Port::generate_osc_path ()
     int n = module()->chain()->get_module_instance_number( module() );
 
     if ( n > 0 )        
-        asprintf( &path, "/mixer/strip/%s/control/%s.%i/%s", module()->chain()->name(), p->module()->label(), n, p->name() );
+        asprintf( &path, "/non/mixer/strip/%s/control/%s.%i/%s", module()->chain()->name(), p->module()->label(), n, p->name() );
     else
-        asprintf( &path, "/mixer/strip/%s/control/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
-
-//    asprintf( &path, "/mixer/strip/control/%s/%s", p->module()->label(), p->name() );
+        asprintf( &path, "/non/mixer/strip/%s/control/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
 
     // Hack to keep spaces out of OSC URL... Probably need to handle other special characters similarly.
     for ( int i = strlen( path ); i--; )
@@ -254,6 +252,30 @@ Module::Port::change_osc_path ( char *path )
 	mixer->osc_endpoint->add_method( _osc_path, "f", &Module::Port::osc_control_change_cv, this, "value" );
 
 	mixer->osc_endpoint->add_method( _osc_path_unscaled, "f", &Module::Port::osc_control_change_exact, this, "value" );
+
+        if ( hints.ranged )
+        {
+            mixer->osc_endpoint->set_parameter_limits( _osc_path_unscaled, "f", 0,
+                                                       hints.minimum,
+                                                       hints.maximum,
+                                                       hints.default_value );
+        
+        }
+        
+        float scaled_default = 0.5f;
+        
+        if ( hints.ranged )
+        {
+            float scale = hints.maximum - hints.minimum;
+//        float offset = hints.minimum;
+            
+            scaled_default = ( hints.default_value / scale );
+        }
+   
+        mixer->osc_endpoint->set_parameter_limits( _osc_path, "f", 0,
+                                                   0.0f,
+                                                   1.0f,
+                                                   scaled_default );
     }
 }
 

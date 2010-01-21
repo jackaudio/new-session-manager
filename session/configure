@@ -12,21 +12,14 @@ begin_options
 ask "Installation prefix" prefix /usr/local
 ask "Build for debugging" USE_DEBUG no
 
-using DEBUG &&
-{
-    ask "Use unoptimized drawing routines" USE_UNOPTIMIZED_DRAWING no
-    ask "Use widget for timeline" USE_WIDGET_FOR_TIMELINE no
-    using WIDGET_FOR_TIMELINE || ask "Use singlebuffered timeline" USE_SINGLEBUFFERED_TIMELINE no
-}
-
 begin_tests
 
 require_FLTK 1.1.7 images
 require_command FLUID fluid
 require_command ar ar
 require_command makedepend makedepend
-require_package JACK 0.103.0 jack
-require_package sndfile 1.0.17 sndfile
+# require_package JACK 0.103.0 jack
+require_package lrdf 0.4.0 lrdf
 require_package liblo 0.23 liblo
 
 test_version `version_of liblo` 0.26 || warn "Version $(version_of liblo) of liblo is slow to create servers. Consider upgrading to 0.26 or later"

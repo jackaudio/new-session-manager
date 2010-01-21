@@ -52,14 +52,21 @@
 #include "Chain.H"
 #include "Mixer_Strip.H"
 
+#include "NSM.H"
+
+#include <signal.h>
 
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-mixer/"
 
+
+const double OSC_INTERVAL = 0.1f;
+
 char *user_config_dir;
 Mixer *mixer;
+NSM_Client *nsm;
 
-const char *instance_name;
+char *instance_name;
 
 #include <errno.h>
 
@@ -83,6 +90,32 @@ static void cb_main ( Fl_Double_Window *o, void *)
     mixer->command_quit();
 }
 
+void
+check_osc ( void * v )
+{
+    nsm->check();
+    Fl::repeat_timeout( OSC_INTERVAL, check_osc, v );
+}
+
+static int got_sigterm = 0;
+
+void
+sigterm_handler ( int )
+{
+    got_sigterm = 1;
+    Fl::awake();
+}
+
+void
+check_sigterm ( void * )
+{
+    if ( got_sigterm )
+    {
+        MESSAGE( "Got SIGTERM, quitting..." );
+        mixer->command_quit();
+    }
+}
+
 int
 main ( int argc, char **argv )
 {
@@ -92,6 +125,8 @@ main ( int argc, char **argv )
     thread.set();
 
     ensure_dirs();
+
+    signal( SIGTERM, sigterm_handler );
 
     Fl_Tooltip::color( FL_BLACK );
     Fl_Tooltip::textcolor( FL_YELLOW );
@@ -119,6 +154,8 @@ main ( int argc, char **argv )
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
 
+    Fl::lock();
+
     Plugin_Module::spawn_discover_thread();
 
     Fl_Double_Window *main_window;
@@ -142,6 +179,10 @@ main ( int argc, char **argv )
 
     const char *osc_port = NULL;
 
+    nsm = new NSM_Client;
+
+    instance_name = strdup( APP_NAME );
+
     {
         int r = argc - 1;
         int i = 1;
@@ -152,7 +193,7 @@ main ( int argc, char **argv )
                 if ( r > 1 )
                 {
                     MESSAGE( "Using instance name \"%s\"", argv[i+1] );
-                    instance_name = argv[i+1];
+                    instance_name = strdup( argv[i+1] );
                     --r;
                     ++i;
                 }
@@ -185,17 +226,33 @@ main ( int argc, char **argv )
 
         mixer->init_osc( osc_port );
 
-        if ( r >= 1 )
+        char *nsm_url = getenv( "NSM_URL" );
+        
+        if ( nsm_url )
         {
-            MESSAGE( "Loading \"%s\"", argv[i] );
-
-            if ( ! mixer->command_load( argv[i] ) )
+            if ( ! nsm->init() )
             {
-                fl_alert( "Error opening project specified on commandline" );
+                nsm->announce( nsm_url, APP_NAME, ":switch:dirty:", argv[0] );
             }
         }
-
+        else
+        {
+            if ( r >= 1 )
+            {
+                MESSAGE( "Loading \"%s\"", argv[i] );
+                
+                if ( ! mixer->command_load( argv[i] ) )
+                {
+                    fl_alert( "Error opening project specified on commandline" );
+                }
+            }
+        }
     }
+    
+    // poll so we can keep OSC handlers running in the GUI thread and avoid extra sync
+    Fl::add_timeout( OSC_INTERVAL, check_osc, NULL );
+
+    Fl::add_check( check_sigterm );
 
     Fl::run();
 

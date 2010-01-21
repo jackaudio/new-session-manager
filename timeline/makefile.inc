@@ -10,7 +10,7 @@ Timeline_SRCS:=$(Timeline_SRCS:.fl=.C)
 Timeline_SRCS:=$(sort $(Timeline_SRCS))
 Timeline_OBJS:=$(Timeline_SRCS:.C=.o)
 
-Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS)
+Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS) $(LIBLO_LIBS)
 
 src/timeline: $(Timeline_OBJS) FL/libfl_widgets.a nonlib/libnonlib.a
 	@ echo -n Linking timeline...

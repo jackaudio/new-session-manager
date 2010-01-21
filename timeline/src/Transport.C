@@ -23,10 +23,6 @@
 
 #include "Engine/Engine.H"
 
-// Transport transport;
-
-#define client engine->jack_client()
-
 
 
 Transport::Transport ( int X, int Y, int W, int H, const char *L )
@@ -35,6 +31,18 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
     recording = false;
     rolling = false;
     _stop_disables_record = true;
+
+    bar = 0;
+    beat = 0;
+    tick = 0;
+    beats_per_minute = 120;
+    ticks_per_beat = 1920;
+    beat_type = 4;
+    beats_per_bar = 4;
+    next_time = 0;
+    frame_time =0;
+    frame_rate = 48000;
+    frame = 0;
 
     const int bw = W / 3;
 
@@ -156,9 +164,10 @@ Transport::handle ( int m )
 void
 Transport::poll ( void )
 {
+
     jack_transport_state_t ts;
 
-    ts = jack_transport_query( client, this );
+    ts = engine->transport_query( this );
 
     rolling = ts == JackTransportRolling;
 }
@@ -166,9 +175,12 @@ Transport::poll ( void )
 void
 Transport::locate ( nframes_t frame )
 {
+    if ( ! engine )
+        return;
+
     if ( ! recording )
         // don't allow seeking while record is in progress
-        jack_transport_locate( client, frame );
+        engine->transport_locate( frame );
 }
 
 
@@ -182,7 +194,8 @@ Transport::start ( void )
         update_record_state();
     }
 
-    jack_transport_start( client );
+    if ( engine )
+        engine->transport_start();
 }
 
 void
@@ -197,7 +210,8 @@ Transport::stop ( void )
         update_record_state();
     }
 
-    jack_transport_stop( client );
+    if ( engine )
+        engine->transport_stop();
 }
 
 void

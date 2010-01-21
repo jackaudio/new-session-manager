@@ -44,9 +44,14 @@
 #include "file.h"
 #include "Block_Timer.H"
 
+#include "Transport.H"
+
+extern Transport *transport;
 extern TLE *tle;
 
 const int PROJECT_VERSION = 1;
+
+extern char *instance_name;
 
 
 
@@ -200,6 +205,9 @@ Project::close ( void )
 
     release_lock( &_lockfd, ".lock" );
 
+    delete engine;
+    engine = NULL;
+
     return true;
 }
 
@@ -233,6 +241,25 @@ Project::validate ( const char *name )
     return r;
 }
 
+void
+Project::make_engine ( void )
+{
+    if ( engine )
+        FATAL( "Engine should be null!" );
+
+    engine = new Engine;
+    
+    if ( ! engine->init( instance_name, JACK::Client::SLOW_SYNC | JACK::Client::TIMEBASE_MASTER  ))
+        FATAL( "Could not connect to JACK!" );
+    
+    timeline->sample_rate( engine->sample_rate() );
+    
+    /* always start stopped (please imagine for me a realistic
+     * scenario requiring otherwise */
+    transport->stop();
+}
+
+
 /** Try to open project /name/. Returns 0 if sucsessful, an error code
  * otherwise */
 int
@@ -262,13 +289,19 @@ Project::open ( const char *name )
     if ( version != PROJECT_VERSION )
         return E_VERSION;
 
+    /* normally, engine will be NULL after a close or on an initial open, 
+     but 'new' will have already created it to get the sample rate. */
+    if ( ! engine )
+        make_engine();
+ 
     {
         Block_Timer timer( "Replayed journal" );
         if ( ! Loggable::open( "history" ) )
             return E_INVALID;
     }
 
-    timeline->sample_rate( rate );
+    /* /\* really a good idea? *\/ */
+    /* timeline->sample_rate( rate ); */
 
     if ( creation_date )
     {
@@ -318,6 +351,9 @@ Project::create ( const char *name, const char *template_name )
 
     mkdir( "sources", 0777 );
     creat( "history", 0666 );
+
+    if ( ! engine )
+        make_engine();
 
     /* TODO: copy template */
 

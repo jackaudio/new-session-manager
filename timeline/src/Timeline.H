@@ -31,6 +31,8 @@
 #include <assert.h>
 #include <list>
 
+#include "OSC/Endpoint.H"
+
 class Fl_Scroll;
 class Fl_Pack;
 class Fl_Scrollbar;
@@ -149,7 +151,7 @@ public:
 
     void update_tempomap ( void );
 
-    const char *session_manager_name ( void ) { return NULL; }
+    const char *session_manager_name ( void );
 
     nframes_t fpp ( void ) const { return 1 << _fpp; }
     void range ( nframes_t start, nframes_t length );
@@ -220,6 +222,11 @@ public:
 
     void wait_for_buffers ( void );
     bool seek_pending ( void );
+
+    bool command_load ( const char *name, const char *display_name );
+    bool command_new ( const char *name, const char *display_name );
+    bool command_save ( void );
+    void command_quit ( void );
 
 private:
 

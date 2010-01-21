@@ -29,8 +29,14 @@
 class Fl_Flowpack;
 class Fl_Menu_Bar;
 
+#include "OSC/Endpoint.H"
+
 class Mixer : public Fl_Group
 {
+
+public:
+
+    OSC::Endpoint *osc_endpoint;
 
 private:
 
@@ -84,6 +90,10 @@ public:
 
     Mixer ( int X, int Y, int W, int H, const char *L );
     virtual ~Mixer();
+
+    static void check_osc ( void * v );
+
+    void announce ( const char *nash_url );
 
 public:
 

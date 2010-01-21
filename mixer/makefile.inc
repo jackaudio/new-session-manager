@@ -8,7 +8,7 @@ Mixer_SRCS:=$(Mixer_SRCS:.fl=.C)
 Mixer_SRCS:=$(sort $(Mixer_SRCS))
 Mixer_OBJS:=$(Mixer_SRCS:.C=.o)
 
-Mixer_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(LRDF_LIBS)
+Mixer_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(LRDF_LIBS) $(LIBLO_LIBS)
 
 src/mixer: $(Mixer_OBJS) FL/libfl_widgets.a nonlib/libnonlib.a
 	@ echo -n Linking mixer...

@@ -42,8 +42,12 @@
 #include "debug.h"
 
 #include "FL/color_scheme.H"
+#include "OSC/Endpoint.H"
+#include <lo/lo.h>
 
 const double STATUS_UPDATE_FREQ = 0.2f;
+
+const double OSC_INTERVAL = 0.1f;
 
 extern char *user_config_dir;
 
@@ -54,6 +58,108 @@ extern char *user_config_dir;
 
 /*     ((Mixer*)v)->update(); */
 /* } */
+
+
+
+/************************/
+/* OSC Message Handlers */
+/************************/
+
+OSC_HANDLER( generic )
+{
+    OSC_DMSG();
+
+    return 0;
+}
+
+OSC_HANDLER( quit )
+{
+    OSC_DMSG();
+
+    ((Mixer*)user_data)->command_quit();
+
+    return 0;
+}
+
+OSC_HANDLER( save )
+{
+    OSC_DMSG();
+
+    if ( ((Mixer*)user_data)->command_save() )
+        OSC_REPLY_OK();
+    else
+        OSC_REPLY_ERR();
+
+    return 0;
+}
+
+OSC_HANDLER( load )
+{
+   OSC_DMSG();
+
+   const char *project_path = &argv[0]->s;
+   const char *project_display_name = &argv[1]->s;
+
+   if ( ((Mixer*)user_data)->command_load( project_path, project_display_name ) )
+       OSC_REPLY_OK();
+   else
+       OSC_REPLY_ERR();
+
+    return 0;
+}
+
+OSC_HANDLER( new )
+{
+   OSC_DMSG();
+
+   const char *project_path = &argv[0]->s;
+   const char *project_display_name = &argv[1]->s;
+
+   if ( ((Mixer*)user_data)->command_new( project_path, project_display_name ) )
+       OSC_REPLY_OK();
+   else
+       OSC_REPLY_ERR();
+
+    return 0;
+}
+
+OSC_HANDLER( root )
+{
+   OSC_DMSG();
+
+   OSC_REPLY( "load\nsave\nquit\nnew\n");
+
+   return 0;
+}
+
+OSC_HANDLER( add_strip )
+{
+   OSC_DMSG();
+
+   ((Mixer*)user_data)->command_add_strip();
+
+   OSC_REPLY_OK();
+
+   return 0;
+}
+
+OSC_HANDLER( finger )
+{
+    OSC_DMSG();
+
+    lo_address src = lo_message_get_source( msg );
+
+    const char *s = "APP_TITLE\n";
+
+/*     if ( 1 >= lo_send_from( src, ((Mixer*)user_data)->osc_endpoint, LO_TT_IMMEDIATE, "/finger-reply", "s", s ) ) */
+/*     { */
+/*         DMESSAGE( "Failed to send reply" ); */
+/*     } */
+
+    return 0;
+}
+
+
 
 
 void Mixer::cb_menu(Fl_Widget* o) {
@@ -276,6 +382,34 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     update_menu();
 
     load_options();
+
+    osc_endpoint = new OSC::Endpoint();
+
+    osc_endpoint->url();
+
+    // if ( 1 >= lo_send_from( src, ((Mixer*)user_data)->osc_endpoint, LO_TT_IMMEDIATE, "/finger-reply", "s", s ) )
+
+    osc_endpoint->add_method( "/nsm/quit", "", OSC_NAME( quit ), this );
+    osc_endpoint->add_method( "/nsm/load", "ss", OSC_NAME( load ), this );
+    osc_endpoint->add_method( "/nsm/save", "", OSC_NAME( save ), this );
+    osc_endpoint->add_method( "/nsm/new", "ss", OSC_NAME( new ), this );
+    osc_endpoint->add_method( "/nsm/", "", OSC_NAME( root ), this );
+    osc_endpoint->add_method( "/finger", "", OSC_NAME( finger ), this );
+    osc_endpoint->add_method( "/mixer/add_strip", "", OSC_NAME( add_strip ), this );
+//    osc_endpoint->add_method( NULL, "", osc_generic, this );
+
+//    osc_endpoint->start();
+
+    /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
+    Fl::add_timeout( OSC_INTERVAL, check_osc, this );
+}
+
+void
+Mixer::check_osc ( void * v )
+{
+    ((Mixer*)v)->osc_endpoint->check();
+    Fl::repeat_timeout( OSC_INTERVAL, check_osc, v );
+
 }
 
 Mixer::~Mixer ( )

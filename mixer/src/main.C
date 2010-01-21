@@ -155,8 +155,8 @@ main ( int argc, char **argv )
                 else
                 {
                     FATAL( "Missing instance name" );
-                }
-            }
+		}
+	    }
             else if ( !strncmp( argv[i], "--", 2 ) )
             {
                 WARNING( "Unrecognized option: %s", argv[i] );

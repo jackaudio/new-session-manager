@@ -23,6 +23,9 @@
 #include <vector>
 #include "JACK/Port.H"
 
+class Fl_Menu_Button;
+class Fl_Menu_;
+
 class Fl_Valuator;
 
 class Controller_Module : public Module
@@ -35,12 +38,16 @@ class Controller_Module : public Module
 
     volatile float control_value;
 
+    Fl_Menu_Button & menu ( void );
+    static void menu_cb ( Fl_Widget *w, void *v );
+    void menu_cb ( const Fl_Menu_ *m );
+
 public:
 
     enum Mode { GUI, CV, OSC, MIDI };
 
     Mode mode ( void ) const { return _mode; }
-    void mode ( Mode v ) { _mode = v; }
+    void mode ( Mode v );
 
     Controller_Module ( bool is_default = false );
 //    Controller_Module ( int W, int H, const char *L=0 );

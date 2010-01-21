@@ -447,7 +447,19 @@ Chain::name ( const char *name )
 bool
 Chain::add ( Module *m )
 {
-    return insert( NULL, m );
+    /* FIXME: hacky */
+    if ( !strcmp( m->name(), "Controller" ) )
+        return false;
+    else
+        return insert( NULL, m );
+}
+
+bool
+Chain::add ( Controller_Module *m )
+{
+    DMESSAGE( "Adding control" );
+    add_control(m);
+    return true;
 }
 
 bool
@@ -534,7 +546,7 @@ err:
 
 /* add a control to the control strip. Assumed to already be connected! */
 void
-Chain::add_control ( Module *m )
+Chain::add_control ( Controller_Module *m )
 {
     engine()->lock();
 

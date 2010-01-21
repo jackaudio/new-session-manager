@@ -33,6 +33,7 @@ class Mixer_Strip;
 class Fl_Flowpack;
 class Fl_Flip_Button;
 class Engine;
+class Controller_Module;
 
 class Chain : public Fl_Group, public Loggable {
 
@@ -109,8 +110,9 @@ public:
     Module *module ( int n ) const { return (Module*)modules_pack->child( n ); }
     void remove ( Module *m );
     bool add ( Module *m );
+    bool add ( Controller_Module *m );
     bool insert ( Module *m, Module *n );
-    void add_control ( Module *m );
+    void add_control ( Controller_Module *m );
 
     void initialize_with_default ( void );
 

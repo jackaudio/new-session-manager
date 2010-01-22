@@ -168,7 +168,7 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
         /* do fade in if necessary */
         if ( sofs < fade.length )
         {
-            const long d = 0 - sofs;
+            const long d = 0L - (long)sofs;
 
             assert( cnt <= nframes );
 

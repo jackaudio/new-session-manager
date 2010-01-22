@@ -25,6 +25,8 @@
 
 class DPM : public Meter
 {
+    char peak_string[10];
+
     int _segments;
     int _pixels_per_segment;
     int _last_drawn_hi_segment;

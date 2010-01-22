@@ -34,8 +34,9 @@ protected:
     virtual void draw ( void ) = 0;
     virtual int handle ( int m )
         {
-
-            if ( m == FL_PUSH )
+            if ( m == FL_ENTER || m == FL_LEAVE )
+                return 1;
+            else if ( m == FL_PUSH )
             {
 //                if ( Fl::event_button3() )
 //                    hide();

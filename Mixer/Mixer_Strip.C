@@ -452,16 +452,16 @@ Mixer_Strip::handle ( int m )
 
     switch ( m )
     {
-        case FL_ENTER:
-            name_field->color( FL_BLACK );
-            name_field->redraw();
-            return 1;
-            break;
-        case FL_LEAVE:
-            name_field->color( _color );
-            name_field->redraw();
-            return 1;
-            break;
+/*         case FL_ENTER: */
+/*             name_field->color( FL_BLACK ); */
+/*             name_field->redraw(); */
+/*             return 1; */
+/*             break; */
+/*         case FL_LEAVE: */
+/*             name_field->color( _color ); */
+/*             name_field->redraw(); */
+/*             return 1; */
+/*             break; */
         default:
             return Fl_Group::handle( m );
 

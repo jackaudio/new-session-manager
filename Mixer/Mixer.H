@@ -46,8 +46,8 @@ private:
 
     Fl_Scroll *scroll;
     Fl_Pack *pack;
-    Fl_Flowpack *mixer_strips;
 
+    Fl_Flowpack *mixer_strips;
 
 protected:
 

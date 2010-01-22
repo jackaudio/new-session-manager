@@ -55,8 +55,7 @@ public:
     Mixer_Strip(int X, int Y, int W, int H, const char *L = 0);
     Mixer_Strip( const char *name, int channels );
     Mixer_Strip();                                              /* for log create */
-    ~Mixer_Strip();
-
+    virtual ~Mixer_Strip();
 
     void chain ( Chain *c );
 
@@ -101,14 +100,9 @@ private:
     Controller_Module *jack_input_controller;
     Meter_Indicator_Module *meter_indicator;
 
-    sample_t **chain_buffer;
-    int chain_buffers;
-
     nframes_t nframes;
 
-
     Fl_Color _color;
-//    unsigned _color;
 
     void init ( );
     void cb_handle(Fl_Widget*);

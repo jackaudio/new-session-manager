@@ -177,6 +177,10 @@ Mixer_Strip::Mixer_Strip() : Fl_Group( 0, 0, 120, 600 )
 Mixer_Strip::~Mixer_Strip ( )
 {
     DMESSAGE( "Destroying mixer strip" );
+
+    delete _chain;
+    _chain = NULL;
+
     log_destroy();
 }
 
@@ -287,9 +291,6 @@ void
 Mixer_Strip::init ( )
 {
     _chain = 0;
-
-    chain_buffers = 0;
-    chain_buffer = NULL;
 
 //    box(FL_THIN_UP_BOX);
     box( FL_RFLAT_BOX );

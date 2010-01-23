@@ -179,7 +179,7 @@ Project::close ( void )
     if ( ! save() )
         return false;
 
-/*     Loggable::close(); */
+    Loggable::close();
 /* //    write_info(); */
 
     _is_open = false;

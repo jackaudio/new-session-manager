@@ -36,6 +36,10 @@ public:
             _max_width = _hspacing = _vspacing = 0;
         }
 
+    virtual ~Fl_Flowpack ( )
+        {
+        }
+
     int max_width ( void ) const { return _max_width; }
 
     void vspacing ( int v ) { _vspacing = v; }

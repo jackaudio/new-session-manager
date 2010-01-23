@@ -26,6 +26,7 @@
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/fl_ask.H>
+#include <FL/Fl_File_Chooser.H>
 #include "New_Project_Dialog.H"
 #include "Engine/Engine.H"
 #include "FL/Fl_Flowpack.H"
@@ -77,6 +78,26 @@ void Mixer::cb_menu(Fl_Widget* o) {
 
 //        write_line( user_config_dir, "default_path", default_path );
 
+    }
+    else if (! strcmp( picked, "&Project/&Open" ) )
+    {
+        char *path = NULL;
+
+//        read_line( user_config_dir, "default_path", &path );
+
+        const char *name = fl_dir_chooser( "Open Project", path, NULL );
+
+        free( path );
+
+        mixer->hide();
+
+        if ( int err = Project::open( name ) )
+        {
+            fl_alert( "Error opening project: %s", Project::errstr( err ) );
+            mixer->show();
+        }
+
+        mixer->show();
     }
     else if (! strcmp( picked, "&Project/&Save" ) )
     {
@@ -169,8 +190,10 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
 
 Mixer::~Mixer ( )
 {
-    /* FIXME: teardown */
     DMESSAGE( "Destroying mixer" );
+
+    /* FIXME: teardown */
+    mixer_strips->clear();
 }
 
 void Mixer::resize ( int X, int Y, int W, int H )
@@ -243,8 +266,6 @@ void Mixer::remove ( Mixer_Strip *ms )
     MESSAGE( "Remove mixer strip \"%s\"", ms->name() );
 
     mixer_strips->remove( ms );
-
-    delete ms;
 
     parent()->redraw();
 }

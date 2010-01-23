@@ -219,12 +219,11 @@ Loggable::close ( void )
 {
     DMESSAGE( "closing journal and destroying all journaled objects" );
 
-    if ( ! _fp )
-        return true;
-
-    fclose( _fp );
-
-    _fp = NULL;
+    if ( _fp )
+    {
+        fclose( _fp );
+        _fp = NULL;
+    }
 
     if ( ! snapshot( "snapshot" ) )
         WARNING( "Failed to create snapshot" );

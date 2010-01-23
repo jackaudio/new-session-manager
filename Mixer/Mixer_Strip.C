@@ -182,6 +182,8 @@ Mixer_Strip::~Mixer_Strip ( )
     _chain = NULL;
 
     log_destroy();
+
+    mixer->remove( this );
 }
 
 void Mixer_Strip::cb_handle(Fl_Widget* o) {
@@ -213,6 +215,7 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
         if ( Fl::event_shift() || 1 == fl_choice( "Are you sure you want to remove this strip?\n\n(this action cannot be undone)", "Cancel", "Remove", NULL ) )
         {
             ((Mixer*)parent())->remove( this );
+            Fl::delete_widget( this );
         }
     }
     else if ( o == name_field )

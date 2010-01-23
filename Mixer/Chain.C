@@ -72,6 +72,7 @@
 #include <FL/Fl_Tabs.H>
 #include "FL/Fl_Flowpack.H"
 #include "FL/Fl_Scroll.H"
+#include "FL/Fl_Packscroller.H"
 #include <string.h>
 
 #include "Mixer_Strip.H"
@@ -156,9 +157,10 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
         o->box( FL_FLAT_BOX );
         o->color( fl_darker( FL_BACKGROUND_COLOR ) );
 //        o->box( FL_NO_BOX );
-        { Fl_Scroll *o = new Fl_Scroll( X, Y, W, H );
+        { Fl_Packscroller *o = new Fl_Packscroller( X, Y, W, H );
             o->color( fl_darker( FL_BACKGROUND_COLOR ) );
-            o->box( FL_FLAT_BOX );
+//            o->box( FL_FLAT_BOX );
+            o->box( FL_THIN_UP_BOX );
             o->type( Fl_Scroll::VERTICAL );
             { Fl_Pack *o = modules_pack = new Fl_Pack( X, Y, W, H );
                 o->type( Fl_Pack::VERTICAL );
@@ -567,7 +569,11 @@ Chain::draw_connections ( Module *m )
     int spacing;
     int offset;
 
-    fl_push_clip( chain_tab->x(), chain_tab->y(), chain_tab->w(), chain_tab->h() );
+    int X, Y, W, H;
+
+    ((Fl_Packscroller*)chain_tab->child( 0 ))->bbox( X, Y, W, H );
+
+    fl_push_clip( X, Y, W, H );
 
     Fl_Color c =fl_color_average( FL_WHITE, FL_YELLOW, 0.50 );
     fl_color( c );

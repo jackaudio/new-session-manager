@@ -403,13 +403,13 @@ Mixer_Strip::init ( )
         o->type( Fl_Pack::VERTICAL );
         o->box( FL_NO_BOX );
 
-#if 0
         { Fl_Box *o = new Fl_Box( 0, 0, 100, 24 );
             o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
             o->labelsize( 10 );
-            o->label( "Pan" );
+            o->label( "Spatialization" );
         }
         { Panner* o = new Panner(0, 0, 110, 90);
+            o->deactivate();
             o->box(FL_THIN_UP_BOX);
             o->color(FL_GRAY0);
             o->selection_color(FL_BACKGROUND_COLOR);
@@ -420,8 +420,7 @@ Mixer_Strip::init ( )
             o->align(FL_ALIGN_TOP);
             o->when(FL_WHEN_RELEASE);
         } // Panner* o
-#endif
-        { Fl_Box *o = new Fl_Box( 0, 0, 100, 24 );
+        { Fl_Box *o = new Fl_Box( 0, 0, 100, 12 );
             o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
             o->labelsize( 10 );
             o->label( "Inputs" );

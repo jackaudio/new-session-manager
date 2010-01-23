@@ -116,6 +116,9 @@ DPM::draw ( void )
     snprintf( peak_string, sizeof( peak_string ), "%.1f", peak() );
     tooltip( peak_string );
 
+    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
+        return;
+
     int v = pos( value() );
     int pv = pos( peak() );
 

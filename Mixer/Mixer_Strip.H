@@ -52,6 +52,8 @@ class Mixer_Strip : public Fl_Group, public Loggable {
 
 public:
 
+    static int min_h ( void ) { return 250; }
+
     Mixer_Strip(int X, int Y, int W, int H, const char *L = 0);
     Mixer_Strip( const char *name, int channels );
     Mixer_Strip();                                              /* for log create */

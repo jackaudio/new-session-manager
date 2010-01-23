@@ -252,6 +252,9 @@ Mixer::rows ( int n )
     else
         sh = (scroll->h() - 18) / n;
 
+    if ( sh < Mixer_Strip::min_h() )
+        return;
+
     int tw = 0;
 
     for ( int i = 0; i < mixer_strips->children(); ++i )

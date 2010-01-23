@@ -157,8 +157,7 @@ Track::process_input ( nframes_t nframes )
 
     if ( ! transport->rolling )
     {
-        for ( int i = input.size(); i--; )
-            input[ i ].silence( nframes );
+        /* There is no work to do when we're not rolling. */
 
         return 0;
     }

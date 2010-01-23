@@ -90,6 +90,16 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         new_strip();
     }
+    else if ( !strcmp( picked, "&Mixer/Add &N Strips" ) )
+    {
+        const char *s = fl_input( "Enter number of strips to add" );
+
+        if ( s )
+        {
+            for ( int i = atoi( s ); i > 0; i-- )
+                new_strip();
+        }
+    }
     else if (! strcmp( picked, "&Mixer/&Rows/One") )
     {
         rows( 1 );
@@ -121,9 +131,13 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "&Project/&Save", FL_CTRL + 's', 0, 0 );
         o->add( "&Project/&Quit", FL_CTRL + 'q', 0, 0 );
         o->add( "&Mixer/&Add Strip", 'a', 0, 0 );
+        o->add( "&Mixer/Add &N Strips" );
         o->add( "&Mixer/&Rows/One", '1', 0, 0 );
         o->add( "&Mixer/&Rows/Two", '2', 0, 0 );
         o->add( "&Mixer/&Rows/Three", '3', 0, 0 );
+        o->add( "_&Options" );
+        o->add( "&Help/&Manual" );
+        o->add( "&Help/&About" );
         o->callback( cb_menu, this );
     }
     { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - 24 );
@@ -244,7 +258,6 @@ Mixer::contains ( Mixer_Strip *ms )
 void
 Mixer::rows ( int n )
 {
-
     int sh;
 
     if ( n > 1 )

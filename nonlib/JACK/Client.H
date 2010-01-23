@@ -55,6 +55,10 @@ namespace JACK
         Client ( const Client &rhs );
         Client & operator = ( const Client &rhs );
 
+    protected:
+
+        void deactivate ( void );
+
     private:
 
         friend class Port;

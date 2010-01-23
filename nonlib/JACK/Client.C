@@ -34,10 +34,16 @@ namespace JACK
 
     Client::~Client ( )
     {
-        jack_deactivate( _client );
         jack_client_close( _client );
     }
 
+    /** Tell JACK to calling process callback. This MUST be called in
+     * an inheriting class' destructor */
+    void
+    Client::deactivate ( )
+    {
+        jack_deactivate( _client );
+    }
 
 
 /*******************/

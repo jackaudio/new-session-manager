@@ -159,13 +159,18 @@ system_colors[ 0 ] = (Fl_Color)Fl::get_color( FL_BACKGROUND_COLOR );
 system_colors[ 1 ] = (Fl_Color)Fl::get_color( FL_FOREGROUND_COLOR  );
 system_colors[ 2 ] = (Fl_Color)Fl::get_color( FL_BACKGROUND2_COLOR  );
 
-// try to fill the screen
+// constrain window to size of screen.
 {
         int sx, sy, sw, sh;
 
         Fl::screen_xywh( sx, sy, sw, sh );
 
-        main_window->resize( sx, sy, sw, sh );
+        main_window->size( 947, 600 );
+        main_window->size_range( 947, 600 );
+
+        if ( main_window->w() > sw ||
+             main_window->h() > sh )
+                main_window->resize( sx, sy, sw, sh );
 }
 
 Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );

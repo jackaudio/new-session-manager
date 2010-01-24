@@ -27,6 +27,7 @@
 #include "Mixer_Strip.H"
 
 class Fl_Flowpack;
+class Fl_Menu_Bar;
 
 class Mixer : public Fl_Group
 {
@@ -34,6 +35,8 @@ class Mixer : public Fl_Group
 private:
 
     int _rows;
+
+    Fl_Color system_colors[3];
 
     Mixer_Strip* track_by_name ( const char *name );
     char * get_unique_track_name ( const char *name );
@@ -44,16 +47,21 @@ private:
     void cb_menu(Fl_Widget*);
     static void cb_menu(Fl_Widget*, void*);
 
+    Fl_Menu_Bar *menubar;
     Fl_Scroll *scroll;
     Fl_Pack *pack;
 
     Fl_Flowpack *mixer_strips;
+
+    void load_options ( void );
+    void save_options ( void );
 
 protected:
 
     virtual int handle ( int m );
 
 public:
+
 
     void rows ( int n );
     virtual void resize ( int X, int Y, int W, int H );

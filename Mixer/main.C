@@ -52,6 +52,25 @@ Mixer *mixer;
 #include "Mono_Pan_Module.H"
 #include "Chain.H"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
+/* TODO: put these in a header */
+#define USER_CONFIG_DIR ".non-mixer/"
+
+char *user_config_dir;
+
+#include <errno.h>
+
+static int
+ensure_dirs ( void )
+{
+    asprintf( &user_config_dir, "%s/%s", getenv( "HOME" ), USER_CONFIG_DIR );
+
+    int r = mkdir( user_config_dir, 0777 );
+
+    return r == 0 || errno == EEXIST;
+}
 
 #include <signal.h>
 
@@ -66,6 +85,8 @@ main ( int argc, char **argv )
 
     Thread thread( "UI" );
     thread.set();
+
+    ensure_dirs();
 
     Fl_Tooltip::color( FL_BLACK );
     Fl_Tooltip::textcolor( FL_YELLOW );
@@ -100,7 +121,7 @@ main ( int argc, char **argv )
     Fl_Double_Window *main_window;
 
     {
-        Fl_Double_Window *o = main_window = new Fl_Double_Window( 1024, 768, "Mixer" );
+        Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, "Mixer" );
         {
             Fl_Widget *o = mixer = new Mixer( 0, 0, main_window->w(), main_window->h(), NULL );
             Fl_Group::current()->resizable(o);

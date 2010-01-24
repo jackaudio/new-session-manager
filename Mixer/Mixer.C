@@ -26,17 +26,19 @@
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/fl_ask.H>
+#include <FL/Fl.H>
 #include <FL/Fl_File_Chooser.H>
 #include "New_Project_Dialog.H"
 #include "Engine/Engine.H"
 #include "FL/Fl_Flowpack.H"
 #include "Project.H"
-
+#include "FL/Fl_Menu_Settings.H"
 #include <string.h>
 #include "debug.h"
 
 const double STATUS_UPDATE_FREQ = 0.2f;
 
+extern char *user_config_dir;
 
 #include "util/debug.h"
 
@@ -133,6 +135,50 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         rows( 3 );
     }
+    else if (! strcmp( picked, "&Options/&Display/&Style/&Default") )
+    {
+        Fl::scheme( "plastic" );
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Style/&Flat") )
+    {
+        Fl::scheme( "gtk+" );
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Colors/&System") )
+    {
+        //Fl::get_system_colors();
+
+        unsigned char r, g, b;
+
+        Fl::get_color( system_colors[ 0 ], r, g, b );
+
+        Fl::background( r, g, b );
+
+        Fl::get_color( system_colors[ 1 ], r, g, b );
+
+        Fl::foreground( r, g, b );
+
+        Fl::get_color( system_colors[ 2 ], r, g, b );
+
+        Fl::background2( r, g, b );
+
+        Fl::scheme( Fl::scheme() );
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Colors/&Dark") )
+    {
+        Fl::background2( 100, 100, 100 );
+        Fl::background( 50, 50, 50 );
+        Fl::foreground( 255, 255, 255 );
+
+        Fl::scheme( Fl::scheme() );
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Colors/&Light") )
+    {
+        Fl::background2( 192, 192, 192 );
+        Fl::background( 220, 220, 220 );
+        Fl::foreground( 0, 0, 0 );
+
+        Fl::scheme( Fl::scheme() );
+    }
 
 }
 
@@ -143,10 +189,18 @@ void Mixer::cb_menu(Fl_Widget* o, void* v) {
 Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
 {
+
+    Fl::get_system_colors();
+    Fl::scheme( "plastic" );
+
+    system_colors[ 0 ] = (Fl_Color)Fl::get_color( FL_BACKGROUND_COLOR );
+    system_colors[ 1 ] = (Fl_Color)Fl::get_color( FL_FOREGROUND_COLOR  );
+    system_colors[ 2 ] = (Fl_Color)Fl::get_color( FL_BACKGROUND2_COLOR  );
+
     _rows = 1;
     box( FL_NO_BOX );
     labelsize( 96 );
-    { Fl_Menu_Bar *o = new Fl_Menu_Bar( X, Y, W, 24 );
+    { Fl_Menu_Bar *o = menubar = new Fl_Menu_Bar( X, Y, W, 24 );
         o->add( "&Project/&New" );
         o->add( "&Project/&Open" );
         o->add( "&Project/&Save", FL_CTRL + 's', 0, 0 );
@@ -156,7 +210,11 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "&Mixer/&Rows/One", '1', 0, 0 );
         o->add( "&Mixer/&Rows/Two", '2', 0, 0 );
         o->add( "&Mixer/&Rows/Three", '3', 0, 0 );
-        o->add( "_&Options" );
+        o->add( "_&Options/&Display/&Style/&Default", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
+        o->add( "_&Options/&Display/&Style/&Flat", 0, 0, 0, FL_MENU_RADIO );
+        o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
+        o->add( "_&Options/&Display/&Colors/&Dark", 0, 0, 0, FL_MENU_RADIO  );
+        o->add( "_&Options/&Display/&Colors/&Light", 0, 0, 0, FL_MENU_RADIO  );
         o->add( "&Help/&Manual" );
         o->add( "&Help/&About" );
         o->callback( cb_menu, this );
@@ -184,13 +242,15 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
 
 //    Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );
 
-    MESSAGE( "Scanning for plugins..." );
 
+    load_options();
 }
 
 Mixer::~Mixer ( )
 {
     DMESSAGE( "Destroying mixer" );
+
+    save_options();
 
     /* FIXME: teardown */
     mixer_strips->clear();
@@ -374,6 +434,27 @@ Mixer::save ( void )
     return true;
 }
 
+static const char options_filename[] = "options";
+
+void
+Mixer::load_options ( void )
+{
+// save options
+
+    char *path;
+    asprintf( &path, "%s/options", user_config_dir );
+    ((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options" ), path );
+    free( path );
+}
+
+void
+Mixer::save_options ( void )
+{
+    char *path;
+    asprintf( &path, "%s/%s", user_config_dir, options_filename );
+    ((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Options" ), path );
+    free( path );
+}
 
 int
 Mixer::handle ( int m )

@@ -558,6 +558,8 @@ Chain::add_control ( Controller_Module *m )
 
     controls_pack->add( m );
 
+    configure_ports();
+
     engine()->unlock();
 
     controls_pack->redraw();

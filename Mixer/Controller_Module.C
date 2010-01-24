@@ -118,7 +118,9 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
 
     add_port( Port( this, Port::OUTPUT, Port::CONTROL ) );
 
-    mode( GUI );
+    _mode = GUI;
+
+//    mode( GUI );
 //    mode( CV );
 //    configure_inputs( 1 );
 

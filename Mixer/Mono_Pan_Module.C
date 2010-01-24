@@ -26,7 +26,7 @@ Mono_Pan_Module::Mono_Pan_Module ( )
     : Module ( 50, 24, name() )
 {
     Port p( this, Port::INPUT, Port::CONTROL, "Pan" );
-    p.hints.type = Port::Hints::LOGARITHMIC;
+//    p.hints.type = Port::Hints::LOGARITHMIC;
     p.hints.ranged = true;
     p.hints.minimum = -1.0f;
     p.hints.maximum = 1.0f;

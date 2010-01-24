@@ -1,0 +1,110 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0110 
+header_name {.H} 
+code_name {.C}
+decl {\#include <FL/Fl.H>} {} 
+
+decl {\#include <Fl/Fl_Shared_Image.H>} {} 
+
+decl {\#include <Fl/filename.H>} {} 
+
+Function {open_url( const char *url )} {open return_type void
+} {
+  code {\#if ! ( FL_MAJOR_VERSION >= 1 && FL_MINOR_VERSION >= 1 && FL_PATCH_VERSION >= 8 )
+	
+	// FIXME: got a better idea?
+	char cmd[256];
+	snprintf( cmd, sizeof( cmd ), "x-www-browser '%s' &", url );
+	system( cmd );
+\#else
+	fl_open_uri( url );
+\#endif} {}
+} 
+
+class About_Dialog {open
+} {
+  Function {About_Dialog()} {} {
+    code {make_window();} {}
+  }
+  Function {run()} {return_type void
+  } {
+    code {window->show();
+
+while ( window->shown() )
+	Fl::wait();
+	
+delete window;} {}
+  }
+  Function {make_window()} {open private
+  } {
+    Fl_Window window {
+      label About
+      callback {o->hide();
+
+if ( logo_box->image() )
+{
+	((Fl_Shared_Image*)logo_box->image())->release();
+	logo_box->image( 0 );
+}} open selected
+      private xywh {1355 125 495 655} type Double xclass {Non-DAW} visible
+    } {
+      Fl_Tabs {} {open
+        xywh {0 264 497 392}
+      } {
+        Fl_Group {} {
+          label Credits open
+          xywh {2 293 492 362}
+        } {
+          Fl_Box {} {
+            label {Non-DAW was written from scratch by
+ Jonathan Moore Liles for his own use
+ (see the manual).
+
+Nobody planned. Nobody helped.
+ You can help now by donating time, money,
+and/or replacing the rest of Linux Audio
+with fast, light, reliable alternatives.}
+            xywh {39 322 418 262} box ROUNDED_BOX color 46 labelsize 18
+          }
+        }
+        Fl_Group {} {
+          label License open
+          xywh {2 288 492 311} hide
+        } {
+          Fl_Box {} {
+            label {Copyright (C) 2008-2010 Jonathan Moore Liles}
+            xywh {43 302 410 37} labeltype SHADOW_LABEL labelfont 1 labelsize 18
+          }
+          Fl_Box {} {
+            label {This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.}
+            xywh {10 351 475 233} box ROUNDED_BOX color 46 labelfont 1 labelsize 12 labelcolor 53 align 144
+          }
+        }
+      }
+      Fl_Box logo_box {
+        label VERSION
+        private xywh {25 20 445 180} box ROUNDED_BOX color 48 labelfont 1 labelsize 18 align 16
+        code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo.png" ) );}
+        code1 {o->label( VERSION );}
+      }
+      Fl_Return_Button {} {
+        label Rock
+        callback {o->window()->do_callback();}
+        xywh {400 614 76 30}
+      }
+      Fl_Button {} {
+        label {http://non-daw.tuxfamily.org}
+        callback {open_url( o->label() );}
+        xywh {125 614 245 30} color 14 labeltype SHADOW_LABEL labelcolor 6
+      }
+      Fl_Box {} {
+        label {The Non DAW (Digital Audio Workstation)}
+        xywh {32 221 430 29} labeltype SHADOW_LABEL labelfont 3 labelsize 17
+      }
+    }
+  }
+} 

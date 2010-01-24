@@ -18,6 +18,7 @@
 /*******************************************************************************/
 
 /* This is the main mixer group. It contains and manages Mixer_Strips. */
+#include "const.h"
 
 #include "Mixer.H"
 #include "Mixer_Strip.H"
@@ -33,6 +34,10 @@
 #include "FL/Fl_Flowpack.H"
 #include "Project.H"
 #include "FL/Fl_Menu_Settings.H"
+#include "About_Dialog.H"
+
+#include "util/file.h"
+
 #include <string.h>
 #include "debug.h"
 
@@ -179,7 +184,12 @@ void Mixer::cb_menu(Fl_Widget* o) {
 
         Fl::scheme( Fl::scheme() );
     }
+    else if ( ! strcmp( picked, "&Help/&About" ) )
+    {
+        About_Dialog ab;
 
+        ab.run();
+    }
 }
 
 void Mixer::cb_menu(Fl_Widget* o, void* v) {

@@ -195,6 +195,16 @@ void Mixer::cb_menu(Fl_Widget* o) {
 
         ab.run();
     }
+    else if ( !strcmp( picked, "&Help/&Manual" ))
+    {
+        char *pat;
+
+        asprintf( &pat, "file://%s%s.html", DOCUMENT_PATH, "MANUAL.html" );
+
+        open_url( pat );
+
+        free( pat );
+    }
 }
 
 void Mixer::cb_menu(Fl_Widget* o, void* v) {

@@ -104,6 +104,8 @@ public:
             {
                 case FL_PUSH:
                 {
+                    Logger log( this );
+
                     if ( Fl::event_button1() )
                     {
                         add( new Annotation_Point( this, x_to_offset( Fl::event_x() ), "mark" ) );
@@ -123,6 +125,28 @@ public:
 
                         return 1;
 
+                    }
+                    else if ( Fl::event_button3() && ! ( Fl::event_state() & ( FL_ALT | FL_SHIFT | FL_CTRL ) ) )
+                    {
+
+                        Fl_Menu_Item menu[] =
+                            {
+                                { "Remove" },
+                                { 0 }
+                            };
+
+                        const Fl_Menu_Item *r = menu->popup( Fl::event_x(), Fl::event_y(), "Annotation Sequence" );
+
+                        if ( r )
+                        {
+                            if ( r == &menu[ 0 ] )
+                            {
+                                Fl::delete_widget( this );
+                            }
+
+                        }
+
+                        return 1;
                     }
                     break;
                 }

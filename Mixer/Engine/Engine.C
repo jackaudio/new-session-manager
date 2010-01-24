@@ -39,6 +39,7 @@ Engine::Engine ( void (*process_callback)(nframes_t nframes, void *), void *user
 
 Engine::~Engine ( )
 {
+    deactivate();
 }
 
 

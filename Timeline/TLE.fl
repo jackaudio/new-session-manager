@@ -221,7 +221,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label Timeline
       callback {if ( Fl::event_key() != FL_Escape )
 	o->hide();} open
-      private xywh {703 114 1025 770} type Double resizable xclass Non_DAW visible
+      private xywh {705 125 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         private xywh {0 0 1024 25}
@@ -290,19 +290,24 @@ const char *templates[] = { "Default", NULL };
 char *default_path;
 char *selected_template;
 
-read_line( user_config_dir, "default_path", &default_path );
+        read_line( user_config_dir, "default_path", &default_path );
 
-char *path = new_project_chooser( templates, &default_path, &selected_template );
+        char *path = new_project_chooser( templates, &default_path, &selected_template );
 
-if ( ! Project::create( path, selected_template ) )
-	fl_alert( "Error creating project!" );
+        if ( path )
+        {
+            if ( ! Project::create( path, selected_template ) )
+                fl_alert( "Error creating project!" );
+            free( path );
+            free( selected_template );
+        }
 
-free( path );
-free( selected_template );
-free( default_path );
+        if ( default_path )
+        {
+            write_line( user_config_dir, "default_path", default_path );
+            free( default_path );
+        }
 
-
-write_line( user_config_dir, "default_path", default_path );
 
 load_timeline_settings();
 
@@ -838,8 +843,7 @@ sm_blinker->value( timeline->session_manager_name() != NULL );
 sm_blinker->tooltip( timeline->session_manager_name() );
 selected_blinker->value( timeline->nselected() );} {selected
 seek_blinker->value( timeline->seek_pending() );
-project_name->redraw();} {selected
-    }
+project_name->redraw();} {}
   }
   Function {update_cb( void *v )} {open private return_type {static void}
   } {
@@ -927,7 +931,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {655 259 520 740} type Double modal visible
+      private xywh {761 214 520 740} type Double modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}

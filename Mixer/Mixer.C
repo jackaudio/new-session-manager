@@ -72,18 +72,23 @@ void Mixer::cb_menu(Fl_Widget* o) {
         char *default_path;
         char *selected_template;
 
-//        read_line( user_config_dir, "default_path", &default_path );
+        read_line( user_config_dir, "default_path", &default_path );
 
         char *path = new_project_chooser( templates, &default_path, &selected_template );
 
-        if ( ! Project::create( path, selected_template ) )
-            fl_alert( "Error creating project!" );
+        if ( path )
+        {
+            if ( ! Project::create( path, selected_template ) )
+                fl_alert( "Error creating project!" );
+            free( path );
+            free( selected_template );
+        }
 
-        free( path );
-        free( selected_template );
-        free( default_path );
-
-//        write_line( user_config_dir, "default_path", default_path );
+        if ( default_path )
+        {
+            write_line( user_config_dir, "default_path", default_path );
+            free( default_path );
+        }
 
     }
     else if (! strcmp( picked, "&Project/&Open" ) )

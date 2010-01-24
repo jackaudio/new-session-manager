@@ -34,11 +34,17 @@ class New_Project_Dialog {open
 } {
   Function {New_Project_Dialog()} {open
   } {
-    code {make_window();} {}
+    code {_default_path = 0;
+          path = 0;
+          make_window();} {}
   }
   Function {run()} {open return_type void
   } {
-    code {_window->show();
+    code {
+
+    _directory->value( _default_path );
+
+    _window->show();
 
 while ( _window->shown() )
 	Fl::wait();} {}
@@ -68,8 +74,7 @@ while ( _window->shown() )
 	
 	path = strdup( pat );
 	
-	_default_path = strdup( _directory->value() );
-	
+        _default_path = _directory->value() ? strdup( _directory->value() ) : 0;
 
 	//if ( ! Project::create( pat, _template->text( _template->value() ) ) )
 	//	fl_alert( "Error creating project!" );
@@ -143,6 +148,6 @@ nsd.run();
 *default_path = strdup( nsd.default_path() );
 *selected_template = strdup( nsd.selected_template() );
 
-return strdup( nsd.path );} {selected
+return nsd.path;} {selected
   }
 } 

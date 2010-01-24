@@ -72,9 +72,8 @@ Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
 
         const nframes_t len = p2->when() - p1->when();
 
-        /* scale to -1.0 to 1.0 */
-        const float y1 = 1.0f - ( 2.0f * p1->control() );
-        const float y2 = 1.0f - ( 2.0f * p2->control() );
+        const float y1 = 1.0f - p1->control();
+        const float y2 = 1.0f - p2->control();
 
         const nframes_t start = frame - p1->when();
         const float incr = ( y2 - y1 ) / (float)len;

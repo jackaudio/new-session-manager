@@ -50,7 +50,6 @@ public:
     void mode ( Mode v );
 
     Controller_Module ( bool is_default = false );
-//    Controller_Module ( int W, int H, const char *L=0 );
     virtual ~Controller_Module ( );
 
     const char *name ( void ) const { return "Controller"; }
@@ -67,24 +66,21 @@ public:
 
     LOG_CREATE_FUNC( Controller_Module );
 
+    void resize ( int, int, int, int );
+    void process ( void );
 
-protected:
-
-    void get ( Log_Entry &e ) const;
-    void set ( Log_Entry &e );
-
-    //   virtual void draw ( void );
-    virtual void process ( void );
-
-    virtual void draw ( void )
+    void draw ( void )
         {
             draw_box();
             Fl_Group::draw();
         }
 
-    virtual int handle ( int m );
+    int handle ( int m );
 
-    void resize ( int, int, int, int );
+protected:
+
+    void get ( Log_Entry &e ) const;
+    void set ( Log_Entry &e );
 
 private:
 

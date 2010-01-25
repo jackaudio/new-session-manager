@@ -17,25 +17,28 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
 #include <FL/fl_draw.H>
 #include <FL/Fl_Pack.H>
-#include "FL/Fl_Value_SliderX.H"
 #include <FL/Fl_Box.H>
+#include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Counter.H>
-#include "FL/Fl_Arc_Dial.H"
 #include "FL/Boxtypes.H"
 #include "FL/Fl_Flowpack.H"
 #include "FL/Fl_Labelpad_Group.H"
-#include "FL/Fl_Menu_Button.H"
+#include "FL/Fl_Value_SliderX.H"
+#include "FL/Fl_Arc_Dial.H"
+
 #include "Module.H"
 #include "Module_Parameter_Editor.H"
 #include "Controller_Module.H"
 #include "Chain.H"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+
 #include <util/debug.h>
-#include <math.h>
 
 
 
@@ -297,7 +300,6 @@ Module_Parameter_Editor::bind_control ( int i )
     _module->chain()->add_control( o );
     _module->redraw();
 }
-
 
 void
 Module_Parameter_Editor::set_value (int i, float value )

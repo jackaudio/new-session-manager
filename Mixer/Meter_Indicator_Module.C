@@ -19,29 +19,68 @@
 
 #include "Meter_Indicator_Module.H"
 
+#include <stdio.h>
+
 #include <FL/Fl.H>
 #include <FL/Fl_Value_Slider.H>
 #include <FL/Fl_Box.H>
-#include <FL/Fl_Counter.H>
-#include "FL/Fl_Arc_Dial.H"
-#include "FL/Fl_Light_Button.H"
-#include "FL/Boxtypes.H"
 #include <FL/fl_draw.H>
+#include <FL/Fl_Counter.H>
+#include <FL/Fl_Light_Button.H>
+#include "FL/Boxtypes.H"
+
+#include "FL/Fl_Arc_Dial.H"
 #include "FL/Fl_Labelpad_Group.H"
-#include <stdio.h>
+#include "FL/Fl_Scalepack.H"
+
 #include "Engine/Engine.H"
 #include "Chain.H"
 #include "DPM.H"
-#include "FL/Fl_Scalepack.H"
-
-
-
-const float CONTROL_UPDATE_FREQ = 0.1f;
 
 #include "FL/test_press.H"
 
 
 
+const float CONTROL_UPDATE_FREQ = 0.1f;
+
+
+
+Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
+    : Module ( is_default, 50, 100, name() )
+{
+    box( FL_NO_BOX );
+
+    _pad = true;
+    control = 0;
+    control_value = 0;
+
+    add_port( Port( this, Port::INPUT, Port::CONTROL ) );
+
+    dpm_pack = new Fl_Scalepack( x(), y(), w(), h() );
+    dpm_pack->type( FL_HORIZONTAL );
+
+    control_value = new float[1];
+    *control_value = -70.0f;
+
+    end();
+
+    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
+}
+
+Meter_Indicator_Module::~Meter_Indicator_Module ( )
+{
+    if ( control_value )
+    {
+        delete[] control_value;
+        control_value = NULL;
+    }
+
+    Fl::remove_timeout( update_cb, this );
+
+    log_destroy();
+}
+
+
 
 void
 Meter_Indicator_Module::get ( Log_Entry &e ) const
@@ -88,43 +127,6 @@ Meter_Indicator_Module::set ( Log_Entry &e )
 
     if ( port >= 0 && module )
         control_input[0].connect_to( &module->control_output[port] );
-}
-
-
-
-Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
-    : Module ( is_default, 50, 100, name() )
-{
-    box( FL_NO_BOX );
-
-    _pad = true;
-    control = 0;
-    control_value = 0;
-
-    add_port( Port( this, Port::INPUT, Port::CONTROL ) );
-
-    dpm_pack = new Fl_Scalepack( x(), y(), w(), h() );
-    dpm_pack->type( FL_HORIZONTAL );
-
-    control_value = new float[1];
-    *control_value = -70.0f;
-
-    end();
-
-    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
-}
-
-Meter_Indicator_Module::~Meter_Indicator_Module ( )
-{
-    if ( control_value )
-    {
-        delete[] control_value;
-        control_value = NULL;
-    }
-
-    Fl::remove_timeout( update_cb, this );
-
-    log_destroy();
 }
 
 
@@ -186,16 +188,14 @@ Meter_Indicator_Module::connect_to ( Port *p )
 {
     control_input[0].connect_to( p );
 
-/*     else if ( p->hints.type == Module::Port::Hints::LOGARITHMIC ) */
-/*     { */
-    {
-        DPM *o = new DPM( x(), y(), this->w(), h() );
-        o->type( FL_VERTICAL );
-        align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
+    DPM *o = new DPM( x(), y(), this->w(), h() );
+    o->type( FL_VERTICAL );
+    align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
 
-        dpm_pack->add( o );
-    }
+    dpm_pack->add( o );
 }
+
+
 
 int
 Meter_Indicator_Module::handle ( int m )
@@ -250,6 +250,10 @@ Meter_Indicator_Module::handle_control_changed ( Port *p )
         }
     }
 }
+
+/**********/
+/* Engine */
+/**********/
 
 void
 Meter_Indicator_Module::process ( void )

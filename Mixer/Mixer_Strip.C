@@ -55,11 +55,54 @@ extern Mixer *mixer;
 
 
 
+/* add a new mixer strip (with default configuration) */
+Mixer_Strip::Mixer_Strip( const char *strip_name ) : Fl_Group( 0, 0, 120, 600 )
+{
+    label( strdup( strip_name ) );
+    labeltype( FL_NO_LABEL );
+
+    init();
+
+    chain( new Chain() );
+
+    _chain->initialize_with_default();
+
+    _chain->configure_ports();
+
+    color( (Fl_Color)rand() );
+
+//    name( strdup( strip_name ) );
+
+    log_create();
+}
+
+/* virgin strip created from journal */
+Mixer_Strip::Mixer_Strip() : Fl_Group( 0, 0, 120, 600 )
+{
+    init();
+
+    log_create();
+}
+
+Mixer_Strip::~Mixer_Strip ( )
+{
+    DMESSAGE( "Destroying mixer strip" );
+
+    delete _chain;
+    _chain = NULL;
+
+    log_destroy();
+
+    mixer->remove( this );
+}
+
+
+
 void
 Mixer_Strip::get ( Log_Entry &e ) const
 {
     e.add( ":name",            name()           );
-    e.add( ":width",      prepost_button->value() ? "wide" : "narrow" );
+    e.add( ":width",      width_button->value() ? "wide" : "narrow" );
     e.add( ":tab",      tab_button->value() ? "signal" : "fader" );
     e.add( ":color",           (unsigned long)color());
 }
@@ -77,8 +120,8 @@ Mixer_Strip::set ( Log_Entry &e )
             name( v );
         else if ( ! strcmp( s, ":width" ) )
         {
-            prepost_button->value( strcmp( v, "wide" ) == 0 );
-            prepost_button->do_callback();
+            width_button->value( strcmp( v, "wide" ) == 0 );
+            width_button->do_callback();
         }
         else if ( ! strcmp( s, ":tab" ) )
         {
@@ -145,46 +188,6 @@ Mixer_Strip::chain ( Chain *c )
     meter_indicator->chain( c );
 }
 
-/* add a new mixer strip (with default configuration) */
-Mixer_Strip::Mixer_Strip( const char *strip_name, int channels ) : Fl_Group( 0, 0, 120, 600 )
-{
-    label( strdup( strip_name ) );
-    labeltype( FL_NO_LABEL );
-
-    init();
-
-    chain( new Chain() );
-
-    _chain->initialize_with_default();
-
-    _chain->configure_ports();
-
-    color( (Fl_Color)rand() );
-
-//    name( strdup( strip_name ) );
-
-    log_create();
-}
-
-/* virgin strip created from journal */
-Mixer_Strip::Mixer_Strip() : Fl_Group( 0, 0, 120, 600 )
-{
-    init();
-
-    log_create();
-}
-
-Mixer_Strip::~Mixer_Strip ( )
-{
-    DMESSAGE( "Destroying mixer strip" );
-
-    delete _chain;
-    _chain = NULL;
-
-    log_destroy();
-
-    mixer->remove( this );
-}
 
 void Mixer_Strip::cb_handle(Fl_Widget* o) {
     // parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
@@ -220,7 +223,7 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
     }
     else if ( o == name_field )
         name( name_field->value() );
-    else if ( o == prepost_button )
+    else if ( o == width_button )
     {
         if ( ((Fl_Button*)o)->value() )
             size( 300, h() );
@@ -352,7 +355,7 @@ Mixer_Strip::init ( )
 
             o->end();
         } // Fl_Group* o
-        { Fl_Flip_Button* o = prepost_button = new Fl_Flip_Button(61, 183, 45, 22, "narrow/wide");
+        { Fl_Flip_Button* o = width_button = new Fl_Flip_Button(61, 183, 45, 22, "narrow/wide");
             o->type(1);
             o->labelsize(14);
             o->callback( ((Fl_Callback*)cb_handle), this );

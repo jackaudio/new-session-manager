@@ -22,22 +22,23 @@
 
 #include "const.h"
 
-#include "Plugin_Module.H"
-
-#include <Fl/fl_draw.H>
-#include <FL/Fl_Group.H>
-
-#include "util/debug.h"
-
 #include <string.h>
-
-#define HAVE_LIBLRDF 1
-#include "LADSPAInfo.h"
 #include <vector>
 #include <string>
 #include <ladspa.h>
 #include <stdlib.h>
 #include <math.h>
+
+#include <Fl/fl_draw.H>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Menu_Button.H>
+
+#include "Plugin_Module.H"
+
+#include "util/debug.h"
+
+#define HAVE_LIBLRDF 1
+#include "LADSPAInfo.h"
 
 #include "Engine/Engine.H"
 
@@ -56,7 +57,6 @@ struct Plugin_Module::ImplementationData
 
 
 
-
 Plugin_Module::Plugin_Module ( ) : Module( 50, 35, name() )
 {
     init();
@@ -73,7 +73,6 @@ Plugin_Module::~Plugin_Module ( )
 }
 
 
-
 
 void
 Plugin_Module::get ( Log_Entry &e ) const
@@ -103,10 +102,7 @@ Plugin_Module::set ( Log_Entry &e )
     Module::set( e );
 }
 
-
 
-
-#include <FL/Fl_Menu_Button.H>
 
 void
 Plugin_Module::add_plugins_to_menu ( Fl_Menu_Button *menu )
@@ -180,46 +176,6 @@ Plugin_Module::init ( void )
 
     bbox( tx, ty, tw, th );
 }
-
-#include "FL/test_press.H"
-
-int
-Plugin_Module::handle ( int m )
-{
-    switch ( m )
-    {
-        case FL_ENTER:
-        case FL_LEAVE:
-            redraw();
-            return 1;
-            break;
-        default:
-            return Module::handle( m );
-    }
-
-    return 0;
-}
-
-/* There are two possible adaptations that can be made at Plugin_Module input to account for a mismatch
-   between channel configurations.
-
-   The two scenarios are as follows.
-
-   1. The preceding module has fewer outputs than this module has inputs. If
-   the preceding module has 1 output (MONO) then it will be duplicated
-   for this module's addition inputs. If the preceding module has more
-   than one output, then the chain is in error.
-
-   2. The preceding module has more outputs than this module has inputs
-   If this module has 1 output (MONO) then it will create the required number of
-   instances of its plugin.
-
-
-   Stereo plugins are never run with more than one instance.  Mono
-   plugins will have their outputs brought up to stereo for plugins with
-   stereo input.
-
-*/
 
 int
 Plugin_Module::can_support_inputs ( int n )
@@ -720,6 +676,12 @@ Plugin_Module::handle_port_connection_change ( void )
     for ( unsigned int i = 0; i < audio_output.size(); ++i )
         set_output_buffer( i, audio_output[i].buffer() );
 }
+
+
+
+/**********/
+/* Engine */
+/**********/
 
 void
 Plugin_Module::process ( )

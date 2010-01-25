@@ -372,7 +372,10 @@ Mixer::rows ( int n )
         sh = (scroll->h() - 18) / n;
 
     if ( sh < Mixer_Strip::min_h() )
+    {
+        rows( ( scroll->h() - 18 ) /  Mixer_Strip::min_h() );
         return;
+    }
 
     int tw = 0;
 
@@ -447,7 +450,7 @@ Mixer::snapshot ( void )
 void
 Mixer::new_strip ( void )
 {
-    add( new Mixer_Strip( get_unique_track_name( "Unnamed" ), 1 ) );
+    add( new Mixer_Strip( get_unique_track_name( "Unnamed" ) ) );
 }
 
 bool

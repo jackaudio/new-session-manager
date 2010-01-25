@@ -17,16 +17,19 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Mono_Pan_Module.H"
+#include "const.h"
 
 #include <math.h>
 #include <dsp.h>
+
+#include "Mono_Pan_Module.H"
+
+
 
 Mono_Pan_Module::Mono_Pan_Module ( )
     : Module ( 50, 24, name() )
 {
     Port p( this, Port::INPUT, Port::CONTROL, "Pan" );
-//    p.hints.type = Port::Hints::LOGARITHMIC;
     p.hints.ranged = true;
     p.hints.minimum = -1.0f;
     p.hints.maximum = 1.0f;
@@ -62,14 +65,14 @@ Mono_Pan_Module::configure_inputs ( int n )
 
 
 
+/**********/
+/* Engine */
+/**********/
+
 void
 Mono_Pan_Module::process ( void )
 {
     const float g = control_input[0].control_value();
-
-// this is obviously wrong, but it produces a strange false stereo effect.
-//    const float lg = (0.0f - g);
-//    const float rg = g;
 
     const float lg = (0.0f - g) + 1.0f;
     const float rg = g + 1.0f;

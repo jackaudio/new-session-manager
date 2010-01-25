@@ -47,9 +47,11 @@
  */
 
 #include "const.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "Chain.H"
-
 #include "Module.H"
 #include "Meter_Module.H"
 #include "JACK_Module.H"
@@ -60,61 +62,20 @@
 #include <Fl/Fl_Box.H>
 #include <FL/Fl_Menu.H>
 #include <FL/fl_ask.H>
-
-#include <stdlib.h>
-#include "util/debug.h"
-
-#include <stdio.h>
-
-#include <FL/fl_draw.H>
-
-#include "Engine/Engine.H"
+#include <FL/Fl_Flip_Button.H>
 #include <FL/Fl_Tabs.H>
 #include "FL/Fl_Flowpack.H"
 #include "FL/Fl_Scroll.H"
 #include "FL/Fl_Packscroller.H"
-#include <string.h>
+#include <FL/fl_draw.H>
+#include "FL/menu_popup.H"
+#include "FL/test_press.H"
+
+#include "util/debug.h"
+#include "Engine/Engine.H"
 
 #include "Mixer_Strip.H"
 #include <dsp.h>
-
-#include <FL/Fl_Flip_Button.H>
-
-
-
-void
-Chain::get ( Log_Entry &e ) const
-{
-    e.add( ":strip", strip() );
-    e.add( ":tab", tab_button->value() ? "controls" : "chain" );
-}
-
-void
-Chain::set ( Log_Entry &e )
-{
-    for ( int i = 0; i < e.size(); ++i )
-    {
-        const char *s, *v;
-
-        e.get( i, &s, &v );
-
-        if ( ! strcmp( s, ":tab" ) )
-        {
-            tab_button->value( strcmp( v, "controls" ) == 0 );
-            tab_button->do_callback();
-        }
-        else if ( ! strcmp( s, ":strip" ) )
-        {
-            int i;
-            sscanf( v, "%X", &i );
-            Mixer_Strip *t = (Mixer_Strip*)Loggable::find( i );
-
-            assert( t );
-
-            t->chain( this );
-        }
-    }
-}
 
 
 
@@ -221,6 +182,42 @@ Chain::~Chain ( )
 
 
 void
+Chain::get ( Log_Entry &e ) const
+{
+    e.add( ":strip", strip() );
+    e.add( ":tab", tab_button->value() ? "controls" : "chain" );
+}
+
+void
+Chain::set ( Log_Entry &e )
+{
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! strcmp( s, ":tab" ) )
+        {
+            tab_button->value( strcmp( v, "controls" ) == 0 );
+            tab_button->do_callback();
+        }
+        else if ( ! strcmp( s, ":strip" ) )
+        {
+            int i;
+            sscanf( v, "%X", &i );
+            Mixer_Strip *t = (Mixer_Strip*)Loggable::find( i );
+
+            assert( t );
+
+            t->chain( this );
+        }
+    }
+}
+
+
+
+void
 Chain::log_children ( void )
 {
     log_create();
@@ -287,18 +284,6 @@ void Chain::cb_handle(Fl_Widget* o) {
             control_tab->show();
         }
     }
-
-    /* if ( o == head_button ) */
-    /* { */
-    /*     Module *m = Module::pick_plugin(); */
-
-    /*     insert_before( (Module*)modules_pack->child( 0 ), m ); */
-    /* } */
-    /* else if ( o == tail_button ) */
-    /* { */
-    /*     Module *m = Module::pick_plugin(); */
-    /*     insert_before( 0, m ); */
-    /* } */
 }
 
 void Chain::cb_handle(Fl_Widget* o, void* v) {
@@ -443,12 +428,6 @@ Chain::name ( const char *name )
     for ( int i = 0; i < modules(); ++i )
         module( i )->handle_chain_name_changed();
 }
-
-
-
-
-
-#include "FL/menu_popup.H"
 
 bool
 Chain::add ( Module *m )
@@ -686,6 +665,14 @@ Chain::build_process_queue ( void )
 }
 
 void
+Chain::strip ( Mixer_Strip * ms )
+{
+    _strip = ms;
+}
+
+
+
+void
 Chain::draw ( void )
 {
     Fl_Group::draw();
@@ -704,8 +691,6 @@ Chain::resize ( int X, int Y, int W, int H )
 /* this won't naturally resize because it's inside of an Fl_Scroll... */
     controls_pack->size( W, controls_pack->h() );
 }
-
-#include "FL/test_press.H"
 
 int
 Chain::handle ( int m )
@@ -778,12 +763,12 @@ Chain::handle ( int m )
 
     return Fl_Group::handle( m );
 }
-void
-Chain::strip ( Mixer_Strip * ms )
-{
-    _strip = ms;
-}
 
+
+
+/**********/
+/* Engine */
+/**********/
 
 void
 Chain::process ( nframes_t nframes, void *v )

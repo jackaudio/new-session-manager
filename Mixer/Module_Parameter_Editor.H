@@ -20,6 +20,7 @@
 #pragma once
 
 #include <FL/Fl_Double_Window.H>
+
 class Fl_Pack;
 class Fl_Flowpack;
 class Module;
@@ -52,8 +53,6 @@ class Module_Parameter_Editor : public Fl_Double_Window
     Fl_Flowpack *control_pack;
     Fl_Menu_Button *mode_choice;
     bool _resized;
-
-
 
 public:
 

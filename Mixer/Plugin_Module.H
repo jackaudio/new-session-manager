@@ -116,7 +116,6 @@ public:
 
 protected:
 
-    virtual int handle ( int );
     void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 

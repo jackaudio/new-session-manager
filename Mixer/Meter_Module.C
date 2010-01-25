@@ -17,14 +17,18 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Meter_Module.H"
-#include "DPM.H"
+#include "const.h"
+
+#include <math.h>
 #include <FL/Fl.H>
 #include <FL/Fl_Single_Window.H>
-#include <FL/Fl_Scalepack.H>
-#include "JACK/Port.H"
-#include <math.h>
+
+#include "FL/Fl_Scalepack.H"
 #include "FL/test_press.H"
+
+#include "Meter_Module.H"
+#include "DPM.H"
+#include "JACK/Port.H"
 
 
 
@@ -152,6 +156,8 @@ Meter_Module::configure_inputs ( int n )
     return true;
 }
 
+
+
 int
 Meter_Module::handle ( int m )
 {
@@ -172,6 +178,10 @@ Meter_Module::handle ( int m )
 }
 
 
+
+/**********/
+/* Engine */
+/**********/
 
 static float
 get_peak_sample ( const sample_t* buf, nframes_t nframes )

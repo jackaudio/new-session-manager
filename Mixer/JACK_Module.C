@@ -17,13 +17,16 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "JACK_Module.H"
-#include <FL/Fl_Single_Window.H>
+#include "const.h"
+
+#include <string.h>
+
+#include "dsp.h"
 
 #include "Engine/Engine.H"
-#include "dsp.h"
-#include <string.h>
 #include "Chain.H"
+
+#include "JACK_Module.H"
 
 
 
@@ -148,7 +151,6 @@ JACK_Module::configure_outputs ( int n )
 bool
 JACK_Module::initialize ( void )
 {
-//    configure_inputs( 1 );
     return true;
 }
 
@@ -195,6 +197,10 @@ JACK_Module::handle_chain_name_changed ( void )
 }
 
 
+
+/**********/
+/* Engine */
+/**********/
 
 void
 JACK_Module::process ( void )

@@ -37,40 +37,32 @@ class Controller_Module;
 
 class Chain : public Fl_Group, public Loggable {
 
-    Fl_Pack *modules_pack;
-    Fl_Flowpack *controls_pack;
-
-
     Fl_Flip_Button *tab_button;
+    Fl_Flowpack *controls_pack;
     Fl_Group *chain_tab;
     Fl_Group *control_tab;
-
-    void cb_handle(Fl_Widget*);
-    static void cb_handle(Fl_Widget*, void*);
-
-/*     int _ins; */
-/*     int _outs; */
+    Fl_Pack *modules_pack;
 
     Mixer_Strip *_strip;
-
-//    sample_t **_buffer;
-//    int _nbuffers;
-
-    Fl_Callback *_configure_outputs_callback;
-    void *_configure_outputs_userdata;
-
     const char *_name;
 
-    void draw_connections ( Module *m );
-
     std::list<Module*> process_queue;
-
-    void build_process_queue ( void );
-    void add_to_process_queue ( Module *m );
 
     std::vector <Module::Port> scratch_port;
 
     Engine *_engine;
+
+    Fl_Callback *_configure_outputs_callback;
+    void *_configure_outputs_userdata;
+
+private:
+
+    void cb_handle(Fl_Widget*);
+    static void cb_handle(Fl_Widget*, void*);
+
+    void draw_connections ( Module *m );
+    void build_process_queue ( void );
+    void add_to_process_queue ( Module *m );
 
     static void process ( nframes_t, void * );
     void process ( nframes_t );
@@ -80,11 +72,14 @@ protected:
     void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
-    int handle ( int m );
-    void draw ( void );
-
 public:
 
+    Chain ( int X, int Y, int W, int H, const char *L = 0 );
+    Chain ( );
+    virtual ~Chain ( );
+
+    int handle ( int m );
+    void draw ( void );
     void resize ( int X, int Y, int W, int H );
 
     Mixer_Strip *strip ( void ) const { return _strip; }
@@ -95,16 +90,7 @@ public:
     void configure_ports ( void );
     int required_buffers ( void );
 
-    Chain ( int X, int Y, int W, int H, const char *L = 0 );
-    Chain ( );
-    virtual ~Chain ( );
-
     bool can_support_input_channels ( int n );
-
-/*     void ins ( int i ) { _ins = i; } */
-/*     void outs ( int i ) { _outs = i; } */
-/*     int ins ( void ) const { return _ins; } */
-/*     int outs ( void ) const { return _outs; } */
 
     int modules ( void ) const { return modules_pack->children(); }
     Module *module ( int n ) const { return (Module*)modules_pack->child( n ); }

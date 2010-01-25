@@ -17,10 +17,12 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "Gain_Module.H"
-
 #include <math.h>
 #include <dsp.h>
+
+#include "Gain_Module.H"
+
+
 
 Gain_Module::Gain_Module ( )
     : Module ( 50, 24, name() )
@@ -32,7 +34,6 @@ Gain_Module::Gain_Module ( )
     p.hints.type = Port::Hints::LOGARITHMIC;
     p.hints.ranged = true;
     p.hints.minimum = -70.0f;
-//    p.hints.maximum = HUGE;
     p.hints.maximum = 6.0f;
     p.hints.default_value = 0.0f;
 
@@ -40,8 +41,6 @@ Gain_Module::Gain_Module ( )
     p.control_value( p.hints.default_value );
 
     add_port( p );
-
-//    color( FL_BLACK );
 
     end();
 
@@ -67,17 +66,16 @@ Gain_Module::configure_inputs ( int n )
     {
         add_port( Port( this, Port::INPUT, Port::AUDIO ) );
         add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
-//        add_port( Port( this, Port::INPUT, Port::CONTROL ) );
-
-/*         Port p( Port::OUTPUT, Port::CONTROL, "dB level" ); */
-/*         p.hints.type = Port::Hints::LOGARITHMIC; */
-/*         add_port( p ); */
     }
 
     return true;
 }
 
 
+
+/**********/
+/* Engine */
+/**********/
 
 void
 Gain_Module::process ( void )

@@ -17,29 +17,26 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Scroll.H>
-#include <FL/Fl_Pack.H>
-#include "Mixer_Strip.H"
-
-
-#include <stdlib.h>
-#include <unistd.h>
-
-#include  "DPM.H"
-
-#include "Mixer.H"
-#include "util/Thread.H"
-#include "util/debug.h"
-#include "Project.H"
-
-Mixer *mixer;
-
-#include <FL/Boxtypes.H>
-#include "Loggable.H"
 #include <FL/Fl_Tooltip.H>
 #include <FL/fl_ask.H>
+#include <FL/Fl_Pack.H>
+#include <FL/Boxtypes.H>
+
+#include "util/Thread.H"
+#include "util/debug.h"
+
+#include "Mixer.H"
+#include "Project.H"
+
+#include "Loggable.H"
 
 /* for registration */
 #include "Module.H"
@@ -51,14 +48,14 @@ Mixer *mixer;
 #include "Controller_Module.H"
 #include "Mono_Pan_Module.H"
 #include "Chain.H"
+#include "Mixer_Strip.H"
 
-#include <sys/types.h>
-#include <sys/stat.h>
 
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-mixer/"
 
 char *user_config_dir;
+Mixer *mixer;
 
 #include <errno.h>
 
@@ -111,10 +108,6 @@ main ( int argc, char **argv )
 
     Fl::get_system_colors();
     Fl::scheme( "plastic" );
-//    Fl::scheme( "gtk+" );
-
-/*     Fl::foreground( 0xFF, 0xFF, 0xFF ); */
-/*     Fl::background( 0x10, 0x10, 0x10 ); */
 
     Plugin_Module::spawn_discover_thread();
 
@@ -135,11 +128,6 @@ main ( int argc, char **argv )
     {
         if ( argc > 1 )
         {
-/*             char name[1024]; */
-
-/*             snprintf( name, sizeof( name ), "%s/history", argv[1] ); */
-
-/*             Loggable::open( name ); */
             MESSAGE( "Loading \"%s\"", argv[1] );
 
             if ( int err = Project::open( argv[1] ) )
@@ -159,5 +147,4 @@ main ( int argc, char **argv )
     main_window = NULL;
 
     MESSAGE( "Your fun is over" );
-
 }

@@ -54,8 +54,7 @@ public:
 
     static int min_h ( void ) { return 250; }
 
-    Mixer_Strip(int X, int Y, int W, int H, const char *L = 0);
-    Mixer_Strip( const char *name, int channels );
+    Mixer_Strip( const char *strip_name );
     Mixer_Strip();                                              /* for log create */
     virtual ~Mixer_Strip();
 
@@ -77,14 +76,12 @@ public:
 
     void update ( void );
 
-    // int channels ( void ) const { return _in.size(); }
     void name ( const char *name );
     const char *name ( void ) const { return label(); }
 
 private:
 
-//    Fl_Value_Slider *gain_slider;
-    Fl_Flip_Button *prepost_button;
+    Fl_Flip_Button *width_button;
     Fl_Flip_Button *tab_button;
     Fl_Button *close_button;
     Fl_Button *left_button;

@@ -17,21 +17,27 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include "const.h"
+
 #include "Controller_Module.H"
 
+#include <stdio.h>
+
 #include <FL/Fl.H>
-#include "FL/Fl_Value_SliderX.H"
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Counter.H>
-#include "FL/Fl_Arc_Dial.H"
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Menu_.H>
-#include "FL/Fl_Light_Button.H"
+#include <FL/Fl_Light_Button.H>
 #include "FL/Boxtypes.H"
 #include <FL/fl_draw.H>
+#include "FL/Fl_Arc_Dial.H"
 #include "FL/Fl_Labelpad_Group.H"
-#include <stdio.h>
+#include "FL/Fl_Value_SliderX.H"
+#include "FL/test_press.H"
+#include "FL/menu_popup.H"
+
 #include "Engine/Engine.H"
 #include "Chain.H"
 
@@ -39,6 +45,38 @@
 
 const float CONTROL_UPDATE_FREQ = 0.1f;
 
+
+
+Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 50, 100, name() )
+{
+//    label( "" );
+    box( FL_NO_BOX );
+
+    _pad = true;
+    control = 0;
+    control_value =0.0f;
+
+    add_port( Port( this, Port::OUTPUT, Port::CONTROL ) );
+
+    _mode = GUI;
+
+//    mode( GUI );
+//    mode( CV );
+//    configure_inputs( 1 );
+
+    end();
+
+    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
+
+    log_create();
+
+}
+
+Controller_Module::~Controller_Module ( )
+{
+    Fl::remove_timeout( update_cb, this );
+    log_destroy();
+}
 
 
 void
@@ -107,72 +145,39 @@ Controller_Module::set ( Log_Entry &e )
 
 
 
-Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 50, 100, name() )
-{
-//    label( "" );
-    box( FL_NO_BOX );
-
-    _pad = true;
-    control = 0;
-    control_value =0.0f;
-
-    add_port( Port( this, Port::OUTPUT, Port::CONTROL ) );
-
-    _mode = GUI;
-
-//    mode( GUI );
-//    mode( CV );
-//    configure_inputs( 1 );
-
-    end();
-
-    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
-
-    log_create();
-
-}
-
-Controller_Module::~Controller_Module ( )
-{
-    Fl::remove_timeout( update_cb, this );
-    log_destroy();
-}
-
-
-
 void
-Controller_Module::update_cb ( void *v )
+Controller_Module::mode ( Mode m )
 {
-    ((Controller_Module*)v)->update_cb();
-}
 
-void
-Controller_Module::update_cb ( void )
-{
-    Fl::repeat_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
-
-    if ( control && control_output[0].connected() )
-        control->value(control_value);
-}
-
-void
-Controller_Module::cb_handle ( Fl_Widget *w, void *v )
-{
-    ((Controller_Module*)v)->cb_handle( w );
-}
-
-void
-Controller_Module::cb_handle ( Fl_Widget *w )
-{
-    control_value = ((Fl_Valuator*)w)->value();
-    if ( control_output[0].connected() )
+    if( mode() != CV && m == CV )
     {
-        control_output[0].control_value( control_value );
-        Port *p = control_output[0].connected_port();
-        Module *m = p->module();
+        if ( control_output[0].connected() )
+        {
+            chain()->engine()->lock();
 
-        m->handle_control_changed( p );
+            Port *p = control_output[0].connected_port();
+
+            JACK::Port po( chain()->engine(), JACK::Port::Input, p->name(), 0, "CV" );
+
+            if ( po.valid() )
+            {
+                jack_input.push_back( po );
+            }
+
+            chain()->engine()->unlock();
+        }
     }
+    else if ( mode() == CV && m == GUI )
+    {
+        chain()->engine()->lock();
+
+        jack_input.back().shutdown();
+        jack_input.pop_back();
+
+        chain()->engine()->unlock();
+    }
+
+    _mode = m ;
 }
 
 void
@@ -221,9 +226,6 @@ Controller_Module::connect_to ( Port *p )
         o->value(1);
         o->textsize(14);
 
-//        o->type( FL_VERTICAL );
-//        o->type(1);
-
         if ( p->hints.ranged )
         {
             o->minimum( p->hints.maximum );
@@ -244,8 +246,6 @@ Controller_Module::connect_to ( Port *p )
             }
 
             o->box( FL_BURNISHED_OVAL_BOX );
-//            o->box( FL_OVAL_BOX );
-//            o->type( FL_FILL_DIAL );
             o->color( fl_darker( fl_darker( FL_GRAY ) ) );
             o->selection_color( FL_WHITE );
             o->value( p->control_value() );
@@ -273,6 +273,8 @@ Controller_Module::connect_to ( Port *p )
     }
 }
 
+
+
 void
 Controller_Module::resize ( int X, int Y, int W, int H )
 {
@@ -284,6 +286,40 @@ Controller_Module::resize ( int X, int Y, int W, int H )
     }
 }
 
+void
+Controller_Module::update_cb ( void *v )
+{
+    ((Controller_Module*)v)->update_cb();
+}
+
+void
+Controller_Module::update_cb ( void )
+{
+    Fl::repeat_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
+
+    if ( control && control_output[0].connected() )
+        control->value(control_value);
+}
+
+void
+Controller_Module::cb_handle ( Fl_Widget *w, void *v )
+{
+    ((Controller_Module*)v)->cb_handle( w );
+}
+
+void
+Controller_Module::cb_handle ( Fl_Widget *w )
+{
+    control_value = ((Fl_Valuator*)w)->value();
+    if ( control_output[0].connected() )
+    {
+        control_output[0].control_value( control_value );
+        Port *p = control_output[0].connected_port();
+        Module *m = p->module();
+
+        m->handle_control_changed( p );
+    }
+}
 
 void
 Controller_Module::menu_cb ( Fl_Widget *w, void *v )
@@ -305,9 +341,6 @@ Controller_Module::menu_cb ( const Fl_Menu_ *m )
     else if ( ! strcmp( picked, "Mode/Control Voltage" ) )
         mode( CV );
 }
-
-#include "FL/test_press.H"
-#include "FL/menu_popup.H"
 
 /** build the context menu for this control */
 Fl_Menu_Button &
@@ -357,43 +390,9 @@ Controller_Module::handle ( int m )
 
 
 
-void
-Controller_Module::mode ( Mode m )
-{
-
-    if( mode() != CV && m == CV )
-    {
-        if ( control_output[0].connected() )
-        {
-            chain()->engine()->lock();
-
-//        char name[256];
-//        snprintf( name, sizeof( name ), "%s-CV", p->name() );
-
-            Port *p = control_output[0].connected_port();
-
-            JACK::Port po( chain()->engine(), JACK::Port::Input, p->name(), 0, "CV" );
-
-            if ( po.valid() )
-            {
-                jack_input.push_back( po );
-            }
-
-            chain()->engine()->unlock();
-        }
-    }
-    else if ( mode() == CV && m == GUI )
-    {
-        chain()->engine()->lock();
-
-        jack_input.back().shutdown();
-        jack_input.pop_back();
-
-        chain()->engine()->unlock();
-    }
-
-    _mode = m ;
-}
+/**********/
+/* Engine */
+/**********/
 
 void
 Controller_Module::process ( void )

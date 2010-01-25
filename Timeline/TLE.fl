@@ -24,8 +24,6 @@ comment {//
 
 decl {const float STATUS_UPDATE_FREQ = 0.5f;} {} 
 
-decl {\#include "LASH_Engine.H"} {} 
-
 decl {\#include "Fl_Menu_Settings.H"} {} 
 
 decl {\#include "Timeline.H"} {} 
@@ -65,9 +63,6 @@ decl {extern char project_display_name[256];} {global
 } 
 
 decl {extern char *user_config_dir;} {global
-} 
-
-decl {extern LASH_Engine *lash;} {global
 } 
 
 class TLE {open
@@ -694,8 +689,8 @@ ab.run();}
           code0 {\#include "FL/Fl_Blinker.H"}
           class Fl_Blinker
         }
-        Fl_Button lash_blinker {
-          label LASH
+        Fl_Button sm_blinker {
+          label SM
           xywh {695 30 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 75 selection_color 86 labelfont 2 labelcolor 39 deactivate
           code0 {\#include "FL/Fl_Blinker.H"}
           class Fl_Blinker
@@ -812,8 +807,10 @@ if ( engine->zombified() && ! zombie )
 
 solo_blinker->value( Track::soloing() );
 rec_blinker->value( transport->rolling && transport->rec_enabled() );
-lash_blinker->value( lash->enabled() );
-selected_blinker->value( timeline->nselected() );} {}
+sm_blinker->value( timeline->session_manager_name() != NULL );
+sm_blinker->tooltip( timeline->session_manager_name() );
+selected_blinker->value( timeline->nselected() );} {selected
+    }
   }
   Function {update_cb( void *v )} {open private return_type {static void}
   } {

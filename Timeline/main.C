@@ -43,7 +43,6 @@
 #include "../FL/Boxtypes.H"
 
 #include "Project.H"
-#include "LASH_Engine.H"
 #include "Transport.H"
 #include "Engine/Engine.H"
 
@@ -52,7 +51,6 @@
 Engine *engine;
 Timeline *timeline;
 Transport *transport;
-LASH_Engine *lash;
 TLE *tle;
 
 /* TODO: put these in a header */
@@ -146,17 +144,6 @@ main ( int argc, char **argv )
     /* always start stopped (please imagine for me a realistic
      * scenario requiring otherwise */
     transport->stop();
-
-    MESSAGE( "Initializing LASH" );
-    lash = new LASH_Engine;
-
-    if ( argc > 1 && ! strcmp( argv[1], "--no-lash" ) )
-    {
-        MESSAGE( "--no-lash specified on command-line: LASH disabled." );
-        shift( argv, &argc, 1 );
-    }
-    else
-        lash->init( jack_name, APP_TITLE, &argc, &argv );
 
     MESSAGE( "Starting GUI" );
 

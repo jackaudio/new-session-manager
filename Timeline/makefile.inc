@@ -12,7 +12,7 @@ Timeline_SRCS:=$(Timeline_SRCS:.fl=.C)
 Timeline_SRCS:=$(sort $(Timeline_SRCS))
 Timeline_OBJS:=$(Timeline_SRCS:.C=.o)
 
-Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS) $(LASH_LIBS)
+Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS)
 
 Timeline/timeline: $(Timeline_OBJS) FL
 	@ echo -n Linking timeline...

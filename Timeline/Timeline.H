@@ -145,6 +145,8 @@ public:
 
     void update_tempomap ( void );
 
+    const char *session_manager_name ( void ) { return NULL; }
+
     nframes_t fpp ( void ) const { return 1 << _fpp; }
     void range ( nframes_t start, nframes_t length );
     nframes_t length ( void ) const;

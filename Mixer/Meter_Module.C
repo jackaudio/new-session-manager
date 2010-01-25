@@ -24,6 +24,7 @@
 #include <FL/Fl_Scalepack.H>
 #include "JACK/Port.H"
 #include <math.h>
+#include "FL/test_press.H"
 
 
 
@@ -69,6 +70,8 @@ Meter_Module::~Meter_Module ( )
 
     log_destroy();
 }
+
+
 
 void
 Meter_Module::update_cb ( void *v )
@@ -152,8 +155,22 @@ Meter_Module::configure_inputs ( int n )
 int
 Meter_Module::handle ( int m )
 {
-    return Fl_Group::handle( m );
+    switch ( m )
+    {
+        case FL_PUSH:
+        {
+            if ( test_press( FL_BUTTON1 ) )
+            {
+                /* don't let Module::handle eat our click */
+                return Fl_Group::handle( m );
+            }
+            return Module::handle( m );
+        }
+    }
+
+    return Module::handle( m );
 }
+
 
 
 static float

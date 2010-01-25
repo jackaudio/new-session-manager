@@ -38,6 +38,8 @@
 
 const float CONTROL_UPDATE_FREQ = 0.1f;
 
+#include "FL/test_press.H"
+
 
 
 
@@ -198,7 +200,20 @@ Meter_Indicator_Module::connect_to ( Port *p )
 int
 Meter_Indicator_Module::handle ( int m )
 {
-    return Fl_Group::handle( m );
+    switch ( m )
+    {
+        case FL_PUSH:
+        {
+            if ( test_press( FL_BUTTON1 ) )
+            {
+                /* don't let Module::handle eat our click */
+                return Fl_Group::handle( m );
+            }
+            return Module::handle( m );
+        }
+    }
+
+    return Module::handle( m );
 }
 
 

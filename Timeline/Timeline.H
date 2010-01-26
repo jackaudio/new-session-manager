@@ -124,6 +124,7 @@ public:
 
     static bool draw_with_measure_lines;
     static snap_e snap_to;
+    static bool snapping_on_hold;
     static bool snap_magnetic;
     static bool follow_playhead;
     static bool center_playhead;

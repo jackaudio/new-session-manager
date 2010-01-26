@@ -67,6 +67,7 @@
 
 bool Timeline::draw_with_measure_lines = true;
 Timeline::snap_e Timeline::snap_to = Bars;
+bool Timeline::snapping_on_hold = false;
 bool Timeline::snap_magnetic = true;
 bool Timeline::follow_playhead = true;
 bool Timeline::center_playhead = true;
@@ -597,7 +598,7 @@ prev_next_line_cb ( nframes_t frame, const BBT &bbt, void *arg )
 bool
 Timeline::nearest_line ( nframes_t *frame, bool snap ) const
 {
-    if ( snap && None == Timeline::snap_to )
+    if ( snap && ( snapping_on_hold || None == Timeline::snap_to ) )
         return false;
 
     nframes_t when = *frame;
@@ -1192,11 +1193,21 @@ Timeline::handle ( int m )
                 range = true;
                 return 1;
             }
+            else if ( Fl::event_key() == 's' )
+            {
+                snapping_on_hold = true;
+                return 1;
+            }
             return 0;
         case FL_KEYUP:
             if ( Fl::event_key() == 'r' )
             {
                 range = false;
+                return 1;
+            }
+            else if ( Fl::event_key() == 's' )
+            {
+                snapping_on_hold = false;
                 return 1;
             }
             return 0;

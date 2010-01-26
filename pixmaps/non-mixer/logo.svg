@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.47 r22583"
-   sodipodi:docname="non-mixer-logo.svg">
+   sodipodi:docname="logo.svg">
   <defs
      id="defs4">
     <linearGradient
@@ -473,7 +473,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="176.68231"
+     inkscape:cx="110.25374"
      inkscape:cy="67.042088"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -491,7 +491,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -514,7 +514,7 @@
            height="312.14285"
            x="441.42856"
            y="234.50504" /></flowRegion><flowPara
-         id="flowPara2856"></flowPara></flowRoot>    <path
+         id="flowPara2856" /></flowRoot>    <path
        sodipodi:type="arc"
        style="opacity:0.92941176;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.20000005;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
        id="path6508"
@@ -522,17 +522,17 @@
        sodipodi:cy="282.12088"
        sodipodi:rx="12.626906"
        sodipodi:ry="0.50507629"
-       d="m 383.85795,282.12088 a 12.626906,0.50507629 0 1 1 -25.25381,0 12.626906,0.50507629 0 1 1 25.25381,0 z"
+       d="m 383.85795,282.12088 c 0,0.27895 -5.65325,0.50508 -12.6269,0.50508 -6.97365,0 -12.62691,-0.22613 -12.62691,-0.50508 0,-0.27895 5.65326,-0.50508 12.62691,-0.50508 6.97365,0 12.6269,0.22613 12.6269,0.50508 z"
        transform="matrix(0.30012437,0,0,0.30012437,-49.066035,895.4161)" />
     <path
        sodipodi:type="arc"
-       style="opacity:0.92941176;fill:#4d4d4d;fill-opacity:1;stroke:#000000;stroke-width:1.20000005;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;filter:url(#filter6362)"
+       style="opacity:0.92941176000000003;fill:#4d4d4d;fill-opacity:1;stroke:#000000;stroke-width:1.20000005000000010;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;filter:url(#filter6362)"
        id="path6360"
        sodipodi:cx="404.5661"
        sodipodi:cy="343.74017"
        sodipodi:rx="226.77925"
        sodipodi:ry="234.86047"
-       d="m 631.34535,343.74017 a 226.77925,234.86047 0 1 1 -453.5585,0 226.77925,234.86047 0 1 1 453.5585,0 z"
+       d="m 631.34535,343.74017 c 0,129.70986 -101.53253,234.86048 -226.77925,234.86048 -125.24672,0 -226.77925,-105.15062 -226.77925,-234.86048 0,-129.70985 101.53253,-234.86047 226.77925,-234.86047 125.24672,0 226.77925,105.15062 226.77925,234.86047 z"
        transform="matrix(0.26857896,0,0,0.26857896,-44.689287,896.40644)" />
     <g
        id="g6215"
@@ -675,26 +675,26 @@
     </g>
     <path
        sodipodi:type="arc"
-       style="opacity:0.85490196;fill:url(#radialGradient6506);fill-opacity:1;stroke:none;filter:url(#filter6514)"
+       style="opacity:0.56470588;fill:url(#radialGradient6506);fill-opacity:1;stroke:none;filter:url(#filter6514)"
        id="path6480"
        sodipodi:cx="351.53308"
        sodipodi:cy="315.4559"
        sodipodi:rx="159.6041"
        sodipodi:ry="190.41376"
-       d="m 511.13718,315.4559 a 159.6041,190.41376 0 1 1 -319.20819,0 159.6041,190.41376 0 1 1 319.20819,0 z"
+       d="m 511.13718,315.4559 c 0,105.16262 -71.45719,190.41376 -159.6041,190.41376 -88.14691,0 -159.60409,-85.25114 -159.60409,-190.41376 0,-105.16261 71.45718,-190.41376 159.60409,-190.41376 88.14691,0 159.6041,85.25115 159.6041,190.41376 z"
        transform="matrix(0.17869573,0,0,0.12175577,-15.77816,930.76469)" />
     <text
        xml:space="preserve"
        style="font-size:43.10160828px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:center;line-height:100%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Westminster;-inkscape-font-specification:Westminster Medium"
-       x="86.535927"
-       y="763.60779"
+       x="81.228783"
+       y="763.87213"
        id="text3222"
        sodipodi:linespacing="100%"
        transform="scale(0.74024198,1.3509096)"><tspan
          sodipodi:role="line"
          id="tspan3224"
-         x="86.535927"
-         y="763.60779"
+         x="81.228783"
+         y="763.87213"
          style="font-size:55.41635132px">MIXER</tspan></text>
     <text
        xml:space="preserve"

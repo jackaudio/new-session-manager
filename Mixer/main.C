@@ -27,9 +27,9 @@
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Tooltip.H>
 #include <FL/fl_ask.H>
+#include <FL/Fl_Shared_Image.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Boxtypes.H>
-
 #include "util/Thread.H"
 #include "util/debug.h"
 
@@ -93,6 +93,8 @@ main ( int argc, char **argv )
     Fl_Tooltip::hoverdelay( 0.1f );
 
     Fl::visible_focus( 0 );
+
+    fl_register_images();
 
     LOG_REGISTER_CREATE( Mixer_Strip );
     LOG_REGISTER_CREATE( Chain );

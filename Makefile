@@ -124,7 +124,7 @@ install: all
 	@ mkdir -p $(SYSTEM_PATH)/non-mixer
 	@ mkdir -p $(PIXMAP_PATH)/non-mixer
 	@ cp pixmaps/non-mixer/*.png $(PIXMAP_PATH)/non-mixer
-	@ cp pixmaps/non-daw/*.png $(PIXMAP_PATH)non-daw
+	@ cp pixmaps/non-daw/*.png $(PIXMAP_PATH)/non-daw
 	@ $(MAKE) -s -C doc install
 	@ echo "$(DONE)"
 ifneq ($(USE_DEBUG),yes)

@@ -607,7 +607,7 @@ timeline->redraw();}
           }
           MenuItem {} {
             label {&About}
-            callback {About_Dialog ab;
+            callback {About_Dialog ab( PIXMAP_PATH "/non-daw/logo.png" );
 
 ab.run();}
             xywh {0 0 40 25}

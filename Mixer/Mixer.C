@@ -176,7 +176,7 @@ void Mixer::cb_menu(Fl_Widget* o) {
     }
     else if ( ! strcmp( picked, "&Help/&About" ) )
     {
-        About_Dialog ab;
+        About_Dialog ab( PIXMAP_PATH "/non-mixer/logo.png" );
 
         ab.run();
     }

@@ -1,17 +1,17 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0110 
-header_name {.H} 
+version 1.0110
+header_name {.H}
 code_name {.C}
-decl {\#include <FL/Fl.H>} {} 
+decl {\#include <FL/Fl.H>} {}
 
-decl {\#include <Fl/Fl_Shared_Image.H>} {} 
+decl {\#include <Fl/Fl_Shared_Image.H>} {}
 
-decl {\#include <Fl/filename.H>} {} 
+decl {\#include <Fl/filename.H>} {}
 
 Function {open_url( const char *url )} {open return_type void
 } {
   code {\#if ! ( FL_MAJOR_VERSION >= 1 && FL_MINOR_VERSION >= 1 && FL_PATCH_VERSION >= 8 )
-	
+
 	// FIXME: got a better idea?
 	char cmd[256];
 	snprintf( cmd, sizeof( cmd ), "x-www-browser '%s' &", url );
@@ -19,12 +19,12 @@ Function {open_url( const char *url )} {open return_type void
 \#else
 	fl_open_uri( url );
 \#endif} {}
-} 
+}
 
 class About_Dialog {open
 } {
-  Function {About_Dialog()} {} {
-    code {make_window();} {}
+  Function {About_Dialog( const char *logo_filename )} {} {
+    code { make_window( logo_filename );} {}
   }
   Function {run()} {return_type void
   } {
@@ -32,10 +32,10 @@ class About_Dialog {open
 
 while ( window->shown() )
 	Fl::wait();
-	
+
 delete window;} {}
   }
-  Function {make_window()} {open private
+  Function {make_window( const char *logo_filename )} {open private
   } {
     Fl_Window window {
       label About
@@ -88,7 +88,11 @@ You should have received a copy of the GNU General Public License along with thi
       Fl_Box logo_box {
         label VERSION
         private xywh {25 20 445 180} box ROUNDED_BOX color 48 labelfont 1 labelsize 18 align 16
-        code0 {o->image( Fl_Shared_Image::get( INSTALL_PREFIX "/share/pixmaps/non-daw/logo.png" ) );}
+        code0 {
+        Fl_Shared_Image *im = Fl_Shared_Image::get( logo_filename );
+        float iA = im->h() / im->w();
+        int oH = o->h() - 18;
+        o->image( Fl_Shared_Image::get( logo_filename, iA * oH, oH ) ); }
         code1 {o->label( VERSION );}
       }
       Fl_Return_Button {} {
@@ -107,4 +111,4 @@ You should have received a copy of the GNU General Public License along with thi
       }
     }
   }
-} 
+}

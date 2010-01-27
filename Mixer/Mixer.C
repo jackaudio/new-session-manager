@@ -367,9 +367,15 @@ Mixer::rows ( int n )
     int sh;
 
     if ( n > 1 )
+    {
         sh = (scroll->h() / n) - (mixer_strips->vspacing() * (n - 1));
+        mixer_strips->flow( true );
+    }
     else
+    {
         sh = (scroll->h() - 18) / n;
+        mixer_strips->flow( false );
+    }
 
     if ( sh < Mixer_Strip::min_h() )
     {

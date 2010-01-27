@@ -26,6 +26,7 @@ class Fl_Flowpack : public Fl_Group
     int _hspacing;
     int _vspacing;
     int _max_width;
+    bool _flow;
 
 public:
 
@@ -34,6 +35,7 @@ public:
         {
             resizable( 0 );
             _max_width = _hspacing = _vspacing = 0;
+            _flow = 0;
         }
 
     virtual ~Fl_Flowpack ( )
@@ -47,6 +49,9 @@ public:
 
     void hspacing ( int h ) { _hspacing = h; }
     int hspacing ( void ) const { return _hspacing; };
+
+    bool flow ( void ) const { return _flow; }
+    void flow ( bool v ) { _flow = v; }
 
     void
     add ( Fl_Widget *w )
@@ -100,7 +105,7 @@ public:
 
                 H = o->h() > H ? o->h() : H;
 
-                if ( X + o->w() >= W )
+                if ( _flow && X + o->w() >= W )
                 {
 
                     Y += H + _vspacing;

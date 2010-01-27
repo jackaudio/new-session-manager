@@ -16,7 +16,8 @@
   inter-application audio I\/O and the FLTK GUI toolkit for a fast and
   lightweight user interface.
 
-  Please see the #(url,MANUAL.html,manual) for more information.
+  Please see the #(url,non-daw%(slash)MANUAL.html,Non DAW Manual) and
+  #(url,non-mixer%(slash)MANUAL.html,Non Mixer Manual) for more information.
 
 :: What it is not
 
@@ -44,7 +45,7 @@
 * Tempo and time signature mapping, with editing operations being closely aligned to this map.
 
   Since Non uses JACK for IO, some things traditionally considered to be within
-  the scope of a monolithic DAW can be pared out:
+  the scope of a monolithic DAW can be pared out into JACK and Non Mixer:
 
 * Signal routing
 * Audio mixing
@@ -77,7 +78,7 @@
 :: Features
 
   Non-DAW shares many features in common with other, similar projects. However,
-  Non-DAW's unique architecture permits suprising new functionality.
+  Non-DAW's unique architecture permits surprising new functionality.
 
 ::: Journaled Projects
 
@@ -161,11 +162,6 @@
   are drawn. During playback they affect the time\/tempo of the JACK transport
   so that other programs, like the Non-Sequencer, can follow along in sync.
 
-#::: External control
-#
-#  MIDI and OSC control allows mixer and automation to be controlled by eg. a
-#  BCF2000.
-
 :: Components
 
   The Mixer and the Timeline are separate programs, connected through JACK.
@@ -183,8 +179,8 @@
 	= captures. These sequences are referred to as /Takes/. Previous
 	= takes may be swapped with the current sequence and all takes
 	= may be shown on screen at once for easy splicing. Each track
-	= can also have any number of Control Seqeunces attached to it,
-	= in which case all control seqeunces generate control output
+	= can also have any number of Control Sequences attached to it,
+	= in which case all control sequences generate control output
 	= unless disconnected. The height of a track may be adjusted
 	= and a track can be muted, soloed, or record-enabled.
 = Regions
@@ -214,108 +210,40 @@
 	= sequences associated with it, and these sequences can contain
 	= a free mix of annotation points and annotation regions.
 
-#::: Mixer
-#
-#  Mix data is stored separately from timeline data and is not journaled. This
-#  makes it possible to do multiple mixes of a single project and switch
-#  between them at will.
-#
-#  Since the Mixer is an entirely separate unit, you may use any JACK capable
-#  mixer client you want instead of, or in myriad combination with, the Non-DAW
-#  Mixer. The one called LiveMix works well, but lacks many features of Non's
-#  mixer.  All operations on the mixer affect the current mix set state only
-#  and are not journaled.
-#
-#  The following data belong to the mixer:
-#
-#* track configuration (number of input channels, number of mix channels)
-#* track gain\/panning (controllable via automation)
-#* plugins (controllable via automation)
-#
-#:::: Panning
-#
-#  The panning system in Non is different from other DAWs. In other DAWs, like
-#  Ardour, each track has a number of inputs and a (larger) number of outputs
-#  and (stereo only) panning is performed by the traditional, but inferior,
-#  intensity method.
-#
-#  In Non, each track has a panner, yes, but this does not actually affect the
-#  track's output. The actual 'panning' (more properly, spatialization) is
-#  performed for all tracks at the master output stage. Outputs from all tracks
-#  are encoded into something similar to Ambisonic B-Format, using the spacial
-#  locations from each track panner. This signal is then (optionally) decoded
-#  to a specific speaker layout form the master output signals. Rendering can
-#  be done either to the universal .amb format or any fixed configuration of
-#  speakers (Quad, 5.1, 7.1, 10.1). A .amb file contains a complete soundfield
-#  and can later be reduced to any fixed layout format, or even other types of
-#  Ambisonic encodings.
-#
-#  What this means is that, even for stereo mixes, the soundfield produced by
-#  the output will be more stable, wider, and more realistic than anything
-#  intensity panning can produce. It also means that moving a stereo mix to
-#  surround is quite straight forward, and that surround mixes produced with
-#  Non will be future-proof and far superior to anything achievable with 2D
-#  intensity panning.  This single feature clearly sets Non-DAW apart from
-#  other (even proprietary) offerings.
-#
-#::: Router
-#
-#  The router is simply an interface to the JACK port routing. It's a slightly
-#  more practical than what you get from QJackCtl or Patchage.
-#
-#* jack port routing.
-#
-#::: Plugin Host
-#
-#  Plugins are handled differently in Non-DAW versus other DAWs. The author has
-#  enough first hand experience with LADSPA to know that plugins cannot be
-#  trusted in a sensitive process. They fail, they crash, they stop responding.
-#  For a DAW like Ardour, which uses plugins as, well, plugins, this means that
-#  a single malfunctioning plugin can bring your entire project to its
-#  knees--this is clearly an unacceptable interruption of the creative process.
-#
-#  Aside from these stability issues, plugins present a conceptual problem.
-#  They require each 'host' to implement a routing and control system similar,
-#  but inferior to, what JACK already provides to fully fledged clients.
-#  Likewise, fully fledged clients may display any GUI they like--a long
-#  standing gripe in the LAD community being the lack of any provision for
-#  wood-grain pixmaps, fan-sliders, and antialiased knobs in the LADSPA
-#  standard.
-#
-#  Until such time as LAD sees the light on this and other issues requiring the
-#  application of thought and reason (don't hold your breath), Non will
-#  continue to employ the following compromise:
-#
-#  Plugins are hosted externally, in a dedicated host process, and routing
-#  between them is accomplished via the JACK connection graph. In this
-#  dedicated plugin host, we enforce some saner forms of interoperability than
-#  the hoards of LAD could ever conceive. We give each plugin the appropriate
-#  input and output ports, and define OSC control points for each plugin
-#  parameter. We save and restore settings (without resorting to the patron
-#  saint of idiots; XML).
-#
-#  Using plugins in this way has the following advantage/disadvantage:
-#
-#  Non-DAW may create more JACK ports than something like Ardour. *But*, Non
-#  eliminates the need for stupid, buggy, irrational in-host routing such as
-#  the rats-nest of connections one gets with sends/inserts in something like
-#  Ardour.
-#
-#  Truthfully, it is absurd for a JACK based DAW to re-implement nearly all of
-#  JACK routing in-process simply for the sake of LADSPA.
-#-----
-#
-#: Notes
-#
-#* Why not use SpiralSynthModular (SSM) as our plugin host?
-#	. In order for this to work SSM would need to be modified to
-#	. support the following: LASH, OSC control of plugins, and just
-#	. generally work with Jack. The OSS driver could be removed
-#	. entirely. And the GUI optimized in order to make running
-#	. multiple instances less taxing. Alternatively, the GUI could
-#	. be restructured to allow a single SSM to host the plugins for
-#	. all tracks.
+::: Mixer
 
+  The Non Mixer is a stand-alone application. It is a complement to Non
+  DAW, but neither program requires the other in order to function.
+
+  Implementing the mixer functionality in a separate program, connected
+  to Non-DAW via JACK presents a number of advantages:
+
+* Eliminates the need for an internal connection management interface
+* Improves overall system stability
+* Increases parallelism (utilizes multiple cores)
+* Adds flexibility
+* Eliminates the need for cumbersome concepts and interfaces such as 'sends', 'groups', 'inserts' and 'busses'.
+
+  Multiple instances of the mixer can be run together in order to
+  organize groups of channels and manage them with your preferred
+  window manager.
+
+  Each mixer strip runs as a separate JACK client. In JACK2, this can
+  translates into the DSP workload being spread across multiple CPU
+  cores.
+
+  Since the Mixer is an entirely separate unit, you may use any JACK capable
+  mixer client you want instead of, or in myriad combination with, the Non-DAW
+  Mixer. The one called LiveMix works well, but lacks many features of Non's
+  mixer.  All operations on the mixer affect the current mix set state only
+  and are not journaled.
+
+  The mixer's design is modular, with all DSP occurring in discrete
+  modules. One module hosts LADSPA plugins and the mixer is capable of
+  receiving control (automation) data for any module parameter from
+  Non-DAW (or another program) via JACK.
+
+  Control data is expressed as Control Voltage (CV).
 
 ; What does freedom have to do with this software?
 
@@ -361,11 +289,12 @@
 
 ; Requirements
 
-  The following libraries are required to build Non-DAW
+  The following libraries are required to build Non DAW and Non Mixer
 
 * FLTK >= 1.1.7 (with `fluid`)
 * JACK >= 0.103.0
 * libsndfile >= 0.18.0
+* liblrdf >= 0.1.0
 
   The following are optional:
 
@@ -381,4 +310,3 @@
   #(email,non-daw-request@lists.tuxfamily.org).
 
   You can also browse the #(url,http:\/\/listengine.tuxfamily.org\/lists.tuxfamily.org\/non-daw\/,archive).
-

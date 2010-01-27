@@ -35,9 +35,9 @@ config:
 
 -include .config
 
-export SYSTEM_PATH:=$(prefix)/share/non-daw/
-export DOCUMENT_PATH:=$(prefix)/share/doc/non-daw/
-export PIXMAP_PATH:=$(prefix)/share/pixmaps/non-daw/
+export SYSTEM_PATH:=$(prefix)/share/
+export DOCUMENT_PATH:=$(prefix)/share/doc/
+export PIXMAP_PATH:=$(prefix)/share/pixmaps/
 
 # a bit of a hack to make sure this runs before any rules
 ifneq ($(CALCULATING),yes)
@@ -119,9 +119,12 @@ install: all
 	@ echo -n "Installing..."
 	@ install Timeline/timeline $(prefix)/bin/non-daw
 	@ install Mixer/mixer $(prefix)/bin/non-mixer
-	@ mkdir -p $(SYSTEM_PATH)
-	@ mkdir -p $(PIXMAP_PATH)
-	@ cp pixmaps/*.png $(PIXMAP_PATH)
+	@ mkdir -p $(SYSTEM_PATH)/non-daw
+	@ mkdir -p $(PIXMAP_PATH)/non-daw
+	@ mkdir -p $(SYSTEM_PATH)/non-mixer
+	@ mkdir -p $(PIXMAP_PATH)/non-mixer
+	@ cp pixmaps/non-mixer/*.png $(PIXMAP_PATH)/non-mixer
+	@ cp pixmaps/non-daw/*.png $(PIXMAP_PATH)non-daw
 	@ $(MAKE) -s -C doc install
 	@ echo "$(DONE)"
 ifneq ($(USE_DEBUG),yes)

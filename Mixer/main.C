@@ -71,8 +71,10 @@ ensure_dirs ( void )
 
 #include <signal.h>
 
-static void cb_main ( Fl_Widget *w, void *v )
+static void cb_main ( Fl_Double_Window *o, void *v )
 {
+    if ( Fl::event_key() != FL_Escape )
+        o->hide();
 }
 
 int
@@ -121,7 +123,7 @@ main ( int argc, char **argv )
         }
         o->end();
 
-        o->callback( cb_main, main_window );
+        o->callback( (Fl_Callback*)cb_main, main_window );
         o->show( argc, argv );
     }
 

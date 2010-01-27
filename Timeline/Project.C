@@ -124,7 +124,7 @@ Project::write_info ( void )
 }
 
 bool
-Project::read_info ( int *version, nframes_t *sample_rate, char **creation_date )
+Project::read_info ( int *version, nframes_t *sample_rate, char **creation_date, char **created_by )
 {
     FILE *fp;
 
@@ -137,6 +137,7 @@ Project::read_info ( int *version, nframes_t *sample_rate, char **creation_date 
     *version = 0;
     *sample_rate = 0;
     *creation_date = 0;
+    *created_by = 0;
 
     char *name, *value;
 
@@ -150,6 +151,8 @@ Project::read_info ( int *version, nframes_t *sample_rate, char **creation_date 
             *version = atoi( value );
         else if ( ! strcmp( name, "created on" ) )
             *creation_date = strdup( value );
+        else if ( ! strcmp( name, "created by" ) )
+            *created_by = strdup( value );
 
         free( name );
         free( value );
@@ -248,8 +251,12 @@ Project::open ( const char *name )
     int version;
     nframes_t rate;
     char *creation_date;
+    char *created_by;
 
-    if ( ! read_info( &version, &rate, &creation_date ) )
+    if ( ! read_info( &version, &rate, &creation_date, &created_by ) )
+        return E_INVALID;
+
+    if ( strncmp( created_by, APP_TITLE, strlen( APP_TITLE ) ) )
         return E_INVALID;
 
     if ( version != PROJECT_VERSION )

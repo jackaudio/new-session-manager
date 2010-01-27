@@ -32,7 +32,7 @@ class Project
     static char _created_on[40];
 
     static bool write_info ( void );
-    static bool read_info ( int *version, char **creation_date );
+    static bool read_info ( int *version, char **creation_date, char **created_by );
     static void set_name ( const char *name );
     static const char *_errstr[];
 

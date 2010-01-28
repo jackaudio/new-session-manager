@@ -32,6 +32,9 @@ menu_popup ( Fl_Menu_ *m, int X, int Y )
         m->value( r );
         if ( r->callback() )
             r->do_callback( static_cast<Fl_Widget*>(m) );
+        else if ( m->callback() )
+            m->do_callback( static_cast<Fl_Widget*>(m), m->user_data() );
+
         return true;
     }
 

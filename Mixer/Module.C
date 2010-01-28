@@ -19,6 +19,7 @@
 
 #include "Module.H"
 #include <FL/fl_draw.H>
+#include <FL/fl_ask.H>
 
 #include <stdlib.h>
 #include <string.h>
@@ -32,6 +33,10 @@
 #include "Mono_Pan_Module.H"
 #include "Meter_Module.H"
 #include "Plugin_Module.H"
+
+#include <FL/Fl_Menu_Button.H>
+#include "FL/test_press.H"
+#include "FL/menu_popup.H"
 
 
 
@@ -84,6 +89,7 @@ Module::init ( void )
     _editor = 0;
     _chain = 0;
     _instances = 1;
+    _bypass = 0;
     box( FL_UP_BOX );
     labeltype( FL_NO_LABEL );
     clip_children( 1 );
@@ -103,7 +109,7 @@ Module::get ( Log_Entry &e ) const
     }
     e.add( ":is_default", is_default() );
     e.add( ":chain", chain() );
-    e.add( ":active", active() );
+    e.add( ":active", bypass() );
 }
 
 void
@@ -118,7 +124,7 @@ Module::set ( Log_Entry &e )
         if ( ! strcmp( s, ":chain" ) )
         {
             /* This trickiness is because we may need to know the name of
-             our chain before we actually get added to it. */
+               our chain before we actually get added to it. */
             int i;
             sscanf( v, "%X", &i );
             Chain *t = (Chain*)Loggable::find( i );
@@ -147,10 +153,7 @@ Module::set ( Log_Entry &e )
         }
         else if ( ! ( strcmp( s, ":active" ) ) )
         {
-            if ( atoi( v ) )
-                activate();
-            else
-                deactivate();
+            bypass( atoi( v ) );
         }
         else if ( ! strcmp( s, ":chain" ) )
         {
@@ -249,7 +252,7 @@ Module::draw_box ( void )
 
     Fl_Color c = is_default() ? FL_BLACK : color();
 
-    c = active() ? c : fl_inactive( c );
+    c = active() && ! bypass() ? c : fl_inactive( c );
 
     int spacing = w() / instances();
     for ( int i = instances(); i--; )
@@ -285,7 +288,7 @@ Module::draw_label ( void )
 
     Fl_Color c = FL_FOREGROUND_COLOR;
 
-    if ( ! active() )
+    if ( bypass() || ! active() )
         c = FL_BLACK;
 
     fl_color( c );
@@ -320,97 +323,230 @@ Module::draw_label ( void )
         delete[] s;
 }
 
-#include <FL/Fl_Menu_Button.H>
-
-Module *
-Module::pick_module ( void )
+void
+Module::insert_menu_cb ( const Fl_Menu_ *m )
 {
-    Fl_Menu_Button *menu = new Fl_Menu_Button( 0, 0, 400, 400 );
-    menu->type( Fl_Menu_Button::POPUP3 );
+    void * v = m->menu()[ m->value() ].user_data();
 
-//    menu->add( "JACK", 0, 0, (void*)1 );
-    menu->add( "Gain", 0, 0, new unsigned long(-2) );
-    menu->add( "Meter", 0, 0, new unsigned long(-3) );
-    menu->add( "Mono Pan", 0, 0, new unsigned long(-4) );
-
-    Plugin_Module::add_plugins_to_menu( menu );
-
-    menu->popup();
-
-    if ( menu->value() < 0 )
-        return NULL;
-
-    void * v = menu->menu()[ menu->value() ].user_data();
-
-    if ( ! v )
-        return NULL;
-
-    unsigned long id = *((unsigned long *)v);
-
-    switch ( id )
+    if ( v )
     {
-        case -1:
-            return new JACK_Module();
-        case -2:
-            return new Gain_Module();
-        case -3:
-            return new Meter_Module();
-        case -4:
-            return new Mono_Pan_Module();
+        unsigned long id = *((unsigned long *)v);
+
+        Module *mod = NULL;
+
+        switch ( id )
+        {
+            case -1:
+                mod = new JACK_Module();
+                break;
+            case -2:
+                mod = new Gain_Module();
+                break;
+            case -3:
+                mod = new Meter_Module();
+                break;
+            case -4:
+                mod = new Mono_Pan_Module();
+                break;
+            default:
+            {
+                Plugin_Module *m = new Plugin_Module();
+
+                m->load( id );
+
+                mod = m;
+            }
+        }
+
+        if ( mod )
+        {
+            if ( !strcmp( mod->name(), "JACK" ) )
+            {
+                DMESSAGE( "Special casing JACK module" );
+                JACK_Module *jm = (JACK_Module*)mod;
+                jm->chain( chain() );
+                jm->configure_inputs( ninputs() );
+                jm->configure_outputs( ninputs() );
+            }
+
+            if ( ! chain()->insert( this, mod ) )
+            {
+                fl_alert( "Cannot insert this module at this point in the chain" );
+                delete mod;
+                return;
+            }
+
+            redraw();
+        }
+    }
+}
+
+void
+Module::insert_menu_cb ( Fl_Widget *w, void *v )
+{
+    ((Module*)v)->insert_menu_cb( (Fl_Menu_*) w );
+}
+
+void
+Module::menu_cb ( const Fl_Menu_ *m )
+{
+    char picked[256];
+
+    strncpy( picked, m->mvalue()->label(), sizeof( picked ) );
+
+//    m->item_pathname( picked, sizeof( picked ) );
+
+    DMESSAGE( "%s", picked );
+
+    Logger log( this );
+
+    if ( ! strcmp( picked, "Edit Parameters" ) )
+        command_open_parameter_editor();
+    else if ( ! strcmp( picked, "Activate" ) )
+        command_activate();
+    else if ( ! strcmp( picked, "Deactivate" ) )
+        command_deactivate();
+    else if ( ! strcmp( picked, "Remove" ) )
+        command_remove();
+}
+
+void
+Module::menu_cb ( Fl_Widget *w, void *v )
+{
+    ((Module*)v)->menu_cb( (Fl_Menu_*) w );
+}
+
+/** build the context menu */
+Fl_Menu_Button &
+Module::menu ( void ) const
+{
+    static Fl_Menu_Button m( 0, 0, 0, 0, "Module" );
+    static Fl_Menu_Button *insert_menu = NULL;
+
+    if ( ! insert_menu )
+    {
+        insert_menu = new Fl_Menu_Button( 0, 0, 0, 0 );
+
+        insert_menu->add( "Gain", 0, 0, new unsigned long(-2) );
+        insert_menu->add( "Meter", 0, 0, new unsigned long(-3) );
+        insert_menu->add( "Mono Pan", 0, 0, new unsigned long(-4) );
+
+        Plugin_Module::add_plugins_to_menu( insert_menu );
+
+//        menu_set_callback( insert_menu, &Module::insert_menu_cb, (void*)this );
+        insert_menu->callback( &Module::insert_menu_cb, (void*)this );
     }
 
-/*     Plugin_Module::Plugin_Info *pi = (Plugin_Module::Plugin_Info*)v; */
-    Plugin_Module *m = new Plugin_Module();
+    m.clear();
 
-    m->load( id );
+    m.add( "Insert", 0, &Module::menu_cb, (void*)this, 0);
+    m.add( "Insert", 0, &Module::menu_cb, const_cast< Fl_Menu_Item *>( insert_menu->menu() ), FL_SUBMENU_POINTER );
+    m.add( "Edit Parameters", 0, &Module::menu_cb, (void*)this, 0 );
+    m.add( "Activate",   0, &Module::menu_cb, (void*)this, ! bypass() ? FL_MENU_INACTIVE : 0 );
+    m.add( "Deactivate", 0, &Module::menu_cb, (void*)this, bypass() ? FL_MENU_INACTIVE : 0 );
+    m.add( "Remove",    0, &Module::menu_cb, (void*)this );
 
-    for ( const Fl_Menu_Item *mi = menu->menu(); mi->label(); ++mi )
-    {
-        if ( mi->user_data() )
-            delete mi->user_data();
-    }
+//    menu_set_callback( menu, &Module::menu_cb, (void*)this );
+    m.callback( &Module::insert_menu_cb, (void*)this );
 
     return m;
 }
-
-#include "FL/test_press.H"
 
 int
 Module::handle ( int m )
 {
     switch ( m )
     {
-        case FL_PUSH:
+        case FL_KEYBOARD:
         {
-            if ( test_press( FL_BUTTON1 ) )
+            if ( Fl_Group::handle( m ) )
+                return 1;
+
+            if ( test_press( FL_Menu ) )
             {
-                if ( _editor )
-                {
-                    _editor->show();
-                }
-                else if ( ncontrol_inputs() )
-                {
-
-                    DMESSAGE( "Opening module parameters for \"%s\"", label() );
-                    _editor = new Module_Parameter_Editor( this );
-
-                    _editor->show();
-
-                    do { Fl::wait(); }
-                    while ( _editor->shown() );
-
-                    DMESSAGE( "Module parameters for \"%s\" closed",label() );
-
-                    delete _editor;
-
-                    _editor = NULL;
-                }
-
+                menu_popup( &menu(), x(), y() );
                 return 1;
             }
-            break;
+            else
+                return menu().test_shortcut() != 0;
+        }
+        case FL_PUSH:
+        {
+            if ( Fl_Group::handle( m ) )
+                return 1;
+            else if ( test_press( FL_BUTTON3 ) )
+            {
+                menu_popup( &menu() );
+                return 1;
+            }
+            else if ( test_press( FL_BUTTON1 ) )
+            {
+                command_open_parameter_editor();
+                return 1;
+            }
+            else if ( test_press( FL_BUTTON3 | FL_CTRL ) )
+            {
+                command_remove();
+                return 1;
+            }
+
+            return 0;
         }
     }
 
     return Fl_Group::handle( m );
+}
+
+
+/************/
+/* Commands */
+/************/
+
+void
+Module::command_open_parameter_editor ( void )
+{
+    if ( _editor )
+    {
+        _editor->show();
+    }
+    else if ( ncontrol_inputs() )
+    {
+        DMESSAGE( "Opening module parameters for \"%s\"", label() );
+        _editor = new Module_Parameter_Editor( this );
+
+        _editor->show();
+
+        do { Fl::wait(); }
+        while ( _editor->shown() );
+
+        DMESSAGE( "Module parameters for \"%s\" closed",label() );
+
+        delete _editor;
+
+        _editor = NULL;
+    }
+}
+
+void
+Module::command_activate ( void )
+{
+    bypass( false );
+}
+
+void
+Module::command_deactivate ( void )
+{
+    bypass( true );
+}
+
+void
+Module::command_remove ( void )
+{
+    if ( is_default() )
+        fl_alert( "Default modules may not be deleted." );
+    else
+    {
+        chain()->remove( this );
+        Fl::delete_widget( this );
+    }
 }

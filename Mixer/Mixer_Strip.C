@@ -546,28 +546,27 @@ Mixer_Strip::handle ( int m )
     switch ( m )
     {
         case FL_KEYBOARD:
+            if ( Fl_Group::handle( m ) )
+                return 1;
+
             if ( test_press( FL_Menu ) )
             {
                 menu_popup( &menu(), x(), y() );
                 return 1;
             }
             else
-                return menu().test_shortcut() || Fl_Group::handle( m );
+                return menu().test_shortcut() != 0;
         case FL_PUSH:
         {
-            int r;
-            if ( test_press( FL_BUTTON3 ) )
+            if ( Fl_Group::handle( m ) )
+                return 1;
+            else if ( test_press( FL_BUTTON3 ) )
             {
                 menu_popup( &menu() );
-                r = 1;
+                return 1;
             }
-            else
-                r = Fl_Group::handle( m );
 
-            if ( r )
-                take_focus();
-
-            return r;
+            return 0;
         }
         case FL_FOCUS:
             _focused = true;

@@ -78,7 +78,6 @@ public:
     Chain ( );
     virtual ~Chain ( );
 
-    int handle ( int m );
     void draw ( void );
     void resize ( int X, int Y, int W, int H );
 

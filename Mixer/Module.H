@@ -20,8 +20,6 @@
 #pragma once
 
 #include <FL/Fl.H>
-#include <FL/Fl_Widget.H>
-#include <FL/Fl_Button.H>
 #include <FL/Fl_Group.H>
 
 #include <stdlib.h>
@@ -34,6 +32,9 @@
 
 class Chain;
 class Module_Parameter_Editor;
+class Fl_Menu_;
+class Fl_Menu_Button;
+class Fl_Button;
 
 class Module : public Fl_Group, public Loggable {
 
@@ -43,13 +44,18 @@ class Module : public Fl_Group, public Loggable {
     unsigned long _nframes;
     Chain *_chain;
     bool _is_default;
+    bool _bypass;
 
     Module_Parameter_Editor *_editor;
 
-/*     void cb_handle(Fl_Widget*); */
-/*     static void cb_handle(Fl_Widget*, void*); */
-
     void init ( void );
+
+    void insert_menu_cb ( const Fl_Menu_ *m );
+    static void insert_menu_cb ( Fl_Widget *w, void *v );
+
+    void menu_cb ( const Fl_Menu_ *m );
+    static void menu_cb ( Fl_Widget *w, void *v );
+    Fl_Menu_Button & menu ( void ) const;
 
 public:
 
@@ -220,9 +226,6 @@ public:
 
     LOG_NAME_FUNC( Module );
 
-//    static Module * pick_plugin ( void );
-
-
     unsigned long nframes ( void ) const { return _nframes; }
     void nframes ( unsigned long v ) { _nframes = v; }
 
@@ -285,6 +288,8 @@ public:
             return control_output.size();
         }
 
+    bool bypass ( void ) const { return _bypass; }
+    void bypass ( bool v ) { _bypass = v; redraw(); }
 
     int control_input_port_index ( Port *p )
         {
@@ -309,8 +314,6 @@ public:
 
     char *get_parameters ( void ) const;
     void set_parameters ( const char * );
-
-    static Module * pick_module ( void );
 
     virtual bool initialize ( void ) { return true; }
 
@@ -346,5 +349,12 @@ protected:
 
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
+
+public:
+
+    void command_open_parameter_editor();
+    void command_activate ( void );
+    void command_deactivate ( void );
+    void command_remove ( void );
 
 };

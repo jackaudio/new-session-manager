@@ -23,6 +23,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Valuator.H>
+
 class Meter : public Fl_Valuator
 {
 
@@ -36,11 +37,8 @@ protected:
         {
             if ( m == FL_ENTER || m == FL_LEAVE )
                 return 1;
-            else if ( m == FL_PUSH )
+            else if ( m == FL_PUSH && Fl::event_button1())
             {
-//                if ( Fl::event_button3() )
-//                    hide();
-//                else
                 reset();
                 return 1;
             }

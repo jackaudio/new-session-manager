@@ -692,78 +692,6 @@ Chain::resize ( int X, int Y, int W, int H )
     controls_pack->size( W, controls_pack->h() );
 }
 
-int
-Chain::handle ( int m )
-{
-    switch ( m )
-    {
-        case FL_PUSH:
-        {
-            if ( Fl::belowmouse() != this )
-            {
-                Module *m = NULL;
-
-                for ( int i = 0; i < modules(); ++i )
-                    if ( Fl::event_inside( module( i ) ) )
-                    {
-                        m = module( i );
-                        break;
-                    }
-
-                if ( m )
-                {
-                    if ( test_press( FL_BUTTON3 | FL_CTRL ) )
-                    {
-                        if ( m->is_default() )
-                        {
-                            fl_alert( "Default modules may not be deleted." );
-                        }
-                        else
-                        {
-                            remove( m );
-                            delete m;
-                            redraw();
-                        }
-                        return 1;
-                    }
-                    else if ( test_press( FL_BUTTON1 | FL_SHIFT ) )
-                    {
-//                        Module *mod = (Module*)Plugin_Module::pick_plugin();
-                        Module *mod = Module::pick_module();
-                        if ( mod )
-                        {
-                            if ( !strcmp( mod->name(), "JACK" ) )
-                            {
-                                DMESSAGE( "Special casing JACK module" );
-                                JACK_Module *jm = (JACK_Module*)mod;
-                                jm->chain( this );
-                                jm->configure_inputs( m->ninputs() );
-                                jm->configure_outputs( m->ninputs() );
-                            }
-
-                            if ( ! insert( m, mod ) )
-                                fl_alert( "Cannot insert this module at this point in the chain" );
-                            redraw();
-                        }
-                        return 1;
-                    }
-                    else if ( test_press( FL_BUTTON1 | FL_CTRL ) )
-                    {
-                        if ( m->active() )
-                            m->deactivate();
-                        else
-                            m->activate();
-                        return 1;
-                    }
-                }
-            }
-            break;
-        }
-    }
-
-    return Fl_Group::handle( m );
-}
-
 
 
 /**********/
@@ -784,7 +712,7 @@ Chain::process ( nframes_t nframes )
         Module *m = *i;
 
         m->nframes( nframes );
-        if ( m->active() )
+        if ( ! m->bypass() )
             m->process();
     }
 }

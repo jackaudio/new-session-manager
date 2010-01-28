@@ -143,6 +143,9 @@ public:
     virtual int
     handle ( int m )
         {
+            if ( Fl_Group::handle( m ) )
+                return 1;
+
             switch ( m )
             {
                 case FL_PUSH:
@@ -160,7 +163,7 @@ public:
                             return 1;
                         }
 
-                        return Fl_Group::handle( m );
+                        return 0;
                     }
                 }
                 case FL_ENTER:
@@ -180,7 +183,7 @@ public:
                         yposition( yposition() - (h() / 4 ) );
                         return 1;
                     }
-                    return Fl_Group::handle( m );
+                    return 0;
                 }
                 case FL_MOUSEWHEEL:
                 {
@@ -190,6 +193,6 @@ public:
                 }
             }
 
-            return Fl_Group::handle( m );
+            return 0;
         }
 };

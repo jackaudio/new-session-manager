@@ -21,5 +21,6 @@ class Fl_Menu_;
 class Fl_Menu_Item;
 class Fl_Widget;
 
+bool menu_popup ( Fl_Menu_ *m, int X, int Y );
 bool menu_popup ( Fl_Menu_ *m );
 void menu_set_callback ( Fl_Menu_Item *menu, void (*callback)( Fl_Widget *, void * ), void *user_data );

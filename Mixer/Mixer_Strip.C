@@ -51,6 +51,10 @@
 #include "Meter_Indicator_Module.H"
 #include "util/debug.h"
 
+#include <FL/Fl_Menu_Button.H>
+#include "FL/test_press.H"
+#include "FL/menu_popup.H"
+
 extern Mixer *mixer;
 
 
@@ -206,20 +210,13 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
 
     }
     else if ( o == left_button )
-    {
-        mixer->move_left( this );
-    }
+        command_move_left();
     else if ( o == right_button )
-    {
-        mixer->move_right( this );
-    }
+        command_move_right();
     else if ( o == close_button )
     {
         if ( Fl::event_shift() || 1 == fl_choice( "Are you sure you want to remove this strip?\n\n(this action cannot be undone)", "Cancel", "Remove", NULL ) )
-        {
-            ((Mixer*)parent())->remove( this );
-            Fl::delete_widget( this );
-        }
+            command_close();
     }
     else if ( o == name_field )
         name( name_field->value() );
@@ -238,6 +235,7 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
 void Mixer_Strip::cb_handle(Fl_Widget* o, void* v) {
     ((Mixer_Strip*)(v))->cb_handle(o);
 }
+
 
 
 void
@@ -296,6 +294,8 @@ Mixer_Strip::update ( void )
 void
 Mixer_Strip::init ( )
 {
+    selection_color( FL_FOREGROUND_COLOR );
+
     _chain = 0;
 
 //    box(FL_THIN_UP_BOX);
@@ -449,6 +449,94 @@ Mixer_Strip::init ( )
     //  _chain->configure_ports();
 }
 
+void
+Mixer_Strip::draw ( void )
+{
+    if ( !fl_not_clipped( x(), y(), w(), h() ) )
+        return;
+
+    /* don't bother drawing anything else, all we're doing is drawing the focus. */
+    if ( damage() != FL_DAMAGE_USER1 )
+        Fl_Group::draw();
+
+    Fl_Group::draw_box( FL_ROUNDED_FRAME, x(), y(), w(), h(), _focused ? Fl_Group::selection_color() : Fl_Group::color() );
+}
+
+
+
+void
+Mixer_Strip::menu_cb ( const Fl_Menu_ *m )
+{
+    char picked[256];
+
+    m->item_pathname( picked, sizeof( picked ) );
+
+    Logger log( this );
+
+    if ( ! strcmp( picked, "Width/Narrow" ) )
+        command_width( false );
+    else if ( ! strcmp( picked, "Width/Wide" ) )
+        command_width( true );
+    else if ( ! strcmp( picked, "View/Fader" ) )
+        command_view( false );
+    else if ( ! strcmp( picked, "View/Signal" ) )
+        command_view( true );
+    else if ( ! strcmp( picked, "/Move Left" ) )
+        command_move_left();
+    else if ( ! strcmp( picked, "/Move Right" ) )
+        command_move_right();
+    else if ( ! strcmp( picked, "/Rename" ) )
+        name_field->take_focus();
+    else if ( ! strcmp( picked, "/Remove" ) )
+    {
+        if ( Fl::event_shift() || 1 == fl_choice( "Are you sure you want to remove this strip?\n\n(this action cannot be undone)", "Cancel", "Remove", NULL ) )
+            command_close();
+    }
+}
+
+void
+Mixer_Strip::menu_cb ( Fl_Widget *w, void *v )
+{
+    ((Mixer_Strip*)v)->menu_cb( (Fl_Menu_*) w );
+}
+
+
+/** build the context menu */
+Fl_Menu_Button &
+Mixer_Strip::menu ( void ) const
+{
+    static Fl_Menu_Button m( 0, 0, 0, 0, "Strip" );
+    static char label[256];
+
+    snprintf( label, sizeof(label), "Strip/%s", name() );
+    m.label( label );
+
+//    int c = output.size();
+
+    Fl_Menu_Item menu[] =
+        {
+            { "Width",            0, 0, 0, FL_SUBMENU    },
+            { "Narrow",         'n', 0, 0, FL_MENU_RADIO | ( ! width_button->value() ? FL_MENU_VALUE : 0 ) },
+            { "Wide",           'w', 0, 0, FL_MENU_RADIO | ( width_button->value() ? FL_MENU_VALUE : 0 ) },
+            { 0                  },
+            { "View",            0, 0, 0, FL_SUBMENU    },
+            { "Fader",          'f', 0, 0, FL_MENU_RADIO | ( 0 == tab_button->value() ? FL_MENU_VALUE : 0 ) },
+            { "Signal",         's', 0, 0, FL_MENU_RADIO | ( 1 == tab_button->value() ? FL_MENU_VALUE : 0 ) },
+            { 0                  },
+            { "Move Left",      '[', 0, 0  },
+            { "Move Right",     ']', 0, 0 },
+            { "Color",           0, 0, 0 },
+            { "Rename",          FL_CTRL + 'n', 0, 0 },
+            { "Remove",          FL_Delete, 0, 0 },
+            { 0 },
+        };
+
+    menu_set_callback( menu, &Mixer_Strip::menu_cb, (void*)this );
+
+    m.copy( menu, (void*)this );
+
+    return m;
+}
 
 int
 Mixer_Strip::handle ( int m )
@@ -457,6 +545,38 @@ Mixer_Strip::handle ( int m )
 
     switch ( m )
     {
+        case FL_KEYBOARD:
+            if ( test_press( FL_Menu ) )
+            {
+                menu_popup( &menu(), x(), y() );
+                return 1;
+            }
+            else
+                return menu().test_shortcut() || Fl_Group::handle( m );
+        case FL_PUSH:
+        {
+            int r;
+            if ( test_press( FL_BUTTON3 ) )
+            {
+                menu_popup( &menu() );
+                r = 1;
+            }
+            else
+                r = Fl_Group::handle( m );
+
+            if ( r )
+                take_focus();
+
+            return r;
+        }
+        case FL_FOCUS:
+            _focused = true;
+            damage( FL_DAMAGE_USER1 );
+            return 1;
+        case FL_UNFOCUS:
+            _focused = false;
+            damage( FL_DAMAGE_USER1 );
+            return 1;
 /*         case FL_ENTER: */
 /*             name_field->color( FL_BLACK ); */
 /*             name_field->redraw(); */
@@ -472,5 +592,49 @@ Mixer_Strip::handle ( int m )
 
     }
 
-    return 0;
+    return Fl_Group::handle( m );
+}
+
+
+/************/
+/* Commands */
+/************/
+
+void
+Mixer_Strip::command_move_left ( void )
+{
+    mixer->move_left( this );
+}
+
+void
+Mixer_Strip::command_move_right ( void )
+{
+    mixer->move_right( this );
+}
+
+void
+Mixer_Strip::command_close ( void )
+{
+        mixer->remove( this );
+        Fl::delete_widget( this );
+}
+
+void
+Mixer_Strip::command_rename ( const char * s )
+{
+    name( s );
+}
+
+void
+Mixer_Strip::command_width ( bool b )
+{
+    width_button->value( b );
+    width_button->do_callback();
+}
+
+void
+Mixer_Strip::command_view ( bool b )
+{
+    tab_button->value( b );
+    tab_button->do_callback();
 }

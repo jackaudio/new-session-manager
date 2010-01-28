@@ -92,7 +92,7 @@ main ( int argc, char **argv )
     Fl_Tooltip::size( 14 );
     Fl_Tooltip::hoverdelay( 0.1f );
 
-//    Fl::visible_focus( 0 );
+    Fl::visible_focus( 0 );
 
     LOG_REGISTER_CREATE( Mixer_Strip );
     LOG_REGISTER_CREATE( Chain );

@@ -23,9 +23,9 @@
 
 /** popup menu and execute callback */
 bool
-menu_popup ( Fl_Menu_ *m )
+menu_popup ( Fl_Menu_ *m, int X, int Y )
 {
-    const Fl_Menu_Item *r = m->menu()->popup( Fl::event_x(), Fl::event_y(), m->label() );
+    const Fl_Menu_Item *r = m->menu()->popup( X, Y, m->label() );
 
     if ( r )
     {
@@ -36,6 +36,13 @@ menu_popup ( Fl_Menu_ *m )
     }
 
     return false;
+}
+
+/** popup menu and execute callback */
+bool
+menu_popup ( Fl_Menu_ *m )
+{
+    return menu_popup( m, Fl::event_x(), Fl::event_y() );
 }
 
 /** set a single callback for all items in menu.  */

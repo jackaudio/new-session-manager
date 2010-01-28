@@ -47,6 +47,8 @@ class Meter_Indicator_Module;
 class Module;
 class Fl_Flip_Button;
 class Fl_Input;
+class Fl_Menu_;
+class Fl_Menu_Button;
 
 class Mixer_Strip : public Fl_Group, public Loggable {
 
@@ -107,9 +109,15 @@ private:
     void cb_handle(Fl_Widget*);
     static void cb_handle(Fl_Widget*, void*);
 
+    bool _focused;
+
     void set_tab ( void );
 
     void update_port_names ( void );
+
+    void menu_cb ( const Fl_Menu_ *m );
+    static void menu_cb ( Fl_Widget *w, void *v );
+    Fl_Menu_Button & menu ( void ) const;
 
 protected:
 
@@ -117,4 +125,15 @@ protected:
     void set ( Log_Entry &e );
 
     virtual int handle ( int m );
+    virtual void draw ( void );
+
+public:
+
+    void command_move_left ( void );
+    void command_move_right ( void );
+    void command_close ( void );
+    void command_rename ( const char * s );
+    void command_width ( bool b );
+    void command_view ( bool b );
+
 };

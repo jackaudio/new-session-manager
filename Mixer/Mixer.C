@@ -298,6 +298,8 @@ void Mixer::add ( Mixer_Strip *ms )
 
     mixer_strips->add( ms );
 
+    ms->take_focus();
+
     rows( _rows );
 
     scroll->redraw();

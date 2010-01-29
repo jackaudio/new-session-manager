@@ -35,6 +35,8 @@ struct Transport : public jack_position_t, public Fl_Pack
 
 private:
 
+    bool _stop_disables_record;
+
     static void cb_button ( Fl_Widget *w, void *arg );
     void cb_button ( Fl_Widget *w );
 
@@ -54,6 +56,9 @@ public:
     Transport ( int X, int Y, int W, int H, const char *L=0 );
 
     bool rec_enabled ( void ) const;
+
+    void stop_disables_record ( bool b ) { _stop_disables_record = b; }
+    bool stop_disables_record ( void ) const { return _stop_disables_record; }
 
     void toggle_record ( void );
     int handle ( int m );

@@ -34,6 +34,7 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
 {
     recording = false;
     rolling = false;
+    _stop_disables_record = true;
 
     const int bw = W / 3;
 
@@ -96,12 +97,12 @@ Transport::update_record_state ( void )
      * should begin or end on the next frame */
     if ( rolling )
     {
-        if ( w->value() )
+        if ( ! recording && w->value() )
         {
             timeline->record();
             recording = true;
         }
-        else
+        else if ( recording )
         {
             timeline->stop();
             recording = false;
@@ -190,7 +191,9 @@ Transport::stop ( void )
 //    MESSAGE( "Stopping transport" );
     if ( _record_button->value() )
     {
-        _record_button->value( 0 );
+        if ( _stop_disables_record )
+            _record_button->value( 0 );
+
         update_record_state();
     }
 

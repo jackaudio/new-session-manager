@@ -203,13 +203,13 @@ JACK_Module::handle_chain_name_changed ( void )
 /**********/
 
 void
-JACK_Module::process ( void )
+JACK_Module::process ( nframes_t nframes )
 {
-    for ( int i = 0; i < audio_input.size(); ++i )
+    for ( unsigned int i = 0; i < audio_input.size(); ++i )
         if ( audio_input[i].connected() )
-            buffer_copy( (sample_t*)jack_output[i].buffer( nframes() ), (sample_t*)audio_input[i].buffer(), nframes() );
+            buffer_copy( (sample_t*)jack_output[i].buffer( nframes ), (sample_t*)audio_input[i].buffer(), nframes );
 
-    for ( int i = 0; i < audio_output.size(); ++i )
+    for ( unsigned int i = 0; i < audio_output.size(); ++i )
         if ( audio_output[i].connected() )
-            buffer_copy( (sample_t*)audio_output[i].buffer(), (sample_t*)jack_input[i].buffer( nframes() ), nframes() );
+            buffer_copy( (sample_t*)audio_output[i].buffer(), (sample_t*)jack_input[i].buffer( nframes ), nframes );
 }

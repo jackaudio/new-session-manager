@@ -67,7 +67,7 @@ public:
     LOG_CREATE_FUNC( Controller_Module );
 
     void resize ( int, int, int, int );
-    void process ( void );
+    void process ( nframes_t nframes );
 
     void draw ( void )
         {

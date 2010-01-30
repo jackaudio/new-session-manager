@@ -395,7 +395,7 @@ Controller_Module::handle ( int m )
 /**********/
 
 void
-Controller_Module::process ( void )
+Controller_Module::process ( nframes_t nframes )
 {
     THREAD_ASSERT( RT );
 
@@ -405,7 +405,7 @@ Controller_Module::process ( void )
 
         if ( mode() == CV )
         {
-            f = *((float*)jack_input[0].buffer( chain()->engine()->nframes() ));
+            f = *((float*)jack_input[0].buffer( nframes ));
 
             const Port *p = control_output[0].connected_port();
 

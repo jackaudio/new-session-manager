@@ -58,7 +58,7 @@ Mono_Pan_Module::~Mono_Pan_Module ( )
 
 
 bool
-Mono_Pan_Module::configure_inputs ( int n )
+Mono_Pan_Module::configure_inputs ( int )
 {
     return true;
 }
@@ -70,7 +70,7 @@ Mono_Pan_Module::configure_inputs ( int n )
 /**********/
 
 void
-Mono_Pan_Module::process ( void )
+Mono_Pan_Module::process ( nframes_t nframes )
 {
     const float g = control_input[0].control_value();
 
@@ -81,8 +81,8 @@ Mono_Pan_Module::process ( void )
          audio_output[0].connected() &&
          audio_output[1].connected() )
     {
-        buffer_copy_and_apply_gain( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes(), rg );
+        buffer_copy_and_apply_gain( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes, rg );
 
-        buffer_apply_gain( (sample_t*)audio_output[0].buffer(), nframes(), lg );
+        buffer_apply_gain( (sample_t*)audio_output[0].buffer(), nframes, lg );
     }
 }

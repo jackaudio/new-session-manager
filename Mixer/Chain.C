@@ -412,6 +412,8 @@ Chain::name ( const char *name )
     {
         _engine = new Engine( &Chain::process, this );
 
+        engine()->buffer_size_callback( &Chain::buffer_size, this );
+
         engine()->init( ename );
     }
     else
@@ -711,8 +713,30 @@ Chain::process ( nframes_t nframes )
     {
         Module *m = *i;
 
-        m->nframes( nframes );
         if ( ! m->bypass() )
-            m->process();
+            m->process( nframes );
+    }
+}
+
+void
+Chain::buffer_size ( nframes_t nframes, void *v )
+{
+    ((Chain*)v)->buffer_size( nframes );
+}
+
+void
+Chain::buffer_size ( nframes_t nframes )
+{
+    for ( unsigned int i = scratch_port.size(); i--; )
+        delete[] (sample_t*)scratch_port[i].buffer();
+    scratch_port.clear();
+
+    configure_ports();
+
+    for ( int i = 0; i < modules(); ++i )
+    {
+        Module *m = module(i);
+
+        m->resize_buffers( nframes );
     }
 }

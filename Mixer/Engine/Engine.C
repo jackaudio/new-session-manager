@@ -33,7 +33,8 @@
 Engine::Engine ( void (*process_callback)(nframes_t nframes, void *), void *user_data  ) : _thread( "RT" )
 {
     _process_callback = process_callback;
-    _user_data = user_data;
+    _process_callback_user_data = user_data;
+    _buffer_size_callback = 0;
     _buffers_dropped = 0;
 }
 
@@ -43,6 +44,13 @@ Engine::~Engine ( )
 }
 
 
+
+void
+Engine::buffer_size_callback (  void ( *buffer_size_callback ) ( nframes_t, void * ), void *user_data )
+{
+    _buffer_size_callback = buffer_size_callback;
+    _buffer_size_callback_user_data = user_data;
+}
 
 /*************/
 /* Callbacks */
@@ -68,9 +76,17 @@ Engine::freewheel ( bool starting )
 
 /* THREAD: RT (non-RT) */
 int
-Engine::buffer_size ( nframes_t )
+Engine::buffer_size ( nframes_t nframes )
 {
-    // timeline->resize_buffers( nframes );
+    /* JACK calls this in the RT thread, even though it's a
+     * non-realtime operation. This mucks up our ability to do
+     * THREAD_ASSERT, so just lie and say this is the UI thread... */
+
+    _thread.set( "UI" );
+
+    _buffer_size_callback( nframes, _buffer_size_callback_user_data );
+
+    _thread.set( "RT" );
 
     return 0;
 }
@@ -82,33 +98,19 @@ Engine::process ( nframes_t nframes )
     /* FIXME: wrong place for this */
     _thread.set( "RT" );
 
-    if ( freewheeling() )
+    if ( ! trylock() )
     {
-/*         /\* freewheeling mode/export. We're actually running */
-/*            non-RT. Assume that everything is quiescent, locking is */
-/*            unecessary and do I/O synchronously *\/ */
-/*         if ( timeline ) */
-/*             timeline->process( nframes ); */
-
-/*         /\* because we're going faster than realtime. *\/ */
-/*         timeline->wait_for_buffers(); */
+        /* the data structures we need to access here (tracks and
+         * their ports, but not track contents) may be in an
+         * inconsistent state at the moment. Just punt and drop this
+         * buffer. */
+        ++_buffers_dropped;
+        return 0;
     }
-    else
-    {
-        if ( ! trylock() )
-        {
-            /* the data structures we need to access here (tracks and
-             * their ports, but not track contents) may be in an
-             * inconsistent state at the moment. Just punt and drop this
-             * buffer. */
-            ++_buffers_dropped;
-            return 0;
-        }
 
-        _process_callback(nframes, _user_data);
+    _process_callback(nframes, _process_callback_user_data);
 
-        unlock();
-    }
+    unlock();
 
     return 0;
 }

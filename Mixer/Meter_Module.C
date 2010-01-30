@@ -206,13 +206,13 @@ get_peak_sample ( const sample_t* buf, nframes_t nframes )
 }
 
 void
-Meter_Module::process ( void )
+Meter_Module::process ( nframes_t nframes )
 {
     for ( unsigned int i = 0; i < audio_input.size(); ++i )
     {
         if ( audio_input[i].connected() )
         {
-            float dB = 20 * log10( get_peak_sample( (float*)audio_input[i].buffer(), nframes() ) / 2.0f );
+            float dB = 20 * log10( get_peak_sample( (float*)audio_input[i].buffer(), nframes ) / 2.0f );
 
             ((float*)control_output[0].buffer())[i] = dB;
             control_value[i] = dB;

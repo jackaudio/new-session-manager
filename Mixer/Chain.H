@@ -67,6 +67,9 @@ private:
     static void process ( nframes_t, void * );
     void process ( nframes_t );
 
+    static void buffer_size ( nframes_t nframes, void *v );
+    void buffer_size ( nframes_t nframes );
+
 protected:
 
     void get ( Log_Entry &e ) const;

@@ -29,6 +29,7 @@
 #include "util/Thread.H"
 
 #include "Loggable.H"
+#include "JACK/Port.H"
 
 class Chain;
 class Module_Parameter_Editor;
@@ -41,7 +42,7 @@ class Module : public Fl_Group, public Loggable {
     int _ins;
     int _outs;
     int _instances;
-    unsigned long _nframes;
+    nframes_t _nframes;
     Chain *_chain;
     bool _is_default;
     bool _bypass;
@@ -137,9 +138,9 @@ public:
         Direction direction ( void ) const  { return _direction; }
 
         Module * module ( void ) const { return _module; }
-        unsigned long nframes ( void ) const { return _nframes; }
+        nframes_t nframes ( void ) const { return _nframes; }
 
-        void buffer ( void *buf, unsigned long nframes ) { _buf = buf; _nframes = nframes; };
+        void buffer ( void *buf, nframes_t nframes ) { _buf = buf; _nframes = nframes; };
         void *buffer ( void ) const { return _buf; }
 
         void control_value_no_callback ( float f )
@@ -206,7 +207,7 @@ public:
         Direction _direction;
         const char *_name;
         void *_buf;
-        unsigned long _nframes;
+        nframes_t _nframes;
         Module *_module;
     };
 
@@ -226,8 +227,8 @@ public:
 
     LOG_NAME_FUNC( Module );
 
-    unsigned long nframes ( void ) const { return _nframes; }
-    void nframes ( unsigned long v ) { _nframes = v; }
+    nframes_t nframes ( void ) const { return _nframes; }
+    void resize_buffers ( nframes_t v ) { _nframes = v; }
 
 
     int instances ( void ) const { return _instances; }
@@ -235,7 +236,7 @@ public:
 
     bool is_being_controlled ( void ) const
         {
-            for ( unsigned int i = control_input.size(); i--; )
+            for ( nframes_t i = control_input.size(); i--; )
                 if ( control_input[i].connected() )
                     return true;
             return false;
@@ -243,7 +244,7 @@ public:
 
     bool is_controlling ( void ) const
         {
-            for ( unsigned int i = control_output.size(); i--; )
+            for ( nframes_t i = control_output.size(); i--; )
                 if ( control_output[i].connected() )
                     return true;
             return false;
@@ -293,7 +294,7 @@ public:
 
     int control_input_port_index ( Port *p )
         {
-            for ( unsigned int i = control_input.size(); i--; )
+            for ( nframes_t i = control_input.size(); i--; )
                 if ( &control_input[i] == p )
                     return i;
 
@@ -302,7 +303,7 @@ public:
 
     int control_output_port_index ( Port *p )
         {
-            for ( unsigned int i = control_output.size(); i--; )
+            for ( nframes_t i = control_output.size(); i--; )
                 if ( &control_output[i] == p )
                     return i;
 
@@ -326,7 +327,7 @@ public:
      * true */
     virtual bool configure_inputs ( int n ) = 0;
 
-    virtual void process ( void ) { }
+    virtual void process ( nframes_t ) = 0;
 
     /* called whenever the value of a control port is changed.
        This can be used to take appropriate action from the GUI thread */

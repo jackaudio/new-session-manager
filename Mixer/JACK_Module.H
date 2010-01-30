@@ -51,6 +51,6 @@ public:
 
 protected:
 
-    virtual void process ( void );
+    virtual void process ( nframes_t nframes );
 
 };

@@ -78,7 +78,7 @@ Gain_Module::configure_inputs ( int n )
 /**********/
 
 void
-Gain_Module::process ( void )
+Gain_Module::process ( nframes_t nframes )
 {
     float g = DB_CO( control_input[0].control_value() );
 
@@ -86,7 +86,7 @@ Gain_Module::process ( void )
     {
         if ( audio_input[i].connected() && audio_output[i].connected() )
         {
-            buffer_apply_gain( (sample_t*)audio_input[i].buffer(), nframes(), g );
+            buffer_apply_gain( (sample_t*)audio_input[i].buffer(), nframes, g );
         }
     }
 }

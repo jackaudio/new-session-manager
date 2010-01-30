@@ -684,16 +684,13 @@ Plugin_Module::handle_port_connection_change ( void )
 /**********/
 
 void
-Plugin_Module::process ( )
+Plugin_Module::process ( nframes_t nframes )
 {
     handle_port_connection_change();
 
     if ( _active )
         for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
-        {
-            volatile int n = i;
-            _idata->descriptor->run( _idata->handle[n], nframes() );
-        }
+            _idata->descriptor->run( _idata->handle[i], nframes );
 }
 
 

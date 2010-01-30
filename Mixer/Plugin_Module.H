@@ -108,7 +108,7 @@ public:
     int can_support_inputs ( int );
     bool configure_inputs ( int );
 
-    void process ( void );
+    void process ( nframes_t );
 
     void handle_port_connection_change ( void );
 

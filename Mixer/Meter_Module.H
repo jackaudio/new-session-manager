@@ -47,5 +47,5 @@ public:
 protected:
 
     virtual int handle ( int m );
-    virtual void process ( void );
+    virtual void process ( nframes_t nframes );
 };

@@ -825,7 +825,17 @@ Track::handle ( int m )
     switch ( m )
     {
         case FL_KEYBOARD:
-            return menu().test_shortcut() || Fl_Group::handle( m );
+        {
+            Fl_Menu_Button * men = &menu();
+
+            if ( Fl::event_key() == FL_Menu )
+            {
+                menu_popup( men );
+                return 1;
+            }
+            else
+                return men->test_shortcut() || Fl_Group::handle( m );
+        }
         case FL_MOUSEWHEEL:
         {
             Logger log( this );

@@ -495,18 +495,15 @@ Mixer::save_options ( void )
 int
 Mixer::handle ( int m )
 {
-    int r = Fl_Group::handle( m );
+    if ( Fl_Group::handle( m ) )
+        return 1;
 
     switch ( m )
     {
         case FL_ENTER:
         case FL_LEAVE:
             return 1;
-        default:
-            return r;
-            break;
     }
 
-    // return 0;
-    return r;
+    return 0;
 }

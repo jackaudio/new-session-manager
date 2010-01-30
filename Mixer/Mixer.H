@@ -58,7 +58,7 @@ private:
 
 protected:
 
-    virtual int handle ( int m );
+    int handle ( int m );
 
 public:
 

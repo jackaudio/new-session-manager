@@ -43,7 +43,7 @@ protected:
                 return 1;
             }
 
-            return Fl_Widget::handle( m );
+            return Fl_Valuator::handle( m );
         }
 
     float

@@ -462,7 +462,7 @@ Module::handle ( int m )
             if ( Fl_Group::handle( m ) )
                 return 1;
 
-            if ( test_press( FL_Menu ) )
+            if ( Fl::event_key() == FL_Menu )
             {
                 menu_popup( &menu(), x(), y() );
                 return 1;

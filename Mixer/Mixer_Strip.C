@@ -546,16 +546,19 @@ Mixer_Strip::handle ( int m )
     switch ( m )
     {
         case FL_KEYBOARD:
+        {
             if ( Fl_Group::handle( m ) )
                 return 1;
 
-            if ( test_press( FL_Menu ) )
+            if ( Fl::event_key() == FL_Menu )
             {
                 menu_popup( &menu(), x(), y() );
                 return 1;
             }
-            else
+             else
                 return menu().test_shortcut() != 0;
+        }
+        break;
         case FL_PUSH:
         {
             if ( Fl_Group::handle( m ) )
@@ -576,19 +579,6 @@ Mixer_Strip::handle ( int m )
             _focused = false;
             damage( FL_DAMAGE_USER1 );
             return 1;
-/*         case FL_ENTER: */
-/*             name_field->color( FL_BLACK ); */
-/*             name_field->redraw(); */
-/*             return 1; */
-/*             break; */
-/*         case FL_LEAVE: */
-/*             name_field->color( _color ); */
-/*             name_field->redraw(); */
-/*             return 1; */
-/*             break; */
-        default:
-            return Fl_Group::handle( m );
-
     }
 
     return Fl_Group::handle( m );

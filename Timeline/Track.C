@@ -729,6 +729,18 @@ Track::menu_cb ( const Fl_Menu_ *m )
 
         redraw();
     }
+    else if ( ! strcmp( picked, "Flags/Record" ) )
+    {
+        armed( m->mvalue()->flags & FL_MENU_VALUE );
+    }
+    else if ( ! strcmp( picked, "Flags/Mute" ) )
+    {
+        mute( m->mvalue()->flags & FL_MENU_VALUE );
+    }
+    else if ( ! strcmp( picked, "Flags/Solo" ) )
+    {
+        solo( m->mvalue()->flags & FL_MENU_VALUE );
+    }
     else if ( ! strcmp( picked, "/Remove" ) )
     {
         int r = fl_choice( "Are you certain you want to remove track \"%s\"?", "Cancel", NULL, "Remove", name() );
@@ -767,6 +779,11 @@ Track::menu ( void ) const
             { "Add Annotation",  0, 0, 0 },
             { "Color",           0, 0, 0 },
             { "Rename",          FL_CTRL + 'n', 0, 0 },
+            { "Flags",            0, 0, 0, FL_SUBMENU    },
+            { "Record",         FL_CTRL + 'r', 0, 0, FL_MENU_TOGGLE | ( armed() ? FL_MENU_VALUE : 0 ) },
+            { "Mute",            FL_CTRL + 'm', 0, 0, FL_MENU_TOGGLE | ( mute() ? FL_MENU_VALUE : 0 ) },
+            { "Solo",           FL_CTRL + 's', 0, 0, FL_MENU_TOGGLE | ( solo() ? FL_MENU_VALUE : 0 ) },
+            { 0 },
             { "Remove",          0, 0, 0 }, // transport->rolling ? FL_MENU_INACTIVE : 0 },
             { 0 },
         };

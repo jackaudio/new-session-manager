@@ -1188,6 +1188,10 @@ Timeline::handle ( int m )
         case FL_LEAVE:
             return 1;
         case FL_KEYDOWN:
+            if ( Fl::event_state() & ( FL_ALT | FL_CTRL | FL_SHIFT ) )
+                /* we don't want any keys with modifiers... */
+                return 0;
+
             if ( Fl::event_key() == 'r' )
             {
                 range = true;
@@ -1200,6 +1204,10 @@ Timeline::handle ( int m )
             }
             return 0;
         case FL_KEYUP:
+            if ( Fl::event_state() & ( FL_ALT | FL_CTRL | FL_SHIFT ) )
+                /* we don't want any keys with modifiers... */
+                return 0;
+
             if ( Fl::event_key() == 'r' )
             {
                 range = false;

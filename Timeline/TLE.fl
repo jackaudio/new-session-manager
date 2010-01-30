@@ -357,7 +357,7 @@ Project::compact();}
           }
         }
         Submenu {} {
-          label Transport open
+          label T&ransport open
           xywh {0 0 74 25}
         } {
           MenuItem {} {

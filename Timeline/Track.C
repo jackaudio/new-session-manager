@@ -741,6 +741,22 @@ Track::menu_cb ( const Fl_Menu_ *m )
     {
         solo( m->mvalue()->flags & FL_MENU_VALUE );
     }
+    else if ( ! strcmp( picked, "Size/Small" ) )
+    {
+        size( 0 );
+    }
+    else if ( ! strcmp( picked, "Size/Medium" ) )
+    {
+        size( 1 );
+    }
+    else if ( ! strcmp( picked, "Size/Large" ) )
+    {
+        size( 2 );
+    }
+    else if ( ! strcmp( picked, "Size/Huge" ) )
+    {
+        size( 3 );
+    }
     else if ( ! strcmp( picked, "/Remove" ) )
     {
         int r = fl_choice( "Are you certain you want to remove track \"%s\"?", "Cancel", NULL, "Remove", name() );
@@ -766,6 +782,7 @@ Track::menu ( void ) const
     static Fl_Menu_Button m( 0, 0, 0, 0, "Track" );
 
     int c = output.size();
+    int s = size();
 
     Fl_Menu_Item menu[] =
         {
@@ -779,6 +796,12 @@ Track::menu ( void ) const
             { "Add Annotation",  0, 0, 0 },
             { "Color",           0, 0, 0 },
             { "Rename",          FL_CTRL + 'n', 0, 0 },
+            { "Size",            0, 0, 0, FL_SUBMENU    },
+            { "Small",           FL_ALT + '1', 0, 0, FL_MENU_RADIO | ( s == 0 ? FL_MENU_VALUE : 0 ) },
+            { "Medium",          FL_ALT + '2', 0, 0, FL_MENU_RADIO | ( s == 1 ? FL_MENU_VALUE : 0 ) },
+            { "Large",           FL_ALT + '3', 0, 0, FL_MENU_RADIO | ( s == 2 ? FL_MENU_VALUE : 0 ) },
+            { "Huge",           FL_ALT + '4', 0, 0, FL_MENU_RADIO | ( s == 3 ? FL_MENU_VALUE : 0 ) },
+            { 0 },
             { "Flags",            0, 0, 0, FL_SUBMENU    },
             { "Record",         FL_CTRL + 'r', 0, 0, FL_MENU_TOGGLE | ( armed() ? FL_MENU_VALUE : 0 ) },
             { "Mute",            FL_CTRL + 'm', 0, 0, FL_MENU_TOGGLE | ( mute() ? FL_MENU_VALUE : 0 ) },

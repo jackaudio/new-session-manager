@@ -67,7 +67,7 @@ namespace JACK
         nframes_t latency ( void ) const;
         void latency ( nframes_t frames );
 
-        void activate ( const char *name, type_e dir );
+        bool activate ( void );
         void shutdown ( void );
         void write ( sample_t *buf, nframes_t nframes );
         void read ( sample_t *buf, nframes_t nframes );
@@ -82,12 +82,15 @@ namespace JACK
 
     private:
 
+        type_e _direction;
+
+        bool activate ( const char *name, type_e dir );
+
         /* holds all we need to know about a jack port to recreate it on a
          new client */
         struct freeze_state
         {
             const char **connections;
-            type_e direction;
             char *name;
 
             freeze_state ( )

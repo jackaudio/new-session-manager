@@ -17,6 +17,9 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include "const.h"
+#include "debug.h"
+
 #include <FL/fl_ask.H>
 
 #include "Control_Sequence.H"
@@ -42,6 +45,11 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
     _track = track;
 
     _output = new JACK::Port( engine, JACK::Port::Output, track->name(), track->ncontrols(), "cv" );
+
+    if ( ! _output->activate() )
+    {
+        FATAL( "could not create JACK port" );
+    }
 
     if ( track )
         track->add( this );
@@ -111,6 +119,11 @@ Control_Sequence::set ( Log_Entry &e )
             assert( t );
 
             _output = new JACK::Port( engine, JACK::Port::Output, t->name(), t->ncontrols(), "cv" );
+
+            if ( ! _output->activate() )
+            {
+                FATAL( "could not create JACK port" );
+            }
 
             t->add( this );
         }

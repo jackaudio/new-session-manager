@@ -25,6 +25,7 @@
 
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
+#include <FL/fl_ask.H>
 #include <FL/Fl_Counter.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Menu_Button.H>
@@ -158,6 +159,12 @@ Controller_Module::mode ( Mode m )
             Port *p = control_output[0].connected_port();
 
             JACK::Port po( chain()->engine(), JACK::Port::Input, p->name(), 0, "CV" );
+
+            if ( ! po.activate() )
+            {
+                fl_alert( "Could not activate JACK port \"%s\"", po.name() );
+                return;
+            }
 
             if ( po.valid() )
             {

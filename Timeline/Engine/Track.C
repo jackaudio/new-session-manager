@@ -79,6 +79,11 @@ Track::configure_outputs ( int n )
         {
             JACK::Port p( engine, JACK::Port::Output, name(), i );
 
+            if ( !p.activate() )
+            {
+                FATAL( "could not created output port!");
+            }
+
             if ( p.valid() )
                 output.push_back( p );
             else
@@ -125,6 +130,11 @@ Track::configure_inputs ( int n )
         for ( int i = on; i < n; ++i )
         {
             JACK::Port p( engine, JACK::Port::Input, name(), i );
+
+            if ( !p.activate() )
+            {
+                FATAL( "could not created output port!");
+            }
 
             if ( p.valid() )
                 input.push_back( p );

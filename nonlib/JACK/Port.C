@@ -42,6 +42,7 @@ namespace JACK
         _freezer = rhs._freezer;
         _client = rhs._client;
         _port = rhs._port;
+        _direction = rhs._direction;
         _name = strdup( rhs._name );
 
         _client->port_added( this );
@@ -54,6 +55,7 @@ namespace JACK
         _client = client;
         _port = port;
         _name = strdup( jack_port_name( port ) );
+        _direction = jack_port_flags( _port ) == JackPortIsOutput ? Output : Input;
     }
 
     Port::Port ( JACK::Client *client, const char *name, type_e dir )
@@ -61,7 +63,9 @@ namespace JACK
         _name = NULL;
         _freezer = NULL;
         _client = client;
-        activate( name, dir );
+        _direction = dir;
+
+        _name = strdup( name );
     }
 
     Port::Port ( JACK::Client *client, type_e dir, const char *base, int n, const char *type )
@@ -70,9 +74,8 @@ namespace JACK
         _freezer = NULL;
         _client = client;
 
-        const char *name = name_for_port( dir, base, n, type );
-
-        activate( name, dir );
+        _name = strdup( name_for_port( dir, base, n, type ) );
+        _direction = dir;
     }
 
     Port::Port ( JACK::Client *client, type_e dir, int n, const char *type )
@@ -81,9 +84,9 @@ namespace JACK
         _freezer = NULL;
         _client = client;
 
-        const char *name = name_for_port( dir, NULL, n, type );
+        _name = strdup( name_for_port( dir, NULL, n, type ) );
+        _direction = dir;
 
-        activate( name, dir );
     }
 
     Port::~Port ( )
@@ -141,16 +144,29 @@ namespace JACK
         return pname;
     }
 
-    void
+    bool
     Port::activate ( const char *name, type_e dir )
     {
         _name = strdup( name );
+        _direction = dir;
+
+        return activate();
+    }
+
+    bool
+    Port::activate ( void )
+    {
         _port = jack_port_register( _client->jack_client(), _name,
                                     JACK_DEFAULT_AUDIO_TYPE,
-                                    dir == Output ? JackPortIsOutput : JackPortIsInput,
+                                    _direction == Output ? JackPortIsOutput : JackPortIsInput,
                                     0 );
 
+        if ( ! _port )
+            return false;
+
         _client->port_added( this );
+
+        return true;
     }
 
 /** returns the sum of latency of all ports between this one and a
@@ -239,10 +255,7 @@ namespace JACK
     Port::type_e
     Port::type ( void ) const
     {
-        if ( _freezer )
-            return _freezer->direction;
-        else
-            return jack_port_flags( _port ) == JackPortIsOutput ? Output : Input;
+        return _direction;
     }
 
     /** Restore the connections returned by connections() */
@@ -295,7 +308,6 @@ namespace JACK
         freeze_state *f = new freeze_state();
 
         f->connections = connections();
-        f->direction = type();
         f->name = strdup( name() );
 
         _freezer = f;
@@ -304,7 +316,7 @@ namespace JACK
     void
     Port::thaw ( void )
     {
-        activate( name(), _freezer->direction );
+        activate();
 
         connections( _freezer->connections );
 

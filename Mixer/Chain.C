@@ -414,7 +414,16 @@ Chain::name ( const char *name )
 
         engine()->buffer_size_callback( &Chain::buffer_size, this );
 
-        engine()->init( ename );
+        const char *jack_name = engine()->init( ename );
+
+        if ( ! jack_name )
+        {
+            _engine = NULL;
+
+            fl_alert( "Could not create JACK client. Perhaps the sound device already in use. In any event, now I'll die." );
+            exit( 1 );
+            return;
+        }
     }
     else
     {

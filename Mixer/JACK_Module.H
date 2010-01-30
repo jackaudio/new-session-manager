@@ -29,6 +29,8 @@ class JACK_Module : public Module
     std::vector<JACK::Port> jack_input;
     std::vector<JACK::Port> jack_output;
 
+    static void jack_port_activation_error ( JACK::Port *p );
+
 public:
 
     JACK_Module ( );

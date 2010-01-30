@@ -21,6 +21,8 @@
 
 #include <string.h>
 
+#include <FL/fl_ask.H>
+
 #include "dsp.h"
 
 #include "Engine/Engine.H"
@@ -91,6 +93,12 @@ JACK_Module::configure_inputs ( int n )
         {
             JACK::Port po( chain()->engine(), JACK::Port::Output, i );
 
+            if ( ! po.activate() )
+            {
+                jack_port_activation_error( &po );
+                return false;
+            }
+
             if ( po.valid() )
             {
                 add_port( Port( this, Port::INPUT, Port::AUDIO ) );
@@ -114,6 +122,12 @@ JACK_Module::configure_inputs ( int n )
     return true;
 }
 
+void
+JACK_Module::jack_port_activation_error ( JACK::Port *p )
+{
+    fl_alert( "Could not activate JACK port \"%s\"", p->name() );
+}
+
 bool
 JACK_Module::configure_outputs ( int n )
 {
@@ -124,6 +138,12 @@ JACK_Module::configure_outputs ( int n )
         for ( int i = on; i < n; ++i )
         {
             JACK::Port po( chain()->engine(), JACK::Port::Input, i );
+
+            if ( ! po.activate() )
+            {
+                jack_port_activation_error( &po );
+                return false;
+            }
 
             if ( po.valid() )
             {

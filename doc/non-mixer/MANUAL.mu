@@ -142,6 +142,27 @@
 { events. Hold down the `Ctrl` key while scrolling the mousewheel to
 { achieve finer resolution.
 
+:::::::: Control Voltages
+
+  The control voltage concept should be familiar to anyone who has
+  experience with pre-MIDI hardware synthesizers designs. MIDI
+  definitely has its advantages, but MIDI control data is multiplexed
+  and connecting one MIDI control to a parameter usually involves
+  configuring settings on both ends of the connection in order to
+  separate the control data streams.
+
+  Control Voltages provide a simple 1:1 source to sink relationship
+  and offer much higher resolution, both in time and value, than can
+  be natively expressed through MIDI. The chief advantage of CV in the
+  context of Non-DAW is the ease with which an control sequence can be
+  connected to a mixer module parameter. If you have a MIDI controller
+  that you'd like to use to control parameters of Non-Mixer, consider
+  /jm2cv/, a JACK MIDI to Control Voltage daemon which was written by
+  Peter Nelson specifically for use with Non-Mixer. jm2cv can be
+  acquired by:
+
+> git clone git://fuzzle.org/jm2cv.git
+
 :::: JACK I/O
 
   Each mixer strip is presented as a separate JACK "client". This

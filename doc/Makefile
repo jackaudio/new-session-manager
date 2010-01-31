@@ -13,7 +13,7 @@ ND_OBJS=$(ND_SRCS:.mu=.html)
 
 .PHONY: all clean
 
-all: $(OBJS)
+all: $(OBJS) $(NM_OBJS) $(ND_OBJS)
 
 upload: all
 	@ ln -sf OVERVIEW.html index.html

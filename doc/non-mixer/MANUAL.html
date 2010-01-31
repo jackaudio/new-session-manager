@@ -33,7 +33,9 @@ January 21, 2010<br>
 
 <li><a href="#n:1.1.1.1.1.1.2.">1.1.1.1.1.1.2. Controls</a>
 
-</ul></ul></ul><li><a href="#n:1.1.1.2.">1.1.1.2. JACK I/O</a>
+<ul><li><a href="#n:1.1.1.1.1.1.2.1.">1.1.1.1.1.1.2.1. Control Voltages</a>
+
+</ul></ul></ul></ul><li><a href="#n:1.1.1.2.">1.1.1.2. JACK I/O</a>
 
 </ul></ul></ul></ul></ul><hr></div>
 <h1 id="n:1.">1. User Manual</h1>
@@ -172,6 +174,17 @@ events. Hold down the `Ctrl` key while scrolling the mousewheel to
 achieve finer resolution.
 </td></table>
 </div>
+<h8 id="n:1.1.1.1.1.1.2.1.">1.1.1.1.1.1.2.1. Control Voltages</h8>
+<p>
+The control voltage concept should be familiar to anyone who has experience with pre-MIDI hardware synthesizers designs. MIDI definitely has its advantages, but MIDI control data is multiplexed and connecting one MIDI control to a parameter usually involves configuring settings on both ends of the connection in order to separate the control data streams.
+</p>
+<p>
+Control Voltages provide a simple 1:1 source to sink relationship and offer much higher resolution, both in time and value, than can be natively expressed through MIDI. The chief advantage of CV in the context of Non-DAW is the ease with which an control sequence can be connected to a mixer module parameter. If you have a MIDI controller that you'd like to use to control parameters of Non-Mixer, consider <i>jm2cv</i>, a JACK MIDI to Control Voltage daemon which was written by Peter Nelson specifically for use with Non-Mixer. jm2cv can be acquired by:
+</p>
+<div class="fig example"><table width=100%><tr><td><pre>
+git clone git://fuzzle.org/jm2cv.git
+</pre></td></tr>
+</table></div>
 <h4 id="n:1.1.1.2.">1.1.1.2. JACK I/O</h4>
 <p>
 Each mixer strip is presented as a separate JACK "client". This helps to avoid the necessity of internally duplicating JACK's routing logic and, with JACK2, permits the possibility of parallel execution of mixer strip signal chains.

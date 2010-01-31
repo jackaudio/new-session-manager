@@ -26,6 +26,8 @@ decl {const float STATUS_UPDATE_FREQ = 0.1f;} {}
 
 decl {\#include "Fl_Menu_Settings.H"} {} 
 
+decl {\#include "color_scheme.H"} {} 
+
 decl {\#include "Timeline.H"} {} 
 
 decl {\#include "Transport.H"} {} 
@@ -148,14 +150,11 @@ make_window();
 	
 Fl::visible_focus( 0 );
 
-Fl::get_system_colors();
+get_system_colors();
+
 Fl::scheme( "plastic" );
 
-system_colors[ 0 ] = (Fl_Color)Fl::get_color( FL_BACKGROUND_COLOR );
-system_colors[ 1 ] = (Fl_Color)Fl::get_color( FL_FOREGROUND_COLOR  );
-system_colors[ 2 ] = (Fl_Color)Fl::get_color( FL_BACKGROUND2_COLOR  );
-
-set_theme_dark();
+color_scheme( "dark" );
 
 // constrain window to size of screen.
 {
@@ -555,42 +554,30 @@ timeline->redraw();}
               xywh {10 10 74 25}
             } {
               MenuItem {} {
-                label System
-                callback {//Fl::get_system_colors();
-
-unsigned char r, g, b;
-
-Fl::get_color( system_colors[ 0 ], r, g, b );
-
-Fl::background( r, g, b );
-
-Fl::get_color( system_colors[ 1 ], r, g, b );
-
-Fl::foreground( r, g, b );
-
-Fl::get_color( system_colors[ 2 ], r, g, b );
-
-Fl::background2( r, g, b );
-
-Fl::scheme( Fl::scheme() );}
-                xywh {10 10 40 25} type Radio
-              }
-              MenuItem {} {
                 label Dark
                 callback {
-
-                set_theme_dark(); }
+                color_scheme( "dark" ); } 
                 xywh {20 20 40 25} type Radio value 1
               }
               MenuItem {} {
+                label {Very Dark}
+                callback {
+                color_scheme( "very dark" ); }
+                xywh {20 20 40 25} type Radio
+              }
+              MenuItem {} {
                 label Light
-                callback {Fl::background2( 192, 192, 192 );
-Fl::background( 220, 220, 220 );
-Fl::foreground( 0, 0, 0 );
-
-Fl::scheme( Fl::scheme() );}
+                callback {
+                color_scheme( "light" ); }
                 xywh {30 30 40 25} type Radio
               }
+              MenuItem {} {
+                label System
+                callback {
+                color_scheme( "system" ); }
+                xywh {10 10 40 25} type Radio
+              }
+
             }
           }
           Submenu {} {

@@ -41,6 +41,8 @@
 #include <string.h>
 #include "debug.h"
 
+#include "FL/color_scheme.H"
+
 const double STATUS_UPDATE_FREQ = 0.2f;
 
 extern char *user_config_dir;
@@ -155,39 +157,19 @@ void Mixer::cb_menu(Fl_Widget* o) {
     }
     else if (! strcmp( picked, "&Options/&Display/&Colors/&System") )
     {
-        //Fl::get_system_colors();
-
-        unsigned char r, g, b;
-
-        Fl::get_color( system_colors[ 0 ], r, g, b );
-
-        Fl::background( r, g, b );
-
-        Fl::get_color( system_colors[ 1 ], r, g, b );
-
-        Fl::foreground( r, g, b );
-
-        Fl::get_color( system_colors[ 2 ], r, g, b );
-
-        Fl::background2( r, g, b );
-
-        Fl::scheme( Fl::scheme() );
+        color_scheme( "system" );
     }
     else if (! strcmp( picked, "&Options/&Display/&Colors/&Dark") )
     {
-        Fl::background2( 100, 100, 100 );
-        Fl::background( 50, 50, 50 );
-        Fl::foreground( 255, 255, 255 );
-
-        Fl::scheme( Fl::scheme() );
+        color_scheme( "dark" );
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Colors/&Very Dark") )
+    {
+        color_scheme( "very dark" );
     }
     else if (! strcmp( picked, "&Options/&Display/&Colors/&Light") )
     {
-        Fl::background2( 192, 192, 192 );
-        Fl::background( 220, 220, 220 );
-        Fl::foreground( 0, 0, 0 );
-
-        Fl::scheme( Fl::scheme() );
+        color_scheme( "light" );
     }
     else if ( ! strcmp( picked, "&Help/&About" ) )
     {
@@ -214,13 +196,10 @@ void Mixer::cb_menu(Fl_Widget* o, void* v) {
 Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
 {
+    get_system_colors();
 
-    Fl::get_system_colors();
     Fl::scheme( "plastic" );
-
-    system_colors[ 0 ] = (Fl_Color)Fl::get_color( FL_BACKGROUND_COLOR );
-    system_colors[ 1 ] = (Fl_Color)Fl::get_color( FL_FOREGROUND_COLOR  );
-    system_colors[ 2 ] = (Fl_Color)Fl::get_color( FL_BACKGROUND2_COLOR  );
+    color_scheme( "dark" );
 
     _rows = 1;
     box( FL_NO_BOX );
@@ -237,9 +216,10 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "&Mixer/&Rows/Three", '3', 0, 0 );
         o->add( "_&Options/&Display/&Style/&Default", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
         o->add( "_&Options/&Display/&Style/&Flat", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
-        o->add( "_&Options/&Display/&Colors/&Dark", 0, 0, 0, FL_MENU_RADIO  );
+        o->add( "_&Options/&Display/&Colors/&Dark", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
+        o->add( "_&Options/&Display/&Colors/&Very Dark", 0, 0, 0, FL_MENU_RADIO  );
         o->add( "_&Options/&Display/&Colors/&Light", 0, 0, 0, FL_MENU_RADIO  );
+        o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
         o->add( "&Help/&Manual" );
         o->add( "&Help/&About" );
         o->callback( cb_menu, this );

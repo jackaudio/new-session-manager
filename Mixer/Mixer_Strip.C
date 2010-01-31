@@ -303,7 +303,7 @@ Mixer_Strip::init ( )
 //    box(FL_THIN_UP_BOX);
     box( FL_RFLAT_BOX );
 
-    Fl_Group::color( fl_darker( FL_BACKGROUND_COLOR ) );
+    Fl_Group::color( FL_BACKGROUND_COLOR );
 
     clip_children( 1 );
 
@@ -461,7 +461,7 @@ Mixer_Strip::draw ( void )
     if ( damage() != FL_DAMAGE_USER1 )
         Fl_Group::draw();
 
-    Fl_Group::draw_box( FL_ROUNDED_FRAME, x(), y(), w(), h(), _focused ? Fl_Group::selection_color() : Fl_Group::color() );
+    Fl_Group::draw_box( FL_ROUNDED_FRAME, x(), y(), w(), h(), _focused ? Fl_Group::selection_color() : FL_BLACK );
 }
 
 

@@ -89,6 +89,8 @@ class Loggable
 
 private:
 
+    static unsigned int _relative_id;
+
     unsigned int _id;
 
     Log_Entry *_old_state;
@@ -182,6 +184,10 @@ public:
     virtual const char *class_name ( void ) const = 0;
 
     virtual void log_children ( void ) const { return; }
+
+    static void begin_relative_id_mode ( void );
+    
+    static void end_relative_id_mode ( void );
 
     static bool do_this ( const char *s, bool reverse );
 

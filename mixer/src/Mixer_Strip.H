@@ -125,6 +125,10 @@ private:
     static void menu_cb ( Fl_Widget *w, void *v );
     Fl_Menu_Button & menu ( void ) const;
 
+    static void snapshot ( void *v );
+    void snapshot ( void );
+    bool export_strip ( const char *filename );
+
 protected:
 
     void get ( Log_Entry &e ) const;
@@ -134,6 +138,8 @@ protected:
     virtual void draw ( void );
 
 public:
+
+    static bool import_strip ( const char *filename );
 
     void command_move_left ( void );
     void command_move_right ( void );

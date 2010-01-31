@@ -57,6 +57,9 @@ class Chain : public Fl_Group, public Loggable {
 
 private:
 
+    static void snapshot ( void *v );
+    void snapshot ( void );
+
     void cb_handle(Fl_Widget*);
     static void cb_handle(Fl_Widget*, void*);
 
@@ -103,6 +106,8 @@ public:
     bool add ( Controller_Module *m );
     bool insert ( Module *m, Module *n );
     void add_control ( Controller_Module *m );
+
+    bool do_export ( const char *filename );
 
     void initialize_with_default ( void );
 

@@ -734,6 +734,33 @@ Chain::resize ( int X, int Y, int W, int H )
 
 
 
+/*****************/
+/* Import/Export */
+/*****************/
+
+void
+Chain::snapshot ( void *v )
+{
+    ((Chain*)v)->snapshot();
+}
+
+void
+Chain::snapshot ( void )
+{
+    log_children();
+}
+
+bool
+Chain::do_export ( const char *filename )
+{
+    MESSAGE( "Exporting chain state" );
+    Loggable::snapshot_callback( &Chain::snapshot, this );
+    Loggable::snapshot( filename );
+    return true;
+}
+
+
+
 /**********/
 /* Engine */
 /**********/

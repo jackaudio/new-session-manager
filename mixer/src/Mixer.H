@@ -47,7 +47,6 @@ private:
     Fl_Color system_colors[3];
 
     Mixer_Strip* track_by_name ( const char *name );
-    char * get_unique_track_name ( const char *name );
 
     void snapshot ( void );
     static void snapshot ( void *v ) { ((Mixer*)v)->snapshot(); }
@@ -74,7 +73,9 @@ protected:
 
 public:
 
-  int min_h ( void ) const { return Mixer_Strip::min_h() + (18 * 2); }
+    char * get_unique_track_name ( const char *name );
+
+    int min_h ( void ) const { return Mixer_Strip::min_h() + (18 * 2); }
 
     void rows ( int n );
     virtual void resize ( int X, int Y, int W, int H );

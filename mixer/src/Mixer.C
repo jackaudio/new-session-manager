@@ -251,6 +251,16 @@ void Mixer::cb_menu(Fl_Widget* o) {
                 command_add_strip();
         }
     }
+    else if ( !strcmp( picked, "&Mixer/&Import Strip" ) )
+    {
+        const char *s = fl_file_chooser( "Export strip to filename:", "*.strip", NULL, 0 );
+
+        if ( s )
+        {
+            if (! Mixer_Strip::import_strip( s ) )
+                fl_alert( "%s", "Failed to import strip!" );
+        }
+    }
     else if (! strcmp( picked, "&Mixer/&Rows/One") )
     {
         rows( 1 );
@@ -382,6 +392,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "&Project/&Quit", FL_CTRL + 'q', 0, 0 );
         o->add( "&Mixer/&Add Strip", 'a', 0, 0 );
         o->add( "&Mixer/Add &N Strips" );
+        o->add( "&Mixer/&Import Strip" );
         o->add( "&Mixer/&Rows/One", '1', 0, 0 );
         o->add( "&Mixer/&Rows/Two", '2', 0, 0 );
         o->add( "&Mixer/&Rows/Three", '3', 0, 0 );

@@ -38,7 +38,7 @@ public:
         {
             clear_visible_focus();
             up_box( FL_NO_BOX );
-            when(FL_WHEN_ENTER_KEY);
+            when(FL_WHEN_ENTER_KEY_ALWAYS);
         }
 
     void up_box ( Fl_Boxtype b ) { _up_box = b;  }

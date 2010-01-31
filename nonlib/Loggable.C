@@ -88,6 +88,9 @@ Loggable::block_end ( void )
 Loggable *
 Loggable::find ( unsigned int id )
 {
+    if ( _relative_id )
+        id += _relative_id;
+
     return _loggables[ id ].loggable;
 }
 
@@ -329,6 +332,25 @@ Loggable::escape ( const char *s )
     return r;
 }
 
+unsigned int Loggable::_relative_id = 0;
+
+/* calls to do_this() between invocation of this method and
+ * end_relative_id_mode() will have all their IDs made relative to the
+ * highest available ID at this time of this call. Non-Mixer uses
+ * this to allow importing of module chains */
+void
+Loggable::begin_relative_id_mode ( void )
+{
+    _relative_id = ++_log_id;
+}
+
+void
+Loggable::end_relative_id_mode ( void )
+{
+    _relative_id = 0;
+}
+
+
 /** 'do' a message like "Audio_Region 0xF1 set :r 123" */
 bool
 Loggable::do_this ( const char *s, bool reverse )
@@ -395,6 +417,9 @@ Loggable::do_this ( const char *s, bool reverse )
         ASSERT( _class_map[ std::string( classname ) ], "Journal contains an object of class \"%s\", but I don't know how to create such objects.", classname );
 
         {
+            if ( _relative_id )
+                id += _relative_id;
+
             /* create */
             Loggable *l = _class_map[ std::string( classname ) ]( e, id );
             l->log_create();

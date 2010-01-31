@@ -56,6 +56,7 @@
 #include <FL/Fl_Menu_Button.H>
 #include "FL/test_press.H"
 #include "FL/menu_popup.H"
+#include <FL/Fl_File_Chooser.H>
 
 extern Mixer *mixer;
 
@@ -242,7 +243,7 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
     else if ( o == name_field )
     {
         name( name_field->value() );
-        take_focus();
+        Fl::focus( this );
     }
     else if ( o == width_button )
     {
@@ -261,8 +262,12 @@ void Mixer_Strip::cb_handle(Fl_Widget* o, void* v) {
 }
 
 void
-Mixer_Strip::name ( const char *name ) {
+Mixer_Strip::name ( const char *name )
+{
+    if ( this->name() && !strcmp( name, this->name() ) )
+        return;
 
+    name = mixer->get_unique_track_name( name );
 
     char *s = strdup( name );
 
@@ -521,6 +526,43 @@ Mixer_Strip::draw ( void )
     Fl_Group::draw_box( FL_UP_FRAME, x(), y(), w(), h(), Fl::focus() == this ? Fl_Group::selection_color() : FL_BLACK );
 }
 
+/*****************/
+/* Import/Export */
+/*****************/
+
+void
+Mixer_Strip::snapshot ( void *v )
+{
+    ((Mixer_Strip*)v)->snapshot();
+}
+
+void
+Mixer_Strip::snapshot ( void )
+{
+    log_children();
+}
+
+bool
+Mixer_Strip::export_strip ( const char *filename )
+{
+    MESSAGE( "Exporting chain state" );
+    Loggable::snapshot_callback( &Mixer_Strip::snapshot, this );
+    Loggable::snapshot( filename );
+    return true;
+}
+
+bool
+Mixer_Strip::import_strip ( const char *filename )
+{
+    MESSAGE( "Importing new chain state" );
+    Loggable::begin_relative_id_mode();
+    int r = Loggable::replay( filename );
+    Loggable::end_relative_id_mode();
+    return r;
+}
+
+
+
 
 
 void
@@ -558,6 +600,20 @@ Mixer_Strip::menu_cb ( const Fl_Menu_ *m )
             color( fl_rgb_color( r, g, b ) );
 
         redraw();
+    }
+    else if ( !strcmp( picked, "/Export Strip" ) )
+    {
+        char *suggested_name;
+        asprintf( &suggested_name, "%s.strip", name() );
+
+        const char *s = fl_file_chooser( "Export strip to filename:", "*.strip", suggested_name, 0 );
+
+        free( suggested_name );
+
+        if ( s )
+            export_strip( s );
+
+        fl_message( "Strip exported." );
     }
     else if ( ! strcmp( picked, "/Remove" ) )
     {
@@ -598,6 +654,7 @@ Mixer_Strip::menu ( void ) const
             { "Move Left",      '[', 0, 0  },
             { "Move Right",     ']', 0, 0 },
             { "Color",           0, 0, 0 },
+            { "Export Strip",           0, 0, 0 },
             { "Rename",          FL_CTRL + 'n', 0, 0 },
             { "Remove",          FL_Delete, 0, 0 },
             { 0 },

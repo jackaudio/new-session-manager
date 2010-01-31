@@ -115,15 +115,15 @@ void Mixer::cb_menu(Fl_Widget* o) {
     }
     else if (! strcmp( picked, "&Project/&Save" ) )
     {
-        Project::save();
+        command_save();
     }
     else if (! strcmp( picked, "&Project/&Quit") )
     {
-        quit();
+        command_quit();
     }
     else if ( !strcmp( picked, "&Mixer/&Add Strip" ) )
     {
-        new_strip();
+        command_add_strip();
     }
     else if ( !strcmp( picked, "&Mixer/Add &N Strips" ) )
     {
@@ -132,7 +132,7 @@ void Mixer::cb_menu(Fl_Widget* o) {
         if ( s )
         {
             for ( int i = atoi( s ); i > 0; i-- )
-                new_strip();
+                command_add_strip();
         }
     }
     else if (! strcmp( picked, "&Mixer/&Rows/One") )
@@ -486,4 +486,58 @@ Mixer::handle ( int m )
     }
 
     return 0;
+}
+
+
+
+/************/
+/* Commands */
+/************/
+
+bool
+Mixer::command_save ( void )
+{
+    return Project::save();
+}
+
+bool
+Mixer::command_load ( const char *path, const char *display_name )
+{
+    if ( int err = Project::open( path ) )
+    {
+        // fl_alert( "Error opening project specified on commandline: %s", Project::errstr( err ) );
+        return false;
+    }
+
+    if ( display_name )
+        Project::name( display_name );
+
+    return true;
+}
+
+bool
+Mixer::command_new ( const char *path, const char *display_name )
+{
+    if ( ! Project::create( path, "" ) )
+        return false;
+
+    if ( display_name )
+        Project::name( display_name );
+
+    return true;
+//        fl_alert( "Error creating project!" );
+}
+
+void
+Mixer::command_quit ( void )
+{
+    quit();
+}
+
+/*  */
+
+void
+Mixer::command_add_strip ( void )
+{
+    new_strip();
 }

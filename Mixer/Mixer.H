@@ -83,6 +83,16 @@ public:
 
     Mixer ( int X, int Y, int W, int H, const char *L );
     virtual ~Mixer();
+
+public:
+
+    bool command_save ( void );
+    bool command_load ( const char *path, const char *display_name = 0 );
+    bool command_new ( const char *path, const char *display_name = 0 );
+    void command_quit ( void );
+
+    void command_add_strip ( void );
+
 };
 
 extern Mixer* mixer;

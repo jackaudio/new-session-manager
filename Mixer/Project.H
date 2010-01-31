@@ -50,6 +50,7 @@ public:
     static const char *errstr ( int n ) { return _errstr[ ( 0 - n ) - 1 ]; }
 
     static const char *name ( void ) { return Project::_name; }
+    static void name ( const char *v );
     static void compact ( void );
     static bool close ( void );
     static bool save ( void );

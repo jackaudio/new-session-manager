@@ -84,6 +84,12 @@ Project::set_name ( const char *name )
             *s = ' ';
 }
 
+void
+Project::name ( const char *name )
+{
+    strcpy( Project::_name, name );
+}
+
 bool
 Project::write_info ( void )
 {

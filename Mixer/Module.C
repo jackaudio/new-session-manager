@@ -489,6 +489,12 @@ Module::handle ( int m )
                 command_remove();
                 return 1;
             }
+            else if ( test_press( FL_BUTTON2 ) )
+            {
+                bypass( !bypass() );
+                redraw();
+                return 1;
+            }
 
             return 0;
         }

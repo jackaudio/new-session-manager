@@ -1,6 +1,6 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0110 
-header_name {.H} 
+version 1.0110
+header_name {.H}
 code_name {.C}
 comment {//
 // Copyright (C) 2008-2010 Jonathan Moore Liles
@@ -20,7 +20,7 @@ comment {//
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 } {in_source in_header
-} 
+}
 
 decl {const float STATUS_UPDATE_FREQ = 0.1f;} {} 
 
@@ -828,7 +828,7 @@ solo_blinker->value( Track::soloing() );
 rec_blinker->value( transport->rolling && transport->rec_enabled() );
 sm_blinker->value( timeline->session_manager_name() != NULL );
 sm_blinker->tooltip( timeline->session_manager_name() );
-selected_blinker->value( timeline->nselected() );} {selected
+selected_blinker->value( timeline->nselected() );
 seek_blinker->value( timeline->seek_pending() );
 project_name->redraw();} {}
   }

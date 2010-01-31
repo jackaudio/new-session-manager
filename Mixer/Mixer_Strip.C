@@ -488,7 +488,9 @@ Mixer_Strip::menu_cb ( const Fl_Menu_ *m )
     else if ( ! strcmp( picked, "/Move Right" ) )
         command_move_right();
     else if ( ! strcmp( picked, "/Rename" ) )
-        name_field->take_focus();
+    {
+        ((Fl_Sometimes_Input*)name_field)->take_focus();
+    }
     else if ( ! strcmp( picked, "/Color" ) )
     {
         unsigned char r, g, b;

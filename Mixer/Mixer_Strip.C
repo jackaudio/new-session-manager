@@ -42,6 +42,8 @@
 #include "FL/Fl_Flowpack.H"
 #include <FL/Fl_Input.H>
 #include <FL/fl_ask.H>
+#include <FL/Fl_Color_Chooser.H>
+#include <FL/Fl.H>
 #include "Mixer.H"
 
 #include "Chain.H"
@@ -487,6 +489,17 @@ Mixer_Strip::menu_cb ( const Fl_Menu_ *m )
         command_move_right();
     else if ( ! strcmp( picked, "/Rename" ) )
         name_field->take_focus();
+    else if ( ! strcmp( picked, "/Color" ) )
+    {
+        unsigned char r, g, b;
+
+        Fl::get_color( color(), r, g, b );
+
+        if ( fl_color_chooser( "Strip Color", r, g, b ) )
+            color( fl_rgb_color( r, g, b ) );
+
+        redraw();
+    }
     else if ( ! strcmp( picked, "/Remove" ) )
     {
         if ( Fl::event_shift() || 1 == fl_choice( "Are you sure you want to remove this strip?\n\n(this action cannot be undone)", "Cancel", "Remove", NULL ) )

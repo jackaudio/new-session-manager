@@ -64,5 +64,4 @@ public:
 
     int dropped ( void ) const { return _buffers_dropped; }
     void buffer_size_callback ( void ( *buffer_size_callback ) ( nframes_t, void * ), void *user_data );
-
 };

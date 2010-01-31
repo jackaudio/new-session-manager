@@ -98,5 +98,6 @@ namespace JACK
         bool zombified ( void ) const { return _zombified; }
         float cpu_load ( void ) const { return jack_cpu_load( _client ); }
 
+        static int maximum_name_length ( void ) { return jack_client_name_size(); }
     };
 }

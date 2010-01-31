@@ -116,6 +116,8 @@ public:
 
     void log_children ( void );
 
+    static int maximum_name_length ( void );
+
     Engine *engine ( void ) const { return _engine; }
 
     LOG_CREATE_FUNC( Chain );

@@ -398,6 +398,12 @@ Chain::can_configure_outputs ( Module *m, int n ) const
     return true;
 }
 
+int
+Chain::maximum_name_length ( void )
+{
+    return JACK::Client::maximum_name_length() - strlen( APP_NAME "/" );
+}
+
 /* rename chain... we have to let our modules know our name has
  * changed so they can take the appropriate action (in particular the
  * JACK module). */
@@ -406,7 +412,6 @@ Chain::name ( const char *name )
 {
     char ename[512];
     snprintf( ename, sizeof(ename), "%s/%s", APP_NAME, name );
-
 
     if ( ! _engine )
     {

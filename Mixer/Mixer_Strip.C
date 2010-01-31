@@ -238,11 +238,19 @@ void Mixer_Strip::cb_handle(Fl_Widget* o, void* v) {
     ((Mixer_Strip*)(v))->cb_handle(o);
 }
 
-
-
 void
 Mixer_Strip::name ( const char *name ) {
+
+
     char *s = strdup( name );
+
+    if ( strlen( s ) > Chain::maximum_name_length() )
+    {
+        s[Chain::maximum_name_length() - 1] = '\0';
+
+        fl_alert( "Name \"%s\" is too long, truncating to \"%s\"", name, s );
+    }
+
     name_field->value( s );
     label( s );
     if ( _chain )

@@ -574,6 +574,8 @@ Mixer_Strip::handle ( int m )
         break;
         case FL_PUSH:
         {
+            take_focus();
+
             if ( Fl_Group::handle( m ) )
                 return 1;
             else if ( test_press( FL_BUTTON3 ) )

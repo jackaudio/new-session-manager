@@ -111,7 +111,7 @@ TAGS: $(SRCS)
 ifneq ($(CALCULATING),yes)
 	@ echo -n Calculating dependencies...
 	@ makedepend -f- -- $(CXXFLAGS) $(INCLUDES) -- $(SRCS) 2>/dev/null > .deps  && echo $(DONE)
-	# @ gcc -M $(CXXFLAGS) $(INCLUDES) $(SRCS) > .deps && echo $(DONE)
+	@ # gcc -M $(CXXFLAGS) $(INCLUDES) $(SRCS) > .deps && echo $(DONE)
 endif
 
 

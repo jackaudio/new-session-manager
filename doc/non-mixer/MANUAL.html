@@ -21,21 +21,29 @@ January 21, 2010<br>
 <li><a href="#n:1.">1. User Manual</a>
 <ul><li><a href="#n:1.1.">1.1. The Mixer</a>
 
-<ul><li><a href="#n:1.1.1.">1.1.1. Mixer Strip</a>
+<ul><li><a href="#n:1.1.1.">1.1.1. Display Options</a>
 
-<ul><li><a href="#n:1.1.1.1.">1.1.1.1. Signal Processing</a>
+<li><a href="#n:1.1.2.">1.1.2. Mixer Strips</a>
 
-<ul><li><a href="#n:1.1.1.1.1.">1.1.1.1.1. Signal Chain</a>
+<ul><li><a href="#n:1.1.2.1.">1.1.2.1. Navigation</a>
 
-<ul><li><a href="#n:1.1.1.1.1.1.">1.1.1.1.1.1. Modules</a>
+<li><a href="#n:1.1.2.2.">1.1.2.2. Control</a>
 
-<ul><li><a href="#n:1.1.1.1.1.1.1.">1.1.1.1.1.1.1. Module Parameter Editor</a>
+<li><a href="#n:1.1.2.3.">1.1.2.3. Signal Chain</a>
 
-<li><a href="#n:1.1.1.1.1.1.2.">1.1.1.1.1.1.2. Controls</a>
+<ul><li><a href="#n:1.1.2.3.1.">1.1.2.3.1. Modules</a>
 
-<ul><li><a href="#n:1.1.1.1.1.1.2.1.">1.1.1.1.1.1.2.1. Control Voltages</a>
+<ul><li><a href="#n:1.1.2.3.1.1.">1.1.2.3.1.1. Manipulation</a>
 
-</ul></ul></ul></ul><li><a href="#n:1.1.1.2.">1.1.1.2. JACK I/O</a>
+<li><a href="#n:1.1.2.3.1.2.">1.1.2.3.1.2. Module Parameter Editor</a>
+
+<li><a href="#n:1.1.2.3.1.3.">1.1.2.3.1.3. Controls</a>
+
+<ul><li><a href="#n:1.1.2.3.1.3.1.">1.1.2.3.1.3.1. Control Voltages</a>
+
+</ul></ul></ul></ul><li><a href="#n:1.1.3.">1.1.3. Projects</a>
+
+<ul><li><a href="#n:1.1.3.1.">1.1.3.1. JACK I/O</a>
 
 </ul></ul></ul></ul></ul><hr></div>
 <h1 id="n:1.">1. User Manual</h1>
@@ -51,7 +59,7 @@ January 21, 2010<br>
 The Non-Mixer is a stand-alone audio mixer, utilizing JACK as an audio subsystem. At the time of writing, the architecture of Non-Mixer is unique. By making the mixer stand-alone, concepts such as busses, sends, and inserts are eliminated, as the same goals can be achieved by simply adding more strips to the mixer.
 </p>
 <p>
-Start by creating a new project.
+Start by creating a new project (menu item <tt>Project<i>New</i></tt>.
 </p>
 <center><div class="fig image"><table id="Fig.1.2" border=1>
 <caption>
@@ -61,7 +69,13 @@ Start by creating a new project.
 <tr><td><img src="new-project.png" alt="fig. 1.2"></td></tr>
 </table></div></center>
 <p>
-<h3 id="n:1.1.1.">1.1.1. Mixer Strip</h3>
+After the project has been created. Hit <tt>a</tt> or choose <tt>Mixer/Add Strip</tt> from the menu to add a new strip to the mixer.
+</p>
+<h3 id="n:1.1.1.">1.1.1. Display Options</h3>
+<p>
+The display options, found in the <tt>Options/Display</tt> submenu may be adjusted to suit your needs. Set the color scheme, widget style, and other graphic options to your liking. These options are global and affect all projects.
+</p>
+<h3 id="n:1.1.2.">1.1.2. Mixer Strips</h3>
 <center><div class="fig image"><table id="Fig.1.3" border=1>
 <caption>
 <strong>Fig. 1.3.</strong> Mixer Strip
@@ -76,17 +90,25 @@ Each mixer strip has a name and color, each of which may be defined by the user.
 Strips start out in <i>narrow</i> mode, with the <i>fader</i> view enabled. Click the desired button to toggle the mode or view.
 </p>
 <p>
-The fader view comprises a large gain control and digital peak meter indicator. These are automatically connected to the default gain and meter modules of the strips signal chain.
+<p>
+The fader view comprises a large gain control and digital peak meter indicator. These are automatically connected to the default gain and meter modules of the strip's signal chain.
 </p>
 <p>
 To see how an audio signal traveling through this strip will be processed, switch to its <i>signal</i> view.
 </p>
-<h4 id="n:1.1.1.1.">1.1.1.1. Signal Processing</h4>
-<h5 id="n:1.1.1.1.1.">1.1.1.1.1. Signal Chain</h5>
+<h4 id="n:1.1.2.1.">1.1.2.1. Navigation</h4>
+<p>
+A strip is focused when you click on it. Focus can be removed back and forth between strips with <tt>Tab</tt> and <tt>Shift-Tab</tt>.
+</p>
+<h4 id="n:1.1.2.2.">1.1.2.2. Control</h4>
+<p>
+The focused strip can be moved in the display order via the <tt>[</tt> and <tt>]</tt> keys. <tt>Delete</tt> removes a strip (with confirmation dialog). <tt>n</tt> and <tt>w</tt> set the focused strip's width to <i>narrow</i> or <i>wide</i>, respectively, and <tt>f</tt> and <tt>s</tt> switch between <i>fader</i> and <i>signal</i> views. The strip's context menu can be invoked without the mouse by hitting the <tt>Menu</tt> key (assuming your keyboard has one).
+</p>
+<h4 id="n:1.1.2.3.">1.1.2.3. Signal Chain</h4>
 <p>
 The signal chain view of a mixer strip provides a way to view and manipulate the signal processing of a mixer strip.
 </p>
-<h6 id="n:1.1.1.1.1.1.">1.1.1.1.1.1. Modules</h6>
+<h5 id="n:1.1.2.3.1.">1.1.2.3.1. Modules</h5>
 <center><div class="fig image"><table id="Fig.1.4" border=1>
 <caption>
 <strong>Fig. 1.4.</strong> Modules
@@ -95,13 +117,14 @@ The signal chain view of a mixer strip provides a way to view and manipulate the
 <tr><td><img src="modules.png" alt="fig. 1.4"></td></tr>
 </table></div></center>
 <p>
-All signal processing in Non Mixer occurs in <i>Modules</i>. Modules are
+All signal processing in Non Mixer occurs in <i>Modules</i>. Modules are signal processing abstractions providing ports for audio and control I/O and, in addition, some simple user interface. Sink and source modules carry audio out of and into JACK.
 </p>
 <p>
-<p>
-Modules are displayed as named blocks. Some modules may have additional GUI components.
+Modules are displayed as named blocks. Some modules (e.g. the Meter module) may have additional GUI components.
 </p>
 <p>
+Each module has zero or more audio I/O ports and zero or more control ports. Audio routing between modules is handled automatically. Modules with mono audio configurations (one channel in, one channel out) can be automatically adjusted to support any number of discrete channels. Modules with more (related) channels, however, introduce restrictions on the order in which modules can be chained.
+</p>
 <p>
 An indicator in the upper left-hand corner of each module block indicates whether the module has any parameters bound to controls.
 </p>
@@ -120,16 +143,20 @@ Non Mixer has several built-in modules. They are:
 <dt><em>Plugin</em></dt>
 <dd>Hosts a LADSPA plugin</dd>
 </dl>
+<h6 id="n:1.1.2.3.1.1.">1.1.2.3.1.1. Manipulation</h6>
 <p>
-Left-clicking on a module brings up the Module Parameter Editor.
+Left-clicking on a module brings up a Module Parameter Editor window for the selected module.
 </p>
 <p>
-Shift+Left-clicking on a module brings up a menu which allows you to pick a new module to insert before this one in the chain.
+Right-clicking on a module brings up a context menu allowing you manipulate the module, as well as to pick a new module to insert before the selected one in the chain.
+</p>
+<p>
+Middle-clicking on a module toggles its activation state (the audio signal will bypass inactive modules).
 </p>
 <p>
 Control+Right-clicking on a module causes it to be removed from the chain (modules added by default cannot be removed).
 </p>
-<h7 id="n:1.1.1.1.1.1.1.">1.1.1.1.1.1.1. Module Parameter Editor</h7>
+<h6 id="n:1.1.2.3.1.2.">1.1.2.3.1.2. Module Parameter Editor</h6>
 <center><div class="fig image"><table id="Fig.1.5" border=1>
 <caption>
 <strong>Fig. 1.5.</strong> Module Parameter Editor
@@ -157,7 +184,7 @@ The Module Parameter Editor is used to alter the values of a module's parameters
 <p>
 Underneath each control is a bind button. Clicking adds a new control to the chain's <i>Controls</i> view and binds it to the parameter in question. For simplicity, only one control at a time may be bound to a given parameter.
 </p>
-<h7 id="n:1.1.1.1.1.1.2.">1.1.1.1.1.1.2. Controls</h7>
+<h6 id="n:1.1.2.3.1.3.">1.1.2.3.1.3. Controls</h6>
 <center><div class="fig image"><table id="Fig.1.8" border=1>
 <caption>
 <strong>Fig. 1.8.</strong> Control View
@@ -166,6 +193,8 @@ Underneath each control is a bind button. Clicking adds a new control to the cha
 <tr><td><img src="controls.png" alt="fig. 1.8"></td></tr>
 </table></div></center>
 <p>
+The control view of a chain groups together all of the controls bound to parameters of modules in that chain. The default mode of controls is <i>Manual</i>. Right click on a control to bring up a menu which will allow you to select one of the available control I/O methods to use. When <i>Control Voltage</i> (CV) is selected, a CV input port will be created on the containing mixer strip's JACK client. The control will now accept values from that input. A control bound and configured in this way can then be connected to the output of a Non-DAW control sequence using your favorite connection manager.
+</p>
 <div class=admonition>
 <table width=100%>
 <tr><td>NOTE:
@@ -174,18 +203,26 @@ events. Hold down the `Ctrl` key while scrolling the mousewheel to
 achieve finer resolution.
 </td></table>
 </div>
-<h8 id="n:1.1.1.1.1.1.2.1.">1.1.1.1.1.1.2.1. Control Voltages</h8>
+<h7 id="n:1.1.2.3.1.3.1.">1.1.2.3.1.3.1. Control Voltages</h7>
 <p>
-The control voltage concept should be familiar to anyone who has experience with pre-MIDI hardware synthesizers designs. MIDI definitely has its advantages, but MIDI control data is multiplexed and connecting one MIDI control to a parameter usually involves configuring settings on both ends of the connection in order to separate the control data streams.
+The control voltage concept should be familiar to anyone who has experience with analog modular synthesizers. MIDI, while having definite advantages in many respects, multiplexes control data in such a way as to make connecting one MIDI control to a parameter involve a significant inconvenience, usually requiring the adjustment of settings on both ends of the connection in order to separate the control data streams.
 </p>
 <p>
-Control Voltages provide a simple 1:1 source to sink relationship and offer much higher resolution, both in time and value, than can be natively expressed through MIDI. The chief advantage of CV in the context of Non-DAW is the ease with which an control sequence can be connected to a mixer module parameter. If you have a MIDI controller that you'd like to use to control parameters of Non-Mixer, consider <i>jm2cv</i>, a JACK MIDI to Control Voltage daemon which was written by Peter Nelson specifically for use with Non-Mixer. jm2cv can be acquired by:
+Control Voltages, on the other hand, provide a simple 1:1 source to sink relationship and offer much higher resolution, both in time and value, than can be natively expressed through MIDI. The chief advantage of CV in the context of Non-DAW is the ease with which an control sequence can be connected to a mixer module parameter. If you have a MIDI controller that you'd like to use to control parameters of Non-Mixer, consider <i>jm2cv</i>, a JACK MIDI to Control Voltage daemon which was written by Peter Nelson specifically for use with Non-Mixer. jm2cv can be acquired by:
 </p>
 <div class="fig example"><table width=100%><tr><td><pre>
 git clone git://fuzzle.org/jm2cv.git
 </pre></td></tr>
 </table></div>
-<h4 id="n:1.1.1.2.">1.1.1.2. JACK I/O</h4>
+<h3 id="n:1.1.3.">1.1.3. Projects</h3>
+<p>
+A Non-Mixer project is a directory where Non-Mixer keeps the strip settings project specific settings, some meta-data.  A project is completely self-contained. You can rename a project as simply as:
+</p>
+<div class="fig example"><table width=100%><tr><td><pre>
+$ mv Project-A Project-B
+</pre></td></tr>
+</table></div>
+<h4 id="n:1.1.3.1.">1.1.3.1. JACK I/O</h4>
 <p>
 Each mixer strip is presented as a separate JACK "client". This helps to avoid the necessity of internally duplicating JACK's routing logic and, with JACK2, permits the possibility of parallel execution of mixer strip signal chains.
 </p>

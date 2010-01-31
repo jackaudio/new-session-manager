@@ -122,11 +122,11 @@
 
 ::: Unlimited tracks
 
-  Tracks in a DAW are unlike tracks on tape in that a single track can contain
-  more than one channel of audio. Each audio track has its own record, mute,
-  solo, and gain, as well an active take and any number of inactive takes. A
-  may also have any number of annotation and control sequences associated with
-  it.
+  Tracks in a DAW are unlike tracks on tape in that a single track can
+  contain more than one channel of audio. Each audio track has its own
+  record, mute, solo, and gain, as well an active take and any number
+  of inactive takes. A track may also have any number of annotation
+  and control sequences associated with it.
 
 ::: Unlimited takes
 
@@ -232,11 +232,11 @@
   translates into the DSP workload being spread across multiple CPU
   cores.
 
-  Since the Mixer is an entirely separate unit, you may use any JACK capable
-  mixer client you want instead of, or in myriad combination with, the Non-DAW
-  Mixer. The one called LiveMix works well, but lacks many features of Non's
-  mixer.  All operations on the mixer affect the current mix set state only
-  and are not journaled.
+  Since the Mixer is an entirely separate unit, you may use any JACK
+  capable mixer client you want instead of, or in myriad combination
+  with, the Non-DAW Mixer. The one called LiveMix works well, but
+  lacks many features of Non's mixer.  All operations on the mixer
+  affect the current mix set state only and are not journaled.
 
   The mixer's design is modular, with all DSP occurring in discrete
   modules. One module hosts LADSPA plugins and the mixer is capable of

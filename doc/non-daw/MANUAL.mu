@@ -85,7 +85,7 @@
 
 :::: Settings
 
-  Project specific settings are found in the Project\/Settings submenu.
+  Project specific settings are found in the `Project\/Settings` submenu.
 
 ::: Transport
 

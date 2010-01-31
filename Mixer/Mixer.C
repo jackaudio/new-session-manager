@@ -86,6 +86,8 @@ void Mixer::cb_menu(Fl_Widget* o) {
             free( selected_template );
         }
 
+        update_menu();
+
         if ( default_path )
         {
             write_line( user_config_dir, "default_path", default_path );
@@ -108,8 +110,9 @@ void Mixer::cb_menu(Fl_Widget* o) {
         if ( int err = Project::open( name ) )
         {
             fl_alert( "Error opening project: %s", Project::errstr( err ) );
-            mixer->show();
         }
+
+        update_menu();
 
         mixer->show();
     }
@@ -247,6 +250,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
 
 //    Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );
 
+    update_menu();
 
     load_options();
 }
@@ -472,6 +476,25 @@ Mixer::save_options ( void )
     free( path );
 }
 
+void
+Mixer::update_menu ( void )
+{
+    bool b = Project::open();
+
+    if ( b )
+    {
+        ((Fl_Menu_Item*)menubar->find_item( "&Mixer" ))->flags &= ~FL_MENU_INACTIVE;
+        ((Fl_Menu_Item*)menubar->find_item( "&Project/&Save" ))->flags &= ~FL_MENU_INACTIVE;
+         mixer_strips->activate();
+    }
+    else
+    {
+        ((Fl_Menu_Item*)menubar->find_item( "&Mixer" ))->flags |= FL_MENU_INACTIVE;
+        ((Fl_Menu_Item*)menubar->find_item( "&Project/&Save" ))->flags |= FL_MENU_INACTIVE;
+        mixer_strips->deactivate();
+    }
+}
+
 int
 Mixer::handle ( int m )
 {
@@ -512,6 +535,8 @@ Mixer::command_load ( const char *path, const char *display_name )
     if ( display_name )
         Project::name( display_name );
 
+    update_menu();
+
     return true;
 }
 
@@ -523,6 +548,8 @@ Mixer::command_new ( const char *path, const char *display_name )
 
     if ( display_name )
         Project::name( display_name );
+
+    update_menu();
 
     return true;
 //        fl_alert( "Error creating project!" );

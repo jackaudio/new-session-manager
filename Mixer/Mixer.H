@@ -55,6 +55,7 @@ private:
 
     void load_options ( void );
     void save_options ( void );
+    void update_menu ( void );
 
 protected:
 

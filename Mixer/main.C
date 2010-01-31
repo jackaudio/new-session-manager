@@ -132,9 +132,9 @@ main ( int argc, char **argv )
         {
             MESSAGE( "Loading \"%s\"", argv[1] );
 
-            if ( int err = Project::open( argv[1] ) )
+            if ( ! mixer->command_load( argv[1] ) )
             {
-                fl_alert( "Error opening project specified on commandline: %s", Project::errstr( err ) );
+                fl_alert( "Error opening project specified on commandline" );
             }
         }
         else

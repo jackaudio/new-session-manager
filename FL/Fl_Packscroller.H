@@ -166,6 +166,7 @@ public:
                         return 0;
                     }
                 }
+                return 0;
                 case FL_ENTER:
                 case FL_LEAVE:
                     return 1;

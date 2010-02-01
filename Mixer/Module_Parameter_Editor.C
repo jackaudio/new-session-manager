@@ -200,7 +200,7 @@ Module_Parameter_Editor::make_controls ( void )
                 else
                 {
                     o->type( FL_VERTICAL );
-                    o->size( 24, 120 );
+                    o->size( 32, 120 );
                     /* have to reverse the meaning of these to get the
                      * orientation of the slider right */
                     o->maximum( p->hints.minimum );

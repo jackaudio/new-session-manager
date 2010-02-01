@@ -225,9 +225,9 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
     else if ( o == width_button )
     {
         if ( ((Fl_Button*)o)->value() )
-            size( 300, h() );
+            size( 220, h() );
         else
-            size( 120, h() );
+            size( 96, h() );
 
         if ( parent() )
             parent()->parent()->redraw();
@@ -456,6 +456,8 @@ Mixer_Strip::init ( )
     end();
 
     color( FL_BLACK );
+
+    size( 96, h() );
 
     //  _chain->configure_ports();
 }

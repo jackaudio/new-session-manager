@@ -50,6 +50,7 @@ private:
     Fl_Menu_Bar *menubar;
     Fl_Scroll *scroll;
     Fl_Pack *pack;
+    Fl_Box *project_name;
 
     Fl_Flowpack *mixer_strips;
 

@@ -227,6 +227,12 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "&Help/&About" );
         o->callback( cb_menu, this );
     }
+    { Fl_Box *o = project_name = new Fl_Box( X + 150, Y, W, 24 );
+        o->labelfont( FL_HELVETICA_ITALIC );
+        o->label( 0 );
+        o->align( FL_ALIGN_INSIDE | FL_ALIGN_CENTER );
+        o->labeltype( FL_SHADOW_LABEL );
+    }
     { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - 24 );
         o->box( FL_NO_BOX );
 //        o->type( Fl_Scroll::HORIZONTAL_ALWAYS );
@@ -493,6 +499,8 @@ Mixer::update_menu ( void )
         ((Fl_Menu_Item*)menubar->find_item( "&Project/&Save" ))->flags |= FL_MENU_INACTIVE;
         mixer_strips->deactivate();
     }
+
+    project_name->label( Project::name() );
 }
 
 int

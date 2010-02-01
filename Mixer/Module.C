@@ -476,10 +476,8 @@ Module::menu_cb ( const Fl_Menu_ *m )
 
     if ( ! strcmp( picked, "Edit Parameters" ) )
         command_open_parameter_editor();
-    else if ( ! strcmp( picked, "Activate" ) )
-        command_activate();
-    else if ( ! strcmp( picked, "Deactivate" ) )
-        command_deactivate();
+    else if ( ! strcmp( picked, "Bypass" ) )
+        bypass( ! ( m->mvalue()->flags & FL_MENU_VALUE ) );
     else if ( ! strcmp( picked, "Cut" ) )
     {
         copy();
@@ -531,8 +529,7 @@ Module::menu ( void ) const
     m.add( "Insert", 0, &Module::menu_cb, (void*)this, 0);
     m.add( "Insert", 0, &Module::menu_cb, const_cast< Fl_Menu_Item *>( insert_menu->menu() ), FL_SUBMENU_POINTER );
     m.add( "Edit Parameters", ' ', &Module::menu_cb, (void*)this, 0 );
-    m.add( "Activate",   'a', &Module::menu_cb, (void*)this, ! bypass() ? FL_MENU_INACTIVE : 0 );
-    m.add( "Deactivate", 'd', &Module::menu_cb, (void*)this, bypass() ? FL_MENU_INACTIVE : 0 );
+    m.add( "Bypass",   'b', &Module::menu_cb, (void*)this, FL_MENU_TOGGLE | ( bypass() ? FL_MENU_VALUE : 0 ) );
     m.add( "Cut", FL_CTRL + 'x', &Module::menu_cb, (void*)this, is_default() ? FL_MENU_INACTIVE : 0 );
     m.add( "Copy", FL_CTRL + 'c', &Module::menu_cb, (void*)this, is_default() ? FL_MENU_INACTIVE : 0 );
     m.add( "Paste", FL_CTRL + 'v', &Module::menu_cb, (void*)this, _copied_module_empty ? 0 : FL_MENU_INACTIVE );

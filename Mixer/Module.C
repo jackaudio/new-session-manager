@@ -304,7 +304,7 @@ Module::set_parameters ( const char *parameters )
 void
 Module::draw_box ( void )
 {
-    fl_color( FL_WHITE );
+    fl_color( fl_contrast( FL_FOREGROUND_COLOR, color() ) );
 
     int tw, th, tx, ty;
 
@@ -362,10 +362,9 @@ Module::draw_label ( void )
     Fl_Color c = FL_FOREGROUND_COLOR;
 
     if ( bypass() || ! active() )
-
         c = FL_BLACK;
 
-    fl_color( c );
+    fl_color( fl_contrast( c, is_default() ? FL_BLACK : color() ) );
 
     char *s = NULL;
 

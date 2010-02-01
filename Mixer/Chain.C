@@ -116,10 +116,11 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
     { Fl_Group *o = chain_tab = new Fl_Group( X, Y, W, H, "" );
         o->labeltype( FL_NO_LABEL );
         o->box( FL_FLAT_BOX );
-        o->color( fl_darker( FL_BACKGROUND_COLOR ) );
+//        o->color( fl_darker( FL_BACKGROUND_COLOR ) );
+//        o->color( FL_BACKGROUND_COLOR );
 //        o->box( FL_NO_BOX );
         { Fl_Packscroller *o = new Fl_Packscroller( X, Y, W, H );
-            o->color( fl_darker( FL_BACKGROUND_COLOR ) );
+            o->color( FL_BACKGROUND_COLOR );
 //            o->box( FL_FLAT_BOX );
             o->box( FL_THIN_UP_BOX );
             o->type( Fl_Scroll::VERTICAL );
@@ -138,7 +139,7 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
         o->labeltype( FL_NO_LABEL );
         o->hide();
         { Fl_Scroll *o = new Fl_Scroll( X, Y, W, H );
-            o->color( fl_darker( FL_BACKGROUND_COLOR ) );
+            o->color( FL_BACKGROUND_COLOR );
             o->box( FL_FLAT_BOX );
             o->type( Fl_Scroll::VERTICAL );
             { Fl_Flowpack *o = controls_pack = new Fl_Flowpack( X, Y, W, H );

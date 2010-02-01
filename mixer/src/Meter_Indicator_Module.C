@@ -211,11 +211,10 @@ Meter_Indicator_Module::handle ( int m )
                 /* don't let Module::handle eat our click */
                 return Fl_Group::handle( m );
             }
-            return Module::handle( m );
         }
     }
 
-    return Module::handle( m );
+    return 0;
 }
 
 

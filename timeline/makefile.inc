@@ -12,7 +12,7 @@ Timeline_OBJS:=$(Timeline_SRCS:.C=.o)
 
 Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS)
 
-src/timeline: $(Timeline_OBJS) FL
+src/timeline: $(Timeline_OBJS) FL/libfl_widgets.a nonlib/libnonlib.a
 	@ echo -n Linking timeline...
 	@ $(CXX) $(CXXFLAGS) $(INCLUDES) $(Timeline_LIBS)  $(Timeline_OBJS) -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
 

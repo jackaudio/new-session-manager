@@ -24,7 +24,7 @@ comment {//
 
 decl {const float STATUS_UPDATE_FREQ = 0.1f;} {}
 
-decl {\#include "Fl_Menu_Settings.H"} {} 
+decl {\#include "Fl_Menu_Settings.H"} {}
 
 decl {\#include "color_scheme.H"} {} 
 
@@ -715,7 +715,7 @@ ab.run();}
         }
         Fl_Button seek_blinker {
           label SEEK
-          xywh {640 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 10 selection_color 2 labelfont 2 labelcolor 39 deactivate
+          xywh {640 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 10 selection_color 2 labelfont 2 labelcolor 39 deactivate hide
           code0 {\#include "FL/Fl_Blinker.H"}
           code1 {o->interval( Fl_Blinker::FAST );}
           class Fl_Blinker

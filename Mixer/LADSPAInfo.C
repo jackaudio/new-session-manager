@@ -682,7 +682,7 @@ LADSPAInfo::MetadataRDFDescend(const char * uri,
 	// Add any instances found
 		lrdf_uris * instances = lrdf_get_instances(uri);
 		if (instances) {
-			for (long j = 0; j < instances->count; j++) {
+			for (unsigned long j = 0; j < instances->count; j++) {
 				unsigned long uid = lrdf_get_uid(instances->items[j]);
 				if (m_IDLookup.find(uid) != m_IDLookup.end()) {
 					ri.Plugins.push_back(m_IDLookup[uid]);
@@ -713,7 +713,7 @@ LADSPAInfo::MetadataRDFDescend(const char * uri,
 	lrdf_uris * uris = lrdf_get_subclasses(uri);
 
 	if (uris) {
-		for (long i = 0; i < uris->count; i++) {
+		for (unsigned long i = 0; i < uris->count; i++) {
 			MetadataRDFDescend(uris->items[i], this_uri_index);
 		}
 	}

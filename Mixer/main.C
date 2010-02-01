@@ -75,7 +75,7 @@ ensure_dirs ( void )
 
 #include <signal.h>
 
-static void cb_main ( Fl_Double_Window *o, void *v )
+static void cb_main ( Fl_Double_Window *o, void *)
 {
     if ( Fl::event_key() != FL_Escape )
         o->hide();

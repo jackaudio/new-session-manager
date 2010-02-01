@@ -400,7 +400,7 @@ Chain::can_configure_outputs ( Module *m, int n ) const
     return true;
 }
 
-int
+unsigned int
 Chain::maximum_name_length ( void )
 {
     return JACK::Client::maximum_name_length() - ( strlen( APP_NAME ) + 1 + ( instance_name ? strlen( instance_name ) + 1 : 0 ) );

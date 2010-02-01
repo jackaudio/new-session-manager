@@ -77,7 +77,7 @@ JACK_Module::~JACK_Module ( )
 
 
 int
-JACK_Module::can_support_inputs ( int n )
+JACK_Module::can_support_inputs ( int )
 {
     return audio_output.size();
 }

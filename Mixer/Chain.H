@@ -116,7 +116,7 @@ public:
 
     void log_children ( void );
 
-    static int maximum_name_length ( void );
+    static unsigned int maximum_name_length ( void );
 
     Engine *engine ( void ) const { return _engine; }
 

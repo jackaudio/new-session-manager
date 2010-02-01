@@ -265,7 +265,7 @@ Plugin_Module::configure_inputs( int n )
 }
 
 void *
-Plugin_Module::discover_thread ( void * v )
+Plugin_Module::discover_thread ( void * )
 {
     THREAD_ASSERT( Plugin_Discover );
 

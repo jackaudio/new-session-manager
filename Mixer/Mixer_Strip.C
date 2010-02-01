@@ -258,7 +258,7 @@ Mixer_Strip::name ( const char *name ) {
 }
 
 void
-Mixer_Strip::configure_outputs ( Fl_Widget *o, void *v )
+Mixer_Strip::configure_outputs ( Fl_Widget *, void *v )
 {
     ((Mixer_Strip*)v)->configure_outputs();
 }
@@ -316,8 +316,6 @@ Mixer_Strip::init ( )
 
     set_visible_focus();
     clip_children( 1 );
-
-    Fl_Pack *gain_pack;
 
     { Fl_Pack *o = new Fl_Pack( 2, 2, 114, 100 );
         o->type( Fl_Pack::VERTICAL );
@@ -379,9 +377,6 @@ Mixer_Strip::init ( )
             o->callback( cb_handle, this );
             o->when(FL_WHEN_RELEASE);
         }
-//    { Fl_Pack* o = new Fl_Pack(8, 208, 103, 471);
-//    { Fl_Pack* o = gain_pack = new Fl_Pack(8, 208, 103, 516 );
-
         o->end();
     }
 

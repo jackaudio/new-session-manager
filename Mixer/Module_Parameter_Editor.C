@@ -268,7 +268,7 @@ Module_Parameter_Editor::cb_value_handle ( Fl_Widget *w, void *v )
 }
 
 void
-Module_Parameter_Editor::cb_mode_handle ( Fl_Widget *w, void *v )
+Module_Parameter_Editor::cb_mode_handle ( Fl_Widget *, void *v )
 {
     ((Module_Parameter_Editor*)v)->make_controls();
 }

@@ -59,6 +59,8 @@
 char *user_config_dir;
 Mixer *mixer;
 
+const char *instance_name;
+
 #include <errno.h>
 
 static int
@@ -134,19 +136,41 @@ main ( int argc, char **argv )
     }
 
     {
-        if ( argc > 1 )
+        int r = argc - 1;
+        int i = 1;
+        for ( ; i < argc; ++i, --r )
         {
-            MESSAGE( "Loading \"%s\"", argv[1] );
+            if ( !strcmp( argv[i], "--instance" ) )
+            {
+                if ( r > 1 )
+                {
+                    MESSAGE( "Using instance name \"%s\"", argv[i+1] );
+                    instance_name = argv[i+1];
+                    ++i;
+                }
+                else
+                {
+                    FATAL( "Missing instance name" );
+                }
+            }
+            else if ( !strncmp( argv[i], "--", 2 ) )
+            {
+                WARNING( "Unrecognized option: %s", argv[i] );
+            }
+            else
+                break;
+        }
 
-            if ( ! mixer->command_load( argv[1] ) )
+        if ( r >= 1 )
+        {
+            MESSAGE( "Loading \"%s\"", argv[i] );
+
+            if ( ! mixer->command_load( argv[i] ) )
             {
                 fl_alert( "Error opening project specified on commandline" );
             }
         }
-        else
-        {
-            WARNING( "Running without a project--nothing will be saved." );
-        }
+
     }
 
     Fl::run();

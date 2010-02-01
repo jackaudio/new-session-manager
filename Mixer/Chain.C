@@ -77,6 +77,7 @@
 #include "Mixer_Strip.H"
 #include <dsp.h>
 
+extern char *instance_name;
 
 
 
@@ -402,7 +403,7 @@ Chain::can_configure_outputs ( Module *m, int n ) const
 int
 Chain::maximum_name_length ( void )
 {
-    return JACK::Client::maximum_name_length() - strlen( APP_NAME "/" );
+    return JACK::Client::maximum_name_length() - ( strlen( APP_NAME ) + 1 + ( instance_name ? strlen( instance_name ) + 1 : 0 ) );
 }
 
 /* rename chain... we have to let our modules know our name has
@@ -412,7 +413,7 @@ void
 Chain::name ( const char *name )
 {
     char ename[512];
-    snprintf( ename, sizeof(ename), "%s/%s", APP_NAME, name );
+    snprintf( ename, sizeof(ename), "%s%s%s/%s", APP_NAME, instance_name ? "." : "", instance_name ? instance_name : "", name );
 
     if ( ! _engine )
     {

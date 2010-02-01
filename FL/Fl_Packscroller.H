@@ -170,6 +170,7 @@ public:
                 case FL_LEAVE:
                     return 1;
                 case FL_FOCUS:
+                case FL_UNFOCUS:
                     return 1;
                 case FL_KEYBOARD:
                 {

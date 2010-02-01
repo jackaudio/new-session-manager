@@ -95,9 +95,12 @@ Module::init ( void )
     _chain = 0;
     _instances = 1;
     _bypass = 0;
+
     box( FL_UP_BOX );
     labeltype( FL_NO_LABEL );
     clip_children( 1 );
+    set_visible_focus();
+    selection_color( FL_RED );
 }
 
 
@@ -323,6 +326,11 @@ Module::draw_box ( void )
     for ( int i = instances(); i--; )
     {
         fl_draw_box( box(), tx + (spacing * i), ty, tw / instances(), th, Fl::belowmouse() == this ? fl_lighter( c ) : c );
+    }
+
+    if ( this == Fl::focus() )
+    {
+        fl_draw_box( FL_UP_FRAME, x(), y(), w(), h(), selection_color() );
     }
 
     if ( audio_input.size() && audio_output.size() )
@@ -556,6 +564,8 @@ Module::handle ( int m )
         }
         case FL_PUSH:
         {
+            take_focus();
+
             if ( Fl_Group::handle( m ) )
                 return 1;
             else if ( test_press( FL_BUTTON3 ) )
@@ -582,6 +592,10 @@ Module::handle ( int m )
 
             return 0;
         }
+        case FL_FOCUS:
+        case FL_UNFOCUS:
+            redraw();
+            return 1;
     }
 
     return Fl_Group::handle( m );

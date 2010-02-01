@@ -262,6 +262,7 @@ Controller_Module::connect_to ( Port *p )
 
     control_value = p->control_value();
 
+    w->set_visible_focus();
     w->align(FL_ALIGN_TOP);
     w->labelsize( 10 );
     w->callback( cb_handle, this );
@@ -269,6 +270,7 @@ Controller_Module::connect_to ( Port *p )
     if ( _pad )
     {
         Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( w );
+        flg->set_visible_focus();
         size( flg->w(), flg->h() );
         add( flg );
     }

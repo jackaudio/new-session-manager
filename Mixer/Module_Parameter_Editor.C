@@ -239,6 +239,9 @@ Module_Parameter_Editor::make_controls ( void )
                 o->resizable( 0 );
                 o->end();
 
+                o->set_visible_focus();
+                flg->set_visible_focus();
+
                 flg->position( o->x(), o->y() );
                 bound->position( o->x(), flg->y() + flg->h() );
                 o->size( flg->w(), flg->h() + bound->h() );

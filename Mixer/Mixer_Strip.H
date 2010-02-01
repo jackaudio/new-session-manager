@@ -109,8 +109,6 @@ private:
     void cb_handle(Fl_Widget*);
     static void cb_handle(Fl_Widget*, void*);
 
-    bool _focused;
-
     void set_tab ( void );
 
     void update_port_names ( void );

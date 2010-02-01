@@ -64,6 +64,8 @@ Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
 
     end();
 
+    clear_visible_focus();
+
     Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
 }
 

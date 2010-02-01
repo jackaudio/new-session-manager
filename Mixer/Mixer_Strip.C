@@ -304,7 +304,7 @@ Mixer_Strip::update ( void )
 void
 Mixer_Strip::init ( )
 {
-    selection_color( FL_FOREGROUND_COLOR );
+    selection_color( FL_RED );
 
     _chain = 0;
 
@@ -313,6 +313,7 @@ Mixer_Strip::init ( )
 
     Fl_Group::color( FL_BACKGROUND_COLOR );
 
+    set_visible_focus();
     clip_children( 1 );
 
     Fl_Pack *gain_pack;
@@ -469,7 +470,7 @@ Mixer_Strip::draw ( void )
     if ( damage() != FL_DAMAGE_USER1 )
         Fl_Group::draw();
 
-    Fl_Group::draw_box( FL_ROUNDED_FRAME, x(), y(), w(), h(), _focused ? Fl_Group::selection_color() : FL_BLACK );
+    Fl_Group::draw_box( FL_UP_FRAME, x(), y(), w(), h(), Fl::focus() == this ? Fl_Group::selection_color() : FL_BLACK );
 }
 
 
@@ -588,7 +589,8 @@ Mixer_Strip::handle ( int m )
 
             if ( Fl_Group::handle( m ) )
                 return 1;
-            else if ( test_press( FL_BUTTON3 ) )
+
+            if ( test_press( FL_BUTTON3 ) )
             {
                 menu_popup( &menu() );
                 return 1;
@@ -597,13 +599,11 @@ Mixer_Strip::handle ( int m )
             return 0;
         }
         case FL_FOCUS:
-            _focused = true;
             damage( FL_DAMAGE_USER1 );
-            return 1;
+            return Fl_Group::handle( m ) || 1;
         case FL_UNFOCUS:
-            _focused = false;
             damage( FL_DAMAGE_USER1 );
-            return 1;
+            return Fl_Group::handle( m ) || 1;
     }
 
     return Fl_Group::handle( m );

@@ -95,6 +95,8 @@ private:
 
     int _nest;
 
+    static int _dirty;                                                 /* count of changes */
+
     static void ensure_size ( size_t n );
 
     void log_print ( const Log_Entry *o, const Log_Entry *n ) const;
@@ -182,6 +184,9 @@ public:
     virtual void log_children ( void ) const { return; }
 
     static bool do_this ( const char *s, bool reverse );
+
+    static int dirty ( void ) { return _dirty; }
+    static void clear_dirty ( void ) { _dirty = 0; }
 
     void log_create  ( void ) const;
 

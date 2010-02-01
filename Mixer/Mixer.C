@@ -566,6 +566,14 @@ Mixer::command_new ( const char *path, const char *display_name )
 void
 Mixer::command_quit ( void )
 {
+    if ( Loggable::dirty() )
+    {
+        int i = fl_choice( "There have been changes since the last save. Quitting now will discard them", "Discard", "Cancel", NULL );
+
+        if ( i != 0 )
+            return;
+    }
+
     quit();
 }
 

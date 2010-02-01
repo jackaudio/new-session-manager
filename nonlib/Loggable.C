@@ -45,7 +45,7 @@ using std::max;
 FILE *Loggable::_fp;
 unsigned int Loggable::_log_id = 0;
 int Loggable::_level = 0;
-
+int Loggable::_dirty = 0;
 off_t Loggable::_undo_offset = 0;
 
 std::map <unsigned int, Loggable::log_pair > Loggable::_loggables;
@@ -686,6 +686,8 @@ Loggable::log_end ( void )
         log( "%s 0x%X set ", class_name(), _id );
 
         log_print( _old_state, new_state );
+
+        ++_dirty;
     }
 
     delete new_state;
@@ -703,6 +705,8 @@ Loggable::log_end ( void )
 void
 Loggable::log_create ( void ) const
 {
+    ++_dirty;
+
     if ( ! _fp )
         /* replaying, don't bother */
         return;
@@ -752,6 +756,8 @@ Loggable::log_destroy ( void ) const
 {
     /* the unjournaled state may have changed: make a note of it. */
     record_unjournaled();
+
+    ++_dirty;
 
     if ( ! _fp )
         /* tearing down... don't bother */

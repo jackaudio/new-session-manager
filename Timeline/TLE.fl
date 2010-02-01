@@ -22,7 +22,7 @@ comment {//
 } {in_source in_header
 }
 
-decl {const float STATUS_UPDATE_FREQ = 0.1f;} {} 
+decl {const float STATUS_UPDATE_FREQ = 0.1f;} {}
 
 decl {\#include "Fl_Menu_Settings.H"} {} 
 
@@ -217,7 +217,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   Function {make_window()} {open
   } {
     Fl_Window main_window {
-      label Timeline
+      label {Non DAW : Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	o->hide();} open
       private xywh {705 125 1025 770} type Double resizable xclass Non_DAW visible

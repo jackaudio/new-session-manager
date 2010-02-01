@@ -122,7 +122,7 @@ main ( int argc, char **argv )
     Fl_Double_Window *main_window;
 
     {
-        Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, "Mixer" );
+        Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, "Non-DAW : Mixer" );
         {
             main_window->xclass( APP_NAME );
 

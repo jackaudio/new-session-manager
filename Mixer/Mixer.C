@@ -184,7 +184,7 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         char *pat;
 
-        asprintf( &pat, "file://%s%s.html", DOCUMENT_PATH, "MANUAL.html" );
+        asprintf( &pat, "file://%s.html", DOCUMENT_PATH "/non-mixer/MANUAL" );
 
         open_url( pat );
 

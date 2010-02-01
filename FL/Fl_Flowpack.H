@@ -35,7 +35,7 @@ public:
         {
             resizable( 0 );
             _max_width = _hspacing = _vspacing = 0;
-            _flow = 0;
+            _flow = true;
         }
 
     virtual ~Fl_Flowpack ( )

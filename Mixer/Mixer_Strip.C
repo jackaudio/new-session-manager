@@ -310,6 +310,7 @@ Mixer_Strip::init ( )
 
 //    box(FL_THIN_UP_BOX);
     box( FL_RFLAT_BOX );
+    labeltype( FL_NO_LABEL );
 
     Fl_Group::color( FL_BACKGROUND_COLOR );
 

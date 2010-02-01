@@ -1,0 +1,995 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0110
+header_name {.H}
+code_name {.C}
+comment {//
+// Copyright (C) 2008-2010 Jonathan Moore Liles
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+} {in_source in_header
+}
+
+decl {const float STATUS_UPDATE_FREQ = 0.1f;} {}
+
+decl {\#include "Fl_Menu_Settings.H"} {} 
+
+decl {\#include "color_scheme.H"} {} 
+
+decl {\#include "Timeline.H"} {} 
+
+decl {\#include "Transport.H"} {} 
+
+decl {\#include "Loggable.H"} {} 
+
+decl {\#include "Project.H"} {} 
+
+decl {\#include "Clock.H"} {public
+} 
+
+decl {\#include "New_Project_Dialog.H"} {} 
+
+decl {\#include "Track.H" // for capture_format} {} 
+
+decl {\#include "Waveform.H" // for options} {} 
+
+decl {\#include "Audio_Region.H" // for options} {} 
+
+decl {\#include "Control_Sequence.H" // for options} {} 
+
+decl {\#include <FL/Fl_File_Chooser.H>} {} 
+
+decl {\#include <Fl/Fl_Shared_Image.H>} {} 
+
+decl {\#include <FL/Fl.H>} {selected
+} 
+
+decl {\#include <FL/fl_ask.H>} {} 
+
+decl {\#include "Engine/Engine.H"} {} 
+
+decl {\#include "Engine/Audio_File.H" // for supported formats} {} 
+
+decl {\#include "FL/About_Dialog.H"} {} 
+
+decl {extern char project_display_name[256];} {global
+} 
+
+decl {extern char *user_config_dir;} {global
+} 
+
+class TLE {open
+} {
+  decl {Fl_Color system_colors[3];} {}
+  Function {save()} {open
+  } {
+    code {const char options_filename[] = "options";
+// const char state_filename[] = "state";
+
+// save options
+
+char *path;
+asprintf( &path, "%s/%s", user_config_dir, options_filename );
+((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Options" ), path );
+free( path );} {}
+  }
+  Function {quit()} {} {
+    code {Project::close();
+
+save();
+
+while ( Fl::first_window() ) Fl::first_window()->hide();} {}
+  }
+  Function {open( const char *name )} {} {
+    code {if ( ! name )
+	return;
+
+int r =	Project::open( name );
+
+if ( r < 0 )
+{
+	const char *s = Project::errstr( r );
+	
+	fl_alert( "Could not open project \\"%s\\":\\n\\n\\t%s", name, s );
+}} {}
+  }
+  Function {save_timeline_settings()} {open
+  } {
+    code {if ( ! Project::open() )
+	return;
+	
+
+// save project local options (Timeline menu)
+((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Project/Se&ttings" ), "options" );} {}
+  }
+  Function {reset_timeline_settings( void )} {open private return_type void
+  } {
+    code {char path[256];
+snprintf( path, sizeof( path ), "%s/%s", user_config_dir, ".default_project_settings" );
+
+((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), path );} {}
+  }
+  Function {load_timeline_settings()} {open
+  } {
+    code {reset_timeline_settings();
+
+
+if ( Project::open() )
+	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), "options" );
+
+update_menu();
+
+project_name->redraw();} {}
+  }
+  Function {run()} {} {
+    code {update_menu();
+
+main_window->show();
+
+Fl::lock();
+
+// Fl::run();} {}
+  }
+  Function {TLE()} {open
+  } {
+    code {Fl::visual( FL_DOUBLE | FL_RGB8 );
+
+make_window();
+	
+Fl::visible_focus( 0 );
+
+get_system_colors();
+
+Fl::scheme( "plastic" );
+
+color_scheme( "dark" );
+
+// constrain window to size of screen.
+{
+        int sx, sy, sw, sh;
+
+        Fl::screen_xywh( sx, sy, sw, sh );
+
+        main_window->size( 947, 600 );
+        main_window->size_range( 947, 600 );
+
+        if ( main_window->w() > sw ||
+             main_window->h() > sh )
+                main_window->resize( sx, sy, sw, sh );
+}
+
+Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );
+
+fl_message_icon()->box( FL_RSHADOW_BOX );
+fl_message_icon()->labelcolor( FL_BLACK );
+fl_message_icon()->color( FL_RED );
+fl_message_font( FL_HELVETICA, 18 );
+
+
+std::list <const char *> formats;
+
+Audio_File::all_supported_formats( formats );
+
+for ( std::list <const char *>::const_iterator f = formats.begin(); f != formats.end(); ++f )
+{
+//	capture_format_menu->add( *f, FL_MENU_RADIO, 0, 0, 0 );
+//;
+	char pat[256];
+	snprintf( pat, sizeof( pat ), "&Project/Se&ttings/Capture Format/%s", *f );	
+
+	menubar->add( pat, 0, &TLE::capture_format_cb, this, FL_MENU_RADIO );
+}
+
+menubar->picked( menubar->find_item( "&Project/Se&ttings/Capture Format/Wav 24" ) );
+
+char *path;
+asprintf( &path, "%s/options", user_config_dir );
+((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options" ), path );
+free( path );
+
+
+menubar->add( "&Timeline", 0, 0, const_cast< Fl_Menu_Item *>( timeline->menu->menu() ), FL_SUBMENU_POINTER );
+
+
+// save a copy of the project settings menu so that we can restore the defaults later
+{
+	char path[512];
+	snprintf( path, sizeof( path ), "%s/%s", user_config_dir, ".default_project_settings" );
+
+	((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Project/Se&ttings" ), path );
+}
+
+
+Loggable::progress_callback( &TLE::progress_cb, this );} {}
+  }
+  Function {make_window()} {open
+  } {
+    Fl_Window main_window {
+      label {Non DAW : Timeline}
+      callback {if ( Fl::event_key() != FL_Escape )
+	o->hide();} open
+      private xywh {705 125 1025 770} type Double resizable xclass Non_DAW visible
+    } {
+      Fl_Menu_Bar menubar {open
+        private xywh {0 0 1024 25}
+      } {
+        Submenu {} {
+          label {&Project} open
+          xywh {0 0 74 25}
+        } {
+          MenuItem {} {
+            label {&Info}
+            callback {Project_Info_Dialog pi;
+
+pi.run();}
+            xywh {0 0 40 25} deactivate
+          }
+          Submenu {} {
+            label {Se&ttings} open
+            xywh {20 20 74 25}
+          } {
+            MenuItem {} {
+              label {&Follow Playhead}
+              callback {Timeline::follow_playhead = menu_picked_value( o );}
+              xywh {40 40 40 25} type Toggle value 1
+            }
+            MenuItem {} {
+              label {&Center Playhead}
+              callback {Timeline::center_playhead = menu_picked_value( o );}
+              xywh {50 50 40 25} type Toggle value 1
+            }
+            Submenu {} {
+              label {&Snap to} open
+              xywh {20 20 74 25}
+            } {
+              MenuItem {} {
+                label Bars
+                callback {Timeline::snap_to = Timeline::Bars;}
+                xywh {20 20 40 25} type Radio value 1
+              }
+              MenuItem {} {
+                label Beats
+                callback {Timeline::snap_to = Timeline::Beats;}
+                xywh {30 30 40 25} type Radio
+              }
+              MenuItem {} {
+                label Off
+                callback {Timeline::snap_to = Timeline::None;}
+                xywh {40 40 40 25} type Radio
+              }
+            }
+            MenuItem {} {
+              label {Magnetic snap}
+              callback {Timeline::snap_magnetic = menu_picked_value( o );}
+              xywh {30 30 40 25} type Toggle value 1
+            }
+            Submenu {} {
+              label {Capture Format} open
+              xywh {20 20 74 25}
+            } {}
+          }
+          MenuItem {} {
+            label {&New}
+            callback {save_timeline_settings();
+
+const char *templates[] = { "Default", NULL };
+
+char *default_path;
+char *selected_template;
+
+        read_line( user_config_dir, "default_path", &default_path );
+
+        char *path = new_project_chooser( templates, &default_path, &selected_template );
+
+        if ( path )
+        {
+            if ( ! Project::create( path, selected_template ) )
+                fl_alert( "Error creating project!" );
+            free( path );
+            free( selected_template );
+        }
+
+        if ( default_path )
+        {
+            write_line( user_config_dir, "default_path", default_path );
+            free( default_path );
+        }
+
+
+load_timeline_settings();
+
+update_menu();
+
+main_window->redraw();}
+            xywh {0 0 40 25}
+          }
+          MenuItem {} {
+            label {&Open}
+            callback {char *path;
+
+read_line( user_config_dir, "default_path", &path );
+
+const char *name = fl_dir_chooser( "Open Project", path, NULL );
+
+free( path );
+
+open( name );}
+            xywh {10 10 40 25}
+          }
+          MenuItem {} {
+            label {&Compact}
+            callback {int n = fl_choice( "Compacting will replace the project history with a snapshot of the current state.\\nYou will not be able to use Undo to go back beyond this point.\\n\\nThis operation is irreversible!", NULL, "&Cancel", "Pr&ocede with compaction" );
+
+if ( n != 2 )
+	return;
+	
+Project::compact();}
+            xywh {20 20 40 25}
+          }
+          Submenu {} {
+            label {&Export} open
+            xywh {0 0 74 25} deactivate
+          } {
+            MenuItem {} {
+              label Project
+              xywh {0 0 40 25}
+            }
+            MenuItem {} {
+              label Range
+              xywh {10 10 40 25}
+            }
+          }
+          MenuItem {} {
+            label {&Quit}
+            callback {quit()}
+            xywh {40 40 40 25} shortcut 0x40071
+          }
+        }
+        Submenu {} {
+          label {&Edit} open
+          xywh {0 0 74 25}
+        } {
+          MenuItem {} {
+            label Undo
+            callback {Loggable::undo();}
+            xywh {0 0 40 25} shortcut 0x4007a divider
+          }
+          MenuItem {} {
+            label {Select None}
+            callback {timeline->select_none();}
+            xywh {10 10 40 25} shortcut 0x50061
+          }
+          MenuItem {} {
+            label {Delete  Selected}
+            callback {timeline->delete_selected();}
+            xywh {20 20 40 25} shortcut 0xffff
+          }
+        }
+        Submenu {} {
+          label T&ransport open
+          xywh {0 0 74 25}
+        } {
+          MenuItem {} {
+            label Start
+            callback {transport->locate( 0 );}
+            xywh {0 0 40 25} shortcut 0xff50
+          }
+          MenuItem {} {
+            label End
+            callback {transport->locate( timeline->length() );}
+            xywh {10 10 40 25} shortcut 0xff57
+          }
+          MenuItem {} {
+            label {Play/Stop}
+            callback {transport->toggle();}
+            xywh {20 20 40 25} shortcut 0x20
+          }
+          MenuItem {} {
+            label Record
+            callback {transport->toggle_record();}
+            xywh {40 40 40 25} shortcut 0x10072
+          }
+        }
+        MenuItem {} {
+          label {&Timeline}
+          xywh {0 0 40 25}
+        }
+        Submenu {} {
+          label {&View} open
+          xywh {0 0 74 25}
+        } {
+          Submenu {} {
+            label {&Zoom} open
+            xywh {0 0 74 25}
+          } {
+            MenuItem {} {
+              label {&In}
+              callback {timeline->zoom_in();}
+              xywh {20 20 40 25} shortcut 0x2b
+            }
+            MenuItem {} {
+              label {&Out}
+              callback {timeline->zoom_out();}
+              xywh {30 30 40 25} shortcut 0x5f
+            }
+            MenuItem {} {
+              label {&Fit}
+              callback {timeline->zoom_fit();}
+              xywh {10 10 40 25} shortcut 0x3d divider
+            }
+            MenuItem {} {
+              label {1 sec.}
+              callback {timeline->zoom( 1 );}
+              xywh {10 10 40 25} shortcut 0x31
+            }
+            MenuItem {} {
+              label {1 min.}
+              callback {timeline->zoom( 60 );}
+              xywh {20 20 40 25} shortcut 0x32
+            }
+            MenuItem {} {
+              label {1 hour.}
+              callback {timeline->zoom( 60 * 60 );}
+              xywh {30 30 40 25} shortcut 0x33
+            }
+          }
+        }
+        Submenu {} {
+          label {&Options} open
+          xywh {0 0 74 25} divider
+        } {
+          Submenu {} {
+            label {&Display} open
+            xywh {10 10 74 25}
+          } {
+            Submenu {} {
+              label {&Timeline} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label {&Measure lines}
+                callback {Timeline::draw_with_measure_lines = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {10 10 40 25} type Toggle value 1
+              }
+            }
+            Submenu {} {
+              label {&Waveform} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label Fill
+                callback {Waveform::fill = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {20 20 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label Outline
+                callback {Waveform::outline = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {40 40 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label {Vary color}
+                callback {Waveform::vary_color = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {30 30 40 25} type Toggle value 1
+              }
+            }
+            Submenu {} {
+              label {&Region} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label {Filled fades}
+                xywh {40 40 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label {Inherit track color}
+                callback {Audio_Region::inherit_track_color = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {50 50 40 25} type Toggle value 1
+              }
+            }
+            Submenu {} {
+              label {&Control Sequence} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label Polygon
+                callback {Control_Sequence::draw_with_polygon = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {30 30 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label Graded
+                callback {Control_Sequence::draw_with_gradient = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {40 40 40 25} type Toggle value 1
+              }
+              MenuItem {} {
+                label Ruled
+                callback {Control_Sequence::draw_with_grid = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {50 50 40 25} type Toggle value 1
+              }
+            }
+            Submenu {} {
+              label {&Style} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label Default
+                callback {Fl::scheme( "plastic" );}
+                xywh {10 10 40 25} type Radio value 1
+              }
+              MenuItem {} {
+                label Flat
+                callback {Fl::scheme( "gtk+" );}
+                xywh {20 20 40 25} type Radio
+              }
+            }
+            Submenu {} {
+              label {C&olors} open
+              xywh {10 10 74 25}
+            } {
+              MenuItem {} {
+                label Dark
+                callback {
+                color_scheme( "dark" ); } 
+                xywh {20 20 40 25} type Radio value 1
+              }
+              MenuItem {} {
+                label {Very Dark}
+                callback {
+                color_scheme( "very dark" ); }
+                xywh {20 20 40 25} type Radio
+              }
+              MenuItem {} {
+                label Light
+                callback {
+                color_scheme( "light" ); }
+                xywh {30 30 40 25} type Radio
+              }
+              MenuItem {} {
+                label System
+                callback {
+                color_scheme( "system" ); }
+                xywh {10 10 40 25} type Radio
+              }
+
+            }
+          }
+          Submenu {} {
+            label {&Behavior} open
+            xywh {0 0 74 25}
+          } {
+            Submenu {} {
+              label {&Transport} open
+              xywh {0 0 74 25}
+            } {
+              MenuItem {} {
+                label {Stop Disables Record}
+                callback {transport->stop_disables_record( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE );} selected
+                xywh {5 5 40 25} type Toggle value 1
+              }
+            }
+          }
+        }
+        Submenu {} {
+          label {&Help} open
+          xywh {0 0 74 25}
+        } {
+          MenuItem {} {
+            label {&Manual}
+            callback {show_help_dialog( "MANUAL" );}
+            xywh {10 10 40 25} divider
+          }
+          MenuItem {} {
+            label {&About}
+            callback {About_Dialog ab( PIXMAP_PATH "/non-daw/logo.png" );
+
+ab.run();}
+            xywh {0 0 40 25}
+          }
+        }
+      }
+      Fl_Group {} {open
+        xywh {0 1 1025 73}
+      } {
+        Fl_Pack {} {open
+          xywh {0 23 483 46} type HORIZONTAL
+          code0 {o->spacing( 10 );}
+        } {
+          Fl_Box {} {
+            label {<Transport>}
+            xywh {5 23 189 46} color 30
+            code0 {transport = o;}
+            code1 {o->labeltype( FL_NO_LABEL );}
+            class Transport
+          }
+          Fl_Pack clocks_pack {
+            private xywh {195 23 288 46} type HORIZONTAL
+            code0 {o->spacing( 2 );}
+          } {
+            Fl_Box {} {
+              label PLAYHEAD
+              private xywh {195 29 137 40} box BORDER_BOX color 40
+              code0 {o->type( Clock::HMS );}
+              code1 {o->run( &transport->frame );}
+              class Clock
+            }
+            Fl_Box {} {
+              label PLAYHEAD
+              xywh {335 29 142 40} box BORDER_BOX color 40
+              code0 {o->type( Clock::BBT );}
+              code1 {o->run( &transport->frame );}
+              class Clock
+            }
+          }
+        }
+        Fl_Box {} {
+          label {<empty>}
+          xywh {487 27 148 42} resizable
+          code0 {o->labeltype( FL_NO_LABEL );}
+        }
+        Fl_Group {} {open
+          xywh {745 26 280 44}
+        } {
+          Fl_Box {} {
+            label {capture:}
+            xywh {865 26 56 14} labelsize 10 align 24
+          }
+          Fl_Box {} {
+            label {playback:}
+            xywh {865 42 56 14} labelsize 10 align 24
+          }
+          Fl_Box {} {
+            label {DSP:}
+            xywh {865 56 56 14} labelsize 10 align 24
+          }
+          Fl_Progress capture_buffer_progress {
+            label {50%}
+            private xywh {921 26 104 14} labelsize 10
+          }
+          Fl_Progress cpu_load_progress {
+            label {50%}
+            private xywh {921 56 104 14} labelsize 9
+          }
+          Fl_Progress playback_buffer_progress {
+            label {50%}
+            private xywh {921 41 104 14} labelsize 10
+          }
+          Fl_Box {} {
+            label {disk:}
+            xywh {810 27 55 18} labelsize 10 align 16
+          }
+          Fl_Progress disk_usage_progress {
+            label {50%}
+            private xywh {810 43 55 26} labelsize 10
+          }
+        }
+        Fl_Button solo_blinker {
+          label SOLO
+          xywh {750 30 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 74 selection_color 92 labelfont 2 labelcolor 39 deactivate
+          code0 {\#include "FL/Fl_Blinker.H"}
+          class Fl_Blinker
+        }
+        Fl_Button rec_blinker {
+          label REC
+          xywh {750 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 72 selection_color 88 labelfont 2 labelcolor 39 deactivate
+          code0 {\#include "FL/Fl_Blinker.H"}
+          class Fl_Blinker
+        }
+        Fl_Button sm_blinker {
+          label SM
+          xywh {695 30 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 75 selection_color 86 labelfont 2 labelcolor 39 deactivate
+          code0 {\#include "FL/Fl_Blinker.H"}
+          class Fl_Blinker
+        }
+        Fl_Button selected_blinker {
+          label SEL
+          xywh {695 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 13 selection_color 5 labelfont 2 labelcolor 39 deactivate
+          code0 {\#include "FL/Fl_Blinker.H"}
+          class Fl_Blinker
+        }
+        Fl_Button seek_blinker {
+          label SEEK
+          xywh {640 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 10 selection_color 2 labelfont 2 labelcolor 39 deactivate
+          code0 {\#include "FL/Fl_Blinker.H"}
+          code1 {o->interval( Fl_Blinker::FAST );}
+          class Fl_Blinker
+        }
+        Fl_Box stats_box {
+          label {<stats>}
+          xywh {810 1 215 21} labelsize 13 labelcolor 53 align 88
+        }
+      }
+      Fl_Progress progress {
+        label {0%}
+        private xywh {15 394 995 41} hide
+      }
+      Fl_Box {} {
+        label {<Timeline>}
+        xywh {0 72 1024 695} box FLAT_BOX color 47 labelsize 100 resizable
+        code0 {timeline = o;}
+        class Timeline
+      }
+      Fl_Box project_name {
+        label {<project name>}
+        private xywh {450 0 365 22} labeltype SHADOW_LABEL labelfont 2
+        code0 {o->label( Project::name() );}
+      }
+    }
+  }
+  Function {menu_picked_value( const Fl_Menu_ *m )} {private return_type {static int}
+  } {
+    code {return m->menu()[ m->value() ].flags & FL_MENU_VALUE;} {}
+  }
+  Function {find_item( Fl_Menu_ *menu, const char *path )} {private return_type {static Fl_Menu_Item *}
+  } {
+    code {return const_cast<Fl_Menu_Item*>(menu->find_item( path ));} {}
+  }
+  decl {static void menubar_cb ( void *v )} {}
+  decl {void menubar_cb ( void )} {}
+  Function {update_menu()} {private
+  } {
+    code {Fl_Menu_Bar *m = menubar;
+
+if ( ! Project::open() )
+{
+	find_item( m, "&Project/&Export" )->deactivate();
+	find_item( m, "&Project/&Compact" )->deactivate();
+	find_item( m, "&Project/&Info" )->deactivate();
+	
+ 	find_item( m, "&Project/Se&ttings" )->deactivate();
+ 	find_item( m, "&Timeline" )->deactivate();
+
+	timeline->deactivate();
+	transport->deactivate();
+}
+else
+{
+	find_item( m, "&Project/&Export" )->activate();
+	find_item( m, "&Project/&Compact" )->activate();
+	find_item( m, "&Project/&Info" )->activate();
+
+ 	find_item( m, "&Project/Se&ttings" )->activate();
+ 	find_item( m, "&Timeline" )->activate();
+	
+	timeline->activate();
+	transport->activate();	
+}
+
+m->redraw();
+project_name->redraw();} {}
+  }
+  Function {update_progress( Fl_Progress *p, char *s, float v )} {private return_type {static void}
+  } {
+    code {p->value( v );
+
+snprintf( s, 5, "%d%%", (int)v );
+
+p->label( s );} {}
+  }
+  Function {update_status()} {open private
+  } {
+    code {static char cbp[5], pbp[5], clp[5], dup[5];
+
+update_progress( capture_buffer_progress, cbp, timeline->total_input_buffer_percent() );
+update_progress( playback_buffer_progress, pbp, timeline->total_output_buffer_percent() );
+update_progress( cpu_load_progress, clp, engine->cpu_load() );
+
+update_progress( disk_usage_progress, dup, percent_used( "." ) );
+
+if ( timeline->total_capture_xruns() )
+	capture_buffer_progress->selection_color( FL_RED );
+
+if ( timeline->total_playback_xruns() )
+	playback_buffer_progress->selection_color( FL_RED );
+
+static char stats[100];
+
+snprintf( stats, sizeof( stats ), "latency: %.1fms, xruns: %d",
+	engine->frames_to_milliseconds( timeline->total_output_latency() ),
+	engine->xruns() );
+
+stats_box->label( stats );
+
+static bool zombie = false;
+
+if ( engine->zombified() && ! zombie )
+{
+	zombie = true;
+	fl_alert( "Disconnected from JACK!" );
+}
+
+solo_blinker->value( Track::soloing() );
+rec_blinker->value( transport->rolling && transport->rec_enabled() );
+sm_blinker->value( timeline->session_manager_name() != NULL );
+sm_blinker->tooltip( timeline->session_manager_name() );
+selected_blinker->value( timeline->nselected() );
+seek_blinker->value( timeline->seek_pending() );
+project_name->redraw();} {}
+  }
+  Function {update_cb( void *v )} {open private return_type {static void}
+  } {
+    code {Fl::repeat_timeout( STATUS_UPDATE_FREQ, update_cb, v );
+
+((TLE*)v)->update_status();} {}
+  }
+  Function {capture_format_cb( Fl_Widget *w, void *v )} {private return_type {static void}
+  } {
+    code {((TLE*)v)->capture_format_cb();} {}
+  }
+  Function {capture_format_cb()} {private return_type void
+  } {
+    code {Fl_Menu_ *o = menubar;
+
+Track::capture_format = o->menu()[ o->value() ].label();} {}
+  }
+  Function {progress_cb( int p, void *arg )} {private return_type {static void}
+  } {
+    code {((TLE*)arg)->progress_cb( p );} {}
+  }
+  Function {progress_cb( int p )} {private return_type void
+  } {
+    code {if ( ! progress->visible() )
+{
+	timeline->hide();
+	progress->show();
+}
+else if ( 0 == p )
+{
+	timeline->show();
+	progress->hide();
+}
+
+static char pat[10];
+
+update_progress( progress, pat, p );
+
+progress->redraw();
+
+Fl::check();} {}
+  }
+  Function {show_help_dialog( const char *file )} {open private return_type {static void}
+  } {
+    code {char pat[256];
+
+snprintf( pat, 256, "file://%s/non-daw/%s.html", DOCUMENT_PATH, file );
+
+open_url( pat );} {}
+  }
+} 
+
+
+
+Function {set_theme_dark()} {C return_type void
+} {
+        code { Fl::background2( 100, 100, 100 );
+        Fl::background( 50, 50, 50 );
+        Fl::foreground( 255, 255, 255 );
+
+        Fl::scheme( Fl::scheme() ); } {}
+}
+
+class Project_Info_Dialog {open
+} {
+  Function {Project_Info_Dialog()} {open
+  } {
+    code {make_window();} {}
+  }
+  Function {run()} {open return_type void
+  } {
+    code {window->show();
+
+while ( window->shown() )
+	Fl::wait();} {}
+  }
+  Function {make_window()} {open
+  } {
+    Fl_Window window {
+      label {Project info}
+      callback {o->hide();
+
+if ( logo_box->image() )
+{
+	((Fl_Shared_Image*)logo_box->image())->release();
+	logo_box->image( NULL );
+}} open
+      private xywh {761 214 520 740} type Double modal visible
+    } {
+      Fl_Value_Output {} {
+        label {Sample Rate}
+        xywh {40 80 90 25} labeltype SHADOW_LABEL align 1
+        code0 {o->value( timeline->sample_rate() );}
+      }
+      Fl_Output {} {
+        label {Size of Journal}
+        xywh {180 80 100 25} box UP_BOX labeltype SHADOW_LABEL align 1
+        code0 {static char pat[40];}
+        code1 {snprintf( pat, sizeof( pat ), "%.1fK", size( "history" ) / (float)1024 );}
+        code2 {o->value( pat );}
+        code3 {\#include "file.h"}
+      }
+      Fl_Output {} {
+        label {Created On}
+        xywh {320 80 180 25} box UP_BOX labeltype SHADOW_LABEL align 1 textfont 11 textsize 12
+        code0 {o->value( Project::created_on() );}
+      }
+      Fl_Output {} {
+        label Length
+        xywh {30 130 115 25} box BORDER_BOX color 47 align 1 textcolor 71
+        code0 {char pat[40];}
+        code1 {Clock::frame_to_HMS( pat, sizeof( pat ), timeline->length() );}
+        code2 {o->value( pat );}
+      }
+      Fl_Value_Output {} {
+        label Tracks
+        xywh {200 130 55 25} align 1
+        code0 {o->value( timeline->ntracks() );}
+      }
+      Fl_Box logo_box {
+        label {<LOGO>}
+        private xywh {51 180 418 235} box ROUNDED_BOX color 53 labelfont 1 labelsize 18 align 16
+        code0 {o->image( Fl_Shared_Image::get( PIXMAP_PATH "non-daw/logo2.png" ) );}
+        code1 {o->label( NULL );}
+      }
+      Fl_Text_Editor notes_field {
+        label {Notes:}
+        private xywh {20 445 480 245} color 47 selection_color 31 textsize 18 textcolor 92
+        code0 {o->buffer( new Fl_Text_Buffer() );}
+        code1 {o->buffer()->loadfile( "notes" );}
+      }
+      Fl_Button {} {
+        label {&Save}
+        callback {notes_field->buffer()->savefile( "notes" );
+
+window->do_callback();}
+        xywh {425 700 74 25}
+      }
+      Fl_Box {} {
+        label {Project Info}
+        xywh {40 18 405 27} box RSHADOW_BOX color 95 labeltype SHADOW_LABEL labelsize 18
+      }
+      Fl_Box {} {
+        label {Project Info}
+        xywh {25 18 470 33} box RSHADOW_BOX color 133 labelsize 20 labelcolor 32
+      }
+      Fl_Button {} {
+        label {&Discard}
+        callback {window->do_callback();}
+        xywh {330 700 74 25}
+      }
+      Fl_Output {} {
+        label {Last Modified On}
+        xywh {320 130 180 25} box UP_BOX labeltype SHADOW_LABEL align 1 textfont 11 textsize 12
+        code0 {time_t t = modification_time( "history" );}
+        code1 {static char s[40];}
+        code2 {ctime_r( &t, s ); s[ strlen( s ) - 1 ] = 0;}
+        code3 {o->value( s );}
+      }
+    }
+  }
+} 

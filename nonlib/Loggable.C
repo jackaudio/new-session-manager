@@ -31,10 +31,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "util/file.h"
+#include "file.h"
 
 // #include "const.h"
-#include "util/debug.h"
+#include "debug.h"
 
 #include <algorithm>
 using std::min;

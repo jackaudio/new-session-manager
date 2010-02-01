@@ -17,6 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include "const.h"
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -120,6 +122,8 @@ main ( int argc, char **argv )
     {
         Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, "Mixer" );
         {
+            main_window->xclass( APP_NAME );
+
             Fl_Widget *o = mixer = new Mixer( 0, 0, main_window->w(), main_window->h(), NULL );
             Fl_Group::current()->resizable(o);
         }

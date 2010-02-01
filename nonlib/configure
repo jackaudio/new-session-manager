@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# Copyright (C) 2008 Jonathan Moore Liles
+# This file is licensed under version 2 of the GPL.
+
+. scripts/config-funcs
+
+begin
+
+begin_options
+
+ask "Build for debugging" USE_DEBUG no
+
+begin_tests
+
+require_command ar ar
+require_command makedepend makedepend
+require_package JACK 0.103.0 jack
+
+end

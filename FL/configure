@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# Copyright (C) 2008 Jonathan Moore Liles
+# This file is licensed under version 2 of the GPL.
+
+. scripts/config-funcs
+
+begin
+
+begin_options
+
+ask "Build for debugging" USE_DEBUG no
+
+begin_tests
+
+require_FLTK 1.1.7 images
+require_command FLUID fluid
+require_command ar ar
+require_command makedepend makedepend
+
+end

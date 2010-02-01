@@ -24,13 +24,16 @@
 ##
 
 VERSION := 1.0.0
+PACKAGE := TIMELINE
 
 all: .config
 
 .config: configure
+	@ echo '<<< Configuring '$(PACKAGE)
 	@ ./configure
 
 config:
+	@ echo '<<< Configuring '$(PACKAGE)
 	@ ./configure
 
 -include .config
@@ -79,7 +82,7 @@ INCLUDES := -I. -Iutil -IFL -Inonlib
 include scripts/colors
 
 ifneq ($(CALCULATING),yes)
-	COMPILING="$(BOLD)$(BLACK)[$(SGR0)$(CYAN)`scripts/percent-complete .files "$<"`$(SGR0)$(BOLD)$(BLACK)]$(SGR0) Compiling: $(BOLD)$(YELLOW)$<$(SGR0)"
+	COMPILING="$(BOLD)$(BLACK)$(PACKAGE)	[$(SGR0)$(CYAN)`scripts/percent-complete .files "$<"`$(SGR0)$(BOLD)$(BLACK)]$(SGR0) $(BOLD)$(YELLOW)$<$(SGR0)"
 else
 	COMPILING="Compiling: $<"
 endif
@@ -94,11 +97,11 @@ endif
 DONE := $(BOLD)$(GREEN)done$(SGR0)
 
 include FL/makefile.inc
-include nonlib/makefile.inc
+# include nonlib/makefile.inc
 include makefile.inc
 
-SRCS:=$(FL_SRCS) $(nonlib_SRCS) $(Timeline_SRCS) $(Mixer_SRCS)
-OBJS:=$(FL_OBJS) $(nonlib_OBJS) $(Timeline_OBJS) $(Mixer_OBJS)
+SRCS:=$(Timeline_SRCS)
+OBJS:=$(Timeline_OBJS)
 
 # FIXME: isn't there a better way?
 $(OBJS): .config Makefile
@@ -133,7 +136,7 @@ clean_deps:
 
 .PHONEY: clean config depend clean_deps
 
-clean: FL_clean nonlib_clean Timeline_clean
+clean: FL_clean Timeline_clean
 
 dist:
 	git archive --prefix=non-daw-$(VERSION)/ v$(VERSION) | bzip2 > non-daw-$(VERSION).tar.bz2

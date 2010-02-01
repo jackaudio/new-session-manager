@@ -24,7 +24,7 @@
 ##
 
 VERSION := 1.0.0
-PACKAGE := MIXER
+PACKAGE := FL
 
 all: .config
 
@@ -70,7 +70,7 @@ INCLUDES := -I. -Iutil -IFL -Inonlib
 include scripts/colors
 
 ifneq ($(CALCULATING),yes)
-	COMPILING="$(BOLD)$(BLACK)MIXER		[$(SGR0)$(CYAN)`scripts/percent-complete .files "$<"`$(SGR0)$(BOLD)$(BLACK)]$(SGR0) $(BOLD)$(YELLOW)$<$(SGR0)"
+	COMPILING="$(BOLD)$(BLACK)$(PACKAGE)		[$(SGR0)$(CYAN)`scripts/percent-complete .files "$<"`$(SGR0)$(BOLD)$(BLACK)]$(SGR0) $(BOLD)$(YELLOW)$<$(SGR0)"
 else
 	COMPILING="Compiling: $<"
 endif
@@ -84,12 +84,10 @@ endif
 
 DONE := $(BOLD)$(GREEN)done$(SGR0)
 
-include FL/makefile.inc
-#include nonlib/makefile.inc
 include makefile.inc
 
-SRCS:=$(Mixer_SRCS)
-OBJS:=$(Mixer_OBJS)
+SRCS:=$(FL_SRCS)
+OBJS:=$(FL_OBJS)
 
 # FIXME: isn't there a better way?
 $(OBJS): .config Makefile
@@ -104,32 +102,14 @@ ifneq ($(CALCULATING),yes)
 	@ # gcc -M $(CXXFLAGS) $(INCLUDES) $(SRCS) > .deps && echo $(DONE)
 endif
 
-
-install: all
-	@ echo -n "Installing..."
-	@ install src/mixer $(prefix)/bin/non-mixer
-	@ mkdir -p $(SYSTEM_PATH)/non-mixer
-	@ mkdir -p $(PIXMAP_PATH)/non-mixer
-	@ cp pixmaps/*.png $(PIXMAP_PATH)/non-mixer
-	@ $(MAKE) -s -C doc install
-	@ echo "$(DONE)"
-ifneq ($(USE_DEBUG),yes)
-	@ echo -n "Stripping..."
-	@ strip $(prefix)/bin/non-mixer
-	@ echo "$(DONE)"
-endif
-
 clean_deps:
 	@ rm -f .deps
 
+install:
+	@ echo ...
+
 .PHONEY: clean config depend clean_deps
 
-clean: FL_clean Mixer_clean
-
-dist:
-	git archive --prefix=non-mixer-$(VERSION)/ v$(VERSION) | bzip2 > non-mixer-$(VERSION).tar.bz2
-
-scan-gpl:
-	@ scripts/scan-gpl $(SRCS) || echo $(BOLD)$(RED)Some source files do not contain proper license information!
+clean: FL_clean
 
 -include .deps

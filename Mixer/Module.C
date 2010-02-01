@@ -530,13 +530,13 @@ Module::menu ( void ) const
 
     m.add( "Insert", 0, &Module::menu_cb, (void*)this, 0);
     m.add( "Insert", 0, &Module::menu_cb, const_cast< Fl_Menu_Item *>( insert_menu->menu() ), FL_SUBMENU_POINTER );
-    m.add( "Edit Parameters", 0, &Module::menu_cb, (void*)this, 0 );
-    m.add( "Activate",   0, &Module::menu_cb, (void*)this, ! bypass() ? FL_MENU_INACTIVE : 0 );
-    m.add( "Deactivate", 0, &Module::menu_cb, (void*)this, bypass() ? FL_MENU_INACTIVE : 0 );
+    m.add( "Edit Parameters", ' ', &Module::menu_cb, (void*)this, 0 );
+    m.add( "Activate",   'a', &Module::menu_cb, (void*)this, ! bypass() ? FL_MENU_INACTIVE : 0 );
+    m.add( "Deactivate", 'd', &Module::menu_cb, (void*)this, bypass() ? FL_MENU_INACTIVE : 0 );
     m.add( "Cut", FL_CTRL + 'x', &Module::menu_cb, (void*)this, is_default() ? FL_MENU_INACTIVE : 0 );
     m.add( "Copy", FL_CTRL + 'c', &Module::menu_cb, (void*)this, is_default() ? FL_MENU_INACTIVE : 0 );
     m.add( "Paste", FL_CTRL + 'v', &Module::menu_cb, (void*)this, _copied_module_empty ? 0 : FL_MENU_INACTIVE );
-    m.add( "Remove",    0, &Module::menu_cb, (void*)this );
+    m.add( "Remove",  FL_Delete, &Module::menu_cb, (void*)this );
 
 //    menu_set_callback( menu, &Module::menu_cb, (void*)this );
     m.callback( &Module::insert_menu_cb, (void*)this );

@@ -59,7 +59,7 @@ January 21, 2010<br>
 The Non-Mixer is a stand-alone audio mixer, utilizing JACK as an audio subsystem. At the time of writing, the architecture of Non-Mixer is unique. By making the mixer stand-alone, concepts such as busses, sends, and inserts are eliminated, as the same goals can be achieved by simply adding more strips to the mixer.
 </p>
 <p>
-Start by creating a new project (menu item <tt>Project<i>New</i></tt>.
+Start by creating a new project (menu item <tt>Project/New</tt>).
 </p>
 <center><div class="fig image"><table id="Fig.1.2" border=1>
 <caption>
@@ -98,7 +98,7 @@ To see how an audio signal traveling through this strip will be processed, switc
 </p>
 <h4 id="n:1.1.2.1.">1.1.2.1. Navigation</h4>
 <p>
-A strip is focused when you click on it. Focus can be removed back and forth between strips with <tt>Tab</tt> and <tt>Shift-Tab</tt>.
+A strip is focused when you click on it. Focus can be moved among strips with the <tt>Tab</tt> and <tt>Shift-Tab</tt> keys.
 </p>
 <h4 id="n:1.1.2.2.">1.1.2.2. Control</h4>
 <p>
@@ -156,6 +156,9 @@ Middle-clicking on a module toggles its activation state (the audio signal will 
 <p>
 Control+Right-clicking on a module causes it to be removed from the chain (modules added by default cannot be removed).
 </p>
+<p>
+The focused module may also be controlled via the keyboard. <tt>Menu</tt> brings up the context menu for the focused module. <tt>Space</tt> opens the module parameter editor, <tt>b</tt> toggles the bypassed state, and <tt>Delete</tt> removes the module from the chain (without confirmation!). <tt>Control-X</tt>, <tt>Control-C</tt> and <tt>Control-V</tt>, cut, copy, and paste modules, respectively. Modules may be copied within or across chain. The normal module I/O constraints also apply to pasted modules.
+</p>
 <h6 id="n:1.1.2.3.1.2.">1.1.2.3.1.2. Module Parameter Editor</h6>
 <center><div class="fig image"><table id="Fig.1.5" border=1>
 <caption>
@@ -165,7 +168,7 @@ Control+Right-clicking on a module causes it to be removed from the chain (modul
 <tr><td><img src="gverb-parameters-knobs.png" alt="fig. 1.5"></td></tr>
 </table></div></center>
 <p>
-The Module Parameter Editor is used to alter the values of a module's parameters, and, further more, to bind its parameters to controls. A menu button in the upper left-hand corner allows you to select between knob, vertical slider and horizontal slider controls.
+The Module Parameter Editor is used to alter the values of a module's parameters, and in addition, to bind its parameters to controls. A menu button in the upper left-hand corner allows you to select between knob, vertical slider and horizontal slider controls.
 </p>
 <center><div class="fig image"><table id="Fig.1.6" border=1>
 <caption>
@@ -216,7 +219,7 @@ git clone git://fuzzle.org/jm2cv.git
 </table></div>
 <h3 id="n:1.1.3.">1.1.3. Projects</h3>
 <p>
-A Non-Mixer project is a directory where Non-Mixer keeps the strip settings project specific settings, some meta-data.  A project is completely self-contained. You can rename a project as simply as:
+A Non-Mixer project is a directory where Non-Mixer keeps the strip settings, project specific settings, and some meta-data.  A project is completely self-contained. You can rename a project as simply as:
 </p>
 <div class="fig example"><table width=100%><tr><td><pre>
 $ mv Project-A Project-B

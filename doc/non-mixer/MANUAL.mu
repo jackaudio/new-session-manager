@@ -18,7 +18,7 @@
   as busses, sends, and inserts are eliminated, as the same goals can
   be achieved by simply adding more strips to the mixer.
 
-  Start by creating a new project (menu item `Project/New`).
+  Start by creating a new project (menu item `Project\/New`).
 
 / New Project
 < new-project.png
@@ -57,8 +57,8 @@
 
 :::: Navigation
 
-  A strip is focused when you click on it. Focus can be removed back
-  and forth between strips with `Tab` and `Shift-Tab`.
+  A strip is focused when you click on it. Focus can be moved among
+  strips with the `Tab` and `Shift-Tab` keys.
 
 :::: Control
 
@@ -105,7 +105,7 @@
 = Gain
 	= Applies gain in dB
 = Meter
-	= Digital Peak meter
+	= Digital Peak Meter
 = Mono Pan
 	= Performs intensity panning of a mono signal into a stereo signal.
 = Plugin
@@ -125,6 +125,15 @@
 
   Control+Right-clicking on a module causes it to be removed from the
   chain (modules added by default cannot be removed).
+
+  The focused module may also be controlled via the keyboard. `Menu`
+  brings up the context menu for the focused module. `Space` opens the
+  module parameter editor, `b` toggles the bypassed state, and
+  `Delete` removes the module from the chain (without confirmation!).
+  `Control-X`, `Control-C` and `Control-V`, cut, copy, and paste
+  modules, respectively. Modules may be copied within or across chain
+  boundaries. The normal module I\/O constraints also apply to pasted
+  modules.
 
 :::::: Module Parameter Editor
 

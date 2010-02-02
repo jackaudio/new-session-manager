@@ -326,11 +326,11 @@ LADSPAInfo::DescendGroup(string prefix,
 		string name;
 
 		// Escape '/' and '|' characters
-		unsigned int x = g->find_first_of("/|");
+		size_t x = g->find_first_of("/|");
 		if (x == string::npos) {
 			name = *g;
 		} else {
-			unsigned int last_x = 0;
+                    size_t last_x = 0;
 			while (x < string::npos) {
 				name += g->substr(last_x, x - last_x) + '\\' + (*g)[x];
 				last_x = x + 1;
@@ -360,11 +360,11 @@ LADSPAInfo::DescendGroup(string prefix,
 			string name;
 
 		// Escape '/' and '|' characters
-			unsigned int x = pi->Name.find_first_of("/|");
+			size_t x = pi->Name.find_first_of("/|");
 			if (x == string::npos) {
 				name = pi->Name;
 			} else {
-				unsigned int last_x = 0;
+				size_t last_x = 0;
 				while (x < string::npos) {
 					name += pi->Name.substr(last_x, x - last_x) + '\\' + pi->Name[x];
 					last_x = x + 1;

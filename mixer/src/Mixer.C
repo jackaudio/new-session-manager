@@ -178,6 +178,23 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         About_Dialog ab( PIXMAP_PATH "/non-mixer/logo.png" );
 
+        ab.logo_box->label( VERSION );
+
+        ab.title->label( "The Non Mixer" );
+
+        ab.copyright->label( "Copyright (C) 2008-2010 Jonathan Moore Liles" );
+        ab.credits->label(
+            "Non-Mixer was written from scratch by\n"
+            "Jonathan Moore Liles for his own use\n"
+            "(see the manual).\n"
+            "\n"
+            "Nobody planned. Nobody helped.\n"
+            "You can help now by donating time, money,\n"
+            "and/or replacing the rest of Linux Audio\n"
+            "with fast, light, reliable alternatives.\n" );
+
+        ab.website_url->label( "http://non-mixer.tuxfamily.org" );
+
         ab.run();
     }
     else if ( !strcmp( picked, "&Help/&Manual" ))

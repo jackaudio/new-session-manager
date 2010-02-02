@@ -1,12 +1,12 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0110
-header_name {.H}
+version 1.0110 
+header_name {.H} 
 code_name {.C}
-decl {\#include <FL/Fl.H>} {}
+decl {\#include <FL/Fl.H>} {} 
 
-decl {\#include <Fl/Fl_Shared_Image.H>} {}
+decl {\#include <Fl/Fl_Shared_Image.H>} {} 
 
-decl {\#include <Fl/filename.H>} {}
+decl {\#include <Fl/filename.H>} {} 
 
 Function {open_url( const char *url )} {open return_type void
 } {
@@ -19,12 +19,12 @@ Function {open_url( const char *url )} {open return_type void
 \#else
 	fl_open_uri( url );
 \#endif} {}
-}
+} 
 
 class About_Dialog {open
 } {
   Function {About_Dialog( const char *logo_filename )} {} {
-    code { make_window( logo_filename );} {}
+    code {make_window( logo_filename );} {}
   }
   Function {run()} {return_type void
   } {
@@ -45,8 +45,8 @@ if ( logo_box->image() )
 {
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( 0 );
-}} open selected
-      private xywh {1355 125 495 655} type Double xclass {Non-DAW} visible
+}} open
+      private xywh {382 210 495 655} type Double xclass {Non-DAW} visible
     } {
       Fl_Tabs {} {open
         xywh {0 264 497 392}
@@ -55,7 +55,7 @@ if ( logo_box->image() )
           label Credits open
           xywh {2 293 492 362}
         } {
-          Fl_Box {} {
+          Fl_Box credits {
             label {Non-DAW was written from scratch by
  Jonathan Moore Liles for his own use
  (see the manual).
@@ -71,8 +71,8 @@ with fast, light, reliable alternatives.}
           label License open
           xywh {2 288 492 311} hide
         } {
-          Fl_Box {} {
-            label {Copyright (C) 2008-2010 Jonathan Moore Liles}
+          Fl_Box copyright {
+            label COPYRIGHT
             xywh {43 302 410 37} labeltype SHADOW_LABEL labelfont 1 labelsize 18
           }
           Fl_Box {} {
@@ -86,13 +86,12 @@ You should have received a copy of the GNU General Public License along with thi
         }
       }
       Fl_Box logo_box {
-        label VERSION
-        private xywh {25 20 445 180} box ROUNDED_BOX color 48 labelfont 1 labelsize 18 align 16
-        code0 {
-        Fl_Shared_Image *im = Fl_Shared_Image::get( logo_filename );
+        label VERSION selected
+        xywh {25 20 445 180} box ROUNDED_BOX color 48 labelfont 1 labelsize 18 align 16
+        code0 {Fl_Shared_Image *im = Fl_Shared_Image::get( logo_filename );
         float iA = im->h() / im->w();
         int oH = o->h() - 18;
-        o->image( Fl_Shared_Image::get( logo_filename, iA * oH, oH ) ); }
+        o->image( Fl_Shared_Image::get( logo_filename, iA * oH, oH ) );}
         code1 {o->label( VERSION );}
       }
       Fl_Return_Button {} {
@@ -100,15 +99,15 @@ You should have received a copy of the GNU General Public License along with thi
         callback {o->window()->do_callback();}
         xywh {400 614 76 30}
       }
-      Fl_Button {} {
+      Fl_Button website_url {
         label {http://non-daw.tuxfamily.org}
         callback {open_url( o->label() );}
         xywh {125 614 245 30} color 14 labeltype SHADOW_LABEL labelcolor 6
       }
-      Fl_Box {} {
-        label {The Non DAW (Digital Audio Workstation)}
+      Fl_Box title {
+        label TITLE
         xywh {32 221 430 29} labeltype SHADOW_LABEL labelfont 3 labelsize 17
       }
     }
   }
-}
+} 

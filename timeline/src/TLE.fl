@@ -609,6 +609,16 @@ timeline->redraw();}
             label {&About}
             callback {About_Dialog ab( PIXMAP_PATH "/non-daw/logo.png" );
 
+            ab.logo_box->label( VERSION );
+
+        ab.title->label( "The Non DAW (Digital Audio Workstation)" );
+
+        ab.copyright->label( "Copyright (C) 2008-2010 Jonathan Moore Liles" );
+        ab.credits->label( "Non-DAW was written from scratch by\\nJonathan Moore Liles for his own use\\n(see the manual).\\n\\nNobody planned. Nobody helped.\\nYou can help now by donating time, money,\\nand/or replacing the rest of Linux Audio\\nwith fast, light, reliable alternatives.\\n" );
+
+        ab.website_url->label( "http://non-daw.tuxfamily.org" );
+
+
 ab.run();}
             xywh {0 0 40 25}
           }

@@ -399,7 +399,7 @@ Module::draw_label ( void )
 void
 Module::insert_menu_cb ( const Fl_Menu_ *m )
 {
-    void * v = m->menu()[ m->value() ].user_data();
+    void * v = m->mvalue()->user_data();
 
     if ( v )
     {
@@ -409,16 +409,16 @@ Module::insert_menu_cb ( const Fl_Menu_ *m )
 
         switch ( id )
         {
-            case -1:
+            case 1:
                 mod = new JACK_Module();
                 break;
-            case -2:
+            case 2:
                 mod = new Gain_Module();
                 break;
-            case -3:
+            case 3:
                 mod = new Meter_Module();
                 break;
-            case -4:
+            case 4:
                 mod = new Mono_Pan_Module();
                 break;
             default:
@@ -513,9 +513,9 @@ Module::menu ( void ) const
     {
         insert_menu = new Fl_Menu_Button( 0, 0, 0, 0 );
 
-        insert_menu->add( "Gain", 0, 0, new unsigned long(-2) );
-        insert_menu->add( "Meter", 0, 0, new unsigned long(-3) );
-        insert_menu->add( "Mono Pan", 0, 0, new unsigned long(-4) );
+        insert_menu->add( "Gain", 0, 0, new unsigned long(2) );
+        insert_menu->add( "Meter", 0, 0, new unsigned long(3) );
+        insert_menu->add( "Mono Pan", 0, 0, new unsigned long(4) );
 
         Plugin_Module::add_plugins_to_menu( insert_menu );
 

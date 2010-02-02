@@ -257,13 +257,15 @@ Meter_Indicator_Module::handle_control_changed ( Port *p )
 /**********/
 
 void
-Meter_Indicator_Module::process ( void )
+Meter_Indicator_Module::process ( nframes_t )
 {
     if ( control_input[0].connected() )
     {
         Port *p = control_input[0].connected_port();
 
         for ( int i = 0; i < p->hints.dimensions; ++i )
+	  {
             control_value[i] = ((float*)control_input[0].buffer())[i];
+	  }
     }
 }

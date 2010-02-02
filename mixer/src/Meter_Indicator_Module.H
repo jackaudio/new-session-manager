@@ -58,15 +58,12 @@ public:
 
     LOG_CREATE_FUNC( Meter_Indicator_Module );
 
-    void process ( nframes_t ) { }
+    void process ( nframes_t );
 
 protected:
 
     void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
-
-    //   virtual void draw ( void );
-    virtual void process ( void );
 
     virtual void draw ( void )
         {

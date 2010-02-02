@@ -315,7 +315,6 @@ Mixer_Strip::init ( )
     Fl_Group::color( FL_BACKGROUND_COLOR );
 
     set_visible_focus();
-    clip_children( 1 );
 
     { Fl_Pack *o = new Fl_Pack( 2, 2, 114, 100 );
         o->type( Fl_Pack::VERTICAL );
@@ -395,7 +394,6 @@ Mixer_Strip::init ( )
             { Meter_Indicator_Module *o = meter_indicator = new Meter_Indicator_Module( true );
                 o->pad( false );
                 o->size( 58, 0 );
-                o->clip_children( 0 );
                 Fl_Group::current()->resizable(o);
 
             }

@@ -16,8 +16,7 @@
   inter-application audio I\/O and the FLTK GUI toolkit for a fast and
   lightweight user interface.
 
-  Please see the #(url,non-daw%(slash)MANUAL.html,Non DAW Manual) and
-  #(url,non-mixer%(slash)MANUAL.html,Non Mixer Manual) for more information.
+  Please see the #(url,MANUAL.html,Manual) for more information.
 
 :: What it is not
 
@@ -210,41 +209,6 @@
 	= sequences associated with it, and these sequences can contain
 	= a free mix of annotation points and annotation regions.
 
-::: Mixer
-
-  The Non Mixer is a stand-alone application. It is a complement to Non
-  DAW, but neither program requires the other in order to function.
-
-  Implementing the mixer functionality in a separate program, connected
-  to Non-DAW via JACK presents a number of advantages:
-
-* Eliminates the need for an internal connection management interface
-* Improves overall system stability
-* Increases parallelism (utilizes multiple cores)
-* Adds flexibility
-* Eliminates the need for cumbersome concepts and interfaces such as 'sends', 'groups', 'inserts' and 'busses'.
-
-  Multiple instances of the mixer can be run together in order to
-  organize groups of channels and manage them with your preferred
-  window manager.
-
-  Each mixer strip runs as a separate JACK client. In JACK2, this can
-  translates into the DSP workload being spread across multiple CPU
-  cores.
-
-  Since the Mixer is an entirely separate unit, you may use any JACK
-  capable mixer client you want instead of, or in myriad combination
-  with, the Non-DAW Mixer. The one called LiveMix works well, but
-  lacks many features of Non's mixer.  All operations on the mixer
-  affect the current mix set state only and are not journaled.
-
-  The mixer's design is modular, with all DSP occurring in discrete
-  modules. One module hosts LADSPA plugins and the mixer is capable of
-  receiving control (automation) data for any module parameter from
-  Non-DAW (or another program) via JACK.
-
-  Control data is expressed as Control Voltage (CV).
-
 ; What does freedom have to do with this software?
 
   Non is /free software/. This means, briefly, that you are free use it as
@@ -278,10 +242,9 @@
 
   #(url,http:\/\/non.tuxfamily.org\/donation.html,Make a donation)
 
-
 ; Distribution
 
-  Development of the Non-DAW can be followed with Git:
+  Development of the Non-DAW and Non-Mixer can be followed with Git:
 
 > git clone git://git.tuxfamily.org/gitroot/non/daw.git
 
@@ -294,11 +257,6 @@
 * FLTK >= 1.1.7 (with `fluid`)
 * JACK >= 0.103.0
 * libsndfile >= 0.18.0
-* liblrdf >= 0.1.0
-
-  The following are optional:
-
-* LASH >= 0.5.4
 
 ; Community
 

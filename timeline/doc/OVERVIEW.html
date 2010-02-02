@@ -47,8 +47,6 @@ March 1, 2008<br>
 
 <ul><li><a href="#n:1.6.1.">1.6.1. Timeline</a>
 
-<li><a href="#n:1.6.2.">1.6.2. Mixer</a>
-
 </ul></ul><li><a href="#u:1.">What does freedom have to do with this software?</a>
 
 <li><a href="#u:2.">Donations</a>
@@ -66,7 +64,7 @@ March 1, 2008<br>
 The Non DAW is a powerful, reliable and fast modular Digital Audio Workstation system, released under the GNU General Public License (GPL). It utilizes the JACK Audio Connection Kit for inter-application audio I/O and the FLTK GUI toolkit for a fast and lightweight user interface.
 </p>
 <p>
-Please see the <a class=ext href="non-daw/MANUAL.html">Non DAW Manual</a> and <a class=ext href="non-mixer/MANUAL.html">Non Mixer Manual</a> for more information.
+Please see the <a class=ext href="MANUAL.html">Manual</a> for more information.
 </p>
 <h2 id="n:1.2.">1.2. What it is not</h2>
 <p>
@@ -173,33 +171,6 @@ The following data belong to the timeline:
 <dt><em>Annotation Regions</em></dt>
 <dd>Annotation Regions are annotations with a definite duration. These are useful for representing lyrics or other notes of a timely nature. Each track may have any number of annotation sequences associated with it, and these sequences can contain a free mix of annotation points and annotation regions.</dd>
 </dl>
-<h3 id="n:1.6.2.">1.6.2. Mixer</h3>
-<p>
-The Non Mixer is a stand-alone application. It is a complement to Non DAW, but neither program requires the other in order to function.
-</p>
-<p>
-Implementing the mixer functionality in a separate program, connected to Non-DAW via JACK presents a number of advantages:
-</p>
-<ul><li><span>Eliminates the need for an internal connection management interface</span>
-<li><span>Improves overall system stability</span>
-<li><span>Increases parallelism (utilizes multiple cores)</span>
-<li><span>Adds flexibility</span>
-<li><span>Eliminates the need for cumbersome concepts and interfaces such as 'sends', 'groups', 'inserts' and 'busses'.</span>
-</ul><p>
-Multiple instances of the mixer can be run together in order to organize groups of channels and manage them with your preferred window manager.
-</p>
-<p>
-Each mixer strip runs as a separate JACK client. In JACK2, this can translates into the DSP workload being spread across multiple CPU cores.
-</p>
-<p>
-Since the Mixer is an entirely separate unit, you may use any JACK capable mixer client you want instead of, or in myriad combination with, the Non-DAW Mixer. The one called LiveMix works well, but lacks many features of Non's mixer.  All operations on the mixer affect the current mix set state only and are not journaled.
-</p>
-<p>
-The mixer's design is modular, with all DSP occurring in discrete modules. One module hosts LADSPA plugins and the mixer is capable of receiving control (automation) data for any module parameter from Non-DAW (or another program) via JACK.
-</p>
-<p>
-Control data is expressed as Control Voltage (CV).
-</p>
 <h1 id="u:1.">What does freedom have to do with this software?</h1>
 <p>
 Non is <i>free software</i>. This means, briefly, that you are free use it as <b>you</b> wish, free to examine and adapt the source code, free to share it with your friends, and free to publish your changes to the source code. Furthermore, Non is <i>copyleft</i>, which means that you are free from the threat of some other entity taking over and denying you the above freedoms. The <i>free</i> part of <i>free software</i> doesn't refer to price any more than the <i>free</i> in <i>free speech</i> does.
@@ -222,7 +193,7 @@ If you don't love this software, don't feel guilty about not contributing. If yo
 </p>
 <h1 id="u:3.">Distribution</h1>
 <p>
-Development of the Non-DAW can be followed with Git:
+Development of the Non-DAW and Non-Mixer can be followed with Git:
 </p>
 <div class="fig example"><table width=100%><tr><td><pre>
 git clone git://git.tuxfamily.org/gitroot/non/daw.git
@@ -238,11 +209,6 @@ The following libraries are required to build Non DAW and Non Mixer
 <ul><li><span>FLTK >= 1.1.7 (with `fluid`)</span>
 <li><span>JACK >= 0.103.0</span>
 <li><span>libsndfile >= 0.18.0</span>
-<li><span>liblrdf >= 0.1.0</span>
-</ul><p>
-The following are optional:
-</p>
-<ul><li><span>LASH >= 0.5.4</span>
 </ul><h1 id="u:5.">Community</h1>
 <p>
 Feel free to drop by the <tt>#non</tt> channel on irc.freenode.net.

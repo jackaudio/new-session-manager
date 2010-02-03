@@ -53,7 +53,7 @@ public:
                 fl_draw_box( up_box(), x(), y(), w(), h(), color() );
                 fl_color( FL_FOREGROUND_COLOR /* textcolor() */ );
                 fl_font( textfont(), textsize() );
-                fl_draw( value(), x(), y(), w(), h(), FL_ALIGN_CENTER );
+                fl_draw( value(), x(), y(), w(), h(), (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_CLIP) );
             }
         }
 

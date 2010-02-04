@@ -131,6 +131,8 @@ main ( int argc, char **argv )
         }
         o->end();
 
+        o->size_range( main_window->w(), mixer->min_h(), 0, 0 );
+
         o->callback( (Fl_Callback*)cb_main, main_window );
         o->show( argc, argv );
     }

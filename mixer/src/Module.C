@@ -399,6 +399,9 @@ Module::draw_label ( void )
 void
 Module::insert_menu_cb ( const Fl_Menu_ *m )
 {
+    if ( ! m->mvalue() || m->mvalue()->flags & FL_SUBMENU_POINTER || m->mvalue()->flags & FL_SUBMENU )
+        return;
+
     void * v = m->mvalue()->user_data();
 
     if ( v )
@@ -464,6 +467,9 @@ void
 Module::menu_cb ( const Fl_Menu_ *m )
 {
     char picked[256];
+
+    if ( ! m->mvalue() || m->mvalue()->flags & FL_SUBMENU_POINTER || m->mvalue()->flags & FL_SUBMENU )
+        return;
 
     strncpy( picked, m->mvalue()->label(), sizeof( picked ) );
 

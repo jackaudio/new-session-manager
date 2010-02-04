@@ -370,26 +370,37 @@ Mixer::contains ( Mixer_Strip *ms )
     return ms->parent() == mixer_strips;
 }
 
+/* set the ideal number of rows... All may not actually fit. */
 void
-Mixer::rows ( int n )
+Mixer::rows ( int ideal_rows )
 {
     int sh;
 
-    if ( n > 1 )
+    int actual_rows = 1;
+
+    if ( ideal_rows > 1 )
     {
-        sh = (scroll->h() / n) - (mixer_strips->vspacing() * (n - 1));
+        sh = (scroll->h() / ideal_rows ) - (mixer_strips->vspacing() * (ideal_rows - 1));
         mixer_strips->flow( true );
+
+	if ( sh < Mixer_Strip::min_h() )
+	  {
+	    int can_fit = ( scroll->h() - 18 ) / Mixer_Strip::min_h();
+
+            actual_rows = can_fit > 0 ? can_fit : 1;
+	  }
+        else
+            actual_rows = ideal_rows;
     }
     else
-    {
-        sh = (scroll->h() - 18) / n;
-        mixer_strips->flow( false );
-    }
+        actual_rows = 1;
 
-    if ( sh < Mixer_Strip::min_h() )
+    if ( 1 == actual_rows )
     {
-        rows( ( scroll->h() - 18 ) /  Mixer_Strip::min_h() );
-        return;
+      sh = (scroll->h() - 18);
+      mixer_strips->flow( false );
+
+      actual_rows = 1;
     }
 
     int tw = 0;
@@ -403,12 +414,12 @@ Mixer::rows ( int n )
         tw += t->w() + mixer_strips->hspacing();
     }
 
-    if ( n > 1 )
+    if ( actual_rows > 1 )
         mixer_strips->size( scroll->w() - 18, mixer_strips->h() );
     else
         mixer_strips->size( tw, mixer_strips->h() );
 
-    _rows = n;
+    _rows = ideal_rows;
 
     scroll->redraw();
 }

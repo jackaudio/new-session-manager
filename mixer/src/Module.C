@@ -70,6 +70,13 @@ Module::Module ( ) : Fl_Group( 0, 0, 0, 50, "Unnamed" )
 
 Module::~Module ( )
 {
+
+    if ( _editor )
+    {
+        delete _editor;
+        _editor = NULL;
+    }
+
     for ( unsigned int i = 0; i < audio_input.size(); ++i )
         audio_input[i].disconnect();
     for ( unsigned int i = 0; i < audio_output.size(); ++i )
@@ -621,15 +628,6 @@ Module::command_open_parameter_editor ( void )
         _editor = new Module_Parameter_Editor( this );
 
         _editor->show();
-
-        do { Fl::wait(); }
-        while ( _editor->shown() );
-
-        DMESSAGE( "Module parameters for \"%s\" closed",label() );
-
-        delete _editor;
-
-        _editor = NULL;
     }
 }
 

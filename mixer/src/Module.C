@@ -105,7 +105,6 @@ Module::init ( void )
 
     box( FL_UP_BOX );
     labeltype( FL_NO_LABEL );
-    clip_children( 1 );
     set_visible_focus();
     selection_color( FL_RED );
 }
@@ -320,10 +319,7 @@ Module::draw_box ( void )
     ty = y();
     tx = x();
 
-//    bbox( tx, ty, tw, th );
-
     fl_push_clip( tx, ty, tw, th );
-
 
     Fl_Color c = is_default() ? FL_BLACK : color();
 
@@ -349,10 +345,9 @@ Module::draw_box ( void )
             fl_draw_box( FL_ROUNDED_BOX, tx + tw - 8, ty + 4, 5, 5, is_controlling() ? FL_YELLOW : fl_inactive( FL_YELLOW ) );
     }
 
-    fl_pop_clip();
-//    box( FL_NO_BOX );
-
     Fl_Group::draw_children();
+
+    fl_pop_clip();
 }
 
 void

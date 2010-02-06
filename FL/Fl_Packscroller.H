@@ -41,8 +41,6 @@ public:
 
     Fl_Packscroller ( int X, int Y, int W, int H, const char *L = 0 ) : Fl_Group( X, Y, W, H, L )
         {
-            clip_children( 1 );
-
             _increment = 30;
             _yposition = 0;
 

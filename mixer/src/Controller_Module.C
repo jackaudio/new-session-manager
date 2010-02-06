@@ -276,6 +276,9 @@ Controller_Module::connect_to ( Port *p )
     }
     else
     {
+        /* HACK: hide label */
+        w->labeltype( FL_NO_LABEL );
+
         w->resize( x(), y(), this->w(), h() );
         add( w );
         resizable( w );

@@ -37,6 +37,7 @@
 #include "Module_Parameter_Editor.H"
 #include "Controller_Module.H"
 #include "Chain.H"
+#include "Panner.H"
 
 #include "debug.h"
 
@@ -130,11 +131,28 @@ Module_Parameter_Editor::make_controls ( void )
 
     control_pack->clear();
 
+
+    /* these are for detecting related parameter groups which can be
+       better represented by a single control */
+    int azimuth_port_number = -1;
+    int elevation_port_number = -1;
+
     for ( unsigned int i = 0; i < module->control_input.size(); ++i )
     {
         Fl_Widget *w;
 
         Module::Port *p = &module->control_input[i];
+
+        if ( !strcasecmp( "Azimuth", p->name() ) )
+        {
+            azimuth_port_number = i;
+            continue;
+        }
+        else if ( !strcasecmp( "Elevation", p->name() ) )
+        {
+            elevation_port_number = i;
+            continue;
+        }
 
         if ( p->hints.type == Module::Port::Hints::BOOLEAN )
         {
@@ -216,6 +234,7 @@ Module_Parameter_Editor::make_controls ( void )
 
         }
 
+
         Fl_Button *bound;
 
         w->align(FL_ALIGN_TOP);
@@ -252,6 +271,27 @@ Module_Parameter_Editor::make_controls ( void )
 
     }
 
+    if ( azimuth_port_number >= 0 && elevation_port_number >= 0 )
+    {
+        Panner *o = new Panner( 0,0, 200, 200 );
+        o->box(FL_THIN_UP_BOX);
+        o->color(FL_GRAY0);
+        o->selection_color(FL_BACKGROUND_COLOR);
+        o->labeltype(FL_NORMAL_LABEL);
+        o->labelfont(0);
+        o->labelcolor(FL_FOREGROUND_COLOR);
+        o->align(FL_ALIGN_TOP);
+        o->when(FL_WHEN_RELEASE);
+        o->label( "Spatialization" );
+
+        o->align(FL_ALIGN_TOP);
+        o->labelsize( 10 );
+        o->callback( cb_panner_value_handle, new callback_data( this, azimuth_port_number, elevation_port_number ) );
+
+        control_pack->add( o );
+    }
+
+
     int width = control_pack->max_width() + 100;
     int height = control_pack->h() + 50;
 
@@ -264,7 +304,16 @@ Module_Parameter_Editor::cb_value_handle ( Fl_Widget *w, void *v )
 {
     callback_data *cd = (callback_data*)v;
 
-    cd->base_widget->set_value( cd->port_number, ((Fl_Valuator*)w)->value() );
+    cd->base_widget->set_value( cd->port_number[0], ((Fl_Valuator*)w)->value() );
+}
+
+void
+Module_Parameter_Editor::cb_panner_value_handle ( Fl_Widget *w, void *v )
+{
+    callback_data *cd = (callback_data*)v;
+
+    cd->base_widget->set_value( cd->port_number[0], ((Panner*)w)->point( 0 ).azimuth() );
+    cd->base_widget->set_value( cd->port_number[1], ((Panner*)w)->point( 0 ).elevation() );
 }
 
 void
@@ -282,7 +331,7 @@ Module_Parameter_Editor::cb_bound_handle ( Fl_Widget *w, void *v )
 
     fv->value( 1 );
 
-    cd->base_widget->bind_control( cd->port_number );
+    cd->base_widget->bind_control( cd->port_number[0] );
 }
 
 void

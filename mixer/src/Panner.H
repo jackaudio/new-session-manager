@@ -54,6 +54,17 @@ class Panner : public Fl_Widget
                 *Y = d * sinf( A );
             }
 
+        float azimuth ( void ) const
+            {
+                return a;
+            }
+
+        float elevation ( void ) const
+            {
+                return ( 1.0f - d ) * 90.0f;
+            }
+
+        /** set point position in X, Y coordinates (0.0 to 1.0) */
         void
         angle ( float X1, float Y1 )
             {

@@ -148,16 +148,20 @@ Panner::draw ( void )
     /* draw perimeter */
     {
         Fl_Color c = FL_RED;
-        const int iter = 8;
+        const int iter = 6;
 
         for ( int i = iter; i--; )
         {
             fl_color( c );
 
+            fl_line_style( FL_SOLID, 4 * ((float)i / iter) );
+
             fl_arc( tx + (i * (tw / iter)) / 2, ty + (i * (th / iter)) / 2, tw - (i * (tw / iter)), th - (i * ( th / iter )), 0, 360 );
 
             c = fl_color_average( FL_RED, FL_GRAY, (float)i / iter);
         }
+
+        fl_line_style( FL_SOLID, 0 );
     }
 
 /*     fl_color( FL_WHITE ); */

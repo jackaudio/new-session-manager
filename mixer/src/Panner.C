@@ -145,7 +145,24 @@ Panner::draw ( void )
     tw -= b * 2;
     th -= b * 2;
 
-    fl_arc( tx, ty, tw, th, 0, 360 );
+    /* draw perimeter */
+    {
+        Fl_Color c = FL_RED;
+        const int iter = 8;
+
+        for ( int i = iter; i--; )
+        {
+            fl_color( c );
+
+            fl_arc( tx + (i * (tw / iter)) / 2, ty + (i * (th / iter)) / 2, tw - (i * (tw / iter)), th - (i * ( th / iter )), 0, 360 );
+
+            c = fl_color_average( FL_RED, FL_GRAY, (float)i / iter);
+        }
+    }
+
+/*     fl_color( FL_WHITE ); */
+
+/*     fl_arc( tx, ty, tw, th, 0, 360 ); */
 
     if ( _configs[ _outs ][0] >= 0 )
     {
@@ -253,7 +270,12 @@ Panner::handle ( int m )
                 return 0;
         case FL_RELEASE:
             drag = NULL;
+            do_callback();
             return 1;
+        case FL_MOUSEWHEEL:
+        {
+            /* TODO: place point on opposite face of sphere */
+        }
         case FL_DRAG:
         {
             float X = Fl::event_x() - x();
@@ -266,9 +288,6 @@ Panner::handle ( int m )
 /*                 drag->angle( (float)(X / (tw / 2)) - 1.0f, 0.0f ); */
 /*             else */
                 drag->angle( (float)(X / (tw / 2)) - 1.0f, (float)(Y / (th / 2)) - 1.0f );
-
-
-            printf( "%f %f\n", drag->a, drag->d );
 
             redraw();
 

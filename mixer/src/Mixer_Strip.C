@@ -434,7 +434,7 @@ Mixer_Strip::init ( )
             o->label( "Spatialization" );
         }
         { Panner* o = new Panner(0, 0, 110, 90);
-            o->deactivate();
+//            o->deactivate();
             o->box(FL_THIN_UP_BOX);
             o->color(FL_GRAY0);
             o->selection_color(FL_BACKGROUND_COLOR);

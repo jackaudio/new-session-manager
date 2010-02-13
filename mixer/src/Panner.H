@@ -146,6 +146,7 @@ class Panner : public Fl_Widget
         RR   = 135,
     };
 
+    static Point * drag;
 
 protected:
 

@@ -24,6 +24,7 @@
 
 /* 2D Panner widget. Supports various multichannel configurations. */
 
+Panner::Point *Panner::drag;
 
 /* multichannel layouts, in degrees */
 int Panner::_configs[][12] =
@@ -136,7 +137,7 @@ Panner::draw ( void )
 
     fl_push_clip( tx, ty, tw, th );
 
-    fl_color( FL_WHITE );
+    fl_color( FL_RED );
 
     const int b = 10;
 
@@ -147,21 +148,32 @@ Panner::draw ( void )
 
     /* draw perimeter */
     {
-        Fl_Color c = FL_RED;
-        const int iter = 6;
+        Fl_Color c1, c2;
+        int iter;
+
+        if ( Fl::belowmouse() == this )
+        {
+            iter = 12;
+            c1 = fl_darker( FL_RED );
+            c2 = FL_GRAY;
+        }
+        else
+        {
+            iter = 6;
+            c1 = FL_GRAY;
+            c2 = FL_BLACK;
+        }
+
+        Fl_Color c = c1;
 
         for ( int i = iter; i--; )
         {
             fl_color( c );
 
-            fl_line_style( FL_SOLID, 4 * ((float)i / iter) );
-
             fl_arc( tx + (i * (tw / iter)) / 2, ty + (i * (th / iter)) / 2, tw - (i * (tw / iter)), th - (i * ( th / iter )), 0, 360 );
 
-            c = fl_color_average( FL_RED, FL_GRAY, (float)i / iter);
+            c = fl_color_average( c1, c2, (float)i / iter);
         }
-
-        fl_line_style( FL_SOLID, 0 );
     }
 
 /*     fl_color( FL_WHITE ); */
@@ -214,16 +226,23 @@ Panner::draw ( void )
         point_bbox( p, &px, &py, &pw, &ph );
 
         /* draw point */
-        fl_color( c );
+        if ( p != drag )
+            fl_color( c );
+        else
+            fl_color( FL_WHITE );
+
         fl_pie( px, py, pw, ph, 0, 360 );
 
         /* draw echo */
         fl_color( c = fl_darker( c ) );
         fl_arc( px - 5, py - 5, pw + 10, ph + 10, 0, 360 );
-        fl_color( c = fl_darker( c ) );
-        fl_arc( px - 10, py - 10, pw + 20, ph + 20, 0, 360 );
-        fl_color( c = fl_darker( c ) );
-        fl_arc( px - 30, py - 30, pw + 60, ph + 60, 0, 360 );
+        if ( Fl::belowmouse() == this )
+        {
+            fl_color( c = fl_darker( c ) );
+            fl_arc( px - 10, py - 10, pw + 20, ph + 20, 0, 360 );
+            fl_color( c = fl_darker( c ) );
+            fl_arc( px - 30, py - 30, pw + 60, ph + 60, 0, 360 );
+        }
 
         /* draw number */
         char pat[4];
@@ -253,13 +272,14 @@ Panner::point( int i )
 int
 Panner::handle ( int m )
 {
-    static Point *drag;
-
     int r = Fl_Widget::handle( m );
 
     switch ( m )
     {
-
+        case FL_ENTER:
+        case FL_LEAVE:
+            redraw();
+            return 1;
         case FL_PUSH:
 
             if ( Fl::event_button2() )
@@ -275,6 +295,7 @@ Panner::handle ( int m )
         case FL_RELEASE:
             drag = NULL;
             do_callback();
+            redraw();
             return 1;
         case FL_MOUSEWHEEL:
         {

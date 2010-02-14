@@ -263,10 +263,10 @@ Panner::draw ( void )
 }
 
 /* return the current gain setting for the path in/out  */
-Panner::Point
+Panner::Point *
 Panner::point( int i )
 {
-    return _points[ i ];
+    return &_points[ i ];
 }
 
 int

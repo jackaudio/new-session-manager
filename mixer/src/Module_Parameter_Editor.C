@@ -135,7 +135,9 @@ Module_Parameter_Editor::make_controls ( void )
     /* these are for detecting related parameter groups which can be
        better represented by a single control */
     int azimuth_port_number = -1;
+    float azimuth_value;
     int elevation_port_number = -1;
+    float elevation_value;
 
     for ( unsigned int i = 0; i < module->control_input.size(); ++i )
     {
@@ -143,14 +145,20 @@ Module_Parameter_Editor::make_controls ( void )
 
         Module::Port *p = &module->control_input[i];
 
-        if ( !strcasecmp( "Azimuth", p->name() ) )
+        if ( !strcasecmp( "Azimuth", p->name() ) &&
+            180.0f == p->hints.maximum &&
+            -180.0f == p->hints.minimum )
         {
             azimuth_port_number = i;
+            azimuth_value = p->control_value();
             continue;
         }
-        else if ( !strcasecmp( "Elevation", p->name() ) )
+        else if ( !strcasecmp( "Elevation", p->name() ) &&
+             90.0f == p->hints.maximum &&
+            -90.0f == p->hints.minimum )
         {
             elevation_port_number = i;
+            elevation_value = p->control_value();
             continue;
         }
 
@@ -288,7 +296,12 @@ Module_Parameter_Editor::make_controls ( void )
         o->labelsize( 10 );
         o->callback( cb_panner_value_handle, new callback_data( this, azimuth_port_number, elevation_port_number ) );
 
-        control_pack->add( o );
+        o->point( 0 )->azimuth( azimuth_value );
+        o->point( 0 )->elevation( elevation_value );
+
+        Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( o );
+
+        control_pack->add( flg );
     }
 
 
@@ -312,8 +325,8 @@ Module_Parameter_Editor::cb_panner_value_handle ( Fl_Widget *w, void *v )
 {
     callback_data *cd = (callback_data*)v;
 
-    cd->base_widget->set_value( cd->port_number[0], ((Panner*)w)->point( 0 ).azimuth() );
-    cd->base_widget->set_value( cd->port_number[1], ((Panner*)w)->point( 0 ).elevation() );
+    cd->base_widget->set_value( cd->port_number[0], ((Panner*)w)->point( 0 )->azimuth() );
+    cd->base_widget->set_value( cd->port_number[1], ((Panner*)w)->point( 0 )->elevation() );
 }
 
 void

@@ -56,12 +56,25 @@ class Panner : public Fl_Widget
 
         float azimuth ( void ) const
             {
-                return a;
+                return a > 180.0f ? a - 360.0f : a;
             }
+
 
         float elevation ( void ) const
             {
                 return ( 1.0f - d ) * 90.0f;
+            }
+
+         void azimuth (  float v )
+            {
+                a = v < -180.0f ? 360.0f - v : v;
+                a = a < 0.0f ? 0.0f : a > 360.0f ? 360.0f : a;
+            }
+
+         void elevation ( float v )
+            {
+                d = 1.0f - ( v / 90.0f );
+                d = d < 0.0f ? 0.0f : d > 1.0f ? 1.0f : d;
             }
 
         /** set point position in X, Y coordinates (0.0 to 1.0) */
@@ -179,6 +192,6 @@ public:
 
     virtual ~Panner ( ) { }
 
-    Panner::Point point ( int i );
+    Panner::Point *point ( int i );
 
 };

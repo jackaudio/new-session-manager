@@ -83,6 +83,11 @@ public:
 
 private:
 
+    /* used to defer setting the mode of the gain controller until the
+     chain has been added and the controller connected to a default
+     module */
+    int _gain_controller_mode;
+
     Fl_Flip_Button *width_button;
     Fl_Flip_Button *tab_button;
     Fl_Button *close_button;

@@ -94,6 +94,10 @@ Mixer_Strip::~Mixer_Strip ( )
 {
     DMESSAGE( "Destroying mixer strip" );
 
+
+    /* make sure this gets destroyed before the chain */
+    fader_tab->clear();
+
     delete _chain;
     _chain = NULL;
 
@@ -111,6 +115,10 @@ Mixer_Strip::get ( Log_Entry &e ) const
     e.add( ":width",      width_button->value() ? "wide" : "narrow" );
     e.add( ":tab",      tab_button->value() ? "signal" : "fader" );
     e.add( ":color",           (unsigned long)color());
+    /* since the default controllers aren't logged, we have to store
+     * this setting as part of the mixer strip */
+    e.add( ":gain_mode", gain_controller->mode() );
+
 }
 
 void
@@ -138,6 +146,10 @@ Mixer_Strip::set ( Log_Entry &e )
         {
             color( (Fl_Color)atoll( v ) );
             redraw();
+        }
+        else if ( ! strcmp( s, ":gain_mode" ) )
+        {
+            _gain_controller_mode = atoi( v );
         }
     }
 
@@ -286,6 +298,7 @@ Mixer_Strip::handle_module_added ( Module *m )
         else if ( 0 == strcmp( m->name(), "Gain" ) )
         {
             gain_controller->connect_to( &m->control_input[0] );
+            gain_controller->mode( (Controller_Module::Mode)_gain_controller_mode );
         }
         else if ( 0 == strcmp( m->name(), "Meter" ) )
         {
@@ -306,6 +319,7 @@ Mixer_Strip::init ( )
 {
     selection_color( FL_RED );
 
+    _gain_controller_mode = 0;
     _chain = 0;
 
 //    box(FL_THIN_UP_BOX);

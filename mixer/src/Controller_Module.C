@@ -76,8 +76,13 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
 Controller_Module::~Controller_Module ( )
 {
     Fl::remove_timeout( update_cb, this );
+
     log_destroy();
+
+    /* shutdown JACK port, if we have one */
+    mode( GUI );
 }
+
 
 
 void
@@ -163,6 +168,7 @@ Controller_Module::mode ( Mode m )
             if ( ! po.activate() )
             {
                 fl_alert( "Could not activate JACK port \"%s\"", po.name() );
+                chain()->engine()->unlock();
                 return;
             }
 

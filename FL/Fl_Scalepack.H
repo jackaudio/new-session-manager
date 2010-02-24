@@ -36,6 +36,8 @@ public:
     int spacing ( void ) const { return _spacing; }
     void spacing ( int v ) { _spacing = v; redraw(); }
 
+    virtual void resize ( int, int, int, int );
+
     virtual void draw ( void );
 
 };

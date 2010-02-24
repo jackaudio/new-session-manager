@@ -97,33 +97,3 @@ public:
     void reset ( void ) { _peak = -80.0f; redraw(); }
 
 };
-
-#include <FL/Fl_Group.H>
-#include <stdio.h>
-
-
-/* ... Extension methods for any group containing only meters. Access
- * via a cast to (Meter_Pack *) */
-
-class Meter_Pack : public Fl_Group
-{
-
-public:
-
-/** return a pointer to the meter for channel /c/ in group of meters /g/ */
-    Meter *
-    channel ( int c )
-        {
-            if ( c > children() )
-            {
-                fprintf( stderr, "no such channel\n" );
-                return NULL;
-            }
-
-            return (Meter *)child( c );
-        }
-
-    int
-    channels ( void ) const { return children(); }
-
-};

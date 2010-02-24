@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2009 Jonathan Moore Liles                                     */
+/* Copyright (C) 2010 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -48,10 +48,10 @@ const float CONTROL_UPDATE_FREQ = 0.1f;
 Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
     : Module ( is_default, 50, 100, name() )
 {
-    box( FL_NO_BOX );
+    box( FL_FLAT_BOX );
+    color( FL_GREEN );
 
     _pad = true;
-    control = 0;
     control_value = 0;
 
     add_port( Port( this, Port::INPUT, Port::CONTROL ) );
@@ -59,10 +59,12 @@ Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
     dpm_pack = new Fl_Scalepack( x(), y(), w(), h() );
     dpm_pack->type( FL_HORIZONTAL );
 
+    end();
+
     control_value = new float[1];
     *control_value = -70.0f;
 
-    end();
+    align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
 
     clear_visible_focus();
 
@@ -163,13 +165,14 @@ Meter_Indicator_Module::update_cb ( void )
 
                 DPM *dpm = new DPM( x(), y(), w(), h() );
                 dpm->type( FL_VERTICAL );
-                align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
 
                 dpm_pack->add( dpm );
 
                 control_value[i] = -70.0f;
                 dpm->value( -70.0f );
             }
+
+//            redraw();
 
 /*             engine->unlock(); */
         }
@@ -181,8 +184,6 @@ Meter_Indicator_Module::update_cb ( void )
             }
         }
     }
-
-//    redraw();
 }
 
 void
@@ -190,11 +191,12 @@ Meter_Indicator_Module::connect_to ( Port *p )
 {
     control_input[0].connect_to( p );
 
-    DPM *o = new DPM( x(), y(), this->w(), h() );
-    o->type( FL_VERTICAL );
-    align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
+    /* DPM *o = new DPM( 10, 10, 10, 10 ); */
+    /* o->type( FL_VERTICAL ); */
 
-    dpm_pack->add( o );
+    /* dpm_pack->add( o ); */
+
+    redraw();
 }
 
 
@@ -206,7 +208,7 @@ Meter_Indicator_Module::handle ( int m )
     {
         case FL_PUSH:
         {
-            if ( test_press( FL_BUTTON1 ) )
+            if ( Fl::event_button1() )
             {
                 /* don't let Module::handle eat our click */
                 return Fl_Group::handle( m );
@@ -214,7 +216,7 @@ Meter_Indicator_Module::handle ( int m )
         }
     }
 
-    return 0;
+    return Module::handle( m );
 }
 
 
@@ -244,10 +246,13 @@ Meter_Indicator_Module::handle_control_changed ( Port *p )
                 align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
 
                 dpm_pack->add( dpm );
+                dpm_pack->redraw();
 
                 control_value[i] = -70.0f;
                 dpm->value( -70.0f );
             }
+
+            redraw();
         }
     }
 }

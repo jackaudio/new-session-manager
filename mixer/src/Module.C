@@ -61,9 +61,10 @@ Module::Module ( bool is_default, int W, int H, const char *L ) : Fl_Group( 0, 0
     log_create();
 }
 
-Module::Module ( ) : Fl_Group( 0, 0, 0, 50, "Unnamed" )
+Module::Module ( ) : Fl_Group( 0, 0, 50, 50, "Unnamed" )
 {
     init();
+
 
     log_create();
 }
@@ -185,7 +186,6 @@ Module::paste_before ( void )
     /* set up for another copy */
     m->copy();
 }
-
 
 void
 Module::set ( Log_Entry &e )

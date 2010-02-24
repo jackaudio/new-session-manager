@@ -47,7 +47,7 @@ DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
 
     type( FL_VERTICAL );
 
-    resize( X, Y, W, H );
+//    resize( X, Y, W, H );
 
     dim( 0.70f );
 
@@ -113,6 +113,7 @@ DPM::resize ( int X, int Y, int W, int H )
 void
 DPM::draw ( void )
 {
+
     snprintf( peak_string, sizeof( peak_string ), "%.1f", peak() );
     tooltip( peak_string );
 

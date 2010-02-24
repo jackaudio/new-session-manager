@@ -67,14 +67,12 @@ protected:
 
     virtual void draw ( void )
         {
-            draw_box();
+//            draw_box();
             Fl_Group::draw();
         }
 
     virtual int handle ( int m );
 
 private:
-
-    Fl_Valuator *control;
 
 };

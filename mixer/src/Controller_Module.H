@@ -46,8 +46,16 @@ public:
 
     enum Mode { GUI, CV, OSC, MIDI };
 
+    enum Type { KNOB,
+                SLIDER,
+                SPINNER,
+                TOGGLE,
+                SPATIALIZATION };
+
     Mode mode ( void ) const { return _mode; }
     void mode ( Mode v );
+
+    Type type ( void ) const { return _type; }
 
     Controller_Module ( bool is_default = false );
     virtual ~Controller_Module ( );
@@ -90,6 +98,7 @@ private:
 
     std::vector<JACK::Port> jack_input;
     Mode _mode;
+    Type _type;
 
     Fl_Valuator *control;
 

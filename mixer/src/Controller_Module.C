@@ -281,6 +281,7 @@ Controller_Module::connect_spatializer_to ( Module *m )
             init_sizes();
         }
 
+        _type = SPATIALIZATION;
         return true;
     }
 }
@@ -300,6 +301,7 @@ Controller_Module::connect_to ( Port *p )
         w = o;
         o->value( p->control_value() );
 
+        _type = TOGGLE;
     }
     else if ( p->hints.type == Module::Port::Hints::INTEGER )
     {
@@ -316,6 +318,8 @@ Controller_Module::connect_to ( Port *p )
             o->minimum( p->hints.minimum );
             o->maximum( p->hints.maximum );
         }
+
+        _type = SPINNER;
 
         o->value( p->control_value() );
     }
@@ -340,6 +344,8 @@ Controller_Module::connect_to ( Port *p )
         }
 
         o->value( p->control_value() );
+
+        _type = SLIDER;
     }
     else
     {
@@ -358,6 +364,7 @@ Controller_Module::connect_to ( Port *p )
             o->value( p->control_value() );
         }
 
+        _type = KNOB;
     }
 
     control_value = p->control_value();
@@ -490,7 +497,8 @@ Controller_Module::handle ( int m )
             if ( test_press( FL_BUTTON3 ) )
             {
                 /* context menu */
-                menu_popup( &menu() );
+                if ( type() != SPATIALIZATION )
+                    menu_popup( &menu() );
 
                 return 1;
             }
@@ -509,9 +517,8 @@ Controller_Module::handle_control_changed ( Port * )
     if ( contains( Fl::pushed() ) )
         return;
 
-    if ( control_output.size() > 1 )
+    if ( type() == SPATIALIZATION )
     {
-        /* spatializer */
         Panner *pan = (Panner*)control;
 
         pan->point( 0 )->azimuth( control_output[0].control_value() );
@@ -534,9 +541,8 @@ Controller_Module::process ( nframes_t nframes )
 {
     THREAD_ASSERT( RT );
 
-    if ( control_output.size() > 1 )
+    if ( type() == SPATIALIZATION )
     {
-        /* this is a spatializer controller... */
         return;
     }
 

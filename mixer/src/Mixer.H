@@ -63,13 +63,11 @@ protected:
     int handle ( int m );
 
 public:
-  
+
   int min_h ( void ) const { return Mixer_Strip::min_h() + (18 * 2); }
 
     void rows ( int n );
     virtual void resize ( int X, int Y, int W, int H );
-
-    void update ( void );
 
     void new_strip ( void );
     void process ( unsigned int nframes );

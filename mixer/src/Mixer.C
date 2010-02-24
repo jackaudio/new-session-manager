@@ -49,11 +49,11 @@ extern char *user_config_dir;
 
 #include "debug.h"
 
-static void update_cb( void *v ) {
-    Fl::repeat_timeout( STATUS_UPDATE_FREQ, update_cb, v );
+/* static void update_cb( void *v ) { */
+/*     Fl::repeat_timeout( STATUS_UPDATE_FREQ, update_cb, v ); */
 
-    ((Mixer*)v)->update();
-}
+/*     ((Mixer*)v)->update(); */
+/* } */
 
 
 void Mixer::cb_menu(Fl_Widget* o) {
@@ -309,7 +309,7 @@ void Mixer::add ( Mixer_Strip *ms )
 
     rows( _rows );
 
-    scroll->redraw();
+//    scroll->redraw();
 }
 
 void
@@ -422,17 +422,6 @@ Mixer::rows ( int ideal_rows )
     _rows = ideal_rows;
 
     scroll->redraw();
-}
-
-void Mixer::update ( void )
-{
-    THREAD_ASSERT( UI );
-
-    for ( int i = mixer_strips->children(); i--; )
-    {
-        ((Mixer_Strip*)mixer_strips->child( i ))->update();
-    }
-    // redraw();
 }
 
 /** retrun a pointer to the track named /name/, or NULL if no track is named /name/ */

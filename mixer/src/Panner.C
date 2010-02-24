@@ -286,23 +286,31 @@ Panner::handle ( int m )
             {
                 _bypassed = ! _bypassed;
                 redraw();
-                return 0;
+                return 1;
             }
             else if ( Fl::event_button1() && ( drag = event_point() ) )
                 return 1;
             else
                 return 0;
         case FL_RELEASE:
-            drag = NULL;
-            do_callback();
-            redraw();
-            return 1;
+            if ( Fl::event_button1() && drag )
+            {
+                drag = NULL;
+                do_callback();
+                redraw();
+                return 1;
+            }
+            else
+                return 0;
         case FL_MOUSEWHEEL:
         {
             /* TODO: place point on opposite face of sphere */
         }
         case FL_DRAG:
         {
+            if ( ! drag )
+                return 0;
+
             float X = Fl::event_x() - x();
             float Y = Fl::event_y() - y();
 
@@ -312,7 +320,10 @@ Panner::handle ( int m )
 /*             if ( _outs < 3 ) */
 /*                 drag->angle( (float)(X / (tw / 2)) - 1.0f, 0.0f ); */
 /*             else */
-                drag->angle( (float)(X / (tw / 2)) - 1.0f, (float)(Y / (th / 2)) - 1.0f );
+            drag->angle( (float)(X / (tw / 2)) - 1.0f, (float)(Y / (th / 2)) - 1.0f );
+
+            if ( when() & FL_WHEN_CHANGED )
+                do_callback();
 
             redraw();
 

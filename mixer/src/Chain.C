@@ -310,6 +310,8 @@ Chain::remove ( Module *m )
         fl_alert( "Can't remove module at this point because the resultant chain is invalid" );
     }
 
+    strip()->handle_module_removed( m );
+
     modules_pack->remove( m );
 
     configure_ports();

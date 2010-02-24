@@ -209,17 +209,23 @@ Mixer_Strip::chain ( Chain *c )
 
 void Mixer_Strip::cb_handle(Fl_Widget* o) {
     // parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
+    DMESSAGE( "Callback for %s", o->label() );
+
     if ( o == tab_button )
     {
         if ( tab_button->value() == 0 )
         {
+            fader_tab->resize( tab_group->x(), tab_group->y(), tab_group->w(), tab_group->h() );
             fader_tab->show();
             signal_tab->hide();
+            tab_group->resizable( fader_tab );
         }
         else
         {
+            signal_tab->resize( tab_group->x(), tab_group->y(), tab_group->w(), tab_group->h() );
             signal_tab->show();
             fader_tab->hide();
+            tab_group->resizable( signal_tab );
         }
 
     }
@@ -236,13 +242,13 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
         name( name_field->value() );
     else if ( o == width_button )
     {
-        if ( ((Fl_Button*)o)->value() )
+        if ( width_button->value() )
             size( 220, h() );
         else
             size( 96, h() );
 
-        if ( parent() )
-            parent()->parent()->redraw();
+         if ( parent() )
+             parent()->parent()->redraw();
     }
 }
 
@@ -305,6 +311,26 @@ Mixer_Strip::handle_module_added ( Module *m )
             meter_indicator->connect_to( &m->control_output[0] );
         }
     }
+    else
+    {
+        if ( spatialization_controller->connect_spatializer_to( m ) )
+        {
+            spatialization_controller->show();
+            DMESSAGE( "Connected spatializer to module \"%s\"", m->name() );
+        }
+    }
+}
+
+
+/* called by the chain to let us know that a module has been removed */
+void
+Mixer_Strip::handle_module_removed ( Module *m )
+{
+    if ( spatialization_controller->control_output[0].connected_port()->module() == m )
+    {
+        spatialization_controller->hide();
+        DMESSAGE( "Module \"%s\" disconnected from spatialization controller", m->name() );
+    }
 }
 
 /* update GUI with values from RT thread */
@@ -330,134 +356,138 @@ Mixer_Strip::init ( )
 
     set_visible_focus();
 
-    { Fl_Pack *o = new Fl_Pack( 2, 2, 114, 100 );
-        o->type( Fl_Pack::VERTICAL );
-        o->spacing( 2 );
-        {
-            Fl_Sometimes_Input *o = new Fl_Sometimes_Input( 2, 2, 144, 24 );
-            name_field = o;
+     { Fl_Scalepack *o = new Fl_Scalepack( 2, 2, 116, 595 );
+         o->type( FL_VERTICAL );
+         o->spacing( 2 );
 
-            o->color( color() );
-            o->up_box( FL_ROUNDED_BOX );
-            o->box( FL_ROUNDED_BOX );
-            o->labeltype( FL_NO_LABEL );
-            o->labelcolor( FL_GRAY0 );
-            o->textcolor( FL_FOREGROUND_COLOR );
-            o->value( name() );
-            o->callback( cb_handle, (void*)this );
+        { Fl_Pack *o = new Fl_Pack( 2, 2, 114, 100 );
+            o->type( Fl_Pack::VERTICAL );
+            o->spacing( 2 );
+            {
+                Fl_Sometimes_Input *o = new Fl_Sometimes_Input( 2, 2, 144, 24 );
+                name_field = o;
 
-        }
-        { Fl_Scalepack *o = new Fl_Scalepack( 7, 143, 110, 25 );
-            o->type( Fl_Pack::HORIZONTAL );
-            { Fl_Button* o = left_button = new Fl_Button(7, 143, 35, 25, "@<-");
-                o->tooltip( "Move left" );
-                o->type(0);
-                o->labelsize(10);
-                o->when( FL_WHEN_RELEASE );
-                o->callback( ((Fl_Callback*)cb_handle), this );
-            } // Fl_Button* o
+                o->color( color() );
+                o->up_box( FL_ROUNDED_BOX );
+                o->box( FL_ROUNDED_BOX );
+                o->labeltype( FL_NO_LABEL );
+                o->labelcolor( FL_GRAY0 );
+                o->textcolor( FL_FOREGROUND_COLOR );
+                o->value( name() );
+                o->callback( cb_handle, (void*)this );
 
-            { Fl_Button* o = close_button = new Fl_Button(7, 143, 35, 25, "X");
-                o->tooltip( "Remove strip" );
-                o->type(0);
-                o->labeltype( FL_EMBOSSED_LABEL );
-                o->color( FL_LIGHT1 );
-                o->selection_color( FL_RED );
-                o->labelsize(10);
-                o->when( FL_WHEN_RELEASE );
-                o->callback( ((Fl_Callback*)cb_handle), this );
-            } // Fl_Button* o
-
-            { Fl_Button* o = right_button = new Fl_Button(7, 143, 35, 25, "@->");
-                o->tooltip( "Move right" );
-                o->type(0);
-                o->labelsize(10);
-                o->when( FL_WHEN_RELEASE );
-                o->callback( ((Fl_Callback*)cb_handle), this );
-            } // Fl_Button* o
-
-            o->end();
-        } // Fl_Group* o
-        { Fl_Flip_Button* o = width_button = new Fl_Flip_Button(61, 183, 45, 22, "narrow/wide");
-            o->type(1);
-            o->labelsize(14);
-            o->callback( ((Fl_Callback*)cb_handle), this );
-            o->when(FL_WHEN_RELEASE);
-        } // Fl_Flip_Button* o
-        { Fl_Flip_Button* o = tab_button = new Fl_Flip_Button(61, 183, 45, 22, "fader/signal");
-            o->type(1);
-            o->labelsize( 14 );
-            o->callback( cb_handle, this );
-            o->when(FL_WHEN_RELEASE);
-        }
-        o->end();
-    }
-
-    Fl_Pack *fader_pack;
-
-    { Fl_Group *o = fader_tab = new Fl_Group( 7, 115, 105, 330, "Fader" );
-        o->box( FL_NO_BOX );
-        o->labeltype( FL_NO_LABEL );
-        { Fl_Pack* o = fader_pack = new Fl_Pack(7, 116, 103, 330 );
-            o->spacing( 20 );
-            o->type( Fl_Pack::HORIZONTAL );
-            { Controller_Module *o = gain_controller = new Controller_Module( true );
-                o->pad( false );
-                o->size( 33, 0 );
             }
-            { Meter_Indicator_Module *o = meter_indicator = new Meter_Indicator_Module( true );
-                o->pad( false );
-                o->size( 58, 0 );
+            { Fl_Scalepack *o = new Fl_Scalepack( 7, 143, 110, 25 );
+                o->type( Fl_Pack::HORIZONTAL );
+                { Fl_Button* o = left_button = new Fl_Button(7, 143, 35, 25, "@<-");
+                    o->tooltip( "Move left" );
+                    o->type(0);
+                    o->labelsize(10);
+                    o->when( FL_WHEN_RELEASE );
+                    o->callback( ((Fl_Callback*)cb_handle), this );
+                } // Fl_Button* o
+
+                { Fl_Button* o = close_button = new Fl_Button(7, 143, 35, 25, "X");
+                    o->tooltip( "Remove strip" );
+                    o->type(0);
+                    o->labeltype( FL_EMBOSSED_LABEL );
+                    o->color( FL_LIGHT1 );
+                    o->selection_color( FL_RED );
+                    o->labelsize(10);
+                    o->when( FL_WHEN_RELEASE );
+                    o->callback( ((Fl_Callback*)cb_handle), this );
+                } // Fl_Button* o
+
+                { Fl_Button* o = right_button = new Fl_Button(7, 143, 35, 25, "@->");
+                    o->tooltip( "Move right" );
+                    o->type(0);
+                    o->labelsize(10);
+                    o->when( FL_WHEN_RELEASE );
+                    o->callback( ((Fl_Callback*)cb_handle), this );
+                } // Fl_Button* o
+
+                o->end();
+            } // Fl_Group* o
+            { Fl_Flip_Button* o = tab_button = new Fl_Flip_Button(61, 183, 45, 22, "fader/signal");
+                o->type(1);
+                o->labelsize( 14 );
+                o->callback( ((Fl_Callback*)cb_handle), this );
+                o->when(FL_WHEN_RELEASE);
+            }
+            { Fl_Flip_Button* o = width_button = new Fl_Flip_Button(61, 183, 45, 22, "narrow/wide");
+                o->type(1);
+                o->labelsize( 14 );
+                o->callback( ((Fl_Callback*)cb_handle), this );
+                o->when(FL_WHEN_RELEASE);
+            }
+            o->end();
+        }
+
+/*         { Fl_Scalepack *o = new Fl_Scalepack( 2, 103, 114, 490 ); */
+/*             o->type( FL_VERTICAL ); */
+//        o->box( FL_FLAT_BOX );
+//        o->color( FL_BACKGROUND_COLOR );
+        { Fl_Group *o = tab_group = new Fl_Group( 2, 116, 105, 330 );
+            o->box( FL_NO_BOX );
+            { Fl_Group *o = fader_tab = new Fl_Group( 2, 116, 105, 330, "Fader" );
+                o->box( FL_NO_BOX );
+                o->labeltype( FL_NO_LABEL );
+                { Fl_Scalepack* o = new Fl_Scalepack(2, 116, 105, 330 );
+                    // o->box( FL_BORDER_BOX );
+//                        o->color( FL_RED );
+                    o->spacing( 20 );
+                    o->type( Fl_Scalepack::HORIZONTAL );
+                    { Controller_Module *o = gain_controller = new Controller_Module( true );
+                        o->pad( false );
+                        o->size( 33, 100 );
+                    }
+                    { Meter_Indicator_Module *o = meter_indicator = new Meter_Indicator_Module( true );
+                        o->pad( false );
+                        o->size( 38, 100 );
+                        Fl_Group::current()->resizable(o);
+                    }
+                    o->end();
+                    Fl_Group::current()->resizable(o);
+                } // Fl_Group* o
+                o->end();
                 Fl_Group::current()->resizable(o);
-
+            }
+            { Fl_Group *o = signal_tab = new Fl_Group( 2, 116, 105, 330 );
+                o->box( FL_NO_BOX );
+                o->labeltype( FL_NO_LABEL );
+                o->hide();
+                o->end();
             }
             o->end();
-            Fl_Group::current()->resizable(o);
-        } // Fl_Group* o
-        o->end();
-        Fl_Group::current()->resizable(o);
-    }
-    { Fl_Group *o = signal_tab = new Fl_Group( 7, 115, 105, 330 );
-        o->box( FL_NO_BOX );
-        o->labeltype( FL_NO_LABEL );
-        o->hide();
-        o->end();
-    }
-    { Fl_Pack *o = panner_pack = new Fl_Pack( 2, 443, 114, 40 );
-        o->spacing( 2 );
-        o->type( Fl_Pack::VERTICAL );
-        o->box( FL_NO_BOX );
-
-        { Fl_Box *o = new Fl_Box( 0, 0, 100, 24 );
-            o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
-            o->labelsize( 10 );
-            o->label( "Spatialization" );
+            Fl_Group::current()->resizable( o );
         }
-        { Panner* o = new Panner(0, 0, 110, 90);
-//            o->deactivate();
-            o->box(FL_THIN_UP_BOX);
-            o->color(FL_GRAY0);
-            o->selection_color(FL_BACKGROUND_COLOR);
-            o->labeltype(FL_NORMAL_LABEL);
-            o->labelfont(0);
-            o->labelsize(11);
-            o->labelcolor(FL_FOREGROUND_COLOR);
-            o->align(FL_ALIGN_TOP);
-            o->when(FL_WHEN_RELEASE);
-        } // Panner* o
-        { Fl_Box *o = new Fl_Box( 0, 0, 100, 12 );
-            o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
-            o->labelsize( 10 );
-            o->label( "Inputs" );
-        }
-        {
-            Controller_Module *m = jack_input_controller = new Controller_Module( true );
-            m->labeltype( FL_NO_LABEL );
-            m->chain( _chain );
-            m->pad( false );
-//            m->connect_to( &_chain->module( 0 )->control_input[1] );
-            m->size( 33, 24 );
-        }
+/*         { Fl_Pack *o = panner_pack = new Fl_Pack( 2, 465, 114, 40 ); */
+/*             o->spacing( 2 ); */
+/*             o->type( Fl_Pack::VERTICAL ); */
+            { Fl_Box *o = new Fl_Box( 0, 0, 100, 12 );
+                o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
+                o->labelsize( 10 );
+//                o->label( "Spatialization" );
+            }
+            { Controller_Module *o = spatialization_controller = new Controller_Module( true );
+                o->hide();
+                o->pad( false );
+                o->size( 100, 100 );
+            }
+            { Fl_Box *o = new Fl_Box( 0, 0, 100, 12 );
+                o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
+                o->labelsize( 10 );
+                o->label( "Inputs" );
+            }
+            {
+                Controller_Module *m = jack_input_controller = new Controller_Module( true );
+                m->labeltype( FL_NO_LABEL );
+                m->chain( _chain );
+                m->pad( false );
+                m->size( 33, 24 );
+             }
+/*             o->end(); */
+/*         } */
         o->end();
     }
 
@@ -466,6 +496,8 @@ Mixer_Strip::init ( )
     color( FL_BLACK );
 
     size( 96, h() );
+
+    redraw();
 
     //  _chain->configure_ports();
 }
@@ -476,8 +508,9 @@ Mixer_Strip::draw ( void )
     if ( !fl_not_clipped( x(), y(), w(), h() ) )
         return;
 
-    /* don't bother drawing anything else, all we're doing is drawing the focus. */
-    if ( damage() != FL_DAMAGE_USER1 )
+     /* don't bother drawing anything else, all we're doing is drawing the focus. */
+    if ( damage() & FL_DAMAGE_ALL ||
+         damage() & FL_DAMAGE_CHILD )
         Fl_Group::draw();
 
     Fl_Group::draw_box( FL_UP_FRAME, x(), y(), w(), h(), Fl::focus() == this ? Fl_Group::selection_color() : FL_BLACK );
@@ -591,22 +624,27 @@ Mixer_Strip::handle ( int m )
             }
              else
                 return menu().test_shortcut() != 0;
+            break;
         }
-        break;
         case FL_PUSH:
         {
-            take_focus();
+            int r = 0;
+            if ( Fl::event_button1() )
+            {
+                take_focus();
+                r = 1;
+            }
 
             if ( Fl_Group::handle( m ) )
                 return 1;
-
-            if ( test_press( FL_BUTTON3 ) )
+            else if ( test_press( FL_BUTTON3 ) )
             {
                 menu_popup( &menu() );
                 return 1;
             }
-
-            return 0;
+            else
+                return r;
+            break;
         }
         case FL_FOCUS:
             damage( FL_DAMAGE_USER1 );

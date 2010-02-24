@@ -1,4 +1,3 @@
-
 /*******************************************************************************/
 /* Copyright (C) 2009 Jonathan Moore Liles                                     */
 /*                                                                             */
@@ -36,6 +35,7 @@
 #include "FL/Fl_Arc_Dial.H"
 #include "FL/Fl_Labelpad_Group.H"
 #include "FL/Fl_Value_SliderX.H"
+#include "Panner.H"
 #include "FL/test_press.H"
 #include "FL/menu_popup.H"
 
@@ -193,10 +193,104 @@ Controller_Module::mode ( Mode m )
     _mode = m ;
 }
 
+/** attempt to transform this controller into a spatialization
+    controller and connect to the given module's spatialization
+    control inputs. Returns true on success, false if given module
+    does not accept spatialization inputs. */
+bool
+Controller_Module::connect_spatializer_to ( Module *m )
+{
+    /* these are for detecting related parameter groups which can be
+       better represented by a single control */
+    Port *azimuth_port = NULL;
+    float azimuth_value = 0.0f;
+    Port *elevation_port = NULL;
+    float elevation_value = 0.0f;
+
+    for ( unsigned int i = 0; i < m->control_input.size(); ++i )
+    {
+        Port *p = &m->control_input[i];
+
+        if ( !strcasecmp( "Azimuth", p->name() ) &&
+             180.0f == p->hints.maximum &&
+             -180.0f == p->hints.minimum )
+        {
+            azimuth_port = p;
+            azimuth_value = p->control_value();
+            continue;
+        }
+        else if ( !strcasecmp( "Elevation", p->name() ) &&
+                  90.0f == p->hints.maximum &&
+                  -90.0f == p->hints.minimum )
+        {
+            elevation_port = p;
+            elevation_value = p->control_value();
+            continue;
+        }
+    }
+
+    if ( ! ( azimuth_port && elevation_port ) )
+        return false;
+
+    control_output.clear();
+    add_port( Port( this, Port::OUTPUT, Port::CONTROL ) );
+    add_port( Port( this, Port::OUTPUT, Port::CONTROL ) );
+
+    control_output[0].connect_to( azimuth_port );
+    control_output[1].connect_to( elevation_port );
+
+    {
+        clear();
+
+        Panner *o = new Panner( 0,0, 100, 100 );
+
+        o->box(FL_THIN_UP_BOX);
+        o->color(FL_GRAY0);
+        o->selection_color(FL_BACKGROUND_COLOR);
+        o->labeltype(FL_NORMAL_LABEL);
+        o->labelfont(0);
+        o->labelcolor(FL_FOREGROUND_COLOR);
+        o->align(FL_ALIGN_TOP);
+        o->when(FL_WHEN_CHANGED);
+        o->label( "Spatialization" );
+
+        o->align(FL_ALIGN_TOP);
+        o->labelsize( 10 );
+//        o->callback( cb_panner_value_handle, new callback_data( this, azimuth_port_number, elevation_port_number ) );
+
+        o->point( 0 )->azimuth( azimuth_value );
+        o->point( 0 )->elevation( elevation_value );
+
+        o->callback( cb_spatializer_handle, this );
+
+        control = (Fl_Valuator*)o;
+
+        if ( _pad )
+        {
+            Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( o );
+            flg->position( x(), y() );
+            flg->set_visible_focus();
+            size( flg->w(), flg->h() );
+            add( flg );
+        }
+        else
+        {
+            o->resize( x(), y(), w(), h() );
+            add( o );
+            resizable( o );
+            init_sizes();
+        }
+
+        return true;
+    }
+}
+
 void
 Controller_Module::connect_to ( Port *p )
 {
     control_output[0].connect_to( p );
+
+    clear();
 
     Fl_Widget *w;
 
@@ -278,29 +372,17 @@ Controller_Module::connect_to ( Port *p )
         Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( w );
         flg->set_visible_focus();
         size( flg->w(), flg->h() );
+        flg->position( x(), y() );
         add( flg );
     }
     else
     {
         /* HACK: hide label */
         w->labeltype( FL_NO_LABEL );
-
         w->resize( x(), y(), this->w(), h() );
         add( w );
         resizable( w );
-    }
-}
-
-
-
-void
-Controller_Module::resize ( int X, int Y, int W, int H )
-{
-    Module::resize( X, Y, W, H );
-
-    if ( ! _pad && children() )
-    {
-        child( 0 )->resize( X, Y, W, H );
+/*         init_sizes(); */
     }
 }
 
@@ -315,8 +397,8 @@ Controller_Module::update_cb ( void )
 {
     Fl::repeat_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
 
-    if ( control && control_output[0].connected() )
-        control->value(control_value);
+/*     if ( control && control_output[0].connected() ) */
+/*         handle_control_changed( NULL ); */
 }
 
 void
@@ -330,12 +412,26 @@ Controller_Module::cb_handle ( Fl_Widget *w )
 {
     control_value = ((Fl_Valuator*)w)->value();
     if ( control_output[0].connected() )
-    {
         control_output[0].control_value( control_value );
-        Port *p = control_output[0].connected_port();
-        Module *m = p->module();
+}
 
-        m->handle_control_changed( p );
+
+void
+Controller_Module::cb_spatializer_handle ( Fl_Widget *w, void *v )
+{
+    ((Controller_Module*)v)->cb_spatializer_handle( w );
+}
+
+void
+Controller_Module::cb_spatializer_handle ( Fl_Widget *w )
+{
+    Panner *pan = (Panner*)w;
+
+    if ( control_output[0].connected() &&
+         control_output[1].connected() )
+    {
+        control_output[0].connected_port()->control_value( pan->point( 0 )->azimuth() );
+        control_output[1].connected_port()->control_value( pan->point( 0 )->elevation() );
     }
 }
 
@@ -391,22 +487,43 @@ Controller_Module::handle ( int m )
     {
         case FL_PUSH:
         {
-                if ( test_press( FL_BUTTON3 ) )
-                {
-                    /* context menu */
-                    menu_popup( &menu() );
+            if ( test_press( FL_BUTTON3 ) )
+            {
+                /* context menu */
+                menu_popup( &menu() );
 
-                    return 1;
-                }
-                else
-                    return Fl_Group::handle( m );
+                return 1;
+            }
+            else
+                return Fl_Group::handle( m );
         }
     }
 
     return Fl_Group::handle( m );
 }
 
-
+void
+Controller_Module::handle_control_changed ( Port * )
+{
+    /* ignore changes initiated while mouse is over widget */
+    if ( contains( Fl::pushed() ) )
+        return;
+
+    if ( control_output.size() > 1 )
+    {
+        /* spatializer */
+        Panner *pan = (Panner*)control;
+
+        pan->point( 0 )->azimuth( control_output[0].control_value() );
+        pan->point( 0 )->elevation( control_output[1].control_value() );
+    }
+    else
+    {
+        control->value(control_value);
+    }
+
+    redraw();
+}
 
 /**********/
 /* Engine */
@@ -417,7 +534,13 @@ Controller_Module::process ( nframes_t nframes )
 {
     THREAD_ASSERT( RT );
 
-    if ( control_output[0].connected() )
+    if ( control_output.size() > 1 )
+    {
+        /* this is a spatializer controller... */
+        return;
+    }
+
+    if (  control_output[0].connected() )
     {
         float f = control_value;
 
@@ -443,6 +566,6 @@ Controller_Module::process ( nframes_t nframes )
 
         *((float*)control_output[0].buffer()) = f;
 
-       control_value = f;
+        control_value = f;
     }
 }

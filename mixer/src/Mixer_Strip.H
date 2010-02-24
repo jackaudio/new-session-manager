@@ -75,6 +75,7 @@ public:
     bool configure_ports ( int n );
 
     void handle_module_added ( Module *m );
+    void handle_module_removed ( Module *m );
 
     void update ( void );
 
@@ -96,6 +97,7 @@ private:
     Fl_Input *name_field;
 
     Fl_Flowpack *controls_pack;
+    Fl_Group *tab_group;
     Fl_Group *signal_tab;
     Fl_Group *fader_tab;
     Fl_Pack *panner_pack;
@@ -104,6 +106,7 @@ private:
 
     Controller_Module *gain_controller;
     Controller_Module *jack_input_controller;
+    Controller_Module *spatialization_controller;
     Meter_Indicator_Module *meter_indicator;
 
     nframes_t nframes;

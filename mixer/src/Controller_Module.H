@@ -61,12 +61,16 @@ public:
 
     static void cb_handle ( Fl_Widget *w, void *v );
     void cb_handle ( Fl_Widget *w );
+    static void cb_spatializer_handle ( Fl_Widget *w, void *v );
+    void cb_spatializer_handle ( Fl_Widget *w );
 
     void connect_to ( Port *p );
+    bool connect_spatializer_to ( Module *m );
+
+    void handle_control_changed ( Port *p );
 
     LOG_CREATE_FUNC( Controller_Module );
 
-    void resize ( int, int, int, int );
     void process ( nframes_t nframes );
 
     void draw ( void )

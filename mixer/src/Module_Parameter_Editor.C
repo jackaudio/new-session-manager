@@ -281,7 +281,7 @@ Module_Parameter_Editor::make_controls ( void )
 
     if ( azimuth_port_number >= 0 && elevation_port_number >= 0 )
     {
-        Panner *o = new Panner( 0,0, 200, 200 );
+        Panner *o = new Panner( 0,0, 300, 300 );
         o->box(FL_THIN_UP_BOX);
         o->color(FL_GRAY0);
         o->selection_color(FL_BACKGROUND_COLOR);
@@ -289,7 +289,7 @@ Module_Parameter_Editor::make_controls ( void )
         o->labelfont(0);
         o->labelcolor(FL_FOREGROUND_COLOR);
         o->align(FL_ALIGN_TOP);
-        o->when(FL_WHEN_RELEASE);
+        o->when(FL_WHEN_CHANGED);
         o->label( "Spatialization" );
 
         o->align(FL_ALIGN_TOP);
@@ -370,5 +370,8 @@ void
 Module_Parameter_Editor::set_value (int i, float value )
 {
     _module->control_input[i].control_value( value );
-    _module->handle_control_changed( &_module->control_input[i] );
+    if ( _module->control_input[i].connected() )
+        _module->control_input[i].connected_port()->module()->handle_control_changed( _module->control_input[i].connected_port() );
+
+//    _module->handle_control_changed( &_module->control_input[i] );
 }

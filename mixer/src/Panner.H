@@ -67,7 +67,7 @@ class Panner : public Fl_Widget
 
          void azimuth (  float v )
             {
-                a = v < -180.0f ? 360.0f - v : v;
+                a = v < 0.0f ? v + 360.0f : v;
                 a = a < 0.0f ? 0.0f : a > 360.0f ? 360.0f : a;
             }
 

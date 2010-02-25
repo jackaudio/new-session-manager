@@ -24,4 +24,4 @@ struct Peak {
     float max;
 
     float normalization_factor ( void ) const;
-};
+} __attribute__ (( packed ));

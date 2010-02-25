@@ -51,6 +51,8 @@
 using std::min;
 using std::max;
 
+#include <stdint.h>
+
 
 
 /* whether to cache peaks at multiple resolutions on disk to
@@ -102,11 +104,12 @@ Peaks::fill_buffer ( float fpp, nframes_t s, nframes_t e ) const
     return read_peaks( s, (e - s) / fpp, fpp );
 }
 
+
 struct peakfile_block_header
 {
-    unsigned long chunksize;
-    unsigned long skip;
-};
+    uint32_t chunksize;
+    uint32_t skip;
+} __attribute__ (( packed ));
 
 class Peakfile
 {

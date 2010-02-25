@@ -56,11 +56,10 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
     else
         strcpy( lab, module->label() );
 
-
     char title[512];
     snprintf( title, sizeof( title ), "%s - %s - %s", "Mixer", module->chain()->name(), lab );
 
-    label( title );
+    copy_label( title );
 
     { Fl_Pack *o = main_pack = new Fl_Pack( 0, y(), w(), h() - 10 );
         o->type( FL_VERTICAL );

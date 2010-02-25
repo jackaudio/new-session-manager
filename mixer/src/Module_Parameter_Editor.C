@@ -134,9 +134,9 @@ Module_Parameter_Editor::make_controls ( void )
     /* these are for detecting related parameter groups which can be
        better represented by a single control */
     int azimuth_port_number = -1;
-    float azimuth_value;
+    float azimuth_value = 0.0f;
     int elevation_port_number = -1;
-    float elevation_value;
+    float elevation_value = 0.0f;
 
     for ( unsigned int i = 0; i < module->control_input.size(); ++i )
     {

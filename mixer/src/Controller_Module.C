@@ -419,7 +419,7 @@ Controller_Module::cb_handle ( Fl_Widget *w )
 {
     control_value = ((Fl_Valuator*)w)->value();
     if ( control_output[0].connected() )
-        control_output[0].control_value( control_value );
+        control_output[0].connected_port()->control_value( control_value );
 }
 
 

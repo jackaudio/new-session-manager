@@ -40,7 +40,7 @@ JACK_Module::JACK_Module ( )
         Port p( this, Port::INPUT, Port::CONTROL, "Inputs" );
         p.hints.type = Port::Hints::INTEGER;
         p.hints.minimum = 0;
-        p.hints.maximum = 6;
+        p.hints.maximum = 16;
         p.hints.ranged = true;
 
         p.connect_to( new float );
@@ -53,7 +53,7 @@ JACK_Module::JACK_Module ( )
         Port p( this, Port::INPUT, Port::CONTROL, "Outputs" );
         p.hints.type = Port::Hints::INTEGER;
         p.hints.minimum = 0;
-        p.hints.maximum = 6;
+        p.hints.maximum = 16;
         p.hints.ranged = true;
 
         p.connect_to( new float );

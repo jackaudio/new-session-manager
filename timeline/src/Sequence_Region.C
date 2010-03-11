@@ -20,6 +20,8 @@
 #include "Sequence_Region.H"
 #include "Track.H"
 
+#include <stdint.h>
+
 
 
 Sequence_Region::Sequence_Region ( )
@@ -68,13 +70,14 @@ Sequence_Region::set ( Log_Entry &e )
 void
 Sequence_Region::trim_left ( nframes_t where )
 {
-    long td = where - _r->start;
+    int64_t td = (int64_t)where - _r->start;
 
+    /* beyond the beginning */
     if ( td < 0 && _r->offset < (nframes_t)( 0 - td ) )
-        td = 0 - _r->offset;
+        td = (int64_t)0 - _r->offset;
 
     if ( td > 0 && (nframes_t)td >= _r->length )
-        td = _r->length - timeline->x_to_ts( 1 );
+        td = (int64_t)_r->length - timeline->x_to_ts( 1 );
 
     _r->trim_left( 0 - td );
 
@@ -89,7 +92,7 @@ Sequence_Region::trim_left ( nframes_t where )
 void
 Sequence_Region::trim_right ( nframes_t where )
 {
-    long td =  ( _r->start + _r->length ) - where;
+    int64_t td = (int64_t)(  _r->start + _r->length ) - where;
 
     if ( td >= 0 && _r->length < (nframes_t)td )
         td = _r->length - timeline->x_to_ts( 1 );

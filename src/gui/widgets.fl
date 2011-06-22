@@ -199,9 +199,10 @@ for ( int i = pack->children(); i-- ; )
   }
   Function {update( void )} {open return_type void
   } {
-    code {bpb( transport.beats_per_bar );
+    code {if ( transport.beats_per_bar ) {
+bpb( transport.beats_per_bar );
 tpb( transport.ticks_per_beat );
 beat( transport.beat - 1 );
-tick( transport.tick - 1 );} {}
+tick( transport.tick - 1 );}} {}
   }
 } 

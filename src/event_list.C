@@ -495,6 +495,8 @@ event_list::insert_time ( tick_t start, tick_t l )
                 e->timestamp( e->timestamp() + l );
         }
     }
+
+    sort();
 }
 
 /** delete events in range and close the gap */
@@ -550,14 +552,19 @@ event_list::sort ( event *e )
 void
 event_list::sort ( void )
 {
-    event_list *temp = new event_list( *this );
+    event_list *temp = new event_list( );
 
     _head = temp->_head;
     _tail = temp->_tail;
 
+    FOR_ALL( n )
+	temp->insert( n );
+
     temp->_head = NULL;
 
     delete temp;
+
+    relink();
 }
 
 /** move event /e/ by /o/ ticks */

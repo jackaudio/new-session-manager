@@ -116,6 +116,10 @@ class Timeline : public Fl_Single_Window, public RWLock
 
 public:
 
+#undef Bars
+#undef Beats
+#undef None
+
     enum snap_e {
         Bars,
         Beats,

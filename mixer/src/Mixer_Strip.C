@@ -326,7 +326,9 @@ Mixer_Strip::handle_module_added ( Module *m )
 void
 Mixer_Strip::handle_module_removed ( Module *m )
 {
-    if ( spatialization_controller->control_output[0].connected_port()->module() == m )
+
+    if ( spatialization_controller->control_output[0].connected() &&
+	 spatialization_controller->control_output[0].connected_port()->module() == m )
     {
         spatialization_controller->hide();
         DMESSAGE( "Module \"%s\" disconnected from spatialization controller", m->name() );

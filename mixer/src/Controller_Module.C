@@ -106,7 +106,8 @@ Controller_Module::generate_osc_path ()
 
     char *path;
 
-    asprintf( &path, "/mixer/%s/%s/%s", chain()->name(), p->module()->label(), p->name() );
+    // /mixer/strip/STRIPNAME/control/MODULENAME/CONTROLNAME
+    asprintf( &path, "/mixer/strip/%s/control/%s/%s", chain()->name(), p->module()->label(), p->name() );
 
     // Hack to keep spaces out of OSC URL... Probably need to handle other special characters similarly.
     for ( int i = strlen( path ); i--; )
@@ -114,7 +115,6 @@ Controller_Module::generate_osc_path ()
         if ( path[i] == ' ' )
             path[i] = '_';
     }
-    
 
     return path;
 }
@@ -133,7 +133,7 @@ Controller_Module::change_osc_path ( char *path )
 
     if ( path )
     {
-	mixer->osc_endpoint->add_method( path, "f", &Controller_Module::osc_control_change, this );
+	mixer->osc_endpoint->add_method( path, "f", &Controller_Module::osc_control_change, this, "value" );
 
 	_osc_path = path;
 

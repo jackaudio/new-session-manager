@@ -109,10 +109,15 @@ namespace OSC
     {
         static void error_handler(int num, const char *msg, const char *path);
 
+
+        static int osc_generic ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+
 //    Thread _thread;
 
 //    lo_server_thread _st;
         lo_server _server;
+
+        std::list<char*> _path_names;
 
     public:
 
@@ -120,7 +125,8 @@ namespace OSC
 
         ~Endpoint ( );
 
-        void add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data );
+        char *get_paths ( const char *prefix );
+        void add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data, const char *argument_description );
         void del_method ( const char *path, const char *typespec );
         void start ( void );
         void stop ( void );

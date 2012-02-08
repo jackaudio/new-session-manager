@@ -65,12 +65,6 @@ extern char *user_config_dir;
 /* OSC Message Handlers */
 /************************/
 
-OSC_HANDLER( generic )
-{
-    OSC_DMSG();
-
-    return 0;
-}
 
 OSC_HANDLER( quit )
 {
@@ -125,14 +119,9 @@ OSC_HANDLER( new )
     return 0;
 }
 
-OSC_HANDLER( root )
-{
-   OSC_DMSG();
-
-   OSC_REPLY( "load\nsave\nquit\nnew\n");
-
-   return 0;
-}
+// OSC_HANDLER( root )
+// {
+// }
 
 OSC_HANDLER( add_strip )
 {
@@ -395,15 +384,14 @@ Mixer::init_osc ( const char *osc_port )
 
     // if ( 1 >= lo_send_from( src, ((Mixer*)user_data)->osc_endpoint, LO_TT_IMMEDIATE, "/finger-reply", "s", s ) )
 
-    osc_endpoint->add_method( "/nsm/quit", "", OSC_NAME( quit ), this );
-    osc_endpoint->add_method( "/nsm/load", "ss", OSC_NAME( load ), this );
-    osc_endpoint->add_method( "/nsm/save", "", OSC_NAME( save ), this );
-    osc_endpoint->add_method( "/nsm/new", "ss", OSC_NAME( new ), this );
-    osc_endpoint->add_method( "/nsm/", "", OSC_NAME( root ), this );
-    osc_endpoint->add_method( "/finger", "", OSC_NAME( finger ), this );
-    osc_endpoint->add_method( "/mixer/add_strip", "", OSC_NAME( add_strip ), this );
-//    osc_endpoint->add_method( NULL, "", osc_generic, this );
-
+    osc_endpoint->add_method( "/nsm/quit", "", OSC_NAME( quit ), this, "" );
+    osc_endpoint->add_method( "/nsm/load", "ss", OSC_NAME( load ), this, "path,display_name" );
+    osc_endpoint->add_method( "/nsm/save", "", OSC_NAME( save ), this, "" );
+    osc_endpoint->add_method( "/nsm/new", "ss", OSC_NAME( new ), this, "path,display_name" );
+//    osc_endpoint->add_method( "/nsm/", "", OSC_NAME( root ), this );
+    osc_endpoint->add_method( "/finger", "", OSC_NAME( finger ), this, "" );
+    osc_endpoint->add_method( "/mixer/add_strip", "", OSC_NAME( add_strip ), this, "" );
+  
 //    osc_endpoint->start();
 
     /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */

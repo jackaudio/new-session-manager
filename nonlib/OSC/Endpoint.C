@@ -21,6 +21,7 @@
 #include "debug.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "Endpoint.H"
 
@@ -48,6 +49,11 @@ namespace OSC
         char *url = lo_server_get_url(_server);
         printf("OSC: %s\n",url);
         free(url);
+
+
+        add_method( NULL, "", &Endpoint::osc_generic, this, "" );
+
+//        _path_names = new std::list<const char*>();
     }
 
     Endpoint::~Endpoint ( )
@@ -56,12 +62,63 @@ namespace OSC
         lo_server_free( _server );
     }
 
+
+    int
+    Endpoint::osc_generic ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+    {
+        OSC_DMSG();
+
+        if ( path[ strlen(path) - 1 ] != '/' )
+        {
+            DMESSAGE( "Unknown OSC signal %s", path );
+            return 0;
+        }
+
+        char *paths = ((Endpoint*)user_data)->get_paths( path );
+
+        ((Endpoint*)user_data)->send( lo_message_get_source( msg ), "/reply", path, paths );
+
+        free(paths);
+
+        return 0;
+    }
+
+    // returns a malloc()'d string containing path names beginning with /prefix/, newline separated
+    char *
+    Endpoint::get_paths ( const char *prefix )
+    {
+        char *r = (char*)malloc( 1024 );
+        r[0] = 0;
+        
+        for ( std::list<char*>::iterator i = _path_names.begin(); i != _path_names.end(); ++i )
+        {
+            if ( ! *i )
+                continue;
+
+            if (! strncmp( *i, prefix, strlen(prefix) ) )
+            {
+                r = (char*)realloc( r, strlen( r ) + strlen( *i ) + 2 );
+
+                strcat( r, *i );
+                strcat( r, "\n" );
+            }
+        }
+
+        return r;
+    }
+
     void
-    Endpoint::add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data )
+    Endpoint::add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data, const char *argument_description )
     {
 	DMESSAGE( "Added OSC method %s (%s)", path, typespec );
  
         lo_server_add_method( _server, path, typespec, handler, user_data );
+
+        char *stored_path;
+
+        asprintf( &stored_path, "%s (%s); %s", path, typespec, argument_description );
+
+        _path_names.push_back( stored_path );
     }
 
     void
@@ -70,6 +127,18 @@ namespace OSC
 	DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
 
         lo_server_del_method( _server, path, typespec );
+
+        for ( std::list<char *>::iterator i = _path_names.begin(); i != _path_names.end(); ++i )
+        {
+            if ( ! *i )
+                continue;
+
+            if ( ! strncmp( path, *i, index( *i, ' ' ) - *i ) )
+            {
+                free( *i );
+                i = _path_names.erase( i );
+            }
+        }
     }
 
 /* void * */
@@ -145,7 +214,6 @@ namespace OSC
             lo_server_recv( _server );
         }
     }
-
 
     int
     Endpoint::send ( lo_address to, const char *path, std::list< OSC_Value > values )

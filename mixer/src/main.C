@@ -137,7 +137,10 @@ main ( int argc, char **argv )
 
         o->callback( (Fl_Callback*)cb_main, main_window );
         o->show( argc, argv );
+         // o->show();
     }
+
+    const char *osc_port = NULL;
 
     {
         int r = argc - 1;
@@ -150,6 +153,7 @@ main ( int argc, char **argv )
                 {
                     MESSAGE( "Using instance name \"%s\"", argv[i+1] );
                     instance_name = argv[i+1];
+                    --r;
                     ++i;
                 }
                 else
@@ -157,6 +161,20 @@ main ( int argc, char **argv )
                     FATAL( "Missing instance name" );
 		}
 	    }
+            else if ( !strcmp( argv[i], "--osc-port" ) )
+            {
+                if ( r > 1 )
+                {
+                    MESSAGE( "Using OSC port \"%s\"", argv[i+1] );
+                    osc_port = argv[i+1];
+                    --r;
+                    ++i;
+                }
+                else
+                {
+                    FATAL( "Missing OSC port" );
+                }
+            }
             else if ( !strncmp( argv[i], "--", 2 ) )
             {
                 WARNING( "Unrecognized option: %s", argv[i] );
@@ -176,6 +194,8 @@ main ( int argc, char **argv )
         }
 
     }
+
+    mixer->init_osc( osc_port );
 
     Fl::run();
 

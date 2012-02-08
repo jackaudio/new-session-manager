@@ -95,6 +95,8 @@ public:
 
     void announce ( const char *nash_url );
 
+    void init_osc ( const char* osc_port );
+
 public:
 
     bool command_save ( void );

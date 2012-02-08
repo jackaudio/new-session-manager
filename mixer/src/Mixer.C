@@ -384,8 +384,12 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     update_menu();
 
     load_options();
+}
 
-    osc_endpoint = new OSC::Endpoint();
+void
+Mixer::init_osc ( const char *osc_port )
+{
+    osc_endpoint = new OSC::Endpoint(osc_port);
 
     osc_endpoint->url();
 

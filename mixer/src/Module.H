@@ -341,7 +341,7 @@ public:
 
     /* called whenever the name of the chain changes (usually because
      * the name of the mixer strip changed). */
-    virtual void handle_chain_name_changed () {}
+    virtual void handle_chain_name_changed ();
 
     virtual void handle_port_connection_change () {}
 

@@ -446,7 +446,9 @@ Chain::name ( const char *name )
     _name = name;
 
     for ( int i = 0; i < modules(); ++i )
+    {
         module( i )->handle_chain_name_changed();
+    }
 }
 
 bool

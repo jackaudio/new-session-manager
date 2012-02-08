@@ -78,6 +78,8 @@ OSC_HANDLER( quit )
 
     ((Mixer*)user_data)->command_quit();
 
+    OSC_REPLY_OK();
+
     return 0;
 }
 

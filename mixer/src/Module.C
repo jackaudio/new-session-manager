@@ -548,6 +548,17 @@ Module::menu ( void ) const
     return m;
 }
 
+void
+Module::handle_chain_name_changed ( )
+{
+    // pass it along to our connected Controller_Modules, if any.
+    for ( int i = 0; i < ncontrol_inputs(); ++i )
+    {
+        if ( control_input[i].connected() )
+            control_input[i].connected_port()->module()->handle_chain_name_changed();
+    }
+}
+
 int
 Module::handle ( int m )
 {

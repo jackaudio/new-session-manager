@@ -22,6 +22,7 @@
 #include "Module.H"
 #include <vector>
 #include "JACK/Port.H"
+#include "OSC/Endpoint.H"
 
 class Fl_Menu_Button;
 class Fl_Menu_;
@@ -41,6 +42,8 @@ class Controller_Module : public Module
     Fl_Menu_Button & menu ( void );
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( const Fl_Menu_ *m );
+
+    char *_osc_path;
 
 public:
 
@@ -76,6 +79,7 @@ public:
     bool connect_spatializer_to ( Module *m );
 
     void handle_control_changed ( Port *p );
+    void handle_chain_name_changed ( void );
 
     LOG_CREATE_FUNC( Controller_Module );
 
@@ -89,12 +93,20 @@ public:
 
     int handle ( int m );
 
+//    void set_control_value ( float f ) { control_value = f; }
+
 protected:
 
     void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
 private:
+
+    char *generate_osc_path ( void );
+    void change_osc_path ( char *path );
+    
+    static int osc_control_change ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+
 
     std::vector<JACK::Port> jack_input;
     Mode _mode;

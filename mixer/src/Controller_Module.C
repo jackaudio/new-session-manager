@@ -42,6 +42,11 @@
 #include "Engine/Engine.H"
 #include "Chain.H"
 
+#include "OSC/Endpoint.H"
+
+// needed for mixer->endpoint
+#include "Mixer.H"
+
 
 
 const float CONTROL_UPDATE_FREQ = 0.1f;
@@ -60,6 +65,7 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
     add_port( Port( this, Port::OUTPUT, Port::CONTROL ) );
 
     _mode = GUI;
+    _osc_path = NULL;
 
 //    mode( GUI );
 //    mode( CV );
@@ -70,7 +76,6 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
     Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
 
     log_create();
-
 }
 
 Controller_Module::~Controller_Module ( )
@@ -81,6 +86,59 @@ Controller_Module::~Controller_Module ( )
 
     /* shutdown JACK port, if we have one */
     mode( GUI );
+    
+    change_osc_path( NULL );
+}
+
+void
+Controller_Module::handle_chain_name_changed()
+{
+    change_osc_path( generate_osc_path() );
+}
+
+char *
+Controller_Module::generate_osc_path ()
+{
+    const Port *p = control_output[0].connected_port();
+
+    if ( !p )
+        return NULL;
+
+    char *path;
+
+    asprintf( &path, "/mixer/%s/%s/%s", chain()->name(), p->module()->label(), p->name() );
+
+    // Hack to keep spaces out of OSC URL... Probably need to handle other special characters similarly.
+    for ( int i = strlen( path ); i--; )
+    {
+        if ( path[i] == ' ' )
+            path[i] = '_';
+    }
+    
+
+    return path;
+}
+
+void
+Controller_Module::change_osc_path ( char *path )
+{
+    if ( _osc_path )
+    {
+	mixer->osc_endpoint->del_method( _osc_path, "f" );
+
+	free( _osc_path );
+       
+	_osc_path = NULL;
+    }
+
+    if ( path )
+    {
+	mixer->osc_endpoint->add_method( path, "f", &Controller_Module::osc_control_change, this );
+
+	_osc_path = path;
+
+	tooltip( _osc_path );
+    }
 }
 
 
@@ -180,7 +238,7 @@ Controller_Module::mode ( Mode m )
             chain()->engine()->unlock();
         }
     }
-    else if ( mode() == CV && m == GUI )
+    else if ( mode() == CV && m != CV )
     {
         chain()->engine()->lock();
 
@@ -391,6 +449,10 @@ Controller_Module::connect_to ( Port *p )
         resizable( w );
 /*         init_sizes(); */
     }
+
+    // create OSC port
+
+    change_osc_path( generate_osc_path() );
 }
 
 void
@@ -461,6 +523,8 @@ Controller_Module::menu_cb ( const Fl_Menu_ *m )
         mode( GUI );
     else if ( ! strcmp( picked, "Mode/Control Voltage" ) )
         mode( CV );
+    else if ( ! strcmp( picked, "Mode/Open Sound Control (OSC)" ) )
+	mode( OSC );
 }
 
 /** build the context menu for this control */
@@ -474,7 +538,7 @@ Controller_Module::menu ( void )
             { "Mode",             0, 0, 0,  FL_SUBMENU    },
             { "Manual",       0, 0, 0,  FL_MENU_RADIO | ( mode() == GUI ? FL_MENU_VALUE : 0 ) },
             { "Control Voltage",           0, 0, 0,  FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) },
-//            { "Open Sound Control (OSC)",          0, 0, 0,  FL_MENU_RADIO | ( mode() == OSC  ? FL_MENU_VALUE : 0 ) },
+            { "Open Sound Control (OSC)",          0, 0, 0,  FL_MENU_RADIO | ( mode() == OSC  ? FL_MENU_VALUE : 0 ) },
             { 0                   },
             { 0 },
         };
@@ -574,4 +638,23 @@ Controller_Module::process ( nframes_t nframes )
 
         control_value = f;
     }
+}
+
+int 
+Controller_Module::osc_control_change ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+{
+    Controller_Module *c = (Controller_Module*)user_data;
+
+    if ( c->mode() != OSC )
+        return 0;
+
+    OSC_DMSG();
+
+    c->control_value = argv[0]->f;
+
+    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
+
+//    OSC_REPLY_OK();
+
+    return 0;
 }

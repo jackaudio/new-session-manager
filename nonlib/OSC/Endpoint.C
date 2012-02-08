@@ -59,12 +59,16 @@ namespace OSC
     void
     Endpoint::add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data )
     {
+	DMESSAGE( "Added OSC method %s (%s)", path, typespec );
+ 
         lo_server_add_method( _server, path, typespec, handler, user_data );
     }
 
     void
     Endpoint::del_method ( const char *path, const char *typespec )
     {
+	DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
+
         lo_server_del_method( _server, path, typespec );
     }
 

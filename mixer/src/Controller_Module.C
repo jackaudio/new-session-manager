@@ -49,7 +49,7 @@
 
 
 
-const float CONTROL_UPDATE_FREQ = 0.1f;
+const float CONTROL_UPDATE_FREQ = 0.2f;
 
 
 
@@ -127,13 +127,23 @@ Controller_Module::change_osc_path ( char *path )
 	mixer->osc_endpoint->del_method( _osc_path, "f" );
 
 	free( _osc_path );
+        free( _osc_path_cv );
        
 	_osc_path = NULL;
+        _osc_path_cv = NULL;
     }
 
     if ( path )
     {
-	mixer->osc_endpoint->add_method( path, "f", &Controller_Module::osc_control_change, this, "value" );
+        _osc_path_cv = (char*)malloc( strlen( path ) + 4 );
+        _osc_path_cv[0] = 0;
+
+        strcpy( _osc_path_cv, path );
+        strcat( _osc_path_cv, "/cv" );
+
+	mixer->osc_endpoint->add_method( path, "f", &Controller_Module::osc_control_change_exact, this, "value" );
+
+	mixer->osc_endpoint->add_method( _osc_path_cv, "f", &Controller_Module::osc_control_change_cv, this, "value" );
 
 	_osc_path = path;
 
@@ -410,8 +420,10 @@ Controller_Module::connect_to ( Port *p )
         { Fl_Arc_Dial *o = new Fl_Arc_Dial( 0, 0, 40, 40, p->name() );
             w = o;
             control = o;
+
             if ( p->hints.ranged )
             {
+                DMESSAGE( "Min: %f, max: %f", p->hints.minimum, p->hints.maximum );
                 o->minimum( p->hints.minimum );
                 o->maximum( p->hints.maximum );
             }
@@ -466,8 +478,8 @@ Controller_Module::update_cb ( void )
 {
     Fl::repeat_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
 
-/*     if ( control && control_output[0].connected() ) */
-/*         handle_control_changed( NULL ); */
+    if ( control && control_output.size() > 0 && control_output[0].connected() )
+        handle_control_changed( NULL );
 }
 
 void
@@ -581,6 +593,9 @@ Controller_Module::handle_control_changed ( Port * )
     if ( contains( Fl::pushed() ) )
         return;
 
+    if ( control->value() != control_value )
+        redraw();
+
     if ( type() == SPATIALIZATION )
     {
         Panner *pan = (Panner*)control;
@@ -592,8 +607,6 @@ Controller_Module::handle_control_changed ( Port * )
     {
         control->value(control_value);
     }
-
-    redraw();
 }
 
 /**********/
@@ -641,7 +654,7 @@ Controller_Module::process ( nframes_t nframes )
 }
 
 int 
-Controller_Module::osc_control_change ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+Controller_Module::osc_control_change_exact ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
     Controller_Module *c = (Controller_Module*)user_data;
 
@@ -650,11 +663,53 @@ Controller_Module::osc_control_change ( const char *path, const char *types, lo_
 
     OSC_DMSG();
 
-    c->control_value = argv[0]->f;
+    const Port *p = c->control_output[0].connected_port();
+    
+    float f = argv[0]->f;
+
+    if ( p->hints.ranged )
+    {
+        if ( f > p->hints.maximum )
+            f = p->hints.maximum;
+        else if ( f < p->hints.minimum )
+            f = p->hints.minimum;
+    }
+
+    c->control_value = f;
 
     mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
 
-//    OSC_REPLY_OK();
+    return 0;
+}
+
+int 
+Controller_Module::osc_control_change_cv ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+{
+    Controller_Module *c = (Controller_Module*)user_data;
+
+    if ( c->mode() != OSC )
+        return 0;
+
+    OSC_DMSG();
+
+    const Port *p = c->control_output[0].connected_port();
+    
+    float f = argv[0]->f;
+
+    if (p->hints.ranged )
+    {
+        // scale value to range.
+        // we assume that CV values are between 0 and 1
+        
+        float scale = p->hints.maximum - p->hints.minimum;
+        float offset = p->hints.minimum;
+        
+        f = ( f * scale ) + offset;
+    }
+    
+    c->control_value = f;
+
+    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
 
     return 0;
 }

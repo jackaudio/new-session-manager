@@ -183,6 +183,8 @@ main ( int argc, char **argv )
                 break;
         }
 
+        mixer->init_osc( osc_port );
+
         if ( r >= 1 )
         {
             MESSAGE( "Loading \"%s\"", argv[i] );
@@ -194,8 +196,6 @@ main ( int argc, char **argv )
         }
 
     }
-
-    mixer->init_osc( osc_port );
 
     Fl::run();
 

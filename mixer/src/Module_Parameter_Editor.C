@@ -194,8 +194,11 @@ Module_Parameter_Editor::make_controls ( void )
             {
                 Fl_Arc_Dial *o = new Fl_Arc_Dial( 0, 0, 50, 50, p->name() );
                 w = o;
+
                 if ( p->hints.ranged )
                 {
+                    DMESSAGE( "Min: %f, max: %f", p->hints.minimum, p->hints.maximum );
+
                     o->minimum( p->hints.minimum );
                     o->maximum( p->hints.maximum );
                 }

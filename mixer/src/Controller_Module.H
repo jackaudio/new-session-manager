@@ -106,9 +106,6 @@ private:
     char *generate_osc_path ( void );
     void change_osc_path ( char *path );
     
-    static int osc_control_change_exact ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
-    static int osc_control_change_cv ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
-
     std::vector<JACK::Port> jack_input;
     Mode _mode;
     Type _type;

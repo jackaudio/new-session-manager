@@ -30,6 +30,7 @@
 
 #include "Loggable.H"
 #include "JACK/Port.H"
+#include "OSC/Endpoint.H"
 
 class Chain;
 class Module_Parameter_Editor;
@@ -97,7 +98,7 @@ public:
             float maximum;
             float default_value;
             int dimensions;
-
+            
             Hints ( )
                 {
                     type = LINEAR;
@@ -108,6 +109,9 @@ public:
                     dimensions = 1;
                 }
         };
+
+    static int osc_control_change_exact ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+    static int osc_control_change_cv ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
 
         Hints hints;
 
@@ -120,6 +124,8 @@ public:
                 _nframes = 0;
                 _connected = 0;
                 _module = module;
+                _osc_path = 0;
+                _osc_path_cv = 0;
             }
 
         Port ( const Port& p )
@@ -132,10 +138,13 @@ public:
                 _connected = p._connected;
                 _module = p._module;
                 hints = p.hints;
+                _osc_path = p._osc_path;
+                _osc_path_cv = p._osc_path;
             }
 
         virtual ~Port ( )
             {
+                //     change_osc_path( NULL );
                 //   disconnect();
             }
 
@@ -148,6 +157,17 @@ public:
 
         void buffer ( void *buf, nframes_t nframes ) { _buf = buf; _nframes = nframes; };
         void *buffer ( void ) const { return _buf; }
+
+        void update_osc_port ( )
+            {
+                if ( INPUT == _direction )
+                    change_osc_path( generate_osc_path() );
+            }
+
+        void destroy_osc_port ( )
+            {
+                change_osc_path( NULL );
+            }
 
         void control_value_no_callback ( float f )
             {
@@ -163,6 +183,8 @@ public:
             {
                 control_value_no_callback( f );
                 _module->handle_control_changed( this );
+                if ( connected() )
+                    connected_port()->_module->handle_control_changed( connected_port() );
             }
 
         float control_value ( ) const
@@ -208,6 +230,9 @@ public:
 
     private:
 
+        char *generate_osc_path ( void );
+        void change_osc_path ( char *path );
+    
         Port *_connected;
         Type _type;
         Direction _direction;
@@ -215,6 +240,9 @@ public:
         void *_buf;
         nframes_t _nframes;
         Module *_module;
+
+        char *_osc_path;
+        char *_osc_path_cv;
     };
 
     void bbox ( int &X, int &Y, int &W, int &H )
@@ -317,7 +345,15 @@ public:
         }
 
     Chain *chain ( void ) const { return _chain; }
-    void chain ( Chain * v ) { _chain = v; }
+    void chain ( Chain * v )
+        {
+            _chain = v; 
+
+            for ( int i = 0; i < ncontrol_inputs(); ++i )
+            {
+                control_input[i].update_osc_port();
+            }
+        }
 
     char *get_parameters ( void ) const;
     void set_parameters ( const char * );

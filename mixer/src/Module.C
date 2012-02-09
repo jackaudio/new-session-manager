@@ -37,6 +37,7 @@
 #include <FL/Fl_Menu_Button.H>
 #include "FL/test_press.H"
 #include "FL/menu_popup.H"
+#include "Mixer.H"
 
 
 
@@ -65,7 +66,6 @@ Module::Module ( ) : Fl_Group( 0, 0, 50, 50, "Unnamed" )
 {
     init();
 
-
     log_create();
 }
 
@@ -83,12 +83,16 @@ Module::~Module ( )
     for ( unsigned int i = 0; i < audio_output.size(); ++i )
         audio_output[i].disconnect();
     for ( unsigned int i = 0; i < control_input.size(); ++i )
+    {
         control_input[i].disconnect();
+        control_input[i].destroy_osc_port();
+    }
     for ( unsigned int i = 0; i < control_output.size(); ++i )
         control_output[i].disconnect();
 
     audio_input.clear();
     audio_output.clear();
+
     control_input.clear();
     control_output.clear();
 }
@@ -186,6 +190,118 @@ Module::paste_before ( void )
     /* set up for another copy */
     m->copy();
 }
+
+
+char *
+Module::Port::generate_osc_path ()
+{
+    const Port *p = this;
+
+    char *path;
+
+    // /mixer/strip/STRIPNAME/control/MODULENAME/CONTROLNAME
+    asprintf( &path, "/mixer/strip/%s/control/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
+
+//    asprintf( &path, "/mixer/strip/control/%s/%s", p->module()->label(), p->name() );
+
+    // Hack to keep spaces out of OSC URL... Probably need to handle other special characters similarly.
+    for ( int i = strlen( path ); i--; )
+    {
+        if ( path[i] == ' ' )
+            path[i] = '_';
+    }
+
+    return path;
+}
+
+void
+Module::Port::change_osc_path ( char *path )
+{
+    if ( _osc_path )
+    {
+	mixer->osc_endpoint->del_method( _osc_path, "f" );
+
+	free( _osc_path );
+        free( _osc_path_cv );
+       
+	_osc_path = NULL;
+        _osc_path_cv = NULL;
+    }
+
+    if ( path )
+    {
+        _osc_path_cv = (char*)malloc( strlen( path ) + 4 );
+        _osc_path_cv[0] = 0;
+
+        strcpy( _osc_path_cv, path );
+        strcat( _osc_path_cv, "/cv" );
+
+	mixer->osc_endpoint->add_method( path, "f", &Module::Port::osc_control_change_exact, this, "value" );
+
+	mixer->osc_endpoint->add_method( _osc_path_cv, "f", &Module::Port::osc_control_change_cv, this, "value" );
+
+	_osc_path = path;
+
+//	tooltip( _osc_path );
+    }
+}
+
+
+int 
+Module::Port::osc_control_change_exact ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+{
+    Module::Port *p = (Module::Port*)user_data;
+
+    OSC_DMSG();
+
+//    const Port *p = c->control_output[0].connected_port();
+    
+    float f = argv[0]->f;
+
+    if ( p->hints.ranged )
+    {
+        if ( f > p->hints.maximum )
+            f = p->hints.maximum;
+        else if ( f < p->hints.minimum )
+            f = p->hints.minimum;
+    }
+
+    p->control_value( f );
+
+    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
+
+    return 0;
+}
+
+int 
+Module::Port::osc_control_change_cv ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+{
+    Module::Port *p = (Module::Port*)user_data;
+
+//    const Port *p = c->control_output[0].connected_port();
+    
+    float f = argv[0]->f;
+
+    if (p->hints.ranged )
+    {
+        // scale value to range.
+        // we assume that CV values are between 0 and 1
+        
+        float scale = p->hints.maximum - p->hints.minimum;
+        float offset = p->hints.minimum;
+        
+        f = ( f * scale ) + offset;
+    }
+    
+    p->control_value( f );
+
+//    c->control_value = f;
+
+    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
+
+    return 0;
+}
+
 
 void
 Module::set ( Log_Entry &e )

@@ -41,7 +41,6 @@
 
 #include "Engine/Engine.H"
 #include "Chain.H"
-
 #include "OSC/Endpoint.H"
 
 // needed for mixer->endpoint
@@ -65,7 +64,6 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
     add_port( Port( this, Port::OUTPUT, Port::CONTROL ) );
 
     _mode = GUI;
-    _osc_path = NULL;
 
 //    mode( GUI );
 //    mode( CV );
@@ -86,69 +84,12 @@ Controller_Module::~Controller_Module ( )
 
     /* shutdown JACK port, if we have one */
     mode( GUI );
-    
-    change_osc_path( NULL );
 }
 
 void
 Controller_Module::handle_chain_name_changed()
 {
-    change_osc_path( generate_osc_path() );
-}
-
-char *
-Controller_Module::generate_osc_path ()
-{
-    const Port *p = control_output[0].connected_port();
-
-    if ( !p )
-        return NULL;
-
-    char *path;
-
-    // /mixer/strip/STRIPNAME/control/MODULENAME/CONTROLNAME
-    asprintf( &path, "/mixer/strip/%s/control/%s/%s", chain()->name(), p->module()->label(), p->name() );
-
-    // Hack to keep spaces out of OSC URL... Probably need to handle other special characters similarly.
-    for ( int i = strlen( path ); i--; )
-    {
-        if ( path[i] == ' ' )
-            path[i] = '_';
-    }
-
-    return path;
-}
-
-void
-Controller_Module::change_osc_path ( char *path )
-{
-    if ( _osc_path )
-    {
-	mixer->osc_endpoint->del_method( _osc_path, "f" );
-
-	free( _osc_path );
-        free( _osc_path_cv );
-       
-	_osc_path = NULL;
-        _osc_path_cv = NULL;
-    }
-
-    if ( path )
-    {
-        _osc_path_cv = (char*)malloc( strlen( path ) + 4 );
-        _osc_path_cv[0] = 0;
-
-        strcpy( _osc_path_cv, path );
-        strcat( _osc_path_cv, "/cv" );
-
-	mixer->osc_endpoint->add_method( path, "f", &Controller_Module::osc_control_change_exact, this, "value" );
-
-	mixer->osc_endpoint->add_method( _osc_path_cv, "f", &Controller_Module::osc_control_change_cv, this, "value" );
-
-	_osc_path = path;
-
-	tooltip( _osc_path );
-    }
+//    change_osc_path( generate_osc_path() );
 }
 
 
@@ -463,8 +404,6 @@ Controller_Module::connect_to ( Port *p )
     }
 
     // create OSC port
-
-    change_osc_path( generate_osc_path() );
 }
 
 void
@@ -550,7 +489,7 @@ Controller_Module::menu ( void )
             { "Mode",             0, 0, 0,  FL_SUBMENU    },
             { "Manual",       0, 0, 0,  FL_MENU_RADIO | ( mode() == GUI ? FL_MENU_VALUE : 0 ) },
             { "Control Voltage",           0, 0, 0,  FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) },
-            { "Open Sound Control (OSC)",          0, 0, 0,  FL_MENU_RADIO | ( mode() == OSC  ? FL_MENU_VALUE : 0 ) },
+//            { "Open Sound Control (OSC)",          0, 0, 0,  FL_MENU_RADIO | ( mode() == OSC  ? FL_MENU_VALUE : 0 ) },
             { 0                   },
             { 0 },
         };
@@ -587,14 +526,20 @@ Controller_Module::handle ( int m )
 }
 
 void
-Controller_Module::handle_control_changed ( Port * )
+Controller_Module::handle_control_changed ( Port *p )
 {
     /* ignore changes initiated while mouse is over widget */
     if ( contains( Fl::pushed() ) )
         return;
 
+    if ( p )
+        control_value = p->control_value();
+
     if ( control->value() != control_value )
+    {
         redraw();
+        DMESSAGE( "handle_control_changed" );
+    }
 
     if ( type() == SPATIALIZATION )
     {
@@ -651,65 +596,4 @@ Controller_Module::process ( nframes_t nframes )
 
         control_value = f;
     }
-}
-
-int 
-Controller_Module::osc_control_change_exact ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
-{
-    Controller_Module *c = (Controller_Module*)user_data;
-
-    if ( c->mode() != OSC )
-        return 0;
-
-    OSC_DMSG();
-
-    const Port *p = c->control_output[0].connected_port();
-    
-    float f = argv[0]->f;
-
-    if ( p->hints.ranged )
-    {
-        if ( f > p->hints.maximum )
-            f = p->hints.maximum;
-        else if ( f < p->hints.minimum )
-            f = p->hints.minimum;
-    }
-
-    c->control_value = f;
-
-    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
-
-    return 0;
-}
-
-int 
-Controller_Module::osc_control_change_cv ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
-{
-    Controller_Module *c = (Controller_Module*)user_data;
-
-    if ( c->mode() != OSC )
-        return 0;
-
-    OSC_DMSG();
-
-    const Port *p = c->control_output[0].connected_port();
-    
-    float f = argv[0]->f;
-
-    if (p->hints.ranged )
-    {
-        // scale value to range.
-        // we assume that CV values are between 0 and 1
-        
-        float scale = p->hints.maximum - p->hints.minimum;
-        float offset = p->hints.minimum;
-        
-        f = ( f * scale ) + offset;
-    }
-    
-    c->control_value = f;
-
-    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
-
-    return 0;
 }

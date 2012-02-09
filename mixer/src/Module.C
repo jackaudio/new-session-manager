@@ -200,7 +200,13 @@ Module::Port::generate_osc_path ()
     char *path;
 
     // /mixer/strip/STRIPNAME/control/MODULENAME/CONTROLNAME
-    asprintf( &path, "/mixer/strip/%s/control/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
+
+    int n = module()->chain()->get_module_instance_number( module() );
+
+    if ( n > 0 )        
+        asprintf( &path, "/mixer/strip/%s/control/%s.%i/%s", module()->chain()->name(), p->module()->label(), n, p->name() );
+    else
+        asprintf( &path, "/mixer/strip/%s/control/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
 
 //    asprintf( &path, "/mixer/strip/control/%s/%s", p->module()->label(), p->name() );
 
@@ -220,6 +226,7 @@ Module::Port::change_osc_path ( char *path )
     if ( _osc_path )
     {
 	mixer->osc_endpoint->del_method( _osc_path, "f" );
+	mixer->osc_endpoint->del_method( _osc_path_cv, "f" );
 
 	free( _osc_path );
         free( _osc_path_cv );

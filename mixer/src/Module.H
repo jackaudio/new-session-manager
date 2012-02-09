@@ -158,6 +158,11 @@ public:
         void buffer ( void *buf, nframes_t nframes ) { _buf = buf; _nframes = nframes; };
         void *buffer ( void ) const { return _buf; }
 
+        const char *osc_path ( )
+            {
+                return _osc_path;
+            }
+
         void update_osc_port ( )
             {
                 if ( INPUT == _direction )

@@ -357,6 +357,23 @@ Chain::configure_ports ( void )
     parent()->redraw();
 }
 
+int 
+Chain::get_module_instance_number ( Module *m )
+{
+    int n = 0;
+
+    for ( int i = 0; i < modules(); ++i )
+    {
+        if ( module(i) == m )
+            break;
+
+        if ( ! strcmp( module(i)->name(), m->name() ) )
+            n++;
+    }
+
+    return n;
+} 
+
 /* calculate the minimum number of buffers required to satisfy this chain */
 int
 Chain::required_buffers ( void )

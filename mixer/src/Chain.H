@@ -89,6 +89,8 @@ public:
     const char *name ( void ) const { return _name; }
     void name ( const char *name );
 
+    int get_module_instance_number ( Module *m );
+
     void configure_ports ( void );
     int required_buffers ( void );
 

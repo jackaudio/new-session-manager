@@ -245,6 +245,8 @@ Module_Parameter_Editor::make_controls ( void )
         }
 
 
+        w->tooltip( p->osc_path() );
+
         Fl_Button *bound;
 
         w->align(FL_ALIGN_TOP);

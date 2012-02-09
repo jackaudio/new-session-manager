@@ -69,10 +69,7 @@ namespace OSC
         OSC_DMSG();
 
         if ( path[ strlen(path) - 1 ] != '/' )
-        {
-            DMESSAGE( "Unknown OSC signal %s", path );
-            return 0;
-        }
+            return -1;
 
         char *paths = ((Endpoint*)user_data)->get_paths( path );
 

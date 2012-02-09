@@ -214,6 +214,8 @@ JACK_Module::handle_chain_name_changed ( void )
 
     for ( unsigned int i = 0; i < jack_input.size(); ++i )
         jack_input[ i ].name( NULL, i );
+
+    Module::handle_chain_name_changed();
 }
 
 

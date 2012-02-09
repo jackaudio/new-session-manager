@@ -33,13 +33,15 @@ January 21, 2010<br>
 
 <ul><li><a href="#n:1.1.2.3.1.">1.1.2.3.1. Modules</a>
 
-<ul><li><a href="#n:1.1.2.3.1.1.">1.1.2.3.1.1. Manipulation</a>
+<ul><li><a href="#n:1.1.2.3.1.1.">1.1.2.3.1.1. OSC Control</a>
 
-<li><a href="#n:1.1.2.3.1.2.">1.1.2.3.1.2. Module Parameter Editor</a>
+<li><a href="#n:1.1.2.3.1.2.">1.1.2.3.1.2. Manipulation</a>
 
-<li><a href="#n:1.1.2.3.1.3.">1.1.2.3.1.3. Controls</a>
+<li><a href="#n:1.1.2.3.1.3.">1.1.2.3.1.3. Module Parameter Editor</a>
 
-<ul><li><a href="#n:1.1.2.3.1.3.1.">1.1.2.3.1.3.1. Control Voltages</a>
+<li><a href="#n:1.1.2.3.1.4.">1.1.2.3.1.4. Controls</a>
+
+<ul><li><a href="#n:1.1.2.3.1.4.1.">1.1.2.3.1.4.1. Control Voltages</a>
 
 </ul></ul></ul></ul><li><a href="#n:1.1.3.">1.1.3. Projects</a>
 
@@ -137,13 +139,50 @@ Non Mixer has several built-in modules. They are:
 <dt><em>Gain</em></dt>
 <dd>Applies gain in dB</dd>
 <dt><em>Meter</em></dt>
-<dd>Digital Peak meter</dd>
+<dd>Digital Peak Meter</dd>
 <dt><em>Mono Pan</em></dt>
 <dd>Performs intensity panning of a mono signal into a stereo signal.</dd>
 <dt><em>Plugin</em></dt>
 <dd>Hosts a LADSPA plugin</dd>
 </dl>
-<h6 id="n:1.1.2.3.1.1.">1.1.2.3.1.1. Manipulation</h6>
+<h6 id="n:1.1.2.3.1.1.">1.1.2.3.1.1. OSC Control</h6>
+<p>
+The input parameters of all modules are controllable via OSC, regardless of whether the parameter is set as controllable.
+</p>
+<p>
+The format of the automatically generated OSC path names is as follows:
+</p>
+<div class="fig example"><table width=100%><tr><td><pre>
+/mixer/strip/[STRIP_NAME]/control/[MODULE_NAME]/[PARAMETER_NAME]
+</pre></td></tr>
+</table></div>
+<p>
+The UDP port that the OSC server binds to can be set by providing the <tt>--osc-port</tt> command-line option. Without this option, a random port will be bound automatically (the exact OSC URL will always be printed to the console as a line beginning with "OSC: ").
+</p>
+<p>
+The default path accepts a float value between 0.0 and 1.0 (a Control Voltage) which will be scaled to the allowable range of the control.
+</p>
+<p>
+A path ending in /unscaled is also available, which accepts exact values, which will be clamped to the allowable range. For example:
+</p>
+<div class="fig example"><table width=100%><tr><td><pre>
+/mixer/strip/[STRIP_NAME]/control/[MODULE_NAME]/[PARAMETER_NAME]/unscaled
+</pre></td></tr>
+</table></div>
+<p>
+If same module/plugin is used twice in a signal chain (e.g. multiple Gain stages), then a position dependent sequence number will be appended to the module name. For example, a path might look like the following:
+</p>
+<div class="fig example"><table width=100%><tr><td><pre>
+/mixer/strip/Foo/control/Gain.1/Gain_(dB)
+</pre></td></tr>
+</table></div>
+<p>
+For the second instance of the Gain module on the strip named 'Foo'.
+</p>
+<p>
+For each OSC parameter change message received, a reply will be sent to the same path at the sender with the new value as the only parameter. Changes to the control value initatied in the GUI will <b>not</b> generate any OSC messages.
+</p>
+<h6 id="n:1.1.2.3.1.2.">1.1.2.3.1.2. Manipulation</h6>
 <p>
 Left-clicking on a module brings up a Module Parameter Editor window for the selected module.
 </p>
@@ -157,9 +196,9 @@ Middle-clicking on a module toggles its activation state (the audio signal will 
 Control+Right-clicking on a module causes it to be removed from the chain (modules added by default cannot be removed).
 </p>
 <p>
-The focused module may also be controlled via the keyboard. <tt>Menu</tt> brings up the context menu for the focused module. <tt>Space</tt> opens the module parameter editor, <tt>b</tt> toggles the bypassed state, and <tt>Delete</tt> removes the module from the chain (without confirmation!). <tt>Control-X</tt>, <tt>Control-C</tt> and <tt>Control-V</tt>, cut, copy, and paste modules, respectively. Modules may be copied within or across chain. The normal module I/O constraints also apply to pasted modules.
+The focused module may also be controlled via the keyboard. <tt>Menu</tt> brings up the context menu for the focused module. <tt>Space</tt> opens the module parameter editor, <tt>b</tt> toggles the bypassed state, and <tt>Delete</tt> removes the module from the chain (without confirmation!). <tt>Control-X</tt>, <tt>Control-C</tt> and <tt>Control-V</tt>, cut, copy, and paste modules, respectively. Modules may be copied within or across chain boundaries. The normal module I/O constraints also apply to pasted modules.
 </p>
-<h6 id="n:1.1.2.3.1.2.">1.1.2.3.1.2. Module Parameter Editor</h6>
+<h6 id="n:1.1.2.3.1.3.">1.1.2.3.1.3. Module Parameter Editor</h6>
 <center><div class="fig image"><table id="Fig.1.5" border=1>
 <caption>
 <strong>Fig. 1.5.</strong> Module Parameter Editor
@@ -187,7 +226,7 @@ The Module Parameter Editor is used to alter the values of a module's parameters
 <p>
 Underneath each control is a bind button. Clicking adds a new control to the chain's <i>Controls</i> view and binds it to the parameter in question. For simplicity, only one control at a time may be bound to a given parameter.
 </p>
-<h6 id="n:1.1.2.3.1.3.">1.1.2.3.1.3. Controls</h6>
+<h6 id="n:1.1.2.3.1.4.">1.1.2.3.1.4. Controls</h6>
 <center><div class="fig image"><table id="Fig.1.8" border=1>
 <caption>
 <strong>Fig. 1.8.</strong> Control View
@@ -206,7 +245,7 @@ events. Hold down the `Ctrl` key while scrolling the mousewheel to
 achieve finer resolution.
 </td></table>
 </div>
-<h7 id="n:1.1.2.3.1.3.1.">1.1.2.3.1.3.1. Control Voltages</h7>
+<h7 id="n:1.1.2.3.1.4.1.">1.1.2.3.1.4.1. Control Voltages</h7>
 <p>
 The control voltage concept should be familiar to anyone who has experience with analog modular synthesizers. MIDI, while having definite advantages in many respects, multiplexes control data in such a way as to make connecting one MIDI control to a parameter involve a significant inconvenience, usually requiring the adjustment of settings on both ends of the connection in order to separate the control data streams.
 </p>

@@ -111,6 +111,42 @@
 = Plugin
 	= Hosts a LADSPA plugin
 
+:::::: OSC Control
+
+  The input parameters of all modules are controllable via OSC,
+  regardless of whether the parameter is set as controllable.
+
+  The format of the automatically generated OSC path names is as follows:
+
+> /mixer/strip/[STRIP_NAME]/control/[MODULE_NAME]/[PARAMETER_NAME]
+
+  The UDP port that the OSC server binds to can be set by providing
+  the `--osc-port` command-line option. Without this option, a random
+  port will be bound automatically (the exact OSC URL will always be
+  printed to the console as a line beginning with "OSC: ").
+
+  The default path accepts a float value between 0.0 and 1.0 (a
+  Control Voltage) which will be scaled to the allowable range of the control.
+
+  A path ending in \/unscaled is also available, which accepts exact values,
+  which will be clamped to the allowable range. For example:
+
+> /mixer/strip/[STRIP_NAME]/control/[MODULE_NAME]/[PARAMETER_NAME]/unscaled
+
+  If same module\/plugin is used twice in a signal chain
+  (e.g. multiple Gain stages), then a position dependent sequence number
+  will be appended to the module name. For example, a path might look
+  like the following:
+
+> /mixer/strip/Foo/control/Gain.1/Gain_(dB)
+
+  For the second instance of the Gain module on the strip named 'Foo'.
+
+  For each OSC parameter change message received, a reply will be sent
+  to the same path at the sender with the new value as the only
+  parameter. Changes to the control value initatied in the GUI will
+  *not* generate any OSC messages.
+
 :::::: Manipulation
 
   Left-clicking on a module brings up a Module Parameter Editor window

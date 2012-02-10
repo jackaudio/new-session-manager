@@ -77,8 +77,10 @@ ensure_dirs ( void )
 
 static void cb_main ( Fl_Double_Window *o, void *)
 {
-    if ( Fl::event_key() != FL_Escape )
-        o->hide();
+    if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
+	return;
+
+    mixer->command_quit();
 }
 
 int

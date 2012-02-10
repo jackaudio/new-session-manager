@@ -261,8 +261,6 @@ Module::Port::osc_control_change_exact ( const char *path, const char *types, lo
 
     OSC_DMSG();
 
-//    const Port *p = c->control_output[0].connected_port();
-    
     float f = argv[0]->f;
 
     if ( p->hints.ranged )
@@ -275,7 +273,8 @@ Module::Port::osc_control_change_exact ( const char *path, const char *types, lo
 
     p->control_value( f );
 
-    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
+//    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
+    mixer->osc_endpoint->send( lo_message_get_source( msg ), path, argv[0]->f );
 
     return 0;
 }
@@ -285,8 +284,6 @@ Module::Port::osc_control_change_cv ( const char *path, const char *types, lo_ar
 {
     Module::Port *p = (Module::Port*)user_data;
 
-//    const Port *p = c->control_output[0].connected_port();
-    
     float f = argv[0]->f;
 
     if (p->hints.ranged )
@@ -302,9 +299,8 @@ Module::Port::osc_control_change_cv ( const char *path, const char *types, lo_ar
     
     p->control_value( f );
 
-//    c->control_value = f;
-
-    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
+//    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
+    mixer->osc_endpoint->send( lo_message_get_source( msg ), path, argv[0]->f );
 
     return 0;
 }

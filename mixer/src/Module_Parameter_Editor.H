@@ -25,6 +25,9 @@ class Fl_Pack;
 class Fl_Flowpack;
 class Module;
 class Fl_Menu_Button;
+class Panner;
+
+#include <vector>
 
 class Module_Parameter_Editor : public Fl_Double_Window
 {
@@ -65,6 +68,11 @@ class Module_Parameter_Editor : public Fl_Double_Window
     Fl_Flowpack *control_pack;
     Fl_Menu_Button *mode_choice;
     bool _resized;
+
+    int azimuth_port_number;
+    int elevation_port_number;
+
+    std::vector<Fl_Widget*> controls_by_port;  
 
 public:
 

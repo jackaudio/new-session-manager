@@ -117,8 +117,7 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
 
 Module_Parameter_Editor::~Module_Parameter_Editor ( )
 {
-
-
+    controls_by_port.clear();
 }
 
 
@@ -130,13 +129,16 @@ Module_Parameter_Editor::make_controls ( void )
 
     control_pack->clear();
 
+    controls_by_port.clear();
 
     /* these are for detecting related parameter groups which can be
        better represented by a single control */
-    int azimuth_port_number = -1;
+    azimuth_port_number = -1;
     float azimuth_value = 0.0f;
-    int elevation_port_number = -1;
+    elevation_port_number = -1;
     float elevation_value = 0.0f;
+
+    controls_by_port.resize( module->control_input.size() );
 
     for ( unsigned int i = 0; i < module->control_input.size(); ++i )
     {
@@ -243,6 +245,7 @@ Module_Parameter_Editor::make_controls ( void )
 
         }
 
+        controls_by_port[i] = w;
 
         w->tooltip( p->osc_path() );
 
@@ -309,6 +312,9 @@ Module_Parameter_Editor::make_controls ( void )
         Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( o );
 
         control_pack->add( flg );
+
+        controls_by_port[azimuth_port_number] = o;
+        controls_by_port[elevation_port_number] = o;
     }
 
 
@@ -387,21 +393,34 @@ void
 Module_Parameter_Editor::handle_control_changed ( Module::Port *p )
 {
     int i = _module->control_input_port_index( p );
+   
+    Fl_Widget *w = controls_by_port[i];
 
-    /* FIXME: very hacky in that it assumes the control is an Fl_Valuator... (which buttons are not) */
-    Fl_Group *g = (Fl_Group*)control_pack->child( i );
-    Fl_Group *g2 = (Fl_Group*)g->child( 0 );
+    if ( i == azimuth_port_number ||
+         i == elevation_port_number )
+    {
+        Panner *_panner = (Panner*)w;
+
+        if ( i == azimuth_port_number )
+            _panner->point(0)->azimuth( p->control_value() );
+        else if ( i == elevation_port_number )
+            _panner->point(0)->elevation( p->control_value() );
+
+        _panner->redraw();
+
+        return;
+    }
 
 
     if ( p->hints.type == Module::Port::Hints::BOOLEAN )
     {
-        Fl_Button *v = (Fl_Button*)g2->child( 0 );
+        Fl_Button *v = (Fl_Button*)w;
 
         v->value( p->control_value() );
-    }
+    }        
     else
     {
-        Fl_Valuator *v = (Fl_Valuator*)g2->child( 0 );
+        Fl_Valuator *v = (Fl_Valuator*)w;
     
         v->value( p->control_value() );
     }

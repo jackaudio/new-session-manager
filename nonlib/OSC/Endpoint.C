@@ -111,10 +111,10 @@ namespace OSC
  
         lo_server_add_method( _server, path, typespec, handler, user_data );
 
-        char *stored_path;
-
+        char *stored_path = NULL;
+        
         asprintf( &stored_path, "%s (%s); %s", path, typespec, argument_description );
-
+        
         _path_names.push_back( stored_path );
     }
 

@@ -381,7 +381,7 @@ public:
 
     /* called whenever the value of a control port is changed.
        This can be used to take appropriate action from the GUI thread */
-    virtual void handle_control_changed ( Port * ) { }
+    virtual void handle_control_changed ( Port * );
 
     /* called whenever the name of the chain changes (usually because
      * the name of the mixer strip changed). */

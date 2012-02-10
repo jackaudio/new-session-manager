@@ -67,6 +67,8 @@ class Module_Parameter_Editor : public Fl_Double_Window
 
 public:
 
+    void handle_control_changed ( Module::Port *p );
+
     Module_Parameter_Editor ( Module *module );
     virtual ~Module_Parameter_Editor ( );
 };

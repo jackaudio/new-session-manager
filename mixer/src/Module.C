@@ -191,13 +191,22 @@ Module::paste_before ( void )
     m->copy();
 }
 
+
+
+
+void
+Module::handle_control_changed ( Port *p )
+{
+    if ( _editor )
+        _editor->handle_control_changed ( p );
+}
 
 char *
 Module::Port::generate_osc_path ()
 {
     const Port *p = this;
 
-    char *path;
+    char *path = NULL;
 
     // /mixer/strip/STRIPNAME/control/MODULENAME/CONTROLNAME
 
@@ -237,11 +246,9 @@ Module::Port::change_osc_path ( char *path )
 
     if ( path )
     {
-        _osc_path_cv = (char*)malloc( strlen( path ) + 4 );
-        _osc_path_cv[0] = 0;
+        _osc_path_cv = NULL;
 
-        strcpy( _osc_path_cv, path );
-        strcat( _osc_path_cv, "/unscaled" );
+        asprintf( &_osc_path_cv, "%s/unscaled", path );
 
 	mixer->osc_endpoint->add_method( path, "f", &Module::Port::osc_control_change_cv, this, "value" );
 

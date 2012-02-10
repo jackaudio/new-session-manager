@@ -168,7 +168,6 @@ Module_Parameter_Editor::make_controls ( void )
             o->selection_color( FL_GREEN );
             o->type( FL_TOGGLE_BUTTON );
             o->value( p->control_value() );
-
         }
         else if ( p->hints.type == Module::Port::Hints::INTEGER )
         {
@@ -368,6 +367,19 @@ Module_Parameter_Editor::bind_control ( int i )
 
     _module->chain()->add_control( o );
     _module->redraw();
+}
+
+/* Display changes initiated via automation or from other parts of the GUI */
+void
+Module_Parameter_Editor::handle_control_changed ( Module::Port *p )
+{
+    int i = _module->control_input_port_index( p );
+
+    Fl_Group *g = (Fl_Group*)control_pack->child( i );
+    Fl_Group *g2 = (Fl_Group*)g->child( 0 );
+    Fl_Valuator *v = (Fl_Valuator*)g2->child( 0 );
+
+    v->value( p->control_value() );
 }
 
 void

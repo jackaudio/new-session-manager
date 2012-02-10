@@ -125,7 +125,7 @@ public:
                 _connected = 0;
                 _module = module;
                 _osc_path = 0;
-                _osc_path_cv = 0;
+                _osc_path_unscaled = 0;
             }
 
         Port ( const Port& p )
@@ -139,7 +139,7 @@ public:
                 _module = p._module;
                 hints = p.hints;
                 _osc_path = p._osc_path;
-                _osc_path_cv = p._osc_path;
+                _osc_path_unscaled = p._osc_path_unscaled;
             }
 
         virtual ~Port ( )
@@ -247,7 +247,7 @@ public:
         Module *_module;
 
         char *_osc_path;
-        char *_osc_path_cv;
+        char *_osc_path_unscaled;
     };
 
     void bbox ( int &X, int &Y, int &W, int &H )

@@ -235,28 +235,25 @@ Module::Port::change_osc_path ( char *path )
     if ( _osc_path )
     {
 	mixer->osc_endpoint->del_method( _osc_path, "f" );
-	mixer->osc_endpoint->del_method( _osc_path_cv, "f" );
+	mixer->osc_endpoint->del_method( _osc_path_unscaled, "f" );
 
 	free( _osc_path );
-        free( _osc_path_cv );
+        free( _osc_path_unscaled );
        
 	_osc_path = NULL;
-        _osc_path_cv = NULL;
+        _osc_path_unscaled = NULL;
     }
 
     if ( path )
     {
-        _osc_path_cv = NULL;
-
-        asprintf( &_osc_path_cv, "%s/unscaled", path );
-
-	mixer->osc_endpoint->add_method( path, "f", &Module::Port::osc_control_change_cv, this, "value" );
-
-	mixer->osc_endpoint->add_method( _osc_path_cv, "f", &Module::Port::osc_control_change_exact, this, "value" );
-
+        _osc_path_unscaled = NULL;
 	_osc_path = path;
 
-//	tooltip( _osc_path );
+        asprintf( &_osc_path_unscaled, "%s/unscaled", path );
+
+	mixer->osc_endpoint->add_method( _osc_path, "f", &Module::Port::osc_control_change_cv, this, "value" );
+
+	mixer->osc_endpoint->add_method( _osc_path_unscaled, "f", &Module::Port::osc_control_change_exact, this, "value" );
     }
 }
 
@@ -265,8 +262,6 @@ int
 Module::Port::osc_control_change_exact ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
     Module::Port *p = (Module::Port*)user_data;
-
-    OSC_DMSG();
 
     float f = argv[0]->f;
 
@@ -281,7 +276,7 @@ Module::Port::osc_control_change_exact ( const char *path, const char *types, lo
     p->control_value( f );
 
 //    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
-    mixer->osc_endpoint->send( lo_message_get_source( msg ), path, argv[0]->f );
+    mixer->osc_endpoint->send( lo_message_get_source( msg ), path, f );
 
     return 0;
 }
@@ -293,10 +288,15 @@ Module::Port::osc_control_change_cv ( const char *path, const char *types, lo_ar
 
     float f = argv[0]->f;
 
-    if (p->hints.ranged )
+    // clamp value to control voltage range.
+    if ( f > 1.0 )
+        f = 1.0;
+    else if ( f < 0.0 )
+        f = 0.0;
+
+    if ( p->hints.ranged )
     {
         // scale value to range.
-        // we assume that CV values are between 0 and 1
         
         float scale = p->hints.maximum - p->hints.minimum;
         float offset = p->hints.minimum;
@@ -307,7 +307,7 @@ Module::Port::osc_control_change_cv ( const char *path, const char *types, lo_ar
     p->control_value( f );
 
 //    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
-    mixer->osc_endpoint->send( lo_message_get_source( msg ), path, argv[0]->f );
+    mixer->osc_endpoint->send( lo_message_get_source( msg ), path, f );
 
     return 0;
 }

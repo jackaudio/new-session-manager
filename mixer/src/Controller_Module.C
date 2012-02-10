@@ -311,6 +311,9 @@ Controller_Module::connect_to ( Port *p )
         o->value( p->control_value() );
 
         _type = TOGGLE;
+
+        /* FIXME: hack */
+        control = (Fl_Valuator*)o;
     }
     else if ( p->hints.type == Module::Port::Hints::INTEGER )
     {
@@ -430,7 +433,13 @@ Controller_Module::cb_handle ( Fl_Widget *w, void *v )
 void
 Controller_Module::cb_handle ( Fl_Widget *w )
 {
-    control_value = ((Fl_Valuator*)w)->value();
+    if ( type() == TOGGLE )
+    {
+        control_value = ((Fl_Button*)w)->value();
+    }
+    else
+        control_value = ((Fl_Valuator*)w)->value();
+
     if ( control_output[0].connected() )
         control_output[0].connected_port()->control_value( control_value );
 }
@@ -535,11 +544,10 @@ Controller_Module::handle_control_changed ( Port *p )
     if ( p )
         control_value = p->control_value();
 
-    if ( control->value() != control_value )
-    {
-        redraw();
-        DMESSAGE( "handle_control_changed" );
-    }
+    /* if ( control->value() != control_value ) */
+    /* { */
+    /*     redraw(); */
+    /* } */
 
     if ( type() == SPATIALIZATION )
     {
@@ -550,7 +558,10 @@ Controller_Module::handle_control_changed ( Port *p )
     }
     else
     {
-        control->value(control_value);
+        if ( type() == TOGGLE )
+            ((Fl_Button*)control)->value(control_value);
+        else
+            control->value(control_value);
     }
 }
 

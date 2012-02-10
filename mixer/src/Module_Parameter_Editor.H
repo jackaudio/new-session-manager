@@ -52,6 +52,7 @@ class Module_Parameter_Editor : public Fl_Double_Window
 
     };
 
+    static void cb_button_handle ( Fl_Widget *w, void *v );
     static void cb_value_handle ( Fl_Widget *w, void *v );
     static void cb_panner_value_handle ( Fl_Widget *w, void *v );
     static void cb_mode_handle ( Fl_Widget *w, void *v );

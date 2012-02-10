@@ -250,7 +250,11 @@ Module_Parameter_Editor::make_controls ( void )
 
         w->align(FL_ALIGN_TOP);
         w->labelsize( 10 );
-        w->callback( cb_value_handle, new callback_data( this, i ) );
+
+        if ( p->hints.type == Module::Port::Hints::BOOLEAN )
+            w->callback( cb_button_handle, new callback_data( this, i ) );
+        else
+            w->callback( cb_value_handle, new callback_data( this, i ) );
 
         { Fl_Group *o = new Fl_Group( 0, 0, 50, 75 );
             {
@@ -324,6 +328,15 @@ Module_Parameter_Editor::cb_value_handle ( Fl_Widget *w, void *v )
 }
 
 void
+Module_Parameter_Editor::cb_button_handle ( Fl_Widget *w, void *v )
+{
+    callback_data *cd = (callback_data*)v;
+
+    cd->base_widget->set_value( cd->port_number[0], ((Fl_Button*)w)->value() );
+}
+
+
+void
 Module_Parameter_Editor::cb_panner_value_handle ( Fl_Widget *w, void *v )
 {
     callback_data *cd = (callback_data*)v;
@@ -375,11 +388,23 @@ Module_Parameter_Editor::handle_control_changed ( Module::Port *p )
 {
     int i = _module->control_input_port_index( p );
 
+    /* FIXME: very hacky in that it assumes the control is an Fl_Valuator... (which buttons are not) */
     Fl_Group *g = (Fl_Group*)control_pack->child( i );
     Fl_Group *g2 = (Fl_Group*)g->child( 0 );
-    Fl_Valuator *v = (Fl_Valuator*)g2->child( 0 );
 
-    v->value( p->control_value() );
+
+    if ( p->hints.type == Module::Port::Hints::BOOLEAN )
+    {
+        Fl_Button *v = (Fl_Button*)g2->child( 0 );
+
+        v->value( p->control_value() );
+    }
+    else
+    {
+        Fl_Valuator *v = (Fl_Valuator*)g2->child( 0 );
+    
+        v->value( p->control_value() );
+    }
 }
 
 void

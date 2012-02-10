@@ -352,11 +352,14 @@ public:
     Chain *chain ( void ) const { return _chain; }
     void chain ( Chain * v )
         {
-            _chain = v; 
-
-            for ( int i = 0; i < ncontrol_inputs(); ++i )
+            if ( _chain != v )
             {
-                control_input[i].update_osc_port();
+                _chain = v; 
+
+                for ( int i = 0; i < ncontrol_inputs(); ++i )
+                {
+                    control_input[i].update_osc_port();
+                }
             }
         }
 

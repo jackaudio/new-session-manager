@@ -675,6 +675,8 @@ Module::handle_chain_name_changed ( )
     {
         if ( control_input[i].connected() )
             control_input[i].connected_port()->module()->handle_chain_name_changed();
+    
+        control_input[i].update_osc_port();
     }
 }
 

@@ -222,7 +222,7 @@ Module::Port::generate_osc_path ()
     // Hack to keep spaces out of OSC URL... Probably need to handle other special characters similarly.
     for ( int i = strlen( path ); i--; )
     {
-        if ( path[i] == ' ' )
+        if ( path[i] == ' ' || path[i] == ',' )
             path[i] = '_';
     }
 

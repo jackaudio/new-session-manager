@@ -241,11 +241,11 @@ Module::Port::change_osc_path ( char *path )
         _osc_path_cv[0] = 0;
 
         strcpy( _osc_path_cv, path );
-        strcat( _osc_path_cv, "/cv" );
+        strcat( _osc_path_cv, "/unscaled" );
 
-	mixer->osc_endpoint->add_method( path, "f", &Module::Port::osc_control_change_exact, this, "value" );
+	mixer->osc_endpoint->add_method( path, "f", &Module::Port::osc_control_change_cv, this, "value" );
 
-	mixer->osc_endpoint->add_method( _osc_path_cv, "f", &Module::Port::osc_control_change_cv, this, "value" );
+	mixer->osc_endpoint->add_method( _osc_path_cv, "f", &Module::Port::osc_control_change_exact, this, "value" );
 
 	_osc_path = path;
 

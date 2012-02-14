@@ -88,10 +88,19 @@ static port_t input[2];                                                /* contro
 
 jack_nframes_t nframes;                                         /* for compatibility with older jack */
 
+bool
+midi_is_active ( void )
+{
+    return client != NULL;
+}
+
 /** get next recorded event, if any--runs in UI thread */
 bool
 midi_input_event ( int port, midievent *me )
 {
+    if ( ! midi_is_active() )
+        return NULL;
+
     if ( jack_ringbuffer_read_space( input[ port ].ring_buf ) >= sizeof( midievent ) )
     {
         if ( jack_ringbuffer_read( input[ port ].ring_buf, (char *)me, sizeof( midievent ) ) )
@@ -100,11 +109,15 @@ midi_input_event ( int port, midievent *me )
     return false;
 }
 
+
 /**
  * Queue an event for output. /tick/ is relative to the current cycle! */
 void
 midi_output_event ( int port, const midievent *e )
 {
+    if ( ! midi_is_active() )
+        return;
+
     event *fe = freelist.first();
 
     if ( ! fe )
@@ -150,6 +163,9 @@ midi_output_event ( int port, const midievent *e )
 void
 midi_output_event ( int port, const midievent *e, tick_t duration )
 {
+    if ( ! midi_is_active() )
+        return;
+
     if ( duration )
     {
         note_duration[ port ][ e->channel() ][ e->note() ] = (duration + e->timestamp()) * subticks_per_tick;
@@ -194,6 +210,9 @@ midi_write_event ( int port, const midievent *e )
 void
 midi_output_immediate_event ( int port, const midievent *e )
 {
+    if ( ! midi_is_active() )
+        return;
+
     if ( jack_ringbuffer_write( output[ port ].ring_buf, (const char *)e, sizeof( midievent ) ) != sizeof( midievent ) )
         WARNING( "output ringbuffer overrun" );
     else
@@ -208,6 +227,9 @@ midi_output_immediate_event ( int port, const midievent *e )
 void
 midi_all_sound_off ( void )
 {
+    if ( ! midi_is_active() )
+        return;
+
     MESSAGE( "stopping all sound" );
 
     midievent e;
@@ -525,14 +547,11 @@ schedule:
 }
 
 const char *
-midi_init ( void )
+midi_init ( const char *name )
 {
     MESSAGE( "Initializing Jack MIDI" );
 
-/*     if (( client = jack_client_new ( APP_NAME )) == 0 ) */
-/*         return 0; */
-
-    if (( client = jack_client_open ( APP_NAME, (jack_options_t)0, NULL )) == 0 )
+    if (( client = jack_client_open ( name, (jack_options_t)0, NULL )) == 0 )
         return NULL;
 
     /* create output ports */
@@ -605,6 +624,10 @@ void
 midi_shutdown ( void )
 {
     // TODO: wait for all queued events to play.
-
-    jack_deactivate( client );
+    if ( client )
+    {
+        jack_deactivate( client );
+        jack_client_close( client );
+        client = NULL;
+    }
 }

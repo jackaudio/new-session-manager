@@ -42,7 +42,7 @@ void init_song ( void );
 void handle_midi_input ( void );
 bool load_song ( const char *name );
 bool save_song ( const char *name );
-
+void setup_jack ( void );
 
 #include "common.h"
 #include "const.h"

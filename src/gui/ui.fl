@@ -40,8 +40,11 @@ decl {\#include "event_edit.H"} {private local
 decl {\#include "../jack.H"} {private local
 } 
 
-decl {\#include "../lash.H"} {private local
+decl {\#include "../NSM.H"} {private local
 } 
+
+decl {extern NSM_Client *nsm;} {private local
+}
 
 decl {extern const char *BUILD_ID;} {private local
 } 
@@ -73,8 +76,6 @@ Function {update_transport( void * )} {open return_type void
 
 handle_midi_input();
 
-lash.process();
-
 ui->progress_group->do_callback();
 
 ui->vmetro_widget->update();	
@@ -101,6 +102,16 @@ if ( transport.rolling != oldstate )
 		ui->menu_new->activate();
 		ui->menu_open->activate();
 	}
+}
+
+if ( nsm && nsm->is_active() )
+{
+     if ( ui->menu_new->active() )
+     {
+            ui->menu_new->deactivate();
+            ui->menu_open->deactivate();
+            ui->menu_save_as->deactivate();
+     }
 }
 
 // JUST A TEST
@@ -136,6 +147,8 @@ Fl::foreground( 255, 255, 255 );
 Fl::scheme( "plastic" );
 
 canvas_background_color = FL_GREEN;
+
+playback_mode_menu = NULL;
 
 main_window = make_main_window();
 seq_window = make_seq_window();
@@ -235,7 +248,7 @@ if ( name )
             code0 {song.signal_dirty.connect( sigc::mem_fun( o, &Fl_Menu_Item::activate ) );}
             code1 {song.signal_clean.connect( sigc::mem_fun( o, &Fl_Menu_Item::deactivate ) );}
           }
-          MenuItem {} {
+          MenuItem menu_save_as {
             label {Save &As}
             callback {save_dialog( NULL );}
             xywh {0 0 40 25}
@@ -1031,6 +1044,10 @@ else
             callback {song.play_mode = QUEUE;}
             xywh {0 0 40 24}
           }
+        }
+        Fl_Box sm_indicator {
+          label SM selected
+          xywh {805 6 50 17} box ROUNDED_BOX color 50 labelcolor 3 deactivate
         }
       }
       Fl_Group {} {open

@@ -25,7 +25,7 @@
 // #include "gui/input.H"
 #include "gui/ui.H"
 #include "jack.H"
-#include "lash.H"
+#include "NSM.H"
 
 #include "pattern.H"
 #include "phrase.H"
@@ -41,6 +41,8 @@
 extern const char *BUILD_ID;
 extern const char *VERSION;
 
+const double NSM_CHECK_INTERVAL = 0.25f;
+
 Canvas *pattern_c, *phrase_c, *trigger_c;
 
 sequence *playlist;
@@ -48,7 +50,9 @@ sequence *playlist;
 global_settings config;
 song_settings song;
 
-Lash lash;
+NSM_Client *nsm;
+
+char *instance_name;
 
 /* default to pattern mode */
 
@@ -78,9 +82,9 @@ quit ( void )
 }
 
 void
-init_song ( void )
+clear_song ( void )
 {
-    song.filename = NULL;
+//    song.filename = NULL;
 
     pattern_c->grid( NULL );
     phrase_c->grid( NULL );
@@ -91,6 +95,21 @@ init_song ( void )
     phrase_c->grid( new phrase );
 
     song.dirty( false );
+}
+
+void
+init_song ( void )
+{
+    if ( ! midi_is_active() )
+        setup_jack();
+
+    if ( !( nsm && nsm->is_active() ) )
+        song.filename = NULL;
+
+    clear_song();
+
+    if ( nsm && nsm->is_active() )
+        save_song( song.filename );
 }
 
 void
@@ -106,6 +125,9 @@ handle_midi_input ( void )
 bool
 load_song ( const char *name )
 {
+    if ( ! midi_is_active() )
+        setup_jack();
+
     MESSAGE( "loading song \"%s\"", name );
 
     Grid *pattern_grid = pattern_c->grid();
@@ -148,6 +170,52 @@ save_song ( const char *name )
     return true;
 }
 
+
+void
+setup_jack ( )
+{
+   const char *jack_name;
+
+    jack_name = midi_init( instance_name );
+    if ( ! jack_name )
+        ASSERTION( "Could not initialize MIDI system! (is Jack running and with MIDI ports enabled?)" );
+
+    if ( ! transport.valid )
+    {
+        if ( transport.master )
+            ASSERTION( "The version of JACK you are using does not appear to be capable of passing BBT positional information." );
+        else
+            ASSERTION( "Either the version of JACK you are using does pass BBT information, or the current timebase master does not provide it." );
+    }
+}
+
+static int got_sigterm = 0;
+
+void
+sigterm_handler ( int )
+{
+    got_sigterm = 1;
+    Fl::awake();
+}
+
+void
+check_sigterm ( void * )
+{
+    if ( got_sigterm )
+    {
+        MESSAGE( "Got SIGTERM, quitting..." );
+        quit();
+    }
+}
+
+
+void
+check_nsm ( void * v )
+{
+    nsm->check();
+    Fl::repeat_timeout( NSM_CHECK_INTERVAL, check_nsm, v );
+}
+
 int
 main ( int argc, char **argv )
 {
@@ -177,26 +245,16 @@ main ( int argc, char **argv )
     phrase_c = new Canvas;
     trigger_c = new Canvas;
 
-    init_song();
+    nsm = new NSM_Client;
+
+    song.filename = NULL;
+    clear_song();
 
     pattern::signal_create_destroy.connect( mem_fun( phrase_c,  &Canvas::v_zoom_fit ) );
     pattern::signal_create_destroy.connect( mem_fun( song, &song_settings::set_dirty ) );
     phrase::signal_create_destroy.connect( mem_fun( song, &song_settings::set_dirty ) );
 
-    const char *jack_name;
-
-    jack_name = midi_init();
-    if ( ! jack_name )
-        ASSERTION( "Could not initialize MIDI system! (is Jack running and with MIDI ports enabled?)" );
-
-    if ( ! transport.valid )
-    {
-        if ( transport.master )
-            ASSERTION( "The version of JACK you are using does not appear to be capable of passing BBT positional information." );
-        else
-            ASSERTION( "Either the version of JACK you are using does pass BBT information, or the current timebase master does not provide it." );
-    }
-
+    //
     song.dirty( false );
 
     init_colors();
@@ -210,17 +268,38 @@ main ( int argc, char **argv )
 #endif
     ui->main_window->show( argc, argv );
 
-    if ( ! lash.init( &argc, &argv, jack_name ) )
-        WARNING( "error initializing LASH" );
+    instance_name = strdup( APP_NAME );
 
-    if ( argc > 1 )
+    const char *nsm_url = getenv( "NSM_URL" );
+    
+    if ( nsm_url )
     {
-        /* maybe a filename on the commandline */
-        if ( ! load_song( argv[ 1 ] ) )
-            ASSERTION( "Could not load song \"%s\" specified on command line", argv[ 1 ] );
+        if ( ! nsm->init( nsm_url ) )
+        {
+            nsm->announce( APP_NAME, ":switch:dirty:", argv[0] );
+
+            song.signal_dirty.connect( sigc::mem_fun( nsm, &NSM_Client::is_dirty ) );
+            song.signal_clean.connect( sigc::mem_fun( nsm, &NSM_Client::is_clean ) );
+
+            // poll so we can keep OSC handlers running in the GUI thread and avoid extra sync
+            Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
+        }       
+        else
+            WARNING( "Error initializing NSM" );
+    }
+    else
+    {
+        if ( argc > 1 )
+        {
+            /* maybe a filename on the commandline */
+            if ( ! load_song( argv[ 1 ] ) )
+                ASSERTION( "Could not load song \"%s\" specified on command line", argv[ 1 ] );
+        }
     }
 
     MESSAGE( "Initializing GUI" );
+
+    Fl::add_check( check_sigterm );
 
     ui->run();
 

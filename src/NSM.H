@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/* Copyright (C) 2012 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -19,22 +19,23 @@
 
 #pragma once
 
-#include "config.h"
+#include "NSM/Client.H"
 
-#ifdef HAVE_LASH
-#include <lash/lash.h>
-#endif
-
-class Lash
+class NSM_Client : public NSM::Client
 {
 
-#ifdef HAVE_LASH
-    lash_client_t *_client;
-#endif
+    char *project_filename;
 
 public:
-    Lash ( );
-    bool init ( int *argc, char ***argv, const char *jack_name );
-    void process ( void );
 
+    NSM_Client ( );
+    ~NSM_Client ( ) { };
+    
+protected:
+
+    int command_open ( const char *name, const char *display_name, const char *client_id, char **out_msg );
+    int command_save ( char **out_msg );
+    int command_quit ( char **out_msg );
+
+    void command_active ( bool );
 };

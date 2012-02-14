@@ -57,9 +57,9 @@ CFLAGS+=-DINSTALL_PREFIX=\"$(prefix)\" \
 	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\" \
 	-DPIXMAP_PATH=\"$(PIXMAP_PATH)\"
 
-CXXFLAGS:=$(CFLAGS) $(CXXFLAGS) $(FLTK_CFLAGS) $(SIGCPP_CFLAGS) $(LASH_CFLAGS) $(XPM_CFLAGS)
+CXXFLAGS:=$(CFLAGS) $(CXXFLAGS) $(FLTK_CFLAGS) $(SIGCPP_CFLAGS) $(LIBLO_CFLAGS) $(XPM_CFLAGS)
 
-LIBS:=$(FLTK_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
+LIBS:=$(FLTK_LIBS) $(JACK_LIBS) $(SIGCPP_LIBS) $(LIBLO_LIBS) $(XPM_LIBS)
 
 ifeq ($(JACK_MIDI_PROTO_API),yes)
 	CXXFLAGS+=-DJACK_MIDI_PROTO_API
@@ -68,7 +68,7 @@ endif
 # uncomment this line to print each playback event to the console (not RT safe)
 # CXXFLAGS+= -DDEBUG_EVENTS
 
-SRCS:=$(wildcard src/*.C src/gui/*.fl src/gui/*.C)
+SRCS:=$(wildcard src/*.C src/gui/*.fl src/gui/*.C src/NSM/*.C)
 
 SRCS:=$(SRCS:.fl=.C)
 SRCS:=$(sort $(SRCS))

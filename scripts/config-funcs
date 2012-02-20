@@ -273,7 +273,7 @@ require_package ()
     fi
 
     name="`upcase \"$1\"`"
-    append "${name}_LIBS=`pkg-config --libs $3 | sed 's/,?--as-needed//g'`"
+    append "${name}_LIBS=`pkg-config --libs $3 | sed 's/,\\?--as-needed//g'`"
     append "${name}_CFLAGS=-DHAVE_${1} `pkg-config --cflags $3`"
 
     ok `pkg-config --modversion "$3"`
@@ -327,6 +327,6 @@ require_FLTK ()
         use="$use --use-$1"
     done
 
-    append "FLTK_LIBS=`fltk-config $use --ldflags | sed 's/,?--as-needed//g'`"
+    append "FLTK_LIBS=`fltk-config $use --ldflags | sed 's/,\\?--as-needed//g'`"
     append "FLTK_CFLAGS=`fltk-config $use --cflags`"
 }

@@ -1,5 +1,5 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0110 
+version 1.0300 
 header_name {.H} 
 code_name {.C}
 comment {//
@@ -22,38 +22,50 @@ comment {//
 } {in_source in_header
 } 
 
-decl {\#include <Fl/Fl_Dial.H>} {public
+decl {\#include <Fl/Fl_Dial.H>} {public local
 } 
 
-decl {\#include <Fl/Fl_Help_Dialog.H>} {} 
-
-decl {\#include <FL/Fl_Shared_Image.H>} {} 
-
-decl {\#include "widgets.H"} {} 
-
-decl {\#include "event_edit.H"} {} 
-
-decl {\#include "../jack.H"} {} 
-
-decl {\#include "../lash.H"} {} 
-
-decl {extern const char *BUILD_ID;} {} 
-
-decl {extern const char *VERSION;} {} 
-
-decl {extern UI *ui;} {} 
-
-decl {class O_Canvas;} {} 
-
-decl {class Triggers;} {public
+decl {\#include <Fl/Fl_Help_Dialog.H>} {private local
 } 
 
-decl {class Instrument_Editor;} {} 
-
-decl {Fl_Color canvas_background_color;} {public
+decl {\#include <FL/Fl_Shared_Image.H>} {private local
 } 
 
-decl {extern Fl_Color velocity_colors[];} {} 
+decl {\#include "widgets.H"} {private local
+} 
+
+decl {\#include "event_edit.H"} {private local
+} 
+
+decl {\#include "../jack.H"} {private local
+} 
+
+decl {\#include "../lash.H"} {private local
+} 
+
+decl {extern const char *BUILD_ID;} {private local
+} 
+
+decl {extern const char *VERSION;} {private local
+} 
+
+decl {extern UI *ui;} {private local
+} 
+
+decl {class O_Canvas;} {private local
+} 
+
+decl {class Triggers;} {public local
+} 
+
+decl {class Instrument_Editor;} {private local
+} 
+
+decl {Fl_Color canvas_background_color;} {public local
+} 
+
+decl {extern Fl_Color velocity_colors[];} {private local
+} 
 
 Function {update_transport( void * )} {open return_type void
 } {
@@ -107,9 +119,12 @@ ui->transport_state->do_callback();} {}
 
 class UI {open
 } {
-  decl {Fl_Text_Buffer *sequence_notes_buffer;} {}
-  decl {Fl_Text_Buffer *pattern_notes_buffer;} {}
-  decl {Fl_Text_Buffer *phrase_notes_buffer} {}
+  decl {Fl_Text_Buffer *sequence_notes_buffer;} {private local
+  }
+  decl {Fl_Text_Buffer *pattern_notes_buffer;} {private local
+  }
+  decl {Fl_Text_Buffer *phrase_notes_buffer} {private local
+  }
   Function {UI()} {open
   } {
     code {fl_register_images();
@@ -169,7 +184,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {209 100 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
+      xywh {133 420 730 590} type Double box PLASTIC_UP_BOX color 37 hide resizable xclass non size_range {600 420 0 0}
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
@@ -849,7 +864,7 @@ pattern_c->changed_mapping();}
           }
         }
       }
-      Fl_Group {} {open selected
+      Fl_Group {} {open
         xywh {0 29 865 67}
       } {
         Fl_Pack {} {
@@ -1030,7 +1045,7 @@ detach_button->value( 0 );} open
   } {
     Fl_Window about_popup {
       label About open
-      xywh {697 224 535 620} type Single non_modal size_range {539 608 539 608} visible
+      xywh {1266 317 535 620} type Single hide non_modal size_range {539 608 539 608}
     } {
       Fl_Box {} {
         label VERSION
@@ -1399,9 +1414,12 @@ return processed;} {}
 
 class O_Canvas {open : {public Fl_Widget}
 } {
-  decl {Canvas *_c;} {}
-  decl {bool _border_drawn;} {}
-  decl {uint _flags;} {}
+  decl {Canvas *_c;} {private local
+  }
+  decl {bool _border_drawn;} {private local
+  }
+  decl {uint _flags;} {private local
+  }
   Function {O_Canvas( int X, int Y, int W, int H, const char*L=0) : Fl_Widget(X,Y,W,H,L)} {open
   } {
     code {_c = NULL;
@@ -1575,8 +1593,10 @@ class Instrument_Editor {} {
   } {
     code {make_window();} {}
   }
-  decl {Instrument *_inst;} {}
-  decl {int _note;} {}
+  decl {Instrument *_inst;} {private local
+  }
+  decl {int _note;} {private local
+  }
   Function {make_window()} {open
   } {
     Fl_Window window {
@@ -1632,8 +1652,11 @@ while ( window->shown() )
 
 class Trigger {open : {public Fl_Dial}
 } {
-  Function {Trigger( int X, int Y, int W, int H, const char *L = 0 ) : Fl_Dial( X, Y, W, H, L )} {open
-  } {}
+  Function {Trigger( int X, int Y, int W, int H, const char *L ) : Fl_Dial( X, Y, W, H, L )} {open
+  } {
+    code {} {selected
+    }
+  }
   Function {handle( int m )} {open return_type int
   } {
     code {int r = 0;

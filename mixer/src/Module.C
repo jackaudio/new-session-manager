@@ -71,7 +71,6 @@ Module::Module ( ) : Fl_Group( 0, 0, 50, 50, "Unnamed" )
 
 Module::~Module ( )
 {
-
     if ( _editor )
     {
         delete _editor;
@@ -84,7 +83,15 @@ Module::~Module ( )
         audio_output[i].disconnect();
     for ( unsigned int i = 0; i < control_input.size(); ++i )
     {
-        control_input[i].disconnect();
+        /* destroy connected Controller_Module */
+        if ( control_input[i].connected() )
+        {
+            Module *o = (Module*)control_input[i].connected_port()->module();
+
+            control_input[i].disconnect();
+            delete o;
+        }
+
         control_input[i].destroy_osc_port();
     }
     for ( unsigned int i = 0; i < control_output.size(); ++i )
@@ -95,6 +102,9 @@ Module::~Module ( )
 
     control_input.clear();
     control_output.clear();
+
+    if ( parent() )
+        parent()->remove( this );
 }
 
 

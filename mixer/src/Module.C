@@ -297,8 +297,7 @@ Module::Port::osc_control_change_exact ( const char *path, const char *types, lo
 
     p->control_value( f );
 
-//    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
-    mixer->osc_endpoint->send( lo_message_get_source( msg ), path, f );
+    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, f );
 
     return 0;
 }
@@ -328,8 +327,7 @@ Module::Port::osc_control_change_cv ( const char *path, const char *types, lo_ar
     
     p->control_value( f );
 
-//    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, "ok" );
-    mixer->osc_endpoint->send( lo_message_get_source( msg ), path, f );
+    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, f );
 
     return 0;
 }

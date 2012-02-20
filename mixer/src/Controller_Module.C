@@ -71,14 +71,14 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
 
     end();
 
-//    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
+    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
 
     log_create();
 }
 
 Controller_Module::~Controller_Module ( )
 {
-//    Fl::remove_timeout( update_cb, this );
+    Fl::remove_timeout( update_cb, this );
 
     log_destroy();
 
@@ -420,8 +420,14 @@ Controller_Module::update_cb ( void )
 {
     Fl::repeat_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
 
+    /* we only need this in CV (JACK) mode, because with other forms
+     * of control the change happens in the GUI thread and we know it */
+    if ( mode() != CV )
+        return;
+
+    /* ensures that port value change callbacks are run */
     if ( control && control_output.size() > 0 && control_output[0].connected() )
-        handle_control_changed( NULL );
+        control_output[0].connected_port()->control_value( control_value );
 }
 
 void
@@ -543,6 +549,9 @@ Controller_Module::handle_control_changed ( Port *p )
 
     if ( p )
         control_value = p->control_value();
+
+    if ( control->value() == control_value )
+        return;
 
     /* if ( control->value() != control_value ) */
     /* { */

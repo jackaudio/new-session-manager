@@ -35,4 +35,6 @@ protected:
     int command_save ( char **out_msg );
 
     void command_active ( bool active );
+
+    int command_broadcast ( lo_message msg );
 };

@@ -121,6 +121,16 @@ namespace NSM
         }
     }
 
+    
+    void
+    Client::broadcast ( const char *path, const char *v1 )
+    {
+        if ( nsm_is_active )
+        {
+            lo_send_from( nsm_addr, _server, LO_TT_IMMEDIATE, "/nsm/server/broadcast", "ss", path, v1 );
+        }
+    }
+
     void
     Client::check ( int timeout )
     {
@@ -153,6 +163,8 @@ namespace NSM
         lo_server_add_method( _server, "/reply", "ssss", &Client::osc_announce_reply, this );
         lo_server_add_method( _server, "/nsm/client/open", "sss", &Client::osc_open, this );
         lo_server_add_method( _server, "/nsm/client/save", "", &Client::osc_save, this );
+        lo_server_add_method( _server, "/nsm/client/session_is_loaded", "", &Client::osc_session_is_loaded, this );
+        lo_server_add_method( _server, "/nsm/client/broadcast", NULL, &Client::osc_broadcast, this );
 
         return 0;
     }
@@ -170,13 +182,21 @@ namespace NSM
         lo_server_thread_add_method( _st, "/reply", "ssss", &Client::osc_announce_reply, this );
         lo_server_thread_add_method( _st, "/nsm/client/open", "sss", &Client::osc_open, this );
         lo_server_thread_add_method( _st, "/nsm/client/save", "", &Client::osc_save, this );
-
+        lo_server_thread_add_method( _st, "/nsm/client/session_is_loaded", "", &Client::osc_session_is_loaded, this );
+        lo_server_thread_add_method( _st, "/nsm/client/broadcast", NULL, &Client::osc_broadcast, this );
+        
         return 0;
     }
 
 /************************/
 /* OSC Message Handlers */
 /************************/
+
+    int
+    Client::osc_broadcast ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+    {
+        return ((NSM::Client*)user_data)->command_broadcast( msg );
+    }
 
     int
     Client::osc_save ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
@@ -244,7 +264,7 @@ namespace NSM
 
         return 0;
     }
-    
+
     int
     Client::osc_announce_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
     {

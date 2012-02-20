@@ -81,3 +81,27 @@ NSM_Client::command_open ( const char *name, const char *display_name, const cha
 
     return 0;
 }
+
+void
+NSM_Client::command_session_is_loaded ( void )
+{
+    MESSAGE( "NSM says session is loaded." );
+
+    timeline->discover_peers();
+}
+
+int
+NSM_Client::command_broadcast ( lo_message msg )
+{
+    int argc = lo_message_get_argc( msg );
+    lo_arg **argv = lo_message_get_argv( msg );
+
+    if ( argc > 1 && !strcmp( &argv[0]->s, "/non/finger" ) )
+    {
+        timeline->reply_to_finger( msg );
+        return 0;
+    }
+    else 
+        return -1;
+
+}

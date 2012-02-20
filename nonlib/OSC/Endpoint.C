@@ -372,15 +372,15 @@ namespace OSC
             switch ( ov->type() )
             {
                 case 'f':
-                    DMESSAGE( "Adding float %f", ((OSC_Float*)ov)->value() );
+//                    DMESSAGE( "Adding float %f", ((OSC_Float*)ov)->value() );
                     lo_message_add_float( m, ((OSC_Float*)ov)->value() );
                     break;
                 case 'i':
-                    DMESSAGE( "Adding int %i", ((OSC_Int*)ov)->value() );
+//                    DMESSAGE( "Adding int %i", ((OSC_Int*)ov)->value() );
                     lo_message_add_int32( m, ((OSC_Int*)ov)->value() );
                     break;
                 case 's':
-                    DMESSAGE( "Adding string %s", ((OSC_String*)ov)->value() );
+//                    DMESSAGE( "Adding string %s", ((OSC_String*)ov)->value() );
                     lo_message_add_string( m, ((OSC_String*)ov)->value() );
                     break;
                 default:
@@ -389,7 +389,7 @@ namespace OSC
             }
         }
 
-        DMESSAGE( "Path: %s", path );
+//        DMESSAGE( "Path: %s", path );
 
         lo_bundle b = lo_bundle_new( LO_TT_IMMEDIATE );
 

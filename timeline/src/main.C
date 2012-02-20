@@ -201,6 +201,8 @@ main ( int argc, char **argv )
 
         tle->run();
 
+        timeline->init_osc( NULL );
+
         char *nsm_url = getenv( "NSM_URL" );
 
         if ( nsm_url )

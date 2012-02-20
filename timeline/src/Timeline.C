@@ -1546,3 +1546,89 @@ Timeline::session_manager_name ( void )
 {
     return nsm->session_manager_name();
 }
+
+
+/*******/
+/* OSC */
+/*******/
+
+const double OSC_INTERVAL = 0.2f;
+
+void
+Timeline::check_osc ( void * v )
+{
+    ((Timeline*)v)->osc->check();
+    Fl::repeat_timeout( OSC_INTERVAL, &Timeline::check_osc, v );
+}
+
+int
+Timeline::init_osc ( const char *osc_port )
+{
+    osc = new OSC::Endpoint();
+    
+    if ( int r = osc->init( osc_port ) )
+        return r;
+    
+    osc->owner = this;
+    
+    printf( "OSC=%s\n", osc->url() );
+    
+    osc->add_method( "/reply", NULL, &Timeline::osc_reply, osc, "" );
+    
+//    osc->start();
+    
+    /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
+    Fl::add_timeout( OSC_INTERVAL, &Timeline::check_osc, this );
+
+    return 0;
+}
+
+int
+Timeline::osc_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+{
+    OSC_DMSG();
+
+    if ( argc >= 5 && !strcmp( &argv[0]->s, "/non/finger" ) )
+    {
+        const char *url = &argv[1]->s;
+        const char *name = &argv[2]->s;
+        const char *version = &argv[3]->s;
+        const char *id = &argv[4]->s;
+
+        MESSAGE( "Discovered OSC peer %s (%s) @ %s with ID \"%s\"", name, version, url, id );
+
+        return 0;
+    }
+    
+    return -1;
+}
+
+void
+Timeline::reply_to_finger ( lo_message msg )
+{
+    int argc = lo_message_get_argc( msg );
+    lo_arg **argv = lo_message_get_argv( msg );
+
+    if ( argc < 2 )
+        return;
+
+    lo_address reply = lo_address_new_from_url( &argv[1]->s );
+    
+    osc->send( reply,
+              "/reply",
+              "/non/finger",
+              osc->url(),
+              APP_NAME,
+              VERSION,
+              instance_name );
+
+    lo_address_free( reply );
+}
+
+
+void
+Timeline::discover_peers ( void )
+{
+    nsm->broadcast( "/non/finger", osc->url() );
+}
+

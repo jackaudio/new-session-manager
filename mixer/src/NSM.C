@@ -35,6 +35,22 @@ NSM_Client::NSM_Client ( )
 int command_open ( const char *name, const char *display_name, const char *client_id, char **out_msg );
 int command_save ( char **out_msg );
 
+int
+NSM_Client::command_broadcast ( lo_message msg )
+{
+    int argc = lo_message_get_argc( msg );
+    lo_arg **argv = lo_message_get_argv( msg );
+
+    if ( argc > 1 && !strcmp( &argv[0]->s, "/non/finger" ) )
+    {
+        mixer->reply_to_finger( msg );
+        return 0;
+    }
+    else 
+        return -1;
+
+}
+
 
 int
 NSM_Client::command_save ( char **out_msg )

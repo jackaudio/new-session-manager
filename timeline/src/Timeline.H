@@ -87,6 +87,8 @@ class Timeline : public Fl_Single_Window, public RWLock
 {
     static void draw_clip ( void * v, int X, int Y, int W, int H );
 
+    OSC::Endpoint *osc;
+
     int _old_xposition;
     int _old_yposition;
 
@@ -227,6 +229,18 @@ public:
     bool command_new ( const char *name, const char *display_name );
     bool command_save ( void );
     void command_quit ( void );
+
+    /* OSC */
+    
+    void discover_peers ( void );
+
+    static void check_osc ( void * v );
+    
+    int init_osc ( const char *osc_port );
+    
+    static int osc_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+    
+    void reply_to_finger ( lo_message msg );
 
 private:
 

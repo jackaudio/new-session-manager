@@ -33,4 +33,7 @@ protected:
 
     int command_open ( const char *name, const char *display_name, const char *client_id, char **out_msg );
     int command_save ( char **out_msg );
+    void command_session_is_loaded ( void );
+
+    int command_broadcast ( lo_message msg );
 };

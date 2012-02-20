@@ -92,27 +92,27 @@ OSC_HANDLER( add_strip )
    return 0;
 }
 
-OSC_HANDLER( finger )
-{
-    OSC_DMSG();
+void
+Mixer::reply_to_finger ( lo_message msg )
+{    
+    int argc = lo_message_get_argc( msg );
+    lo_arg **argv = lo_message_get_argv( msg );
 
-    OSC::Endpoint *ep = ((OSC::Endpoint*)user_data);
-  
-    lo_address reply = lo_address_new_from_url( &argv[0]->s );
-    
-    ep->send( reply,
-              "/reply",
-              path,
-              ep->url(),
-              APP_NAME,
-              VERSION,
-              instance_name );
+    if ( argc < 2 )
+        return;
 
-    lo_address_free( reply );
+    lo_address to = lo_address_new_from_url( &argv[1]->s );
 
-    return 0;
+    osc_endpoint->send( to,
+                        "/reply",
+                        "/non/finger",
+                        osc_endpoint->url(),
+                        APP_NAME,
+                        VERSION,
+                        instance_name );
+
+    lo_address_free( to );
 }
-
 
 
 
@@ -383,13 +383,14 @@ Mixer::init_osc ( const char *osc_port )
     
     printf( "OSC=%s\n", osc_endpoint->url() );
 
-    osc_endpoint->add_method( "/non/finger", "s", OSC_NAME( finger ), osc_endpoint, "" );
     osc_endpoint->add_method( "/non/mixer/add_strip", "", OSC_NAME( add_strip ), osc_endpoint, "" );
   
 //    osc_endpoint->start();
 
     /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
     Fl::add_timeout( OSC_INTERVAL, check_osc, this );
+
+    return 0;
 }
 
 void

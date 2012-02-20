@@ -65,7 +65,9 @@ namespace NSM
         void progress ( float f );
         void message( int priority, const char *msg );
         void announce ( const char *nsm_url, const char *appliction_name, const char *capabilities, const char *process_name );
-       
+
+        void broadcast ( const char *path, const char *v1 );
+
         /* init without threading */
         int init ( void );
         /* init with threading */
@@ -88,6 +90,9 @@ namespace NSM
 
         virtual void command_session_is_loaded ( void ) { }
 
+        /* invoked when an unrecognized message is received. Should return 0 if you handled it, -1 otherwise. */
+        virtual int command_broadcast ( lo_message msg ) { return -1; }
+
     private:
 
         /* osc handlers */
@@ -96,6 +101,7 @@ namespace NSM
         static int osc_announce_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_error ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_session_is_loaded ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+        static int osc_broadcast ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
 
     };
 };

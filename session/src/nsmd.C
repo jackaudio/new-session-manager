@@ -1451,15 +1451,23 @@ OSC_HANDLER( broadcast )
         }
     }
 
+    char *sender_url = lo_address_get_url( lo_message_get_source( msg ) );
 
     for ( std::list<Client*>::iterator i = client.begin();
           i != client.end();
           ++i )
     {
-        if ( (*i)->addr != lo_message_get_source( msg ) )
+        if ( ! (*i)->addr )
+            continue;
+
+        char *url = lo_address_get_url( (*i)->addr );
+
+        if ( strcmp( sender_url, url ) )
         {
-            osc_server->send( (*i)->addr, to_path, new_args );
+            osc_server->send( (*i)->addr, "/nsm/client/broadcast", new_args );
         }
+
+        free( url );
     }
 
     /* also relay to attached GUI so that the broadcast can be
@@ -1470,6 +1478,8 @@ OSC_HANDLER( broadcast )
 
         osc_server->send( gui_addr, path, new_args );
     }
+
+    free( sender_url );
 
     return 0;
 }

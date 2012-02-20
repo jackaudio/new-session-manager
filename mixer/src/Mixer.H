@@ -95,6 +95,8 @@ public:
 
     static void check_osc ( void * v );
 
+    void reply_to_finger ( lo_message msg );
+
     void announce ( const char *nash_url, const char *process_name );
 
     int init_osc ( const char* osc_port );

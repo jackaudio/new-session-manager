@@ -404,7 +404,9 @@ replies_still_pending ( )
     for ( std::list<Client*>::const_iterator i = client.begin();
           i != client.end();
           ++i )
-        if ( (*i)->active && (*i)->reply_pending() )
+        /* if ( (*i)->active && (*i)->reply_pending() ) */
+        /*     return true; */
+        if ( (*i)->reply_pending() )
             return true;
 
     return false;
@@ -427,9 +429,6 @@ generate_client_id ( Client *c )
 void
 wait_for_replies ( )
 {
-    if ( ! replies_still_pending() )
-        return;
-
     fprintf( stdout, "Waiting..." );
     fflush(stdout);
 
@@ -733,6 +732,8 @@ OSC_HANDLER( announce )
         
         osc_server->send( lo_message_get_source( msg ), "/nsm/client/open", client_project_path, session_name, full_client_id );
         
+        c->pending_command = COMMAND_OPEN;
+
         free( full_client_id );
         free( client_project_path );
     }
@@ -973,8 +974,10 @@ close_all_clients ( )
 void
 tell_client_session_is_loaded( Client *c )
 {
-    if ( c->active && !c->is_dumb_client() )
+    if ( c->active )
+//!c->is_dumb_client() )
     {
+        MESSAGE( "Telling client %s that session is loaded.", c->name );
         osc_server->send( c->addr, "/nsm/client/session_is_loaded" );
     }
 }
@@ -982,6 +985,8 @@ tell_client_session_is_loaded( Client *c )
 void
 tell_all_clients_session_is_loaded ( void )
 {
+    MESSAGE( "Telling all clients that session is loaded..." );
+
    for ( std::list<Client*>::iterator i = client.begin();
           i != client.end();
           ++i )
@@ -1088,6 +1093,15 @@ load_session_file ( const char * path )
             launch( (*i)->executable_path, (*i)->client_id );
         }
     }
+
+    /* this part is a little tricky... the clients need some time to
+     * send their 'announce' messages before we can send them 'open'
+     * and know that a reply is pending and we should continue waiting
+     * until they finish. wait_for_replies() must check for OSC
+     * messages immediately, even if no replies seem to be pending
+     * yet. */
+
+//    osc_server->wait( 3000 );
 
     wait_for_replies();
 

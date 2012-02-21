@@ -5,36 +5,44 @@
 
 -- Table Of Contents
 
-: Non Session Management API version 0.7
+: Non Session Management API version 0.8
 
-  The Non Session Management API is an API for session management used
-  by the various parts of the Non music production suite. It comprises
-  a simple OSC based protocol which can easily be implemented by other
-  applications. NSM provides robust session management, including
-  interactive features.
+  The Non Session Management API is used by the various components of
+  the Non audio production suite to allow any number of independent
+  programs to be managed together as part of a logical session (i.e. a
+  song). Thus, operations such as loading and saving are synchronized.
 
-  The Non project contains an implementation of the NSM server API
-  called `nsmd` which can be controlled by the `non-session-manager`
-  GUI, but the same server API can easily be implemented by other
-  session managers (such as LADISH).
+  The API comprises a simple Open Sound Control (OSC) based protocol,
+  along with some behavioral guidelines, which can easily be
+  implemented by various applications.
+
+  The Non project contains an program called `nsmd` which is an
+  implementation of the server side of the NSM API. `nsmd` is
+  controlled by the `non-session-manager` GUI. However, the same
+  server-side API can also be implemented by other session managers
+  (such as LADISH), although consistency and robustness will likely
+  suffer if non-NSM compliant clients are allowed to participate in a
+  session.
   
-  The only dependency for clients `liblo` (the OSC library), which
-  several Linux audio applications already link to or plan to link to
-  in the future.
+  The only dependency for client implementations `liblo` (the OSC
+  library), which several Linux audio applications already link to or
+  plan to link to in the future.
 
   The aim of this project is to thoroughly define the behavior
   required of clients. This is an area where other attempts at session
   management (LASH and JACK-Session) have failed. Often the difficulty
-  with these previous system been, not in implementing support for
-  them, but in attempting to interpret the confusing and ambiguous API
-  documentation. For this reason, all LASH support has been removed
-  from Non.
+  with these systems has been not in implementing support for them,
+  but in attempting to interpret the confusing, ambiguous, or
+  ill-conceived API documentation. For these reasons and more all
+  previous attempts at Linux audio session management protocols are
+  considered harmful.
 
-  You *WILL* see a lot of unambiguous language in this document. These
-  rules are meant to be followed and are non-negotiable. If an
-  application does not conform to this specification it should be
-  considered broken. Consistency across applications under session
-  management is very important for a good user experience.
+  You *WILL* see some unambiguous and emphatic language in this
+  document. For the good of the user, these rules are meant to be
+  followed and are non-negotiable. If an application does not conform
+  to this specification it should be considered broken. Consistency
+  across applications under session management is very important for a
+  good user experience.
 
 :: Client Behavior Under Session Management
 
@@ -50,7 +58,8 @@
   handshake described in the #(ref,NSM OSC Protocol) section). 
   
   In order to provide a consistent and predictable user experience, it
-  is important for applications to adhere to these guidelines.
+  is critically important for applications to adhere to these
+  guidelines.
 
 ::: New
 
@@ -60,11 +69,11 @@
 
 ::: Open
 
-  This option should be disabled. 
+  This option *MUST* be disabled. 
 
   The application may, however, elect to implement an option called
   'Import into Session', creates a copy of a file\/project which is
-  then saved in the session path provided by NSM.
+  then saved at the session path provided by NSM.
 
 ::: Save
 
@@ -72,11 +81,11 @@
   file\/project as established by the NSM `open` message.
 
   *UNDER NO CIRCUMSTANCES* should this option present the user with a
-  choice of where to save the file!
+  choice of where to save the file.
 
 ::: Save As
 
-  This option should be disabled.
+  This option *MUST* be disabled.
 
   The application may, however, elect to implement an option called
   'Export from Session', which creates a copy of the current
@@ -85,7 +94,7 @@
 
 ::: Close (as distinguished from Quit or Exit)
   
-  This option should be disabled, unless its meaning is to disconnect
+  This option *MUST* be disabled unless its meaning is to disconnect
   the application from session management.
 
 ::: Quit or Exit
@@ -97,14 +106,14 @@
 
   All message parameters are *REQUIRED*. All messages *MUST* be sent
   from the same socket as the `announce` message, using the
-  `lo\_send\_from` method of liblo (the server uses the return
-  addresses to distinguish between clients).
+  `lo\_send\_from` method of liblo or its equivalent, as the server uses
+  the return addresses to distinguish between clients.
 
 ::: Establishing a Connection
 
 :::: Announce
 
-  When started clients *MUST* check the environment for the value of
+  At launch, the client *MUST* check the environment for the value of
   `NSM\_URL`. If present, the client *MUST* send the following message
   to the provided address as soon as it is ready to respond to the
   `\/nsm\/client\/open` event:
@@ -114,8 +123,9 @@
   If `NSM\_URL` is undefined, invalid, or unreachable, then the client
   should proceed assuming that session management is unavailable.
 
-  `api\_version\_major` and `api\_version\_minor` must be the two parts of
-  the version number of the NSM API as defined by this document.
+  `api\_version\_major` and `api\_version\_minor` must be the two
+  parts of the version number of the NSM API as defined by this
+  document.
 
   Note that if the application intends to register JACK clients,
   `application\_name` *MUST* be the same as the name that would
@@ -124,7 +134,10 @@
   NOT* register their JACK clients until receiving an `open` message;
   the `open` message will provide a unique client name prefix suitable
   for passing to JACK. This is probably the most complex requirement
-  of the NSM API, but it isn't difficult to implement.
+  of the NSM API, but it isn't difficult to implement, especially if
+  the application simply wishes to delay its initialization process
+  for up to one second while awaiting the `announce` reply and
+  subsequent `open` message.
 
   `capabilities` *MUST* be a string containing a colon separated list
   of the special capabilities the client
@@ -135,19 +148,20 @@
 [[ switch, client is capable of responding to multiple `open` messages without restarting
 [[ dirty, client knows when it has unsaved changes
 [[ progress, client can send progress updates during time-consuming operations
-[[ status, client can send textual status updates 
+[[ message, client can send textual status updates 
 
 :::: Response
 
-  The server will respond to the client's `announce` with the following message:
+  The server will respond to the client's `announce` message with the
+  following message:
 
 > /reply "/nsm/server/announce" s:message s:name_of_session_manager s:capabilities
 
   `message` is a welcome message.
 
   The value of `name\_of\_session\_manager` will depend on the
-  implementation of the NSM server. It might say "Non Session Manager",
-  or it might say "LADISH".
+  implementation of the NSM server. It might say "Non Session
+  Manager", or it might say "LADISH". This is for display to the user.
 
   `capabilities` will be a string containing a colon separated list of
   special server capabilities.
@@ -159,8 +173,8 @@
 [[ server_control, client-to-server control
 
   A client should not consider itself to be under session management
-  until it receives this response (the Non programs activate their
-  "SM" blinkers at this time.)
+  until it receives this response. For example, the Non applications
+  activate their "SM" blinkers at this time.
 
   If there is an error, a reply of the following form will be sent to
   the client:
@@ -202,36 +216,39 @@
   There is no message for this. Clients will receive the Unix SIGTERM
   signal and *MUST* close cleanly *IMMEDIATELY*, without displaying
   any kind of dialog to the user and regardless of whether or not
-  unsaved changes would be lost (when a session is closed the
+  unsaved changes would be lost. When a session is closed the
   application will receive this signal soon after having responded to
-  a `save` message).
+  a `save` message.
 
 :::: Open 
 
-> /nsm/client/open s:path_to_instance_specific_project s:client_id
+> /nsm/client/open s:path_to_instance_specific_project s:display_name s:client_id
 
-  The client *MUST* open an existing project, or create new one if one
-  doesn't already exist, at `path\_to\_instance_specific\_project`
+  `path\_to\_instance_specific\_project` is a path name assigned to
+  the client for storing its project data.
 
-  If the path provided doesn't exist, then the client *MUST*
-  immediately create and open a new file\/project at the specified
-  path (whether that means creating a single file or a project
-  directory).
-
-  No file or directory will be created at the specified path by the
-  server. It is up to the client to create what it needs.
-
-  The client may append to the path, creating a subdirectory,
+  The client may append to the path, creating a sub-directory,
   e.g. '/song.foo' or simply append the client's native file extension
   (e.g. '.non' or '.XML'). The same transformation *MUST* be applied
   to the name when opening an existing project, as NSM will only
   provide the instance specific part of the path.
 
-  For clients which *HAVE NOT* specified the 'switch' capability, the
-  `open` message will only be delivered once, immediately after the
-  'announce' response.
+  If a project exists at the path, the client *MUST* immediately open
+  it.
 
-  For client which *HAVE* specified the `:switch:` capability, the
+  If a project does not exist at the path, then the client *MUST*
+  immediately create and open a new one at the specified path or, for
+  clients which hold all their state in memory, store the path for
+  later use when responding to the `save` message.
+
+  No file or directory will be created at the specified path by the
+  server. It is up to the client to create what it needs.
+
+  For clients which *HAVE NOT* specified the `:switch:` capability,
+  the `open` message will only be delivered once, immediately
+  following the `announce` response.
+
+  For clients which *HAVE* specified the `:switch:` capability, the
   client *MUST* immediately switch to the specified project or create
   a new one if it doesn't exist.
 
@@ -242,9 +259,9 @@
   If the user the is allowed to run two or more instances of the
   application simultaneously (that is to say, there is no technical
   limitation preventing them from doing so, even if it doesn't make
-  sense to the author), then such an application *MUST* prepend the
+  sense to the author), then such an application *MUST PRE-PEND* the
   provided `client\_id` string to any names it registers with common
-  subsystems (e.g. JACK client names). This ensures that the multiple
+  subsystems (e.g. JACK client names). This ensures that multiple
   instances of the same application can be restored in any order
   without scrambling the JACK connections or causing other
   conflicts. The provided `client\_id` will be a concatenation of the
@@ -252,7 +269,7 @@
   message and a unique identifier. Therefore, applications which
   create single JACK clients can use the value of `client\_id` directly
   as their JACK client name. Applications which register multiple JACK
-  clients (e.g. Non-Mixer) *MUST* prepend `client_id` value to the
+  clients (e.g. Non-Mixer) *MUST PRE-PEND* `client\_id` value to the
   client names they register with JACK and the application determined
   part *MUST* be unique for that (JACK) client.
 
@@ -260,7 +277,15 @@
 
 > $CLIENT_ID/track-1
 
-  A response is *REQUIRED* *AFTER* the load\/new operation has been
+  Note that this means that the application *MUST NOT* register with
+  JACK (or any other subsystem requiring unique names) until it
+  receives an `open` message from NSM. Likewise, applications with the
+  `:switch:` capability should close their JACK clients and re-create
+  them with using the new `client\_id`. Re-registering is necessary
+  because the JACK API does currently support renaming existing
+  clients, although this is a sorely needed addition.
+
+  A response is *REQUIRED* *AFTER* the open operation has been
   completed.  Ongoing progress may be indicated by sending messages to
   `\/nsm\/client\/progress`.
 
@@ -289,7 +314,11 @@
   The client *MUST* immediately save the current application specific
   project data to the project path previously established in the
   'open' message. *UNDER NO CIRCUMSTANCES* should a dialog be
-  displayed to the user (giving a choice of where to save, etc.)
+  displayed to the user (giving a choice of where to save, etc.) 
+  
+  This message will only be delivered after a previous `open` message,
+  and may be sent any number of times within the course of a session
+  (including zero, if the user aborts the session).
 
 ::::: Response
 
@@ -312,7 +341,7 @@
 :::: Session is Loaded
  
   Accepting this message is optional. The intent is to signal to
-  clients which may have some interdependency (say, peer to peer OSC
+  clients which may have some interdependence (say, peer to peer OSC
   connections) that the session is fully loaded and all their peers
   are available.
 
@@ -341,7 +370,7 @@
   The server will not send a response to these messages, but will
   relay the information to the user.
 
-  Note that, even when using the `progress` feature, the final
+  Note that even when using the `progress` feature, the final
   response to the `save` or `open` message is still *REQUIRED*.
 
   Clients which intend to send `progress` messages should include
@@ -365,9 +394,9 @@
 > /nsm/client/message i:priority s:message
 
   Clients may send miscellaneous status updates to the server for
-  possible display to the user. This may simply be chatter that is normally
-  written to the console. `priority` should be a number from 0 to 3, 3
-  being the most important.
+  possible display to the user. This may simply be chatter that is
+  normally written to the console. `priority` should be a number from
+  0 to 3, 3 being the most important.
 
   Clients which have this capability should include `:message:` in their
   `announce` capability string.
@@ -376,20 +405,20 @@
 
 // Error Code Definitions
 [[ Symbolic Name, Integer Value
-[[ ERR_GENERAL, -1
+[[ ERR_GENERAL,          -1
 [[ ERR_INCOMPATIBLE_API, -2
 [[ ERR_BLACKLISTED,      -3
 [[ ERR_LAUNCH_FAILED,    -4
 [[ ERR_NO_SUCH_FILE,     -5
-[[ ERR_NO_SESSION_OPEN, -6
+[[ ERR_NO_SESSION_OPEN,  -6
 [[ ERR_UNSAVED_CHANGES,  -7
-[[ ERR_NOT_NOW, -8
-[[ ERR_BAD_PROJECT, -9
-[[ ERR_CREATE_FAILED, -10
+[[ ERR_NOT_NOW,          -8
+[[ ERR_BAD_PROJECT,      -9
+[[ ERR_CREATE_FAILED,    -10
 
 ::: Client to Server Control
 
-  If the server publishes the `server\_control` capability, then
+  If the server publishes the `:server\_control:` capability, then
   clients can also initiate action by the server. For example, a
   client might implement a 'Save All' option which sends a
   `\/nsm\/server\/save` message to the server, rather than requiring
@@ -398,12 +427,12 @@
 
 ::: Server Control API
 
-  The session manager not only manages clients via OSC, but it is itself
-  controlled via OSC messages. The server responds to the following
-  messages.
+  The session manager not only manages clients via OSC, but it is
+  itself controlled via OSC messages. The server responds to the
+  following messages.
 
-  All of the following messages will be responded to back to the sender's address 
-  with one of the two following messages:
+  All of the following messages will be responded to back to the
+  sender's address with one of the two following messages:
 
 > /reply s:path s:message
 
@@ -454,12 +483,6 @@
 = /nsm/server/list 
   Lists available projects. One `\/reply` message will be sent for each existing project.
 
-
-
-# = /nsm/server/client/list
-#   Lists clients in the current session, their client IDs and statuses
-# = /nsm/server/ve
-
 :::: Client to Client Communication
 
   If the server includes `:broadcast:` in its capability string, then
@@ -471,11 +494,10 @@
 
   The format of this message is as follows:
 
-> /nsm/server/broadcast s:path [other parameters...]
+> /nsm/server/broadcast [any parameters...]
 
   The message will then be relayed to all clients in the session at
-  the path given in the `path` parameter and with the other parameters
-  shifted forward by one.
+  the path `\/nsm\/client\/broadcast`.
 
   For example the message:
 
@@ -483,10 +505,12 @@
 
   Would broadcast the following message to all clients in the session
   (except for the sender), some of which might respond to the message
-  by updating their own tempo maps.
+  by updating their own tempo maps. Here the string
+  `\/tempomap\/update` is not an OSC path but merely a name-space
+  qualifier by which the receivers can filter messages.
 
->  /tempomap/update "0,120,4/4:12351234,240,4/4"
+>  /nsm/client/broadcast /tempomap/update "0,120,4/4:12351234,240,4/4"
 
-  Clients may use this feature to establish peer to peer OSC
+  Clients might use this feature to establish peer to peer OSC
   communication with symbolic names without having to remember the OSC
-  URLs of peers.
+  ports of peers across sessions.

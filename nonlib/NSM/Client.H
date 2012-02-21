@@ -72,7 +72,7 @@ namespace NSM
         int init_thread ( void );
         
         /* call this periodically to check for new messages */
-        void check ( void );
+        void check ( int timeout = 0 );
 
         /* or call these to start and stop a thread (must do your own locking in handler!) */
         void start ( void );

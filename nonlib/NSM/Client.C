@@ -122,9 +122,10 @@ namespace NSM
     }
 
     void
-    Client::check (  )
+    Client::check ( int timeout )
     {
-        lo_server_recv_noblock( _server, 0 );
+        if ( lo_server_wait( _server, timeout ) )
+            while ( lo_server_recv_noblock( _server, 0 ) ) {}
     }
 
     void

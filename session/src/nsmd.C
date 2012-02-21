@@ -225,47 +225,55 @@ void clear_clients ( void )
     }
 }
 
+
+void
+handle_client_process_death ( int pid )
+{
+    Client *c = get_client_by_pid( (int)pid );
+        
+    if ( c )
+    {
+        MESSAGE( "Client %s died.", c->name );
+
+        if ( c->pending_command == COMMAND_KILL ||
+             c->pending_command == COMMAND_QUIT )
+        {
+            c->dead_because_we_said = true;
+        }
+
+        c->pending_command = COMMAND_NONE;
+            
+        if ( gui_is_active )
+        {
+            if ( ! c->dead_because_we_said )
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
+            else
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
+        }
+
+        c->active = false;
+        c->pid = 0;
+
+        if ( c->dead_because_we_said )
+        {
+            client.remove( c );
+            delete c;
+        }
+    }
+}
+
+
 void handle_sigchld ( )
 {
     for ( ;; )
     {
         int status;
         pid_t pid = waitpid(-1, &status, WNOHANG);
-        if (pid <= 0) {
+
+        if (pid <= 0) 
             break;
-        }
         
-        Client *c = get_client_by_pid( (int)pid );
-        
-        if ( c )
-        {
-            MESSAGE( "Client %s died.", c->name );
-
-            if ( c->pending_command == COMMAND_KILL ||
-                 c->pending_command == COMMAND_QUIT )
-            {
-                c->dead_because_we_said = true;
-            }
-
-            c->pending_command = COMMAND_NONE;
-            
-            if ( gui_is_active )
-            {
-                if ( ! c->dead_because_we_said )
-                    osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
-                else
-                    osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
-            }
-
-            c->active = false;
-            c->pid = 0;
-
-            if ( c->dead_because_we_said )
-            {
-                client.remove( c );
-                delete c;
-            }
-        }
+        handle_client_process_death( pid );
     }
 }
 
@@ -576,6 +584,39 @@ purge_inactive_clients ( )
     }
 }
 
+bool
+process_is_running ( int pid )
+{
+    if ( 0 == kill( pid, 0 ) )
+    {
+        return true;
+    }
+    else if ( ESRCH == errno )
+    {
+        return false;
+    }
+
+    return false;
+}
+
+void
+purge_dead_clients ( )
+{
+    std::list<Client*> tmp( client );
+
+    for ( std::list<Client*>::const_iterator i = tmp.begin();
+          i != tmp.end();
+          ++i )
+    {
+        const Client *c = *i;
+        if ( c->pid )
+        {
+            if ( ! process_is_running( c->pid ) )
+                handle_client_process_death( c->pid );
+        }
+    }
+}
+
 /************************/
 /* OSC Message Handlers */
 /************************/
@@ -827,6 +868,8 @@ wait_for_killed_clients_to_die ( )
                 handle_sigchld();
         }
         
+        purge_dead_clients();
+
         usleep( 200 * 1000 );
     }
 
@@ -1748,6 +1791,8 @@ int main(int argc, char *argv[])
         }
         
         osc_server->wait( 1000 );
+
+        purge_dead_clients();
     }
     
 //    osc_server->run();

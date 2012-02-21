@@ -218,14 +218,14 @@ Module::Port::generate_osc_path ()
 
     char *path = NULL;
 
-    // /mixer/strip/STRIPNAME/control/MODULENAME/CONTROLNAME
+    // /mixer/STRIPNAME/MODULENAME/CONTROLNAME
 
     int n = module()->chain()->get_module_instance_number( module() );
 
     if ( n > 0 )        
-        asprintf( &path, "/non/mixer/strip/%s/control/%s.%i/%s", module()->chain()->name(), p->module()->label(), n, p->name() );
+        asprintf( &path, "/mixer/%s/%s.%i/%s", module()->chain()->name(), p->module()->label(), n, p->name() );
     else
-        asprintf( &path, "/non/mixer/strip/%s/control/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
+        asprintf( &path, "/mixer/%s/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
 
     // Hack to keep spaces out of OSC URL... Probably need to handle other special characters similarly.
     for ( int i = strlen( path ); i--; )
@@ -240,36 +240,34 @@ Module::Port::generate_osc_path ()
 void
 Module::Port::change_osc_path ( char *path )
 {
-    if ( _osc_path )
+    if ( _scaled_signal && _unscaled_signal )
     {
-	mixer->osc_endpoint->del_method( _osc_path, "f" );
-	mixer->osc_endpoint->del_method( _osc_path_unscaled, "f" );
+	mixer->osc_endpoint->del_signal( _scaled_signal );
+	mixer->osc_endpoint->del_signal( _unscaled_signal );
 
-	free( _osc_path );
-        free( _osc_path_unscaled );
-       
-	_osc_path = NULL;
-        _osc_path_unscaled = NULL;
+	_scaled_signal = _unscaled_signal = NULL;
     }
 
     if ( path )
     {
-        _osc_path_unscaled = NULL;
-	_osc_path = path;
+        char *scaled_path = path;
+        char *unscaled_path = NULL;
 
-        asprintf( &_osc_path_unscaled, "%s/unscaled", path );
+        asprintf( &unscaled_path, "%s/unscaled", path );
 
-	mixer->osc_endpoint->add_method( _osc_path, "f", &Module::Port::osc_control_change_cv, this, "value" );
+        _scaled_signal = mixer->osc_endpoint->add_signal( scaled_path, OSC::Signal::Input, &Module::Port::osc_control_change_cv, this );
 
-	mixer->osc_endpoint->add_method( _osc_path_unscaled, "f", &Module::Port::osc_control_change_exact, this, "value" );
+        _unscaled_signal = mixer->osc_endpoint->add_signal( unscaled_path, OSC::Signal::Input, &Module::Port::osc_control_change_exact, this );
+
+        free( unscaled_path );
+        free( scaled_path );
 
         if ( hints.ranged )
         {
-            mixer->osc_endpoint->set_parameter_limits( _osc_path_unscaled, "f", 0,
-                                                       hints.minimum,
-                                                       hints.maximum,
-                                                       hints.default_value );
-        
+            _unscaled_signal->parameter_limits( 
+                                                hints.minimum,
+                                                hints.maximum,
+                                                hints.default_value );
         }
         
         float scaled_default = 0.5f;
@@ -277,25 +275,25 @@ Module::Port::change_osc_path ( char *path )
         if ( hints.ranged )
         {
             float scale = hints.maximum - hints.minimum;
-//        float offset = hints.minimum;
+            float offset = hints.minimum;
             
-            scaled_default = ( hints.default_value / scale );
+            scaled_default = ( hints.default_value - offset ) / scale;
         }
    
-        mixer->osc_endpoint->set_parameter_limits( _osc_path, "f", 0,
-                                                   0.0f,
-                                                   1.0f,
-                                                   scaled_default );
+        _scaled_signal->parameter_limits(
+                                          0.0f,
+                                          1.0f,
+                                          scaled_default );
     }
 }
 
 
 int 
-Module::Port::osc_control_change_exact ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+Module::Port::osc_control_change_exact ( float v, void *user_data )
 {
     Module::Port *p = (Module::Port*)user_data;
 
-    float f = argv[0]->f;
+    float f = v;
 
     if ( p->hints.ranged )
     {
@@ -307,17 +305,17 @@ Module::Port::osc_control_change_exact ( const char *path, const char *types, lo
 
     p->control_value( f );
 
-    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, f );
+//    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, f );
 
     return 0;
 }
 
 int 
-Module::Port::osc_control_change_cv ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+Module::Port::osc_control_change_cv ( float v, void *user_data )
 {
     Module::Port *p = (Module::Port*)user_data;
 
-    float f = argv[0]->f;
+    float f = v;
 
     // clamp value to control voltage range.
     if ( f > 1.0 )
@@ -337,7 +335,7 @@ Module::Port::osc_control_change_cv ( const char *path, const char *types, lo_ar
     
     p->control_value( f );
 
-    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, f );
+//    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, f );
 
     return 0;
 }

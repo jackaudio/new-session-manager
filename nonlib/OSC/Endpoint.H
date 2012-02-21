@@ -23,11 +23,10 @@
 #include "Thread.H"
 #include <list>
 #include <stdlib.h>
+#include <string.h>
 
 namespace OSC
 {
-    typedef void * method_handle;
-
     class OSC_Value
     {
 
@@ -107,83 +106,189 @@ namespace OSC
             }
     };
 
+    struct Parameter_Limits
+    {
+        float min;
+        float max;
+        float default_value;
+    };
+
+    class Endpoint;
+    class Signal;
+    struct Peer
+    {
+     
+        bool _scanning;
+
+        char *name;
+        lo_address addr;
+
+        std::list<Signal*> _signals;
+    };
+
+    struct Target
+    {
+        Peer *peer;
+//        char *path;
+        int signal_id;
+        float value;
+    };
+
+    typedef int (*signal_handler) ( float value, void *user_data );
+
+    class Signal
+    {
+        static int next_id;
+
+    public:
+
+        enum Direction {
+            Input,
+            Output,
+            Bidirectional
+        };
+
+    private:
+
+        Endpoint *_endpoint;
+
+        int _id;
+
+        char *_path;
+        char *_documentation;
+        
+        float _value;
+
+        std::list<Target*> _outgoing;
+
+        Direction _direction;
+
+        /* FIXME:
+           In order to support signal mixing, the receiver must track
+           each connected signal channel separately, and add the
+           values together before invoking the handler. 
+         */
+        std::list<Target*> _incoming;
+
+        signal_handler _handler;
+        void *_user_data;
+        
+    public:
+
+        Parameter_Limits _parameter_limits;
+
+        Signal ( const char *path, Direction dir )
+            { 
+                _direction = dir;
+                _path = strdup( path );
+                _id = ++next_id;
+                _value = 0.0f;
+            }
+
+        ~Signal ( )
+            {
+                free( _path );
+            }
+
+        bool connected ( void ) { return _outgoing.size() + _incoming.size(); }
+
+        int id ( void ) { return _id; }
+
+        Direction direction ( void ) { return _direction; }
+
+        void parameter_limits ( float min, float max, float default_value )
+            {
+                _parameter_limits.min = min;
+                _parameter_limits.max = max;
+                _parameter_limits.default_value = default_value;
+                _value = default_value;
+            }
+
+        Parameter_Limits& parameter_limits ( void ) { return _parameter_limits; }
+
+        const char *path ( void ) { return _path; }
+
+        /* publishes value to targets */
+        void value ( float v );
+        /* get current value */
+        float value ( void ) { return _value; }
+
+        friend class Endpoint;
+    };
+
+    class Method
+    {
+        char *_path;
+        char *_typespec;
+        char *_documentation;
+        struct Parameter_Limits *_parameter_limits;
+
+    public:
+
+        const char *path ( void ) { return _path; }
+        const char *typespec ( void ) { return _typespec; }
+
+        Method ( );
+        ~Method ( );
+
+        friend class Endpoint;
+    };
+
+
     class Endpoint
     {
         static void error_handler(int num, const char *msg, const char *path);
 
 
+        static int osc_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+
+        static int osc_signal_lister ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_generic ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
-        static int osc_query_parameters ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+        static int osc_sig_handler ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
 
         Thread _thread;
 
 //        lo_server_thread _st;
         lo_server _server;
 
-
-        struct Parameter_Limits
-        {
-            float min;
-            float max;
-            float default_value;
-        };
-        
-        struct Method_Data
-        {
-            char *path;
-            char *typespec;
-            char *documentation;
-            struct Parameter_Limits *parameter_limits;
-            std::list<lo_address> subscribers;
-
-            Method_Data ( )
-                {
-                    path = typespec = documentation = 0;
-                    parameter_limits = 0;
-                }
-            
-            ~Method_Data ( )
-                {
-                    if ( path )
-                        free( path );
-                    if ( typespec )
-                        free( typespec );
-                    if ( parameter_limits )
-                        free( parameter_limits );
-                    
-                    for ( std::list<lo_address>::iterator i = subscribers.begin();
-                          i != subscribers.end();
-                          ++i )
-                    {
-                        lo_address_free( *i );
-                    }
-                    
-                    subscribers.clear();
-                }
-        };
-
-        std::list<Method_Data*> _methods;
+        std::list<Peer*> _peers;
+        std::list<Signal*> _signals;
+        std::list<Method*> _methods;
 
         static void *osc_thread ( void *arg );
         void osc_thread ( void );
             
+        OSC::Signal *find_signal_by_id ( int id );
+
+        Peer *find_peer_by_name ( const char *name );
+        Peer *find_peer_by_address ( lo_address addr );
+        static bool address_matches ( lo_address addr1, lo_address addr2 );
+
+        static Target *find_target_by_peer_address ( std::list<Target*> *l, lo_address addr );
+
     public:
+
+        void list_peers ( void (*callback) (const char *, const char *, int, void * ), void *v );
 
         int init ( const char *port = 0 );
         Endpoint ( );
 
         ~Endpoint ( );
 
-        char *get_paths ( const char *prefix );
-        method_handle add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data, const char *argument_description );
+        bool connect_signal( OSC::Signal *s, const char *peer_name, int signal_id );
+
+
+        Signal *add_signal ( const char *path, Signal::Direction dir, signal_handler handler, void *user_data );
+        Method *add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data, const char *argument_description );
         void del_method ( const char *path, const char *typespec );
-        void del_method ( const method_handle );
+        void del_method ( Method* method );
+        void del_signal ( Signal *signal );
         void start ( void );
         void stop ( void );
         int port ( void ) const;
         char * url ( void ) const;
-        void set_parameter_limits ( const char *path, const char *typespec, int index, float min, float max, float default_value );
 
+        void scan_peer ( const char *name, const char *url );
 
         void check ( void ) const;
         void wait ( int timeout ) const;
@@ -197,8 +302,11 @@ namespace OSC
         int send ( lo_address to, const char *path, double v );
         int send ( lo_address to, const char *path, int v );
         int send ( lo_address to, const char *path, long v );
-        int send ( lo_address to, const char *path, const char * v1, float v2 );
+        int send ( lo_address to, const char *path, int v1, int v2 );
+        int send ( lo_address to, const char *path, int v1, float v2 );
         int send ( lo_address to, const char *path, const char *v );
+        int send ( lo_address to, const char *path, const char *v1, float v2 );
+        int send ( lo_address to, const char *path, const char *v1, int v2, int v3 );
         int send ( lo_address to, const char *path, const char *v1, const char *v2 );
         int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3 );
         int send ( lo_address to, const char *path, const char *v1, int v2, int v3, int v4 );
@@ -215,6 +323,8 @@ namespace OSC
         int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, const char *v4 );
 
         int send ( lo_address to, const char *path, lo_message msg );
+
+        int send ( lo_address to, const char *path, const char *v1, const char *v2, int v3, float v4, float v5, float v6 );
 
         // can be used to point back to owning object.
         void *owner;

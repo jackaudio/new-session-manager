@@ -54,7 +54,7 @@ sigmoid_interpolate ( float y1, float y2, float mu )
 nframes_t
 Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
 {
-    THREAD_ASSERT( RT );
+    //  THREAD_ASSERT( RT );
 
     Control_Point *p2, *p1 = (Control_Point*)&_widgets.front();
 

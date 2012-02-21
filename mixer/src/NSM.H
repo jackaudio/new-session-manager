@@ -36,5 +36,5 @@ protected:
 
     void command_active ( bool active );
 
-    int command_broadcast ( lo_message msg );
+    int command_broadcast ( const char *path, lo_message msg );
 };

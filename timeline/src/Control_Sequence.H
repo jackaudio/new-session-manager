@@ -26,6 +26,7 @@
 #include "JACK/Port.H"
 
 // class JACK::Port;
+#include "OSC/Endpoint.H"
 
 class Control_Sequence : public Sequence
 {
@@ -41,6 +42,8 @@ private:
 
     JACK::Port *_output;
 
+    OSC::Signal *_osc_output;
+
     bool _highlighted;
 
     curve_type_e _type;
@@ -48,6 +51,13 @@ private:
     void init ( void );
 
     void draw_curve ( bool flip, bool filled );
+
+    static void menu_cb ( Fl_Widget *w, void *v );
+    void menu_cb ( const Fl_Menu_ *m );
+
+    static void process_osc ( void *v );
+    void process_osc ( void );
+    
 
 protected:
 

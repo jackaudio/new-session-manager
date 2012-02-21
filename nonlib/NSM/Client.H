@@ -66,7 +66,7 @@ namespace NSM
         void message( int priority, const char *msg );
         void announce ( const char *nsm_url, const char *appliction_name, const char *capabilities, const char *process_name );
 
-        void broadcast ( const char *path, const char *v1 );
+        void broadcast ( lo_message msg );
 
         /* init without threading */
         int init ( void );
@@ -91,7 +91,7 @@ namespace NSM
         virtual void command_session_is_loaded ( void ) { }
 
         /* invoked when an unrecognized message is received. Should return 0 if you handled it, -1 otherwise. */
-        virtual int command_broadcast ( lo_message msg ) { return -1; }
+        virtual int command_broadcast ( const char *path, lo_message msg ) { return -1; }
 
     private:
 

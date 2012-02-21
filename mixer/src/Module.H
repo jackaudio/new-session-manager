@@ -110,8 +110,8 @@ public:
                 }
         };
 
-    static int osc_control_change_exact ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
-    static int osc_control_change_cv ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+        static int osc_control_change_exact ( float v, void *user_data );
+        static int osc_control_change_cv ( float v, void *user_data );
 
         Hints hints;
 
@@ -124,8 +124,8 @@ public:
                 _nframes = 0;
                 _connected = 0;
                 _module = module;
-                _osc_path = 0;
-                _osc_path_unscaled = 0;
+                _scaled_signal = 0;
+                _unscaled_signal = 0;
             }
 
         Port ( const Port& p )
@@ -138,8 +138,8 @@ public:
                 _connected = p._connected;
                 _module = p._module;
                 hints = p.hints;
-                _osc_path = p._osc_path;
-                _osc_path_unscaled = p._osc_path_unscaled;
+                _scaled_signal = p._scaled_signal;
+                _unscaled_signal = p._unscaled_signal;
             }
 
         virtual ~Port ( )
@@ -160,7 +160,7 @@ public:
 
         const char *osc_path ( )
             {
-                return _osc_path;
+                return _scaled_signal->path();
             }
 
         void update_osc_port ( )
@@ -246,8 +246,8 @@ public:
         nframes_t _nframes;
         Module *_module;
 
-        char *_osc_path;
-        char *_osc_path_unscaled;
+        OSC::Signal *_scaled_signal;
+        OSC::Signal *_unscaled_signal;
     };
 
     void bbox ( int &X, int &Y, int &W, int &H )

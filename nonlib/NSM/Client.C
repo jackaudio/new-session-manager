@@ -123,11 +123,11 @@ namespace NSM
 
     
     void
-    Client::broadcast ( const char *path, const char *v1 )
+    Client::broadcast ( lo_message msg )
     {
         if ( nsm_is_active )
         {
-            lo_send_from( nsm_addr, _server, LO_TT_IMMEDIATE, "/nsm/server/broadcast", "ss", path, v1 );
+            lo_send_message_from( nsm_addr, _server, "/nsm/server/broadcast", msg );
         }
     }
 
@@ -164,7 +164,7 @@ namespace NSM
         lo_server_add_method( _server, "/nsm/client/open", "sss", &Client::osc_open, this );
         lo_server_add_method( _server, "/nsm/client/save", "", &Client::osc_save, this );
         lo_server_add_method( _server, "/nsm/client/session_is_loaded", "", &Client::osc_session_is_loaded, this );
-        lo_server_add_method( _server, "/nsm/client/broadcast", NULL, &Client::osc_broadcast, this );
+        lo_server_add_method( _server, NULL, NULL, &Client::osc_broadcast, this );
 
         return 0;
     }
@@ -183,7 +183,7 @@ namespace NSM
         lo_server_thread_add_method( _st, "/nsm/client/open", "sss", &Client::osc_open, this );
         lo_server_thread_add_method( _st, "/nsm/client/save", "", &Client::osc_save, this );
         lo_server_thread_add_method( _st, "/nsm/client/session_is_loaded", "", &Client::osc_session_is_loaded, this );
-        lo_server_thread_add_method( _st, "/nsm/client/broadcast", NULL, &Client::osc_broadcast, this );
+        lo_server_thread_add_method( _st, NULL, NULL, &Client::osc_broadcast, this );
         
         return 0;
     }
@@ -195,7 +195,7 @@ namespace NSM
     int
     Client::osc_broadcast ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
     {
-        return ((NSM::Client*)user_data)->command_broadcast( msg );
+        return ((NSM::Client*)user_data)->command_broadcast( path, msg );
     }
 
     int

@@ -87,8 +87,7 @@ class Timeline : public Fl_Single_Window, public RWLock
 {
     static void draw_clip ( void * v, int X, int Y, int W, int H );
 
-    OSC::Endpoint *osc;
-
+ 
     int _old_xposition;
     int _old_yposition;
 
@@ -119,6 +118,8 @@ class Timeline : public Fl_Single_Window, public RWLock
     std::list <const Sequence_Widget*> _tempomap;
 
 public:
+
+    OSC::Endpoint *osc;
 
 #undef Bars
 #undef Beats
@@ -232,6 +233,12 @@ public:
 
     /* OSC */
     
+    static void peer_callback( const char *name, const char *path, int id, void *v );
+    void peer_callback2( const char *name, const char *path, int id );
+
+
+    void add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix );
+
     void discover_peers ( void );
 
     static void check_osc ( void * v );
@@ -239,7 +246,9 @@ public:
     int init_osc ( const char *osc_port );
     
     static int osc_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+    static int osc_non_hello ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
     
+
     void reply_to_finger ( lo_message msg );
 
 private:

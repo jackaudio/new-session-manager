@@ -36,12 +36,12 @@ int command_open ( const char *name, const char *display_name, const char *clien
 int command_save ( char **out_msg );
 
 int
-NSM_Client::command_broadcast ( lo_message msg )
+NSM_Client::command_broadcast ( const char *path, lo_message msg )
 {
     int argc = lo_message_get_argc( msg );
     lo_arg **argv = lo_message_get_argv( msg );
 
-    if ( argc > 1 && !strcmp( &argv[0]->s, "/non/finger" ) )
+    if ( argc == 1 && !strcmp( path, "/non/finger" ) )
     {
         mixer->reply_to_finger( msg );
         return 0;

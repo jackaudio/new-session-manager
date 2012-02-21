@@ -349,8 +349,11 @@ set_name ( const char *name )
 bool
 address_matches ( lo_address addr1, lo_address addr2 )
 {
-    char *url1 = lo_address_get_url( addr1 );
-    char *url2 = lo_address_get_url( addr2 );
+    /* char *url1 = lo_address_get_url( addr1 ); */
+    /* char *url2 = lo_address_get_url( addr2 ); */
+
+    char *url1 = strdup( lo_address_get_port( addr1 ) );
+    char *url2 = strdup(lo_address_get_port( addr2 ) );
 
     bool r = !strcmp( url1, url2 );
 
@@ -1464,7 +1467,7 @@ OSC_HANDLER( broadcast )
 
         if ( strcmp( sender_url, url ) )
         {
-            osc_server->send( (*i)->addr, "/nsm/client/broadcast", new_args );
+            osc_server->send( (*i)->addr, to_path, new_args );
         }
 
         free( url );

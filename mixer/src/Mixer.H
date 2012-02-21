@@ -103,6 +103,8 @@ public:
 
     void sm_active ( bool b );
 
+    void say_hello ( void );
+
 public:
 
     bool command_save ( void );

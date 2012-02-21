@@ -1517,6 +1517,8 @@ Timeline::command_load ( const char *name, const char *display_name )
 
   Project::set_name ( display_name ? display_name : name );
 
+  discover_peers();
+
   return true;
 }
 
@@ -1539,6 +1541,9 @@ Timeline::command_new ( const char *name, const char *display_name )
     /* tle->update_menu(); */
 
     /* tle->main_window->redraw(); */
+
+  discover_peers();
+
 }
 
 const char *
@@ -1573,7 +1578,7 @@ Timeline::init_osc ( const char *osc_port )
     
     printf( "OSC=%s\n", osc->url() );
     
-    osc->add_method( "/reply", NULL, &Timeline::osc_reply, osc, "" );
+    osc->add_method( "/non/hello", "ssss", &Timeline::osc_non_hello, osc, "" );
     
 //    osc->start();
     
@@ -1584,18 +1589,22 @@ Timeline::init_osc ( const char *osc_port )
 }
 
 int
-Timeline::osc_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+Timeline::osc_non_hello ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
     OSC_DMSG();
 
-    if ( argc >= 5 && !strcmp( &argv[0]->s, "/non/finger" ) )
+    if ( argc >= 4 )
     {
-        const char *url = &argv[1]->s;
-        const char *name = &argv[2]->s;
-        const char *version = &argv[3]->s;
-        const char *id = &argv[4]->s;
+        const char *url = &argv[0]->s;
+        const char *name = &argv[1]->s;
+        const char *version = &argv[2]->s;
+        const char *id = &argv[3]->s;
 
         MESSAGE( "Discovered OSC peer %s (%s) @ %s with ID \"%s\"", name, version, url, id );
+
+        MESSAGE( "Scanning..." );
+
+        timeline->osc->scan_peer( id, url );
 
         return 0;
     }
@@ -1609,14 +1618,13 @@ Timeline::reply_to_finger ( lo_message msg )
     int argc = lo_message_get_argc( msg );
     lo_arg **argv = lo_message_get_argv( msg );
 
-    if ( argc < 2 )
+    if ( argc < 1 )
         return;
 
-    lo_address reply = lo_address_new_from_url( &argv[1]->s );
+    lo_address reply = lo_address_new_from_url( &argv[0]->s );
     
     osc->send( reply,
-              "/reply",
-              "/non/finger",
+              "/non/hello",
               osc->url(),
               APP_NAME,
               VERSION,
@@ -1625,10 +1633,49 @@ Timeline::reply_to_finger ( lo_message msg )
     lo_address_free( reply );
 }
 
-
 void
 Timeline::discover_peers ( void )
 {
-    nsm->broadcast( "/non/finger", osc->url() );
+    lo_message m = lo_message_new();
+
+    lo_message_add_string( m, "/non/finger" );
+    lo_message_add_string( m, osc->url() );
+
+    nsm->broadcast( m );
+
+    lo_message_free( m );
 }
+
+void
+Timeline::peer_callback( const char *name, const char *path, int id, void *v )
+{
+    ((Timeline*)v)->peer_callback2( name, path, id );
+}
+
+static Fl_Menu_Button *peer_menu;
+static const char *peer_prefix;
+
+void
+Timeline::peer_callback2( const char *name, const char *path, int id )
+{
+    char *s;
+
+    asprintf( &s, "%s/%s/%s", peer_prefix, name, path );
+
+    /* FIXME: Somebody has to free these unsigned longs! */
+    peer_menu->add( s, 0, NULL, new unsigned long( id ) );
+
+    free( s );
+}
+
+void
+Timeline::add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix )
+{
+   peer_menu = m;
+   peer_prefix = prefix;
+
+   osc->list_peers( &Timeline::peer_callback, this );
+}
+
+
 

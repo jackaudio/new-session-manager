@@ -35,5 +35,5 @@ protected:
     int command_save ( char **out_msg );
     void command_session_is_loaded ( void );
 
-    int command_broadcast ( lo_message msg );
+    int command_broadcast ( const char *path, lo_message msg );
 };

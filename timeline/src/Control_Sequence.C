@@ -30,6 +30,8 @@
 #include <list>
 using std::list;
 
+#include "Transport.H"
+
 
 
 bool Control_Sequence::draw_with_gradient = true;
@@ -37,6 +39,8 @@ bool Control_Sequence::draw_with_polygon = true;
 bool Control_Sequence::draw_with_grid = true;
 
 
+
+const double OSC_INTERVAL = 1.0f / 20.0f;
 
 Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 {
@@ -51,10 +55,20 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
         FATAL( "could not create JACK port" );
     }
 
+    {
+        char *path;
+        asprintf( &path, "/non/daw/%s/control/%i", track->name(), track->ncontrols() );
+        
+        _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL );
+        
+        free( path );
+    }
+
     if ( track )
         track->add( this );
 
     log_create();
+
 }
 
 
@@ -88,8 +102,10 @@ Control_Sequence::init ( void )
     _track = NULL;
     _highlighted = false;
     _output = NULL;
-
+    _osc_output = NULL;
     color( fl_darker( FL_YELLOW ) );
+
+    Fl::add_timeout( OSC_INTERVAL, &Control_Sequence::process_osc, this );
 }
 
 
@@ -282,6 +298,69 @@ Control_Sequence::draw ( void )
     fl_pop_clip();
 }
 
+#include "FL/menu_popup.H"
+
+void
+Control_Sequence::menu_cb ( Fl_Widget *w, void *v )
+{
+    ((Control_Sequence*)v)->menu_cb( (const Fl_Menu_*)w );
+}
+
+void
+Control_Sequence::menu_cb ( const Fl_Menu_ *m )
+{
+    char picked[1024];
+
+    if ( ! m->mvalue() ) // || m->mvalue()->flags & FL_SUBMENU_POINTER || m->mvalue()->flags & FL_SUBMENU )
+        return;
+
+    m->item_pathname( picked, sizeof( picked ), m->mvalue() );
+
+    // DMESSAGE( "Picked: %s (%s)", picked, m->mvalue()->label() );
+
+
+    if ( ! _osc_output )
+    {
+        char *path;
+        asprintf( &path, "/non/daw/%s/control/%i", track()->name(), track()->ncontrols() );
+        
+        _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL );
+        
+        free( path );
+    }
+
+    /* FIXME: somebody has to free these unsigned longs */
+    unsigned long id = *(unsigned long*)m->mvalue()->user_data();
+
+    char *peer_name = index( picked, '/' ) + 1;
+    
+    *index( peer_name, '/' ) = 0;
+
+    timeline->osc->connect_signal( _osc_output, peer_name, id );
+}
+
+
+void
+Control_Sequence::process_osc ( void *v )
+{
+    ((Control_Sequence*)v)->process_osc();
+}
+
+void
+Control_Sequence::process_osc ( void )
+{
+    Fl::add_timeout( OSC_INTERVAL, &Control_Sequence::process_osc, this );
+
+    if ( _osc_output && _osc_output->connected() )
+    {
+        sample_t buf[1];
+
+        play( buf, (nframes_t)transport->frame, (nframes_t) 1 );
+        
+        _osc_output->value( (float)buf[0] );
+    }
+}
+
 int
 Control_Sequence::handle ( int m )
 {
@@ -319,33 +398,55 @@ Control_Sequence::handle ( int m )
             }
             else if ( Fl::event_button3() && ! ( Fl::event_state() & ( FL_ALT | FL_SHIFT | FL_CTRL ) ) )
             {
+                timeline->discover_peers();
 
-                Fl_Menu_Item menu[] =
-                    {
-                        { "Rename" },
-                        { "Remove" },
-                        { 0 }
-                    };
+                Fl_Menu_Button menu( 0, 0, 0, 0, "Control Sequence" );
 
-                const Fl_Menu_Item *r = menu->popup( Fl::event_x(), Fl::event_y(), "Control Sequence" );
+                /* Fl_Menu_Button *con = new Fl_Menu_Button( 0, 0, 0, 0 ); */
 
-                if ( r )
-                {
-                    if ( r == &menu[ 0 ] )
-                    {
-                        const char *s = fl_input( "Input new name for control sequence:", name() );
+//                con->callback( &Control_Sequence::menu_cb, (void*)this );
 
-                        if ( s )
-                            name( s );
+                menu.clear();
 
-                        redraw();
-                    }
-                    else if ( r == &menu[ 1 ] )
-                    {
-                        Fl::delete_widget( this );
-                    }
+                timeline->add_osc_peers_to_menu( &menu, "Connect To" );
+                
+                /* menu.add( "Connect To", 0, 0, 0); */
+                /* menu.add( "Connect To", 0, 0, const_cast< Fl_Menu_Item *>( con->menu() ), FL_SUBMENU_POINTER ); */
+                menu.add( "Rename", 0, 0, 0 );
+                menu.add( "Remove", 0, 0, 0 );
 
-                }
+
+               menu.callback( &Control_Sequence::menu_cb, (void*)this);
+                /* Fl_Menu_Item menu[] = */
+                /*     { */
+                /*         { "Rename" }, */
+                /*         { "Remove" }, */
+                /*         { "Connect To" }, */
+                        
+                /*         { 0 } */
+                /*     }; */
+
+                menu_popup( &menu, x(), y() );
+
+//                const Fl_Menu_Item *r = menu.popup( Fl::event_x(), Fl::event_y(), "Control Sequence" );
+
+                /* if ( r ) */
+                /* { */
+                /*     if ( r == &menu[ 0 ] ) */
+                /*     { */
+                /*         const char *s = fl_input( "Input new name for control sequence:", name() ); */
+
+                /*         if ( s ) */
+                /*             name( s ); */
+
+                /*         redraw(); */
+                /*     } */
+                /*     else if ( r == &menu[ 1 ] ) */
+                /*     { */
+                /*         Fl::delete_widget( this ); */
+                /*     } */
+
+                /* } */
 
                 return 1;
             }

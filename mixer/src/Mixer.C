@@ -50,7 +50,7 @@
 
 const double STATUS_UPDATE_FREQ = 0.2f;
 
-const double OSC_INTERVAL = 0.2f;
+const double OSC_INTERVAL = 1.0 / 20.0;                          /* 20 hz */
 
 extern char *user_config_dir;
 extern char *instance_name;
@@ -98,14 +98,13 @@ Mixer::reply_to_finger ( lo_message msg )
     int argc = lo_message_get_argc( msg );
     lo_arg **argv = lo_message_get_argv( msg );
 
-    if ( argc < 2 )
+    if ( argc < 1 )
         return;
 
-    lo_address to = lo_address_new_from_url( &argv[1]->s );
+    lo_address to = lo_address_new_from_url( &argv[0]->s );
 
     osc_endpoint->send( to,
-                        "/reply",
-                        "/non/finger",
+                        "/non/hello",
                         osc_endpoint->url(),
                         APP_NAME,
                         VERSION,
@@ -113,6 +112,24 @@ Mixer::reply_to_finger ( lo_message msg )
 
     lo_address_free( to );
 }
+
+void
+Mixer::say_hello ( void )
+{
+    lo_message m = lo_message_new();
+
+    lo_message_add( m, "sssss",
+                    "/non/hello",
+                    osc_endpoint->url(),
+                    APP_NAME,
+                    VERSION,
+                    instance_name );
+
+    nsm->broadcast( m );
+    
+    lo_message_free( m );
+}
+
 
 
 

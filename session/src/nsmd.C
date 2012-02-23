@@ -1477,11 +1477,19 @@ OSC_HANDLER( broadcast )
      * propagated to another NSMD instance */
     if ( gui_is_active )
     {
-        new_args.push_front( OSC::OSC_String( to_path ) );
-
-        osc_server->send( gui_addr, path, new_args );
+        
+        char *u1 = lo_address_get_url( gui_addr );
+     
+        if ( strcmp( u1, sender_url ) )
+        {
+            new_args.push_front( OSC::OSC_String( to_path ) );
+            
+            osc_server->send( gui_addr, path, new_args );
+        }
+        
+        free(u1);
     }
-
+    
     free( sender_url );
 
     return 0;
@@ -1640,17 +1648,20 @@ OSC_HANDLER( remove )
 OSC_HANDLER( resume )
 {
     Client *c = get_client_by_id( &client, &argv[0]->s );
-
-    if ( c->pid == 0 &&
-         ! c->active )
+    
+    /* FIXME: return error if no such client? */
+    if ( c )
     {
-
-        if ( ! launch( c->executable_path, c->client_id ) )
+        if ( c->pid == 0 &&
+             ! c->active )
         {
-
+            if ( ! launch( c->executable_path, c->client_id ) )
+            {
+                
+            }
         }
     }
-
+    
     return 0;
 }
 
@@ -1659,9 +1670,13 @@ OSC_HANDLER( client_save )
 {
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
-    if ( c->active )
+    /* FIXME: return error if no such client? */
+    if ( c )
     {
-        command_client_to_save( c );
+        if ( c->active )
+        {
+            command_client_to_save( c );
+        }
     }
 
     return 0;

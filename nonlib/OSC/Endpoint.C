@@ -512,4 +512,10 @@ namespace OSC
         return lo_send_from( to, _server, LO_TT_IMMEDIATE, path, "ssss", v1, v2, v3, v4 );
     }
 
+    int
+    Endpoint::send ( lo_address to, const char *path, lo_message msg )
+    {
+        return lo_send_message_from( to, _server, path, msg );
+    }
+
 }

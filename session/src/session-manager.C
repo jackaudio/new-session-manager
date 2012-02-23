@@ -40,13 +40,33 @@
 #include <unistd.h>
 #include <errno.h>
 #include <time.h>
+#include <getopt.h>
 
 #define APP_NAME "Non Session Manager"
 
-static lo_address nsm_addr = NULL;
+// static lo_address nsm_addr = NULL;
 static time_t last_ping_response;
 
-static OSC::Endpoint *osc_endpoint; 
+static OSC::Endpoint *osc; 
+
+
+struct Daemon
+{
+    const char *url;
+    lo_address addr;
+    bool is_child;
+
+    Daemon ( )
+        {
+            url = NULL;
+            addr = NULL;
+            is_child = false;
+        }
+};
+
+static std::list<Daemon*> daemon_list;                                  /* list of all connected daemons */
+
+#define foreach_daemon( _it ) for ( std::list<Daemon*>::iterator _it = daemon_list.begin(); _it != daemon_list.end(); ++ _it )
 
 class NSM_Client : public Fl_Group
 {
@@ -156,17 +176,26 @@ public:
             if ( o == _dirty )
             {
                 MESSAGE( "Sending save.");
-                osc_endpoint->send( nsm_addr, "/nsm/gui/client/save", _client_id );
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/gui/client/save", _client_id );
+                }
             }
             if ( o == _remove_button )
             {
                 MESSAGE( "Sending remove.");
-                osc_endpoint->send( nsm_addr, "/nsm/gui/client/remove", _client_id );
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/gui/client/remove", _client_id );
+                }
             }
             else if ( o == _restart_button )
             {
                 MESSAGE( "Sending resume" );
-                osc_endpoint->send( nsm_addr, "/nsm/gui/client/resume", _client_id );
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/gui/client/resume", _client_id );
+                }
             }
         }
              
@@ -223,6 +252,11 @@ public:
         }
 };
 
+void
+browser_callback ( Fl_Widget *w, void *v )
+{
+    w->window()->hide();
+}
 
 class NSM_Controller : public Fl_Group
 {
@@ -254,18 +288,28 @@ public:
                 if ( 0 == fl_choice( "Are you sure you want to abort this session? Unsaved changes will be lost.", "Abort", "Cancel", NULL ) )
                 {
                     MESSAGE( "Sending abort." );
-                    osc_endpoint->send( nsm_addr, "/nsm/server/abort" );
+
+                    foreach_daemon ( d )
+                    {
+                        osc->send( (*d)->addr, "/nsm/server/abort" );
+                    }
                 }
             }
             if ( w == close_button )
             {
                 MESSAGE( "Sending close." );
-                osc_endpoint->send( nsm_addr, "/nsm/server/close" );
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/server/close" );
+                }
             }
             else if ( w == save_button )
             {
                 MESSAGE( "Sending save." );
-                osc_endpoint->send( nsm_addr, "/nsm/server/save" );
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/server/save" );
+                }
             }
             else if ( w == open_button )
             {
@@ -275,7 +319,11 @@ public:
                     return;
 
                 MESSAGE( "Sending open for: %s", name );
-                osc_endpoint->send( nsm_addr, "/nsm/server/open", name );
+
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/server/open", name );
+                }
             }
             else if ( w == duplicate_button )
             {
@@ -285,15 +333,21 @@ public:
                     return;
 
                 MESSAGE( "Sending duplicate for: %s", name );
-                osc_endpoint->send( nsm_addr, "/nsm/server/duplicate", name );
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/server/duplicate", name );
+                }
             }
             else if ( w == session_browser )
             {
                 const char *name = session_browser->text( session_browser->value());
 
                 /* strip out formatting codes */
-                
-                osc_endpoint->send( nsm_addr, "/nsm/server/open",  index( name, ' ' ) + 1 );
+
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/server/open", index( name, ' ' ) + 1 );
+                }
             }
             else if ( w == new_button )
             {
@@ -303,17 +357,75 @@ public:
                     return;
                 
                 MESSAGE( "Sending new for: %s", name );
-                osc_endpoint->send( nsm_addr, "/nsm/server/new", name );
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/server/new", name );
+                }
             }
             else if ( w == add_button )
             {
-                const char *name = fl_input( "Add Client" );
+                Fl_Select_Browser *browser;
 
-                if ( !name )
-                    return;
+                if ( daemon_list.size() > 1 )
+                {
+                    Fl_Window* win = new Fl_Window( window()->x(), window()->y(), 300, 400, "Choose Server" );
+                    {
+                        {
+                            Fl_Box *o = new Fl_Box( 0,0, 300, 100 );
+                    
+                            o->label( "Connected to multiple NSM servers, please select which one to add a client to." );
+                            o->align( FL_ALIGN_CENTER | FL_ALIGN_INSIDE | FL_ALIGN_WRAP );
+                        }
+                        {
+                            Fl_Select_Browser *o = browser = new Fl_Select_Browser( 0, 100, 300, 300 );
+                            o->box( FL_ROUNDED_BOX );
+                            o->color( FL_BLACK );
+                            o->callback( browser_callback, win );
+                            foreach_daemon( d )
+                            {
+                                o->add( (*d)->url );
+                            }
+                        }
+                    }
 
-                MESSAGE( "Sending add for: %s", name );
-                osc_endpoint->send( nsm_addr, "/nsm/server/add", name );
+                    win->end();
+
+                    win->show();
+
+                    while ( win->visible() )
+                    {
+                        Fl::wait();
+                    }
+
+                    if ( ! browser->value() )
+                        return;
+
+                    const char *name = fl_input( "Add Client" );
+                    
+                    if ( !name )
+                        return;
+
+                    lo_address nsm_addr = lo_address_new_from_url( browser->text( browser->value() ) );
+
+                    osc->send( nsm_addr, "/nsm/server/add", name );
+                    
+                    delete win;
+                }
+                else
+                {
+                    const char *name = fl_input( "Add Client" );
+                    
+                    if ( !name )
+                        return;
+
+                    MESSAGE( "Sending add for: %s", name );
+                    /* FIXME: user should get to choose which system to do the add on */
+                    foreach_daemon ( d )
+                    {
+                        osc->send( (*d)->addr, "/nsm/server/add", name );
+                    }
+                }
+
             }
         }
 
@@ -436,6 +548,16 @@ public:
         {
             char *s;
             asprintf( &s, "@S18@C3 %s", name );
+
+            for ( int i = 1; i <= session_browser->size(); i++ )
+            {
+                if ( !strcmp( session_browser->text( i ), s ) )
+                {
+                    free( s );
+                    return;
+                }
+            }
+            
             session_browser->add( s );
             free(s);
         }
@@ -521,11 +643,13 @@ public:
     void
     ping ( void )
         {
-            if ( nsm_addr )
+            if ( daemon_list.size() )
             {
-                osc_endpoint->send( nsm_addr, "/osc/ping" );
+                foreach_daemon( d )
+                {
+                    osc->send( (*d)->addr, "/osc/ping" );
+                }
             }
-
             if ( last_ping_response )
             {
                 if ( time(NULL) - last_ping_response > 10 )
@@ -538,43 +662,75 @@ public:
                 }
             }
         }
+        
 
     int init_osc ( void )
         {
-            osc_endpoint = new OSC::Endpoint();
-         
-            if ( int r = osc_endpoint->init() )
+            osc = new OSC::Endpoint();
+        
+            if ( int r = osc->init() )
                 return r;
-   
-            osc_endpoint->owner = this;
+        
+            osc->owner = this;
             
-            osc_endpoint->url();
+            osc->url();
 
-            osc_endpoint->add_method( "/error", "sis", osc_handler, osc_endpoint, "msg" );
-            osc_endpoint->add_method( "/reply", "ss", osc_handler, osc_endpoint, "msg" );
-            osc_endpoint->add_method( "/reply", "s", osc_handler, osc_endpoint, "" );
+            osc->add_method( "/error", "sis", osc_handler, osc, "msg" );
+            osc->add_method( "/reply", "ss", osc_handler, osc, "msg" );
+            osc->add_method( "/reply", "s", osc_handler, osc, "" );
 
-            osc_endpoint->add_method( "/nsm/gui/announce", "s", osc_handler, osc_endpoint, "msg" );
-            osc_endpoint->add_method( "/nsm/gui/session/session", "s", osc_handler, osc_endpoint, "path,display_name" );
-            osc_endpoint->add_method( "/nsm/gui/session/name", "s", osc_handler, osc_endpoint, "path,display_name" );
-            osc_endpoint->add_method( "/nsm/gui/client/new", "ss", osc_handler, osc_endpoint, "path,display_name" );
-            osc_endpoint->add_method( "/nsm/gui/client/status", "ss", osc_handler, osc_endpoint, "path,display_name" );
-            osc_endpoint->add_method( "/nsm/gui/client/switch", "ss", osc_handler, osc_endpoint, "path,display_name" );
-            osc_endpoint->add_method( "/nsm/gui/client/progress", "sf", osc_handler, osc_endpoint, "path,display_name" );
-            osc_endpoint->add_method( "/nsm/gui/client/dirty", "si", osc_handler, osc_endpoint, "path,display_name" );
+            osc->add_method( "/nsm/server/broadcast", NULL, osc_broadcast_handler, osc, "msg" );
+            osc->add_method( "/nsm/gui/server_announce", "s", osc_handler, osc, "msg" );
+            osc->add_method( "/nsm/gui/gui_announce", "s", osc_handler, osc, "msg" );
+            osc->add_method( "/nsm/gui/session/session", "s", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/session/name", "s", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/new", "ss", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/status", "ss", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/switch", "ss", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/progress", "sf", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/dirty", "si", osc_handler, osc, "path,display_name" );
 
-            osc_endpoint->start();
+            osc->start();
+
+            return 0;
         }
 
 
     void announce ( const char *nsm_url )
         {
-            nsm_addr = lo_address_new_from_url( nsm_url );
+            /* Daemon *d = new Daemon; */
 
-            osc_endpoint->send( nsm_addr, "/nsm/gui/announce" );
+            /* d->url = nsm_url; */
+            lo_address nsm_addr = lo_address_new_from_url( nsm_url );
+//            d->is_child = true;
+
+            /* daemon_list.push_back( d ); */
+            
+            osc->send( nsm_addr, "/nsm/gui/gui_announce" );
         }
 
 private:
+
+    static int osc_broadcast_handler ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+        {
+            DMESSAGE( "Relaying broadcast" );
+
+            foreach_daemon( d )
+            {
+                char *u1 = lo_address_get_url( (*d)->addr );
+                char *u2 = lo_address_get_url( lo_message_get_source( msg ) );
+
+                if ( strcmp( u1, u2 ) )
+                {
+                    osc->send( (*d)->addr, path, msg );
+                }
+                
+                free( u1 );
+                free( u2 );
+            }
+
+            return 0;
+        }
 
     static int osc_handler ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
         {
@@ -589,14 +745,30 @@ private:
                 controller->add_session_to_list( &argv[0]->s );
                 controller->sort_sessions();
             }
-            else if ( !strcmp( path, "/nsm/gui/announce" ) )
+            else if ( !strcmp( path, "/nsm/gui/gui_announce" ) )
             {
+                /* pre-existing server is replying to our announce message */
                 controller->activate();
                 
-                if ( ! nsm_addr )
-                    nsm_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ) );
+                lo_address nsm_addr = lo_message_get_source( msg );
 
-                osc_endpoint->send( nsm_addr, "/nsm/server/list" );
+                osc->send( nsm_addr, "/nsm/server/list" );
+            }
+            else if ( !strcmp( path, "/nsm/gui/server_announce" ) )
+            {
+                /* must be a server we launched */
+
+                controller->activate();
+                
+                Daemon *d = new Daemon;
+
+                d->url = lo_address_get_url( lo_message_get_source( msg ) );
+                d->addr = lo_address_new_from_url( d->url );
+                d->is_child = true;
+
+                daemon_list.push_back( d );
+
+                osc->send( d->addr, "/nsm/server/list" );
             }
             else if ( !strcmp( path, "/nsm/gui/session/name" ))
             {
@@ -702,32 +874,92 @@ main (int argc, char **argv )
         // o->show();
     }
 
+
+    static struct option long_options[] = 
+        {
+            { "nsm-url", required_argument, 0, 'n' },
+            { "help", no_argument, 0, 'h' },
+            { 0, 0, 0, 0 }
+        };
+
+    int option_index = 0;
+    int c = 0;
+
+    const char *osc_port = NULL;
+    while ( ( c = getopt_long_only( argc, argv, "", long_options, &option_index  ) ) != -1 )
+    {
+        switch ( c )
+        {
+            case 'n':
+            {
+                DMESSAGE( "Adding %s to daemon list", optarg );
+                Daemon *d = new Daemon;
+                
+                d->url = optarg;
+                d->addr = lo_address_new_from_url( optarg );
+
+                daemon_list.push_back( d );
+                break;
+            }
+            case 'h':
+                printf( "Usage: %s [--nsmd-url...] [-- server options ]\n\n", argv[0] );
+                exit(0);
+                break;
+        }
+    }
+
     const char *nsm_url = getenv( "NSM_URL" );
 
     if ( nsm_url )
     {
         MESSAGE( "Found NSM URL of \"%s\" in environment, attempting to connect.", nsm_url );
 
-        if ( ! controller->init_osc() )
+        Daemon *d = new Daemon;
+
+        d->url = optarg;
+        d->addr = lo_address_new_from_url( optarg );
+
+        daemon_list.push_back( d );
+    }
+
+    if ( controller->init_osc() )
+        FATAL( "Could not create OSC server" );
+   
+    if ( daemon_list.size() )
+    {
+        foreach_daemon ( d )
         {
-            controller->announce( nsm_url );
+            controller->announce( (*d)->url );
         }
-        else
-            FATAL( "Could not create OSC server" );
     }
     else
     {
-        if ( controller->init_osc() )
-             FATAL( "Could not create OSC server" );
-    
         /* start a new daemon... */
         MESSAGE( "Starting daemon..." );
 
-        char *url = osc_endpoint->url();
+        char *url = osc->url();
 
         if ( ! fork() )
         {
-            char *args[] = { "nsmd", "--gui-url", url, NULL };
+            /* pass non-option arguments on to daemon */
+
+            option_index += 2;
+
+            char **args = (char **)malloc( 4 + argc - option_index );
+
+            int i = 0;
+            args[i++] = "nsmd";
+            args[i++] = "--gui-url";
+            args[i++] = url;
+            
+
+            for ( ; option_index < argc; i++, option_index++ )
+            {
+                DMESSAGE( "Passing argument: %s", argv[option_index] );
+                args[i] = argv[option_index];
+            }
+
+            args[i] = 0;
 
             if ( -1 == execvp( "nsmd", args ) )
             {
@@ -739,10 +971,13 @@ main (int argc, char **argv )
     Fl::add_timeout( 1.0, ping, NULL );
     Fl::run();
 
-    if ( ! nsm_url )
+    foreach_daemon ( d )
     {
-        MESSAGE( "Telling server to quit" );
-        osc_endpoint->send( nsm_addr, "/nsm/server/quit" );
+        if ( (*d)->is_child )
+        {
+            MESSAGE( "Telling server to quit" );
+            osc->send( (*d)->addr, "/nsm/server/quit" );
+        }
     }
 
     return 0;

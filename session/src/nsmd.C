@@ -944,6 +944,9 @@ command_client_to_quit ( Client *c )
 void
 close_all_clients ( )
 {
+    if ( ! session_path )
+        return;
+
     for ( std::list<Client*>::iterator i = client.begin();
           i != client.end();
           ++i )
@@ -1426,6 +1429,10 @@ OSC_HANDLER( broadcast )
 {
     const char *to_path = &argv[0]->s;
 
+    /* don't allow clients to broadcast NSM commands */
+    if ( ! strncmp( to_path, "/nsm/", strlen( "/nsm/" ) ) )
+        return 0;
+
     std::list<OSC::OSC_Value> new_args;
 
     for ( int i = 1; i < argc; ++i )
@@ -1453,6 +1460,15 @@ OSC_HANDLER( broadcast )
         {
             osc_server->send( (*i)->addr, to_path, new_args );
         }
+    }
+
+    /* also relay to attached GUI so that the broadcast can be
+     * propagated to another NSMD instance */
+    if ( gui_is_active )
+    {
+        new_args.push_front( OSC::OSC_String( to_path ) );
+
+        osc_server->send( gui_addr, path, new_args );
     }
 
     return 0;
@@ -1639,12 +1655,15 @@ OSC_HANDLER( client_save )
 }
 
 void
-announce_gui( const char *url )
+announce_gui( const char *url, bool is_reply )
 {
     gui_addr = lo_address_new_from_url( url );
     gui_is_active = true;
 
-    osc_server->send( gui_addr, "/nsm/gui/announce", "hi" );
+    if ( is_reply )
+        osc_server->send( gui_addr, "/nsm/gui/gui_announce", "hi" );
+    else
+        osc_server->send( gui_addr, "/nsm/gui/server_announce", "hi" );
 
     for ( std::list<Client*>::iterator i = client.begin();
           i != client.end();
@@ -1665,7 +1684,7 @@ announce_gui( const char *url )
 
 OSC_HANDLER( gui_announce )
 {
-    announce_gui( lo_address_get_url( lo_message_get_source( msg ) ));
+    announce_gui( lo_address_get_url( lo_message_get_source( msg ) ), true );
 
     return 0;
 }
@@ -1699,11 +1718,13 @@ int main(int argc, char *argv[])
         srand( (unsigned int) seconds );
     }
 
-    char *osc_port = "6666";
+//    char *osc_port = "6666";
+    char *osc_port = NULL;
     const char *gui_url = NULL;
 
     static struct option long_options[] = 
     {
+        { "session-root", required_argument, 0, 's' },
         { "osc-port", required_argument, 0, 'p' },
         { "gui-url", required_argument, 0, 'g' },
         { "help", no_argument, 0, 'h' },
@@ -1717,6 +1738,9 @@ int main(int argc, char *argv[])
     {
         switch ( c )
         {
+            case 's':
+                session_root = optarg;
+                break;
             case 'p':
                 DMESSAGE( "Using OSC port %s", optarg );
                 osc_port = optarg;
@@ -1726,14 +1750,15 @@ int main(int argc, char *argv[])
                 gui_url = optarg;
                 break;
             case 'h':
-                printf( "Usage: nsmd [--osc-port portnum]\n\n" );
+                printf( "Usage: %s [--osc-port portnum] [--session-root path]\n\n", argv[0] );
                 exit(0);
                 break;
         }
     }
-  
-    asprintf( &session_root, "%s/%s", getenv( "HOME" ), "NSM Sessions" );
 
+    if ( !session_root )
+        asprintf( &session_root, "%s/%s", getenv( "HOME" ), "NSM Sessions" );
+  
     struct stat st;
 
     if ( stat( session_root, &st ) )
@@ -1757,7 +1782,7 @@ int main(int argc, char *argv[])
 
     if ( gui_url )
     {
-        announce_gui( gui_url );
+        announce_gui( gui_url, false );
     }
 
     /*  */
@@ -1773,7 +1798,7 @@ int main(int argc, char *argv[])
     osc_server->add_method( "/nsm/client/message", "is", OSC_NAME( message ), NULL, "message" );
     
     /*  */
-    osc_server->add_method( "/nsm/gui/announce", "", OSC_NAME( gui_announce ), NULL, "" );
+    osc_server->add_method( "/nsm/gui/gui_announce", "", OSC_NAME( gui_announce ), NULL, "" );
     osc_server->add_method( "/nsm/gui/client/remove", "s", OSC_NAME( remove ), NULL, "client_id" );
     osc_server->add_method( "/nsm/gui/client/resume", "s", OSC_NAME( resume ), NULL, "client_id" );
     osc_server->add_method( "/nsm/gui/client/save", "s", OSC_NAME( client_save ), NULL, "client_id" );

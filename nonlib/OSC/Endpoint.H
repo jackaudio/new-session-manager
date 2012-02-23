@@ -214,6 +214,8 @@ namespace OSC
         int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, const char *v4, const char *v5 );
         int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, const char *v4 );
 
+        int send ( lo_address to, const char *path, lo_message msg );
+
         // can be used to point back to owning object.
         void *owner;
     };

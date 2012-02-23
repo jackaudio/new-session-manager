@@ -339,11 +339,12 @@ namespace OSC
         wait( 0 );
     }
 
-/** Process any waiting events and return immediately */
+/** Process any waiting events and return after timeout */
     void
     Endpoint::wait ( int timeout ) const
-    {
-        lo_server_recv_noblock( _server, timeout );
+    {    
+        if ( lo_server_wait( _server, timeout ) )
+            while ( lo_server_recv_noblock( _server, 0 ) ) { }
     }
 
 /** Process events forever */

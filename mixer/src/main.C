@@ -91,10 +91,10 @@ static void cb_main ( Fl_Double_Window *o, void *)
 }
 
 void
-check_osc ( void * v )
+check_nsm ( void * v )
 {
     nsm->check();
-    Fl::repeat_timeout( OSC_INTERVAL, check_osc, v );
+    Fl::repeat_timeout( OSC_INTERVAL, check_nsm, v );
 }
 
 static int got_sigterm = 0;
@@ -233,6 +233,9 @@ main ( int argc, char **argv )
             if ( ! nsm->init() )
             {
                 nsm->announce( nsm_url, APP_NAME, ":switch:dirty:", argv[0] );
+
+                // poll so we can keep OSC handlers running in the GUI thread and avoid extra sync
+                Fl::add_timeout( OSC_INTERVAL, check_nsm, NULL );
             }
         }
         else
@@ -249,9 +252,6 @@ main ( int argc, char **argv )
         }
     }
     
-    // poll so we can keep OSC handlers running in the GUI thread and avoid extra sync
-    Fl::add_timeout( OSC_INTERVAL, check_osc, NULL );
-
     Fl::add_check( check_sigterm );
 
     Fl::run();

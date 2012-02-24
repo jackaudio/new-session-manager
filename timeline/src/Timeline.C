@@ -51,6 +51,8 @@
 #include "TLE.H"
 /*  */
 
+#include "OSC_Thread.H"
+
 #include "NSM.H"
 extern NSM_Client *nsm;
 
@@ -394,6 +396,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
 {
     Loggable::snapshot_callback( &Timeline::snapshot, this );
 
+    osc_thread = 0;
     _sample_rate = 0;
 
     box( FL_FLAT_BOX );
@@ -1458,7 +1461,11 @@ Timeline::add_track ( Track *track )
 
     engine->lock();
 
+    osc_thread->lock();
+
     tracks->add( track );
+
+    osc_thread->unlock();
 
     engine->unlock();
 
@@ -1475,8 +1482,12 @@ Timeline::remove_track ( Track *track )
 
     engine->lock();
 
+    osc_thread->lock();
+
     /* FIXME: what to do about track contents? */
     tracks->remove( track );
+
+    osc_thread->unlock();
 
     engine->unlock();
 
@@ -1585,6 +1596,13 @@ Timeline::init_osc ( const char *osc_port )
     /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
     Fl::add_timeout( OSC_INTERVAL, &Timeline::check_osc, this );
 
+    if ( ! osc_thread )
+    {
+        osc_thread = new OSC_Thread();
+        
+        osc_thread->start();
+    }
+
     return 0;
 }
 
@@ -1664,6 +1682,7 @@ Timeline::discover_peers ( void )
             c->connect_osc();
         }
     }
+
 }
 
 void
@@ -1697,5 +1716,22 @@ Timeline::add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix )
    osc->list_peers( &Timeline::peer_callback, this );
 }
 
+/* runs in the OSC thread... */
+void
+Timeline::process_osc ( void )
+{
+    THREAD_ASSERT( OSC );
 
+    /* reconnect OSC signals */
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+        
+        for ( int j = t->control->children(); j--; )
+        {
+            Control_Sequence *c = (Control_Sequence*)t->control->child( j );
+            c->process_osc();
+        }
+    }
+}
 

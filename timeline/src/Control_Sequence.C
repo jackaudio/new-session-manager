@@ -76,7 +76,7 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 
 Control_Sequence::~Control_Sequence ( )
 {
-    Fl::remove_timeout( &Control_Sequence::process_osc, this );
+//    Fl::remove_timeout( &Control_Sequence::process_osc, this );
 
     Loggable::block_start();
 
@@ -110,8 +110,6 @@ Control_Sequence::init ( void )
 
     interpolation( Linear );
     frequency( 10 );
-
-    Fl::add_timeout( _interval, &Control_Sequence::process_osc, this );
 }
 
 
@@ -140,7 +138,7 @@ Control_Sequence::get_unjournaled ( Log_Entry &e ) const
         free( path );
         free( peer );
     }
-    e.add( ":frequency", frequency() );
+    /* e.add( ":frequency", frequency() ); */
 }
 
 void
@@ -173,8 +171,8 @@ Control_Sequence::set ( Log_Entry &e )
             name( v );
         else if ( ! strcmp( ":interpolation", s ) )
             interpolation( (curve_type_e)atoi( v ) );
-        else if ( ! strcmp( ":frequency", s ) )
-            frequency( atoi( v ) );
+        /* else if ( ! strcmp( ":frequency", s ) ) */
+        /*     frequency( atoi( v ) ); */
         else if ( ! strcmp( ":osc_peer", s ) )
         {
             _osc_connected_peer = strdup( v );
@@ -380,18 +378,18 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
         interpolation( Linear );
     else if ( ! strcmp( picked, "Interpolation/None" ) )
         interpolation( None );
-    else if ( ! strcmp( picked, "Frequency/1Hz" ) )
-        frequency( 1 );
-    else if ( ! strcmp( picked, "Frequency/5Hz" ) )
-        frequency( 5 );
-    else if ( ! strcmp( picked, "Frequency/10Hz" ) )
-        frequency( 10 );
-    else if ( ! strcmp( picked, "Frequency/20Hz" ) )
-        frequency( 20 );
-    else if ( ! strcmp( picked, "Frequency/30Hz" ) )
-        frequency( 30 );
-    else if ( ! strcmp( picked, "Frequency/60Hz" ) )
-        frequency( 60 );
+    /* else if ( ! strcmp( picked, "Frequency/1Hz" ) ) */
+    /*     frequency( 1 ); */
+    /* else if ( ! strcmp( picked, "Frequency/5Hz" ) ) */
+    /*     frequency( 5 ); */
+    /* else if ( ! strcmp( picked, "Frequency/10Hz" ) ) */
+    /*     frequency( 10 ); */
+    /* else if ( ! strcmp( picked, "Frequency/20Hz" ) ) */
+    /*     frequency( 20 ); */
+    /* else if ( ! strcmp( picked, "Frequency/30Hz" ) ) */
+    /*     frequency( 30 ); */
+    /* else if ( ! strcmp( picked, "Frequency/60Hz" ) ) */
+    /*     frequency( 60 ); */
 
     else if ( ! strcmp( picked, "/Rename" ) )
     {
@@ -435,8 +433,6 @@ Control_Sequence::process_osc ( void *v )
 void
 Control_Sequence::process_osc ( void )
 {
-    Fl::repeat_timeout( _interval, &Control_Sequence::process_osc, this );
-
     if ( _osc_output && _osc_output->connected() )
     {
         sample_t buf[1];
@@ -500,12 +496,12 @@ Control_Sequence::handle ( int m )
                 menu.add( "Interpolation/None", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == None ? FL_MENU_VALUE : 0 ) );
                 menu.add( "Interpolation/Linear", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == Linear ? FL_MENU_VALUE : 0 ) );
 
-                menu.add( "Frequency/1Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 1 ? FL_MENU_VALUE : 0 ) );
-                menu.add( "Frequency/5Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 5 ? FL_MENU_VALUE : 0 ) );
-                menu.add( "Frequency/10Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 10 ? FL_MENU_VALUE : 0 ) );
-                menu.add( "Frequency/20Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 20 ? FL_MENU_VALUE : 0 ) );
-                menu.add( "Frequency/30Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 30 ? FL_MENU_VALUE : 0 ) );
-                menu.add( "Frequency/60Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 60 ? FL_MENU_VALUE : 0 ) );
+                /* menu.add( "Frequency/1Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 1 ? FL_MENU_VALUE : 0 ) ); */
+                /* menu.add( "Frequency/5Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 5 ? FL_MENU_VALUE : 0 ) ); */
+                /* menu.add( "Frequency/10Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 10 ? FL_MENU_VALUE : 0 ) ); */
+                /* menu.add( "Frequency/20Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 20 ? FL_MENU_VALUE : 0 ) ); */
+                /* menu.add( "Frequency/30Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 30 ? FL_MENU_VALUE : 0 ) ); */
+                /* menu.add( "Frequency/60Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 60 ? FL_MENU_VALUE : 0 ) ); */
 
 
                 menu.add( "Rename", 0, 0, 0 );

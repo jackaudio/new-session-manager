@@ -62,8 +62,6 @@ private:
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( const Fl_Menu_ *m );
 
-    static void process_osc ( void *v );
-    void process_osc ( void );
     
     float _rate; 
 
@@ -84,6 +82,9 @@ protected:
     int handle ( int m );
 
 public:
+
+    static void process_osc ( void *v );
+    void process_osc ( void );
 
     void connect_osc ( void );
 

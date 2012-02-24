@@ -581,7 +581,11 @@ Track::remove ( Control_Sequence *t )
 
     engine->lock();
 
+    timeline->osc_thread->lock();
+
     control->remove( t );
+
+    timeline->osc_thread->unlock();
 
     engine->unlock();
 

@@ -32,6 +32,7 @@
 #include <list>
 
 #include "OSC/Endpoint.H"
+#include "OSC_Thread.H"
 
 class Fl_Scroll;
 class Fl_Pack;
@@ -120,7 +121,9 @@ class Timeline : public Fl_Single_Window, public RWLock
 public:
 
     OSC::Endpoint *osc;
+    OSC_Thread *osc_thread;
 
+    void process_osc ( void );
 #undef Bars
 #undef Beats
 #undef None
@@ -252,6 +255,7 @@ public:
     void reply_to_finger ( lo_message msg );
 
 private:
+
 
     static void snapshot ( void *v ) { ((Timeline*)v)->snapshot(); }
     void snapshot ( void );

@@ -59,8 +59,7 @@
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-mixer/"
 
-
-const double OSC_INTERVAL = 0.1f;
+const double NSM_CHECK_INTERVAL = 0.25f;
 
 char *user_config_dir;
 Mixer *mixer;
@@ -94,7 +93,7 @@ void
 check_nsm ( void * v )
 {
     nsm->check();
-    Fl::repeat_timeout( OSC_INTERVAL, check_nsm, v );
+    Fl::repeat_timeout( NSM_CHECK_INTERVAL, check_nsm, v );
 }
 
 static int got_sigterm = 0;
@@ -235,7 +234,7 @@ main ( int argc, char **argv )
                 nsm->announce( nsm_url, APP_NAME, ":switch:dirty:", argv[0] );
 
                 // poll so we can keep OSC handlers running in the GUI thread and avoid extra sync
-                Fl::add_timeout( OSC_INTERVAL, check_nsm, NULL );
+                Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
             }
         }
         else

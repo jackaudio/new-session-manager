@@ -65,7 +65,7 @@ const char APP_NAME[]   = "Non-DAW";
 const char APP_TITLE[]  = "The Non-DAW";
 const char COPYRIGHT[]  = "Copyright (C) 2008-2010 Jonathan Moore Liles";
 
-#define OSC_INTERVAL 0.2f
+const double NSM_CHECK_INTERVAL = 0.25f;
 
 #define PACKAGE "non"
 
@@ -109,7 +109,7 @@ void
 check_nsm ( void * v )
 {
     nsm->check();
-    Fl::repeat_timeout( OSC_INTERVAL, check_nsm, v );
+    Fl::repeat_timeout( NSM_CHECK_INTERVAL, check_nsm, v );
 }
 
 static int got_sigterm = 0;
@@ -212,7 +212,7 @@ main ( int argc, char **argv )
                 nsm->announce( nsm_url, APP_NAME, ":progress:switch:", argv[0] );
 
                 /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
-                Fl::add_timeout( OSC_INTERVAL, check_nsm, NULL );
+                Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
             }
         }
         else

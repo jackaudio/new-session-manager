@@ -117,7 +117,6 @@ namespace OSC
     class Signal;
     struct Peer
     {
-     
         bool _scanning;
 
         char *name;
@@ -129,7 +128,6 @@ namespace OSC
     struct Target
     {
         Peer *peer;
-//        char *path;
         int signal_id;
         float value;
     };
@@ -190,8 +188,10 @@ namespace OSC
                 free( _path );
             }
 
+        static Signal *get_peer_signal_by_id ( Peer *p, int signal_id );
         bool connected ( void ) { return _outgoing.size() + _incoming.size(); }
-
+        void get_connected_peer_name_and_path ( char **peer_name, char **path );
+     
         int id ( void ) { return _id; }
 
         Direction direction ( void ) { return _direction; }
@@ -260,6 +260,8 @@ namespace OSC
             
         OSC::Signal *find_signal_by_id ( int id );
 
+        OSC::Signal *find_peer_signal_by_path ( Peer *p, const char *path );
+        
         Peer *find_peer_by_name ( const char *name );
         Peer *find_peer_by_address ( lo_address addr );
         static bool address_matches ( lo_address addr1, lo_address addr2 );
@@ -275,6 +277,8 @@ namespace OSC
 
         ~Endpoint ( );
 
+
+        bool connect_signal( OSC::Signal *s, const char *peer_name, const char *signal_path );        
         bool connect_signal( OSC::Signal *s, const char *peer_name, int signal_id );
 
 

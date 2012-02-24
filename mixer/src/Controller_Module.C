@@ -485,12 +485,10 @@ Controller_Module::menu_cb ( const Fl_Menu_ *m )
 
     Logger log( this );
 
-    if ( ! strcmp( picked, "Mode/Manual" ) )
+    if ( ! strcmp( picked, "Mode/GUI + OSC" ) )
         mode( GUI );
-    else if ( ! strcmp( picked, "Mode/Control Voltage" ) )
+    else if ( ! strcmp( picked, "Mode/Control Voltage (JACK)" ) )
         mode( CV );
-    else if ( ! strcmp( picked, "Mode/Open Sound Control (OSC)" ) )
-	mode( OSC );
 }
 
 /** build the context menu for this control */
@@ -502,9 +500,8 @@ Controller_Module::menu ( void )
     Fl_Menu_Item items[] =
         {
             { "Mode",             0, 0, 0,  FL_SUBMENU    },
-            { "Manual",       0, 0, 0,  FL_MENU_RADIO | ( mode() == GUI ? FL_MENU_VALUE : 0 ) },
-            { "Control Voltage",           0, 0, 0,  FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) },
-//            { "Open Sound Control (OSC)",          0, 0, 0,  FL_MENU_RADIO | ( mode() == OSC  ? FL_MENU_VALUE : 0 ) },
+            { "GUI + OSC",       0, 0, 0,  FL_MENU_RADIO | ( mode() == GUI ? FL_MENU_VALUE : 0 ) },
+            { "Control Voltage (JACK)",           0, 0, 0,  FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) },
             { 0                   },
             { 0 },
         };

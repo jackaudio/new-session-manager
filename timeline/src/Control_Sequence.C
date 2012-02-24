@@ -40,11 +40,11 @@ bool Control_Sequence::draw_with_grid = true;
 
 
 
-const double OSC_INTERVAL = 1.0f / 20.0f;
-
 Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 {
     init();
+
+    _osc_connected_peer = _osc_connected_path = 0;
 
     _track = track;
 
@@ -55,19 +55,19 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
         FATAL( "could not create JACK port" );
     }
 
-    {
-        char *path;
-        asprintf( &path, "/non/daw/%s/control/%i", track->name(), track->ncontrols() );
+    /* { */
+    /*     char *path; */
+    /*     asprintf( &path, "/non/daw/%s/control/%i", track->name(), track->ncontrols() ); */
         
-        _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL );
+    /*     _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL ); */
         
-        free( path );
-    }
+    /*     free( path ); */
+    /* } */
+
+    _osc_output = 0;
 
     if ( track )
         track->add( this );
-
-    interpolation( Linear );
 
     log_create();
 
@@ -108,7 +108,10 @@ Control_Sequence::init ( void )
     _osc_output = NULL;
     color( fl_darker( FL_YELLOW ) );
 
-    Fl::add_timeout( OSC_INTERVAL, &Control_Sequence::process_osc, this );
+    interpolation( Linear );
+    frequency( 10 );
+
+    Fl::add_timeout( _interval, &Control_Sequence::process_osc, this );
 }
 
 
@@ -124,6 +127,20 @@ void
 Control_Sequence::get_unjournaled ( Log_Entry &e ) const
 {
     e.add( ":interpolation", _interpolation );
+    if ( _osc_output->connected() )
+    {
+        char *path;
+        char *peer;
+
+        _osc_output->get_connected_peer_name_and_path( &peer, &path );
+ 
+        e.add( ":osc_peer", peer );
+        e.add( ":osc_path", path );
+
+        free( path );
+        free( peer );
+    }
+    e.add( ":frequency", frequency() );
 }
 
 void
@@ -156,7 +173,16 @@ Control_Sequence::set ( Log_Entry &e )
             name( v );
         else if ( ! strcmp( ":interpolation", s ) )
             interpolation( (curve_type_e)atoi( v ) );
-
+        else if ( ! strcmp( ":frequency", s ) )
+            frequency( atoi( v ) );
+        else if ( ! strcmp( ":osc_peer", s ) )
+        {
+            _osc_connected_peer = strdup( v );
+        }
+        else if ( !strcmp( ":osc_path", s ) )
+        {
+            _osc_connected_path = strdup( v );
+        }
     }
 }
 
@@ -354,6 +380,19 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
         interpolation( Linear );
     else if ( ! strcmp( picked, "Interpolation/None" ) )
         interpolation( None );
+    else if ( ! strcmp( picked, "Frequency/1Hz" ) )
+        frequency( 1 );
+    else if ( ! strcmp( picked, "Frequency/5Hz" ) )
+        frequency( 5 );
+    else if ( ! strcmp( picked, "Frequency/10Hz" ) )
+        frequency( 10 );
+    else if ( ! strcmp( picked, "Frequency/20Hz" ) )
+        frequency( 20 );
+    else if ( ! strcmp( picked, "Frequency/30Hz" ) )
+        frequency( 30 );
+    else if ( ! strcmp( picked, "Frequency/60Hz" ) )
+        frequency( 60 );
+
     else if ( ! strcmp( picked, "/Rename" ) )
     {
         const char *s = fl_input( "Input new name for control sequence:", name() );
@@ -369,6 +408,23 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
     }
 }
 
+void
+Control_Sequence::connect_osc ( void )
+
+{
+    if ( ! _osc_output )
+    {
+        char *path;
+        asprintf( &path, "/non/daw/%s/control/%i", track()->name(), track()->ncontrols() );
+        
+        _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL );
+        
+        free( path );
+    }
+
+    if ( _osc_connected_peer && _osc_connected_path )
+        timeline->osc->connect_signal( _osc_output, _osc_connected_peer, _osc_connected_path );
+}
 
 void
 Control_Sequence::process_osc ( void *v )
@@ -379,7 +435,7 @@ Control_Sequence::process_osc ( void *v )
 void
 Control_Sequence::process_osc ( void )
 {
-    Fl::add_timeout( OSC_INTERVAL, &Control_Sequence::process_osc, this );
+    Fl::repeat_timeout( _interval, &Control_Sequence::process_osc, this );
 
     if ( _osc_output && _osc_output->connected() )
     {
@@ -443,6 +499,15 @@ Control_Sequence::handle ( int m )
                 /* menu.add( "Connect To", 0, 0, const_cast< Fl_Menu_Item *>( con->menu() ), FL_SUBMENU_POINTER ); */
                 menu.add( "Interpolation/None", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == None ? FL_MENU_VALUE : 0 ) );
                 menu.add( "Interpolation/Linear", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == Linear ? FL_MENU_VALUE : 0 ) );
+
+                menu.add( "Frequency/1Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 1 ? FL_MENU_VALUE : 0 ) );
+                menu.add( "Frequency/5Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 5 ? FL_MENU_VALUE : 0 ) );
+                menu.add( "Frequency/10Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 10 ? FL_MENU_VALUE : 0 ) );
+                menu.add( "Frequency/20Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 20 ? FL_MENU_VALUE : 0 ) );
+                menu.add( "Frequency/30Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 30 ? FL_MENU_VALUE : 0 ) );
+                menu.add( "Frequency/60Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 60 ? FL_MENU_VALUE : 0 ) );
+
+
                 menu.add( "Rename", 0, 0, 0 );
                 menu.add( "Remove", 0, 0, 0 );
 

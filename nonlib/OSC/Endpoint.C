@@ -75,6 +75,16 @@ namespace OSC
         }
     }
 
+    void
+    Signal::get_connected_peer_name_and_path ( char **peer_name, char **path )
+    {
+        Target *t = _outgoing.back();
+
+        Signal *s = get_peer_signal_by_id( t->peer, t->signal_id );
+
+        *peer_name = strdup( t->peer->name );
+        *path = strdup( s->path() );
+    }
 
     void
     Endpoint::error_handler(int num, const char *msg, const char *path)
@@ -141,6 +151,22 @@ namespace OSC
             if ( (*i)->id() == id )
                 return *i;
         }
+
+        return NULL;
+    }
+
+    OSC::Signal *
+    Endpoint::find_peer_signal_by_path ( Peer *p, const char *path )
+    {
+        for ( std::list<Signal*>::iterator i = p->_signals.begin();
+              i != p->_signals.end();
+              ++i )
+        {
+            if ( !strcmp( (*i)->path(), path ) )
+                return *i;
+        }
+
+        return NULL;
     }
 
     int
@@ -213,7 +239,7 @@ namespace OSC
     {
 //        OSC_DMSG();
 
-        if ( path[ strlen(path) - 1 ] != '/' )
+        if ( argc || path[ strlen(path) - 1 ] != '/' )
             return -1;
 
         Endpoint *ep = (Endpoint*)user_data;
@@ -363,13 +389,52 @@ namespace OSC
         return NULL;
     }
 
-    /* First part of 'to' is a peer name */
+    bool
+    Endpoint::connect_signal( OSC::Signal *s, const char *peer_name, const char *signal_path )
+    {
+        if ( s->_direction == Signal::Output )
+        {
+            Peer *p = find_peer_by_name( peer_name );
+            
+            if ( ! p )
+                return false;
+
+            Signal *ps = find_peer_signal_by_path( p, signal_path );
+            
+            if ( ! ps )
+                return false;
+
+            MESSAGE( "Connecting signal output \"%s\" to %s:%i", s->path(), peer_name, s->_id );
+
+            if ( p )
+            {
+                Target *t = new Target();
+
+                t->peer = p;
+                t->signal_id = ps->_id;
+                
+                s->_outgoing.push_back( t );
+                
+                send( p->addr, "/signal/connect", 
+                      s->_id, /* our signal id */
+                      t->signal_id /* their signal id */ );
+                
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     bool
     Endpoint::connect_signal( OSC::Signal *s, const char *peer_name, int signal_id )
     {
         if ( s->_direction == Signal::Output )
         {
             Peer *p = find_peer_by_name( peer_name );
+
+            if ( !p )
+                return false;
             
             MESSAGE( "Connecting signal output \"%s\" to %s:%i", s->path(), peer_name, signal_id );
 
@@ -383,8 +448,8 @@ namespace OSC
                 s->_outgoing.push_back( t );
                 
                 send( p->addr, "/signal/connect", 
-                      0, /* FIXME: our signal id */
-                      0 /* FIXME: their signal id */ );
+                      s->_id, /* our signal id */
+                      t->signal_id /* their signal id */ );
                 
                 return true;
             }
@@ -393,6 +458,19 @@ namespace OSC
         return false;
     }
 
+    Signal *
+    Signal::get_peer_signal_by_id ( Peer *p, int signal_id )
+    {
+        for ( std::list<Signal *>::iterator i = p->_signals.begin();
+              i != p->_signals.end();
+              ++i )
+        {
+            if ( (*i)->_id == signal_id )
+                return *i;
+        }
+        
+        return NULL;
+    }
 
     int
     Endpoint::osc_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )

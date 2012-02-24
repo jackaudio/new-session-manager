@@ -42,11 +42,18 @@ private:
 
     JACK::Port *_output;
 
+    /* these are used to cache the saved osc connection until the
+     * session is loaded, at which time we will reconnect */
+    char *_osc_connected_peer;
+    char *_osc_connected_path;
+    /* osc output port */
     OSC::Signal *_osc_output;
 
     bool _highlighted;
 
     curve_type_e _interpolation;
+    int _frequency;
+    float _interval;
 
     void init ( void );
 
@@ -78,6 +85,8 @@ protected:
 
 public:
 
+    void connect_osc ( void );
+
     static bool draw_with_gradient;
     static bool draw_with_polygon;
     static bool draw_with_grid;
@@ -91,6 +100,8 @@ public:
 
     curve_type_e interpolation ( void ) const { return _interpolation; }
     void interpolation ( curve_type_e v ) { _interpolation = v; }
+    int frequency ( void ) const { return _frequency; }
+    void frequency ( int v ) { _frequency = v; _interval = ( 1.0f / (float)v ) / 2; }
 
     /* Engine */
     void output ( JACK::Port *p ) { _output = p; }

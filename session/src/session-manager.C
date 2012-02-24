@@ -916,8 +916,8 @@ main (int argc, char **argv )
 
         Daemon *d = new Daemon;
 
-        d->url = optarg;
-        d->addr = lo_address_new_from_url( optarg );
+        d->url = nsm_url;
+        d->addr = lo_address_new_from_url( nsm_url );
 
         daemon_list.push_back( d );
     }

@@ -1644,6 +1644,26 @@ Timeline::discover_peers ( void )
     nsm->broadcast( m );
 
     lo_message_free( m );
+
+    /* wait for responses and then autoconnect outputs */
+    
+    MESSAGE( "Waiting for OSC peers..." );
+
+    osc->wait( 1000 );
+
+    MESSAGE( "Reconnecting signals." );
+
+    /* reconnect OSC signals */
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+        
+        for ( int j = t->control->children(); j--; )
+        {
+            Control_Sequence *c = (Control_Sequence*)t->control->child( j );
+            c->connect_osc();
+        }
+    }
 }
 
 void

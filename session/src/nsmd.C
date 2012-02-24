@@ -1801,7 +1801,7 @@ int main(int argc, char *argv[])
 
     osc_server = new OSC::Endpoint();
 
-    if ( osc_server->init( osc_port ) )
+    if ( osc_server->init( LO_UDP, osc_port ) )
     {
         FATAL( "Failed to create OSC server." );
     }

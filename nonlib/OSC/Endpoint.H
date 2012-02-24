@@ -270,7 +270,7 @@ namespace OSC
 
         void list_peers ( void (*callback) (const char *, const char *, int, void * ), void *v );
 
-        int init ( const char *port = 0 );
+        int init ( int proto, const char *port = 0 );
         Endpoint ( );
 
         ~Endpoint ( );

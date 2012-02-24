@@ -229,9 +229,9 @@ main ( int argc, char **argv )
         
         if ( nsm_url )
         {
-            if ( ! nsm->init() )
+            if ( ! nsm->init( nsm_url ) )
             {
-                nsm->announce( nsm_url, APP_NAME, ":switch:dirty:", argv[0] );
+                nsm->announce( APP_NAME, ":switch:dirty:", argv[0] );
 
                 // poll so we can keep OSC handlers running in the GUI thread and avoid extra sync
                 Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );

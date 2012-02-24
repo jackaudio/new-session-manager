@@ -29,6 +29,8 @@ namespace NSM
 
     private:
 
+        const char *nsm_url;
+
         lo_server _server;
         lo_server_thread _st;
         lo_address nsm_addr;
@@ -64,14 +66,14 @@ namespace NSM
         void is_clean ( void );
         void progress ( float f );
         void message( int priority, const char *msg );
-        void announce ( const char *nsm_url, const char *appliction_name, const char *capabilities, const char *process_name );
+        void announce ( const char *appliction_name, const char *capabilities, const char *process_name );
 
         void broadcast ( lo_message msg );
 
         /* init without threading */
-        int init ( void );
+        int init ( const char *nsm_url );
         /* init with threading */
-        int init_thread ( void );
+        int init_thread ( const char *nsm_url );
         
         /* call this periodically to check for new messages */
         void check ( int timeout = 0 );

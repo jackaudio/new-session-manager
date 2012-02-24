@@ -1571,7 +1571,7 @@ Timeline::init_osc ( const char *osc_port )
 {
     osc = new OSC::Endpoint();
     
-    if ( int r = osc->init( osc_port ) )
+    if ( int r = osc->init( LO_UDP, osc_port ) )
         return r;
     
     osc->owner = this;

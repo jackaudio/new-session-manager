@@ -668,7 +668,7 @@ public:
         {
             osc = new OSC::Endpoint();
         
-            if ( int r = osc->init() )
+            if ( int r = osc->init( LO_UDP ) )
                 return r;
         
             osc->owner = this;

@@ -60,11 +60,11 @@ namespace NSM
     }
 
     void
-    Client::announce ( const char *nash_url, const char *application_name, const char *capabilities, const char *process_name )
+    Client::announce ( const char *application_name, const char *capabilities, const char *process_name )
     {
         MESSAGE( "Announcing to NSM" );
 
-        lo_address to = lo_address_new_from_url( nash_url );
+        lo_address to = lo_address_new_from_url( nsm_url );
 
         if ( ! to )
         {
@@ -151,9 +151,15 @@ namespace NSM
     }
 
     int
-    Client::init ( )
+    Client::init ( const char *nsm_url )
     {
-        _server = lo_server_new( NULL, NULL );
+        this->nsm_url = nsm_url;
+
+        lo_address addr = lo_address_new_from_url( nsm_url );
+        int proto = lo_address_get_protocol( addr );
+        lo_address_free( addr );
+
+        _server = lo_server_new_with_proto( NULL, proto, NULL );
 
         if ( ! _server )
             return -1;
@@ -169,9 +175,15 @@ namespace NSM
     }
 
     int
-    Client::init_thread ( )
+    Client::init_thread ( const char *nsm_url )
     {
-        _st = lo_server_thread_new( NULL, NULL );
+        this->nsm_url = nsm_url;
+
+        lo_address addr = lo_address_new_from_url( nsm_url );
+        int proto = lo_address_get_protocol( addr );
+        lo_address_free( addr );
+        
+        _st = lo_server_thread_new_with_proto( NULL, proto, NULL );
         _server = lo_server_thread_get_server( _st );
         
         if ( ! _server || ! _st )

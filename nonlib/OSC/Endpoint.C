@@ -87,11 +87,11 @@ namespace OSC
     }
 
     int
-    Endpoint::init ( const char *port )
+    Endpoint::init ( int proto, const char *port )
     {
         DMESSAGE( "Creating OSC server" );
 
-        _server = lo_server_new( port, error_handler );
+        _server = lo_server_new_with_proto( port, proto, error_handler );
 
         if ( ! _server )
         {

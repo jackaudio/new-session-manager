@@ -393,7 +393,7 @@ Mixer::init_osc ( const char *osc_port )
 {
     osc_endpoint = new OSC::Endpoint();
 
-    if ( int r = osc_endpoint->init( osc_port ) )
+    if ( int r = osc_endpoint->init( LO_UDP, osc_port ) )
         return r;
 
     osc_endpoint->owner = this;

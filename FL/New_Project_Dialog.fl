@@ -1,5 +1,5 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0110 
+version 1.0300 
 header_name {.H} 
 code_name {.C}
 comment {//
@@ -22,29 +22,31 @@ comment {//
 } {in_source in_header
 } 
 
-decl {\#include <stdlib.h>} {} 
+decl {\#include <stdlib.h>} {private local
+} 
 
-decl {\#include <string.h>} {} 
+decl {\#include <string.h>} {private local
+} 
 
-decl {\#include <stdio.h>} {} 
+decl {\#include <stdio.h>} {private local
+} 
 
-decl {\#include <FL/Fl_File_Chooser.H>} {} 
+decl {\#include <FL/Fl_File_Chooser.H>} {private local
+} 
 
 class New_Project_Dialog {open
 } {
   Function {New_Project_Dialog()} {open
   } {
     code {_default_path = 0;
-          path = 0;
-          make_window();} {}
+path = 0;
+make_window();} {}
   }
   Function {run()} {open return_type void
   } {
-    code {
+    code {_directory->value( _default_path );
 
-    _directory->value( _default_path );
-
-    _window->show();
+_window->show();
 
 while ( _window->shown() )
 	Fl::wait();} {}
@@ -53,7 +55,7 @@ while ( _window->shown() )
   } {
     Fl_Window _window {
       label {New Project} open
-      xywh {406 251 550 195} type Double hide modal xclass Non_DAW
+      xywh {762 252 550 195} type Double hide modal xclass Non_DAW
     } {
       Fl_File_Input _name {
         label {Named:}
@@ -95,7 +97,7 @@ while ( _window->shown() )
 // write_line( user_config_dir, "default_path", o->value() );}
         xywh {75 100 375 35}
         code0 {\#include <FL/filename.H>}
-        code1 {char *v;}
+        code1 {char *v = NULL;}
         code2 {// read_line( user_config_dir, "default_path", &v );}
         code3 {o->value( v );}
       }
@@ -108,15 +110,16 @@ while ( _window->shown() )
         private xywh {310 60 225 25} down_box BORDER_BOX
       } {
         MenuItem {} {
-          label Default
+          label Default selected
           xywh {0 0 40 25}
         }
       }
     }
   }
-  decl {char *path;} {public
+  decl {char *path;} {public local
   }
-  decl {char *_default_path} {}
+  decl {char *_default_path} {private local
+  }
   Function {templates( const char **templates )} {open return_type void
   } {
     code {for ( const char **s = templates; *s; ++s )
@@ -148,6 +151,5 @@ nsd.run();
 *default_path = strdup( nsd.default_path() );
 *selected_template = strdup( nsd.selected_template() );
 
-return nsd.path;} {selected
-  }
+return nsd.path;} {}
 } 

@@ -71,12 +71,14 @@ Module::Module ( ) : Fl_Group( 0, 0, 50, 50, "Unnamed" )
 
 Module::~Module ( )
 {
+    /* we assume that the engine for this chain is already locked */
+
     if ( _editor )
     {
         delete _editor;
         _editor = NULL;
     }
-
+    
     for ( unsigned int i = 0; i < audio_input.size(); ++i )
         audio_input[i].disconnect();
     for ( unsigned int i = 0; i < audio_output.size(); ++i )

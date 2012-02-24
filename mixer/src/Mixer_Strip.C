@@ -94,6 +94,7 @@ Mixer_Strip::~Mixer_Strip ( )
 {
     DMESSAGE( "Destroying mixer strip" );
 
+    _chain->engine()->lock();
 
     /* make sure this gets destroyed before the chain */
     fader_tab->clear();

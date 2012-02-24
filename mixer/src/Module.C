@@ -242,14 +242,6 @@ Module::Port::generate_osc_path ()
 void
 Module::Port::change_osc_path ( char *path )
 {
-    if ( _scaled_signal && _unscaled_signal )
-    {
-	mixer->osc_endpoint->del_signal( _scaled_signal );
-	mixer->osc_endpoint->del_signal( _unscaled_signal );
-
-	_scaled_signal = _unscaled_signal = NULL;
-    }
-
     if ( path )
     {
         char *scaled_path = path;
@@ -257,13 +249,25 @@ Module::Port::change_osc_path ( char *path )
 
         asprintf( &unscaled_path, "%s/unscaled", path );
 
-        _scaled_signal = mixer->osc_endpoint->add_signal( scaled_path, OSC::Signal::Input, &Module::Port::osc_control_change_cv, this );
-
-        _unscaled_signal = mixer->osc_endpoint->add_signal( unscaled_path, OSC::Signal::Input, &Module::Port::osc_control_change_exact, this );
+        if ( ! ( _scaled_signal && _unscaled_signal ) )
+        {
+            _scaled_signal =
+                mixer->osc_endpoint->add_signal( scaled_path, 
+                                                 OSC::Signal::Input, &Module::Port::osc_control_change_cv, this );
+            
+            _unscaled_signal = 
+                mixer->osc_endpoint->add_signal( unscaled_path, 
+                                                 OSC::Signal::Input, &Module::Port::osc_control_change_exact, this );
+        }
+        else
+        {
+            _scaled_signal->rename( scaled_path );
+            _unscaled_signal->rename( unscaled_path );
+        }
 
         free( unscaled_path );
         free( scaled_path );
-
+        
         if ( hints.ranged )
         {
             _unscaled_signal->parameter_limits( 

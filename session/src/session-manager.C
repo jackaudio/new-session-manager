@@ -734,7 +734,7 @@ private:
 
     static int osc_handler ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
         {
-            OSC_DMSG();
+//            OSC_DMSG();
             
             NSM_Controller *controller = (NSM_Controller*)((OSC::Endpoint*)user_data)->owner;
             

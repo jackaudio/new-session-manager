@@ -96,6 +96,20 @@ Control_Sequence::~Control_Sequence ( )
 
     _output = NULL;
 
+    delete _osc_output;
+    
+    _osc_output = NULL;
+
+    if ( _osc_connected_peer )
+        free( _osc_connected_peer );
+        
+    _osc_connected_peer = NULL;
+
+    if ( _osc_connected_path )
+        free( _osc_connected_path );
+
+    _osc_connected_path = NULL;
+
     Loggable::block_end();
 }
 
@@ -365,8 +379,7 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
             free( path );
         }
 
-        /* FIXME: somebody has to free these unsigned longs */
-        unsigned long id = *(unsigned long*)m->mvalue()->user_data();
+        int id = ((OSC::Signal*)m->mvalue()->user_data())->id();
 
         char *peer_name = index( picked, '/' ) + 1;
     
@@ -421,7 +434,12 @@ Control_Sequence::connect_osc ( void )
     }
 
     if ( _osc_connected_peer && _osc_connected_path )
-        timeline->osc->connect_signal( _osc_output, _osc_connected_peer, _osc_connected_path );
+    {
+        if ( ! timeline->osc->connect_signal( _osc_output, _osc_connected_peer, _osc_connected_path ) )
+        {
+            /* failed to connect */
+        }
+    }
 }
 
 void
@@ -480,6 +498,8 @@ Control_Sequence::handle ( int m )
             else if ( Fl::event_button3() && ! ( Fl::event_state() & ( FL_ALT | FL_SHIFT | FL_CTRL ) ) )
             {
                 timeline->discover_peers();
+
+                timeline->osc->wait( 500 );
 
                 Fl_Menu_Button menu( 0, 0, 0, 0, "Control Sequence" );
 

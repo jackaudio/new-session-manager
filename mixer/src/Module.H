@@ -171,7 +171,11 @@ public:
 
         void destroy_osc_port ( )
             {
-                change_osc_path( NULL );
+
+                delete _unscaled_signal;
+                delete _scaled_signal;
+                
+                _unscaled_signal = _scaled_signal = NULL;
             }
 
         void control_value_no_callback ( float f )

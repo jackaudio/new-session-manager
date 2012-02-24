@@ -53,6 +53,37 @@ namespace OSC
     /**********/
 
     int Signal::next_id = 0;
+
+    Signal::~Signal ( )
+    {
+        if ( _endpoint )
+        {
+            _endpoint->del_signal( this );
+        }
+                
+        free( _path );
+        _path = NULL;
+
+        _endpoint = NULL;
+    }
+
+    void
+    Signal::rename ( const char *path )
+    {
+        for ( std::list<Target*>::const_iterator i = _incoming.begin();
+              i != _incoming.end();
+              ++i )
+        {
+            _endpoint->send( (*i)->peer->addr, 
+                             "/signal/renamed",
+                             (*i)->signal_id,
+                             path );
+
+        }
+
+        free( _path );
+        _path = strdup( path );
+    }
     
     void
     Signal::value ( float f )
@@ -109,6 +140,7 @@ namespace OSC
             return -1;
         }
 
+        add_method( "/signal/renamed", "is", &Endpoint::osc_sig_renamed, this, "" );
         add_method( "/signal/change", "if", &Endpoint::osc_sig_handler, this, "" );
         add_method( NULL, "", &Endpoint::osc_generic, this, "" );
         add_method( NULL, NULL, &Endpoint::osc_signal_lister, this, "" );
@@ -167,6 +199,53 @@ namespace OSC
         }
 
         return NULL;
+    }
+
+    OSC::Signal *
+    Endpoint::find_peer_signal_by_id ( Peer *p, int id )
+    {
+        for ( std::list<Signal*>::iterator i = p->_signals.begin();
+              i != p->_signals.end();
+              ++i )
+        {
+            if ( id == (*i)->id() )
+                return *i;
+        }
+
+        return NULL;
+    }
+
+
+    int
+    Endpoint::osc_sig_renamed ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+    {
+        int id = argv[0]->i;
+        char *new_name = &argv[1]->s;
+
+        Endpoint *ep = (Endpoint*)user_data;
+
+        Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) );
+        
+        if ( ! p )
+        {
+            WARNING( "Got signal rename notification from unknown peer." );
+            return 0;
+        }
+
+        Signal *o = ep->find_peer_signal_by_id( p, id );
+
+        if ( ! o )
+        {
+            WARNING( "Unknown signal id %i", id );
+            return 0;
+        }
+
+        DMESSAGE( "Signal %s was renamed to %s" );
+        
+        free( o->_path );
+        o->_path = strdup( new_name );
+
+        return 0;
     }
 
     int
@@ -330,7 +409,7 @@ namespace OSC
 
 
     void
-    Endpoint::list_peers ( void (*callback) (const char *, const char *, int, void * ), void *v )
+    Endpoint::list_peers ( void (*callback) (const char *, const OSC::Signal *, void * ), void *v )
     {
         for ( std::list<Peer*>::iterator i = _peers.begin(); 
               i != _peers.end();
@@ -341,7 +420,7 @@ namespace OSC
                   ++j )
             {
 //                DMESSAGE( "Running callback" );
-                callback( (*i)->name, (*j)->path(), (*j)->id(), v );
+                callback( (*i)->name, *j, v );
             }
         }
     }
@@ -601,7 +680,7 @@ namespace OSC
 
         lo_server_del_method( _server, o->path(), "f" );
 
-        delete o;
+//        delete o;
 
         _signals.remove( o );
     }

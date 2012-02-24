@@ -1553,7 +1553,7 @@ Timeline::command_new ( const char *name, const char *display_name )
 
     /* tle->main_window->redraw(); */
     
-//  discover_peers();
+  discover_peers();
 
   return b;
 }
@@ -1653,6 +1653,22 @@ Timeline::reply_to_finger ( lo_message msg )
 }
 
 void
+Timeline::connect_osc ( void )
+{
+    /* try to (re)connect OSC signals */
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+        
+        for ( int j = t->control->children(); j--; )
+        {
+            Control_Sequence *c = (Control_Sequence*)t->control->child( j );
+            c->connect_osc();
+        }
+    }
+}
+
+void
 Timeline::discover_peers ( void )
 {
     lo_message m = lo_message_new();
@@ -1668,44 +1684,34 @@ Timeline::discover_peers ( void )
     
     MESSAGE( "Waiting for OSC peers..." );
 
-    osc->wait( 1000 );
+    //   osc->wait( 1000 );
 
     MESSAGE( "Reconnecting signals." );
 
-    /* reconnect OSC signals */
-    for ( int i = tracks->children(); i-- ; )
-    {
-        Track *t = (Track*)tracks->child( i );
-        
-        for ( int j = t->control->children(); j--; )
-        {
-            Control_Sequence *c = (Control_Sequence*)t->control->child( j );
-            c->connect_osc();
-        }
-    }
-
+    connect_osc();
 }
 
 void
-Timeline::peer_callback( const char *name, const char *path, int id, void *v )
+Timeline::peer_callback( const char *name, const OSC::Signal *sig, void *v )
 {
-    ((Timeline*)v)->peer_callback2( name, path, id );
+    ((Timeline*)v)->peer_callback( name, sig );
 }
 
 static Fl_Menu_Button *peer_menu;
 static const char *peer_prefix;
 
 void
-Timeline::peer_callback2( const char *name, const char *path, int id )
+Timeline::peer_callback( const char *name, const OSC::Signal *sig )
 {
     char *s;
 
-    asprintf( &s, "%s/%s/%s", peer_prefix, name, path );
+    asprintf( &s, "%s/%s%s", peer_prefix, name, sig->path() );
 
-    /* FIXME: Somebody has to free these unsigned longs! */
-    peer_menu->add( s, 0, NULL, new unsigned long( id ) );
+    peer_menu->add( s, 0, NULL, (void*)( sig ) );
 
     free( s );
+
+    connect_osc();
 }
 
 void

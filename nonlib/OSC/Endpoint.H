@@ -181,18 +181,16 @@ namespace OSC
                 _path = strdup( path );
                 _id = ++next_id;
                 _value = 0.0f;
+                _endpoint = NULL;
             }
 
-        ~Signal ( )
-            {
-                free( _path );
-            }
+        ~Signal ( );
 
         static Signal *get_peer_signal_by_id ( Peer *p, int signal_id );
         bool connected ( void ) { return _outgoing.size() + _incoming.size(); }
         void get_connected_peer_name_and_path ( char **peer_name, char **path );
      
-        int id ( void ) { return _id; }
+        int id ( void ) const { return _id; }
 
         Direction direction ( void ) { return _direction; }
 
@@ -206,12 +204,14 @@ namespace OSC
 
         Parameter_Limits& parameter_limits ( void ) { return _parameter_limits; }
 
-        const char *path ( void ) { return _path; }
+        const char *path ( void ) const { return _path; }
+
+        void rename ( const char *name );
 
         /* publishes value to targets */
         void value ( float v );
         /* get current value */
-        float value ( void ) { return _value; }
+        float value ( void ) const { return _value; }
 
         friend class Endpoint;
     };
@@ -245,6 +245,7 @@ namespace OSC
         static int osc_signal_lister ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_generic ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_sig_handler ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+        static int osc_sig_renamed ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
 
         Thread _thread;
 
@@ -259,8 +260,8 @@ namespace OSC
         void osc_thread ( void );
             
         OSC::Signal *find_signal_by_id ( int id );
-
         OSC::Signal *find_peer_signal_by_path ( Peer *p, const char *path );
+        OSC::Signal *find_peer_signal_by_id ( Peer *p, int id );
         
         Peer *find_peer_by_name ( const char *name );
         Peer *find_peer_by_address ( lo_address addr );
@@ -270,7 +271,7 @@ namespace OSC
 
     public:
 
-        void list_peers ( void (*callback) (const char *, const char *, int, void * ), void *v );
+        void list_peers ( void (*callback) (const char *, const OSC::Signal *, void * ), void *v );
 
         int init ( int proto, const char *port = 0 );
         Endpoint ( );

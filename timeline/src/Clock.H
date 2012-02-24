@@ -28,7 +28,7 @@ switched between Bar Beat Tick and Wallclock displays  */
 #include "Timeline.H"
 #include "types.h"
 
-const float CLOCK_UPDATE_FREQ = 0.06f;
+const float CLOCK_UPDATE_FREQ = 0.08f;
 
 /* TODO: frames per second? */
 

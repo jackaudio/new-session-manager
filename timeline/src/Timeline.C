@@ -397,7 +397,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
     Loggable::snapshot_callback( &Timeline::snapshot, this );
 
     osc_thread = 0;
-    _sample_rate = 0;
+    _sample_rate = 44100;
 
     box( FL_FLAT_BOX );
     xoffset = 0;
@@ -1544,7 +1544,7 @@ Timeline::command_save ( )
 bool
 Timeline::command_new ( const char *name, const char *display_name )
 {
-    return Project::create( name, NULL );
+    bool b = Project::create( name, NULL );
 
     Project::set_name ( display_name );
 
@@ -1552,9 +1552,10 @@ Timeline::command_new ( const char *name, const char *display_name )
     /* tle->update_menu(); */
 
     /* tle->main_window->redraw(); */
+    
+//  discover_peers();
 
-  discover_peers();
-
+  return b;
 }
 
 const char *

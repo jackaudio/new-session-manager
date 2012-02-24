@@ -36,7 +36,7 @@ class Control_Sequence : public Sequence
 
 public:
 
-    enum curve_type_e { Linear, Quadratic };
+    enum curve_type_e { None, Linear, Quadratic };
 
 private:
 
@@ -46,7 +46,7 @@ private:
 
     bool _highlighted;
 
-    curve_type_e _type;
+    curve_type_e _interpolation;
 
     void init ( void );
 
@@ -58,11 +58,13 @@ private:
     static void process_osc ( void *v );
     void process_osc ( void );
     
+    float _rate; 
 
 protected:
 
 
     virtual void get ( Log_Entry &e ) const;
+    virtual void get_unjournaled ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
     Control_Sequence (  ) : Sequence( 0 )
@@ -86,6 +88,9 @@ public:
     ~Control_Sequence ( );
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_CROSS; }
+
+    curve_type_e interpolation ( void ) const { return _interpolation; }
+    void interpolation ( curve_type_e v ) { _interpolation = v; }
 
     /* Engine */
     void output ( JACK::Port *p ) { _output = p; }

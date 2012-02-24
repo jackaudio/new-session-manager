@@ -71,18 +71,23 @@ Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
         /* do incremental linear interpolation */
 
         const nframes_t len = p2->when() - p1->when();
-
+        
         const float y1 = 1.0f - p1->control();
         const float y2 = 1.0f - p2->control();
-
+        
         const nframes_t start = frame - p1->when();
-        const float incr = ( y2 - y1 ) / (float)len;
-
+        
+        float incr;
+        
+        if ( interpolation() != None )
+            incr = ( y2 - y1 ) / (float)len;
+        else
+            incr = 0.0f;
+        
         float v = y1 + start * incr;
-
+        
         for ( nframes_t i = start; i < len && n--; ++i, v += incr )
             *(buf++) = v;
-
     }
 
     return nframes - n;

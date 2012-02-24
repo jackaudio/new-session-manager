@@ -67,6 +67,8 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
     if ( track )
         track->add( this );
 
+    interpolation( Linear );
+
     log_create();
 
 }
@@ -74,6 +76,7 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 
 Control_Sequence::~Control_Sequence ( )
 {
+    Fl::remove_timeout( &Control_Sequence::process_osc, this );
 
     Loggable::block_start();
 
@@ -118,6 +121,12 @@ Control_Sequence::get ( Log_Entry &e ) const
 }
 
 void
+Control_Sequence::get_unjournaled ( Log_Entry &e ) const
+{
+    e.add( ":interpolation", _interpolation );
+}
+
+void
 Control_Sequence::set ( Log_Entry &e )
 {
     for ( int i = 0; i < e.size(); ++i )
@@ -145,6 +154,8 @@ Control_Sequence::set ( Log_Entry &e )
         }
         else if ( ! strcmp( ":name", s ) )
             name( v );
+        else if ( ! strcmp( ":interpolation", s ) )
+            interpolation( (curve_type_e)atoi( v ) );
 
     }
 }
@@ -207,7 +218,6 @@ Control_Sequence::draw_curve ( bool flip, bool filled )
 void
 Control_Sequence::draw ( void )
 {
-
     if ( ! fl_not_clipped( x(), y(), w(), h() ) )
         return;
 
@@ -230,64 +240,67 @@ Control_Sequence::draw ( void )
     const Fl_Color color = active ? this->color() : fl_inactive( this->color() );
     const Fl_Color selection_color = active ? this->selection_color() : fl_inactive( this->selection_color() );
 
-    if ( draw_with_gradient )
-    {
+
+        if ( draw_with_gradient )
+        {
 /*         const Fl_Color c2 = fl_color_average( selection_color, FL_WHITE, 0.90f ); */
 /*         const Fl_Color c1 = fl_color_average( color, c2, 0.60f ); */
 
-        const Fl_Color c1 = fl_color_average( selection_color, FL_WHITE, 0.90f );
-        const Fl_Color c2 = fl_color_average( color, c1, 0.60f );
+            const Fl_Color c1 = fl_color_average( selection_color, FL_WHITE, 0.90f );
+            const Fl_Color c2 = fl_color_average( color, c1, 0.60f );
 
-        for ( int gy = 0; gy < bh; gy++ )
-        {
-            fl_color( fl_color_average( c1, c2, gy / (float)bh) );
-            fl_line( X, by + gy, X + W, by + gy );
-        }
-    }
-
-    if ( draw_with_grid )
-    {
-        fl_color( fl_darker( color ) );
-
-        const int inc = bh / 10;
-        if ( inc )
-            for ( int gy = 0; gy < bh; gy += inc )
+            for ( int gy = 0; gy < bh; gy++ )
+            {
+                fl_color( fl_color_average( c1, c2, gy / (float)bh) );
                 fl_line( X, by + gy, X + W, by + gy );
+            }
+        }
 
-    }
+        if ( draw_with_grid )
+        {
+            fl_color( fl_darker( color ) );
 
+            const int inc = bh / 10;
+            if ( inc )
+                for ( int gy = 0; gy < bh; gy += inc )
+                    fl_line( X, by + gy, X + W, by + gy );
 
-    if ( draw_with_polygon )
+        }
+
+    if ( interpolation() != None )
     {
-        fl_color( draw_with_gradient ? color : fl_color_average( color, selection_color, 0.45f ) );
+        if ( draw_with_polygon )
+        {
+            fl_color( draw_with_gradient ? color : fl_color_average( color, selection_color, 0.45f ) );
 
-        fl_begin_complex_polygon();
-        draw_curve( draw_with_gradient, true );
-        fl_end_complex_polygon();
+            fl_begin_complex_polygon();
+            draw_curve( draw_with_gradient, true );
+            fl_end_complex_polygon();
 
-        fl_color( selection_color );
-        fl_line_style( FL_SOLID, 2 );
+            fl_color( selection_color );
+            fl_line_style( FL_SOLID, 2 );
 
-        fl_begin_line();
-        draw_curve( draw_with_gradient, false );
-        fl_end_line();
-    }
-    else
-    {
+            fl_begin_line();
+            draw_curve( draw_with_gradient, false );
+            fl_end_line();
+        }
+        else
+        {
 //        fl_color( fl_color_average( selection_color, color, 0.70f ) );
-        fl_color( selection_color );
-        fl_line_style( FL_SOLID, 2 );
+            fl_color( selection_color );
+            fl_line_style( FL_SOLID, 2 );
 
-        fl_begin_line();
-        draw_curve( draw_with_gradient, false );
-        fl_end_line();
+            fl_begin_line();
+            draw_curve( draw_with_gradient, false );
+            fl_end_line();
+        }
+
+        fl_line_style( FL_SOLID, 0 );
     }
-
-    fl_line_style( FL_SOLID, 0 );
 
     timeline->draw_measure_lines( x(), y(), w(), h(), color );
 
-    if ( _highlighted || Fl::focus() == this )
+    if ( interpolation() == None || _highlighted || Fl::focus() == this )
         for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
             (*r)->draw_box();
     else
@@ -316,27 +329,44 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
 
     m->item_pathname( picked, sizeof( picked ), m->mvalue() );
 
-    // DMESSAGE( "Picked: %s (%s)", picked, m->mvalue()->label() );
-
-
-    if ( ! _osc_output )
-    {
-        char *path;
-        asprintf( &path, "/non/daw/%s/control/%i", track()->name(), track()->ncontrols() );
+    if ( ! strncmp( picked, "Connect To/", strlen( "Connect To/" ) ) )
+    { 
+        if ( ! _osc_output )
+        {
+            char *path;
+            asprintf( &path, "/non/daw/%s/control/%i", track()->name(), track()->ncontrols() );
         
-        _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL );
+            _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL );
         
-        free( path );
-    }
+            free( path );
+        }
 
-    /* FIXME: somebody has to free these unsigned longs */
-    unsigned long id = *(unsigned long*)m->mvalue()->user_data();
+        /* FIXME: somebody has to free these unsigned longs */
+        unsigned long id = *(unsigned long*)m->mvalue()->user_data();
 
-    char *peer_name = index( picked, '/' ) + 1;
+        char *peer_name = index( picked, '/' ) + 1;
     
-    *index( peer_name, '/' ) = 0;
+        *index( peer_name, '/' ) = 0;
 
-    timeline->osc->connect_signal( _osc_output, peer_name, id );
+        timeline->osc->connect_signal( _osc_output, peer_name, id );
+    }
+    else if ( ! strcmp( picked, "Interpolation/Linear" ) )
+        interpolation( Linear );
+    else if ( ! strcmp( picked, "Interpolation/None" ) )
+        interpolation( None );
+    else if ( ! strcmp( picked, "/Rename" ) )
+    {
+        const char *s = fl_input( "Input new name for control sequence:", name() );
+        
+        if ( s )
+            name( s );
+        
+        redraw();
+    }
+    else if ( !strcmp( picked, "/Remove" ) )
+    {
+        Fl::delete_widget( this );
+    }
 }
 
 
@@ -354,9 +384,8 @@ Control_Sequence::process_osc ( void )
     if ( _osc_output && _osc_output->connected() )
     {
         sample_t buf[1];
-
-        play( buf, (nframes_t)transport->frame, (nframes_t) 1 );
         
+        play( buf, (nframes_t)transport->frame, (nframes_t) 1 );
         _osc_output->value( (float)buf[0] );
     }
 }
@@ -412,41 +441,14 @@ Control_Sequence::handle ( int m )
                 
                 /* menu.add( "Connect To", 0, 0, 0); */
                 /* menu.add( "Connect To", 0, 0, const_cast< Fl_Menu_Item *>( con->menu() ), FL_SUBMENU_POINTER ); */
+                menu.add( "Interpolation/None", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == None ? FL_MENU_VALUE : 0 ) );
+                menu.add( "Interpolation/Linear", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == Linear ? FL_MENU_VALUE : 0 ) );
                 menu.add( "Rename", 0, 0, 0 );
                 menu.add( "Remove", 0, 0, 0 );
 
-
                menu.callback( &Control_Sequence::menu_cb, (void*)this);
-                /* Fl_Menu_Item menu[] = */
-                /*     { */
-                /*         { "Rename" }, */
-                /*         { "Remove" }, */
-                /*         { "Connect To" }, */
-                        
-                /*         { 0 } */
-                /*     }; */
 
                 menu_popup( &menu, x(), y() );
-
-//                const Fl_Menu_Item *r = menu.popup( Fl::event_x(), Fl::event_y(), "Control Sequence" );
-
-                /* if ( r ) */
-                /* { */
-                /*     if ( r == &menu[ 0 ] ) */
-                /*     { */
-                /*         const char *s = fl_input( "Input new name for control sequence:", name() ); */
-
-                /*         if ( s ) */
-                /*             name( s ); */
-
-                /*         redraw(); */
-                /*     } */
-                /*     else if ( r == &menu[ 1 ] ) */
-                /*     { */
-                /*         Fl::delete_widget( this ); */
-                /*     } */
-
-                /* } */
 
                 return 1;
             }

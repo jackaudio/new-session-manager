@@ -127,10 +127,12 @@ Track::init ( void )
     Fl_Group::size( timeline->w(), height() );
 
     Track *o = this;
-    o->box( FL_THIN_UP_BOX );
+    o->box( FL_NO_BOX );
+
     {
         Fl_Group *o = new Fl_Group( 0, 0, 149, 70 );
         o->color( ( Fl_Color ) 53 );
+        o->box( FL_THIN_UP_BOX );
 
         {
             Fl_Input *o = name_field = new Fl_Sometimes_Input( 2, 2, 144, 24 );

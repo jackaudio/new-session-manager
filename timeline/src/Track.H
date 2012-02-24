@@ -74,6 +74,9 @@ public:
         Audio_Region *region;
     };
 
+    Fl_Color color ( void ) const { return child(0)->color(); }
+    void color ( Fl_Color c ) { child(0)->color( c ); }
+
 private:
 
     static int _soloing;

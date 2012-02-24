@@ -150,7 +150,6 @@ namespace NSM
         lo_server_thread_stop( _st );
     }
 
-
     int
     Client::init ( )
     {

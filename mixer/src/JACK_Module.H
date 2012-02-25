@@ -36,6 +36,7 @@ public:
     JACK_Module ( );
     virtual ~JACK_Module ( );
 
+    bool allows_external_control ( void ) const { return false; }
     const char *name ( void ) const { return "JACK"; }
 
     bool initialize ( void );

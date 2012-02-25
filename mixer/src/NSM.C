@@ -80,6 +80,8 @@ NSM_Client::command_open ( const char *name, const char *display_name, const cha
     
     instance_name = strdup( client_id );
 
+    mixer->osc_endpoint->name( client_id );
+
     int r = ERR_OK;
 
     if ( Project::validate( name ) )

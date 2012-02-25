@@ -44,6 +44,7 @@ public:
     Meter_Indicator_Module ( bool is_default = false );
     virtual ~Meter_Indicator_Module ( );
 
+    bool allows_external_control ( void ) const { return false; }
     const char *name ( void ) const { return "Meter Indicator"; }
 
     int can_support_inputs ( int ) { return 0; }

@@ -143,12 +143,13 @@ Control_Sequence::get_unjournaled ( Log_Entry &e ) const
     {
         char *path;
         char *peer;
-
+        
         _osc_output->get_connected_peer_name_and_path( &peer, &path );
+        
+        e.add( ":osc-peer", peer );
  
-        e.add( ":osc_peer", peer );
-        e.add( ":osc_path", path );
-
+        e.add( ":osc-path", path );
+        
         free( path );
         free( peer );
     }
@@ -182,16 +183,20 @@ Control_Sequence::set ( Log_Entry &e )
             t->add( this );
         }
         else if ( ! strcmp( ":name", s ) )
+        {
             name( v );
+        }
         else if ( ! strcmp( ":interpolation", s ) )
+        {
             interpolation( (curve_type_e)atoi( v ) );
+        }
         /* else if ( ! strcmp( ":frequency", s ) ) */
         /*     frequency( atoi( v ) ); */
-        else if ( ! strcmp( ":osc_peer", s ) )
+        else if ( ! strcmp( ":osc-peer", s ) )
         {
             _osc_connected_peer = strdup( v );
         }
-        else if ( !strcmp( ":osc_path", s ) )
+        else if ( !strcmp( ":osc-path", s ) )
         {
             _osc_connected_path = strdup( v );
         }
@@ -369,23 +374,28 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
 
     if ( ! strncmp( picked, "Connect To/", strlen( "Connect To/" ) ) )
     { 
-        if ( ! _osc_output )
-        {
-            char *path;
-            asprintf( &path, "/non/daw/%s/control/%i", track()->name(), track()->ncontrols() );
-        
-            _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL );
-        
-            free( path );
-        }
-
-        int id = ((OSC::Signal*)m->mvalue()->user_data())->id();
 
         char *peer_name = index( picked, '/' ) + 1;
     
         *index( peer_name, '/' ) = 0;
 
-        timeline->osc->connect_signal( _osc_output, peer_name, id );
+        _osc_connected_peer = strdup( peer_name );
+
+        _osc_connected_path = strdup( ((OSC::Signal*)m->mvalue()->user_data())->path() );
+
+        if ( ! _osc_output->is_connected_to( ((OSC::Signal*)m->mvalue()->user_data()) ) )
+        {
+            connect_osc();
+        }
+        else
+        {
+            timeline->osc->disconnect_signal( _osc_output, _osc_connected_peer, _osc_connected_path );
+
+            free( _osc_connected_path );
+            free( _osc_connected_peer );
+            _osc_connected_peer = _osc_connected_path = NULL;
+        }
+        
     }
     else if ( ! strcmp( picked, "Interpolation/Linear" ) )
         interpolation( Linear );
@@ -437,7 +447,15 @@ Control_Sequence::connect_osc ( void )
     {
         if ( ! timeline->osc->connect_signal( _osc_output, _osc_connected_peer, _osc_connected_path ) )
         {
-            /* failed to connect */
+            //  MESSAGE( "Failed to connect output %s to %s:%s", _osc_output->path(), _osc_connected_peer, _osc_connected_path );
+        }
+        else
+        {
+            tooltip( _osc_connected_path );
+
+//            _osc_connected_peer = _osc_connected_path = 
+
+            MESSAGE( "Connected output %s to %s:%s", _osc_output->path(), _osc_connected_peer, _osc_connected_path );
         }
     }
 }
@@ -458,6 +476,40 @@ Control_Sequence::process_osc ( void )
         play( buf, (nframes_t)transport->frame, (nframes_t) 1 );
         _osc_output->value( (float)buf[0] );
     }
+}
+
+void
+Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig, void *v )
+{
+    ((Control_Sequence*)v)->peer_callback( name, sig );
+}
+
+static Fl_Menu_Button *peer_menu;
+static const char *peer_prefix;
+
+void
+Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig )
+{
+    char *s;
+
+    asprintf( &s, "%s/%s%s", peer_prefix, name, sig->path() );
+
+    peer_menu->add( s, 0, NULL, (void*)( sig ),
+                     FL_MENU_TOGGLE |
+                    ( _osc_output->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) );
+
+    free( s );
+
+    connect_osc();
+}
+
+void
+Control_Sequence::add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix )
+{
+   peer_menu = m;
+   peer_prefix = prefix;
+
+   timeline->osc->list_peers( &Control_Sequence::peer_callback, this );
 }
 
 int
@@ -509,7 +561,7 @@ Control_Sequence::handle ( int m )
 
                 menu.clear();
 
-                timeline->add_osc_peers_to_menu( &menu, "Connect To" );
+                add_osc_peers_to_menu( &menu, "Connect To" );
                 
                 /* menu.add( "Connect To", 0, 0, 0); */
                 /* menu.add( "Connect To", 0, 0, const_cast< Fl_Menu_Item *>( con->menu() ), FL_SUBMENU_POINTER ); */

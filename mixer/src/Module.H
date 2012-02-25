@@ -71,6 +71,8 @@ public:
     bool is_default ( void ) const { return _is_default; }
     void is_default ( bool v ) { _is_default = v; }
 
+    virtual bool allows_external_control ( void ) const { return true; }
+
     class Port
     {
         /* char *type_names[] = { "Audio", "Control" }; */
@@ -160,7 +162,10 @@ public:
 
         const char *osc_path ( )
             {
-                return _scaled_signal->path();
+                if ( _scaled_signal )
+                    return _scaled_signal->path();
+                else
+                    return NULL;
             }
 
         void update_osc_port ( )
@@ -205,6 +210,7 @@ public:
             }
 
         bool connected ( void ) const { return _connected; }
+        bool connected_osc ( void ) const;
 
         Port *connected_port ( void ) const
             {
@@ -289,6 +295,15 @@ public:
         {
             for ( nframes_t i = control_output.size(); i--; )
                 if ( control_output[i].connected() )
+                    return true;
+            return false;
+        }
+
+    bool
+    is_being_controlled_osc ( void ) const
+        {
+            for ( nframes_t i = control_input.size(); i--; )
+                if ( control_input[i].connected_osc() )
                     return true;
             return false;
         }

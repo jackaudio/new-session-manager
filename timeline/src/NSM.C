@@ -58,6 +58,8 @@ NSM_Client::command_open ( const char *name, const char *display_name, const cha
     
     instance_name = strdup( client_id );
 
+    timeline->osc->name( client_id );
+
     if ( Project::validate( name ) )
     {
         if ( timeline->command_load( name, display_name ) )

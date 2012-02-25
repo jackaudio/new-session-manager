@@ -213,6 +213,12 @@ Module::handle_control_changed ( Port *p )
         _editor->handle_control_changed ( p );
 }
 
+bool
+Module::Port::connected_osc ( void ) const
+{
+    return _scaled_signal->connected();
+}
+
 char *
 Module::Port::generate_osc_path ()
 {
@@ -221,6 +227,12 @@ Module::Port::generate_osc_path ()
     char *path = NULL;
 
     // /mixer/STRIPNAME/MODULENAME/CONTROLNAME
+
+    if ( ! module()->allows_external_control() )
+    {
+        /* Don't create signals for the default modules other than Gain */
+        return NULL;
+    }
 
     int n = module()->chain()->get_module_instance_number( module() );
 
@@ -290,6 +302,7 @@ Module::Port::change_osc_path ( char *path )
                                           0.0f,
                                           1.0f,
                                           scaled_default );
+
     }
 }
 
@@ -500,7 +513,12 @@ Module::draw_box ( void )
     {
         /* maybe draw control indicators */
         if ( control_input.size() )
+        {
             fl_draw_box( FL_ROUNDED_BOX, tx + 4, ty + 4, 5, 5, is_being_controlled() ? FL_YELLOW : fl_inactive( FL_YELLOW ) );
+
+            fl_draw_box( FL_ROUNDED_BOX, tx + 4, ty + 8, 5, 5, is_being_controlled_osc() ? FL_GREEN : fl_inactive( FL_GREEN ) );
+        }
+
         if ( control_output.size() )
             fl_draw_box( FL_ROUNDED_BOX, tx + tw - 8, ty + 4, 5, 5, is_controlling() ? FL_YELLOW : fl_inactive( FL_YELLOW ) );
     }

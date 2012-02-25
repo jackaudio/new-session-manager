@@ -84,6 +84,21 @@ namespace OSC
         free( _path );
         _path = strdup( path );
     }
+
+    bool
+    Signal::is_connected_to ( const OSC::Signal *s ) const
+    {
+        for ( std::list<Target*>::const_iterator i = _outgoing.begin();
+              i != _outgoing.end();
+              ++i )
+        {
+            if ( (*i)->peer == s->_peer &&
+                 (*i)->signal_id == s->id() )
+                return true;
+        }
+
+        return false;
+    }
     
     void
     Signal::value ( float f )
@@ -92,8 +107,6 @@ namespace OSC
               i != _outgoing.end();
               ++i )
         {
-//            DMESSAGE( "Sending signal value %i %f", (*i)->signal_id, f );
-
             if ( (*i)->value != f )
             {
                 (*i)->value = f;
@@ -140,10 +153,14 @@ namespace OSC
             return -1;
         }
 
+
+        add_method( "/signal/hello", "s", &Endpoint::osc_sig_hello, this, "" );
+        add_method( "/signal/connect", "ii", &Endpoint::osc_sig_connect, this, "" );
+        add_method( "/signal/disconnect", "ii", &Endpoint::osc_sig_disconnect, this, "" );
         add_method( "/signal/renamed", "is", &Endpoint::osc_sig_renamed, this, "" );
         add_method( "/signal/change", "if", &Endpoint::osc_sig_handler, this, "" );
         add_method( NULL, "", &Endpoint::osc_generic, this, "" );
-        add_method( NULL, NULL, &Endpoint::osc_signal_lister, this, "" );
+        add_method( "/signal/list", NULL, &Endpoint::osc_signal_lister, this, "" );
         add_method( "/reply", NULL, &Endpoint::osc_reply, this, "" );
 
         return 0;
@@ -215,6 +232,135 @@ namespace OSC
         return NULL;
     }
 
+    void
+    Endpoint::hello ( const char *url )
+    {
+        lo_address addr = lo_address_new_from_url ( url );
+
+        send( addr, "/signal/hello", name() );
+
+        lo_address_free( addr );
+    }
+
+    int
+    Endpoint::osc_sig_hello ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+    {
+        Endpoint *ep = (Endpoint*)user_data;
+
+        const char *peer_name = &argv[0]->s;
+
+        DMESSAGE( "Got hello from %s", peer_name );
+
+        if ( ! ep->find_peer_by_name( peer_name ) )
+        {
+            char *url = lo_address_get_url( lo_message_get_source( msg ));
+
+            ep->scan_peer( peer_name, url );
+            
+            ep->send( lo_message_get_source( msg ), "/signal/hello", ep->name() );
+
+            free(url);
+        }
+
+        return 0;
+    }
+
+    int
+    Endpoint::osc_sig_disconnect ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+    {
+        int their_id = argv[0]->i;
+        int our_id = argv[1]->i;
+     
+        Endpoint *ep = (Endpoint*)user_data;
+
+        Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) );
+
+        if ( ! p )
+            return 0;
+
+        Signal *ps = ep->find_peer_signal_by_id( p, their_id );
+
+        if ( ! ps )
+            return 0;
+
+        Signal *s = ep->find_signal_by_id( our_id );
+
+        if ( ! s )
+            return 0;
+
+        if ( s->_direction == Signal::Input )
+        {
+            for ( std::list<Target*>::iterator i = s->_incoming.begin();
+                  i != s->_incoming.end();
+                  ++i )
+            {
+                if ( (*i)->peer == p &&
+                     (*i)->signal_id == ps->id() )
+                {
+                    DMESSAGE( "Peer %s has disconnected from signal %s", p->name, ps->path() );
+ 
+                    delete *i;
+                    i = s->_incoming.erase( i );
+
+                    return 0;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+
+    int
+    Endpoint::osc_sig_connect ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+    {
+        int their_id = argv[0]->i;
+        int our_id = argv[1]->i;
+     
+        Endpoint *ep = (Endpoint*)user_data;
+
+        Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) );
+
+        if ( ! p )
+        {
+            WARNING( "Got connection signal from unknown peer" );
+            return 0;
+        }
+
+        Signal *ps = ep->find_peer_signal_by_id( p, their_id );
+
+        if ( ! ps )
+        {
+            WARNING( "Unknown source signal" );
+
+            return 0;
+        }
+
+        Signal *s = ep->find_signal_by_id( our_id );
+
+        if ( ! s )
+        {
+            WARNING( "Unknown destination signal" );
+
+            return 0;
+        }
+
+        DMESSAGE( "Peer %s has connected to signal %s", p->name, s->path() );
+
+        if ( s->_direction == Signal::Input )
+        {
+            Target *t = new Target;            
+
+            t->peer = p;
+            t->signal_id = ps->id();
+
+            s->_incoming.push_back( t );
+ 
+            return 0;
+        }
+
+        return 0;
+    }
 
     int
     Endpoint::osc_sig_renamed ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
@@ -346,19 +492,6 @@ namespace OSC
     {
 //        OSC_DMSG();
 
-        Signal::Direction dir;
-
-        if ( ! strcmp( path, "/signal/list_inputs" ) )
-        {
-            dir = Signal::Input;
-        }
-        else if ( ! strcmp( path, "/signal/list_outputs" ) )
-        {
-            dir = Signal::Output;
-        }
-        else
-            return -1;
-
         const char *prefix = NULL;
 
         if ( argc )
@@ -370,24 +503,21 @@ namespace OSC
         {
             Signal *o = *i;
 
-            if ( dir == Signal::Bidirectional ||
-                 dir == o->_direction )
+            if ( ! prefix || ! strncmp( o->path(), prefix, strlen(prefix) ) )
             {
-                if ( ! prefix || ! strncmp( o->path(), prefix, strlen(prefix) ) )
-                {
-                    ep->send( lo_message_get_source( msg ),
-                              "/reply", 
-                              path,
-                              o->path(),
-                              o->id(),
-                              o->parameter_limits().min,
-                              o->parameter_limits().max,
-                              o->parameter_limits().default_value
-                        );
-                }
+                ep->send( lo_message_get_source( msg ),
+                          "/reply", 
+                          path,
+                          o->path(),
+                          o->_direction == Signal::Input ? "in" : "out",
+                          o->id(),
+                          o->parameter_limits().min,
+                          o->parameter_limits().max,
+                          o->parameter_limits().default_value
+                    );
             }
         }
-
+        
         ep->send( lo_message_get_source( msg ), "/reply", path );
 
         return 0;
@@ -469,6 +599,48 @@ namespace OSC
     }
 
     bool
+    Endpoint::disconnect_signal( OSC::Signal *s, const char *peer_name, const char *signal_path )
+    {
+        if ( s->_direction == Signal::Output )
+        {
+            Peer *p = find_peer_by_name( peer_name );
+            
+            if ( ! p )
+                return false;
+
+            Signal *ps = find_peer_signal_by_path( p, signal_path );
+            
+            if ( ! ps )
+                return false;
+
+            MESSAGE( "Disconnecting signal output \"%s\" to %s:%i", s->path(), peer_name, ps->_id );
+
+            for ( std::list<Target*>::iterator i = s->_outgoing.begin();
+                  i != s->_outgoing.end();
+                  ++i )
+            {
+                if ( (*i)->peer == p &&
+                     (*i)->signal_id == ps->id() )
+                {
+                    send( p->addr, "/signal/disconnect", 
+                          s->_id, /* our signal id */
+                          (*i)->signal_id /* their signal id */ );
+
+                    delete *i;
+                    i = s->_outgoing.erase( i );
+
+                    DMESSAGE( "Number of outgoing connections: %i", s->_outgoing.size() );
+                    return true;
+                }
+            }
+            
+        }
+
+        return false;
+    }
+
+
+    bool
     Endpoint::connect_signal( OSC::Signal *s, const char *peer_name, const char *signal_path )
     {
         if ( s->_direction == Signal::Output )
@@ -483,23 +655,25 @@ namespace OSC
             if ( ! ps )
                 return false;
 
-            MESSAGE( "Connecting signal output \"%s\" to %s:%i", s->path(), peer_name, s->_id );
-
-            if ( p )
+            if ( s->is_connected_to( ps ) )
             {
-                Target *t = new Target();
-
-                t->peer = p;
-                t->signal_id = ps->_id;
-                
-                s->_outgoing.push_back( t );
-                
-                send( p->addr, "/signal/connect", 
-                      s->_id, /* our signal id */
-                      t->signal_id /* their signal id */ );
-                
-                return true;
+                return false;
             }
+
+            MESSAGE( "Connecting signal output \"%s\" to %s:%i", s->path(), peer_name, ps->_id );
+
+            Target *t = new Target();
+
+            t->peer = p;
+            t->signal_id = ps->_id;
+                
+            s->_outgoing.push_back( t );
+                
+            send( p->addr, "/signal/connect", 
+                  s->_id, /* our signal id */
+                  t->signal_id /* their signal id */ );
+                
+            return true;
         }
 
         return false;
@@ -557,7 +731,7 @@ namespace OSC
     {
         Endpoint *ep = (Endpoint*)user_data;
 
-        if ( argc && !strcmp( &argv[0]->s, "/signal/list_inputs" ) )
+        if ( argc && !strcmp( &argv[0]->s, "/signal/list" ) )
         {
             Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) );
 
@@ -576,12 +750,20 @@ namespace OSC
             {
                 DMESSAGE( "Peer %s has signal %s", p->name, &argv[1]->s );
 
-                Signal *s = new Signal( &argv[1]->s, Signal::Input );
+                int dir = 0;
+
+                if ( !strcmp( &argv[2]->s, "in" ) )
+                    dir = Signal::Input;
+                else if ( !strcmp( &argv[2]->s, "out" ) )
+                    dir = Signal::Output;
+
+                Signal *s = new Signal( &argv[1]->s, (Signal::Direction)dir );
                 
-                s->_id = argv[2]->i;
-                s->parameter_limits().min = argv[3]->f;
-                s->parameter_limits().max = argv[4]->f;
-                s->parameter_limits().default_value = argv[4]->f;
+                s->_peer = p;
+                s->_id = argv[3]->i;
+                s->parameter_limits().min = argv[4]->f;
+                s->parameter_limits().max = argv[5]->f;
+                s->parameter_limits().default_value = argv[6]->f;
 
                 p->_signals.push_back( s );
             }
@@ -690,13 +872,15 @@ namespace OSC
     {
         Peer *p = new Peer;
 
+        DMESSAGE( "Scanning peer %s @ %s...", name, url );
+
         p->name = strdup( name );
         p->addr = lo_address_new_from_url( url );
         p->_scanning = true;
 
         _peers.push_back( p );
 
-        send( p->addr, "/signal/list_inputs" );
+        send( p->addr, "/signal/list" );
     }
 
     void *
@@ -940,6 +1124,12 @@ namespace OSC
         return lo_send_from( to, _server, LO_TT_IMMEDIATE, path, "ssifff", v1, v2, v3, v4, v5, v6 );
     }
 
+    int
+    Endpoint::send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, int v4, float v5, float v6, float v7 )
+    {
+        return lo_send_from( to, _server, LO_TT_IMMEDIATE, path, "sssifff", v1, v2, v3, v4, v5, v6, 7 );
+    }
+    
     int
     Endpoint::send ( lo_address to, const char *path, const char *v1, int v2, int v3 )
     {

@@ -150,6 +150,8 @@ namespace OSC
 
         Endpoint *_endpoint;
 
+        Peer *_peer;
+
         int _id;
 
         char *_path;
@@ -182,6 +184,7 @@ namespace OSC
                 _id = ++next_id;
                 _value = 0.0f;
                 _endpoint = NULL;
+                _peer = NULL;
             }
 
         ~Signal ( );
@@ -212,6 +215,8 @@ namespace OSC
         void value ( float v );
         /* get current value */
         float value ( void ) const { return _value; }
+
+        bool is_connected_to ( const Signal *s ) const;
 
         friend class Endpoint;
     };
@@ -246,6 +251,11 @@ namespace OSC
         static int osc_generic ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_sig_handler ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_sig_renamed ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+        static int osc_sig_disconnect ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+        static int osc_sig_connect ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+        static int osc_sig_hello ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+
+        void scan_peer ( const char *name, const char *url );
 
         Thread _thread;
 
@@ -269,6 +279,8 @@ namespace OSC
 
         static Target *find_target_by_peer_address ( std::list<Target*> *l, lo_address addr );
 
+        char *_name;
+
     public:
 
         void list_peers ( void (*callback) (const char *, const OSC::Signal *, void * ), void *v );
@@ -279,6 +291,7 @@ namespace OSC
         ~Endpoint ( );
 
 
+        bool disconnect_signal( OSC::Signal *s, const char *peer_name, const char *signal_path );        
         bool connect_signal( OSC::Signal *s, const char *peer_name, const char *signal_path );        
         bool connect_signal( OSC::Signal *s, const char *peer_name, int signal_id );
 
@@ -293,11 +306,14 @@ namespace OSC
         int port ( void ) const;
         char * url ( void ) const;
 
-        void scan_peer ( const char *name, const char *url );
-
         void check ( void ) const;
         void wait ( int timeout ) const;
         void run ( void ) const;
+
+        void name ( const char *name ) { _name = strdup( name ); }
+        const char *name ( void ) { return _name; }
+
+        void hello ( const char *url );
 
         int send ( lo_address to, const char *path, std::list< OSC_Value > values );
 
@@ -330,6 +346,8 @@ namespace OSC
         int send ( lo_address to, const char *path, lo_message msg );
 
         int send ( lo_address to, const char *path, const char *v1, const char *v2, int v3, float v4, float v5, float v6 );
+
+        int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, int v4, float v5, float v6, float v7 );
 
         // can be used to point back to owning object.
         void *owner;

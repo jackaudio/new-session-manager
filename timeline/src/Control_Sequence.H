@@ -49,6 +49,10 @@ private:
     /* osc output port */
     OSC::Signal *_osc_output;
 
+    static void peer_callback( const char *name, const OSC::Signal *sig, void *v );
+    void peer_callback( const char *name, const OSC::Signal *sig );
+    void add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix );
+
     bool _highlighted;
 
     curve_type_e _interpolation;

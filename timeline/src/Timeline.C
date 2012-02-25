@@ -1528,7 +1528,7 @@ Timeline::command_load ( const char *name, const char *display_name )
 
   Project::set_name ( display_name ? display_name : name );
 
-  discover_peers();
+  // discover_peers();
 
   return true;
 }
@@ -1553,7 +1553,7 @@ Timeline::command_new ( const char *name, const char *display_name )
 
     /* tle->main_window->redraw(); */
     
-  discover_peers();
+    // discover_peers();
 
   return b;
 }
@@ -1623,7 +1623,9 @@ Timeline::osc_non_hello ( const char *path, const char *types, lo_arg **argv, in
 
         MESSAGE( "Scanning..." );
 
-        timeline->osc->scan_peer( id, url );
+//        timeline->osc->scan_peer( id, url );
+
+        timeline->osc->hello( url );
 
         return 0;
     }
@@ -1684,44 +1686,13 @@ Timeline::discover_peers ( void )
     
     MESSAGE( "Waiting for OSC peers..." );
 
-    //   osc->wait( 1000 );
+    osc->wait( 1000 );
 
     MESSAGE( "Reconnecting signals." );
 
     connect_osc();
 }
 
-void
-Timeline::peer_callback( const char *name, const OSC::Signal *sig, void *v )
-{
-    ((Timeline*)v)->peer_callback( name, sig );
-}
-
-static Fl_Menu_Button *peer_menu;
-static const char *peer_prefix;
-
-void
-Timeline::peer_callback( const char *name, const OSC::Signal *sig )
-{
-    char *s;
-
-    asprintf( &s, "%s/%s%s", peer_prefix, name, sig->path() );
-
-    peer_menu->add( s, 0, NULL, (void*)( sig ) );
-
-    free( s );
-
-    connect_osc();
-}
-
-void
-Timeline::add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix )
-{
-   peer_menu = m;
-   peer_prefix = prefix;
-
-   osc->list_peers( &Timeline::peer_callback, this );
-}
 
 /* runs in the OSC thread... */
 void

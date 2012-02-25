@@ -779,7 +779,7 @@ private:
                 int err = argv[1]->i;
 
                 if ( err != 0 )
-                    fl_alert( "ERROR: %s failed with: %s", &argv[0]->s, &argv[2]->s );
+                    fl_alert( "Command %s failed with:\n\n%s", &argv[0]->s, &argv[2]->s );
             }
             else if (!strcmp( path, "/reply" ))
             {

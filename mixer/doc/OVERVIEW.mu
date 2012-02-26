@@ -8,6 +8,8 @@
 
 : Overview
 
+< non-mixer-complex.png
+
 :: Description
 
   The Non Mixer is a powerful, reliable and fast modular Digital Audio
@@ -16,7 +18,8 @@
   I\/O and the FLTK GUI toolkit for a fast and lightweight user
   interface.
 
-  Please see the #(url,MANUAL.html,Manual) for more information.
+  Please see the #(url,MANUAL.html,Manual) for more information (and
+  lots of screenshots).
 
 :: Why write another one?
 
@@ -76,7 +79,8 @@
   receiving control (automation) data for any module parameter from
   Non-DAW (or another program) via JACK.
 
-  Control data is expressed as Control Voltage (CV).
+  Control data is expressed either as Control Voltage (CV) or Control
+  Signals.
 
 ::: Modular Signal Processing
 
@@ -124,6 +128,9 @@
   Any module parameter may be bound to a /control/. The control may be
   controlled via the GUI, or externally via a Control Voltage signal,
   such as is output by a Non-DAW control sequence.
+  
+  All module parameters are alterable via OSC messages, regardless of
+  whether or not they have /controls/ defined.
 
 ; What does freedom have to do with this software?
 
@@ -174,6 +181,8 @@
 * FLTK >= 1.1.7 (with `fluid`)
 * JACK >= 0.103.0
 * liblrdf >= 0.1.0
+* liblo >= 0.26
+* libsigc++ >= 2.0.0
 
 ; Community
 

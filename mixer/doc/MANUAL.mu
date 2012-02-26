@@ -118,7 +118,7 @@
 
   The format of the automatically generated OSC path names is as follows:
 
-> /mixer/strip/[STRIP_NAME]/control/[MODULE_NAME]/[PARAMETER_NAME]
+> /strip/[STRIP_NAME]/[MODULE_NAME]/[PARAMETER_NAME]
 
   The UDP port that the OSC server binds to can be set by providing
   the `--osc-port` command-line option. Without this option, a random
@@ -126,12 +126,13 @@
   printed to the console as a line beginning with "OSC: ").
 
   The default path accepts a float value between 0.0 and 1.0 (a
-  Control Voltage) which will be scaled to the allowable range of the control.
+  Control Voltage like signal) which will be automatically scaled to
+  the allowable range of the control.
 
   A path ending in \/unscaled is also available, which accepts exact values,
   which will be clamped to the allowable range. For example:
 
-> /mixer/strip/[STRIP_NAME]/control/[MODULE_NAME]/[PARAMETER_NAME]/unscaled
+> /strip/[STRIP_NAME]/[MODULE_NAME]/[PARAMETER_NAME]/unscaled
 
   If same module\/plugin is used twice in a signal chain
   (e.g. multiple Gain stages), then a position dependent sequence number
@@ -142,10 +143,10 @@
 
   For the second instance of the Gain module on the strip named 'Foo'.
 
-  For each OSC parameter change message received, a reply will be sent
-  to the same path at the sender with the new value as the only
-  parameter. Changes to the control value initatied in the GUI will
-  *not* generate any OSC messages.
+  Non-DAW accesses these same signals via a more advanced signal
+  routing layer on top of OSC. Any module parameter is easily
+  controlled via Control Sequences in Non-DAW without the need to
+  specify an OSC URL.
 
 :::::: Manipulation
 
@@ -234,6 +235,11 @@
   use with Non-Mixer. jm2cv can be acquired by:
 
 > git clone git://fuzzle.org/jm2cv.git
+
+{ NOTE:
+{ The use of Control Signals (OSC) should be preferred for types
+{ of parameter automation, as  LADSPA plugins are incapable of
+{ processing Control Voltage signals at full resolution anyway.
 
 ::: Projects
 

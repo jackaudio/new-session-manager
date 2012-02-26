@@ -51,12 +51,15 @@ February 1, 2010<br>
 
 </ul></ul><hr></div>
 <h1 id="n:1.">1. Overview</h1>
+<center><div class="fig image"><table border=1>
+<tr><td><img src="non-mixer-complex.png" alt="fig. "></td></tr>
+</table></div></center>
 <h2 id="n:1.1.">1.1. Description</h2>
 <p>
 The Non Mixer is a powerful, reliable and fast modular Digital Audio Mixer, released under the GNU General Public License (GPL). It utilizes the JACK Audio Connection Kit for inter-application audio I/O and the FLTK GUI toolkit for a fast and lightweight user interface.
 </p>
 <p>
-Please see the <a class=ext href="MANUAL.html">Manual</a> for more information.
+Please see the <a class=ext href="MANUAL.html">Manual</a> for more information (and lots of screenshots).
 </p>
 <h2 id="n:1.2.">1.2. Why write another one?</h2>
 <p>
@@ -91,7 +94,7 @@ Since the Mixer is an entirely separate unit, you may use any JACK capable mixer
 The mixer's design is modular, with all DSP occurring in discrete modules. One module hosts LADSPA plugins and the mixer is capable of receiving control (automation) data for any module parameter from Non-DAW (or another program) via JACK.
 </p>
 <p>
-Control data is expressed as Control Voltage (CV).
+Control data is expressed either as Control Voltage (CV) or Control Signals.
 </p>
 <h3 id="n:1.3.2.">1.3.2. Modular Signal Processing</h3>
 <p>
@@ -115,7 +118,7 @@ There is no limit imposed by Non Mixer on the total number of strips or Mixer in
 </p>
 <h3 id="n:1.3.7.">1.3.7. Automation</h3>
 <p>
-Any module parameter may be bound to a <i>control</i>. The control may be controlled via the GUI, or externally via a Control Voltage signal, such as is output by a Non-DAW control sequence.
+Any module parameter may be bound to a <i>control</i>. The control may be controlled via the GUI, or externally via a Control Voltage signal, such as is output by a Non-DAW control sequence.  All module parameters are alterable via OSC messages, regardless of whether or not they have <i>controls</i> defined.
 </p>
 <h1 id="u:1.">What does freedom have to do with this software?</h1>
 <p>
@@ -155,6 +158,8 @@ The following libraries are required to build Non DAW and Non Mixer
 <ul><li><span>FLTK >= 1.1.7 (with `fluid`)</span>
 <li><span>JACK >= 0.103.0</span>
 <li><span>liblrdf >= 0.1.0</span>
+<li><span>liblo >= 0.26</span>
+<li><span>libsigc++ >= 2.0.0</span>
 </ul><h1 id="u:5.">Community</h1>
 <p>
 Feel free to drop by the <tt>#non</tt> channel on irc.freenode.net.

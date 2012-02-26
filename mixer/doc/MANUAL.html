@@ -153,20 +153,20 @@ The input parameters of all modules are controllable via OSC, regardless of whet
 The format of the automatically generated OSC path names is as follows:
 </p>
 <div class="fig example"><table width=100%><tr><td><pre>
-/mixer/strip/[STRIP_NAME]/control/[MODULE_NAME]/[PARAMETER_NAME]
+/strip/[STRIP_NAME]/[MODULE_NAME]/[PARAMETER_NAME]
 </pre></td></tr>
 </table></div>
 <p>
 The UDP port that the OSC server binds to can be set by providing the <tt>--osc-port</tt> command-line option. Without this option, a random port will be bound automatically (the exact OSC URL will always be printed to the console as a line beginning with "OSC: ").
 </p>
 <p>
-The default path accepts a float value between 0.0 and 1.0 (a Control Voltage) which will be scaled to the allowable range of the control.
+The default path accepts a float value between 0.0 and 1.0 (a Control Voltage like signal) which will be automatically scaled to the allowable range of the control.
 </p>
 <p>
 A path ending in /unscaled is also available, which accepts exact values, which will be clamped to the allowable range. For example:
 </p>
 <div class="fig example"><table width=100%><tr><td><pre>
-/mixer/strip/[STRIP_NAME]/control/[MODULE_NAME]/[PARAMETER_NAME]/unscaled
+/strip/[STRIP_NAME]/[MODULE_NAME]/[PARAMETER_NAME]/unscaled
 </pre></td></tr>
 </table></div>
 <p>
@@ -180,7 +180,7 @@ If same module/plugin is used twice in a signal chain (e.g. multiple Gain stages
 For the second instance of the Gain module on the strip named 'Foo'.
 </p>
 <p>
-For each OSC parameter change message received, a reply will be sent to the same path at the sender with the new value as the only parameter. Changes to the control value initatied in the GUI will <b>not</b> generate any OSC messages.
+Non-DAW accesses these same signals via a more advanced signal routing layer on top of OSC. Any module parameter is easily controlled via Control Sequences in Non-DAW without the need to specify an OSC URL.
 </p>
 <h6 id="n:1.1.2.3.1.2.">1.1.2.3.1.2. Manipulation</h6>
 <p>
@@ -256,6 +256,14 @@ Control Voltages, on the other hand, provide a simple 1:1 source to sink relatio
 git clone git://fuzzle.org/jm2cv.git
 </pre></td></tr>
 </table></div>
+<div class=admonition>
+<table width=100%>
+<tr><td>NOTE:
+The use of Control Signals (OSC) should be preferred for types
+of parameter automation, as  LADSPA plugins are incapable of
+processing Control Voltage signals at full resolution anyway.
+</td></table>
+</div>
 <h3 id="n:1.1.3.">1.1.3. Projects</h3>
 <p>
 A Non-Mixer project is a directory where Non-Mixer keeps the strip settings, project specific settings, and some meta-data.  A project is completely self-contained. You can rename a project as simply as:

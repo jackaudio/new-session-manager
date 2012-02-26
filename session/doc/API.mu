@@ -2,10 +2,11 @@
 ! title		Non Session Management API
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
 ! date		August 1, 2010
+! revision	Version 0.8
 
 -- Table Of Contents
 
-: Non Session Management API version 0.8
+: Non Session Management API
 
   The Non Session Management API is used by the various components of
   the Non audio production suite to allow any number of independent
@@ -109,6 +110,11 @@
   `lo\_send\_from` method of liblo or its equivalent, as the server uses
   the return addresses to distinguish between clients.
 
+  Clients *MUST* create thier OSC servers using the same protocol
+  (UDP,TCP) as found in `NSM\_URL`. liblo is lacking a robust TCP
+  implementation at the time of writing, but in the future it may be
+  useful.
+
 ::: Establishing a Connection
 
 :::: Announce
@@ -118,7 +124,7 @@
   to the provided address as soon as it is ready to respond to the
   `\/nsm\/client\/open` event:
 
-> /nsm/server/announce s:application_name s:capabilities i:api_version_major i:api_version_minor i:pid
+> /nsm/server/announce s:application_name s:capabilities s:executable_name i:api_version_major i:api_version_minor i:pid
 
   If `NSM\_URL` is undefined, invalid, or unreachable, then the client
   should proceed assuming that session management is unavailable.
@@ -136,7 +142,7 @@
   for passing to JACK. This is probably the most complex requirement
   of the NSM API, but it isn't difficult to implement, especially if
   the application simply wishes to delay its initialization process
-  for up to one second while awaiting the `announce` reply and
+  breifly while awaiting the `announce` reply and
   subsequent `open` message.
 
   `capabilities` *MUST* be a string containing a colon separated list
@@ -171,6 +177,7 @@
 // Available Server Capabilities
 [[ Name, Description
 [[ server_control, client-to-server control
+[[ broadcast, server responds to /nsm/server/broadcast message
 
   A client should not consider itself to be under session management
   until it receives this response. For example, the Non applications
@@ -285,7 +292,7 @@
   because the JACK API does currently support renaming existing
   clients, although this is a sorely needed addition.
 
-  A response is *REQUIRED* *AFTER* the open operation has been
+  A response is *REQUIRED* as soon as the open operation has been
   completed.  Ongoing progress may be indicated by sending messages to
   `\/nsm\/client\/progress`.
 
@@ -490,14 +497,14 @@
   server.
   
   Clients may send messages to the server at the path
-  `\/broadcast`.
+  `\/nsm\/server\/broadcast`.
 
   The format of this message is as follows:
 
-> /nsm/server/broadcast [any parameters...]
+> /nsm/server/broadcast s:path [arguments...]
 
   The message will then be relayed to all clients in the session at
-  the path `\/nsm\/client\/broadcast`.
+  the path `path` (with the arguments shifted by one). 
 
   For example the message:
 
@@ -505,12 +512,10 @@
 
   Would broadcast the following message to all clients in the session
   (except for the sender), some of which might respond to the message
-  by updating their own tempo maps. Here the string
-  `\/tempomap\/update` is not an OSC path but merely a name-space
-  qualifier by which the receivers can filter messages.
+  by updating their own tempo maps.
 
->  /nsm/client/broadcast /tempomap/update "0,120,4/4:12351234,240,4/4"
+>  /tempomap/update "0,120,4/4:12351234,240,4/4"
 
-  Clients might use this feature to establish peer to peer OSC
-  communication with symbolic names without having to remember the OSC
-  ports of peers across sessions.
+  The Non programs use this feature to establish peer to peer OSC
+  communication by symbolic names (client IDs) without having to
+  remember the OSC URLs of peers across sessions.

@@ -8,6 +8,8 @@
 
 : Overview
 
+< tle.png
+
 :: Description
 
   The Non DAW is a powerful, reliable and fast modular Digital Audio
@@ -16,7 +18,8 @@
   inter-application audio I\/O and the FLTK GUI toolkit for a fast and
   lightweight user interface.
 
-  Please see the #(url,MANUAL.html,Manual) for more information.
+  Please see the #(url,MANUAL.html,Manual) for more information (and
+  lots of screenshots).
 
 :: What it is not
 
@@ -257,6 +260,8 @@
 * FLTK >= 1.1.7 (with `fluid`)
 * JACK >= 0.103.0
 * libsndfile >= 0.18.0
+* liblo >= 0.26
+* libsigc++ >= 2.0.0
 
 ; Community
 

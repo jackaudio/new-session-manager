@@ -97,7 +97,10 @@ nframes_t
 Control_Sequence::process ( nframes_t nframes )
 {
     THREAD_ASSERT( RT );
-
+    
+    if ( ! _output )
+        return nframes;
+    
     if ( _output->connected() ) /* don't waste CPU on disconnected ports */
     {
         void *buf = _output->buffer( nframes );

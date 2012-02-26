@@ -36,7 +36,14 @@ class Control_Sequence : public Sequence
 
 public:
 
-    enum curve_type_e { None, Linear, Quadratic };
+    enum Curve_Type { None, Linear, Quadratic };
+
+    enum Mode { 
+        CV,
+        OSC,
+        MIDI
+    };
+
 
 private:
 
@@ -44,8 +51,7 @@ private:
 
     /* these are used to cache the saved osc connection until the
      * session is loaded, at which time we will reconnect */
-    char *_osc_connected_peer;
-    char *_osc_connected_path;
+    std::list<char*> _persistent_osc_connections;
     /* osc output port */
     OSC::Signal *_osc_output;
 
@@ -55,9 +61,7 @@ private:
 
     bool _highlighted;
 
-    curve_type_e _interpolation;
-    int _frequency;
-    float _interval;
+    Curve_Type _interpolation;
 
     void init ( void );
 
@@ -66,6 +70,7 @@ private:
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( const Fl_Menu_ *m );
 
+    Mode _mode;
     
     float _rate; 
 
@@ -87,6 +92,7 @@ protected:
 
 public:
 
+
     static void process_osc ( void *v );
     void process_osc ( void );
 
@@ -103,10 +109,11 @@ public:
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_CROSS; }
 
-    curve_type_e interpolation ( void ) const { return _interpolation; }
-    void interpolation ( curve_type_e v ) { _interpolation = v; }
-    int frequency ( void ) const { return _frequency; }
-    void frequency ( int v ) { _frequency = v; _interval = ( 1.0f / (float)v ) / 2; }
+    Curve_Type interpolation ( void ) const { return _interpolation; }
+    void interpolation ( Curve_Type v ) { _interpolation = v; }
+
+    Mode mode ( void ) const { return _mode; }
+    void mode ( Mode v );
 
     /* Engine */
     void output ( JACK::Port *p ) { _output = p; }

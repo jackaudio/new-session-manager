@@ -48,6 +48,8 @@
 #include <lo/lo.h>
 #include "FL/Fl_Blinker.H"
 
+#include "OSC/Endpoint.H"
+
 const double STATUS_UPDATE_FREQ = 0.2f;
 
 const double OSC_INTERVAL = 1.0 / 20.0;                          /* 20 hz */
@@ -678,6 +680,22 @@ Mixer::handle ( int m )
 }
 
 
+
+void
+Mixer::discover_peers ( void )
+{
+    if ( nsm->is_active() )
+    {
+        lo_message m = lo_message_new();
+        
+        lo_message_add_string( m, "/non/finger" );
+        lo_message_add_string( m, osc_endpoint->url() );
+
+        nsm->broadcast( m );
+        
+        lo_message_free( m );
+    }
+}
 
 /************/
 /* Commands */

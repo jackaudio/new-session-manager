@@ -32,6 +32,8 @@ using std::list;
 
 #include "Transport.H"
 
+#include "OSC/Endpoint.H"
+
 
 
 bool Control_Sequence::draw_with_gradient = true;
@@ -44,28 +46,15 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 {
     init();
 
-    _osc_connected_peer = _osc_connected_path = 0;
-
     _track = track;
 
-    _output = new JACK::Port( engine, JACK::Port::Output, track->name(), track->ncontrols(), "cv" );
-
-    if ( ! _output->activate() )
-    {
-        FATAL( "could not create JACK port" );
-    }
-
-    /* { */
-    /*     char *path; */
-    /*     asprintf( &path, "/non/daw/%s/control/%i", track->name(), track->ncontrols() ); */
-        
-    /*     _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL ); */
-        
-    /*     free( path ); */
-    /* } */
-
     _osc_output = 0;
+    _output = 0;
 
+    _mode = CV;
+
+    mode( OSC );
+    
     if ( track )
         track->add( this );
 
@@ -90,25 +79,30 @@ Control_Sequence::~Control_Sequence ( )
 
     engine->unlock();
 
-    _output->shutdown();
+    if ( _output )
+    { 
+        _output->shutdown();
 
-    delete _output;
-
-    _output = NULL;
-
-    delete _osc_output;
-    
-    _osc_output = NULL;
-
-    if ( _osc_connected_peer )
-        free( _osc_connected_peer );
+        delete _output;
         
-    _osc_connected_peer = NULL;
+        _output = NULL;
+    }
 
-    if ( _osc_connected_path )
-        free( _osc_connected_path );
+    if ( _osc_output )
+    {
+        delete _osc_output;
+        
+        _osc_output = NULL;
+    }
 
-    _osc_connected_path = NULL;
+    for ( list<char*>::iterator i = _persistent_osc_connections.begin();
+          i != _persistent_osc_connections.end();
+          ++i )
+    {
+        free( *i );
+    }
+    
+    _persistent_osc_connections.clear();
 
     Loggable::block_end();
 }
@@ -123,7 +117,6 @@ Control_Sequence::init ( void )
     color( fl_darker( FL_YELLOW ) );
 
     interpolation( Linear );
-    frequency( 10 );
 }
 
 
@@ -139,21 +132,24 @@ void
 Control_Sequence::get_unjournaled ( Log_Entry &e ) const
 {
     e.add( ":interpolation", _interpolation );
-    if ( _osc_output->connected() )
+
+    if ( _osc_output && _osc_output->connected() )
     {
-        char *path;
-        char *peer;
+        DMESSAGE( "OSC Output connections: %i", _osc_output->noutput_connections() );
+
+        for ( int i = 0; i < _osc_output->noutput_connections(); ++i )
+        {
+            char *s;
+
+            s = _osc_output->get_output_connection_peer_name_and_path(i);
+
+            e.add( ":osc-output", s );
         
-        _osc_output->get_connected_peer_name_and_path( &peer, &path );
-        
-        e.add( ":osc-peer", peer );
- 
-        e.add( ":osc-path", path );
-        
-        free( path );
-        free( peer );
+            free( s );
+        }
     }
-    /* e.add( ":frequency", frequency() ); */
+
+    e.add( ":mode", mode() );
 }
 
 void
@@ -188,19 +184,65 @@ Control_Sequence::set ( Log_Entry &e )
         }
         else if ( ! strcmp( ":interpolation", s ) )
         {
-            interpolation( (curve_type_e)atoi( v ) );
+            interpolation( (Curve_Type)atoi( v ) );
         }
-        /* else if ( ! strcmp( ":frequency", s ) ) */
-        /*     frequency( atoi( v ) ); */
-        else if ( ! strcmp( ":osc-peer", s ) )
+        else if ( ! strcmp( ":mode", s ) )
+            mode( (Mode)atoi( v ) );
+        else if ( ! strcmp( ":osc-output", s ) )
         {
-            _osc_connected_peer = strdup( v );
-        }
-        else if ( !strcmp( ":osc-path", s ) )
-        {
-            _osc_connected_path = strdup( v );
+            _persistent_osc_connections.push_back( strdup( v ) );
         }
     }
+}
+
+void
+Control_Sequence::mode ( Mode m )
+{
+    if ( CV != m && mode() == CV )
+    {
+        if ( _output )
+        {
+            _output->shutdown();
+            
+            delete _output;
+            
+            _output = NULL;
+        }
+    }
+    else if ( OSC != m && mode() == OSC )
+    {
+        if ( _osc_output )
+        {
+            delete _osc_output;
+            
+            _osc_output = NULL;
+        }
+    }
+
+    if ( CV == m && mode() != CV )
+    {
+        _output = new JACK::Port( engine, JACK::Port::Output, track()->name(), track()->ncontrols(), "cv" );
+        
+        if ( ! _output->activate() )
+        {
+            fl_alert( "Could not create JACK port for control output on %s", track()->name() );
+            delete _output;
+            _output = NULL;
+        }
+    }
+    else if ( OSC == m && mode() != OSC )
+    {
+        char *path;
+        asprintf( &path, "/track/%s/control/%i", track()->name(), track()->ncontrols() );
+        
+        _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL );
+        
+        free( path );
+
+        connect_osc();
+    }
+
+    _mode = m;
 }
 
 void
@@ -284,31 +326,31 @@ Control_Sequence::draw ( void )
     const Fl_Color selection_color = active ? this->selection_color() : fl_inactive( this->selection_color() );
 
 
-        if ( draw_with_gradient )
-        {
+    if ( draw_with_gradient )
+    {
 /*         const Fl_Color c2 = fl_color_average( selection_color, FL_WHITE, 0.90f ); */
 /*         const Fl_Color c1 = fl_color_average( color, c2, 0.60f ); */
 
-            const Fl_Color c1 = fl_color_average( selection_color, FL_WHITE, 0.90f );
-            const Fl_Color c2 = fl_color_average( color, c1, 0.60f );
+        const Fl_Color c1 = fl_color_average( selection_color, FL_WHITE, 0.90f );
+        const Fl_Color c2 = fl_color_average( color, c1, 0.60f );
 
-            for ( int gy = 0; gy < bh; gy++ )
-            {
-                fl_color( fl_color_average( c1, c2, gy / (float)bh) );
-                fl_line( X, by + gy, X + W, by + gy );
-            }
-        }
-
-        if ( draw_with_grid )
+        for ( int gy = 0; gy < bh; gy++ )
         {
-            fl_color( fl_darker( color ) );
-
-            const int inc = bh / 10;
-            if ( inc )
-                for ( int gy = 0; gy < bh; gy += inc )
-                    fl_line( X, by + gy, X + W, by + gy );
-
+            fl_color( fl_color_average( c1, c2, gy / (float)bh) );
+            fl_line( X, by + gy, X + W, by + gy );
         }
+    }
+
+    if ( draw_with_grid )
+    {
+        fl_color( fl_darker( color ) );
+
+        const int inc = bh / 10;
+        if ( inc )
+            for ( int gy = 0; gy < bh; gy += inc )
+                fl_line( X, by + gy, X + W, by + gy );
+
+    }
 
     if ( interpolation() != None )
     {
@@ -379,21 +421,34 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
     
         *index( peer_name, '/' ) = 0;
 
-        _osc_connected_peer = strdup( peer_name );
+        const char *path = ((OSC::Signal*)m->mvalue()->user_data())->path();
 
-        _osc_connected_path = strdup( ((OSC::Signal*)m->mvalue()->user_data())->path() );
+        char *peer_and_path;
+        asprintf( &peer_and_path, "%s:%s", peer_name, path );
 
         if ( ! _osc_output->is_connected_to( ((OSC::Signal*)m->mvalue()->user_data()) ) )
         {
+            _persistent_osc_connections.push_back( peer_and_path );
+            
             connect_osc();
         }
         else
         {
-            timeline->osc->disconnect_signal( _osc_output, _osc_connected_peer, _osc_connected_path );
-
-            free( _osc_connected_path );
-            free( _osc_connected_peer );
-            _osc_connected_peer = _osc_connected_path = NULL;
+            timeline->osc->disconnect_signal( _osc_output, peer_name, path );
+            
+            for ( std::list<char*>::iterator i = _persistent_osc_connections.begin();
+                  i != _persistent_osc_connections.end();
+                  ++i )
+            {
+                if ( !strcmp( *i, peer_and_path ) )
+                {
+                    free( *i );
+                    i = _persistent_osc_connections.erase( i );
+                    break;
+                }
+            }
+            
+            free( peer_and_path );
         }
         
     }
@@ -401,18 +456,10 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
         interpolation( Linear );
     else if ( ! strcmp( picked, "Interpolation/None" ) )
         interpolation( None );
-    /* else if ( ! strcmp( picked, "Frequency/1Hz" ) ) */
-    /*     frequency( 1 ); */
-    /* else if ( ! strcmp( picked, "Frequency/5Hz" ) ) */
-    /*     frequency( 5 ); */
-    /* else if ( ! strcmp( picked, "Frequency/10Hz" ) ) */
-    /*     frequency( 10 ); */
-    /* else if ( ! strcmp( picked, "Frequency/20Hz" ) ) */
-    /*     frequency( 20 ); */
-    /* else if ( ! strcmp( picked, "Frequency/30Hz" ) ) */
-    /*     frequency( 30 ); */
-    /* else if ( ! strcmp( picked, "Frequency/60Hz" ) ) */
-    /*     frequency( 60 ); */
+    else if ( ! strcmp( picked, "Mode/Control Signal (OSC)" ))
+        mode( OSC );
+    else if ( ! strcmp( picked, "Mode/Control Voltage (JACK)" ) )
+        mode( CV );
 
     else if ( ! strcmp( picked, "/Rename" ) )
     {
@@ -431,31 +478,23 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
 
 void
 Control_Sequence::connect_osc ( void )
-
 {
-    if ( ! _osc_output )
+    if ( _persistent_osc_connections.size() )
     {
-        char *path;
-        asprintf( &path, "/non/daw/%s/control/%i", track()->name(), track()->ncontrols() );
-        
-        _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL );
-        
-        free( path );
-    }
-
-    if ( _osc_connected_peer && _osc_connected_path )
-    {
-        if ( ! timeline->osc->connect_signal( _osc_output, _osc_connected_peer, _osc_connected_path ) )
+        for ( std::list<char*>::iterator i = _persistent_osc_connections.begin();
+              i != _persistent_osc_connections.end();
+              ++i )
         {
-            //  MESSAGE( "Failed to connect output %s to %s:%s", _osc_output->path(), _osc_connected_peer, _osc_connected_path );
-        }
-        else
-        {
-            tooltip( _osc_connected_path );
+            if ( ! timeline->osc->connect_signal( _osc_output, *i ) )
+            {
+//                MESSAGE( "Failed to connect output %s to ", _osc_output->path(), *i );
+            }
+            else
+            {
+                MESSAGE( "Connected output %s to %s", _osc_output->path(), *i );
 
-//            _osc_connected_peer = _osc_connected_path = 
-
-            MESSAGE( "Connected output %s to %s:%s", _osc_output->path(), _osc_connected_peer, _osc_connected_path );
+//                tooltip( _osc_connected_path );
+            }
         }
     }
 }
@@ -492,10 +531,15 @@ Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig )
 {
     char *s;
 
+    /* only list CV signals for now */
+    if ( ! ( sig->parameter_limits().min == 0.0 &&
+             sig->parameter_limits().max == 1.0 ) )
+        return;         
+    
     asprintf( &s, "%s/%s%s", peer_prefix, name, sig->path() );
 
     peer_menu->add( s, 0, NULL, (void*)( sig ),
-                     FL_MENU_TOGGLE |
+                    FL_MENU_TOGGLE |
                     ( _osc_output->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) );
 
     free( s );
@@ -506,10 +550,10 @@ Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig )
 void
 Control_Sequence::add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix )
 {
-   peer_menu = m;
-   peer_prefix = prefix;
+    peer_menu = m;
+    peer_prefix = prefix;
 
-   timeline->osc->list_peers( &Control_Sequence::peer_callback, this );
+    timeline->osc->list_peers( &Control_Sequence::peer_callback, this );
 }
 
 int
@@ -549,37 +593,25 @@ Control_Sequence::handle ( int m )
             }
             else if ( Fl::event_button3() && ! ( Fl::event_state() & ( FL_ALT | FL_SHIFT | FL_CTRL ) ) )
             {
-                timeline->discover_peers();
-
-                timeline->osc->wait( 500 );
 
                 Fl_Menu_Button menu( 0, 0, 0, 0, "Control Sequence" );
 
-                /* Fl_Menu_Button *con = new Fl_Menu_Button( 0, 0, 0, 0 ); */
-
-//                con->callback( &Control_Sequence::menu_cb, (void*)this );
-
                 menu.clear();
 
-                add_osc_peers_to_menu( &menu, "Connect To" );
+                if ( mode() == OSC )
+                {
+                    add_osc_peers_to_menu( &menu, "Connect To" );
+                }
                 
-                /* menu.add( "Connect To", 0, 0, 0); */
-                /* menu.add( "Connect To", 0, 0, const_cast< Fl_Menu_Item *>( con->menu() ), FL_SUBMENU_POINTER ); */
                 menu.add( "Interpolation/None", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == None ? FL_MENU_VALUE : 0 ) );
                 menu.add( "Interpolation/Linear", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == Linear ? FL_MENU_VALUE : 0 ) );
-
-                /* menu.add( "Frequency/1Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 1 ? FL_MENU_VALUE : 0 ) ); */
-                /* menu.add( "Frequency/5Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 5 ? FL_MENU_VALUE : 0 ) ); */
-                /* menu.add( "Frequency/10Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 10 ? FL_MENU_VALUE : 0 ) ); */
-                /* menu.add( "Frequency/20Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 20 ? FL_MENU_VALUE : 0 ) ); */
-                /* menu.add( "Frequency/30Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 30 ? FL_MENU_VALUE : 0 ) ); */
-                /* menu.add( "Frequency/60Hz", 0, 0, 0, FL_MENU_RADIO | ( frequency() == 60 ? FL_MENU_VALUE : 0 ) ); */
-
+                menu.add( "Mode/Control Voltage (JACK)", 0, 0, 0 ,FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) );
+                menu.add( "Mode/Control Signal (OSC)", 0, 0, 0 , FL_MENU_RADIO | ( mode() == OSC ? FL_MENU_VALUE : 0 ) );
 
                 menu.add( "Rename", 0, 0, 0 );
                 menu.add( "Remove", 0, 0, 0 );
 
-               menu.callback( &Control_Sequence::menu_cb, (void*)this);
+                menu.callback( &Control_Sequence::menu_cb, (void*)this);
 
                 menu_popup( &menu, x(), y() );
 

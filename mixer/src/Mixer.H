@@ -29,8 +29,8 @@
 class Fl_Blinker;
 class Fl_Flowpack;
 class Fl_Menu_Bar;
-
-#include "OSC/Endpoint.H"
+namespace OSC { class Endpoint; }
+#include <lo/lo.h>
 
 class Mixer : public Fl_Group
 {
@@ -104,6 +104,8 @@ public:
     void sm_active ( bool b );
 
     void say_hello ( void );
+
+    void discover_peers ( void );
 
 public:
 

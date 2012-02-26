@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sigc++/sigc++.h>
+
 namespace OSC
 {
     class OSC_Value
@@ -125,13 +127,6 @@ namespace OSC
         std::list<Signal*> _signals;
     };
 
-    struct Target
-    {
-        Peer *peer;
-        int signal_id;
-        float value;
-    };
-
     typedef int (*signal_handler) ( float value, void *user_data );
 
     class Signal
@@ -159,23 +154,16 @@ namespace OSC
         
         float _value;
 
-        std::list<Target*> _outgoing;
+        std::list<Signal*> _outgoing;
+        std::list<Signal*> _incoming;
 
         Direction _direction;
 
-        /* FIXME:
-           In order to support signal mixing, the receiver must track
-           each connected signal channel separately, and add the
-           values together before invoking the handler. 
-         */
-        std::list<Target*> _incoming;
-
         signal_handler _handler;
         void *_user_data;
+        Parameter_Limits _parameter_limits;
         
     public:
-
-        Parameter_Limits _parameter_limits;
 
         Signal ( const char *path, Direction dir )
             { 
@@ -187,12 +175,17 @@ namespace OSC
                 _peer = NULL;
             }
 
+        sigc::signal <void,Signal*> signal_connection_state_changed;
+
         ~Signal ( );
 
         static Signal *get_peer_signal_by_id ( Peer *p, int signal_id );
+        int noutput_connections() { return _outgoing.size(); }
         bool connected ( void ) { return _outgoing.size() + _incoming.size(); }
-        void get_connected_peer_name_and_path ( char **peer_name, char **path );
+       
+        char * get_output_connection_peer_name_and_path ( int n );
      
+
         int id ( void ) const { return _id; }
 
         Direction direction ( void ) { return _direction; }
@@ -205,7 +198,7 @@ namespace OSC
                 _value = default_value;
             }
 
-        Parameter_Limits& parameter_limits ( void ) { return _parameter_limits; }
+        const Parameter_Limits& parameter_limits ( void ) const { return _parameter_limits; }
 
         const char *path ( void ) const { return _path; }
 
@@ -226,7 +219,6 @@ namespace OSC
         char *_path;
         char *_typespec;
         char *_documentation;
-        struct Parameter_Limits *_parameter_limits;
 
     public:
 
@@ -251,6 +243,8 @@ namespace OSC
         static int osc_generic ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_sig_handler ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_sig_renamed ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+        static int osc_sig_removed ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
+        static int osc_sig_created ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_sig_disconnect ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_sig_connect ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_sig_hello ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
@@ -277,9 +271,12 @@ namespace OSC
         Peer *find_peer_by_address ( lo_address addr );
         static bool address_matches ( lo_address addr1, lo_address addr2 );
 
-        static Target *find_target_by_peer_address ( std::list<Target*> *l, lo_address addr );
+        static Signal *find_target_by_peer_address ( std::list<Signal*> *l, lo_address addr );
 
         char *_name;
+
+        void del_signal ( Signal *signal );
+        void send_signal_rename_notifications( Signal *s );
 
     public:
 
@@ -291,16 +288,20 @@ namespace OSC
         ~Endpoint ( );
 
 
-        bool disconnect_signal( OSC::Signal *s, const char *peer_name, const char *signal_path );        
-        bool connect_signal( OSC::Signal *s, const char *peer_name, const char *signal_path );        
-        bool connect_signal( OSC::Signal *s, const char *peer_name, int signal_id );
+
+    
+        bool disconnect_signal ( OSC::Signal *s, OSC::Signal *d );
+        bool disconnect_signal ( OSC::Signal *s, const char *peer_name, const char *signal_path );        
+        bool connect_signal ( OSC::Signal *s, OSC::Signal *d );
+        bool connect_signal ( OSC::Signal *s, const char *peer_name, const char *signal_path );        
+        bool connect_signal ( OSC::Signal *s, const char *peer_name, int signal_id );
+        bool connect_signal ( OSC::Signal *s, const char *peer_and_path );
 
 
         Signal *add_signal ( const char *path, Signal::Direction dir, signal_handler handler, void *user_data );
         Method *add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data, const char *argument_description );
         void del_method ( const char *path, const char *typespec );
         void del_method ( Method* method );
-        void del_signal ( Signal *signal );
         void start ( void );
         void stop ( void );
         int port ( void ) const;
@@ -325,6 +326,7 @@ namespace OSC
         int send ( lo_address to, const char *path, long v );
         int send ( lo_address to, const char *path, int v1, int v2 );
         int send ( lo_address to, const char *path, int v1, float v2 );
+        int send ( lo_address to, const char *path, int v1, int v2, float v3 );
         int send ( lo_address to, const char *path, const char *v );
         int send ( lo_address to, const char *path, const char *v1, float v2 );
         int send ( lo_address to, const char *path, const char *v1, int v2, int v3 );
@@ -335,6 +337,7 @@ namespace OSC
         
         int send ( lo_address to, const char *path, const char *v1, int v2 );
         int send ( lo_address to, const char *path, int v1, const char *v2 );
+        int send ( lo_address to, const char *path, const char *v1, int v2, int v3, float v4 );
 
         int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, int v4, int v5, int v6 );
         int send ( lo_address to, const char *path, const char *v1, int v2, const char *v3 );
@@ -351,6 +354,11 @@ namespace OSC
 
         // can be used to point back to owning object.
         void *owner;
+
+        sigc::signal <void> signal_peer_scan_complete;
+
+        friend Signal::~Signal();
+        friend void Signal::rename ( const char *name );
     };
 
 };

@@ -23,6 +23,7 @@
 #include "TLE.H"
 #include "NSM.H"
 #include "Project.H"
+#include "OSC/Endpoint.H"
 
 #define OSC_INTERVAL 0.2f
 
@@ -60,28 +61,32 @@ NSM_Client::command_open ( const char *name, const char *display_name, const cha
 
     timeline->osc->name( client_id );
 
+    int r = 0;
+
     if ( Project::validate( name ) )
     {
         if ( timeline->command_load( name, display_name ) )
-            return ERR_OK;
+            r = ERR_OK;
         else
         {
             *out_msg = strdup( "Failed to load for unknown reason" );
-            return ERR_GENERAL;
+            r = ERR_GENERAL;
         }
     }
     else
     {
         if ( timeline->command_new( name, display_name ) )
-            return ERR_OK;
+            r =ERR_OK;
         else
         {
             *out_msg = strdup( "Failed to load for unknown reason" );
-            return ERR_GENERAL;
+            r = ERR_GENERAL;
         }
     }
 
-    return 0;
+    timeline->discover_peers();
+
+    return r;
 }
 
 void

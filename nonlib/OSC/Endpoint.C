@@ -70,30 +70,24 @@ namespace OSC
     void
     Signal::rename ( const char *path )
     {
-        for ( std::list<Target*>::const_iterator i = _incoming.begin();
-              i != _incoming.end();
-              ++i )
-        {
-            _endpoint->send( (*i)->peer->addr, 
-                             "/signal/renamed",
-                             (*i)->signal_id,
-                             path );
+        DMESSAGE( "Renaming signal %s to %s", this->path(), path );
 
-        }
 
         free( _path );
         _path = strdup( path );
+
+        _endpoint->send_signal_rename_notifications( this );
     }
 
     bool
     Signal::is_connected_to ( const OSC::Signal *s ) const
     {
-        for ( std::list<Target*>::const_iterator i = _outgoing.begin();
+        for ( std::list<Signal*>::const_iterator i = _outgoing.begin();
               i != _outgoing.end();
               ++i )
         {
-            if ( (*i)->peer == s->_peer &&
-                 (*i)->signal_id == s->id() )
+            if ( (*i)->_peer == s->_peer &&
+                 (*i)->id() == s->id() )
                 return true;
         }
 
@@ -103,31 +97,47 @@ namespace OSC
     void
     Signal::value ( float f )
     {
-        for ( std::list<Target*>::const_iterator i = _outgoing.begin();
+        for ( std::list<Signal*>::const_iterator i = _outgoing.begin();
               i != _outgoing.end();
               ++i )
         {
-            if ( (*i)->value != f )
+            /* FIXME: won't work for loopback */
+            if ( (*i)->_value != f )
             {
-                (*i)->value = f;
+                (*i)->_value = f;
 
-                _endpoint->send( (*i)->peer->addr, 
+                _endpoint->send( (*i)->_peer->addr, 
                                  "/signal/change",
-                                 (*i)->signal_id,
+                                 id(),
+                                 (*i)->id(),
                                  f );
             }
         }
     }
 
-    void
-    Signal::get_connected_peer_name_and_path ( char **peer_name, char **path )
+    char *
+    Signal::get_output_connection_peer_name_and_path ( int n )
     {
-        Target *t = _outgoing.back();
+        Signal *t;
 
-        Signal *s = get_peer_signal_by_id( t->peer, t->signal_id );
+        int j = 0;
+        for ( std::list<Signal*>::const_iterator i = _outgoing.begin();
+              i != _outgoing.end();
+              ++i, ++j )
+        {
+            if ( j == n )
+            {
+                t = *i;
+                break;
+            }
+        }
 
-        *peer_name = strdup( t->peer->name );
-        *path = strdup( s->path() );
+//        Signal *s = get_peer_signal_by_id( t->_peer, t->signal_id );
+
+        char *r;
+        asprintf( &r, "%s:%s", t->_peer->name, t->path() );
+
+        return r;
     }
 
     void
@@ -154,13 +164,15 @@ namespace OSC
         }
 
 
-        add_method( "/signal/hello", "s", &Endpoint::osc_sig_hello, this, "" );
+        add_method( "/signal/hello", "ss", &Endpoint::osc_sig_hello, this, "" );
         add_method( "/signal/connect", "ii", &Endpoint::osc_sig_connect, this, "" );
         add_method( "/signal/disconnect", "ii", &Endpoint::osc_sig_disconnect, this, "" );
         add_method( "/signal/renamed", "is", &Endpoint::osc_sig_renamed, this, "" );
-        add_method( "/signal/change", "if", &Endpoint::osc_sig_handler, this, "" );
-        add_method( NULL, "", &Endpoint::osc_generic, this, "" );
+        add_method( "/signal/removed", "i", &Endpoint::osc_sig_removed, this, "" );
+        add_method( "/signal/created", "ssifff", &Endpoint::osc_sig_created, this, "" );
+        add_method( "/signal/change", "iif", &Endpoint::osc_sig_handler, this, "" );
         add_method( "/signal/list", NULL, &Endpoint::osc_signal_lister, this, "" );
+        add_method( NULL, "", &Endpoint::osc_generic, this, "" );
         add_method( "/reply", NULL, &Endpoint::osc_reply, this, "" );
 
         return 0;
@@ -173,15 +185,15 @@ namespace OSC
         lo_server_free( _server );
     }
 
-    OSC::Target *
-    Endpoint::find_target_by_peer_address ( std::list<Target*> *l, lo_address addr )
+    OSC::Signal *
+    Endpoint::find_target_by_peer_address ( std::list<Signal*> *l, lo_address addr )
     {
 
-        for ( std::list<Target*>::iterator i = l->begin();
+        for ( std::list<Signal*>::iterator i = l->begin();
               i != l->end();
               ++i )
         {
-            if ( address_matches( addr, (*i)->peer->addr ) )
+            if ( address_matches( addr, (*i)->_peer->addr ) )
             {
                 return *i;
             }
@@ -237,8 +249,10 @@ namespace OSC
     {
         lo_address addr = lo_address_new_from_url ( url );
 
-        send( addr, "/signal/hello", name() );
-
+        char *our_url = this->url();
+        send( addr, "/signal/hello", name(), our_url );
+        free( our_url );
+        
         lo_address_free( addr );
     }
 
@@ -248,18 +262,15 @@ namespace OSC
         Endpoint *ep = (Endpoint*)user_data;
 
         const char *peer_name = &argv[0]->s;
-
+        const char *peer_url = &argv[1]->s;
+        
         DMESSAGE( "Got hello from %s", peer_name );
 
         if ( ! ep->find_peer_by_name( peer_name ) )
         {
-            char *url = lo_address_get_url( lo_message_get_source( msg ));
+            ep->scan_peer( peer_name, peer_url );
 
-            ep->scan_peer( peer_name, url );
-            
-            ep->send( lo_message_get_source( msg ), "/signal/hello", ep->name() );
-
-            free(url);
+            ep->hello( peer_url );
         }
 
         return 0;
@@ -290,21 +301,13 @@ namespace OSC
 
         if ( s->_direction == Signal::Input )
         {
-            for ( std::list<Target*>::iterator i = s->_incoming.begin();
-                  i != s->_incoming.end();
-                  ++i )
-            {
-                if ( (*i)->peer == p &&
-                     (*i)->signal_id == ps->id() )
-                {
-                    DMESSAGE( "Peer %s has disconnected from signal %s", p->name, ps->path() );
+            s->_incoming.remove( ps );
+            
+            DMESSAGE( "Peer %s has disconnected from signal %s", p->name, ps->path() );
  
-                    delete *i;
-                    i = s->_incoming.erase( i );
+            s->signal_connection_state_changed( s );
 
-                    return 0;
-                }
-            }
+            return 0;
         }
 
         return 0;
@@ -347,24 +350,109 @@ namespace OSC
 
         DMESSAGE( "Peer %s has connected to signal %s", p->name, s->path() );
 
-        if ( s->_direction == Signal::Input )
+        /* if ( s->_direction == Signal::Input ) */
+        /* { */
+        s->_incoming.push_back( ps );
+
+        /* make a record of it ourselves */
+        ps->_outgoing.push_back( s );
+
+        s->signal_connection_state_changed( s );
+
+        /*     return 0; */
+        /* } */
+
+        return 0;
+    }
+
+    int
+    Endpoint::osc_sig_removed ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+    {
+        int id = argv[0]->i;
+        
+        Endpoint *ep = (Endpoint*)user_data;
+        
+        Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) );
+        
+        if ( ! p )
         {
-            Target *t = new Target;            
-
-            t->peer = p;
-            t->signal_id = ps->id();
-
-            s->_incoming.push_back( t );
- 
+            WARNING( "Got signal remove notification from unknown peer." );
             return 0;
         }
 
+        Signal *o = ep->find_peer_signal_by_id( p, id );
+
+        if ( ! o )
+        {
+            WARNING( "Unknown signal id %i", id );
+            return 0;
+        }
+
+        DMESSAGE( "Signal %s:%s was removed", o->_peer->name, o->path() );
+
+        /* disconnect it */
+        for ( std::list<Signal*>::iterator i = o->_outgoing.begin();
+              i != o->_outgoing.end();
+              ++i )
+        {
+            ep->disconnect_signal( o, *i );
+        }
+
+        for ( std::list<Signal*>::iterator i = o->_incoming.begin();
+              i != o->_incoming.end();
+              ++i )
+        {
+            ep->disconnect_signal( *i, o );
+        }
+
+        p->_signals.remove( o );
+
+        delete o;
+
+        return 0;
+    }
+
+    int
+    Endpoint::osc_sig_created ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+    {
+        Endpoint *ep = (Endpoint*)user_data;
+
+        if ( ! argc )
+            return -1;
+
+        Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) );
+
+        if ( ! p )
+        {
+            WARNING( "Got signal creation from unknown peer." );
+            return 0;
+        }
+        
+        DMESSAGE( "Peer %s has created signal %s", p->name, &argv[0]->s );
+        
+        int dir = 0;
+        
+        if ( !strcmp( &argv[1]->s, "in" ) )
+            dir = Signal::Input;
+        else if ( !strcmp( &argv[1]->s, "out" ) )
+            dir = Signal::Output;
+        
+        Signal *s = new Signal( &argv[0]->s, (Signal::Direction)dir );
+        
+        s->_peer = p;
+        s->_id = argv[2]->i;
+        s->parameter_limits( argv[3]->f, argv[4]->f, argv[5]->f );
+        
+        p->_signals.push_back( s );
+        
         return 0;
     }
 
     int
     Endpoint::osc_sig_renamed ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
     {
+        DMESSAGE( "Got renamed message." );
+
         int id = argv[0]->i;
         char *new_name = &argv[1]->s;
 
@@ -386,7 +474,7 @@ namespace OSC
             return 0;
         }
 
-        DMESSAGE( "Signal %s was renamed to %s" );
+        DMESSAGE( "Signal %s:%s was renamed to %s", o->_peer->name, o->_path, path );
         
         free( o->_path );
         o->_path = strdup( new_name );
@@ -399,13 +487,18 @@ namespace OSC
     {
         Signal *o;
         float f = 0.0;
-       
-        if ( !strcmp( path, "/signal/change" ) && !strcmp( types, "if" ) )
+        Endpoint *ep = NULL;
+
+
+        if ( !strcmp( path, "/signal/change" ) && !strcmp( types, "iif" ) )
         {
             /* accept a value for numbered signal */
-            int id = argv[0]->i;
-            f = argv[1]->f;
-            o = ((Endpoint*)user_data)->find_signal_by_id( id );
+            int id = argv[1]->i;
+            f = argv[2]->f;
+            ep = (Endpoint*)user_data;
+
+            o = ep->find_signal_by_id( id );
+
             if ( ! o )
             {
                 WARNING( "Unknown signal id %i", id );
@@ -429,26 +522,44 @@ namespace OSC
             return -1;
         }
 
-        Target *t = NULL;
+        Peer *p = NULL;
 
-        if ( 0 == o->_incoming.size() || 
-             ! ( t = find_target_by_peer_address( &o->_incoming, lo_message_get_source( msg ) ) ) )
+        if ( ep )
+            p = ep->find_peer_by_address( lo_message_get_source( msg ) );
+
+        if ( 0 == o->_incoming.size() )
+            return 0;
+
+        if ( !p )
         {
+            DMESSAGE( "Signal change initiated by an unknown peer" );
             /* message came from an unconnected peer, just set the value exactly */
         }
         else
         {
             /* message is from a connected source, do mixing. */
 
-            t->value = f;
+            /* remote signal */
+            /* if ( t->_peer ) */
 
-            f = 0.0;
-
-            for ( std::list<Target*>::const_iterator i = o->_incoming.begin();
+            for ( std::list<Signal*>::const_iterator i = o->_incoming.begin();
                   i != o->_incoming.end();
                   ++i )
             {
-                f += (*i)->value;
+                if ( (*i)->id() == argv[0]->i )
+                {
+                    (*i)->_value = f;
+                    break;
+                }
+            }
+
+            f = 0.0;
+
+            for ( std::list<Signal*>::const_iterator i = o->_incoming.begin();
+                  i != o->_incoming.end();
+                  ++i )
+            {
+                f += (*i)->_value;
             }
         }
 
@@ -599,7 +710,25 @@ namespace OSC
     }
 
     bool
-    Endpoint::disconnect_signal( OSC::Signal *s, const char *peer_name, const char *signal_path )
+    Endpoint::disconnect_signal ( OSC::Signal *s, OSC::Signal *d )
+    {
+        if ( ! s->is_connected_to( d ) )
+            return false;
+
+        MESSAGE( "Disconnecting signal output \"%s\" to %s:%i", s->path(), d->_peer->name, d->_id );
+        
+        send( d->_peer->addr, "/signal/disconnect", 
+              s->_id, /* our signal id */
+              d->_id  /* their signal id */ );
+        
+        s->_outgoing.remove( d );
+        s->_incoming.remove( d );
+
+        return true;
+    }
+
+    bool
+    Endpoint::disconnect_signal ( OSC::Signal *s, const char *peer_name, const char *signal_path )
     {
         if ( s->_direction == Signal::Output )
         {
@@ -613,33 +742,53 @@ namespace OSC
             if ( ! ps )
                 return false;
 
-            MESSAGE( "Disconnecting signal output \"%s\" to %s:%i", s->path(), peer_name, ps->_id );
+            if ( ! s->is_connected_to( ps ) )
+                return false;
 
-            for ( std::list<Target*>::iterator i = s->_outgoing.begin();
-                  i != s->_outgoing.end();
-                  ++i )
-            {
-                if ( (*i)->peer == p &&
-                     (*i)->signal_id == ps->id() )
-                {
-                    send( p->addr, "/signal/disconnect", 
-                          s->_id, /* our signal id */
-                          (*i)->signal_id /* their signal id */ );
-
-                    delete *i;
-                    i = s->_outgoing.erase( i );
-
-                    DMESSAGE( "Number of outgoing connections: %i", s->_outgoing.size() );
-                    return true;
-                }
-            }
-            
+            return disconnect_signal( s, ps );     
         }
 
         return false;
     }
 
+    bool
+    Endpoint::connect_signal( OSC::Signal *s, const char *peer_and_path )
+    {
+        char peer[512];
+        char path[1024];
 
+        /* FIXME: use %a */
+        if ( 2 == sscanf( peer_and_path, "%[^:]:%s", peer, path ) )
+        {
+            return connect_signal( s, peer, path );
+        }
+        else
+            return false;
+    }
+
+    bool
+    Endpoint::connect_signal ( OSC::Signal *s, OSC::Signal *d )
+    {
+        if ( s->is_connected_to( d ) )
+        {
+            return false;
+        }
+        
+        MESSAGE( "Connecting signal output \"%s\" to %s:%s", s->path(), d->_peer->name, d->path() );
+        
+        s->_outgoing.push_back( d );
+
+        /* make a record of it ourselves */
+        d->_incoming.push_back( s );
+        
+        send( d->_peer->addr, "/signal/connect", 
+              s->_id, /* our signal id */
+              d->_id /* their signal id */ );
+        
+        return true;
+    }
+
+  
     bool
     Endpoint::connect_signal( OSC::Signal *s, const char *peer_name, const char *signal_path )
     {
@@ -655,25 +804,7 @@ namespace OSC
             if ( ! ps )
                 return false;
 
-            if ( s->is_connected_to( ps ) )
-            {
-                return false;
-            }
-
-            MESSAGE( "Connecting signal output \"%s\" to %s:%i", s->path(), peer_name, ps->_id );
-
-            Target *t = new Target();
-
-            t->peer = p;
-            t->signal_id = ps->_id;
-                
-            s->_outgoing.push_back( t );
-                
-            send( p->addr, "/signal/connect", 
-                  s->_id, /* our signal id */
-                  t->signal_id /* their signal id */ );
-                
-            return true;
+            return connect_signal( s, ps );
         }
 
         return false;
@@ -688,24 +819,13 @@ namespace OSC
 
             if ( !p )
                 return false;
-            
-            MESSAGE( "Connecting signal output \"%s\" to %s:%i", s->path(), peer_name, signal_id );
 
-            if ( p )
-            {
-                Target *t = new Target();
-                
-                t->peer = p;
-                t->signal_id = signal_id;
-                
-                s->_outgoing.push_back( t );
-                
-                send( p->addr, "/signal/connect", 
-                      s->_id, /* our signal id */
-                      t->signal_id /* their signal id */ );
-                
-                return true;
-            }
+            Signal *ps = find_peer_signal_by_id( p, signal_id );
+
+            if ( !ps )
+                return false;
+
+            return connect_signal( s, ps );
         }            
     
         return false;
@@ -745,10 +865,12 @@ namespace OSC
             {
                 p->_scanning = false;
                 DMESSAGE( "Done scanning %s", p->name );
+
+                ep->signal_peer_scan_complete();
             }
-            else if ( p->_scanning )
+            else if ( argc == 7 && p->_scanning )
             {
-                DMESSAGE( "Peer %s has signal %s", p->name, &argv[1]->s );
+                DMESSAGE( "Peer %s has signal %s (%s)", p->name, &argv[1]->s, &argv[2]->s );
 
                 int dir = 0;
 
@@ -761,9 +883,7 @@ namespace OSC
                 
                 s->_peer = p;
                 s->_id = argv[3]->i;
-                s->parameter_limits().min = argv[4]->f;
-                s->parameter_limits().max = argv[5]->f;
-                s->parameter_limits().default_value = argv[6]->f;
+                s->parameter_limits( argv[4]->f, argv[5]->f, argv[6]->f );
 
                 p->_signals.push_back( s );
             }
@@ -790,9 +910,6 @@ namespace OSC
         if ( argument_description )
             md->_documentation = strdup( argument_description );
         
-        if ( typespec )
-            md->_parameter_limits = new Parameter_Limits[strlen(typespec)];
-            
         _methods.push_back( md );
 
         return md;
@@ -801,23 +918,39 @@ namespace OSC
     Signal *
     Endpoint::add_signal ( const char *path, Signal::Direction dir, signal_handler handler, void *user_data )
     {
-        Signal *md = new Signal( path, dir );
+        Signal *o = new Signal( path, dir );
         
         if ( path )
-            md->_path = strdup( path );
+            o->_path = strdup( path );
         
-        md->_handler = handler;
-        md->_user_data = user_data;
-        md->_endpoint = this;
+        o->_handler = handler;
+        o->_user_data = user_data;
+        o->_endpoint = this;
         
-        _signals.push_back( md );
+        _signals.push_back( o );
         
         if ( dir == Signal::Input )
         {
-            lo_server_add_method( _server, path, NULL, osc_sig_handler, md );
+            lo_server_add_method( _server, path, NULL, osc_sig_handler, o );
         }
 
-        return md;
+        /* tell our peers about it */
+        for ( std::list<Peer*>::iterator i = _peers.begin();
+              i != _peers.end();
+              ++i )
+        {
+            send( (*i)->addr,
+                  "/signal/created", 
+                  o->path(),
+                  o->_direction == Signal::Input ? "in" : "out",
+                  o->id(),
+                  o->parameter_limits().min,
+                  o->parameter_limits().max,
+                  o->parameter_limits().default_value
+                );
+        }
+
+        return o;
     }
 
     void
@@ -856,12 +989,38 @@ namespace OSC
     }
 
     void
+    Endpoint::send_signal_rename_notifications ( Signal *s )
+    {
+    
+        for ( std::list<Peer*>::const_iterator i = _peers.begin();
+              i != _peers.end();
+              ++i )
+        {
+            send( (*i)->addr, 
+                  "/signal/renamed",
+                  s->id(),
+                  s->path() );
+        }
+    }
+
+    void
     Endpoint::del_signal ( Signal *o )
     {
 //	DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
 
         lo_server_del_method( _server, o->path(), "f" );
 
+        /* tell our peers about it */
+        for ( std::list<Peer*>::iterator i = _peers.begin();
+              i != _peers.end();
+              ++i )
+        {
+            send( (*i)->addr,
+                  "/signal/removed", 
+                  o->id() );
+        }
+
+        /* FIXME: clear loopback connections first! */
 //        delete o;
 
         _signals.remove( o );
@@ -1127,7 +1286,7 @@ namespace OSC
     int
     Endpoint::send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, int v4, float v5, float v6, float v7 )
     {
-        return lo_send_from( to, _server, LO_TT_IMMEDIATE, path, "sssifff", v1, v2, v3, v4, v5, v6, 7 );
+        return lo_send_from( to, _server, LO_TT_IMMEDIATE, path, "sssifff", v1, v2, v3, v4, v5, v6, v7 );
     }
     
     int
@@ -1146,5 +1305,17 @@ namespace OSC
     Endpoint::send ( lo_address to, const char *path, int v1, float v2 )
     {
         return lo_send_from( to, _server, LO_TT_IMMEDIATE, path, "if", v1, v2 );
+    }
+
+    int
+    Endpoint::send ( lo_address to, const char *path, const char *v1, int v2, int v3, float v4 )
+    {
+        return lo_send_from( to, _server, LO_TT_IMMEDIATE, path, "siif", v1, v2, v3, v4 );
+    }
+
+    int
+    Endpoint::send ( lo_address to, const char *path, int v1, int v2, float v3 )
+    {
+        return lo_send_from( to, _server, LO_TT_IMMEDIATE, path, "iif", v1, v2, v3 );
     }
 }

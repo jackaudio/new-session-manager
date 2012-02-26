@@ -170,13 +170,12 @@ public:
 
         void update_osc_port ( )
             {
-                if ( INPUT == _direction )
-                    change_osc_path( generate_osc_path() );
+//                if ( INPUT == _direction )
+                change_osc_path( generate_osc_path() );
             }
 
         void destroy_osc_port ( )
             {
-
                 delete _unscaled_signal;
                 delete _scaled_signal;
                 
@@ -256,8 +255,11 @@ public:
         nframes_t _nframes;
         Module *_module;
 
+
         OSC::Signal *_scaled_signal;
         OSC::Signal *_unscaled_signal;
+
+        void handle_signal_connection_state_changed ( OSC::Signal *s );
     };
 
     void bbox ( int &X, int &Y, int &W, int &H )

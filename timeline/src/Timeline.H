@@ -31,7 +31,6 @@
 #include <assert.h>
 #include <list>
 
-#include "OSC/Endpoint.H"
 #include "OSC_Thread.H"
 
 class Fl_Scroll;
@@ -53,6 +52,10 @@ class Track;
 class Scalebar;
 class Sequence;
 class Sequence_Widget;
+
+namespace OSC { class Endpoint; }
+
+#include <lo/lo.h>
 
 #ifndef USE_SINGLEBUFFERED_TIMELINE
 #include <FL/Fl_Overlay_Window.H>
@@ -236,8 +239,6 @@ public:
 
     /* OSC */
     
-
-
     void connect_osc ( void );
 
     void discover_peers ( void );

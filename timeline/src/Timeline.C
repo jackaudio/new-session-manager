@@ -52,6 +52,7 @@
 /*  */
 
 #include "OSC_Thread.H"
+#include "OSC/Endpoint.H"
 
 #include "NSM.H"
 extern NSM_Client *nsm;
@@ -1528,9 +1529,7 @@ Timeline::command_load ( const char *name, const char *display_name )
 
   Project::set_name ( display_name ? display_name : name );
 
-  // discover_peers();
-
-  return true;
+   return true;
 }
 
 bool
@@ -1553,9 +1552,7 @@ Timeline::command_new ( const char *name, const char *display_name )
 
     /* tle->main_window->redraw(); */
     
-    // discover_peers();
-
-  return b;
+   return b;
 }
 
 const char *
@@ -1597,6 +1594,8 @@ Timeline::init_osc ( const char *osc_port )
     /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
     Fl::add_timeout( OSC_INTERVAL, &Timeline::check_osc, this );
 
+    osc->signal_peer_scan_complete.connect( sigc::mem_fun( this, &Timeline::connect_osc ) );
+
     if ( ! osc_thread )
     {
         osc_thread = new OSC_Thread();
@@ -1619,14 +1618,11 @@ Timeline::osc_non_hello ( const char *path, const char *types, lo_arg **argv, in
         const char *version = &argv[2]->s;
         const char *id = &argv[3]->s;
 
-        MESSAGE( "Discovered OSC peer %s (%s) @ %s with ID \"%s\"", name, version, url, id );
-
-        MESSAGE( "Scanning..." );
-
-//        timeline->osc->scan_peer( id, url );
+        MESSAGE( "Discovered NON peer %s (%s) @ %s with ID \"%s\"", name, version, url, id );
+        MESSAGE( "Registering Signals" );
 
         timeline->osc->hello( url );
-
+        
         return 0;
     }
     
@@ -1673,24 +1669,17 @@ Timeline::connect_osc ( void )
 void
 Timeline::discover_peers ( void )
 {
-    lo_message m = lo_message_new();
+    if ( nsm->is_active() )
+    {
+        lo_message m = lo_message_new();
+        
+        lo_message_add_string( m, "/non/finger" );
+        lo_message_add_string( m, osc->url() );
 
-    lo_message_add_string( m, "/non/finger" );
-    lo_message_add_string( m, osc->url() );
-
-    nsm->broadcast( m );
-
-    lo_message_free( m );
-
-    /* wait for responses and then autoconnect outputs */
-    
-    MESSAGE( "Waiting for OSC peers..." );
-
-    osc->wait( 1000 );
-
-    MESSAGE( "Reconnecting signals." );
-
-    connect_osc();
+        nsm->broadcast( m );
+        
+        lo_message_free( m );
+    }
 }
 
 

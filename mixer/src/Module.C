@@ -39,6 +39,8 @@
 #include "FL/menu_popup.H"
 #include "Mixer.H"
 
+#include "OSC/Endpoint.H"
+
 
 
 Module *Module::_copied_module_empty = 0;
@@ -226,7 +228,7 @@ Module::Port::generate_osc_path ()
 
     char *path = NULL;
 
-    // /mixer/STRIPNAME/MODULENAME/CONTROLNAME
+    // /strip/STRIPNAME/MODULENAME/CONTROLNAME
 
     if ( ! module()->allows_external_control() )
     {
@@ -237,9 +239,9 @@ Module::Port::generate_osc_path ()
     int n = module()->chain()->get_module_instance_number( module() );
 
     if ( n > 0 )        
-        asprintf( &path, "/mixer/%s/%s.%i/%s", module()->chain()->name(), p->module()->label(), n, p->name() );
+        asprintf( &path, "/strip/%s/%s.%i/%s", module()->chain()->name(), p->module()->label(), n, p->name() );
     else
-        asprintf( &path, "/mixer/%s/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
+        asprintf( &path, "/strip/%s/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
 
     // Hack to keep spaces out of OSC URL... Probably need to handle other special characters similarly.
     for ( int i = strlen( path ); i--; )
@@ -252,6 +254,12 @@ Module::Port::generate_osc_path ()
 }
 
 void
+Module::Port::handle_signal_connection_state_changed ( OSC::Signal *s )
+{
+    module()->redraw();
+}
+
+void
 Module::Port::change_osc_path ( char *path )
 {
     if ( path )
@@ -261,20 +269,26 @@ Module::Port::change_osc_path ( char *path )
 
         asprintf( &unscaled_path, "%s/unscaled", path );
 
-        if ( ! ( _scaled_signal && _unscaled_signal ) )
+        if ( NULL == _scaled_signal )
         {
             _scaled_signal =
                 mixer->osc_endpoint->add_signal( scaled_path, 
                                                  OSC::Signal::Input, &Module::Port::osc_control_change_cv, this );
-            
+
+            _scaled_signal->signal_connection_state_changed.connect( sigc::mem_fun( this, &Module::Port::handle_signal_connection_state_changed ) );
+     
             _unscaled_signal = 
                 mixer->osc_endpoint->add_signal( unscaled_path, 
                                                  OSC::Signal::Input, &Module::Port::osc_control_change_exact, this );
         }
         else
         {
+            DMESSAGE( "Renaming OSC signals" );
+
             _scaled_signal->rename( scaled_path );
             _unscaled_signal->rename( unscaled_path );
+
+            return;
         }
 
         free( unscaled_path );
@@ -516,7 +530,7 @@ Module::draw_box ( void )
         {
             fl_draw_box( FL_ROUNDED_BOX, tx + 4, ty + 4, 5, 5, is_being_controlled() ? FL_YELLOW : fl_inactive( FL_YELLOW ) );
 
-            fl_draw_box( FL_ROUNDED_BOX, tx + 4, ty + 8, 5, 5, is_being_controlled_osc() ? FL_GREEN : fl_inactive( FL_GREEN ) );
+            fl_draw_box( FL_ROUNDED_BOX, tx + 4, ty + th - 8, 5, 5, is_being_controlled_osc() ? FL_YELLOW : fl_inactive( FL_YELLOW ) );
         }
 
         if ( control_output.size() )

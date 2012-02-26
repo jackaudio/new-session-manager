@@ -23,6 +23,8 @@
 #include "NSM.H"
 #include "Project.H"
 
+#include "OSC/Endpoint.H"
+
 extern char *instance_name;
 extern Mixer *mixer;
 
@@ -100,6 +102,8 @@ NSM_Client::command_open ( const char *name, const char *display_name, const cha
             r = ERR_GENERAL;
         }
     }
+
+    mixer->discover_peers();
 
     Fl::unlock();
 

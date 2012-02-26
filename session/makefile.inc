@@ -9,7 +9,8 @@ Session_SRCS:=$(Session_SRCS:.fl=.C)
 Session_SRCS:=$(sort $(Session_SRCS))
 Session_OBJS:=$(Session_SRCS:.C=.o)
 
-Session_LIBS := $(LIBLO_LIBS)
+Session_LIBS := $(LIBLO_LIBS) $(SIGCPP_LIBS)
+Session_CFLAGS := $(LIBLO_CFLAGS) $(SIGCPP_CFLAGS)
 
 src/nsmd: src/nsmd.o nonlib/libnonlib.a
 	@ echo -n Linking session handler.
@@ -17,7 +18,7 @@ src/nsmd: src/nsmd.o nonlib/libnonlib.a
 
 src/session-manager: src/session-manager.o nonlib/libnonlib.a
 	@ echo -n Linking session handler.
-	@ $(CXX) $(CXXFLAGS) $(FLTK_LIBS) $(Session_LIBS) src/session-manager.o -o $@ -Lnonlib -lnonlib -ldl && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $(FLTK_CLFAGS) $(FLTK_LIBS) $(Session_LIBS) src/session-manager.o -o $@ -Lnonlib -lnonlib -ldl && echo $(DONE)
 
 src/send_osc: src/send_osc.o nonlib/libnonlib.a
 	@ $(CXX) $(CXXFLAGS) $(Session_LIBS) src/send_osc.o -o $@ -Lnonlib -lnonlib -ddl && echo $(DONE)

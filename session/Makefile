@@ -62,7 +62,6 @@ CFLAGS+=-DVERSION=\"$(VERSION)\" \
 	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\" \
 	-DPIXMAP_PATH=\"$(PIXMAP_PATH)\"
 
-CXXFLAGS += $(SNDFILE_CFLAGS) $(FLTK_CFLAGS) $(JACK_CFLAGS)
 CXXFLAGS := $(CFLAGS) $(CXXFLAGS)
 
 INCLUDES := -I. -Iutil -IFL -Inonlib
@@ -90,6 +89,7 @@ include makefile.inc
 
 SRCS:=$(Session_SRCS)
 OBJS:=$(Session_OBJS)
+CXXFLAGS += $(Session_CFLAGS)
 
 # FIXME: isn't there a better way?
 $(OBJS): .config Makefile

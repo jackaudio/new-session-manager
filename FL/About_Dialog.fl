@@ -4,9 +4,9 @@ header_name {.H}
 code_name {.C}
 decl {\#include <FL/Fl.H>} {} 
 
-decl {\#include <Fl/Fl_Shared_Image.H>} {} 
+decl {\#include <FL/Fl_Shared_Image.H>} {} 
 
-decl {\#include <Fl/filename.H>} {} 
+decl {\#include <FL/filename.H>} {} 
 
 Function {open_url( const char *url )} {open return_type void
 } {

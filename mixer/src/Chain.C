@@ -59,7 +59,7 @@
 #include "Plugin_Module.H"
 #include "Controller_Module.H"
 
-#include <Fl/Fl_Box.H>
+#include <FL/Fl_Box.H>
 #include <FL/Fl_Menu.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl_Flip_Button.H>

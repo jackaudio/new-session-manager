@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <Fl/fl_draw.H>
+#include <FL/fl_draw.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Menu_Button.H>
 

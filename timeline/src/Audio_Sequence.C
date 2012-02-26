@@ -21,7 +21,7 @@
  * contents' consist of these objects */
 
 #include <sys/time.h>
-#include <Fl/fl_ask.H>
+#include <FL/fl_ask.H>
 
 #include "Audio_Sequence.H"
 #include "Waveform.H"

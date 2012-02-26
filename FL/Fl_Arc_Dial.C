@@ -20,8 +20,8 @@
 
 #include "Fl_Arc_Dial.H"
 
-#include <Fl/fl_draw.H>
-#include <Fl/Fl.H>
+#include <FL/fl_draw.H>
+#include <FL/Fl.H>
 #include <string.h>
 #include <stdio.h>
 #include <math.h>

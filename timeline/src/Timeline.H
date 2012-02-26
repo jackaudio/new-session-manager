@@ -52,7 +52,7 @@ class Sequence;
 class Sequence_Widget;
 
 #ifndef USE_SINGLEBUFFERED_TIMELINE
-#include <Fl/Fl_Overlay_Window.H>
+#include <FL/Fl_Overlay_Window.H>
 #else
 #include <FL/Fl_Single_Window.H>
 #endif

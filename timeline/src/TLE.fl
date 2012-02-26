@@ -51,7 +51,7 @@ decl {\#include "Control_Sequence.H" // for options} {}
 
 decl {\#include <FL/Fl_File_Chooser.H>} {} 
 
-decl {\#include <Fl/Fl_Shared_Image.H>} {} 
+decl {\#include <FL/Fl_Shared_Image.H>} {} 
 
 decl {\#include <FL/Fl.H>} {selected
 } 

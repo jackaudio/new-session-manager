@@ -43,7 +43,9 @@ January 21, 2010<br>
 
 <ul><li><a href="#n:1.1.2.3.1.4.1.">1.1.2.3.1.4.1. Control Voltages</a>
 
-</ul></ul></ul></ul><li><a href="#n:1.1.3.">1.1.3. Projects</a>
+</ul><li><a href="#n:1.1.2.3.1.5.">1.1.2.3.1.5. Spatialization </a>
+
+</ul></ul></ul><li><a href="#n:1.1.3.">1.1.3. Projects</a>
 
 <ul><li><a href="#n:1.1.3.1.">1.1.3.1. JACK I/O</a>
 
@@ -259,11 +261,35 @@ git clone git://fuzzle.org/jm2cv.git
 <div class=admonition>
 <table width=100%>
 <tr><td>NOTE:
-The use of Control Signals (OSC) should be preferred for types
-of parameter automation, as  LADSPA plugins are incapable of
-processing Control Voltage signals at full resolution anyway.
+The use of Control Signals (OSC) should be preferred for most types
+of parameter automation, as LADSPA plugins are incapable of
+processing Control Voltage signals at full audio resolution  anyway.
 </td></table>
 </div>
+<h6 id="n:1.1.2.3.1.5.">1.1.2.3.1.5. Spatialization </h6>
+<center><div class="fig image"><table id="Fig.1.9" border=1>
+<caption>
+<strong>Fig. 1.9.</strong> Spatialization Control on a Strip
+</caption>
+
+<tr><td><img src="spatialization-on-strip.png" alt="fig. 1.9"></td></tr>
+</table></div></center>
+<p>
+Non-Mixer supports Ambisonic spatialization via the excellent amb-* LADSPA plugin set and others. Whenever a LADSPA plugin is added to a strip whose set of parameters include parameters named Azimuth and Elevation, Non-Mixer will detect this and automatically attach a Spatializer control to these parameters. The Spatializer will be displayed at the bottom of the mixer strip. A larger version of the control may also be found in the Module Parameter Editor.
+</p>
+<center><div class="fig image"><table id="Fig.1.10" border=1>
+<caption>
+<strong>Fig. 1.10.</strong> Larger Spatialization Control
+</caption>
+
+<tr><td><img src="spatialization-in-mpe.png" alt="fig. 1.10"></td></tr>
+</table></div></center>
+<p>
+The spatialization control may be visualized as moving the sound source across the surface of a hemispherical dome enclosing the listener.
+</p>
+<p>
+The output of the spatializing plugin may be routed into a decoding plugin following it the same strip or, more usefully, the output of a number of Ambisonic panning plugins on different strips may be routed (through JACK) into a single master decoder instance on a final strip.
+</p>
 <h3 id="n:1.1.3.">1.1.3. Projects</h3>
 <p>
 A Non-Mixer project is a directory where Non-Mixer keeps the strip settings, project specific settings, and some meta-data.  A project is completely self-contained. You can rename a project as simply as:
@@ -286,12 +312,12 @@ The JACK API makes implementing this far more difficult and kludgey than it shou
 Please petition your local JACK developer to accept jack_client_set_name() into the API.
 </td></table>
 </div>
-<center><div class="fig image"><table id="Fig.1.9" border=1>
+<center><div class="fig image"><table id="Fig.1.11" border=1>
 <caption>
-<strong>Fig. 1.9.</strong> Patchage
+<strong>Fig. 1.11.</strong> Patchage
 </caption>
 
-<tr><td><img src="non-mixer-and-non-daw-in-patchage.png" alt="fig. 1.9"></td></tr>
+<tr><td><img src="non-mixer-and-non-daw-in-patchage.png" alt="fig. 1.11"></td></tr>
 </table></div></center>
 </div>
 </body>

@@ -236,10 +236,37 @@
 
 > git clone git://fuzzle.org/jm2cv.git
 
+
 { NOTE:
-{ The use of Control Signals (OSC) should be preferred for types
-{ of parameter automation, as  LADSPA plugins are incapable of
-{ processing Control Voltage signals at full resolution anyway.
+{ The use of Control Signals (OSC) should be preferred for most types
+{ of parameter automation, as LADSPA plugins are incapable of
+{ processing Control Voltage signals at full audio resolution  anyway.
+
+:::::: Spatialization 
+
+/ Spatialization Control on a Strip
+< spatialization-on-strip.png
+
+  Non-Mixer supports Ambisonic spatialization via the excellent amb-\*
+  LADSPA plugin set and others. Whenever a LADSPA plugin is added to a
+  strip whose set of parameters include parameters named Azimuth and
+  Elevation, Non-Mixer will detect this and automatically attach a
+  Spatializer control to these parameters. The Spatializer will be
+  displayed at the bottom of the mixer strip. A larger version of the
+  control may also be found in the Module Parameter Editor.
+
+/ Larger Spatialization Control
+< spatialization-in-mpe.png
+
+  The spatialization control may be visualized as moving the sound
+  source across the surface of a hemispherical dome enclosing the
+  listener.
+
+  The output of the spatializing plugin may be routed into a decoding
+  plugin following it the same strip or, more usefully, the output of
+  a number of Ambisonic panning plugins on different strips may be
+  routed (through JACK) into a single master decoder instance on a
+  final strip.
 
 ::: Projects
 

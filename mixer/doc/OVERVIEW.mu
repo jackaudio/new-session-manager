@@ -132,6 +132,12 @@
   All module parameters are alterable via OSC messages, regardless of
   whether or not they have /controls/ defined.
 
+::: Spatialization
+
+  Plugins supporting Ambisonics panning are automatically assigned a
+  special control called a Spatializer. This allows for easy and
+  positioning of sound sources.
+
 ; What does freedom have to do with this software?
 
   Non is /free software/. This means, briefly, that you are free use

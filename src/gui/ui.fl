@@ -184,7 +184,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {133 420 730 590} type Double box PLASTIC_UP_BOX color 37 hide resizable xclass non size_range {600 420 0 0}
+      xywh {209 100 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
@@ -864,7 +864,7 @@ pattern_c->changed_mapping();}
           }
         }
       }
-      Fl_Group {} {open
+      Fl_Group {} {open selected
         xywh {0 29 865 67}
       } {
         Fl_Pack {} {
@@ -1045,7 +1045,7 @@ detach_button->value( 0 );} open
   } {
     Fl_Window about_popup {
       label About open
-      xywh {1266 317 535 620} type Single hide non_modal size_range {539 608 539 608}
+      xywh {697 224 535 620} type Single non_modal size_range {539 608 539 608} visible
     } {
       Fl_Box {} {
         label VERSION

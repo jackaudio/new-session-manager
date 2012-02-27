@@ -209,16 +209,15 @@ sequence::play ( tick_t start, tick_t end ) const
             tick_t pend = offset + p->length();
 
             // this phrase seems to be current.
-            if ( pend > start )
+            if ( pend > start && pstart <= end )
             {
-                // FIXME: don't really need to trigger more than once!
+                p->trigger( pstart, pend );
+          
                 _playing = p->number();
 
                 _index = start;
-
-                p->trigger( pstart, pend );
+                
                 p->play( start, end );
-                break;
             }
 
             offset = pend;

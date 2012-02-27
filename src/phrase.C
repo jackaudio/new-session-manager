@@ -178,14 +178,10 @@ phrase::play ( tick_t start, tick_t end )
 
     if ( start > _end )
     {
-        WARNING( "attempt to play a phrase that has ended (%lu, %lu)", start, _end );
+        _playing = false;
         return;
     }
-    else
-        if ( start < _start )
-            // not ready yet
-            return;
-
+    
     if ( start < _start )
         start = _start;
 
@@ -226,10 +222,10 @@ try_again:
             if ( tse > start )
             {
                 pattern *p = pattern::pattern_by_number( 1 + note_to_y( e->note() ) );
-
+            
                 if ( ! p->playing() )
-                    p->trigger( ts, offset + e->link()->timestamp() );
-
+                    p->trigger( ts, tse );
+                
                 p->play( start, end );
             }
         }

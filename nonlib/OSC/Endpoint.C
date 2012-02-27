@@ -28,6 +28,8 @@
 
 #include "Thread.H"
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 namespace OSC
 {
 

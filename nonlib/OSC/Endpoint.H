@@ -364,12 +364,12 @@ namespace OSC
 };
 
 /* helper macros for defining OSC handlers */
-#define OSC_NAME( name ) osc_ ## name
+/* #define OSC_NAME( name ) osc_ ## name */
 #define OSC_DMSG() DMESSAGE( "Got OSC message: %s", path );
-#define OSC_HANDLER( name ) static int OSC_NAME( name ) ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+// #define OSC_HANDLER( name ) static int OSC_NAME( name ) ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 
 
-#define OSC_REPLY_OK() ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path, "ok" )
-#define OSC_REPLY( value ) ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path, value )
-#define OSC_REPLY_ERR() ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path, "err" )
-#define OSC_ENDPOINT() ((OSC::Endpoint*)user_data)
+/* #define OSC_REPLY_OK() ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path, "ok" ) */
+/* #define OSC_REPLY( value ) ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path, value ) */
+/* #define OSC_REPLY_ERR() ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path, "err" ) */
+/* #define OSC_ENDPOINT() ((OSC::Endpoint*)user_data) */

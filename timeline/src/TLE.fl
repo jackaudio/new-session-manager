@@ -322,7 +322,7 @@ main_window->redraw();}
 
 read_line( user_config_dir, "default_path", &path );
 
-const char *name = fl_dir_chooser( "Open Project", path, NULL );
+const char *name = fl_dir_chooser( "Open Project", path );
 
 free( path );
 
@@ -863,7 +863,7 @@ project_name->redraw();} {}
 
 ((TLE*)v)->update_status();} {}
   }
-  Function {capture_format_cb( Fl_Widget *w, void *v )} {private return_type {static void}
+  Function {capture_format_cb( Fl_Widget *, void *v )} {private return_type {static void}
   } {
     code {((TLE*)v)->capture_format_cb();} {}
   }

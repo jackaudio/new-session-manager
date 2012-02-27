@@ -82,8 +82,9 @@ extern NSM_Client *nsm;
 #define OSC_REPLY_OK() ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path, 0, "OK" )
 #define OSC_REPLY( value ) ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path, value )
 #define OSC_REPLY_ERR(errcode, value) ((OSC::Endpoint*)user_data)->send( lo_message_get_source( msg ), path,errcode, value )
+#define OSC_ENDPOINT() ((OSC::Endpoint*)user_data)
 
-OSC_HANDLER( add_strip )
+static int osc_add_strip ( const char *path, const char *, lo_arg **, int , lo_message msg, void *user_data )
 {
    OSC_DMSG();
 
@@ -200,7 +201,7 @@ void Mixer::cb_menu(Fl_Widget* o) {
 
 //        read_line( user_config_dir, "default_path", &path );
 
-        const char *name = fl_dir_chooser( "Open Project", path, NULL );
+        const char *name = fl_dir_chooser( "Open Project", path );
 
         free( path );
 
@@ -402,7 +403,7 @@ Mixer::init_osc ( const char *osc_port )
     
     printf( "OSC=%s\n", osc_endpoint->url() );
 
-    osc_endpoint->add_method( "/non/mixer/add_strip", "", OSC_NAME( add_strip ), osc_endpoint, "" );
+    osc_endpoint->add_method( "/non/mixer/add_strip", "", osc_add_strip, osc_endpoint, "" );
   
 //    osc_endpoint->start();
 
@@ -712,7 +713,7 @@ Mixer::command_load ( const char *path, const char *display_name )
 {
     mixer->hide();
 
-    if ( int err = Project::open( path ) )
+    if ( Project::open( path ) )
     {
         // fl_alert( "Error opening project specified on commandline: %s", Project::errstr( err ) );
         return false;

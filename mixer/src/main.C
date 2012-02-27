@@ -81,7 +81,7 @@ ensure_dirs ( void )
 
 #include <signal.h>
 
-static void cb_main ( Fl_Double_Window *o, void *)
+static void cb_main ( Fl_Double_Window *, void *)
 {
     if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	return;
@@ -164,8 +164,10 @@ main ( int argc, char **argv )
         {
             main_window->xclass( APP_NAME );
 
-            Fl_Widget *o = mixer = new Mixer( 0, 0, main_window->w(), main_window->h(), NULL );
-            Fl_Group::current()->resizable(o);
+            { 
+                Fl_Widget *o = mixer = new Mixer( 0, 0, main_window->w(), main_window->h(), NULL );
+                Fl_Group::current()->resizable(o);
+            }
         }
         o->end();
 

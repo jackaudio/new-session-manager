@@ -88,12 +88,12 @@ namespace NSM
         virtual int command_open ( const char *name, const char *display_name, const char *client_id, char **out_msg ) = 0;
         virtual int command_save ( char **out_msg ) = 0;
 
-        virtual void command_active ( bool active ) { }
+        virtual void command_active ( bool ) { }
 
         virtual void command_session_is_loaded ( void ) { }
 
         /* invoked when an unrecognized message is received. Should return 0 if you handled it, -1 otherwise. */
-        virtual int command_broadcast ( const char *path, lo_message msg ) { return -1; }
+        virtual int command_broadcast ( const char *, lo_message ) { return -1; }
 
     private:
 

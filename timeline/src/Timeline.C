@@ -1607,7 +1607,7 @@ Timeline::init_osc ( const char *osc_port )
 }
 
 int
-Timeline::osc_non_hello ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+Timeline::osc_non_hello ( const char *path, const char *, lo_arg **argv, int argc, lo_message, void * )
 {
     OSC_DMSG();
 

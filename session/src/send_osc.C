@@ -26,23 +26,17 @@
 #include <time.h>
 #include <unistd.h>
 
-/* helper macros for defining OSC handlers */
-#define OSC_NAME( name ) osc_ ## name
-// #define OSCDMSG() DMESSAGE( "Got OSC message: %s", path );
-#define OSC_HANDLER( name ) static int OSC_NAME( name ) ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
-
-
 static bool got_response = false;
 
 /************************/
 /* OSC Message Handlers */
 /************************/
 
-OSC_HANDLER( reply )
+static int osc_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message, void * )
 {
 //    OSCDMSG();
 
-    printf( "Reply: " );
+    printf( "%s : ", path );
 
     for ( int i = 0; i < argc; ++i )
     {
@@ -73,11 +67,9 @@ int main(int argc, char *argv[])
 {
     OSC::Endpoint s;
 
-    s.init( NULL );
+    s.init( LO_UDP );
 
-    s.add_method( NULL, NULL, OSC_NAME( reply ), 0, "");
-
-    int r;
+    s.add_method( NULL, NULL, osc_reply, 0, "");
 
     std::list<OSC::OSC_Value> args;
 

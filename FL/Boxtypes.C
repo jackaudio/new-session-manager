@@ -17,6 +17,10 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+
+#pragma GCC diagnostic ignored "-Wchar-subscripts"
+
+
 #include "Boxtypes.H"
 #include <FL/fl_draw.H>
 #include <string.h>

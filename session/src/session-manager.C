@@ -254,7 +254,7 @@ public:
 };
 
 void
-browser_callback ( Fl_Widget *w, void *v )
+browser_callback ( Fl_Widget *w, void * )
 {
     w->window()->hide();
 }
@@ -731,8 +731,12 @@ public:
 
 private:
 
-    static int osc_broadcast_handler ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+    static int osc_broadcast_handler ( const char *path, const char *, lo_arg **, int argc, lo_message msg, void * )
         {
+            if ( ! argc )
+                /* need at least one argument... */
+                return 0;
+
             DMESSAGE( "Relaying broadcast" );
 
             foreach_daemon( d )
@@ -760,7 +764,8 @@ private:
             
             Fl::lock();
 
-            if ( !strcmp( path, "/nsm/gui/session/session" ) )
+            if ( !strcmp( path, "/nsm/gui/session/session" ) &&
+                 ! strcmp( types, "s" ) )
             {
                 controller->add_session_to_list( &argv[0]->s );
                 controller->sort_sessions();
@@ -790,18 +795,20 @@ private:
 
                 osc->send( d->addr, "/nsm/server/list" );
             }
-            else if ( !strcmp( path, "/nsm/gui/session/name" ))
+            else if ( !strcmp( path, "/nsm/gui/session/name" ) &&
+                      !strcmp( types, "s" ))
             {
                 controller->session_name( &argv[0]->s );
             }
-            else if (!strcmp( path, "/error" ))
+            else if (!strcmp( path, "/error" ) &&
+                     !strcmp( types, "sis" ) )
             {
                 int err = argv[1]->i;
 
                 if ( err != 0 )
                     fl_alert( "Command %s failed with:\n\n%s", &argv[0]->s, &argv[2]->s );
             }
-            else if (!strcmp( path, "/reply" ))
+            else if (!strcmp( path, "/reply" ) && argc && 's' == *types )
             {
                 if ( !strcmp( &argv[0]->s, "/nsm/server/list" ) )
                 {
@@ -812,13 +819,14 @@ private:
                 {
                     last_ping_response = time( NULL );
                 }
-                else
+                else if ( ! strcmp( types, "ss" ) )
                     MESSAGE( "%s says %s", &argv[0]->s, &argv[1]->s);
             }
 
             if ( !strncmp( path, "/nsm/gui/client/", strlen( "/nsm/gui/client/" ) ) )
             {
-                if ( !strcmp( path, "/nsm/gui/client/new" ))
+                if ( !strcmp( path, "/nsm/gui/client/new" ) &&
+                              !strcmp( types, "ss" ) )
                 {
                     controller->client_new( &argv[0]->s, &argv[1]->s );
                 }
@@ -828,19 +836,23 @@ private:
                 
                     if ( c )
                     {
-                        if ( !strcmp( path, "/nsm/gui/client/status" ))
+                        if ( !strcmp( path, "/nsm/gui/client/status" ) &&
+                             !strcmp( types, "ss" ))
                         {
                             controller->client_pending_command( c, &argv[1]->s );
                         }
-                        else if ( !strcmp( path, "/nsm/gui/client/progress" ))
+                        else if ( !strcmp( path, "/nsm/gui/client/progress" ) &&
+                                  !strcmp( types, "sf" )) 
                         {
                             c->progress( argv[1]->f );
                         }
-                        else if ( !strcmp( path, "/nsm/gui/client/dirty" ))
+                        else if ( !strcmp( path, "/nsm/gui/client/dirty" ) &&
+                                  !strcmp( types, "si" ))
                         {
                             c->dirty(  argv[1]->i );
                         }
-                        else if ( !strcmp( path, "/nsm/gui/client/switch" ) )
+                        else if ( !strcmp( path, "/nsm/gui/client/switch" ) && 
+                                  !strcmp( types, "ss" ))
                         {
                             c->client_id( &argv[1]->s );
                         }
@@ -861,7 +873,7 @@ private:
 static NSM_Controller *controller;
 
 void
-ping ( void *v )
+ping ( void * )
 {
     controller->ping();
     Fl::repeat_timeout( 1.0, ping, NULL );
@@ -907,7 +919,6 @@ main (int argc, char **argv )
     int option_index = 0;
     int c = 0;
 
-    const char *osc_port = NULL;
     while ( ( c = getopt_long_only( argc, argv, "", long_options, &option_index  ) ) != -1 )
     {
         switch ( c )
@@ -970,8 +981,8 @@ main (int argc, char **argv )
             char **args = (char **)malloc( 4 + argc - option_index );
 
             int i = 0;
-            args[i++] = "nsmd";
-            args[i++] = "--gui-url";
+            args[i++] = (char*)"nsmd";
+            args[i++] = (char*)"--gui-url";
             args[i++] = url;
             
 

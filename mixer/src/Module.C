@@ -254,7 +254,7 @@ Module::Port::generate_osc_path ()
 }
 
 void
-Module::Port::handle_signal_connection_state_changed ( OSC::Signal *s )
+Module::Port::handle_signal_connection_state_changed ( OSC::Signal * )
 {
     module()->redraw();
 }

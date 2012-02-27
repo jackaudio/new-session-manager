@@ -150,7 +150,7 @@ deurlify ( char *url )
             *w = *r;
     }
 
-    *w = NULL;
+    *w = 0;
 }
 
 void

@@ -201,13 +201,13 @@ main ( int argc, char **argv )
 
         tle->run();
 
-        timeline->init_osc( NULL );
+        timeline->init_osc( osc_port );
 
         char *nsm_url = getenv( "NSM_URL" );
 
         if ( nsm_url )
         {
-            if ( ! nsm->init( nsm_url ) );
+            if ( ! nsm->init( nsm_url ) )
             {
                 nsm->announce( APP_NAME, ":progress:switch:", argv[0] );
 

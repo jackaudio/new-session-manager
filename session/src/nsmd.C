@@ -304,7 +304,7 @@ mkpath ( const char *path, bool create_final_directory )
 
     char *i = p + 1;
 
-    while ( i = index( i, '/' ) )
+    while ( ( i = index( i, '/' ) ) )
     {
         *i = 0;
 
@@ -1206,8 +1206,6 @@ OSC_HANDLER( duplicate )
 
 //    save_session_file();
 
-    const char *src = session_path;
-
     char *spath;
     asprintf( &spath, "%s/%s", session_root, &argv[0]->s );
 
@@ -1615,7 +1613,7 @@ OSC_HANDLER( error )
 {
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
-    const char *rpath = &argv[0]->s;
+//    const char *rpath = &argv[0]->s;
 
     int err_code = argv[1]->i;
     
@@ -1637,7 +1635,7 @@ OSC_HANDLER( reply )
 {
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
-    const char *rpath = &argv[0]->s;
+//    const char *rpath = &argv[0]->s;
     const char *message = &argv[1]->s;
     
     if ( c )

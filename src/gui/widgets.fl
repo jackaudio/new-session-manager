@@ -75,7 +75,7 @@ decl {\#include "../transport.H"} {public
 
 decl {extern Fl_Color velocity_colors[];} {} 
 
-decl {\#include <Fl/Fl_Box.H>} {} 
+decl {\#include <FL/Fl_Box.H>} {} 
 
 decl {\#include <stdio.h>} {} 
 

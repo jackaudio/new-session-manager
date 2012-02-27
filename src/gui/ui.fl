@@ -22,10 +22,10 @@ comment {//
 } {in_source in_header
 } 
 
-decl {\#include <Fl/Fl_Dial.H>} {public local
+decl {\#include <FL/Fl_Dial.H>} {public local
 } 
 
-decl {\#include <Fl/Fl_Help_Dialog.H>} {private local
+decl {\#include <FL/Fl_Help_Dialog.H>} {private local
 } 
 
 decl {\#include <FL/Fl_Shared_Image.H>} {private local
@@ -326,7 +326,7 @@ if ( ! fc->value() )
 if ( tabs->value() == pattern_tab )
 	((pattern*)pattern_c->grid())->save( fc->value() );}
             xywh {0 0 40 25}
-            code0 {\#include <Fl/Fl_File_Chooser.H>}
+            code0 {\#include <FL/Fl_File_Chooser.H>}
           }
           MenuItem {} {
             label {&Quit}
@@ -1724,7 +1724,7 @@ return r;} {}
 widget_class Triggers {open
   xywh {335 80 1278 1003} type Double hide resizable
   code0 {populate();}
-  code1 {\#include <Fl/Fl_Dial.H>}
+  code1 {\#include <FL/Fl_Dial.H>}
   class Fl_Group
 } {
   Fl_Pack rows {open

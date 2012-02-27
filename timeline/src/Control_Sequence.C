@@ -235,7 +235,7 @@ Control_Sequence::mode ( Mode m )
         char *path;
         asprintf( &path, "/track/%s/control/%i", track()->name(), track()->ncontrols() );
         
-        _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, NULL, NULL );
+        _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, 0, 1, 0, NULL, NULL );
         
         free( path );
 
@@ -531,6 +531,10 @@ Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig )
 {
     char *s;
 
+    /* only show inputs */
+    if ( sig->direction() != OSC::Signal::Input )
+        return;
+
     /* only list CV signals for now */
     if ( ! ( sig->parameter_limits().min == 0.0 &&
              sig->parameter_limits().max == 1.0 ) )
@@ -553,7 +557,7 @@ Control_Sequence::add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix 
     peer_menu = m;
     peer_prefix = prefix;
 
-    timeline->osc->list_peers( &Control_Sequence::peer_callback, this );
+    timeline->osc->list_peer_signals( &Control_Sequence::peer_callback, this );
 }
 
 int

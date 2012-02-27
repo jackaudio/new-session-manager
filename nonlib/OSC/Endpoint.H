@@ -181,14 +181,14 @@ namespace OSC
 
         static Signal *get_peer_signal_by_id ( Peer *p, int signal_id );
         int noutput_connections() { return _outgoing.size(); }
-        bool connected ( void ) { return _outgoing.size() + _incoming.size(); }
+        bool connected ( void ) const { return _outgoing.size() + _incoming.size(); }
        
         char * get_output_connection_peer_name_and_path ( int n );
      
 
         int id ( void ) const { return _id; }
 
-        Direction direction ( void ) { return _direction; }
+        Direction direction ( void ) const { return _direction; }
 
         void parameter_limits ( float min, float max, float default_value )
             {
@@ -280,7 +280,7 @@ namespace OSC
 
     public:
 
-        void list_peers ( void (*callback) (const char *, const OSC::Signal *, void * ), void *v );
+        void list_peer_signals ( void (*callback) (const char *, const OSC::Signal *, void * ), void *v );
 
         int init ( int proto, const char *port = 0 );
         Endpoint ( );
@@ -298,7 +298,7 @@ namespace OSC
         bool connect_signal ( OSC::Signal *s, const char *peer_and_path );
 
 
-        Signal *add_signal ( const char *path, Signal::Direction dir, signal_handler handler, void *user_data );
+        Signal * add_signal ( const char *path, Signal::Direction dir, float min, float max, float default_value, signal_handler handler, void *user_data );
         Method *add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data, const char *argument_description );
         void del_method ( const char *path, const char *typespec );
         void del_method ( Method* method );

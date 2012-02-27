@@ -72,7 +72,6 @@ namespace OSC
     {
         DMESSAGE( "Renaming signal %s to %s", this->path(), path );
 
-
         free( _path );
         _path = strdup( path );
 
@@ -417,9 +416,6 @@ namespace OSC
     {
         Endpoint *ep = (Endpoint*)user_data;
 
-        if ( ! argc )
-            return -1;
-
         Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) );
 
         if ( ! p )
@@ -428,20 +424,28 @@ namespace OSC
             return 0;
         }
         
-        DMESSAGE( "Peer %s has created signal %s", p->name, &argv[0]->s );
+        const char *name = &argv[0]->s;
+        const char *direction = &argv[1]->s;
+        const int id = argv[2]->i;
+        const float min = argv[3]->f;
+        const float max = argv[4]->f;
+        const float default_value = argv[5]->f;
+
+        DMESSAGE( "Peer %s has created signal %s with id %i (%s %f %f %f)", p->name, 
+                  name, id, direction, min, max, default_value );
         
-        int dir = 0;
+        Signal::Direction dir = Signal::Input;
         
-        if ( !strcmp( &argv[1]->s, "in" ) )
+        if ( !strcmp( direction, "in" ) )
             dir = Signal::Input;
-        else if ( !strcmp( &argv[1]->s, "out" ) )
+        else if ( !strcmp( direction, "out" ) )
             dir = Signal::Output;
         
-        Signal *s = new Signal( &argv[0]->s, (Signal::Direction)dir );
+        Signal *s = new Signal( name, dir );
         
         s->_peer = p;
-        s->_id = argv[2]->i;
-        s->parameter_limits( argv[3]->f, argv[4]->f, argv[5]->f );
+        s->_id = id;
+        s->parameter_limits( min, max, default_value );
         
         p->_signals.push_back( s );
         
@@ -650,7 +654,7 @@ namespace OSC
 
 
     void
-    Endpoint::list_peers ( void (*callback) (const char *, const OSC::Signal *, void * ), void *v )
+    Endpoint::list_peer_signals ( void (*callback) (const char *, const OSC::Signal *, void * ), void *v )
     {
         for ( std::list<Peer*>::iterator i = _peers.begin(); 
               i != _peers.end();
@@ -916,7 +920,7 @@ namespace OSC
     }
 
     Signal *
-    Endpoint::add_signal ( const char *path, Signal::Direction dir, signal_handler handler, void *user_data )
+    Endpoint::add_signal ( const char *path, Signal::Direction dir, float min, float max, float default_value, signal_handler handler, void *user_data )
     {
         Signal *o = new Signal( path, dir );
         
@@ -934,6 +938,9 @@ namespace OSC
             lo_server_add_method( _server, path, NULL, osc_sig_handler, o );
         }
 
+
+        o->parameter_limits( min, max, default_value );
+
         /* tell our peers about it */
         for ( std::list<Peer*>::iterator i = _peers.begin();
               i != _peers.end();
@@ -944,9 +951,9 @@ namespace OSC
                   o->path(),
                   o->_direction == Signal::Input ? "in" : "out",
                   o->id(),
-                  o->parameter_limits().min,
-                  o->parameter_limits().max,
-                  o->parameter_limits().default_value
+                  min,
+                  max,
+                  default_value
                 );
         }
 

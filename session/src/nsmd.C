@@ -1752,6 +1752,7 @@ int main(int argc, char *argv[])
 
     static struct option long_options[] = 
     {
+        { "detach", no_argument, 0, 'd' },
         { "session-root", required_argument, 0, 's' },
         { "osc-port", required_argument, 0, 'p' },
         { "gui-url", required_argument, 0, 'g' },
@@ -1762,10 +1763,15 @@ int main(int argc, char *argv[])
     int option_index = 0;
     int c = 0;
 
+    bool detach = false;
+
     while ( ( c = getopt_long_only( argc, argv, "", long_options, &option_index  ) ) != -1 )
     {
         switch ( c )
         {
+            case 'd':
+                detach = true;
+                break;
             case 's':
                 session_root = optarg;
                 break;
@@ -1844,7 +1850,24 @@ int main(int argc, char *argv[])
     osc_server->add_method( "/nsm/server/close", "", OSC_NAME( close ), NULL, "" );
     osc_server->add_method( "/nsm/server/quit", "", OSC_NAME( quit ), NULL, "" );
 
+
+    if ( detach )
+    {
+        MESSAGE( "Detaching from console" );
+        if ( fork() )
+        {
+            exit( 0 );            
+        }
+        else
+        {
+            fclose( stdin );
+            fclose( stdout );
+            fclose( stderr );
+        }
+    }
+
     struct signalfd_siginfo fdsi;
+
 
     /* listen for sigchld signals and process OSC messages forever */
     for ( ;; )

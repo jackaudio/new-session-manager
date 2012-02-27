@@ -33,6 +33,7 @@
 #include "debug.h"
 #include <FL/Fl_Browser.H>
 #include <FL/Fl_Select_Browser.H>
+#include <FL/Fl_Hold_Browser.H>
 #include <FL/Fl_Tile.H>
 
 #include "FL/Fl_Packscroller.H"
@@ -272,7 +273,7 @@ public:
     Fl_Button *add_button;
     Fl_Button *duplicate_button;
 
-    Fl_Select_Browser *session_browser;
+    Fl_Hold_Browser *session_browser;
     
     static void cb_handle ( Fl_Widget *w, void *v )
         {
@@ -468,6 +469,23 @@ public:
                 free( (char*)clients_pack->label() );
                       
             clients_pack->parent()->label( strdup( name ) );
+            
+            if ( strlen( name ) )
+            {
+                save_button->activate();
+                add_button->activate();
+                duplicate_button->activate();
+                abort_button->activate();
+                close_button->activate();
+            }
+            else
+            {
+                save_button->deactivate();
+                add_button->deactivate();
+                duplicate_button->deactivate();
+                abort_button->deactivate();
+                close_button->deactivate();
+            }
 
             redraw();
         }
@@ -606,9 +624,10 @@ public:
             }
             { Fl_Tile *o = new Fl_Tile( X, Y + 50, W, H - 50 );
                 { 
-                    Fl_Select_Browser *o = session_browser = new Fl_Select_Browser( X, Y + 50, W / 3, H - 50 );
+                    Fl_Hold_Browser *o = session_browser = new Fl_Hold_Browser( X, Y + 50, W / 3, H - 50 );
                     o->callback( cb_handle, (void *)this );
                     o->color( fl_darker( FL_GRAY ) );
+                    o->selection_color( fl_darker( FL_GREEN ) );
                     o->box( FL_ROUNDED_BOX );
                     o->label( "Sessions" );
                 }
@@ -621,14 +640,15 @@ public:
                         o->align( FL_ALIGN_TOP );
                         o->type( Fl_Pack::VERTICAL );
                         o->end();
-                        Fl_Group::current()->resizable( o );
                     }
+                    Fl_Group::current()->resizable( o );
                     o->end();
                 }
+                resizable( o );
                 o->end();
             }
 
-            Fl_Group::current()->resizable( this );
+//            Fl_Group::current()->resizable( this );
 
             end();
 
@@ -863,6 +883,8 @@ main (int argc, char **argv )
             main_window->xclass( APP_NAME );
 
             Fl_Widget *o = controller = new NSM_Controller( 0, 0, main_window->w(), main_window->h(), NULL );
+            controller->session_name( "" );
+
             Fl_Group::current()->resizable(o);
         }
         o->end();

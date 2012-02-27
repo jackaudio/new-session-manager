@@ -21,14 +21,14 @@
 
 #include "debug.h"
 
-// #include <lo/lo.h>
+#define _GNU_SOURCE
+
 #include <errno.h>
 #include <string.h>
 #include <list>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <OSC/Endpoint.H>
 #include <sys/types.h>
 #include <signal.h>
 #include <sys/signalfd.h>
@@ -44,8 +44,9 @@
 #include <list>
 #include <getopt.h>
 
-#define _GNU_SOURCE
-
+#include <OSC/Endpoint.H>
+/* for locking */
+#include "file.h"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
@@ -54,6 +55,7 @@ static lo_address gui_addr;
 static bool gui_is_active = false;
 static int signal_fd;
 
+static int session_lock_fd = 0;
 static char *session_root;
 
 #define NSM_API_VERSION_MAJOR 0
@@ -70,6 +72,7 @@ static char *session_root;
 #define ERR_NOT_NOW          -8
 #define ERR_BAD_PROJECT      -9
 #define ERR_CREATE_FAILED    -10
+#define ERR_SESSION_LOCKED   -11
 
 #define APP_TITLE "Non Session Manager"
 
@@ -945,7 +948,7 @@ command_client_to_quit ( Client *c )
 }
 
 void
-close_all_clients ( )
+close_session ( )
 {
     if ( ! session_path )
         return;
@@ -965,6 +968,13 @@ close_all_clients ( )
 
     if ( session_path )
     {
+        char *session_lock;
+        asprintf( &session_lock, "%s/.lock", session_path );
+
+        release_lock( &session_lock_fd, session_lock );
+
+        free(session_lock);
+
         free(session_path);
         session_path = NULL;
         free(session_name);
@@ -1001,22 +1011,35 @@ tell_all_clients_session_is_loaded ( void )
     }
 }
 
-bool
+int
 load_session_file ( const char * path )
 {
     char *session_file = NULL;
     asprintf( &session_file, "%s/session.nsm", path );
-  
-    session_path = strdup( path );
+    char *session_lock = NULL;
+    asprintf( &session_lock, "%s/.lock", path );
+    
+    if ( ! acquire_lock( &session_lock_fd, session_lock ) )
+    {
+        free( session_file );
+        free( session_lock );
 
-    set_name( path );
+        WARNING( "Session is locked by another process" );
+        return ERR_SESSION_LOCKED;
+    }
+
 
     FILE *fp;
 
     if ( ! ( fp = fopen( session_file, "r" ) ) )
     {
-        return false;
+        free( session_file );
+        return ERR_CREATE_FAILED;
     }
+
+    session_path = strdup( path );
+
+    set_name( path );
 
     std::list<Client*> new_clients;
 
@@ -1122,7 +1145,7 @@ load_session_file ( const char * path )
         osc_server->send( gui_addr, "/nsm/gui/session/name", session_name );
     }
     
-    return true;
+    return ERR_OK;
 }
 
 OSC_HANDLER( save )
@@ -1237,7 +1260,7 @@ OSC_HANDLER( new )
     {
         command_all_clients_to_save();
         
-        close_all_clients();
+        close_session();
     }
 
     MESSAGE( "Creating new session" );
@@ -1348,7 +1371,9 @@ OSC_HANDLER( open )
 
     MESSAGE( "Attempting to open %s", spath );
 
-    if ( load_session_file( spath ) )
+    int err = load_session_file( spath );
+        
+    if ( ! err )
     {
         MESSAGE( "Loaded" );
         osc_server->send( lo_message_get_source( msg ), "/reply", path,
@@ -1357,9 +1382,26 @@ OSC_HANDLER( open )
     else
     {
         MESSAGE( "Failed" );
-        osc_server->send( lo_message_get_source( msg ), "/reply", path,
-                          ERR_NO_SUCH_FILE,
-                          "No such file." );
+        const char *m = NULL;
+        switch ( err )
+        {
+            case ERR_CREATE_FAILED:
+                m = "Could not create session file!";
+                break;
+            case ERR_SESSION_LOCKED:
+                m = "Session is locked by another process!";
+                break;
+            case ERR_NO_SUCH_FILE:
+                m = "The named session does not exist.";
+                break;
+            default:
+                m = "Unknown error";
+        }
+
+
+        osc_server->send( lo_message_get_source( msg ), "/error", path,
+                          err,
+                          m );
     }
 
     free( spath );
@@ -1372,7 +1414,7 @@ OSC_HANDLER( open )
 
 OSC_HANDLER( quit )
 {
-    close_all_clients();
+    close_session();
 
     exit(0);
 
@@ -1392,7 +1434,7 @@ OSC_HANDLER( abort )
 
     MESSAGE( "Commanding attached clients to quit." );
 
-    close_all_clients();
+    close_session();
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path,
                       "Aborted." );
@@ -1417,7 +1459,7 @@ OSC_HANDLER( close )
 
     MESSAGE( "Commanding attached clients to quit." );
 
-    close_all_clients();
+    close_session();
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path,
                       "Closed." );

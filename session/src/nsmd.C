@@ -246,21 +246,22 @@ handle_client_process_death ( int pid )
 
         c->pending_command = COMMAND_NONE;
             
-        if ( gui_is_active )
-        {
-            if ( ! c->dead_because_we_said )
-                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
-            else
-                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
-        }
-
         c->active = false;
         c->pid = 0;
 
         if ( c->dead_because_we_said )
         {
+            if ( gui_is_active )
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
+
             client.remove( c );
+
             delete c;
+        }
+        else
+        {
+            if ( gui_is_active )
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
         }
     }
 }
@@ -583,7 +584,11 @@ purge_inactive_clients ( )
     {
         if ( ! (*i)->active )
         {
+            if ( gui_is_active )
+                osc_server->send( gui_addr, "/nsm/gui/client/status", (*i)->client_id, (*i)->status = "removed" );
+
             delete *i;
+
             i = client.erase( i );
         }
     }

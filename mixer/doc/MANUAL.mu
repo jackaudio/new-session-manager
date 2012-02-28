@@ -135,11 +135,11 @@
 > /strip/[STRIP_NAME]/[MODULE_NAME]/[PARAMETER_NAME]/unscaled
 
   If same module\/plugin is used twice in a signal chain
-  (e.g. multiple Gain stages), then a position dependent sequence number
-  will be appended to the module name. For example, a path might look
-  like the following:
+  (e.g. multiple Gain stages), then a position dependent sequence
+  number will be appended to the module name. For example, a path
+  might look like the following:
 
-> /mixer/strip/Foo/control/Gain.1/Gain_(dB)
+> /strip/Foo/Gain.1/Gain_(dB)
 
   For the second instance of the Gain module on the strip named 'Foo'.
 

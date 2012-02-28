@@ -27,6 +27,7 @@
 #include <jack/ringbuffer.h>
 #include <jack/thread.h>
 
+#include "jack.H"
 #include "non.H"
 #include "transport.H"
 #include "pattern.H"
@@ -300,22 +301,84 @@ process ( jack_nframes_t nframes, void *arg )
 
     onph = nph;
 
+    if ( old_play_mode != song.play_mode )
+    {
+        switch ( old_play_mode )
+        {
+            case PATTERN:
+            case TRIGGER:
+                DMESSAGE( "Stopping all patterns" );
+                stop_all_patterns();
+                break;
+        }
+        old_play_mode = song.play_mode;
+    }
+
 //  DMESSAGE( "tpp %f %lu-%lu", transport.ticks_per_period, ph, nph );
 
-    switch ( old_play_mode )
+    /* now handle control input */
     {
-        case PATTERN:
-        case TRIGGER:
-            stop_all_patterns();
-            break;
+        int j = CONTROL;
+
+        static midievent e;
+
+        input[j].buf = jack_port_get_buffer( input[j].port, nframes );
+
+        jack_midi_event_t ev;
+
+        jack_nframes_t count = jack_midi_get_event_count( input[j].buf );
+
+        for ( uint i = 0; i < count; ++i )
+        {
+//            MESSAGE( "Got midi input!" );
+
+            jack_midi_event_get( &ev, input[j].buf, i );
+
+            /* time is frame within cycle, convert to absolute tick */
+            e.timestamp( ph + (ev.time / transport.frames_per_tick) );
+            e.status( ev.buffer[0] );
+            e.lsb( ev.buffer[1] );
+            if ( ev.size == 3 )
+                e.msb( ev.buffer[2] );
+
+            /* no need to pass it to the GUI, we can trigger patterns here */
+
+            if ( e.channel() == 0 && e.is_note_on() )
+            {
+                if ( e.note() < pattern::patterns() )
+                {
+                    pattern *p = pattern::pattern_by_number( e.note() + 1 );
+
+                    if ( p->playing() )
+                    {
+                        DMESSAGE( "Untriggering pattern %i", e.note() );
+                        
+                        if ( e.note() < pattern::patterns() )
+                        {
+                            pattern *p = pattern::pattern_by_number( e.note() + 1 );
+                            
+                            DMESSAGE( "Untriggering pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
+                            
+                            p->trigger( ph, e.timestamp() );
+                        }
+                    }
+                    else
+                    {
+                        DMESSAGE( "Triggering pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
+                        
+                        p->trigger( e.timestamp(), -1 );
+                    }
+                }
+            }
+        }
     }
+
     switch ( song.play_mode )
     {
         case SEQUENCE:
             playlist->play( ph, nph );
             break;
         case PATTERN:
-        case TRIGGER:
         {
             for ( uint i = pattern::patterns(); i--; )
             {
@@ -325,18 +388,29 @@ process ( jack_nframes_t nframes, void *arg )
 
                 p->play( ph, nph );
             }
+            break;
+        }
+        case TRIGGER:
+        {
+            for ( uint i = pattern::patterns(); i--; )
+            {
+                pattern *p = pattern::pattern_by_number( i + 1 );
 
+                p->play( ph, nph );
+            }
             break;
         }
     }
 
-    old_play_mode = song.play_mode;
-
     oph = ph;
 
     /* handle midi input */
-    for ( int j = transport.recording ? 2 : 1; j--; )
+//    for ( int j = transport.recording ? 2 : 1; j--; )
+    
+    if ( transport.recording )
     {
+        int j = PERFORMANCE;
+
         static midievent e;
 
         input[j].buf = jack_port_get_buffer( input[j].port, nframes );
@@ -362,6 +436,7 @@ process ( jack_nframes_t nframes, void *arg )
                 WARNING( "input buffer overrun" );
         }
     }
+
 
 schedule:
 

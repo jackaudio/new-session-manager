@@ -45,8 +45,6 @@ pattern::pattern ( void )
     _note = 8;
     int _bars = 2;
 
-    _triggered = false;
-
     // we need to reinitalize this.
     data *d = const_cast< data * >( _rd );
 
@@ -306,6 +304,12 @@ pattern::trigger ( tick_t start, tick_t end )
     _index = 0;
 }
 
+/* trigger forever */
+void
+pattern::trigger ( void )
+{
+    trigger( transport.frame / transport.frames_per_tick, -1 );
+}
 
 void
 pattern::stop ( void ) const
@@ -321,21 +325,6 @@ pattern::stop ( void ) const
 void
 pattern::mode ( int n )
 {
-    if ( song.play_mode == TRIGGER )
-    {
-        switch ( n )
-        {
-            case PLAY:
-                _triggered = true;
-                break;
-            case MUTE:
-                _triggered = false;
-                break;
-        }
-
-        return;
-    }
-
     if ( n == SOLO )
     {
         if ( pattern::_solo )
@@ -355,15 +344,6 @@ pattern::mode ( int n )
 int
 pattern::mode ( void ) const
 {
-
-    if ( song.play_mode == TRIGGER )
-    {
-        if ( ! _triggered )
-            return MUTE;
-        else
-            return PLAY;
-    }
-
     if ( pattern::_solo )
     {
         if ( pattern::_solo == _number )
@@ -477,7 +457,7 @@ done:
 
     if ( _end == end )
     {
-        /* we're doing playing this trigger */
+        /* we're done playing this trigger */
         DMESSAGE( "Pattern %d ended at tick %lu (ls: %lu, le: %lu, o: %lu)", number(), end, _start, _end, offset  );
 
         stop();

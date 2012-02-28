@@ -1673,14 +1673,24 @@ switch ( m )
 		{
 			case 1:
 			{
- 				pattern *p = pattern::pattern_by_number( atoi( label() ) );
-				
+ 		      		pattern *p = pattern::pattern_by_number( atoi( label() ) );
+		
 				if ( p )
-				{
-					if ( p->mode() == MUTE )
-						p->mode( PLAY );
+				{                                  
+                                     if ( TRIGGER == song.play_mode ) 		
+                                     {
+					if ( p->playing() )
+                                            p->stop();
 					else
-						p->mode( MUTE );
+                                            p->trigger();
+                                     }
+                                     else
+                                     {
+                                        if ( p->mode() == PLAY )
+                                            p->mode( MUTE );
+                                        else
+                                            p->mode( PLAY );
+                                     }
 				}
 				
 				break;

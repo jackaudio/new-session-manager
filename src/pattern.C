@@ -366,7 +366,7 @@ pattern::play ( tick_t start, tick_t end ) const
     if ( start > _end )
     {
         stop();
-        WARNING( "attempt to play a loop (pattern %d) that has ended (%lu, %lu)", number(), start, _end );
+//        WARNING( "attempt to play a loop (pattern %d) that has ended (%lu, %lu)", number(), start, _end );
         return;
     }
     else

@@ -30,6 +30,14 @@
 #include "pattern.H"
 #include "phrase.H"
 
+
+#ifdef HAVE_XPM
+#include "FL/Fl.H"
+#include "FL/x.H"
+#include <X11/xpm.h>
+#include "../icons/icon-16x16.xpm"
+#endif
+
 extern const char *BUILD_ID;
 extern const char *VERSION;
 
@@ -144,6 +152,15 @@ save_song ( const char *name )
 int
 main ( int argc, char **argv )
 {
+
+#ifdef HAVE_XPM
+    fl_open_display(); 
+    Pixmap p, mask;
+
+    XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),
+                            (char**)icon_16x16, &p, &mask, NULL);
+#endif
+
     config.follow_playhead = true;
     config.record_mode = MERGE;
     song.play_mode = PATTERN;
@@ -185,7 +202,14 @@ main ( int argc, char **argv )
 
     init_colors();
 
+    Fl::visual( FL_RGB );
+
     ui = new UI;
+
+#ifdef HAVE_XPM
+    ui->main_window->icon((char *)p);
+#endif
+    ui->main_window->show( argc, argv );
 
     if ( ! lash.init( &argc, &argv, jack_name ) )
         WARNING( "error initializing LASH" );

@@ -1,7 +1,7 @@
 
 ! title		The Non Sequencer
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
-! extra		#(image,logo,logo.png)
+! extra		#(image,logo,icon.png)
 
 --
 

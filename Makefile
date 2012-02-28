@@ -37,6 +37,9 @@ config:
 
 SYSTEM_PATH=$(prefix)/share/non-sequencer/
 DOCUMENT_PATH=$(prefix)/share/doc/non-sequencer/
+PIXMAP_PATH:=$(prefix)/share/pixmaps/non-sequencer/
+ICON_PATH:=$(prefix)/share/icons/
+DESKTOP_PATH:=$(prefix)/share/applications/
 
 # a bit of a hack to make sure this runs before any rules
 ifneq ($(CALCULATING),yes)
@@ -51,11 +54,12 @@ endif
 
 CFLAGS+=-DINSTALL_PREFIX=\"$(prefix)\" \
 	-DSYSTEM_PATH=\"$(SYSTEM_PATH)\" \
-	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\"
+	-DDOCUMENT_PATH=\"$(DOCUMENT_PATH)\" \
+	-DPIXMAP_PATH=\"$(PIXMAP_PATH)\"
 
-CXXFLAGS:=$(CFLAGS) $(CXXFLAGS) $(FLTK_CFLAGS) $(SIGCPP_CFLAGS) $(LASH_CFLAGS)
+CXXFLAGS:=$(CFLAGS) $(CXXFLAGS) $(FLTK_CFLAGS) $(SIGCPP_CFLAGS) $(LASH_CFLAGS) $(XPM_CFLAGS)
 
-LIBS:=$(FLTK_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(SIGCPP_LIBS)
+LIBS:=$(FLTK_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
 
 ifeq ($(JACK_MIDI_PROTO_API),yes)
 	CXXFLAGS+=-DJACK_MIDI_PROTO_API
@@ -114,6 +118,12 @@ install: all
 	@ install -m 644 instruments/* "$(DESTDIR)$(SYSTEM_PATH)/instruments"
 	@ install -d "$(DESTDIR)$(DOCUMENT_PATH)"
 	@ install -m 644 doc/*.html doc/*.png "$(DESTDIR)$(DOCUMENT_PATH)"
+	@ install -d "$(DESTDIR)$(PIXMAP_PATH)"
+	@ install -m 644 icons/hicolor/256x256/apps/non-sequencer.png "$(DESTDIR)$(PIXMAP_PATH)"/icon-256x256.png
+	@ install -d "$(DESTDIR)$(ICON_PATH)/hicolor"
+	@ cp -au icons/hicolor/ "$(DESTDIR)$(ICON_PATH)"
+	@ install -d "$(DESTDIR)$(DESKTOP_PATH)"
+	@ sed 's:@BIN_PATH@:$(prefix)/bin:' non-sequencer.desktop.in > "$(DESTDIR)$(DESKTOP_PATH)/non-sequencer.desktop"
 	@ echo "$(DONE)"
 ifneq ($(USE_DEBUG),yes)
 	@ echo -n "Stripping..."

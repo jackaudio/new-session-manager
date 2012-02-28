@@ -18,6 +18,7 @@ begin_tests
 require_FLTK 1.1.7 images
 require_command FLUID fluid
 require_package JACK 0.103.0 jack
+suggest_package XPM 2.0.0 xpm
 test_version `version_of jack` 0.105.0 || append "JACK_MIDI_PROTO_API=yes"
 
 require_package sigcpp 2.0.0 sigc++-2.0

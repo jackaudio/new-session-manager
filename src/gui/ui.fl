@@ -159,8 +159,6 @@ Fl::visible_focus( 0 );
             main_window->resize( sx, sy, sw, sh );
 }
 
-main_window->show();
-
 Fl::add_timeout( TRANSPORT_POLL_INTERVAL, update_transport );
 
 
@@ -865,7 +863,7 @@ pattern_c->changed_mapping();}
           }
         }
       }
-      Fl_Group {} {open selected
+      Fl_Group {} {open
         xywh {0 29 865 67}
       } {
         Fl_Pack {} {
@@ -1050,22 +1048,23 @@ detach_button->value( 0 );} open
   Function {make_about_popup()} {open
   } {
     Fl_Window about_popup {
-      label About open
-      xywh {697 224 535 620} type Single non_modal size_range {539 608 539 608} visible
+      label About open selected
+      xywh {697 224 535 685} type Double non_modal size_range {535 685 535 685} visible
     } {
       Fl_Box {} {
         label VERSION
-        xywh {10 16 515 228} box ROUNDED_BOX
+        xywh {10 16 515 307} align 16
         code0 {o->label( VERSION );}
-        code1 {o->image( Fl_Shared_Image::get( DOCUMENT_PATH "/logo.png" ) );}
+        code1 {const char *logo_filename =  PIXMAP_PATH "/icon-256x256.png";
+        o->image( Fl_Shared_Image::get( logo_filename ) );}
         code2 {o->redraw();}
       }
       Fl_Group {} {open
-        xywh {26 286 488 272} box ROUNDED_BOX color 51
+        xywh {20 361 488 272} box ROUNDED_BOX color 51
       } {
         Fl_Box {} {
           label {Copyright (C) 2007-2008 Jonathan Moore Liles}
-          xywh {26 286 488 32} labeltype SHADOW_LABEL labelfont 1 labelsize 18
+          xywh {20 361 488 32} labeltype SHADOW_LABEL labelfont 1 labelsize 18
         }
         Fl_Box {} {
           label {This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
@@ -1073,7 +1072,7 @@ detach_button->value( 0 );} open
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.}
-          xywh {41 325 463 233} labelfont 1 labelsize 12 align 144
+          xywh {35 400 463 233} labelfont 1 labelsize 12 align 144
         }
       }
       Fl_Button {} {
@@ -1084,16 +1083,16 @@ You should have received a copy of the GNU General Public License along with thi
 \#else
 	fl_open_uri( "http://non.tuxfamily.org" );
 \#endif}
-        xywh {178 568 188 30} color 14 labeltype SHADOW_LABEL labelcolor 6
+        xywh {170 643 188 30} color 14 labeltype SHADOW_LABEL labelcolor 6
       }
       Fl_Return_Button {} {
         label rock
         callback {about_popup->hide();}
-        xywh {453 584 78 31}
+        xywh {440 644 78 31}
       }
       Fl_Box {} {
         label label
-        xywh {191 262 153 22} color 51 labelfont 4 labelcolor 52
+        xywh {185 337 153 22} color 51 labelfont 4 labelcolor 52
         code2 {o->label( BUILD_ID );}
       }
     }
@@ -1664,8 +1663,7 @@ class Trigger {open : {public Fl_Dial}
 } {
   Function {Trigger( int X, int Y, int W, int H, const char *L ) : Fl_Dial( X, Y, W, H, L )} {open
   } {
-    code {} {selected
-    }
+    code {} {}
   }
   Function {handle( int m )} {open return_type int
   } {

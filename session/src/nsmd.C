@@ -43,6 +43,7 @@
 #include <ftw.h>
 #include <list>
 #include <getopt.h>
+#include <sys/time.h>
 
 #include <OSC/Endpoint.H>
 /* for locking */
@@ -91,12 +92,14 @@ private:
     int _reply_errcode;
     char *_reply_message;
 
+    int _pending_command;                /*  */
+    struct timeval _command_sent_time;
+
 public:
 
     lo_address addr;                   /*  */
     char *name;                        /* client application name */
     char *executable_path;             /* path to client executable */
-    int pending_command;                /*  */
     int pid;                           /* PID of client process */
     float progress;                    /*  */
     bool active;              /* client has registered via announce */
@@ -137,12 +140,35 @@ public:
 
     bool reply_pending ( void )
         {
-            return pending_command != COMMAND_NONE;
+            return _pending_command != COMMAND_NONE;
         }
 
     bool is_dumb_client ( void )
         {
             return capabilities == NULL;
+        }
+
+    void pending_command ( int command )
+        {
+            gettimeofday( &_command_sent_time, NULL );
+            _pending_command = command;
+        }
+    
+    double milliseconds_since_last_command ( void ) const
+        {
+            struct timeval now;
+
+            gettimeofday( &now, NULL );
+
+            double elapsedms = ( now.tv_sec - _command_sent_time.tv_sec ) * 1000.0;
+            elapsedms += ( now.tv_usec - _command_sent_time.tv_usec ) / 1000.0;
+
+            return elapsedms;
+        }
+
+    int pending_command ( void )
+        {
+            return _pending_command;
         }
 
     Client ( )
@@ -153,7 +179,7 @@ public:
             dead_because_we_said = false;
             pid = 0;
             progress = -0;
-            pending_command = 0;
+            _pending_command = 0;
             active = false;
             client_id = 0;
             capabilities = 0;
@@ -200,7 +226,6 @@ clients_have_errors ( )
     return false;
 }
 
-
 Client *
 get_client_by_pid ( int pid )
 {
@@ -238,13 +263,13 @@ handle_client_process_death ( int pid )
     {
         MESSAGE( "Client %s died.", c->name );
 
-        if ( c->pending_command == COMMAND_KILL ||
-             c->pending_command == COMMAND_QUIT )
+        if ( c->pending_command() == COMMAND_KILL ||
+             c->pending_command() == COMMAND_QUIT )
         {
             c->dead_because_we_said = true;
         }
 
-        c->pending_command = COMMAND_NONE;
+        c->pending_command( COMMAND_NONE );
             
         c->active = false;
         c->pid = 0;
@@ -533,7 +558,7 @@ command_client_to_save ( Client *c )
         MESSAGE( "Telling %s to save", c->name );
         osc_server->send( c->addr, "/nsm/client/save" );
         
-        c->pending_command = COMMAND_SAVE;
+        c->pending_command( COMMAND_SAVE );
 
         if ( gui_is_active )
             osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "save" );
@@ -564,7 +589,7 @@ void command_client_to_switch ( Client *c, const char *new_client_id )
     free( full_client_id );
     free( client_project_path );
     
-    c->pending_command = COMMAND_OPEN;
+    c->pending_command( COMMAND_OPEN );
 
     if ( gui_is_active )
     {
@@ -743,7 +768,7 @@ OSC_HANDLER( announce )
         
         osc_server->send( lo_message_get_source( msg ), "/nsm/client/open", client_project_path, session_name, full_client_id );
         
-        c->pending_command = COMMAND_OPEN;
+        c->pending_command( COMMAND_OPEN );
 
         free( full_client_id );
         free( client_project_path );
@@ -849,8 +874,8 @@ killed_clients_are_alive ( )
           i != cl->end();
           ++i )
     {
-        if ( ( (*i)->pending_command == COMMAND_QUIT ||
-               (*i)->pending_command == COMMAND_KILL ) &&
+        if ( ( (*i)->pending_command() == COMMAND_QUIT ||
+               (*i)->pending_command() == COMMAND_KILL ) &&
              (*i)->pid > 0 )
             return true;
     }
@@ -924,7 +949,7 @@ command_client_to_quit ( Client *c )
     
     if ( c->active )
     {
-        c->pending_command = COMMAND_QUIT;
+        c->pending_command( COMMAND_QUIT );
 
         kill( c->pid, SIGTERM );
 
@@ -939,8 +964,8 @@ command_client_to_quit ( Client *c )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "kill" );
             
             /* should be kill? */
-            c->pending_command = COMMAND_KILL;
-            
+            c->pending_command( COMMAND_KILL );
+    
             // this is a dumb client... try and kill it
             kill( c->pid, SIGTERM );
         }
@@ -1621,8 +1646,8 @@ OSC_HANDLER( error )
 
     c->set_reply( err_code, message );
 
-    MESSAGE( "Client \"%s\" replied with error: %s (%i)", c->name, message, err_code ); 
-    c->pending_command = COMMAND_NONE;
+    MESSAGE( "Client \"%s\" replied with error: %s (%i) in %fms", c->name, message, err_code, c->milliseconds_since_last_command() ); 
+    c->pending_command( COMMAND_NONE );
     
     if ( gui_is_active )
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "error" );
@@ -1642,9 +1667,9 @@ OSC_HANDLER( reply )
     {
         c->set_reply( ERR_OK, message );
 
-        MESSAGE( "Client \"%s\" replied with: %s", c->name, message ); 
+        MESSAGE( "Client \"%s\" replied with: %s in %fms", c->name, message, c->milliseconds_since_last_command() ); 
         
-        c->pending_command = COMMAND_NONE;
+        c->pending_command( COMMAND_NONE );
         
         if ( gui_is_active )
             osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "ready" );

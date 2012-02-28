@@ -28,7 +28,6 @@ signal <void> phrase::signal_create_destroy;
 
 phrase::phrase ( void )
 {
-
     viewport.h = 32;
     viewport.w = 32;
 
@@ -151,7 +150,7 @@ phrase::row_name ( int r ) const
 void
 phrase::draw_row_names ( Canvas *c ) const
 {
-    for ( int y = 128; y-- ; )
+    for ( int y = viewport.h; y--; )
     {
         pattern *p = pattern::pattern_by_number( y + 1 );
 

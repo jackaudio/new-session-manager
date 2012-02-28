@@ -1168,6 +1168,10 @@ else
 if ( ! g )
 	return;
 	
+g->viewport.y = 0;
+g->viewport.h = pattern::patterns();
+phrase_c->resize_grid();
+phrase_c->changed_mapping();
 phrase_number_spinner->value( g->number() );
 phrase_name_field->value( g->name() );
 phrase_solo_button->value( g->mode() == SOLO );

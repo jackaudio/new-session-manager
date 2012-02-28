@@ -34,7 +34,6 @@ signal <void> pattern::signal_create_destroy;
 
 pattern::pattern ( void )
 {
-
     viewport.h = 32;
     viewport.w = 32;
 

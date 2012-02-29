@@ -149,13 +149,14 @@ Fl::add_handler( shortcut_handler );
 // use old focus behavior
 Fl::visible_focus( 0 );
 
-// try to fill the screen
+// try to fill the screen, but only when the screen is tiny and our window is huge.
 {
         int sx, sy, sw, sh;
 
         Fl::screen_xywh( sx, sy, sw, sh );
 
-        main_window->resize( sx, sy, sw, sh );
+        if ( sw < main_window->w() || sh < main_window->h() )
+            main_window->resize( sx, sy, sw, sh );
 }
 
 main_window->show();

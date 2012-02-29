@@ -12,8 +12,8 @@
 <address>
 Jonathan Moore Liles <a href="mailto:male@tuxfamily.org">&lt;male@tuxfamily.org&gt;</a><br>
 August 1, 2010<br>
-Version 0.8
-</address><hr></div>
+Version 0.9
+</address><img src="icon.png" alt="logo"><hr></div>
 <div id=body>
 <div id=toc>
 <h1 id=toc>Table Of Contents</h1>
@@ -98,7 +98,7 @@ Most graphical applications make available to the user a common set of file oper
 These are: New, Open, Save, Save As, Close and Quit or Exit.
 </p>
 <p>
-The following sub-sections describe how these options should behave when the application is part of an NSM session. These rules only apply when session management is active (that is, after the <tt>announce</tt> handshake described in the <a class=int href="#"></a> section).   In order to provide a consistent and predictable user experience, it is critically important for applications to adhere to these guidelines.
+The following sub-sections describe how these options should behave when the application is part of an NSM session. These rules only apply when session management is active (that is, after the <tt>announce</tt> handshake described in the <a class=int href="#n:1.2.">1.2. NSM OSC Protocol</a> section).   In order to provide a consistent and predictable user experience, it is critically important for applications to adhere to these guidelines.
 </p>
 <h3 id="n:1.1.1.">1.1.1. New</h3>
 <p>
@@ -131,7 +131,7 @@ The application may, however, elect to implement an option called 'Export from S
 </p>
 <h3 id="n:1.1.6.">1.1.6. Quit or Exit</h3>
 <p>
-This option may behave as normal (even possibly asking the user to confirm exiting).
+This option may behave as normal (possibly asking the user to confirm exiting).
 </p>
 <h2 id="n:1.2.">1.2. NSM OSC Protocol</h2>
 <p>
@@ -156,10 +156,10 @@ If <tt>NSM_URL</tt> is undefined, invalid, or unreachable, then the client shoul
 <tt>api_version_major</tt> and <tt>api_version_minor</tt> must be the two parts of the version number of the NSM API as defined by this document.
 </p>
 <p>
-Note that if the application intends to register JACK clients, <tt>application_name</tt> <b>MUST</b> be the same as the name that would normally by passed to <tt>jack_client_open</tt>. For example, Non-Mixer sends "Non-Mixer" as its <tt>application_name</tt>. Applications <b>MUST NOT</b> register their JACK clients until receiving an <tt>open</tt> message; the <tt>open</tt> message will provide a unique client name prefix suitable for passing to JACK. This is probably the most complex requirement of the NSM API, but it isn't difficult to implement, especially if the application simply wishes to delay its initialization process breifly while awaiting the <tt>announce</tt> reply and subsequent <tt>open</tt> message.
+Note that if the application intends to register JACK clients, <tt>application_name</tt> <b>MUST</b> be the same as the name that would normally be passed to <tt>jack_client_open</tt>. For example, Non-Mixer sends "Non-Mixer" as its <tt>application_name</tt>. Applications <b>MUST NOT</b> register their JACK clients until receiving an <tt>open</tt> message; the <tt>open</tt> message will provide a unique client name prefix suitable for passing to JACK. This is probably the most complex requirement of the NSM API, but it isn't difficult to implement, especially if the application simply wishes to delay its initialization process breifly while awaiting the <tt>announce</tt> reply and subsequent <tt>open</tt> message.
 </p>
 <p>
-<tt>capabilities</tt> <b>MUST</b> be a string containing a colon separated list of the special capabilities the client possesses. e.g. ":dirty:switch:progress:"
+<tt>capabilities</tt> <b>MUST</b> be a string containing a colon separated list of the special capabilities the client possesses. e.g. <tt>:dirty:switch:progress:</tt>
 </p>
 <center><div class="fig table"><table id="Fig.1.1" border=1>
 <caption>
@@ -226,7 +226,7 @@ The following table defines possible values of <tt>error_code</tt>:
 Compliant clients <b>MUST</b> accept the client control messages described in this section. All client control messages <b>REQUIRE</b> a response. Responses <b>MUST</b> be delivered back to the sender (NSM) from the same socket used by the client in its <tt>announce</tt> message (by using <tt>lo_send_from</tt>) <b>AFTER</b> the action has been completed or if an error is encountered. The required response is described in the subsection for each message.
 </p>
 <p>
-If there is an error and the action cannot be completed, then <tt>error_code</tt> <b>MUST</b> be set to a valid error code (see <a href="#Fig."></a>) and <tt>message</tt> to a string describing the problem (suitable for display to the user).
+If there is an error and the action cannot be completed, then <tt>error_code</tt> <b>MUST</b> be set to a valid error code (see <a class=int href="#n:1.2.5.">1.2.5. Error Code Definitions</a>) and <tt>message</tt> to a string describing the problem (suitable for display to the user).
 </p>
 <p>
 The reply can take one of the following two forms, where <tt>path</tt> <b>MUST</b> be the path of the message being replied to (e.g. "<i>nsm/client/save"</i>:
@@ -316,8 +316,9 @@ Or
 </pre></td></tr>
 </table></div>
 <p>
-The client <b>MUST</b> immediately save the current application specific project data to the project path previously established in the 'open' message. <b>UNDER NO CIRCUMSTANCES</b> should a dialog be displayed to the user (giving a choice of where to save, etc.)   This message will only be delivered after a previous <tt>open</tt> message, and may be sent any number of times within the course of a session (including zero, if the user aborts the session).
+This message will only be delivered after a previous <tt>open</tt> message, and may be sent any number of times within the course of a session (including zero, if the user aborts the session).
 </p>
+<p>
 <h5 id="n:1.2.2.3.1.">1.2.2.3.1. Response</h5>
 <p>
 The client <b>MUST</b> respond to the 'save' message with:
@@ -427,7 +428,7 @@ If the server publishes the <tt>:server_control:</tt> capability, then clients c
 The session manager not only manages clients via OSC, but it is itself controlled via OSC messages. The server responds to the following messages.
 </p>
 <p>
-All of the following messages will be responded to back to the sender's address with one of the two following messages:
+All of the following messages will be responded to, at the sender's address, with one of the two following messages:
 </p>
 <div class="fig example"><table width=100%><tr><td><pre>
 /reply s:path s:message
@@ -456,57 +457,59 @@ The possible errors are:
 </table></div></center>
 <dl>
 <dt><em>/nsm/server/add s:path_to_executable</em></dt>
-
+</dl>
 <p>
 Adds a client to the current session.
 </p>
-</dl><dl>
+<dl>
 <dt><em>/nsm/server/save</em></dt>
-
+</dl>
 <p>
 Saves the current session.
 </p>
-</dl><dl>
+<dl>
 <dt><em>/nsm/server/load s:project_name</em></dt>
-
+</dl>
 <p>
 Saves the current session and loads a new session.
 </p>
-</dl><dl>
+<dl>
 <dt><em>/nsm/server/new s:project_name</em></dt>
-
+</dl>
 <p>
 Saves the current session and creates a new session.
 </p>
-</dl><dl>
+<dl>
+<dt><em>/nsm/server/duplicate s:new_project</em></dt>
+</dl>
+<p>
+Saves and closes the current session, makes a copy, and opens it.
+</p>
+<dl>
 <dt><em>/nsm/server/close</em></dt>
-
+</dl>
 <p>
 Saves and closes the current session.
 </p>
-</dl><dl>
+<dl>
 <dt><em>/nsm/server/abort</em></dt>
-
+</dl>
 <p>
 Closes the current session <b>WITHOUT SAVING</b>  
 </p>
-</dl><dl>
+<dl>
 <dt><em>/nsm/server/quit</em></dt>
-
+</dl>
 <p>
 Saves and closes the current session and terminates the server.
 </p>
-</dl><dl>
-<dt><em>/nsm/server/duplicate s:new_project </em></dt>
-
-<p>
 <dl>
 <dt><em>/nsm/server/list </em></dt>
-
+</dl>
 <p>
 Lists available projects. One <tt>/reply</tt> message will be sent for each existing project.
 </p>
-</dl><h4 id="n:1.2.7.1.">1.2.7.1. Client to Client Communication</h4>
+<h4 id="n:1.2.7.1.">1.2.7.1. Client to Client Communication</h4>
 <p>
 If the server includes <tt>:broadcast:</tt> in its capability string, then clients may send broadcast messages to each other through the NSM server.  Clients may send messages to the server at the path <tt>/nsm/server/broadcast</tt>.
 </p>

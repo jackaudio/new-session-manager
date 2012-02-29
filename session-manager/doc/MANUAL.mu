@@ -1,7 +1,8 @@
 
-! title The Non Session Manager User Manual
-! author Jonathan Moore Liles #(email,male@tuxfamily.org)
-! date February 25, 2012
+! title		Non Session Manager User Manual
+! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
+! date		February 25, 2012
+! extra		#(image,logo,icon.png)
 
 -- Table Of Contents
 
@@ -33,11 +34,11 @@
   
   There are two ways to open a session.
 
-  The first is to click the Open button and type in the exact name of
-  an existing session.  The second is to click on the desired session
-  name in the session list panel in the left hand half of the
+  The first is to click the /Open/ button and type in the exact name
+  of an existing session.  The second is to click on the desired
+  session name in the session list panel on the left side of the
   interface.
-  
+
   Either way, opening a session saves the current session and switches
   to the new one. Clients which are capable of switching projects
   without restarting are instructed to do so, resulting in very fast
@@ -48,7 +49,7 @@
   /New/.
 
   As each client launches, a status bar representing it will be added
-  to the client list in the hand panel of the interface. For clients
+  to the client list on the right half the interface. For clients
   which are capable of reporting their progress, a progress bar will
   also become active.
 
@@ -108,8 +109,8 @@
   data, as the copy would be very time consuming.
 
   To create a template in the first place, simply use /New/ to start a
-  new session (preferably with a name beginning with Template\/), add
-  the desired clients to it, and configure them (e.g. add plugins,
+  new session (preferably with a name beginning with "Templates\/"),
+  add the desired clients to it, and configure them (e.g. add plugins,
   make JACK connections, etc.)
   
   Now, any time you want to start a session from that template, simply
@@ -121,24 +122,42 @@
   This option will prompt the user for the executable name of the
   client to be added to the session. It is not necessary to type the
   full path (the PATH environment variable will be searched to find
-  the executable).
+  the executable). 
+
+  When controlling an NSM session distributed across multiple
+  machines, the user will also be required to choose which server to
+  invoke the client on.
 
 ::: Removing a Client From a Session
 
   If a client dies unexpectedly or is closed by the user (e.g. by
   closing its main window), Non Session Manager will detect this and
   two buttons will appear on that Client's status bar. One button, the
-  arrow, causes the client to be restarted, and to reopen its project
+  arrow, causes the client to be restarted and to reopen its project
   file where it left off. The /X/ button causes the client to be
   permanently removed from the session.
+
+
+:: Saving and Restoring Aspects of the Environment
+
+  NSM manages clients together in a session. That's it. NSM doesn't
+  know or care what Window Manager or audio subsystem those clients
+  use--nor should it. Specific clients must be written to persist
+  these environmental factors, and added to sessions when required.
+
+  For saving and restoring the JACK connection graph, a simple
+  headless client named `jackpatch` has been developed and included in
+  the NSM distribution. Simply add `jackpatch` do your basic template
+  session and all the sessions you base on it will have their JACK
+  connection graphs automatically saved and restored.
 
 :: The NSM Daemon
 
   The NSM Daemon (nsmd) is launched automatically by the Non Session
   Manager interface whenever one is not found to be already running at
-  the URL specified in the environment
+  the URL specified in the environment.
 
-  Users who are not attempting setup advanced modes like shared
+  Users who are not attempting to setup advanced modes like shared
   sessions between machines will not normally need to even know that
   `nsmd` is running.
 
@@ -147,16 +166,16 @@
 
 > nsmd [--session-root path] [--osc-port port] [--detach]
 
-  The `--session-root` option allows one to override default /Session
-  Root/ is "$HOME\/NSM Sessions" (this option can also be passed to the
-  GUI, which will hand it over to the daemon).
+  The `--session-root` option allows one to override where /Session
+  Root/ is, from the default of "$HOME\/NSM Sessions" (this option can
+  also be passed to the GUI, which will hand it over to the daemon).
 
   `--osc-port` instructs the daemon to bind to a specific UDP port
   number instead of selecting an available port automatically.
 
   `--detach` instructs the daemon to close its standard input and
-  output and go completely into the background. This is useful for
-  starting the daemon remotely with `rsh`.
+  output and go into the background. This is useful for starting the
+  daemon remotely with `rsh`.
 
   When nsmd starts, it will print a string of the following form its
   standard output.
@@ -166,37 +185,36 @@
   This is the OSC URL for the daemon process. If this URL is included
   in the environment (by either using a fixed port number or starting
   nsmd early in the initialization process [like in your .xinitrc]
-  extracting the URL from its output.) then any NSM capable client
-  will join the current session when started, even if started from
-  outside the Non Session Manager interface (e.g. by your desktop
-  environment's program launch menu).
+  extracting the URL from its output) then any NSM capable client will
+  join the current session when started, even if started from outside
+  the Non Session Manager interface (for example, by your Desktop
+  Environment's program launch menu).
 
-
-::: Multiple NSMD Instance
+::: Multiple NSMD Instances
 
   When dealing with multiple instances of nsmd, whether they be on the
-  same machine or different machines, it is most convenient to use
-  fixed port numbers.
+  same host or separate hosts, it is most convenient to use fixed port
+  numbers specified with the `--osc-port` command-line option.
   
 :::: Distributed Session Management
 
   In some situations it is necessary to have different audio programs
-  running on different machines connected by S\/PDIF\/or analog wiring
+  running on different machines, connected by S\/PDIF, analog wiring,
   or over TCP\/IP as achieved by `netjack`. Usually the reason for
   doing this is that neither machine is powerful enough to do all the
-  DSP or synthesis by itself.
+  DSP or synthesis alone.
 
   Needless to say, these configurations have historically been
-  extremely difficult to manage--requiring heavy scripting or lots of
-  manual setup.
+  extremely difficult to manage--requiring heavy scripting and\/or
+  lots of manual setup.
 
-  NSM is the first and currently only system capable of managing these
-  sessions.
+  NSM is the first--and currently only--system capable of managing
+  these sessions.
 
   Let us assume the following conditions for our example:
 
-+ We want to distribute a session across two hosts, Host-A and Host-B, on the local area network
-+ Each host has a completely independent file system (i.e. not NFS)
++ We want to distribute a session across two hosts, Host-A and Host-B, on the local area network.
++ Each host has a completely independent file system (i.e. not NFS).
 + We have appropriate access to both hosts.
 
   The first step is to decide what port numbers to use. Let's choose
@@ -234,8 +252,9 @@
   Simply starting two (or more) instances of the Non Session Manager
   interface on the same machine (when the NSM\_URL environment
   variable is unset) will result in the ability to have two different
-  sessions open at the same time on the same host. The instances are
-  prohibited from opening two instances of the same session.
+  sessions open at the same time on the same host. A lock file
+  prevents the two instances from opening the same session.
 
   Imagining a useful application of this feature is left as an
-  exercise for the user.
+  exercise for the reader.
+

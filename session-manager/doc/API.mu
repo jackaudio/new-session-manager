@@ -2,7 +2,8 @@
 ! title		Non Session Management API
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
 ! date		August 1, 2010
-! revision	Version 0.8
+! revision	Version 0.9
+! extra		#(image,logo,icon.png)
 
 -- Table Of Contents
 
@@ -56,7 +57,7 @@
   The following sub-sections describe how these options should behave when
   the application is part of an NSM session. These rules only apply
   when session management is active (that is, after the `announce`
-  handshake described in the #(ref,NSM OSC Protocol) section). 
+  handshake described in the #(ref,Non Session Management API::NSM OSC Protocol) section). 
   
   In order to provide a consistent and predictable user experience, it
   is critically important for applications to adhere to these
@@ -100,7 +101,7 @@
 
 ::: Quit or Exit
 
-  This option may behave as normal (even possibly asking the user to
+  This option may behave as normal (possibly asking the user to
   confirm exiting).
 
 :: NSM OSC Protocol
@@ -135,7 +136,7 @@
 
   Note that if the application intends to register JACK clients,
   `application\_name` *MUST* be the same as the name that would
-  normally by passed to `jack\_client\_open`. For example, Non-Mixer
+  normally be passed to `jack\_client\_open`. For example, Non-Mixer
   sends "Non-Mixer" as its `application\_name`. Applications *MUST
   NOT* register their JACK clients until receiving an `open` message;
   the `open` message will provide a unique client name prefix suitable
@@ -147,7 +148,7 @@
 
   `capabilities` *MUST* be a string containing a colon separated list
   of the special capabilities the client
-  possesses. e.g. ":dirty:switch:progress:"
+  possesses. e.g. `:dirty:switch:progress:`
 
 // Available Client Capabilities
 [[ Name, Description
@@ -207,7 +208,7 @@
   the subsection for each message.
 
   If there is an error and the action cannot be completed, then
-  `error\_code` *MUST* be set to a valid error code (see #(fig,Error Code Definitions))
+  `error\_code` *MUST* be set to a valid error code (see #(ref,Non Session Management API::NSM OSC Protocol::Error Code Definitions))
   and `message` to a string describing the problem (suitable
   for display to the user).
 
@@ -318,14 +319,23 @@
 
 > /nsm/client/save
 
-  The client *MUST* immediately save the current application specific
-  project data to the project path previously established in the
-  'open' message. *UNDER NO CIRCUMSTANCES* should a dialog be
-  displayed to the user (giving a choice of where to save, etc.) 
-  
   This message will only be delivered after a previous `open` message,
   and may be sent any number of times within the course of a session
   (including zero, if the user aborts the session).
+
+  If able to, the client *MUST* immediately save the current
+  application specific project data to the project path previously
+  established in the 'open' message. *UNDER NO CIRCUMSTANCES* should a
+  dialog be displayed to the user (giving a choice of where to save,
+  etc.)
+  
+  However, if the client is incapable of saving at the specific moment
+  without disturbing the user (e.g. a JACK client that can't save
+  while the transport is rolling without causing massive XRUNS), then
+  the client may respond to "/error" with ERR_NOT_NOW and a string
+  explaining exactly why the save could not be completed (so that, in
+  this example, the user knows that they have to stop the transport in
+  order to save).
 
 ::::: Response
 
@@ -438,8 +448,8 @@
   itself controlled via OSC messages. The server responds to the
   following messages.
 
-  All of the following messages will be responded to back to the
-  sender's address with one of the two following messages:
+  All of the following messages will be responded to, at the sender's
+  address, with one of the two following messages:
 
 > /reply s:path s:message
 
@@ -461,33 +471,39 @@
 [[ ERR_UNSAVED_CHANGES, Unsaved changes would be lost
 
 = /nsm/server/add s:path_to_executable
+
   Adds a client to the current session.
 
 = /nsm/server/save
+
   Saves the current session.
 
 = /nsm/server/load s:project_name
+
   Saves the current session and loads a new session.
 
 = /nsm/server/new s:project_name
+
   Saves the current session and creates a new session.
 
+= /nsm/server/duplicate s:new_project
+
+  Saves and closes the current session, makes a copy, and opens it.
+
 = /nsm/server/close
+
   Saves and closes the current session.
 
 = /nsm/server/abort
+
   Closes the current session *WITHOUT SAVING*  
 
 = /nsm/server/quit
+
   Saves and closes the current session and terminates the server.
 
-= /nsm/server/duplicate s:new_project 
-  Saves and closes the current session, creates a complete copy of
-  it as `new_project` and opens it. The existing project should ideally be
-  a lightweight template, as copying any audio data could be very time
-  consuming.
-
 = /nsm/server/list 
+
   Lists available projects. One `\/reply` message will be sent for each existing project.
 
 :::: Client to Client Communication

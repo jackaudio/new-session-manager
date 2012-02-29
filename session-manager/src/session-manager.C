@@ -21,6 +21,8 @@
 
 #include "OSC/Endpoint.H"
 
+#include <FL/Fl.H>
+
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Widget.H>
@@ -470,6 +472,12 @@ public:
             return NULL;
         }
     
+
+    const char *session_name ( void ) const
+        {
+            clients_pack->parent()->label();
+        }
+
     void
     session_name ( const char *name )
         {
@@ -892,6 +900,31 @@ ping ( void * )
     Fl::repeat_timeout( 1.0, ping, NULL );
 }
 
+void
+cb_main ( Fl_Widget *o, void *v )
+{
+    if ( Fl::event_key() != FL_Escape )
+    {
+        int children = 0;
+        foreach_daemon ( d )
+        {
+            if ( (*d)->is_child )
+                ++children;
+        }
+          
+        if ( children )
+        {
+            if ( strlen( controller->session_name() ) )
+            {
+                fl_message( "%s", "You have to close the session before you can quit." );
+                return;
+            }
+        }
+        
+        while ( Fl::first_window() ) Fl::first_window()->hide();
+    }
+}
+
 int
 main (int argc, char **argv )
 {
@@ -924,12 +957,12 @@ main (int argc, char **argv )
 
         o->size_range( main_window->w(), controller->min_h(), 0, 0 );
 
-//        o->callback( (Fl_Callback*)cb_main, main_window );
+        o->callback( (Fl_Callback*)cb_main, main_window );
 
 #ifdef HAVE_XPM
         o->icon((char *)p);
 #endif        
-        o->show( argc, argv );
+        o->show( 0, NULL );
     }
 
     static struct option long_options[] = 
@@ -999,9 +1032,7 @@ main (int argc, char **argv )
         {
             /* pass non-option arguments on to daemon */
 
-            option_index += 2;
-
-            char **args = (char **)malloc( 4 + argc - option_index );
+            char **args = (char **)malloc( 4 + argc - optind );
 
             int i = 0;
             args[i++] = (char*)"nsmd";
@@ -1009,10 +1040,10 @@ main (int argc, char **argv )
             args[i++] = url;
             
 
-            for ( ; option_index < argc; i++, option_index++ )
+            for ( ; optind < argc; i++, optind++ )
             {
-                DMESSAGE( "Passing argument: %s", argv[option_index] );
-                args[i] = argv[option_index];
+                DMESSAGE( "Passing argument: %s", argv[optind] );
+                args[i] = argv[optind];
             }
 
             args[i] = 0;
@@ -1038,17 +1069,4 @@ main (int argc, char **argv )
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 

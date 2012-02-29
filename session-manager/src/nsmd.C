@@ -695,6 +695,15 @@ OSC_HANDLER( announce )
     int minor = argv[4]->i;
     int pid = argv[5]->i;
 
+    if ( ! session_path )
+    {
+        osc_server->send( lo_message_get_source( msg ), "/error",
+                          path,
+                          ERR_NO_SESSION_OPEN,
+                          "Sorry, but there's no session open for this application to join." );
+        return 0;
+    }
+
     bool expected_client = false;
 
     Client *c = NULL;
@@ -727,6 +736,7 @@ OSC_HANDLER( announce )
         DMESSAGE( "Client is using incompatible and more recent API version %i.%i", major, minor ); 
 
         osc_server->send( lo_message_get_source( msg ), "/error",
+                          path,
                           ERR_INCOMPATIBLE_API,
                           "Server is using an incompatible API version." );
 

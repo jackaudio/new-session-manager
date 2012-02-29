@@ -122,7 +122,7 @@ protected:
     volatile mutable tick_t   _index;                                   /* playhead, relative to start -- primarily used to draw the playhead */
     volatile mutable bool     _playing;                                 /* true if currently playing  */
 
-    volatile int    _mode;                                       /* mute, solo */
+    mutable volatile int    _mode;                                       /* mute, solo */
 
     // FIXME: shouldn't this be "volatile"?
 //    const volatile data *_rd;                                   /* read only data used by RT thread */

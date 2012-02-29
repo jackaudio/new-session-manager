@@ -307,6 +307,7 @@ process ( jack_nframes_t nframes, void *arg )
         {
             case PATTERN:
             case TRIGGER:
+            case QUEUE:
                 DMESSAGE( "Stopping all patterns" );
                 stop_all_patterns();
                 break;
@@ -343,41 +344,55 @@ process ( jack_nframes_t nframes, void *arg )
 
             /* no need to pass it to the GUI, we can trigger patterns here */
 
+
             if ( e.channel() == 0 && e.is_note_on() )
             {
                 if ( e.note() < pattern::patterns() )
                 {
+                    
                     pattern *p = pattern::pattern_by_number( e.note() + 1 );
-
-                    if ( p->playing() )
+                    
+                    if ( TRIGGER == song.play_mode )
                     {
-                        DMESSAGE( "Untriggering pattern %i", e.note() );
-                        
-                        if ( e.note() < pattern::patterns() )
+                        if ( p->playing() )
                         {
-                            pattern *p = pattern::pattern_by_number( e.note() + 1 );
-                            
                             DMESSAGE( "Untriggering pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
                             
                             p->trigger( ph, e.timestamp() );
                         }
+                        else
+                        {
+                            DMESSAGE( "Triggering pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
+                            
+                            p->trigger( e.timestamp(), -1 );
+                        }
                     }
                     else
                     {
-                        DMESSAGE( "Triggering pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
-                        
-                        p->trigger( e.timestamp(), -1 );
+                        if ( p->mode() == PLAY )
+                        {
+                            DMESSAGE( "Dequeuing pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
+                            p->mode( MUTE );
+                        }
+                        else
+                        {
+                            DMESSAGE( "Queuing pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
+                            
+                            p->mode( PLAY );
+                        }
                     }
                 }
             }
         }
     }
-
+    
+            
     switch ( song.play_mode )
     {
         case SEQUENCE:
             playlist->play( ph, nph );
             break;
+        case QUEUE:
         case PATTERN:
         {
             for ( uint i = pattern::patterns(); i--; )

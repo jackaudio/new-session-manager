@@ -51,7 +51,8 @@ bool save_song ( const char *name );
 enum play_mode_e {
   PATTERN,
   SEQUENCE,
-  TRIGGER
+  TRIGGER,
+  QUEUE
 //  PHRASE,
 };
 

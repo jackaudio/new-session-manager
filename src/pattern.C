@@ -43,6 +43,9 @@ pattern::pattern ( void )
     _ppqn = 4;
     _bpb  = 4;
     _note = 8;
+
+    _queued = -1;
+
     int _bars = 2;
 
     // we need to reinitalize this.
@@ -325,6 +328,12 @@ pattern::stop ( void ) const
 void
 pattern::mode ( int n )
 {
+    if ( QUEUE == song.play_mode )
+    {
+        queue( n );
+        return;
+    }
+
     if ( n == SOLO )
     {
         if ( pattern::_solo )
@@ -353,6 +362,19 @@ pattern::mode ( void ) const
     }
     else
         return Grid::mode();
+}
+
+/* queue a mode change for the next loop  */
+void
+pattern::queue ( int m )
+{
+    _queued = m;
+}
+
+int
+pattern::queue ( void ) const
+{
+    return _queued;
 }
 
 /* WARNING: runs in the RT thread! */
@@ -389,11 +411,33 @@ pattern::play ( tick_t start, tick_t end ) const
 
     _index = tick % d->length;
 
+    bool reset_queued = false;
+
     if ( _index < end - start )
     {
+        /* period covers the beginning of the loop  */
         DMESSAGE( "%s pattern %d at tick %lu (ls: %lu, le: %lu, o: %lu)", _playing ? "Looped" : "Triggered", number(), start, _start, _end, offset  );
 
         _cleared = false;
+
+        if ( PLAY == _queued )
+        {
+            /* set the start point to loop boundary */
+            start = start - _index;
+            _mode = PLAY;
+        
+            reset_queued = true;
+        }
+    }
+    else if ( _index >= d->length - ( end - start ) )
+    {
+        if ( MUTE == _queued )
+        {
+            /* set the end point to loop boundary */
+            end = end - _index;
+
+            reset_queued = true;
+        }
     }
 
     _playing = true;
@@ -454,6 +498,12 @@ try_again:
     DMESSAGE( "out of events, resetting to satisfy loop" );
 
 done:
+
+    if ( _queued >= 0 && reset_queued )
+    {
+        _mode = _queued;
+        _queued = -1;
+    }
 
     if ( _end == end )
     {

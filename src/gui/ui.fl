@@ -185,7 +185,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {209 100 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
+      xywh {856 305 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
@@ -983,7 +983,7 @@ else
         } {
           MenuItem {} {
             label Pattern
-            callback {song.play_mode = PATTERN;}
+            callback {song.play_mode = PATTERN;} selected
             xywh {5 5 40 25}
           }
           MenuItem {} {
@@ -995,6 +995,11 @@ else
             label Trigger
             callback {song.play_mode = TRIGGER;}
             xywh {25 25 40 25}
+          }
+          MenuItem {} {
+            label Queue
+            callback {song.play_mode = QUEUE;}
+            xywh {0 0 40 24}
           }
         }
       }

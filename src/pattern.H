@@ -43,12 +43,11 @@ class pattern : public Grid
     bool _recording;
     mutable volatile bool _cleared;
 
-    volatile bool _triggered;
+    mutable volatile int _queued;
 
 //    int _key;
 
     int _note;
-
 
     void _add ( void );
 
@@ -88,8 +87,8 @@ public:
     void record( int mode );
     void record_stop ( void );
 
-    void toggle_trigger ( void );
-    bool triggered ( void ) const;
+    void queue ( int mode );
+    int queue ( void ) const;
 
     void randomize_row ( int y, int feel, float probability );
 

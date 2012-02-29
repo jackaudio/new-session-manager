@@ -822,7 +822,8 @@ Grid::mode ( int m )
 {
     _mode = m;
 
-    signal_settings_change();
+    /* can't do this in RT thread, sorry.  */
+///    signal_settings_change();
 }
 
 int

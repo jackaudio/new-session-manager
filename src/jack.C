@@ -138,7 +138,8 @@ midi_output_event ( int port, const midievent *e )
                 --notes_on[ port ][ e->channel() ][ e->note() ];
             }
         }
-            
+        else
+            output[ port ].events.insert( fe );
     }
 }
 

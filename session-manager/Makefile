@@ -111,6 +111,7 @@ install: all
 	@ echo -n "Installing..."
 	@ install src/nsmd "$(DESTDIR)$(prefix)"/bin/nsmd
 	@ install src/session-manager "$(DESTDIR)$(prefix)"/bin/non-session-manager
+	@ install src/jackpatch "$(DESTDIR)$(prefix)"/bin/jackpatch
 	@ mkdir -p "$(DESTDIR)$(SYSTEM_PATH)"/non-session-manager
 	@ $(MAKE) -s -C doc install
 	@ install -d "$(DESTDIR)$(PIXMAP_PATH)/non-session-manager"
@@ -122,6 +123,7 @@ install: all
 	@ echo "$(DONE)"
 ifneq ($(USE_DEBUG),yes)
 	@ echo -n "Stripping..."
+	@ strip "$(DESTDIR)$(prefix)"/bin/jackpatch
 	@ strip "$(DESTDIR)$(prefix)"/bin/nsmd
 	@ strip "$(DESTDIR)$(prefix)"/bin/non-session-manager
 	@ echo "$(DONE)"

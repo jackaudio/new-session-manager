@@ -127,13 +127,18 @@ ask ()
 
 ok ()
 {
-    echo -e '\r'`tput cuf 30`"$BOLD${GREEN}ok${SGR0} ${*:+${BOLD}${BLACK}($*)${SGR0}}"
+    echo '\r'`tput cuf 30`"$BOLD${GREEN}ok${SGR0} ${*:+${BOLD}${BLACK}($*)${SGR0}}"
 }
 
 failed ()
 {
-    echo "$BOLD${RED}failed!${SGR0}" > /dev/stderr
+    echo '\r'`tput cuf 30`"$BOLD${RED}failed!${SGR0}" > /dev/stderr
     rm -f .config
+}
+
+missing ()
+{
+    echo '\r'`tput cuf 30`"$BOLD${YELLOW}missing!${SGR0}" > /dev/stderr
 }
 
 using ()
@@ -178,6 +183,7 @@ extract_options ()
 begin ()
 {
     echo -n "Checking sanity..."
+    require_command tput tput > /dev/null
     require_command pkg-config pkg-config > /dev/null
     require_command sed sed > /dev/null
     ok
@@ -270,6 +276,33 @@ require_package ()
     then
         failed
         fatal "The installed version of $1 (`pkg-config --mod-version $3`) is too old."
+    fi
+
+    name="`upcase \"$1\"`"
+    append "${name}_LIBS=`pkg-config --libs $3 | sed 's/,\\?--as-needed//g'`"
+    append "${name}_CFLAGS=-DHAVE_${1} `pkg-config --cflags $3`"
+
+    ok `pkg-config --modversion "$3"`
+    return 0
+}
+
+suggest_package ()
+{
+   local name
+
+    echo -n "Checking for $BOLD$1$SGR0..."
+    if ! pkg-config --exists $3
+    then
+    	missing
+	warn "Suggested package $1 doesn't appear to be installed. Some functionality may be missing from your build."
+        warn "Continuing without $1...\n"
+        return 1;
+    elif ! pkg-config --atleast-version $2 $3
+    then
+        missing
+        warn "The installed version of suggested package $1 (`pkg-config --mod-version $3`) is too old."
+        warn "Continuing without $1..."
+        return 1;
     fi
 
     name="`upcase \"$1\"`"

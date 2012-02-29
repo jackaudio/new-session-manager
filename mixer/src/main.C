@@ -56,6 +56,13 @@
 
 #include <signal.h>
 
+#ifdef HAVE_XPM
+#include "FL/Fl.H"
+#include "FL/x.H"
+#include <X11/xpm.h>
+#include "../icons/icon-16x16.xpm"
+#endif
+
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-mixer/"
 
@@ -118,6 +125,15 @@ check_sigterm ( void * )
 int
 main ( int argc, char **argv )
 {
+
+#ifdef HAVE_XPM
+    fl_open_display(); 
+    Pixmap p, mask;
+
+    XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),
+                            (char**)icon_16x16, &p, &mask, NULL);
+#endif
+
     Thread::init();
 
     Thread thread( "UI" );
@@ -174,8 +190,12 @@ main ( int argc, char **argv )
         o->size_range( main_window->w(), mixer->min_h(), 0, 0 );
 
         o->callback( (Fl_Callback*)cb_main, main_window );
+
+
+#ifdef HAVE_XPM
+        o->icon((char *)p);
+#endif
         o->show( argc, argv );
-         // o->show();
     }
 
     const char *osc_port = NULL;

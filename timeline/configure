@@ -29,6 +29,7 @@ require_package JACK 0.103.0 jack
 require_package sndfile 1.0.17 sndfile
 require_package liblo 0.23 liblo
 require_package sigcpp 2.0.0 sigc++-2.0
+suggest_package XPM 2.0.0 xpm
 
 test_version `version_of liblo` 0.26 || warn "Version $(version_of liblo) of liblo is slow to create servers. Consider upgrading to 0.26 or later"
 

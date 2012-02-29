@@ -41,6 +41,8 @@ config:
 export SYSTEM_PATH:=$(prefix)/share/
 export DOCUMENT_PATH:=$(prefix)/share/doc/
 export PIXMAP_PATH:=$(prefix)/share/pixmaps/
+export ICON_PATH:=$(prefix)/share/icons/
+export DESKTOP_PATH:=$(prefix)/share/applications/
 
 # a bit of a hack to make sure this runs before any rules
 ifneq ($(CALCULATING),yes)
@@ -122,8 +124,13 @@ install: all
 	@ install src/timeline $(prefix)/bin/non-daw
 	@ mkdir -p $(SYSTEM_PATH)/non-daw
 	@ mkdir -p $(PIXMAP_PATH)/non-daw
-	@ cp pixmaps/*.png $(PIXMAP_PATH)/non-daw
 	@ $(MAKE) -s -C doc install
+	@ install -d "$(DESTDIR)$(PIXMAP_PATH)/non-daw"
+	@ install -m 644 icons/hicolor/256x256/apps/non-daw.png "$(DESTDIR)$(PIXMAP_PATH)"/non-daw/icon-256x256.png
+	@ install -d "$(DESTDIR)$(ICON_PATH)/hicolor"
+	@ cp -au icons/hicolor/ "$(DESTDIR)$(ICON_PATH)"
+	@ install -d "$(DESTDIR)$(DESKTOP_PATH)"
+	@ sed 's:@BIN_PATH@:$(prefix)/bin:' non-daw.desktop.in > "$(DESTDIR)$(DESKTOP_PATH)/non-daw.desktop"
 	@ echo "$(DONE)"
 ifneq ($(USE_DEBUG),yes)
 	@ echo -n "Stripping..."

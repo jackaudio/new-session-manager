@@ -2,7 +2,7 @@
 ! title		The Non DAW
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
 ! date		March 1, 2008
-! extra		#(image,logo,logo.png)
+! extra		#(image,logo,icon.png)
 
 -- Table Of Contents
 

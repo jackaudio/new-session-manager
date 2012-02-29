@@ -1,6 +1,6 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0110
-header_name {.H}
+version 1.0300 
+header_name {.H} 
 code_name {.C}
 comment {//
 // Copyright (C) 2008-2010 Jonathan Moore Liles
@@ -20,69 +20,87 @@ comment {//
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 } {in_source in_header
-}
-
-decl {const float STATUS_UPDATE_FREQ = 0.1f;} {}
-
-decl {\#include "Fl_Menu_Settings.H"} {}
-
-decl {\#include "color_scheme.H"} {} 
-
-decl {\#include "Timeline.H"} {} 
-
-decl {\#include "Transport.H"} {} 
-
-decl {\#include "Loggable.H"} {} 
-
-decl {\#include "Project.H"} {} 
-
-decl {\#include "Clock.H"} {public
 } 
 
-decl {\#include "New_Project_Dialog.H"} {} 
-
-decl {\#include "Track.H" // for capture_format} {} 
-
-decl {\#include "Waveform.H" // for options} {} 
-
-decl {\#include "Audio_Region.H" // for options} {} 
-
-decl {\#include "Control_Sequence.H" // for options} {} 
-
-decl {\#include <FL/Fl_File_Chooser.H>} {} 
-
-decl {\#include <FL/Fl_Shared_Image.H>} {} 
-
-decl {\#include <FL/Fl.H>} {selected
+decl {const float STATUS_UPDATE_FREQ = 0.1f;} {private local
 } 
 
-decl {\#include <FL/fl_ask.H>} {} 
-
-decl {\#include "Engine/Engine.H"} {} 
-
-decl {\#include "Engine/Audio_File.H" // for supported formats} {} 
-
-decl {\#include "FL/About_Dialog.H"} {} 
-
-decl {extern char project_display_name[256];} {global
+decl {\#include "Fl_Menu_Settings.H"} {private local
 } 
 
-decl {\#include "NSM.H"} {} 
-
-decl {extern NSM_Client *nsm;} {global
+decl {\#include "color_scheme.H"} {private local
 } 
 
-decl {extern char *user_config_dir;} {global
+decl {\#include "Timeline.H"} {private local
+} 
+
+decl {\#include "Transport.H"} {private local
+} 
+
+decl {\#include "Loggable.H"} {private local
+} 
+
+decl {\#include "Project.H"} {private local
+} 
+
+decl {\#include "Clock.H"} {public local
+} 
+
+decl {\#include "New_Project_Dialog.H"} {private local
+} 
+
+decl {\#include "Track.H" // for capture_format} {private local
+} 
+
+decl {\#include "Waveform.H" // for options} {private local
+} 
+
+decl {\#include "Audio_Region.H" // for options} {private local
+} 
+
+decl {\#include "Control_Sequence.H" // for options} {private local
+} 
+
+decl {\#include <FL/Fl_File_Chooser.H>} {private local
+} 
+
+decl {\#include <FL/Fl_Shared_Image.H>} {private local
+} 
+
+decl {\#include <FL/Fl.H>} {private local
+} 
+
+decl {\#include <FL/fl_ask.H>} {private local
+} 
+
+decl {\#include "Engine/Engine.H"} {private local
+} 
+
+decl {\#include "Engine/Audio_File.H" // for supported formats} {private local
+} 
+
+decl {\#include "FL/About_Dialog.H"} {private local
+} 
+
+decl {extern char project_display_name[256];} {private global
+} 
+
+decl {\#include "NSM.H"} {private local
+} 
+
+decl {extern NSM_Client *nsm;} {private global
+} 
+
+decl {extern char *user_config_dir;} {private global
 } 
 
 class TLE {open
 } {
-  decl {Fl_Color system_colors[3];} {}
+  decl {Fl_Color system_colors[3];} {private local
+  }
   Function {save_options()} {open
   } {
-    code {
-
-  const char options_filename[] = "options";
+    code {const char options_filename[] = "options";
   // const char state_filename[] = "state";
   
   // save options
@@ -90,21 +108,17 @@ class TLE {open
   char *path;
   asprintf( &path, "%s/%s", user_config_dir, options_filename );
   ((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Options" ), path );
-  free( path );
-} {}
+  free( path );} {}
   }
   Function {save()} {open
   } {
-    code {
-timeline->command_save();} {}
+    code {timeline->command_save();} {}
   }
   Function {quit()} {} {
-    code {
-timeline->command_quit();} {}
+    code {timeline->command_quit();} {}
   }
   Function {open( const char *name )} {} {
-    code {
-    timeline->command_load( name, NULL );} {}
+    code {timeline->command_load( name, NULL );} {}
   }
   Function {save_timeline_settings()} {open
   } {
@@ -137,7 +151,7 @@ project_name->redraw();} {}
   Function {run()} {} {
     code {update_menu();
 
-main_window->show();
+// main_window->show();
 
 Fl::lock();
 
@@ -221,7 +235,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label {Non DAW : Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	timeline->command_quit();} open
-      private xywh {705 125 1025 770} type Double resizable xclass Non_DAW visible
+      public xywh {705 125 1025 770} type Double resizable xclass Non_DAW visible
     } {
       Fl_Menu_Bar menubar {open
         private xywh {0 0 1024 25}
@@ -379,7 +393,7 @@ Project::compact();}
           }
         }
         Submenu {} {
-          label T&ransport open
+          label {T&ransport} open
           xywh {0 0 74 25}
         } {
           MenuItem {} {
@@ -556,29 +570,24 @@ timeline->redraw();}
             } {
               MenuItem {} {
                 label Dark
-                callback {
-                color_scheme( "dark" ); } 
+                callback {color_scheme( "dark" );}
                 xywh {20 20 40 25} type Radio value 1
               }
               MenuItem {} {
                 label {Very Dark}
-                callback {
-                color_scheme( "very dark" ); }
+                callback {color_scheme( "very dark" );}
                 xywh {20 20 40 25} type Radio
               }
               MenuItem {} {
                 label Light
-                callback {
-                color_scheme( "light" ); }
+                callback {color_scheme( "light" );}
                 xywh {30 30 40 25} type Radio
               }
               MenuItem {} {
                 label System
-                callback {
-                color_scheme( "system" ); }
+                callback {color_scheme( "system" );}
                 xywh {10 10 40 25} type Radio
               }
-
             }
           }
           Submenu {} {
@@ -591,7 +600,7 @@ timeline->redraw();}
             } {
               MenuItem {} {
                 label {Stop Disables Record}
-                callback {transport->stop_disables_record( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE );} selected
+                callback {transport->stop_disables_record( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE );}
                 xywh {5 5 40 25} type Toggle value 1
               }
             }
@@ -608,7 +617,7 @@ timeline->redraw();}
           }
           MenuItem {} {
             label {&About}
-            callback {About_Dialog ab( PIXMAP_PATH "/non-daw/logo.png" );
+            callback {About_Dialog ab( PIXMAP_PATH "/non-daw/icon-256x256.png" );
 
             ab.logo_box->label( VERSION );
 
@@ -726,7 +735,7 @@ ab.run();}
         }
         Fl_Button seek_blinker {
           label SEEK
-          xywh {640 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 10 selection_color 2 labelfont 2 labelcolor 39 deactivate hide
+          xywh {640 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 10 selection_color 2 labelfont 2 labelcolor 39 hide deactivate
           code0 {\#include "FL/Fl_Blinker.H"}
           code1 {o->interval( Fl_Blinker::FAST );}
           class Fl_Blinker
@@ -761,8 +770,10 @@ ab.run();}
   } {
     code {return const_cast<Fl_Menu_Item*>(menu->find_item( path ));} {}
   }
-  decl {static void menubar_cb ( void *v )} {}
-  decl {void menubar_cb ( void )} {}
+  decl {static void menubar_cb ( void *v )} {private local
+  }
+  decl {void menubar_cb ( void )} {private local
+  }
   Function {update_menu()} {private
   } {
     code {Fl_Menu_Bar *m = menubar;
@@ -909,16 +920,14 @@ open_url( pat );} {}
   }
 } 
 
-
-
 Function {set_theme_dark()} {C return_type void
 } {
-        code { Fl::background2( 100, 100, 100 );
+  code {Fl::background2( 100, 100, 100 );
         Fl::background( 50, 50, 50 );
         Fl::foreground( 255, 255, 255 );
 
-        Fl::scheme( Fl::scheme() ); } {}
-}
+        Fl::scheme( Fl::scheme() );} {}
+} 
 
 class Project_Info_Dialog {open
 } {
@@ -944,7 +953,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {761 214 520 740} type Double modal visible
+      private xywh {761 214 520 775} type Double modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}
@@ -977,14 +986,14 @@ if ( logo_box->image() )
         code0 {o->value( timeline->ntracks() );}
       }
       Fl_Box logo_box {
-        label {<LOGO>}
-        private xywh {51 180 418 235} box ROUNDED_BOX color 53 labelfont 1 labelsize 18 align 16
-        code0 {o->image( Fl_Shared_Image::get( PIXMAP_PATH "non-daw/logo2.png" ) );}
+        label {<LOGO>} selected
+        private xywh {20 173 485 268} color 53 labelfont 1 labelsize 18 align 16
+        code0 {o->image( Fl_Shared_Image::get( PIXMAP_PATH "non-daw/icon-256x256.png" ) );}
         code1 {o->label( NULL );}
       }
       Fl_Text_Editor notes_field {
         label {Notes:}
-        private xywh {20 445 480 245} color 47 selection_color 31 textsize 18 textcolor 92
+        private xywh {20 475 480 245} color 47 selection_color 31 textsize 18 textcolor 92
         code0 {o->buffer( new Fl_Text_Buffer() );}
         code1 {o->buffer()->loadfile( "notes" );}
       }
@@ -993,7 +1002,7 @@ if ( logo_box->image() )
         callback {notes_field->buffer()->savefile( "notes" );
 
 window->do_callback();}
-        xywh {425 700 74 25}
+        xywh {420 735 74 25}
       }
       Fl_Box {} {
         label {Project Info}
@@ -1006,7 +1015,7 @@ window->do_callback();}
       Fl_Button {} {
         label {&Discard}
         callback {window->do_callback();}
-        xywh {330 700 74 25}
+        xywh {330 735 74 25}
       }
       Fl_Output {} {
         label {Last Modified On}

@@ -276,7 +276,7 @@ void Mixer::cb_menu(Fl_Widget* o) {
     }
     else if ( ! strcmp( picked, "&Help/&About" ) )
     {
-        About_Dialog ab( PIXMAP_PATH "/non-mixer/logo.png" );
+        About_Dialog ab( PIXMAP_PATH "/non-mixer/icon-256x256.png" );
 
         ab.logo_box->label( VERSION );
 

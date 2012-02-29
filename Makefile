@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  #
 ###############################################################################
 
-SUBDIRS=nonlib FL timeline mixer session
+SUBDIRS=nonlib FL timeline mixer session-manager
 
 all:
 	@ for dir in $(SUBDIRS); do $(MAKE) -s -C $$dir; done

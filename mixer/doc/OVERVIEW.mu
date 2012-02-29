@@ -2,7 +2,7 @@
 ! title		The Non Mixer
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
 ! date		February 1, 2010
-! extra		#(image,logo,logo.png)
+! extra		#(image,icon,icon.png)
 
 -- Table Of Contents
 

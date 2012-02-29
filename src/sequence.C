@@ -301,10 +301,11 @@ sequence::load ( const char *name )
     DMESSAGE( "reading song info" );
 
     /* read song info */
-
-
-    int mode, phrases, patterns;
-    char *sname, *notes;
+    int mode = PATTERN;
+    int phrases = 0;
+    int patterns = 0;
+    char *sname = NULL;
+    char *notes = NULL;
 
     if ( ! f.read_song_info( &mode, &phrases, &patterns, &sname, &notes ) )
     {

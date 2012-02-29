@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <getopt.h>
 
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
@@ -203,72 +204,69 @@ main ( int argc, char **argv )
     nsm = new NSM_Client;
 
     instance_name = strdup( APP_NAME );
+    bool instance_override = false;
 
-    {
-        int r = argc - 1;
-        int i = 1;
-        for ( ; i < argc; ++i, --r )
+    static struct option long_options[] = 
         {
-            if ( !strcmp( argv[i], "--instance" ) )
-            {
-                if ( r > 1 )
-                {
-                    MESSAGE( "Using instance name \"%s\"", argv[i+1] );
-                    instance_name = strdup( argv[i+1] );
-                    --r;
-                    ++i;
-                }
-                else
-                {
-                    FATAL( "Missing instance name" );
-		}
-	    }
-            else if ( !strcmp( argv[i], "--osc-port" ) )
-            {
-                if ( r > 1 )
-                {
-                    MESSAGE( "Using OSC port \"%s\"", argv[i+1] );
-                    osc_port = argv[i+1];
-                    --r;
-                    ++i;
-                }
-                else
-                {
-                    FATAL( "Missing OSC port" );
-                }
-            }
-            else if ( !strncmp( argv[i], "--", 2 ) )
-            {
-                WARNING( "Unrecognized option: %s", argv[i] );
-            }
-            else
+            { "instance", required_argument, 0, 'i' },
+            { "osc-port", required_argument, 0, 'p' },
+            { 0, 0, 0, 0 }
+        };
+
+    int option_index = 0;
+    int c = 0;
+    
+
+    while ( ( c = getopt_long_only( argc, argv, "", long_options, &option_index  ) ) != -1 )
+    {
+        switch ( c )
+        {
+            case 'p':
+                DMESSAGE( "Using OSC port %s", optarg );
+                osc_port = optarg;
+                break;
+            case 'i':
+                DMESSAGE( "Using OSC port %s", optarg );
+                free( instance_name );
+                instance_name = strdup( optarg );
+                instance_override = true;
+                break;
+            case '?':
+                printf( "Usage: %s [--osc-port portnum]\n\n", argv[0] );
+                exit(0);
                 break;
         }
+    }
 
-        mixer->init_osc( osc_port );
+    mixer->init_osc( osc_port );
 
-        char *nsm_url = getenv( "NSM_URL" );
+    char *nsm_url = getenv( "NSM_URL" );
         
-        if ( nsm_url )
+    if ( nsm_url )
+    {
+        if ( ! nsm->init( nsm_url ) )
         {
-            if ( ! nsm->init( nsm_url ) )
-            {
-                nsm->announce( APP_NAME, ":switch:dirty:", argv[0] );
-
-                // poll so we can keep OSC handlers running in the GUI thread and avoid extra sync
-                Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
-            }
-        }
-        else
-        {
-            if ( r >= 1 )
-            {
-                MESSAGE( "Loading \"%s\"", argv[i] );
+            if ( instance_override )
+                WARNING( "--instance option is not available when running under session management, ignoring." );
                 
-                if ( ! mixer->command_load( argv[i] ) )
-                {
-                    fl_alert( "Error opening project specified on commandline" );
-                }
+            if ( optind < argc )
+                WARNING( "Loading files from the command-line is incompatible with session management, ignoring." );
+
+            nsm->announce( APP_NAME, ":switch:dirty:", argv[0] );
+
+            // poll so we can keep OSC handlers running in the GUI thread and avoid extra sync
+            Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
+        }
+    }
+    else
+    {
+        if ( optind < argc )
+        {
+            MESSAGE( "Loading \"%s\"", argv[optind] );
+                
+            if ( ! mixer->command_load( argv[optind] ) )
+            {
+                fl_alert( "Error opening project specified on commandline" );
             }
         }
     }

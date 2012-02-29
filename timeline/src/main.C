@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdlib.h>
+#include <getopt.h>
 
 /* for registrations */
 #include "Audio_Region.H"
@@ -183,6 +184,7 @@ main ( int argc, char **argv )
     tle = new TLE;
 
     instance_name = strdup( APP_NAME );
+    bool instance_override = false;
 
     /* we don't really need a pointer for this */
     // will be created on project new/open
@@ -192,67 +194,74 @@ main ( int argc, char **argv )
 
     const char *osc_port = NULL;
 
+    static struct option long_options[] = 
+        {
+            { "instance", required_argument, 0, 'i' },
+            { "osc-port", required_argument, 0, 'p' },
+            { 0, 0, 0, 0 }
+        };
+
+    int option_index = 0;
+    int c = 0;
+
+    while ( ( c = getopt_long_only( argc, argv, "", long_options, &option_index  ) ) != -1 )
     {
-        int r = argc - 1;
-        int i = 1;
-        for ( ; i < argc; ++i, --r )
+        switch ( c )
+        {
+            case 'p':
+                DMESSAGE( "Using OSC port %s", optarg );
+                osc_port = optarg;
+                break;
+            case 'i':
+                DMESSAGE( "Using OSC port %s", optarg );
+                free( instance_name );
+                instance_name = strdup( optarg );
+                instance_override = true;
+                break;
+            case '?':
+                printf( "Usage: %s [--osc-port portnum]\n\n", argv[0] );
+                exit(0);
+                break;
+        }
+    }
 
-            if ( !strcmp( argv[i], "--osc-port" ) )
-            {
-                if ( r > 1 )
-                {
-                    MESSAGE( "Using OSC port \"%s\"", argv[i+1] );
-                    osc_port = argv[i+1];
-                    --r;
-                    ++i;
-                }
-                else
-                {
-                    FATAL( "Missing OSC port" );
-                }
-            }
-    
+    MESSAGE( "Starting GUI" );
 
-        MESSAGE( "Starting GUI" );
+    tle->run();
 
-        tle->run();
-
-
-        timeline->init_osc( osc_port );
+    timeline->init_osc( osc_port );
 
 #ifdef HAVE_XPM
-        tle->main_window->icon((char *)p);
+    tle->main_window->icon((char *)p);
 #endif        
-        tle->main_window->show( argc, argv );
+    tle->main_window->show( 0, NULL );
         
+    char *nsm_url = getenv( "NSM_URL" );
 
-        char *nsm_url = getenv( "NSM_URL" );
-
-        if ( nsm_url )
+    if ( nsm_url )
+    {
+        if ( ! nsm->init( nsm_url ) )
         {
-            if ( ! nsm->init( nsm_url ) )
-            {
-                nsm->announce( APP_NAME, ":progress:switch:", argv[0] );
-
-                /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
-                Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
-            }
-        }
-        else
-        {
-            if ( r >= 1 )
-            {
-                MESSAGE( "Loading \"%s\"", argv[i] );
+            if ( instance_override )
+                WARNING( "--instance option is not available when running under session management, ignoring." );
             
-                tle->open( argv[i] );
+            if ( optind < argc )
+                WARNING( "Loading files from the command-line is incompatible with session management, ignoring." );
 
-                /* ) */
-                /*            { */
-                /*                fl_alert( "Error opening project specified on commandline" ); */
-                /*            } */
-            }
+            nsm->announce( APP_NAME, ":progress:switch:", argv[0] );
+
+            /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
+            Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
         }
-    
+    }
+    else
+    {
+        if ( optind < argc )
+        {
+            MESSAGE( "Loading \"%s\"", argv[optind] );
+            
+            tle->open( argv[optind] );
+        }
     }
 
     Fl::add_check( check_sigterm );

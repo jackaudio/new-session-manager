@@ -183,7 +183,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {856 276 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
+      xywh {783 174 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
@@ -385,15 +385,13 @@ config.follow_playhead = val ? true : false;}
             MenuItem {} {
               label Circle
               callback {pattern::note_shape = CIRCLE;
-               pattern_canvas_widget->redraw();
-               }
+               pattern_canvas_widget->redraw();}
               xywh {0 0 40 24} type Radio
             }
             MenuItem {} {
               label Square
               callback {pattern::note_shape = SQUARE;
-               pattern_canvas_widget->redraw();
-               } selected
+               pattern_canvas_widget->redraw();}
               xywh {0 0 40 24} type Radio
             }
           }
@@ -424,12 +422,25 @@ about_popup->show();}
       Fl_Tabs tabs {
         callback {((Fl_Group*)o->value())->child( 0 )->take_focus();
 
-if ( o->value() != pattern_tab )
-	edit_menu->deactivate();
-else
-	edit_menu->activate();
+ui->pan_indicators->show();
 
-menu_bar->redraw();} open
+if ( o->value() == pattern_tab )
+	pattern_canvas_widget->handle_pan();
+else if ( o->value() == phrase_tab )
+	phrase_canvas_widget->handle_pan();
+	
+if ( o->value() != pattern_tab )
+{
+	if ( o->value() != phrase_tab )
+		ui->pan_indicators->hide();
+	edit_menu->deactivate();
+}
+else
+{
+	edit_menu->activate();
+}
+
+menu_bar->redraw();} open selected
         xywh {0 76 868 701} color 37 labeltype SHADOW_LABEL labelsize 19 when 1
         code0 {canvas_background_color = fl_rgb_color( 18, 18, 18 );}
       } {
@@ -569,7 +580,8 @@ if ( playlist->length() )
           Fl_Box phrase_canvas_widget {
             label Phrase
             xywh {4 102 860 590} box FLAT_BOX color 37 labelsize 100 align 16 resizable
-            code0 {o->set_canvas( phrase_c );}
+            code0 {o->set_canvas( phrase_c );
+            phrase_c->signal_pan.connect( sigc::mem_fun( phrase_canvas_widget, &O_Canvas::handle_pan ) );}
             code1 {o->box( FL_NO_BOX );}
             class O_Canvas
           }
@@ -618,7 +630,8 @@ o->maximum( phrase::phrases() );}
             label Pattern
             xywh {4 102 860 590} box FLAT_BOX color 37 labelsize 100 align 16 resizable
             code0 {\#include "draw.H"}
-            code1 {o->set_canvas( pattern_c );}
+            code1 {o->set_canvas( pattern_c );
+            pattern_c->signal_pan.connect( sigc::mem_fun( pattern_canvas_widget, &O_Canvas::handle_pan ) );}
             code2 {\#include "input.H"}
             class O_Canvas
           }
@@ -1046,6 +1059,26 @@ if ( s != o->label() )
 		o->color( FL_GREEN );
 }}
           xywh {781 776 87 25} box UP_BOX align 64
+        }
+      }
+      Fl_Group pan_indicators {open
+        xywh {370 692 120 20}
+      } {
+        Fl_Box scroll_up_box {
+          label {@2<}
+          xywh {400 694 30 18}
+        }
+        Fl_Box scroll_down_box {
+          label {@2>}
+          xywh {430 694 30 18}
+        }
+        Fl_Box scroll_left_box {
+          label {@<}
+          xywh {370 692 30 18} hide
+        }
+        Fl_Box scroll_right_box {
+          label {@>}
+          xywh {460 692 30 18} hide
         }
       }
     }
@@ -1613,6 +1646,31 @@ fl_rect( x(), y(), w(), h() );
 fl_line_style( FL_SOLID );
 
 _border_drawn = true;} {}
+  }
+  Function {handle_pan( void )} {open return_type void
+  } {
+    code {int up, left, right, down;
+
+if ( ! ui )
+   return;
+_c->can_scroll( &left, &right, &up, &down );
+
+if ( left == 0 )
+	ui->scroll_left_box->hide();
+else
+	ui->scroll_left_box->show();
+	
+if ( up == 0 )
+	ui->scroll_up_box->hide();
+else
+	ui->scroll_up_box->show();
+	
+if ( down == 0 )
+	ui->scroll_down_box->hide();
+else
+	ui->scroll_down_box->show();
+
+ui->scroll_right_box->hide();} {}
   }
 } 
 

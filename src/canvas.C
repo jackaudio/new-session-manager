@@ -119,6 +119,7 @@ Canvas::grid ( Grid *g )
 
     signal_draw();
     signal_settings_change();
+    signal_pan();
 }
 
 /** keep row compaction tables up-to-date */
@@ -178,6 +179,7 @@ Canvas::update_mapping ( void )
     }
     else
         signal_draw();
+
 }
 
 /** change grid mapping */
@@ -190,6 +192,8 @@ Canvas::changed_mapping ( void )
 
     if ( m.vp->y + m.vp->h > m.maxh )
         m.vp->y = (m.maxh / 2) - (m.vp->h / 2);
+
+    signal_pan();
 }
 
 Grid *
@@ -924,7 +928,18 @@ Canvas::pan ( int dir, int n )
     }
 
     signal_draw();
+    signal_pan();
 }
+
+void
+Canvas::can_scroll ( int *left, int *right, int *up, int *down )
+{
+    *left = m.vp->x;
+    *right = -1;
+    *up = m.vp->y;
+    *down = m.maxh - ( m.vp->y + m.vp->h );
+}
+
 
 /** adjust horizontal zoom (* n) */
 void

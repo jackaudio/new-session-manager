@@ -34,11 +34,11 @@ struct color_table {
 };
 
 struct color_table color_defs[] = {
-    { EMPTY,     38,  38,  38  },
+    { EMPTY,     27,  27,  27  },
     { FULL,      255, 69,  0   },
     { PARTIAL,   0,   0,   0   },
     { CONTINUED, 80,  80,  80  },
-    { LINE,      26,  26,  26  },
+    { LINE,      10,  10,  10  },
     { HIT,       255, 255, 255 },
     { PLAYHEAD,  10,  69,  10  },
     { SELECTED,  255, 10,  255 },

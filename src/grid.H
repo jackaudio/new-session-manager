@@ -111,6 +111,8 @@ protected:
 
     int      _draw_shape;
 
+    bool     _suspend_update;
+
     unsigned int     _bpb;                                  /* beats per bar */
     unsigned int     _ppqn;                                 /* pulses per quarter note (beat) */
 
@@ -142,7 +144,7 @@ protected:
 
 private:
 
-    int _locked;
+    volatile int _locked;
 
 public:
 

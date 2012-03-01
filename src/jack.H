@@ -7,7 +7,7 @@ enum { CONTROL, PERFORMANCE };
 
 class midievent;
 
-midievent * midi_input_event ( int port );
+bool midi_input_event ( int port, midievent *e );
 void midi_output_event ( int port, const midievent *e );
 void midi_output_event ( int port, const midievent *e, tick_t duration );
 void midi_all_sound_off ( void );

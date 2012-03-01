@@ -136,6 +136,9 @@ pattern::reset ( void )
     }
 }
 
+/* records a MIDI event into a temporary buffer. It'll only be
+ * permanently added to pattern after recording stops or the pattern
+ * loops. */
 void
 pattern::record_event ( const midievent *me )
 {
@@ -232,8 +235,10 @@ pattern::record_event ( const midievent *me )
                 el->unlink( e );
                 p->_rw->events.insert( e );
             }
-
+        
+        p->_suspend_update = true;
         p->unlock();
+        p->_suspend_update = false;
     }
 }
 

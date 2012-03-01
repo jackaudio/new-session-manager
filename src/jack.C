@@ -89,19 +89,15 @@ static port_t input[2];                                                /* contro
 jack_nframes_t nframes;                                         /* for compatibility with older jack */
 
 /** get next recorded event, if any--runs in UI thread */
-midievent *
-midi_input_event ( int port )
+bool
+midi_input_event ( int port, midievent *me )
 {
     if ( jack_ringbuffer_read_space( input[ port ].ring_buf ) >= sizeof( midievent ) )
     {
-        midievent *me = new midievent;
-
-//        MESSAGE( "passing midi input to non-RT thread" );
-
         if ( jack_ringbuffer_read( input[ port ].ring_buf, (char *)me, sizeof( midievent ) ) )
-            return me;
+            return true;
     }
-    return NULL;
+    return false;
 }
 
 /**

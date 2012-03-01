@@ -52,6 +52,7 @@ Grid::Grid ( void )
     viewport.y = 0;
 
     _playing = false;
+    _suspend_update = false;
     _start = _end = _index = 0;
 }
 
@@ -124,7 +125,8 @@ Grid::unlock ( void )
 
         _rw = NULL;
 
-        signal_events_change();
+        if ( ! _suspend_update )
+            signal_events_change();
     }
 }
 

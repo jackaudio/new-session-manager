@@ -96,11 +96,10 @@ init_song ( void )
 void
 handle_midi_input ( void )
 {
-    midievent *e;
-    while ( ( e = midi_input_event( PERFORMANCE ) ) )
+    midievent e;
+    while ( ( midi_input_event( PERFORMANCE, &e ) ) )
     {
-        pattern::record_event( e );
-        delete e;
+        pattern::record_event( &e );
     }
 }
 

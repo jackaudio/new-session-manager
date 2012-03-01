@@ -504,6 +504,7 @@ Canvas::draw_playhead ( void )
         }
     }
 
+
     copy();
 
     for ( uint x = m.vp->w; x-- ; )
@@ -511,6 +512,13 @@ Canvas::draw_playhead ( void )
             m.current[ x ][ y ].flags &= ~ (F_PLAYHEAD | F_P1 | F_P2 );
 
     flip();
+
+    /* actually if we're recording, we should draw the grid once per
+     * playhead movement also */
+    if ( pattern::recording() == m.grid )
+    {
+        draw();
+    }
 
     return 1;
 }

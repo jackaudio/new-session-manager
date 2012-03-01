@@ -195,9 +195,14 @@ canvas_input_callback ( O_Canvas *widget, Canvas *c, int m )
                             break;
                         case 'c':
                         {
-                            c->grid( c->grid()->create() );
+                            Grid *g = c->grid()->create();
 
-                            ui->update_sequence_widgets();
+                            if ( g )
+                            {
+                                c->grid( g );
+                                
+                                ui->update_sequence_widgets();
+                            }
 
                             break;
                         }

@@ -109,7 +109,12 @@ phrase::reset ( void )
 phrase *
 phrase::create ( void )
 {
-    return new phrase;
+    if ( phrase::phrases() < 128 )
+    {
+        return new phrase;
+    }
+    else
+        return NULL;
 }
 
 phrase *

@@ -261,7 +261,12 @@ pattern::recording ( void )
 pattern *
 pattern::create ( void )
 {
-    return new pattern;
+    if ( pattern::patterns() < 128 )
+    {
+        return new pattern;
+    }
+    else
+        return NULL;
 }
 
 pattern *

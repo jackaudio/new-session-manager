@@ -109,8 +109,6 @@ protected:
     char     *_name;
     int      _number;
 
-    int      _draw_shape;
-
     bool     _suspend_update;
 
     unsigned int     _bpb;                                  /* beats per bar */
@@ -201,7 +199,7 @@ public:
     char * notes ( void ) const;
     virtual void mode ( int m );
     virtual int mode ( void ) const;
-    int draw_shape ( void ) const;
+    virtual int draw_shape ( void ) const = 0;
     int next_note_x ( int x ) const;
     int prev_note_x ( int x ) const;
 

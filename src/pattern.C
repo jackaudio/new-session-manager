@@ -25,6 +25,8 @@
 #include "jack.H"
 #include "transport.H"
 
+int pattern::note_shape = CIRCLE;
+
 event_list pattern::_recorded_events;
 vector <pattern*> pattern::_patterns;
 int pattern::_solo;
@@ -37,7 +39,6 @@ pattern::pattern ( void )
     viewport.h = 32;
     viewport.w = 32;
 
-    _draw_shape = CIRCLE;
     _channel = _port = 0;
 
     _ppqn = 4;

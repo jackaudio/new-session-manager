@@ -28,15 +28,14 @@ using namespace sigc;
 class Mapping;
 
 struct cell_t {
-    unsigned char color;
-    unsigned char shape : 4;
+    unsigned char color : 8;
     unsigned char state : 4;
     unsigned char flags : 4;
 
     bool
     operator!= ( const cell_t &rhs )
         {
-            return color != rhs.color || shape != rhs.shape || state != rhs.state || flags != rhs.flags;
+            return color != rhs.color || state != rhs.state || flags != rhs.flags;
         }
 };
 

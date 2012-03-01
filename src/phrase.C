@@ -31,8 +31,6 @@ phrase::phrase ( void )
     viewport.h = 32;
     viewport.w = 32;
 
-    _draw_shape = SQUARE;
-
     _add();
 
     char *s;

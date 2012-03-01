@@ -82,7 +82,6 @@ Grid::Grid ( const Grid &rhs ) : sigc::trackable()
     _notes = rhs._notes ? strdup( rhs._notes ) : NULL;
     _number = rhs._number;
     _height = rhs._height;
-    _draw_shape = rhs._draw_shape;
 
     _mode = 0;
     _locked = 0;
@@ -674,7 +673,7 @@ Grid::draw ( Canvas *c, int bx, int by, int bw, int bh )
 //        if ( ts >= start && ts <= end )
         if ( tse >= start && ts <= end )
             c->draw_dash( ts_to_x( ts ), note_to_y( e->note() ), ts_to_x( tse - ts ),
-                          _draw_shape, e->note_velocity(), e->selected() );
+                          draw_shape(), e->note_velocity(), e->selected() );
     }
 
     c->flip();
@@ -834,11 +833,6 @@ Grid::mode ( void ) const
     return _mode;
 }
 
-int
-Grid::draw_shape ( void ) const
-{
-    return _draw_shape;
-}
 
 /** return a pointer to a copy of grid's event list in raw form */
 event_list *

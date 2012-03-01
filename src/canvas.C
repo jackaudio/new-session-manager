@@ -50,7 +50,6 @@ Canvas::_alloc_array ( void )
         {
             a[ x ][ y ].flags = 0;
             a[ x ][ y ].state = -1;
-            a[ x ][ y ].shape = SQUARE;
             a[ x ][ y ].color = 0;
         }
     }
@@ -111,7 +110,7 @@ Canvas::grid ( Grid *g )
 
     update_mapping();
 
-    m.shape = m.grid->draw_shape();
+//    m.shape = m.grid->draw_shape();
 
     /* connect signals */
     /* FIXME: what happens when we do this twice? */
@@ -283,7 +282,7 @@ Canvas::copy ( void )
 void
 Canvas::_reset ( void )
 {
-    cell_t empty = {0,0,0,0};
+    cell_t empty = {0,0,0};
 
     for ( uint y = m.vp->h; y-- ; )
         for ( uint x = m.vp->w; x-- ; )
@@ -302,7 +301,6 @@ Canvas::clear ( void )
         for ( uint x = m.vp->w; x--; )
         {
             m.current[ x ][ y ].color = 0;
-            m.current[ x ][ y ].shape = m.shape;
             m.current[ x ][ y ].state = EMPTY;
             m.current[ x ][ y ].flags = 0;
         }
@@ -339,6 +337,8 @@ Canvas::flip ( void )
 
     if ( viewable_x( m.playhead ) ) draw_line( m.playhead - m.vp->x, F_PLAYHEAD );
 
+    const int shape = m.grid->draw_shape();
+
     for ( uint y = m.vp->h; y--; )
         for ( uint x = m.vp->w; x--; )
         {
@@ -353,7 +353,7 @@ Canvas::flip ( void )
 
             if ( *c != *p )
                 gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h, m.border_w,
-                                c->shape, c->state, c->flags, c->color );
+                                shape, c->state, c->flags, c->color );
         }
 
     cell_t **tmp = m.previous;
@@ -451,7 +451,6 @@ Canvas::draw_shape ( int x, int y, int shape, int state, int color, bool selecte
     if ( x < 0 || y < 0 || x >= m.vp->w || y >= m.vp->h )
         return;
 
-    m.current[ x ][ y ].shape = shape;
     m.current[ x ][ y ].color = color;
     m.current[ x ][ y ].state = (uint)m.vp->x + x > m.grid->ts_to_x( m.grid->length() ) ? PARTIAL : state;
     if ( selected )
@@ -553,18 +552,18 @@ Canvas::redraw ( void )
     draw_mapping();
     draw_ruler();
 
+    const int shape = m.grid->draw_shape();
+
     for ( int y = m.vp->h; y--; )
         for ( int x = m.vp->w; x--; )
         {
             cell_t c = m.previous[ x ][ y ];
 
-            if ( c.shape > HEXAGON ) return;
-
             if ( m.vp->x + x == m.playhead )
                 c.flags |= F_PLAYHEAD;
 
             gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h, m.border_w,
-                            c.shape, c.state, c.flags, c.color );
+                            shape, c.state, c.flags, c.color );
         }
 }
 

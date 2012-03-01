@@ -183,7 +183,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {856 305 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
+      xywh {856 276 865 800} type Double box PLASTIC_UP_BOX color 37 resizable xclass non size_range {600 420 0 0} visible
     } {
       Fl_Menu_Bar menu_bar {open
         xywh {0 0 869 30} color 37
@@ -377,6 +377,25 @@ pattern_canvas_widget->redraw();}
 
 config.follow_playhead = val ? true : false;}
             xywh {10 10 40 25} type Toggle value 1
+          }
+          Submenu {} {
+            label {Note Shape} open
+            xywh {0 0 74 24}
+          } {
+            MenuItem {} {
+              label Circle
+              callback {pattern::note_shape = CIRCLE;
+               pattern_canvas_widget->redraw();
+               }
+              xywh {0 0 40 24} type Radio
+            }
+            MenuItem {} {
+              label Square
+              callback {pattern::note_shape = SQUARE;
+               pattern_canvas_widget->redraw();
+               } selected
+              xywh {0 0 40 24} type Radio
+            }
           }
         }
         Submenu {} {
@@ -981,7 +1000,7 @@ else
         } {
           MenuItem {} {
             label Pattern
-            callback {song.play_mode = PATTERN;} selected
+            callback {song.play_mode = PATTERN;}
             xywh {5 5 40 25}
           }
           MenuItem {} {
@@ -1048,7 +1067,7 @@ detach_button->value( 0 );} open
   Function {make_about_popup()} {open
   } {
     Fl_Window about_popup {
-      label About open selected
+      label About open
       xywh {697 224 535 685} type Double non_modal size_range {535 685 535 685} visible
     } {
       Fl_Box {} {
@@ -1848,8 +1867,7 @@ for ( i = 0; i < MAX_PATTERN; i++ )
 		b->value( 0 );
 	}
 		
-}} {selected
-    }
+}} {}
   }
   Function {resize( int X, int Y, int W, int H )} {open return_type void
   } {

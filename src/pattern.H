@@ -36,6 +36,7 @@ class pattern : public Grid
     static int _solo;
     static int _pattern_recording;
 
+
     static int solo ( void );
 
     int _channel, _port;
@@ -53,6 +54,10 @@ class pattern : public Grid
 
 
 public:
+
+    static int note_shape;
+
+    int draw_shape ( void ) const { return pattern::note_shape; }
 
     static signal <void> signal_create_destroy;
 

@@ -169,6 +169,8 @@ Canvas::update_mapping ( void )
 
     m.grid->draw_row_names( this );
 
+    m.draw = true;
+
     if ( m.margin_left != old_margin )
     {
         signal_resize();
@@ -387,7 +389,7 @@ Canvas::draw_row_name ( int y, const char *name, int color )
 
     int bx = m.origin_x;
     int by = m.origin_y + m.margin_top + y * m.div_h;
-    int bw = min( m.margin_left, m.width / 8 );
+    int bw = m.margin_left;
     int bh = m.div_h;
 
     if ( y < 0 || y >= m.vp->h )

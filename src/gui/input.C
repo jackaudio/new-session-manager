@@ -259,7 +259,7 @@ canvas_input_callback ( O_Canvas *widget, Canvas *c, int m )
                             break;
                         }
 
-                        if ( IS_PATTERN && Fl::event_state() & FL_CTRL )
+                        if ( IS_PATTERN && Fl::event_state() & ( FL_ALT  | FL_CTRL ) )
                             c->randomize_row( y );
                         else
                             c->set( x, y );
@@ -298,8 +298,31 @@ canvas_input_callback ( O_Canvas *widget, Canvas *c, int m )
         {
             if ( Fl::event_state() & FL_CTRL )
                 c->adj_length( x, y, (0 - Fl::event_dy()) );
-            else
+            else if ( Fl::event_state() & FL_ALT )
                 c->adj_color( x, y, (0 - Fl::event_dy()) * 5 );
+            else if ( Fl::event_state() & FL_SHIFT )
+            {
+                if ( Fl::event_dy() > 0 )
+                {
+                    c->pan( RIGHT, Fl::event_dy() * 5 );
+                }
+                else
+                {
+                    c->pan( LEFT, 0 - Fl::event_dy() * 5 );
+                }
+            }
+            else
+            {
+                if ( Fl::event_dy() > 0 )
+                {
+                    c->pan( DOWN, Fl::event_dy() * 1 );
+                }
+                else
+                {
+                    c->pan( UP, (0 - Fl::event_dy()) * 1 );
+                }
+            }
+
             break;
         }
         default:

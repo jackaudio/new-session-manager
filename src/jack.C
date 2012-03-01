@@ -43,6 +43,13 @@
 #define jack_midi_event_write( b, f, d, s ) jack_midi_event_write( b, f, d, s, nframes )
 #endif
 
+
+/* MIDI channel to listen for pattern control changes on */
+int pattern_control_channel = 0;
+
+/* which control change number to use for pattern control */
+int pattern_control_cc = 20;
+
 jack_client_t *client;
 
 int sample_rate;
@@ -345,25 +352,26 @@ process ( jack_nframes_t nframes, void *arg )
 
             /* no need to pass it to the GUI, we can trigger patterns here */
 
-
-            if ( e.channel() == 0 && e.is_note_on() )
+            if ( e.channel() == pattern_control_channel &&
+                 e.opcode() == midievent::CONTROL_CHANGE &&
+                 e.lsb() == pattern_control_cc )
             {
-                if ( e.note() < pattern::patterns() )
+                if ( e.msb() < pattern::patterns() )
                 {
                     
-                    pattern *p = pattern::pattern_by_number( e.note() + 1 );
+                    pattern *p = pattern::pattern_by_number( e.msb() + 1 );
                     
                     if ( TRIGGER == song.play_mode )
                     {
                         if ( p->playing() )
                         {
-                            DMESSAGE( "Untriggering pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
+                            DMESSAGE( "Untriggering pattern %i ph=%lu, ts=%lu", e.msb(), ph, e.timestamp() );
                             
                             p->trigger( ph, e.timestamp() );
                         }
                         else
                         {
-                            DMESSAGE( "Triggering pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
+                            DMESSAGE( "Triggering pattern %i ph=%lu, ts=%lu", e.msb(), ph, e.timestamp() );
                             
                             p->trigger( e.timestamp(), -1 );
                         }
@@ -372,12 +380,12 @@ process ( jack_nframes_t nframes, void *arg )
                     {
                         if ( p->mode() == PLAY )
                         {
-                            DMESSAGE( "Dequeuing pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
+                            DMESSAGE( "Dequeuing pattern %i ph=%lu, ts=%lu", e.msb(), ph, e.timestamp() );
                             p->mode( MUTE );
                         }
                         else
                         {
-                            DMESSAGE( "Queuing pattern %i ph=%lu, ts=%lu", e.note(), ph, e.timestamp() );
+                            DMESSAGE( "Queuing pattern %i ph=%lu, ts=%lu", e.msb(), ph, e.timestamp() );
                             
                             p->mode( PLAY );
                         }

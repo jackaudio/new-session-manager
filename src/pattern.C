@@ -420,12 +420,25 @@ pattern::play ( tick_t start, tick_t end ) const
 
         _cleared = false;
 
-        if ( PLAY == _queued )
+        if ( PLAY == _queued || SOLO == _queued )
         {
             /* set the start point to loop boundary */
             start = start - _index;
-            _mode = PLAY;
-        
+            _mode = _queued;
+            
+            if ( SOLO == _mode )
+            {
+                if ( pattern::_solo )
+                    ((Grid*)pattern::pattern_by_number( pattern::_solo ))->mode( PLAY );
+
+                 pattern::_solo = _number;
+            }
+            else
+            {
+                if ( pattern::_solo == _number )
+                    pattern::_solo = 0;
+            }
+
             reset_queued = true;
         }
     }

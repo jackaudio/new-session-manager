@@ -1750,7 +1750,9 @@ widget_class Triggers {open
   } {}
   Function {populate( void )} {open private return_type void
   } {
-    code {int bw = (w() / 16);
+    code {_timer = 0;
+
+int bw = (w() / 16);
 int bh = h() / (128/ 16);
 
 begin();
@@ -1799,12 +1801,20 @@ redraw();} {}
   }
   Function {update( void )} {open return_type void
   } {
-    code {if ( ! takesevents() )
+    code {++_timer;
+
+if ( ! takesevents() )
 	return;
 
 int i;
 for ( i = 0; i < MAX_PATTERN; i++ )
 {
+
+        Fl_Color mode_color[3];
+
+        mode_color[PLAY] = FL_GREEN;
+        mode_color[MUTE] = FL_GRAY;
+        mode_color[SOLO] = FL_RED;
 
 	Trigger *b = (Trigger*)(((Fl_Pack*)rows->child( i / 16 ))->child( i % 16 ));
 
@@ -1821,22 +1831,15 @@ for ( i = 0; i < MAX_PATTERN; i++ )
 	{
 		b->color( fl_lighter( FL_GRAY ) );
 		
-		Fl_Color c = FL_BLUE;
-		
-		switch ( p->mode() )
-		{
-			case MUTE:
-				c = FL_GRAY;
-				break;
-			case SOLO:
-				c = FL_RED;
-				break;
-			case PLAY:
-				c = FL_GREEN;
-				break;
-		}
-		
-		b->selection_color( c );
+		b->selection_color( mode_color[ p->mode() ] );
+
+                if ( p->queue() >= 0 )
+                {
+                      if ( _timer % 16 < 8 )
+                      {
+                            b->color( mode_color[ p->queue() ] );
+                      }
+                }
 		
 		b->value( (double)p->index() / p->length() );
 	}
@@ -1845,7 +1848,8 @@ for ( i = 0; i < MAX_PATTERN; i++ )
 		b->value( 0 );
 	}
 		
-}} {}
+}} {selected
+    }
   }
   Function {resize( int X, int Y, int W, int H )} {open return_type void
   } {
@@ -1865,5 +1869,7 @@ for ( i = 0; i < MAX_PATTERN; i++ )
 }
 
 Fl_Group::resize( X, Y, W, H );} {}
+  }
+  decl {unsigned long _timer;} {private local
   }
 } 

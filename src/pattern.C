@@ -39,6 +39,8 @@ pattern::pattern ( void )
     viewport.h = 32;
     viewport.w = 32;
 
+    viewport.y = 64 - ( viewport.h + ( viewport.h / 2 ) );
+
     _channel = _port = 0;
 
     _ppqn = 4;

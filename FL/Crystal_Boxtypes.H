@@ -19,15 +19,6 @@
 
 #include <FL/Fl.H>
 
-#define FL_BURNISHED_OVAL_BOX    FL_FREE_BOXTYPE
+#define FL_BURNISHED_OVAL_BOX    (Fl_Boxtype)(FL_FREE_BOXTYPE+0)
 
-#define FL_CRYSTAL_UP_BOX         (Fl_Boxtype)(FL_FREE_BOXTYPE+1)
-#define FL_CRYSTAL_DOWN_BOX       (Fl_Boxtype)(FL_FREE_BOXTYPE+2)
-#define FL_CRYSTAL_UP_FRAME       (Fl_Boxtype)(FL_FREE_BOXTYPE+3)
-#define FL_CRYSTAL_DOWN_FRAME     (Fl_Boxtype)(FL_FREE_BOXTYPE+4)
-#define FL_CRYSTAL_THIN_UP_BOX    (Fl_Boxtype)(FL_FREE_BOXTYPE+5)
-#define FL_CRYSTAL_THIN_DOWN_BOX  (Fl_Boxtype)(FL_FREE_BOXTYPE+6)
-#define FL_CRYSTAL_ROUND_UP_BOX   (Fl_Boxtype)(FL_FREE_BOXTYPE+7)
-#define FL_CRYSTAL_ROUND_DOWN_BOX (Fl_Boxtype)(FL_FREE_BOXTYPE+8)
-
-void init_boxtypes ( void );
+void init_crystal_boxtypes ( void );

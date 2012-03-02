@@ -26,7 +26,7 @@
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Flip_Button.H>
 #include <FL/Fl_Arc_Dial.H>
-#include <FL/Boxtypes.H>
+#include <FL/Crystal_Boxtypes.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>

@@ -32,7 +32,8 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Shared_Image.H>
 #include <FL/Fl_Pack.H>
-#include <FL/Boxtypes.H>
+#include <FL/Crystal_Boxtypes.H>
+#include <FL/Gleam_Boxtypes.H>
 #include "Thread.H"
 #include "debug.h"
 
@@ -163,12 +164,13 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Meter_Indicator_Module );
     LOG_REGISTER_CREATE( Controller_Module );
 
-    init_boxtypes();
+    init_crystal_boxtypes();
+    init_gleam_boxtypes();
 
     signal( SIGPIPE, SIG_IGN );
 
     Fl::get_system_colors();
-    Fl::scheme( "plastic" );
+    Fl::scheme( "gtk+" );
 
     Fl::lock();
 

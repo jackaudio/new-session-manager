@@ -36,6 +36,12 @@ get_system_colors ( void )
 void
 color_scheme ( const char *name )
 {
+    if ( !strcasecmp( name, "gray" ) )
+    {
+        Fl::background2( 127, 127, 127 );
+        Fl::background( 100, 100, 100 );
+        Fl::foreground( 255, 255, 255 );
+    }
     if ( !strcasecmp( name, "dark" ) )
     {
         Fl::background2( 100, 100, 100 );

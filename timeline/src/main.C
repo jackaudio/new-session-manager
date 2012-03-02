@@ -41,7 +41,9 @@
 
 #include "TLE.H"
 #include "Timeline.H"
-#include "../FL/Boxtypes.H"
+
+#include "FL/Crystal_Boxtypes.H"
+#include "FL/Gleam_Boxtypes.H"
 
 #include "Project.H"
 #include "Transport.H"
@@ -172,7 +174,8 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Time_Point          );
     LOG_REGISTER_CREATE( Track               );
 
-    init_boxtypes();
+    init_crystal_boxtypes();
+    init_gleam_boxtypes();
 
     signal( SIGPIPE, SIG_IGN );
 

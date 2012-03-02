@@ -61,6 +61,12 @@ decl {\#include "Audio_Region.H" // for options} {private local
 decl {\#include "Control_Sequence.H" // for options} {private local
 } 
 
+decl {\#include "FL/Crystal_Boxtypes.H"} {private local
+} 
+
+decl {\#include "FL/Gleam_Boxtypes.H"} {private local
+} 
+
 decl {\#include <FL/Fl_File_Chooser.H>} {private local
 } 
 
@@ -167,7 +173,7 @@ Fl::visible_focus( 0 );
 
 get_system_colors();
 
-Fl::scheme( "plastic" );
+Fl::scheme( "gtk+" );
 
 color_scheme( "dark" );
 
@@ -555,7 +561,7 @@ timeline->redraw();}
             } {
               MenuItem {} {
                 label Default
-                callback {Fl::scheme( "plastic" );}
+                callback {Fl::scheme( "gtk+" );}
                 xywh {10 10 40 25} type Radio value 1
               }
               MenuItem {} {
@@ -563,7 +569,12 @@ timeline->redraw();}
                 callback {Fl::scheme( "gtk+" );}
                 xywh {20 20 40 25} type Radio
               }
-            }
+              MenuItem {} {
+                label Round
+                callback {Fl::scheme( "plastic" );}
+                xywh {30 30 40 25} type Radio
+              }
+              }
             Submenu {} {
               label {C&olors} open
               xywh {10 10 74 25}
@@ -581,6 +592,11 @@ timeline->redraw();}
               MenuItem {} {
                 label Light
                 callback {color_scheme( "light" );}
+                xywh {30 30 40 25} type Radio
+              }
+              MenuItem {} {
+                label Gray
+                callback {color_scheme( "gray" );}
                 xywh {30 30 40 25} type Radio
               }
               MenuItem {} {

@@ -27,7 +27,7 @@
 #include <FL/fl_draw.H>
 #include <FL/Fl_Counter.H>
 #include <FL/Fl_Light_Button.H>
-#include "FL/Boxtypes.H"
+#include "FL/Crystal_Boxtypes.H"
 
 #include "FL/Fl_Arc_Dial.H"
 #include "FL/Fl_Labelpad_Group.H"

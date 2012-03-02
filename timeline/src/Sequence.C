@@ -28,7 +28,7 @@
 
 #include "Transport.H" // for locate()
 
-#include "../FL/Boxtypes.H"
+#include "FL/Crystal_Boxtypes.H"
 
 #include "const.h"
 #include "debug.h"

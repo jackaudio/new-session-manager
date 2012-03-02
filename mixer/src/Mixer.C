@@ -252,11 +252,15 @@ void Mixer::cb_menu(Fl_Widget* o) {
     }
     else if (! strcmp( picked, "&Options/&Display/&Style/&Default") )
     {
-        Fl::scheme( "plastic" );
+        Fl::scheme( "gtk+" );
     }
     else if (! strcmp( picked, "&Options/&Display/&Style/&Flat") )
     {
         Fl::scheme( "gtk+" );
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Style/&Round") )
+    {
+        Fl::scheme( "plastic" );
     }
     else if (! strcmp( picked, "&Options/&Display/&Colors/&System") )
     {
@@ -273,6 +277,10 @@ void Mixer::cb_menu(Fl_Widget* o) {
     else if (! strcmp( picked, "&Options/&Display/&Colors/&Light") )
     {
         color_scheme( "light" );
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Colors/&Gray") )
+    {
+        color_scheme( "gray" );
     }
     else if ( ! strcmp( picked, "&Help/&About" ) )
     {
@@ -336,9 +344,11 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "&Mixer/&Rows/Three", '3', 0, 0 );
         o->add( "_&Options/&Display/&Style/&Default", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
         o->add( "_&Options/&Display/&Style/&Flat", 0, 0, 0, FL_MENU_RADIO );
+        o->add( "_&Options/&Display/&Style/&Round", 0, 0, 0, FL_MENU_RADIO );
         o->add( "_&Options/&Display/&Colors/&Dark", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
         o->add( "_&Options/&Display/&Colors/&Very Dark", 0, 0, 0, FL_MENU_RADIO  );
         o->add( "_&Options/&Display/&Colors/&Light", 0, 0, 0, FL_MENU_RADIO  );
+        o->add( "_&Options/&Display/&Colors/&Gray", 0, 0, 0, FL_MENU_RADIO  );
         o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
         o->add( "&Help/&Manual" );
         o->add( "&Help/&About" );

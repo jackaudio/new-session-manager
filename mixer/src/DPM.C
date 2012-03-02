@@ -56,6 +56,7 @@ DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
         DPM::blend( FL_GREEN, FL_RED );
 
     box( FL_ROUNDED_BOX );
+    color( FL_BACKGROUND_COLOR );
 }
 
 /* which marks to draw beside meter */

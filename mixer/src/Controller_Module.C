@@ -30,7 +30,7 @@
 #include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Menu_.H>
 #include <FL/Fl_Light_Button.H>
-#include "FL/Boxtypes.H"
+#include "FL/Crystal_Boxtypes.H"
 #include <FL/fl_draw.H>
 #include "FL/Fl_Arc_Dial.H"
 #include "FL/Fl_Labelpad_Group.H"
@@ -342,7 +342,7 @@ Controller_Module::connect_to ( Port *p )
         w = o;
 
         o->type(4);
-        o->color(FL_GRAY0);
+        o->color(FL_BACKGROUND_COLOR);
         o->selection_color((Fl_Color)1);
         o->minimum(1.5);
         o->maximum(0);

@@ -204,10 +204,12 @@ Module_Parameter_Editor::make_controls ( void )
                     o->maximum( p->hints.maximum );
                 }
 
-                o->box( FL_BURNISHED_OVAL_BOX );
+//                o->box( FL_BURNISHED_OVAL_BOX );
+                o->box( FL_ROUNDED_BOX );
                 o->color( fl_darker( fl_darker( FL_GRAY ) ) );
                 o->selection_color( FL_WHITE );
                 o->value( p->control_value() );
+                o->type( FL_FILL_DIAL );
 
 //                o->step( fabs( ( o->maximum() - o->minimum() ) ) / 32.0f );
             }

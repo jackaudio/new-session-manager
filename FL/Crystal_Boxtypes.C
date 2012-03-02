@@ -21,9 +21,10 @@
 #pragma GCC diagnostic ignored "-Wchar-subscripts"
 
 
-#include "Boxtypes.H"
+#include "Crystal_Boxtypes.H"
 #include <FL/fl_draw.H>
 #include <string.h>
+
 
 /** This simple box is suitable for use with knob-type widgets. It
  * comprises a border with shadow, and a cap with glare-lines akin
@@ -359,16 +360,12 @@ up_box ( int x, int y, int w, int h, Fl_Color c )
 {
     if ( w > 8 && h > 8 )
     {
-//        shade_rect( x + 1, y + 1, w - 2, h - 3, "RVQNOPQRSTUVWVQ", c );
-//          shade_rect( x + 1, y + 1, w - 2, h - 3, "STUVWVQRWXVUVVQ", c );
-          shade_rect( x + 1, y + 1, w - 2, h - 3, "FISPPQQRSSTTUPJ", c );
-
-          /* stipple */
-        fl_color( fl_color_average( FL_GRAY, c, 0.10f ) );
-        for ( int i = y + 1; i < y + h - 8; i += 5 )
-            fl_line( x + 1, i, x + w - 2, i );
+        shade_rect( x + 1, y + 1, w - 2, h - 3, "RVQNOPQRSTUVWVQ", c );
+//      shade_rect( x + 1, y + 1, w - 2, h - 3, "STUVWVQRWXVUVVQ", c );
+//      shade_rect( x + 1, y + 1, w - 2, h - 3, "FISPPQQRSSTTUPJ", c );
 
         frame_rect( x, y, w, h - 1, "IJLM", c );
+
     }
     else
         thin_up_box( x, y, w, h, c );
@@ -395,7 +392,8 @@ down_box ( int x, int y, int w, int h, Fl_Color c )
 {
     if ( w > 6 && h > 6 )
     {
-        shade_rect( x + 2, y + 2, w - 4, h - 5, "STUVWWWVT", c );
+//        shade_rect( x + 2, y + 2, w - 4, h - 5, "STUVWWWVT", c );
+        fl_rectf( x + 2, y + 2, w - 4, h - 5 , fl_darker( c ) );
         down_frame( x, y, w, h, c );
     }
     else
@@ -414,18 +412,9 @@ down_round ( int x, int y, int w, int h, Fl_Color c )
 
 
 void
-init_boxtypes ( void )
+init_crystal_boxtypes ( void )
 {
     Fl::set_boxtype( FL_BURNISHED_OVAL_BOX, burnished_oval_box, 4, 4, 7, 7 );
-
-
-    Fl::set_boxtype(  FL_CRYSTAL_UP_BOX,         up_box,      4,4,8,8 );
-    Fl::set_boxtype(  FL_CRYSTAL_DOWN_BOX,       down_box,    2,2,4,4 );
-    Fl::set_boxtype(  FL_CRYSTAL_UP_FRAME,       up_frame,    2,2,4,4 );
-    Fl::set_boxtype(  FL_CRYSTAL_DOWN_FRAME,     down_frame,  2,2,4,4 );
-    Fl::set_boxtype(  FL_CRYSTAL_THIN_UP_BOX,    thin_up_box, 1,1,2,2 );
-    Fl::set_boxtype(  FL_CRYSTAL_THIN_DOWN_BOX,  down_box,    1,1,2,2 );
-
 
     /* replace the plastic boxes... (is there a better way?) */
     Fl::set_boxtype(  FL_PLASTIC_UP_BOX,         up_box,      4,4,8,8 );
@@ -434,7 +423,6 @@ init_boxtypes ( void )
     Fl::set_boxtype(  FL_PLASTIC_DOWN_FRAME,     down_frame,  2,2,4,4 );
     Fl::set_boxtype(  FL_PLASTIC_THIN_UP_BOX,    thin_up_box, 1,1,2,2 );
     Fl::set_boxtype(  FL_PLASTIC_THIN_DOWN_BOX,  down_box,    1,1,2,2 );
-    Fl::set_boxtype(  FL_CRYSTAL_ROUND_UP_BOX,   up_round,    1,1,2,2 );
-    Fl::set_boxtype(  FL_CRYSTAL_ROUND_DOWN_BOX, down_round,  1,1,2,2 );
-
+    Fl::set_boxtype(  FL_PLASTIC_ROUND_UP_BOX,   up_round,    1,1,2,2 );
+    Fl::set_boxtype(  FL_PLASTIC_ROUND_DOWN_BOX, down_round,  1,1,2,2 );
 }

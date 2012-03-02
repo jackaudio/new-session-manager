@@ -31,6 +31,8 @@ class DPM : public Meter
     int _pixels_per_segment;
     int _last_drawn_hi_segment;
 
+    float _value;
+
     int pos ( float v )
         {
             return deflection( v ) * _segments;
@@ -63,7 +65,21 @@ public:
 
     DPM ( int X, int Y, int W, int H,  const char *L = 0 );
 
-//    void value ( float v ) { if ( pos( v ) != pos( value() ) )  redraw(); Meter::value( v ) }
+    void value ( float v )
+        {
+            if ( _value != v )
+            {
+                if ( pos( v ) != pos( _value ) ) 
+                    Meter::value( v );
+            }
+
+            _value = v;
+        }
+
+    float value ( void ) const
+        {
+            return _value;
+        }
 
     void pixels_per_segment ( int v ) { _pixels_per_segment = v; }
 

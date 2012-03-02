@@ -81,7 +81,7 @@ public:
 
     virtual ~Meter ( ) { }
 
-    void value ( float v )
+    virtual void value ( float v )
         {
             damage( FL_DAMAGE_USER1 );
 
@@ -91,7 +91,7 @@ public:
                 _peak = _value;
         }
 
-    float value ( void ) const { return _value; }
+    virtual float value ( void ) const { return _value; }
     float peak ( void ) const { return _peak; }
 
     void reset ( void ) { _peak = -80.0f; redraw(); }

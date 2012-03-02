@@ -371,9 +371,9 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "_&Options/&Display/&Colors/&Light", 0, 0, 0, FL_MENU_RADIO  );
         o->add( "_&Options/&Display/&Colors/&Gray", 0, 0, 0, FL_MENU_RADIO  );
         o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Knobs/&Arc", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE  );
+        o->add( "_&Options/&Display/&Knobs/&Arc", 0, 0, 0, FL_MENU_RADIO   );
         o->add( "_&Options/&Display/&Knobs/&Burnished", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Knobs/&Plastic", 0, 0, 0, FL_MENU_RADIO );
+        o->add( "_&Options/&Display/&Knobs/&Plastic", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
         o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
         o->add( "&Help/&Manual" );
         o->add( "&Help/&About" );

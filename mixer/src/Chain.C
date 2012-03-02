@@ -136,12 +136,13 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
         o->end();
     }
     { Fl_Group *o = control_tab = new Fl_Group( X, Y, W, H, "" );
-        o->box( FL_NO_BOX );
+        o->box( FL_FLAT_BOX );
+        o->color( FL_BACKGROUND_COLOR );
         o->labeltype( FL_NO_LABEL );
         o->hide();
         { Fl_Scroll *o = new Fl_Scroll( X, Y, W, H );
-            o->color( FL_BACKGROUND_COLOR );
-            o->box( FL_FLAT_BOX );
+//            o->color( FL_BACKGROUND_COLOR );
+            o->box( FL_NO_BOX );
             o->type( Fl_Scroll::VERTICAL );
             { Fl_Flowpack *o = controls_pack = new Fl_Flowpack( X, Y, W, H );
                 o->hspacing( 10 );

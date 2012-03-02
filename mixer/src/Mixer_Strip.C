@@ -240,7 +240,10 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
             command_close();
     }
     else if ( o == name_field )
+    {
         name( name_field->value() );
+        take_focus();
+    }
     else if ( o == width_button )
     {
         if ( width_button->value() )
@@ -378,7 +381,6 @@ Mixer_Strip::init ( )
                 o->textcolor( FL_FOREGROUND_COLOR );
                 o->value( name() );
                 o->callback( cb_handle, (void*)this );
-
             }
             { Fl_Scalepack *o = new Fl_Scalepack( 7, 143, 110, 25 );
                 o->type( Fl_Pack::HORIZONTAL );

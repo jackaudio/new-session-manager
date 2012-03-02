@@ -26,7 +26,7 @@
 
 /* we cache the gradient for (probably excessive) speed */
 float DPM::_dim;
-Fl_Color DPM::_gradient[128] = { (Fl_Color)-1 };
+Fl_Color DPM::_gradient[128] = { (Fl_Color)0 };
 Fl_Color DPM::_dim_gradient[128];
 
 #include <FL/Fl.H>
@@ -52,7 +52,7 @@ DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
     dim( 0.70f );
 
     /* initialize gradients */
-    if ( DPM::_gradient[ 0 ] == -1 )
+    if ( DPM::_gradient[ 0 ] == 0 )
         DPM::blend( FL_GREEN, FL_RED );
 
     box( FL_ROUNDED_BOX );
@@ -121,6 +121,11 @@ DPM::draw ( void )
     if ( ! fl_not_clipped( x(), y(), w(), h() ) )
         return;
 
+    int X = x() + 2;
+    int Y = y() + 2;
+    int W = w() - 4;
+    int H = h() - 4;
+
     int v = pos( value() );
     int pv = pos( peak() );
 
@@ -128,7 +133,13 @@ DPM::draw ( void )
     int bw = w() / _segments;
 
     if ( damage() == FL_DAMAGE_ALL )
+    {
         draw_label();
+
+        draw_box( FL_UP_FRAME, x(), y(), w(), h(), FL_BLACK );
+    }
+
+    fl_push_clip( X, Y, W, H );
 
     const int active = active_r();
 
@@ -156,6 +167,7 @@ DPM::draw ( void )
 
     _last_drawn_hi_segment = v;
 
+
     for ( int p = lo; p <= hi; p++ )
     {
         Fl_Color c = DPM::div_color( p );
@@ -166,26 +178,42 @@ DPM::draw ( void )
         if ( ! active )
             c = fl_inactive( c );
 
-        if ( _pixels_per_segment < 4 )
+        int yy = 0;
+        int xx = 0;
+             
+        if ( type() == FL_HORIZONTAL )
         {
-            if ( type() == FL_HORIZONTAL )
-                fl_rectf( x() + (p * bw), y(), bw, h(), c );
-            else
-                fl_rectf( x(), y() + h() - ((p + 1) * bh), w(), bh, c );
+            xx = X + p * bw;
+            fl_rectf( X + (p * bw), Y, bw, H, c );
         }
         else
         {
-            if ( type() == FL_HORIZONTAL )
-                fl_draw_box( box(), x() + (p * bw), y(), bw, h(), c );
-            else
-                fl_draw_box( box(), x(), y() + h() - ((p + 1) * bh), w(), bh, c );
+            yy = Y + H - ((p + 1) * bh);
+            fl_rectf( X, yy, W, bh, c );
         }
+        
+        if ( _pixels_per_segment > 3 )
+        {
+            fl_color( FL_BLACK );
 
-/*         fl_color( c ); */
-/*         fl_rectf( x(), y() + h() - (p * bh), w(), bh ); */
-/*         fl_color( FL_BLACK ); */
-/*         fl_rect( x(), y() + h() - (p * bh), w(), bh ); */
+            if ( type() == FL_HORIZONTAL )
+            {
+                fl_line( xx, Y, xx, Y + H - 1 );
+            }
+            else
+            {
+                fl_line( X, yy, X + W - 1, yy );
+            }
+        }
+        /* } */
+        /* else */
+        /* { */
+        /*     if ( type() == FL_HORIZONTAL ) */
+        /*         fl_draw_box( box(), X + (p * bw), Y, bw, H, c ); */
+        /*     else */
+        /*         fl_draw_box( box(), X, Y + H - ((p + 1) * bh), W, bh, c ); */
+        /* } */
+    }
 
-   }
-
+    fl_pop_clip();
 }

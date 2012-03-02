@@ -112,7 +112,7 @@ pack_visible_height ( const Fl_Pack *p )
 #define BL fl_begin_line()
 #define EL fl_end_line()
 
-static void
+void
 draw_full_arrow_symbol ( Fl_Color color )
 {
     /* draw cap */

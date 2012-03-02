@@ -41,6 +41,9 @@ using std::max;
 
 
 
+/* defined in timeline.C */
+extern void draw_full_arrow_symbol ( Fl_Color color );
+
 extern Timeline *timeline;
 
 bool Audio_Region::inherit_track_color = true;
@@ -551,11 +554,16 @@ Audio_Region::draw ( void )
                 const int x = timeline->ts_to_x( _loop - offset );
 
                 /* FIXME: is there no way to draw these symbols direclty? */
-                fl_font( FL_SYMBOL, 14 );
                 fl_color( FL_WHITE );
-                fl_draw( "@2>", X + x - 7, y(), 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
-                fl_color( FL_WHITE );
-                fl_draw( "@2<", X + x - 7, y() + h() - 14, 14, 14, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM), 0, 1 );
+                
+                fl_push_matrix();
+                
+                fl_translate( X + x + 2, y() + h() - 14 );
+                fl_scale( - 16, 8 );
+                
+                draw_full_arrow_symbol( FL_BLACK );
+                
+                fl_pop_matrix();
             }
         }
 

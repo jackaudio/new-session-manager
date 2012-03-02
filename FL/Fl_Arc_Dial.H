@@ -23,22 +23,58 @@
 
 #include <FL/Fl_Dial.H>
 
-#include <algorithm>
-
 class Fl_Arc_Dial : public Fl_Dial
 {
+    static int _default_knob_style;
+
+    int _scaleticks;
+
+    void draw_knob ( void );
+    void draw_scale ( int ox,  int oy,  int side );
+    void draw_cursor ( int ox,  int oy,  int sidei );
+
 
 protected:
 
     virtual int handle ( int );
     virtual void draw ( void );
-
+    virtual void draw_box ( void );
+    
 public:
+
+    void scaleticks ( int tck );
+
+    int
+    type ( void ) const
+        { 
+        if ( Fl_Dial::type() == DEFAULT )
+            return Fl_Arc_Dial::_default_knob_style;
+        else
+            return Fl_Dial::type();
+        }
+
+    void type ( int n )
+        { 
+            Fl_Dial::type( n );
+        }
+    
+    static void default_knob_style ( int n ) { Fl_Arc_Dial::_default_knob_style = n; }
+
+    enum 
+    {
+        DEFAULT,
+        BURNISHED_DIAL,
+        ARC_DIAL,
+        PLASTIC_DIAL
+    };
+
 
     Fl_Arc_Dial ( int X, int Y, int W, int H, const char *L = 0 ) :
         Fl_Dial( X, Y, W, H, L )
         {
-            box( FL_OVAL_BOX );
+            _scaleticks = 12;
+            
+            box( FL_NO_BOX );
         }
 
 };

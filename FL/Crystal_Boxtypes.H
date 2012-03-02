@@ -19,6 +19,4 @@
 
 #include <FL/Fl.H>
 
-#define FL_BURNISHED_OVAL_BOX    (Fl_Boxtype)(FL_FREE_BOXTYPE+0)
-
 void init_crystal_boxtypes ( void );

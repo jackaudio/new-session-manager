@@ -371,9 +371,8 @@ Controller_Module::connect_to ( Port *p )
                 o->minimum( p->hints.minimum );
                 o->maximum( p->hints.maximum );
             }
-
-            o->box( FL_BURNISHED_OVAL_BOX );
-            o->color( fl_darker( fl_darker( FL_GRAY ) ) );
+            
+            o->color( fl_darker( FL_GRAY ) );
             o->selection_color( FL_WHITE );
             o->value( p->control_value() );
         }

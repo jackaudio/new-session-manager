@@ -27,7 +27,7 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Counter.H>
-#include "FL/Boxtypes.H"
+#include "FL/Crystal_Boxtypes.H"
 #include "FL/Fl_Flowpack.H"
 #include "FL/Fl_Labelpad_Group.H"
 #include "FL/Fl_Value_SliderX.H"
@@ -193,7 +193,7 @@ Module_Parameter_Editor::make_controls ( void )
         {
             if ( mode_choice->value() == 0 )
             {
-                Fl_Arc_Dial *o = new Fl_Arc_Dial( 0, 0, 50, 50, p->name() );
+                Fl_Arc_Dial *o = new Fl_Arc_Dial( 0, 0, 60, 60, p->name() );
                 w = o;
 
                 if ( p->hints.ranged )
@@ -204,12 +204,9 @@ Module_Parameter_Editor::make_controls ( void )
                     o->maximum( p->hints.maximum );
                 }
 
-//                o->box( FL_BURNISHED_OVAL_BOX );
-                o->box( FL_ROUNDED_BOX );
-                o->color( fl_darker( fl_darker( FL_GRAY ) ) );
+                o->color( FL_GRAY );
                 o->selection_color( FL_WHITE );
                 o->value( p->control_value() );
-                o->type( FL_FILL_DIAL );
 
 //                o->step( fabs( ( o->maximum() - o->minimum() ) ) / 32.0f );
             }
@@ -220,8 +217,10 @@ Module_Parameter_Editor::make_controls ( void )
 
                 if ( mode_choice->value() == 1 )
                 {
-                    o->type( FL_HORIZONTAL );
-                    o->size( 120, 24 );
+//                    o->type( FL_HORIZONTAL );
+                    o->type( FL_HOR_NICE_SLIDER );
+
+                    o->size( 120, 36 );
                     if ( p->hints.ranged )
                     {
                         o->minimum( p->hints.minimum );
@@ -230,18 +229,19 @@ Module_Parameter_Editor::make_controls ( void )
                 }
                 else
                 {
-                    o->type( FL_VERTICAL );
-                    o->size( 32, 120 );
+//                    o->type( FL_VERTICAL );
+                    o->type(FL_VERT_NICE_SLIDER);
+
+                    o->size( 36, 120 );
                     /* have to reverse the meaning of these to get the
                      * orientation of the slider right */
                     o->maximum( p->hints.minimum );
                     o->minimum( p->hints.maximum );
                 }
 
-//                o->step( fabs( ( o->maximum() - o->minimum() ) ) / 32.0f );
-                o->slider( FL_THIN_UP_BOX );
-                o->color( fl_darker( fl_darker( FL_GRAY ) ) );
-                o->selection_color( FL_WHITE );
+                o->slider( FL_UP_BOX );
+                o->color( FL_BACKGROUND2_COLOR );
+                o->selection_color( FL_GRAY );
                 o->value( p->control_value() );
             }
 

@@ -282,6 +282,27 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         color_scheme( "gray" );
     }
+    else if (! strcmp( picked, "&Options/&Display/&Knobs/&Burnished") )
+    {
+        Fl_Arc_Dial::default_knob_style( Fl_Arc_Dial::BURNISHED_DIAL );
+        if ( Fl::first_window() )
+            for ( Fl_Window *w = Fl::first_window(); ( w = Fl::next_window( w ) ); )
+                w->redraw();
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Knobs/&Arc") )
+    {
+        Fl_Arc_Dial::default_knob_style( Fl_Arc_Dial::ARC_DIAL );
+        if ( Fl::first_window() )
+            for ( Fl_Window *w = Fl::first_window(); ( w = Fl::next_window( w ) ); )
+                w->redraw();
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Knobs/&Plastic") )
+    {
+        Fl_Arc_Dial::default_knob_style( Fl_Arc_Dial::PLASTIC_DIAL );
+        if ( Fl::first_window() )
+            for ( Fl_Window *w = Fl::first_window(); ( w = Fl::next_window( w ) ); )
+                w->redraw();
+    }
     else if ( ! strcmp( picked, "&Help/&About" ) )
     {
         About_Dialog ab( PIXMAP_PATH "/non-mixer/icon-256x256.png" );
@@ -349,6 +370,10 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "_&Options/&Display/&Colors/&Very Dark", 0, 0, 0, FL_MENU_RADIO  );
         o->add( "_&Options/&Display/&Colors/&Light", 0, 0, 0, FL_MENU_RADIO  );
         o->add( "_&Options/&Display/&Colors/&Gray", 0, 0, 0, FL_MENU_RADIO  );
+        o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
+        o->add( "_&Options/&Display/&Knobs/&Arc", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE  );
+        o->add( "_&Options/&Display/&Knobs/&Burnished", 0, 0, 0, FL_MENU_RADIO );
+        o->add( "_&Options/&Display/&Knobs/&Plastic", 0, 0, 0, FL_MENU_RADIO );
         o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
         o->add( "&Help/&Manual" );
         o->add( "&Help/&About" );

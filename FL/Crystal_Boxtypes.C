@@ -25,47 +25,6 @@
 #include <FL/fl_draw.H>
 #include <string.h>
 
-
-/** This simple box is suitable for use with knob-type widgets. It
- * comprises a border with shadow, and a cap with glare-lines akin
- * to those seen on burnished aluminum knobs. */
-static void
-burnished_oval_box ( int x, int y, int w, int h, Fl_Color c )
-{
-    /* draw background */
-    fl_color( fl_darker( c ) );
-    fl_pie( x, y, w, h, 0, 360 );
-    fl_color( fl_darker( fl_darker( c ) ) );
-    fl_pie( x, y, w, h, 180 + 215, 180 + 45 );
-
-    /* shrink */
-    x += 4;
-    y += 4;
-    w -= 7;
-    h -= 7;
-
-    /* draw cap */
-    fl_color( c );
-    fl_pie( x, y, w, h, 0, 360 );
-
-    /* draw glare */
-
-    const int a1 = 10;
-    const int a2 = 90;
-
-    fl_color( fl_color_average( FL_WHITE, c, 0.15f ) );
-    fl_pie( x, y, w, h, a1, a2 );
-    fl_pie( x, y, w, h, 180 + a1, 180 + a2 );
-    fl_color( fl_color_average( FL_WHITE, c, 0.25f ) );
-
-    const int d = (a2 - a1) / 2;
-    fl_pie( x, y, w, h, a1 + (d / 2), a2 - (d / 2) );
-    fl_pie( x, y, w, h, 180 + a1 + (d / 2), 180 + a2 - (d / 2) );
-}
-
-
-
-
 /* Crystal boxes, base (obviously) on the FLTK1 'plastic' boxes, but
  * without the rude color blending and with a slightly enhanced
  * appearance. */
@@ -414,8 +373,6 @@ down_round ( int x, int y, int w, int h, Fl_Color c )
 void
 init_crystal_boxtypes ( void )
 {
-    Fl::set_boxtype( FL_BURNISHED_OVAL_BOX, burnished_oval_box, 4, 4, 7, 7 );
-
     /* replace the plastic boxes... (is there a better way?) */
     Fl::set_boxtype(  FL_PLASTIC_UP_BOX,         up_box,      4,4,8,8 );
     Fl::set_boxtype(  FL_PLASTIC_DOWN_BOX,       down_box,    2,2,4,4 );

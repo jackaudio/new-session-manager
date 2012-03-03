@@ -27,7 +27,7 @@
 #include <math.h>
 #include <algorithm>
 
-int Fl_Arc_Dial::_default_knob_style = Fl_Arc_Dial::PLASTIC_DIAL;
+int Fl_Arc_Dial::_default_style = Fl_Arc_Dial::PLASTIC_DIAL;
 
 /** This simple box is suitable for use with knob-type widgets. It
  * comprises a border with shadow, and a cap with glare-lines akin

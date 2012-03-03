@@ -27,8 +27,24 @@
 
 class Fl_Value_SliderX : public Fl_Value_Slider
 {
+    static int _default_style;
+
+    int _type;
 
 public:
+
+    enum 
+    {
+        NICE_SLIDER,
+        SIMPLE_SLIDER,
+        FILL_SLIDER
+    };
+
+    static void default_style ( int n ) { Fl_Value_SliderX::_default_style = n; }
+
+    int type ( void ) const { return _type; }
+    void type ( int v ) { _type = v; }
+    
 
     Fl_Value_SliderX ( int X, int Y, int W, int H, const char *L = 0 )
         : Fl_Value_Slider( X, Y, W, H, L )
@@ -37,52 +53,6 @@ public:
 
     virtual ~Fl_Value_SliderX() { }
 
-    virtual int handle ( int m )
-        {
-
-            /* Fl_Value_Slider and friends should really handle mousewheel, but they don't in FTLK1 */
-
-
-            switch ( m )
-            {
-                case FL_MOUSEWHEEL:
-                {
-                    if ( this != Fl::belowmouse() )
-                        return 0;
-
-                    int steps = 16;
-
-                    if ( Fl::event_ctrl() )
-                        steps = 128;
-
-                    float step = fabs( maximum() - minimum() ) / (float)steps;
-
-                    float d = ((float)Fl::event_dy()) * step;
-
-                    double v = value() + d;
-
-                    if ( maximum() > minimum() )
-                    {
-                        if ( v < minimum() )
-                            v = minimum();
-                        else if ( v > maximum() )
-                            v = maximum();
-                    }
-                    else
-                    {
-                        if ( v > minimum() )
-                            v = minimum();
-                        else if ( v < maximum() )
-                            v = maximum();
-                    }
-
-                    value( v );
-                    do_callback();
-
-                    return 1;
-                }
-            }
-
-            return Fl_Value_Slider::handle( m );
-        }
+    virtual int handle ( int m );
+    virtual void draw ( void );
 };

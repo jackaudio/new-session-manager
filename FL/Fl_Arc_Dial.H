@@ -25,7 +25,7 @@
 
 class Fl_Arc_Dial : public Fl_Dial
 {
-    static int _default_knob_style;
+    static int _default_style;
 
     int _scaleticks;
 
@@ -48,7 +48,7 @@ public:
     type ( void ) const
         { 
         if ( Fl_Dial::type() == DEFAULT )
-            return Fl_Arc_Dial::_default_knob_style;
+            return Fl_Arc_Dial::_default_style;
         else
             return Fl_Dial::type();
         }
@@ -58,7 +58,7 @@ public:
             Fl_Dial::type( n );
         }
     
-    static void default_knob_style ( int n ) { Fl_Arc_Dial::_default_knob_style = n; }
+    static void default_style ( int n ) { Fl_Arc_Dial::_default_style = n; }
 
     enum 
     {

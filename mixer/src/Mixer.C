@@ -43,6 +43,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+#include "FL/Fl_Value_SliderX.H"
 #include "FL/color_scheme.H"
 #include "OSC/Endpoint.H"
 #include <lo/lo.h>
@@ -155,6 +156,18 @@ Mixer::sm_active ( bool b )
         find_item( menubar, "&Project/&New" )->deactivate();
     }
 }
+
+
+void
+Mixer::redraw_windows ( void )
+{
+    window()->redraw();
+
+    if ( Fl::first_window() )
+        for ( Fl_Window *w = Fl::first_window(); ( w = Fl::next_window( w ) ); )
+            w->redraw();
+}
+
 
 void Mixer::cb_menu(Fl_Widget* o) {
     Fl_Menu_Bar *menu = (Fl_Menu_Bar*)o;
@@ -284,24 +297,33 @@ void Mixer::cb_menu(Fl_Widget* o) {
     }
     else if (! strcmp( picked, "&Options/&Display/&Knobs/&Burnished") )
     {
-        Fl_Arc_Dial::default_knob_style( Fl_Arc_Dial::BURNISHED_DIAL );
-        if ( Fl::first_window() )
-            for ( Fl_Window *w = Fl::first_window(); ( w = Fl::next_window( w ) ); )
-                w->redraw();
+        Fl_Arc_Dial::default_style( Fl_Arc_Dial::BURNISHED_DIAL );
+        redraw_windows();
     }
     else if (! strcmp( picked, "&Options/&Display/&Knobs/&Arc") )
     {
-        Fl_Arc_Dial::default_knob_style( Fl_Arc_Dial::ARC_DIAL );
-        if ( Fl::first_window() )
-            for ( Fl_Window *w = Fl::first_window(); ( w = Fl::next_window( w ) ); )
-                w->redraw();
+        Fl_Arc_Dial::default_style( Fl_Arc_Dial::ARC_DIAL );
+        redraw_windows();
     }
     else if (! strcmp( picked, "&Options/&Display/&Knobs/&Plastic") )
     {
-        Fl_Arc_Dial::default_knob_style( Fl_Arc_Dial::PLASTIC_DIAL );
-        if ( Fl::first_window() )
-            for ( Fl_Window *w = Fl::first_window(); ( w = Fl::next_window( w ) ); )
-                w->redraw();
+        Fl_Arc_Dial::default_style( Fl_Arc_Dial::PLASTIC_DIAL );
+        redraw_windows();
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Sliders/&Nice") )
+    {
+        Fl_Value_SliderX::default_style( Fl_Value_SliderX::NICE_SLIDER );
+        redraw_windows();
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Sliders/&Fill") )
+    {
+        Fl_Value_SliderX::default_style( Fl_Value_SliderX::FILL_SLIDER );
+        redraw_windows();
+    }
+    else if (! strcmp( picked, "&Options/&Display/&Sliders/&Simple") )
+    {
+        Fl_Value_SliderX::default_style( Fl_Value_SliderX::SIMPLE_SLIDER );
+        redraw_windows();
     }
     else if ( ! strcmp( picked, "&Help/&About" ) )
     {
@@ -374,6 +396,9 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "_&Options/&Display/&Knobs/&Arc", 0, 0, 0, FL_MENU_RADIO   );
         o->add( "_&Options/&Display/&Knobs/&Burnished", 0, 0, 0, FL_MENU_RADIO );
         o->add( "_&Options/&Display/&Knobs/&Plastic", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
+        o->add( "_&Options/&Display/&Sliders/&Nice", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
+        o->add( "_&Options/&Display/&Sliders/&Fill", 0, 0, 0, FL_MENU_RADIO );
+        o->add( "_&Options/&Display/&Sliders/&Simple", 0, 0, 0, FL_MENU_RADIO );
         o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
         o->add( "&Help/&Manual" );
         o->add( "&Help/&About" );

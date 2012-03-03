@@ -217,8 +217,7 @@ Module_Parameter_Editor::make_controls ( void )
 
                 if ( mode_choice->value() == 1 )
                 {
-//                    o->type( FL_HORIZONTAL );
-                    o->type( FL_HOR_NICE_SLIDER );
+                    o->type( FL_HORIZONTAL );
 
                     o->size( 120, 36 );
                     if ( p->hints.ranged )
@@ -229,8 +228,7 @@ Module_Parameter_Editor::make_controls ( void )
                 }
                 else
                 {
-//                    o->type( FL_VERTICAL );
-                    o->type(FL_VERT_NICE_SLIDER);
+                    o->type( FL_VERTICAL );
 
                     o->size( 36, 120 );
                     /* have to reverse the meaning of these to get the
@@ -240,8 +238,9 @@ Module_Parameter_Editor::make_controls ( void )
                 }
 
                 o->slider( FL_UP_BOX );
+//                o->color( FL_BACKGROUND2_COLOR );
                 o->color( FL_BACKGROUND2_COLOR );
-                o->selection_color( FL_GRAY );
+                o->selection_color( FL_WHITE );
                 o->value( p->control_value() );
             }
 

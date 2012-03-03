@@ -47,6 +47,7 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
 {
     _module = module;
     _resized = false;
+    _min_width = 100;
 
     char lab[256];
     if ( strcmp( module->name(), module->label() ) )
@@ -61,12 +62,17 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
 
     copy_label( title );
 
-    { Fl_Pack *o = main_pack = new Fl_Pack( 0, y(), w(), h() - 10 );
+    fl_font( FL_HELVETICA, 14 );
+
+    _min_width = 30 + fl_width( module->label() );
+
+    { Fl_Pack *o = main_pack = new Fl_Pack( 0, 0, w(), h() - 10 );
         o->type( FL_VERTICAL );
-/*         o->label( strdup( lab ) ); */
-/*         o->labeltype( FL_SHADOW_LABEL ); */
-/*         o->labelsize( 18 ); */
-/*         o->align( FL_ALIGN_TOP | FL_ALIGN_RIGHT | FL_ALIGN_INSIDE ); */
+        o->label( module->label() );
+        o->labelfont( 2 );
+        o->labeltype( FL_SHADOW_LABEL );
+        o->labelsize( 14 );
+        o->align( FL_ALIGN_TOP | FL_ALIGN_RIGHT | FL_ALIGN_INSIDE );
 
 
         { Fl_Pack *o = new Fl_Pack( 0, 0, 50, 25 );
@@ -322,8 +328,12 @@ Module_Parameter_Editor::make_controls ( void )
     int width = control_pack->max_width() + 100;
     int height = control_pack->h() + 50;
 
+    if ( width < _min_width )
+        width = _min_width;
+
     main_pack->size( width, height );
     size( width, height );
+    size_range( width, height, width, height );
 }
 
 void

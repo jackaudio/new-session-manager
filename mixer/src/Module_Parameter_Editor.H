@@ -68,10 +68,11 @@ class Module_Parameter_Editor : public Fl_Double_Window
     Fl_Flowpack *control_pack;
     Fl_Menu_Button *mode_choice;
     bool _resized;
+    int _min_width;
 
     int azimuth_port_number;
     int elevation_port_number;
-
+  
     std::vector<Fl_Widget*> controls_by_port;  
 
 public:

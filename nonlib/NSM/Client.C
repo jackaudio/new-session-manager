@@ -80,8 +80,8 @@ namespace NSM
                             application_name,
                             capabilities,
                             process_name,
-                            0, /* api_major_version */
-                            5, /* api_minor_version */
+                            1, /* api_major_version */
+                            0, /* api_minor_version */
                             pid );
 
         lo_address_free( to );

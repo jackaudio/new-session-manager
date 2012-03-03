@@ -2,7 +2,7 @@
 ! title		Non Session Management API
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
 ! date		August 1, 2010
-! revision	Version 0.9
+! revision	Version 1.0
 ! extra		#(image,logo,icon.png)
 
 -- Table Of Contents

@@ -72,8 +72,6 @@ burnished_oval_box ( int x, int y, int w, int h, Fl_Color c )
 void
 Fl_Arc_Dial::draw_box ( void )
 {
-    if ( type() == ARC_DIAL )
-        fl_draw_box( FL_ROUNDED_BOX, x(), y(), w(), h(), color() );
 }
 
 int
@@ -121,44 +119,45 @@ Fl_Arc_Dial::handle ( int m )
         }
     }
 
-    return Fl_Dial::handle( m );
+    int X, Y, S;
+
+    get_knob_dimensions ( &X, &Y, &S );
+
+    return Fl_Dial::handle( m, X, Y, S, S );
 }
 
 void
 Fl_Arc_Dial::draw ( void )
 {
-    int X = x();
-    int Y = y();
-    int W = w();
-    int H = h();
+    int X, Y, S;
+
+    get_knob_dimensions ( &X, &Y, &S);
 
     draw_box();
     draw_label();
 
-    X += Fl::box_dx(box());
-    Y += Fl::box_dy(box());
-    W -= Fl::box_dw(box());
-    H -= Fl::box_dh(box());
-
     double angle = ( angle2() - angle1() ) * ( value() - minimum()) / ( maximum() - minimum() ) + angle1();
-
-
-    X += W / 8;
-    Y += H / 8;
-    W -= W / 4;
-    H -= H / 4;
 
     if ( type() == ARC_DIAL )
     {
-        fl_line_style( FL_SOLID, W / 6 );
+        /* fl_line_style( FL_SOLID, 0 ); */
+        if ( type() == ARC_DIAL )
+            fl_draw_box( FL_ROUNDED_BOX, X, Y, S, S, color() );
+
+        /* shrink a bit */
+        X += S / 8.0;
+        Y += S / 8.0;
+        S -= S / 4;
+
+        fl_line_style( FL_SOLID, S / 6 );
 
         /* background arc */
         fl_color( fl_darker( color() ) );
-        fl_arc( X, Y, W, H, 270 - angle1(), 270 - angle2() );
+        fl_arc( X, Y, S, S, 270 - angle1(), 270 - angle2() );
 
         /* foreground arc */
         fl_color( selection_color() );
-        fl_arc( X, Y, W, H, 270 - angle1(), 270 - angle  );
+        fl_arc( X, Y, S, S, 270 - angle1(), 270 - angle  );
 
         fl_line_style( FL_SOLID, 0 );
 
@@ -166,52 +165,33 @@ Fl_Arc_Dial::draw ( void )
     }
     else if ( type() == PLASTIC_DIAL || type() == BURNISHED_DIAL )
     {
-//    fl_color( fl_color_average( FL_RED, selection_color(), ( value() - minimum() ) / ( maximum() - minimum() ) ) );
         draw_knob();
         
-        fl_line_style( FL_SOLID, W / 6 );
-        fl_color( fl_contrast( selection_color(), FL_BACKGROUND_COLOR ) );
-        
-        const int d = 6;
-        
-        /* account for edge conditions */
-        angle = angle < angle1() + d ? angle1() + d : angle;
-        angle = angle > angle2() - d ? angle2() - d : angle;
-        
-        fl_arc( X + 5, Y + 5 , W - 10, H - 10, 270 - (angle - d), 270 - (angle + d) );
-
-        fl_line_style( FL_SOLID, 0 );
-
+        draw_cursor( X, Y, S);
     }
 
+    /* Some strange bug in FLTK prevents us from always been able to draw text
+     * here, so don't even try for now. */
+    /* char s[10]; */
     
+    /* fl_font( FL_HELVETICA, 8 ); */
     
-    char s[10];
-    
-    fl_font( FL_HELVETICA, 8 );
-    
-    snprintf( s, sizeof( s ), "%.1f", value() );
-    if ( type() == ARC_DIAL )
-        fl_draw( s, X, Y, W, H, FL_ALIGN_BOTTOM );
-    else
-        if ( type() == PLASTIC_DIAL )
-        {
-                fl_draw( s, x(), y(), w(), H, FL_ALIGN_BOTTOM );
-        }
+    /* snprintf( s, sizeof( s ), "%.1f", value() ); */
 
-
+    /* /\* fl_rectf( X, Y + S, S, 14, FL_BACKGROUND2_COLOR ); *\/ */
+    /* fl_color( FL_WHITE );  */
+    /* fl_draw( s, X, Y + S, S, 14, FL_ALIGN_CENTER ); */
 }
 
 void
-Fl_Arc_Dial::draw_knob ( void )
+Fl_Arc_Dial::get_knob_dimensions ( int *X, int *Y, int *S )
 {
     int ox, oy, ww, hh, side;
     ox = x();
     oy = y();
     ww = w();
     hh = h();
-    draw_label();
-    fl_clip(ox, oy, ww, hh);
+    
     if (ww > hh)
     {
         side = hh;
@@ -224,13 +204,58 @@ Fl_Arc_Dial::draw_knob ( void )
     }
     side = w() > h() ? hh : ww;
 
+    *X = ox;
+    *Y = oy;
+    *S = side;
+}
+
+void 
+Fl_Arc_Dial::draw_cursor ( int ox, int oy, int side )
+{
+    double angle;
+
+//    fl_color(fl_color_average(FL_BACKGROUND_COLOR, FL_BLACK, .7f));
+
+    angle = ( angle2() - angle1() ) * ( value() - minimum()) / ( maximum() - minimum() ) + angle1();
+
+    fl_color( fl_contrast( selection_color(), FL_BACKGROUND_COLOR ) );
+    
+    fl_line_style( FL_SOLID, side / 8 );
+    
+    const int d = 6;
+    
+    /* account for edge conditions */
+    angle = angle < angle1() + d ? angle1() + d : angle;
+    angle = angle > angle2() - d ? angle2() - d : angle;
+    
+    ox += side / 4;
+    oy += side / 4;
+    side -= side / 2;
+    
+    fl_arc( ox, oy, side, side, 270 - (angle - d), 270 - (angle + d) );
+    
+    fl_line_style( FL_SOLID, 0 );
+}
+
+void
+Fl_Arc_Dial::draw_knob ( void )
+{
+    int ox, oy, ww, hh, side;
+
+    get_knob_dimensions ( &ox, &oy, &side );
+
+    ww = w();
+    hh = h();
+    draw_label();
+    fl_clip(ox, oy, ww, hh);
+
+
     // background
     /* fl_color(FL_BACKGROUND_COLOR); */
     /* fl_rectf(ox, oy, side, side); */
         
     /* scale color */
     fl_color(fl_color_average(color(), FL_BACKGROUND2_COLOR, .6));
-
 
     fl_pie(ox + 1, oy + 3, side - 2, side - 12, 0, 360);
     // scale

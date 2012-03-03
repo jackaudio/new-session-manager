@@ -33,6 +33,7 @@ class Fl_Arc_Dial : public Fl_Dial
     void draw_scale ( int ox,  int oy,  int side );
     void draw_cursor ( int ox,  int oy,  int sidei );
 
+    void get_knob_dimensions ( int *X, int *Y, int *S );
 
 protected:
 
@@ -75,6 +76,7 @@ public:
             _scaleticks = 12;
             
             box( FL_NO_BOX );
+            type( DEFAULT );
         }
 
 };

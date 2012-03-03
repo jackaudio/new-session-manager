@@ -82,7 +82,10 @@ public:
 
     void dolayout ( void )
         {
-            size( w(), layout( w() ) );
+            int new_h = layout( w() );
+
+            if ( new_h != h() )
+                size( w(), new_h );
         }
 
     int
@@ -113,7 +116,10 @@ public:
                     X = 0;
                 }
 
-                o->position( x() + X, y() + Y );
+                /* avoid bothering the control with lots of resize() calls */
+                if ( ! ( o->x() == x() + X &&
+                         o->y() == y() + Y ) )
+                    o->position( x() + X, y() + Y );
 
                 X += o->w() + _hspacing;
 

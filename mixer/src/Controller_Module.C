@@ -361,7 +361,7 @@ Controller_Module::connect_to ( Port *p )
     }
     else
     {
-        { Fl_Arc_Dial *o = new Fl_Arc_Dial( 0, 0, 40, 40, p->name() );
+        { Fl_Arc_Dial *o = new Fl_Arc_Dial( 0, 0, 50, 50, p->name() );
             w = o;
             control = o;
 
@@ -402,10 +402,8 @@ Controller_Module::connect_to ( Port *p )
         w->resize( x(), y(), this->w(), h() );
         add( w );
         resizable( w );
-/*         init_sizes(); */
+//       init_sizes();
     }
-
-    // create OSC port
 }
 
 void

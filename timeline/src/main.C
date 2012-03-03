@@ -153,6 +153,9 @@ main ( int argc, char **argv )
                             (char**)icon_16x16, &p, &mask, NULL);
 #endif
 
+    Fl::visual(FL_RGB8);
+    
+
     Thread::init();
 
     Thread thread( "UI" );

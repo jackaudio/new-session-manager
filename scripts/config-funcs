@@ -191,7 +191,7 @@ begin ()
 
 warn ()
 {
-    echo " ${BOLD}${YELLOW}* ${SGR0}$*"
+    echo " ${BOLD}${YELLOW}* ${SGR0}${BOLD}$*"
 }
 
 info ()

@@ -395,6 +395,12 @@ Timeline::ntracks ( void ) const
 
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W, H, L )
 {
+
+    if ( ! can_do_overlay() )
+    {
+        WARNING( "Display lacks hardware overlay visual. Playhead and selection rectangle will flicker." );
+    }
+
     Loggable::snapshot_callback( &Timeline::snapshot, this );
 
     osc_thread = 0;

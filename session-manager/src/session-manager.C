@@ -475,7 +475,7 @@ public:
 
     const char *session_name ( void ) const
         {
-            clients_pack->parent()->label();
+            return clients_pack->parent()->label();
         }
 
     void
@@ -901,7 +901,7 @@ ping ( void * )
 }
 
 void
-cb_main ( Fl_Widget *o, void *v )
+cb_main ( Fl_Widget *, void * )
 {
     if ( Fl::event_key() != FL_Escape )
     {

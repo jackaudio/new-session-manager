@@ -31,6 +31,19 @@ require_package liblo 0.23 liblo
 require_package sigcpp 2.0.0 sigc++-2.0
 suggest_package XPM 2.0.0 xpm
 
+if ! hostname_resolvable
+then
+    echo "Your hostname \"$(hostname)\" does not resolve to a valid address."
+    echo "This is a broken configuration and will cause liblo (the"
+    echo "OSC library) to fail to function. Add the line:"
+    echo
+    echo "127.0.0.1 $(hostname)"
+    echo
+    echo "to your /etc/hosts file to fix. And consider switching to a saner distribution."
+    echo
+    fail "Invalid hostname!"
+fi
+
 if ! test_version 1.1.10 $FLTK_VERSION 
 then
     warn "*** PERFORMANCE WARNING ***"

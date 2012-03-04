@@ -145,7 +145,6 @@ midi_output_event ( int port, const midievent *e )
             if ( notes_on[ port ][ e->channel() ][ e->note() ] == 0 )
             {
                 DMESSAGE( "Dropping extra Note OFF" );
-                WARNING( "Extra Note OFF" );
             }
             else
             {

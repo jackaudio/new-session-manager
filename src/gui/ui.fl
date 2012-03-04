@@ -1871,7 +1871,8 @@ for ( int n = 0; n < 128 ; n += 16 )
 		b->maximum( 1 );
 		b->angles( 0, 360 );
 		b->type( FL_FILL_DIAL );
-//		b->box( FL_ROUNDED_BOX );
+                b->color2( FL_GRAY );
+		b->box( FL_ROUNDED_BOX );
 //		b->down_box( FL_ROUNDED_BOX );
 		b->selection_color( FL_GREEN );
 		b->color( FL_BLACK );
@@ -1900,15 +1901,17 @@ redraw();} {}
 if ( ! takesevents() )
 	return;
 
+        Fl_Color mode_color[3];
+
+//        mode_color[PLAY] = fl_color_average( FL_GRAY, FL_GREEN, 0.5 );
+        mode_color[PLAY] = FL_DARK2;    
+        mode_color[MUTE] = FL_LIGHT2;
+        mode_color[SOLO] = fl_color_average( FL_GRAY, FL_RED, 0.5 );
+
 int i;
 for ( i = 0; i < MAX_PATTERN; i++ )
 {
 
-        Fl_Color mode_color[3];
-
-        mode_color[PLAY] = FL_GREEN;
-        mode_color[MUTE] = FL_GRAY;
-        mode_color[SOLO] = FL_RED;
 
 	Trigger *b = (Trigger*)(((Fl_Pack*)rows->child( i / 16 ))->child( i % 16 ));
 
@@ -1923,7 +1926,7 @@ for ( i = 0; i < MAX_PATTERN; i++ )
 			
 	if ( p->playing() )
 	{
-		b->color( fl_lighter( FL_GRAY ) );
+		b->color( FL_GRAY );
 		
 		b->selection_color( mode_color[ p->mode() ] );
 

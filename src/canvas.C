@@ -509,7 +509,6 @@ Canvas::draw_playhead ( void )
         }
     }
 
-
     copy();
 
     for ( uint x = m.vp->w; x-- ; )

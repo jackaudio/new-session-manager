@@ -34,7 +34,7 @@ struct color_table {
 };
 
 struct color_table color_defs[] = {
-    { EMPTY,     27,  27,  27  },
+    { EMPTY,     18,  18,  18  },
     { FULL,      255, 69,  0   },
     { PARTIAL,   0,   0,   0   },
     { CONTINUED, 80,  80,  80  },
@@ -47,6 +47,9 @@ struct color_table color_defs[] = {
 Fl_Color *state_colors;
 
 Fl_Color velocity_colors[128];
+Fl_Color velocity2_colors[128];
+
+bool draw_borders = 1;
 
 void
 init_colors ( void )
@@ -55,7 +58,10 @@ init_colors ( void )
     /* velocity colors */
 
     for ( i = 128; i--; )
-        velocity_colors[i] = fl_rgb_color( i * 2, 255 - i * 2, 32 );
+    {
+        velocity_colors[i] = fl_color_average( FL_GRAY, fl_rgb_color( i * 2, 255 - i * 2, 32 ), 0.4 );
+        velocity2_colors[i] = fl_color_average( FL_WHITE, velocity_colors[i], 0.5 );
+    }
 
     state_colors = (Fl_Color*)malloc(sizeof( Fl_Color ) * MAX_STATE );
 
@@ -178,10 +184,24 @@ gui_draw_shape ( int x, int y, int w, int h, int bw, int shape, int state, int f
         flags &= ~ F_SELECTION;
     }
 
+    Fl_Color c1, c2;
+
     if ( state == FULL && color  )
-        fl_color( velocity_colors[ color ] );
+    {
+        c1 = velocity_colors[ color ];
+        c2 = velocity2_colors[ color ];
+    }
     else
-        fl_color( state_colors[ state ] );
+    {
+        c1 = state_colors[ state ];
+        c2 = fl_color_average( FL_WHITE, c1, 0.1 );
+    }
+    
+    
+    int thickness = 2;
+
+    /* if ( state == EMPTY && shape == SQUARE ) */
+    /*     shape = HOLLOW_SQUARE; */
 
     if ( flags & F_SELECTION )
         fl_color( fl_darker( fl_color() ) );
@@ -189,16 +209,48 @@ gui_draw_shape ( int x, int y, int w, int h, int bw, int shape, int state, int f
     switch ( shape )
     {
         case CIRCLE:
+            fl_color( c1 );
             fl_pie( x + bw / 2, y + bw / 2, w - bw, h - bw, 0, 360 );
+            if ( draw_borders )
+            {
+                fl_color( c2 );
+                fl_line_style( FL_SOLID, thickness );
+                fl_arc( x + bw / 2, y + bw / 2, w - bw, h - bw, 0, 360 );
+                fl_line_style( FL_SOLID, 0 );
+            }
             break;
         case SQUARE:
+            fl_color( c1 );
             fl_rectf( x + bw, y + bw, w - bw * 2, h - bw * 2 );
+            if ( draw_borders )
+            {
+                fl_color( c2 );
+                fl_line_style( FL_SOLID, thickness );
+                fl_rect( x + bw, y + bw, w - bw * 2, h - bw * 2 );
+                fl_line_style( FL_SOLID, 0 );
+            }
             break;
         case HALF_CIRCLE:
+            fl_color( c1 );
             fl_pie( x + bw / 2, y + bw / 2, w - bw, h - bw, 0, 360 / 2);
+            if ( draw_borders )
+            {
+                fl_color( c2 );
+                fl_line_style( FL_SOLID, thickness );
+                fl_pie( x + bw / 2, y + bw / 2, w - bw, h - bw, 0, 360 / 2);
+                fl_line_style( FL_SOLID, 0 );
+            }
             break;
         case DIAMOND:
+            fl_color( c1 );
             fl_polygon( x + w / 2, y + bw / 2, x + w - bw / 2, y + h / 2, x + w / 2, y + h - bw / 2, x + bw / 2, y + h / 2 );
+            if ( draw_borders )
+            {
+                fl_color( c2 );
+                fl_line_style( FL_SOLID, thickness );
+                fl_loop( x + w / 2, y + bw / 2, x + w - bw / 2, y + h / 2, x + w / 2, y + h - bw / 2, x + bw / 2, y + h / 2 );
+                fl_line_style( FL_SOLID, 0 );
+            }
             break;
         default:
             ASSERTION( "unknown shape" );

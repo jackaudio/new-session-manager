@@ -25,7 +25,7 @@
 #include "jack.H"
 #include "transport.H"
 
-int pattern::note_shape = CIRCLE;
+int pattern::note_shape = SQUARE;
 
 event_list pattern::_recorded_events;
 vector <pattern*> pattern::_patterns;

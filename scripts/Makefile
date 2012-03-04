@@ -70,7 +70,7 @@ INCLUDES := -I. -Iutil -IFL -Inonlib
 
 include scripts/colors
 
-SPACE:=`tput cuf 15`
+SPACE+="`tput cuf 20`"
 
 ifneq ($(CALCULATING),yes)
 	COMPILING="$(BOLD)$(BLACK)$(PACKAGE)$(SPACE)$(SGR0)$(CYAN)`scripts/percent-complete .files "$<"`$(SGR0)$(BOLD)$(BLACK)]$(SGR0) $(BOLD)$(CYAN)$<$(SGR0)"

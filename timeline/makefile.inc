@@ -1,24 +1,57 @@
 # -*- mode: makefile; -*-
 
+VERSION := 1.1.0
+PACKAGE := TIMELINE
+BIN_NAME := non-daw
+
 all: Timeline
 
-Timeline_VERSION := 0.5.0
+SRCS := $(wildcard src/*.C src/*.fl src/Engine/*.C)
 
-Timeline_SRCS := $(wildcard src/*.C src/*.fl src/Engine/*.C)
+SRCS:=$(SRCS:.fl=.C)
+SRCS:=$(sort $(SRCS))
+OBJS:=$(SRCS:.C=.o)
 
-Timeline_SRCS:=$(Timeline_SRCS:.fl=.C)
-Timeline_SRCS:=$(sort $(Timeline_SRCS))
-Timeline_OBJS:=$(Timeline_SRCS:.C=.o)
+LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS) $(LIBLO_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
 
-Timeline_LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS) $(LIBLO_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
+CFLAGS := $(SNDFILE_CFLAGS) $(FLTK_CFLAGS) $(JACK_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS)
 
-Timeline_CFLAGS := $(SNDFILE_CFLAGS) $(FLTK_CFLAGS) $(JACK_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS)
+ifeq ($(USE_UNOPTIMIZED_DRAWING),yes)
+	CFLAGS+=-DUSE_UNOPTIMIZED_DRAWING
+endif
 
-src/timeline: $(Timeline_OBJS) FL/libfl_widgets.a nonlib/libnonlib.a
+ifeq ($(USE_SINGLEBUFFERED_TIMELINE),yes)
+	CFLAGS+=-DUSE_SINGLEBUFFERED_TIMELINE
+endif
+
+ifeq ($(USE_WIDGET_FOR_TIMELINE),yes)
+	CFLAGS+=-DUSE_WIDGET_FOR_TIMELINE
+endif
+
+src/timeline: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a
 	@ echo -n Linking timeline...
-	@ $(CXX) $(CXXFLAGS) $(INCLUDES) $(Timeline_LIBS)  $(Timeline_OBJS) -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $(INCLUDES) $(LIBS)  $(OBJS) -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
 
 Timeline: src/timeline
 
-Timeline_clean:
-	rm -f $(Timeline_OBJS) Timeline/timeline
+clean:
+	rm -f $(OBJS) src/timeline
+
+install: all
+	@ echo -n "Installing..."
+	@ install src/timeline $(prefix)/bin/non-daw
+	@ mkdir -p $(SYSTEM_PATH)/non-daw
+	@ mkdir -p $(PIXMAP_PATH)/non-daw
+	@ $(MAKE) -s -C doc install
+	@ install -d "$(DESTDIR)$(PIXMAP_PATH)/non-daw"
+	@ install -m 644 icons/hicolor/256x256/apps/non-daw.png "$(DESTDIR)$(PIXMAP_PATH)"/non-daw/icon-256x256.png
+	@ install -d "$(DESTDIR)$(ICON_PATH)/hicolor"
+	@ cp -au icons/hicolor/ "$(DESTDIR)$(ICON_PATH)"
+	@ install -d "$(DESTDIR)$(DESKTOP_PATH)"
+	@ sed 's:@BIN_PATH@:$(prefix)/bin:' non-daw.desktop.in > "$(DESTDIR)$(DESKTOP_PATH)/non-daw.desktop"
+	@ echo "$(DONE)"
+ifneq ($(USE_DEBUG),yes)
+	@ echo -n "Stripping..."
+	@ strip $(prefix)/bin/non-daw
+	@ echo "$(DONE)"
+endif

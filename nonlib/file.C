@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/vfs.h>
 
 unsigned long
 modification_time ( const char *file )
@@ -182,25 +183,25 @@ read_line ( const char *dir, const char *name, char **value )
 #include <sys/statvfs.h>
 
 /** return the number of blocks free on filesystem containing file named /file/ */
-unsigned long
+fsblkcnt_t
 free_space ( const char *file )
 {
-    struct statvfs st;
+    struct statfs st;
     memset( &st, 0, sizeof( st ) );
 
-    statvfs( file, &st );
+    statfs( file, &st );
 
-    return st.f_bfree;
+    return st.f_bavail;
 }
 
 /** return the total number of blocks on filesystem containing file named /file/ */
-unsigned long
+fsblkcnt_t
 total_space ( const char *file )
 {
-    struct statvfs st;
+    struct statfs st;
     memset( &st, 0, sizeof( st ) );
 
-    statvfs( file, &st );
+    statfs( file, &st );
 
     return st.f_blocks;
 }
@@ -209,7 +210,10 @@ total_space ( const char *file )
 int
 percent_used ( const char *file )
 {
-    const size_t ts = total_space( file );
+    const double ts = total_space( file );
+    const double fs = free_space( file );
 
-    return 100 - ( ts ? free_space( file ) * 100 / ts : 0 );
+    double percent_free = ( ( fs / ts ) * 100.0f );
+
+    return (int) (100.0f - percent_free);
 }

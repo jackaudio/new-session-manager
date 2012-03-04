@@ -717,7 +717,7 @@ ab.run();}
             private xywh {921 41 104 14} labelsize 10
           }
           Fl_Box {} {
-            label {disk:}
+            label {filesystem}
             xywh {810 27 55 18} labelsize 10 align 16
           }
           Fl_Progress disk_usage_progress {
@@ -838,7 +838,10 @@ update_progress( capture_buffer_progress, cbp, timeline->total_input_buffer_perc
 update_progress( playback_buffer_progress, pbp, timeline->total_output_buffer_percent() );
 update_progress( cpu_load_progress, clp, engine ? engine->cpu_load() : 0 );
 
-update_progress( disk_usage_progress, dup, percent_used( "." ) );
+if ( Project::open() )
+   update_progress( disk_usage_progress, dup, percent_used( Project::path() ) );
+else
+   update_progress( disk_usage_progress, dup, 0 );
 
 if ( timeline->total_capture_xruns() )
 	capture_buffer_progress->selection_color( FL_RED );

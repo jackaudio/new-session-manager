@@ -14,7 +14,7 @@ SRCS:=$(sort $(SRCS))
 OBJS:=$(SRCS:.C=.o)
 
 LIBS := $(LIBLO_LIBS) $(SIGCPP_LIBS)
-CFLAGS := $(LIBLO_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS) $(FLTK_CLFAGS)
+CFLAGS := $(LIBLO_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS) $(FLTK_CFLAGS)
 
 src/nsmd: src/nsmd.o nonlib/libnonlib.a
 	@ echo -n Linking session handler.

@@ -289,6 +289,7 @@ main ( int argc, char **argv )
     }
     else
     {
+        setup_jack();
         if ( argc > 1 )
         {
             /* maybe a filename on the commandline */

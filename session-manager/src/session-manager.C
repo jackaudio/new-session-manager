@@ -358,6 +358,9 @@ public:
 
                 /* strip out formatting codes */
 
+                if ( !name )
+                    return;
+
                 foreach_daemon ( d )
                 {
                     osc->send( (*d)->addr, "/nsm/server/open", index( name, ' ' ) + 1 );

@@ -28,6 +28,9 @@ decl {\#include <FL/Fl_Dial.H>} {public local
 decl {\#include <FL/Fl_Help_Dialog.H>} {private local
 } 
 
+decl {\#include "FL/About_Dialog.H"} {private local
+} 
+
 decl {\#include <FL/Fl_Shared_Image.H>} {private local
 } 
 
@@ -134,11 +137,11 @@ class UI {open
   } {
     code {fl_register_images();
 
-// Make her pretty
-Fl::background( 32, 32, 32 );
-Fl::background2( 36, 36, 36 );
-Fl::foreground( 255, 255, 255 );
-Fl::scheme( "plastic" );
+// // Make her pretty
+// Fl::background( 32, 32, 32 );
+// Fl::background2( 36, 36, 36 );
+// Fl::foreground( 255, 255, 255 );
+// Fl::scheme( "plastic" );
 
 canvas_background_color = FL_GREEN;
 
@@ -419,8 +422,20 @@ config.follow_playhead = val ? true : false;}
           }
           MenuItem {} {
             label {&About}
-            callback {make_about_popup();
-about_popup->show();}
+            callback {
+
+About_Dialog ab( PIXMAP_PATH "/non-sequencer/icon-256x256.png" );
+
+            ab.logo_box->label( VERSION );
+
+        ab.title->label( "The Non Sequencer" );
+
+        ab.copyright->label( "Copyright (C) 2007-2012 Jonathan Moore Liles" );
+        ab.credits->label( "Non-Sequencer was written from scratch by\\nJonathan Moore Liles for his own use\\n(see the manual).\\n\\nNobody planned. Nobody helped.\\nYou can help now by donating time, money,\\nand/or replacing the rest of Linux Audio\\nwith fast, light, reliable alternatives.\\n" );
+
+        ab.website_url->label( "http://non-sequencer.tuxfamily.org" );
+
+ab.run();}
             xywh {0 0 40 25} color 37
             code0 {\#include "../non.H"}
           }
@@ -648,7 +663,7 @@ o->maximum( phrase::phrases() );}
             Fl_Input pattern_name_field {
               label {name:}
               callback {pattern_c->grid()->name( strdup( o->value() ) );}
-              xywh {10 703 144 25} color 36 align 20 when 1 textcolor 32
+              xywh {10 703 144 25} color 0 align 20 when 1 textcolor 32
             }
             Fl_Spinner pattern_number_spinner {
               callback {pattern *p = ((pattern *)pattern_c->grid())->by_number( o->value() );
@@ -1065,11 +1080,11 @@ if ( s != o->label() )
 {
 	o->label( s );
 	if ( ! strcmp( s, "INVALID" ) )
-		o->color( FL_RED );
+		o->color( fl_darker( FL_RED ) );
 	else
-		o->color( FL_GREEN );
+		o->color( fl_darker( FL_GREEN ) );
 }}
-          xywh {781 776 87 25} box UP_BOX align 64
+          xywh {781 776 87 25} box THIN_UP_BOX align 64
         }
       }
       Fl_Group pan_indicators {open
@@ -1106,58 +1121,6 @@ detach_button->value( 0 );} open
       Fl_Group seq_detached_group {open
         xywh {0 0 876 675} resizable
       } {}
-    }
-  }
-  Function {make_about_popup()} {open
-  } {
-    Fl_Window about_popup {
-      label About open
-      xywh {697 224 535 685} type Double non_modal size_range {535 685 535 685} visible
-    } {
-      Fl_Box {} {
-        label VERSION
-        xywh {10 16 515 307} align 16
-        code0 {o->label( VERSION );}
-        code1 {const char *logo_filename =  PIXMAP_PATH "/icon-256x256.png";
-        o->image( Fl_Shared_Image::get( logo_filename ) );}
-        code2 {o->redraw();}
-      }
-      Fl_Group {} {open
-        xywh {20 361 488 272} box ROUNDED_BOX color 51
-      } {
-        Fl_Box {} {
-          label {Copyright (C) 2007-2008 Jonathan Moore Liles}
-          xywh {20 361 488 32} labeltype SHADOW_LABEL labelfont 1 labelsize 18
-        }
-        Fl_Box {} {
-          label {This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.}
-          xywh {35 400 463 233} labelfont 1 labelsize 12 align 144
-        }
-      }
-      Fl_Button {} {
-        label {http://non.tuxfamily.org}
-        callback {\#if ! ( FL_MAJOR_VERSION >= 1 && FL_MINOR_VERSION >= 1 && FL_PATCH_VERSION >= 8 )
-	// FIXME: got a better idea?
-	system( "x-www-browser http://non.tuxfamily.org &" );
-\#else
-	fl_open_uri( "http://non.tuxfamily.org" );
-\#endif}
-        xywh {170 643 188 30} color 14 labeltype SHADOW_LABEL labelcolor 6
-      }
-      Fl_Return_Button {} {
-        label rock
-        callback {about_popup->hide();}
-        xywh {440 644 78 31}
-      }
-      Fl_Box {} {
-        label label
-        xywh {185 337 153 22} color 51 labelfont 4 labelcolor 52
-        code2 {o->label( "" );}
-      }
     }
   }
   Function {make_randomization_dialog()} {} {

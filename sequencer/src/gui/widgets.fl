@@ -89,10 +89,10 @@ widget_class Visual_Metronome {open selected
   class Fl_Group visible
 } {
   Fl_Slider progress {
-    private xywh {119 95 1149 23} type Horizontal box ROUNDED_BOX color 32 selection_color 71
+    private xywh {119 95 1149 23} type Horizontal box THIN_UP_BOX color 32 selection_color 71
     code0 {o->resize( x(), (y() + h()) - (h() / 3), w(), h() / 3 );}
     code1 {o->slider_size( 0.25 );}
-    code2 {o->slider( FL_ROUNDED_BOX );}
+    code2 {o->slider( FL_THIN_UP_BOX );}
   }
   Fl_Pack pack {open
     private xywh {119 7 1149 78} type HORIZONTAL resizable
@@ -116,7 +116,7 @@ int bw = w() / _bpb;
 
 for ( int i = 1; i <= b; ++i )
 {
-	Fl_Box *box = new Fl_Box( FL_ROUNDED_BOX, 0, 0, bw, 1, 0 );
+	Fl_Box *box = new Fl_Box( FL_THIN_UP_BOX, 0, 0, bw, 1, 0 );
 	
 	char *pat = (char *)malloc( 4 );
 	

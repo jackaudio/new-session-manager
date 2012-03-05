@@ -31,7 +31,7 @@ const double TRANSPORT_POLL_INTERVAL = 0.05;
 
 const char APP_NAME[]   = "Non-Sequencer";
 const char APP_TITLE[]  = "The Non-Sequencer";
-const char COPYRIGHT[]  = "Copyright (c) 2007-2008 Jonathan Moore Liles";
+const char COPYRIGHT[]  = "Copyright (c) 2007-2012 Jonathan Moore Liles";
 
 #define PACKAGE "non-sequencer"
 

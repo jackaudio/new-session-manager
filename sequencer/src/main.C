@@ -38,6 +38,10 @@
 #include "../icons/icon-16x16.xpm"
 #endif
 
+#include "FL/color_scheme.H"
+#include "FL/Crystal_Boxtypes.H"
+#include "FL/Gleam_Boxtypes.H"
+
 // extern const char *BUILD_ID;
 // extern const char *VERSION;
 
@@ -261,12 +265,17 @@ main ( int argc, char **argv )
 
     Fl::visual( FL_RGB );
 
+    init_crystal_boxtypes();
+    init_gleam_boxtypes();
+    color_scheme( "dark" );
+    Fl::scheme( "plastic" );
+
     ui = new UI;
 
 #ifdef HAVE_XPM
     ui->main_window->icon((char *)p);
 #endif
-    ui->main_window->show( argc, argv );
+    ui->main_window->show( 0, 0 );
 
     instance_name = strdup( APP_NAME );
 

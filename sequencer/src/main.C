@@ -38,8 +38,8 @@
 #include "../icons/icon-16x16.xpm"
 #endif
 
-extern const char *BUILD_ID;
-extern const char *VERSION;
+// extern const char *BUILD_ID;
+// extern const char *VERSION;
 
 const double NSM_CHECK_INTERVAL = 0.25f;
 
@@ -237,7 +237,7 @@ main ( int argc, char **argv )
     asprintf( &config.user_config_dir, "%s/%s", getenv( "HOME" ), USER_CONFIG_DIR );
     mkdir( config.user_config_dir, 0777 );
 
-    printf( "%s %s %s -- %s\n", APP_TITLE, VERSION, BUILD_ID, COPYRIGHT );
+    printf( "%s %s %s -- %s\n", APP_TITLE, VERSION, "", COPYRIGHT );
 
     playlist = new sequence;
 

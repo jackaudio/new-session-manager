@@ -83,7 +83,7 @@ endif
 	@ $(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 %.C : %.fl
-	@ cd `dirname $<` && fluid -c ../$<
+	@ cd `dirname $<` && fluid -c `basename $<`
 
 DONE := $(BOLD)$(GREEN)done$(SGR0)
 

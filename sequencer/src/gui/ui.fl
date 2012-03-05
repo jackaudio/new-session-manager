@@ -46,12 +46,6 @@ decl {\#include "../NSM.H"} {private local
 decl {extern NSM_Client *nsm;} {private local
 }
 
-decl {extern const char *BUILD_ID;} {private local
-} 
-
-decl {extern const char *VERSION;} {private local
-} 
-
 decl {extern UI *ui;} {private local
 } 
 
@@ -1162,7 +1156,7 @@ You should have received a copy of the GNU General Public License along with thi
       Fl_Box {} {
         label label
         xywh {185 337 153 22} color 51 labelfont 4 labelcolor 52
-        code2 {o->label( BUILD_ID );}
+        code2 {o->label( "" );}
       }
     }
   }

@@ -161,6 +161,8 @@ main ( int argc, char **argv )
     thread.set();
 
     signal( SIGTERM, sigterm_handler );
+    signal( SIGHUP, sigterm_handler );
+    signal( SIGINT, sigterm_handler );
 
     fl_register_images();
 

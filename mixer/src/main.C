@@ -148,6 +148,8 @@ main ( int argc, char **argv )
     ensure_dirs();
 
     signal( SIGTERM, sigterm_handler );
+    signal( SIGHUP, sigterm_handler );
+    signal( SIGINT, sigterm_handler );
 
     Fl_Tooltip::color( FL_BLACK );
     Fl_Tooltip::textcolor( FL_YELLOW );

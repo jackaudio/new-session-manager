@@ -67,6 +67,8 @@ private:
     
     void redraw_windows ( void );
 
+    static void handle_dirty ( int, void *v );
+
 protected:
 
     int handle ( int m );

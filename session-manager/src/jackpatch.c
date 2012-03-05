@@ -448,7 +448,7 @@ die ( void )
 void
 set_traps ( void )
 {
-//	signal( SIGHUP, signal_handler );
+	signal( SIGHUP, signal_handler );
 	signal( SIGINT, signal_handler );
 //	signal( SIGQUIT, signal_handler );
 //	signal( SIGSEGV, signal_handler );

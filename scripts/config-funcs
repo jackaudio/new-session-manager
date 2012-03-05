@@ -344,6 +344,11 @@ version_of ()
     echo `pkg-config --modversion $1`
 }
 
+hostname_resolvable ()
+{
+    ping -c1 `hostname` >/dev/null 2>/dev/null
+}
+
 require_FLTK ()
 {
     local use

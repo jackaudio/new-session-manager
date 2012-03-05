@@ -73,7 +73,7 @@ char *instance_name = NULL;
 
 const char APP_NAME[]   = "Non-DAW";
 const char APP_TITLE[]  = "The Non-DAW";
-const char COPYRIGHT[]  = "Copyright (C) 2008-2010 Jonathan Moore Liles";
+const char COPYRIGHT[]  = "Copyright (C) 2008-2012 Jonathan Moore Liles";
 
 const double NSM_CHECK_INTERVAL = 0.25f;
 
@@ -155,13 +155,14 @@ main ( int argc, char **argv )
 
     Fl::visual(FL_RGB8);
     
-
     Thread::init();
 
     Thread thread( "UI" );
     thread.set();
 
     signal( SIGTERM, sigterm_handler );
+    signal( SIGHUP, sigterm_handler );
+    signal( SIGINT, sigterm_handler );
 
     fl_register_images();
 
@@ -187,21 +188,16 @@ main ( int argc, char **argv )
 
     printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
 
-    tle = new TLE;
 
     instance_name = strdup( APP_NAME );
     bool instance_override = false;
 
-    /* we don't really need a pointer for this */
-    // will be created on project new/open
-    engine = NULL;
-
-    nsm = new NSM_Client;
 
     const char *osc_port = NULL;
 
     static struct option long_options[] = 
         {
+            { "help", no_argument, 0, '?' },
             { "instance", required_argument, 0, 'i' },
             { "osc-port", required_argument, 0, 'p' },
             { 0, 0, 0, 0 }
@@ -214,22 +210,31 @@ main ( int argc, char **argv )
     {
         switch ( c )
         {
+            
             case 'p':
                 DMESSAGE( "Using OSC port %s", optarg );
                 osc_port = optarg;
                 break;
             case 'i':
-                DMESSAGE( "Using OSC port %s", optarg );
+                DMESSAGE( "Using instance name %s", optarg );
                 free( instance_name );
                 instance_name = strdup( optarg );
                 instance_override = true;
                 break;
             case '?':
-                printf( "Usage: %s [--osc-port portnum]\n\n", argv[0] );
+                printf( "\nUsage: %s [--instance instance_name] [--osc-port portnum] [path_to_project]\n\n", argv[0] );
                 exit(0);
                 break;
         }
     }
+
+    /* we don't really need a pointer for this */
+    // will be created on project new/open
+    engine = NULL;
+
+    tle = new TLE;
+
+    nsm = new NSM_Client;
 
     MESSAGE( "Starting GUI" );
 

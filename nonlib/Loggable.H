@@ -35,6 +35,7 @@
 
 typedef void (progress_func)( int, void * );
 typedef void (snapshot_func)( void * );
+typedef void (dirty_func)( int, void * );
 
 class Log_Entry;
 class Loggable;
@@ -87,6 +88,9 @@ class Loggable
     static snapshot_func *_snapshot_callback;
     static void *_snapshot_callback_arg;
 
+    static dirty_func *_dirty_callback;
+    static void *_dirty_callback_arg;
+
 private:
 
     static unsigned int _relative_id;
@@ -132,6 +136,10 @@ private:
 
     static bool replay ( FILE *fp );
 
+    static void signal_dirty ( int v ) { if ( _dirty_callback ) _dirty_callback( v, _dirty_callback_arg ); }
+    static void set_dirty ( void ) {  signal_dirty( ++_dirty ); }
+    static void clear_dirty ( void ) {  signal_dirty( _dirty = 0 ); }
+
 public:
 
     static bool replay ( const char *name );
@@ -141,6 +149,8 @@ public:
 
     static void snapshot_callback ( snapshot_func *p, void *arg ) { _snapshot_callback = p; _snapshot_callback_arg = arg; }
     static void progress_callback ( progress_func *p, void *arg ) { _progress_callback = p; _progress_callback_arg = arg;}
+    static void dirty_callback ( dirty_func *p, void *arg ) { _dirty_callback = p; _dirty_callback_arg = arg;}
+
     static const char *escape ( const char *s );
 
     unsigned int id ( void ) const { return _id; }
@@ -192,7 +202,6 @@ public:
     static bool do_this ( const char *s, bool reverse );
 
     static int dirty ( void ) { return _dirty; }
-    static void clear_dirty ( void ) { _dirty = 0; }
 
     void log_create  ( void ) const;
 

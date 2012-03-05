@@ -26,4 +26,17 @@ suggest_package XPM 2.0.0 xpm
 
 test_version `version_of liblo` 0.26 || warn "Version $(version_of liblo) of liblo is slow to create servers. Consider upgrading to 0.26 or later"
 
+if ! hostname_resolvable
+then
+    echo "Your hostname \"$(hostname)\" does not resolve to a valid address."
+    echo "This is a broken configuration and will cause liblo (the"
+    echo "OSC library) to fail to function. Add the line:"
+    echo
+    echo "127.0.0.1 $(hostname)"
+    echo
+    echo "to your /etc/hosts file to fix. And consider switching to a saner distribution."
+    echo
+    fail "Invalid hostname!"
+fi
+
 end

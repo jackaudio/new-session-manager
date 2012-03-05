@@ -59,6 +59,9 @@ void *Loggable::_progress_callback_arg = NULL;
 snapshot_func *Loggable::_snapshot_callback = NULL;
 void *Loggable::_snapshot_callback_arg = NULL;
 
+dirty_func *Loggable::_dirty_callback = NULL;
+void *Loggable::_dirty_callback_arg = NULL;
+
 
 
 Loggable::~Loggable ( )
@@ -212,6 +215,8 @@ Loggable::replay ( FILE *fp )
 
     if ( _progress_callback )
         _progress_callback( 0, _progress_callback_arg );
+
+    clear_dirty();
 
     return true;
 }
@@ -511,6 +516,8 @@ Loggable::snapshot ( FILE *fp )
 
     _fp = ofp;
 
+    clear_dirty();
+
     return true;
 }
 
@@ -712,7 +719,7 @@ Loggable::log_end ( void )
 
         log_print( _old_state, new_state );
 
-        ++_dirty;
+        set_dirty();
     }
 
     delete new_state;
@@ -730,7 +737,7 @@ Loggable::log_end ( void )
 void
 Loggable::log_create ( void ) const
 {
-    ++_dirty;
+    set_dirty();
 
     if ( ! _fp )
         /* replaying, don't bother */
@@ -782,7 +789,7 @@ Loggable::log_destroy ( void ) const
     /* the unjournaled state may have changed: make a note of it. */
     record_unjournaled();
 
-    ++_dirty;
+    set_dirty();
 
     if ( ! _fp )
         /* tearing down... don't bother */

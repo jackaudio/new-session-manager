@@ -174,7 +174,7 @@ Project::save ( void )
 
     int r = mixer->save();
 
-    Loggable::clear_dirty();
+//    Loggable::clear_dirty();
 
     return r;
 //    return Loggable::save_unjournaled_state();
@@ -282,7 +282,7 @@ Project::open ( const char *name )
 
 //    timeline->zoom_fit();
 
-    Loggable::clear_dirty();
+//    Loggable::clear_dirty();
 
     MESSAGE( "Loaded project \"%s\"", name );
 
@@ -309,7 +309,10 @@ Project::create ( const char *name, const char *template_name )
     }
 
     if ( chdir( name ) )
+    {
         FATAL( "WTF? Cannot change to new project directory" );
+        return false;
+    }
 
 //    mkdir( "sources", 0777 );
     creat( "snapshot", 0666 );

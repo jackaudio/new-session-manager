@@ -47,6 +47,9 @@
 
 #define APP_NAME "Non Session Manager"
 
+#include "FL/Crystal_Boxtypes.H"
+#include "FL/Gleam_Boxtypes.H"
+#include "FL/color_scheme.H"
 
 #ifdef HAVE_XPM
 #include "FL/Fl.H"
@@ -127,7 +130,7 @@ public:
             {
                 _remove_button->show();
                 _restart_button->show();
-                color( FL_RED );
+                color( fl_darker( FL_RED ) );
                 redraw();
             }
             else
@@ -153,14 +156,14 @@ public:
                 
             if ( ! strcmp( command, "ready" ) )
             {
-                color( FL_GREEN );
+                color( fl_darker( FL_GREEN ) );
 //                _progress->value( 0.0f );
             }
             else if ( ! strcmp( command, "quit" ) ||
                       ! strcmp( command, "kill" ) ||
                       ! strcmp( command, "error" ) )
             {
-                color( FL_RED );
+                color( fl_darker( FL_RED ) );
             }
             else if ( ! strcmp( command, "stopped" ) )
             {
@@ -168,7 +171,7 @@ public:
             }
             else
             {
-                color( FL_YELLOW );
+                color( fl_darker( FL_YELLOW ) );
             }
 
             redraw();
@@ -222,7 +225,7 @@ public:
             _client_id = NULL;
             
             align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
-            color( FL_RED );
+            color( fl_darker( FL_RED ) );
             box( FL_UP_BOX );
 
             { Fl_Progress *o = _progress = new Fl_Progress( ( X + W ) - ( W / 4) - 20, Y + 5, ( W / 4 ), H - 10, NULL );
@@ -354,6 +357,9 @@ public:
                 const char *name = session_browser->text( session_browser->value());
 
                 /* strip out formatting codes */
+
+                if ( !name )
+                    return;
 
                 foreach_daemon ( d )
                 {
@@ -659,6 +665,7 @@ public:
                     {
                         Fl_Pack *o = clients_pack = new Fl_Pack( X + ( W / 3 ), Y + 50, ( W / 3 ) * 2, H - 50 );
                         o->align( FL_ALIGN_TOP );
+                        o->spacing( 2 );
                         o->type( Fl_Pack::VERTICAL );
                         o->end();
                     }
@@ -937,7 +944,12 @@ main (int argc, char **argv )
                             (char**)icon_16x16, &p, &mask, NULL);
 #endif
 
+    init_crystal_boxtypes();
+    init_gleam_boxtypes();
+
     Fl::get_system_colors();
+
+    color_scheme( "Dark" );
     Fl::scheme( "plastic" );
     Fl::lock();
     

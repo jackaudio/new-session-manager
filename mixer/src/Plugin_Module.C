@@ -290,6 +290,12 @@ Plugin_Module::spawn_discover_thread ( void )
     plugin_discover_thread->clone( &Plugin_Module::discover_thread, NULL );
 }
 
+void
+Plugin_Module::join_discover_thread ( void )
+{
+    plugin_discover_thread->join();
+}
+
 /* return a list of available plugins */
 Plugin_Module::Plugin_Info *
 Plugin_Module::get_all_plugins ( void )

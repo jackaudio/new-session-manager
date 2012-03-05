@@ -120,7 +120,7 @@ check_sigterm ( void * )
     if ( got_sigterm )
     {
         MESSAGE( "Got SIGTERM, quitting..." );
-        mixer->command_quit();
+        mixer->quit();
     }
 }
 

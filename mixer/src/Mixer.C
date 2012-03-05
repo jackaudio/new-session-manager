@@ -382,6 +382,8 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Fl::scheme( "plastic" );
     color_scheme( "dark" );
 
+    Loggable::dirty_callback( &Mixer::handle_dirty, this );
+
     _rows = 1;
     box( FL_NO_BOX );
     labelsize( 96 );
@@ -666,6 +668,19 @@ Mixer::get_unique_track_name ( const char *name )
         snprintf( pat, sizeof( pat ), "%s.%d", name, i );
 
     return strdup( pat );
+}
+
+void
+Mixer::handle_dirty ( int d, void *v )
+{
+    //Mixer *m = (Mixer*)v;
+    if ( !nsm )
+        return;
+    
+    if ( d == 1 )
+        nsm->is_dirty();
+    else if ( d == 0 )
+        nsm->is_clean();
 }
 
 

@@ -1607,6 +1607,9 @@ OSC_HANDLER( is_dirty )
     MESSAGE( "Client sends dirty" );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
+    
+    if ( ! c )
+        return 0;
 
     c->dirty = 1;
 
@@ -1622,6 +1625,9 @@ OSC_HANDLER( is_clean )
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
+    if ( ! c )
+        return 0;
+
     c->dirty = 0;
 
     if ( gui_is_active )
@@ -1634,6 +1640,9 @@ OSC_HANDLER( is_clean )
 OSC_HANDLER( message )
 {
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
+
+    if ( ! c )
+        return 0;
 
     if ( gui_is_active )
         osc_server->send( gui_addr, "/nsm/gui/client/message", c->client_id, argv[0]->i, &argv[1]->s );
@@ -1649,6 +1658,12 @@ OSC_HANDLER( message )
 OSC_HANDLER( error )
 {
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
+
+    if ( ! c )
+    {
+        WARNING( "Error from unknown client" );
+        return 0;
+    }
 
 //    const char *rpath = &argv[0]->s;
 

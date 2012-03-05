@@ -91,6 +91,7 @@ private:
 public:
 
     static void spawn_discover_thread ( void );
+    static void join_discover_thread ( void );
 
     Plugin_Module ( );
     virtual ~Plugin_Module();

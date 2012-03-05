@@ -70,6 +70,8 @@
 
 const double NSM_CHECK_INTERVAL = 0.25f;
 
+const char COPYRIGHT[]  = "Copyright (c) 2008-2012 Jonathan Moore Liles";
+
 char *user_config_dir;
 Mixer *mixer;
 NSM_Client *nsm;
@@ -128,6 +130,8 @@ int
 main ( int argc, char **argv )
 {
 
+    printf( "%s %s %s -- %s\n", APP_TITLE, VERSION, "", COPYRIGHT );
+
 #ifdef HAVE_XPM
     fl_open_display(); 
     Pixmap p, mask;
@@ -174,8 +178,6 @@ main ( int argc, char **argv )
 
     Fl::lock();
 
-    Plugin_Module::spawn_discover_thread();
-
     Fl_Double_Window *main_window;
 
     {
@@ -198,7 +200,7 @@ main ( int argc, char **argv )
 #ifdef HAVE_XPM
         o->icon((char *)p);
 #endif
-        o->show( argc, argv );
+        o->show( 0, 0 );
     }
 
     const char *osc_port = NULL;
@@ -210,6 +212,7 @@ main ( int argc, char **argv )
 
     static struct option long_options[] = 
         {
+            { "help", no_argument, 0, '?' },
             { "instance", required_argument, 0, 'i' },
             { "osc-port", required_argument, 0, 'p' },
             { 0, 0, 0, 0 }
@@ -234,12 +237,14 @@ main ( int argc, char **argv )
                 instance_override = true;
                 break;
             case '?':
-                printf( "Usage: %s [--osc-port portnum]\n\n", argv[0] );
+                printf( "\nUsage: %s [--instance instance_name] [--osc-port portnum] [path_to_project]\n\n", argv[0] );
                 exit(0);
                 break;
         }
     }
 
+    Plugin_Module::spawn_discover_thread();
+    
     mixer->init_osc( osc_port );
 
     char *nsm_url = getenv( "NSM_URL" );
@@ -264,6 +269,9 @@ main ( int argc, char **argv )
     {
         if ( optind < argc )
         {
+            MESSAGE( "Waiting for plugins..." );
+            Plugin_Module::join_discover_thread();
+
             MESSAGE( "Loading \"%s\"", argv[optind] );
                 
             if ( ! mixer->command_load( argv[optind] ) )
@@ -272,7 +280,7 @@ main ( int argc, char **argv )
             }
         }
     }
-    
+
     Fl::add_check( check_sigterm );
 
     Fl::run();

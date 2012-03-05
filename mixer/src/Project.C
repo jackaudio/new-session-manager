@@ -309,7 +309,10 @@ Project::create ( const char *name, const char *template_name )
     }
 
     if ( chdir( name ) )
+    {
         FATAL( "WTF? Cannot change to new project directory" );
+        return false;
+    }
 
 //    mkdir( "sources", 0777 );
     creat( "snapshot", 0666 );

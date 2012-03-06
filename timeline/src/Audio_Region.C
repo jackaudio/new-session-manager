@@ -420,7 +420,7 @@ Audio_Region::peaks_pending_cb ( Peaks_Redraw_Request *r )
         delete r;
     }
     else
-        Fl::repeat_timeout( 0.1f, &Audio_Region::peaks_pending_cb, (void*)r );
+        Fl::repeat_timeout( 0.5f, &Audio_Region::peaks_pending_cb, (void*)r );
 }
 
 void
@@ -614,7 +614,7 @@ Audio_Region::draw ( void )
         if ( peaks < loop_peaks_needed )
         {
             /* couldn't read peaks--perhaps they're being generated. Try again later. */
-            Fl::add_timeout( 0.1f, &Audio_Region::peaks_pending_cb,
+            Fl::add_timeout( 0.5f, &Audio_Region::peaks_pending_cb,
                              new Peaks_Redraw_Request( this, start + timeline->x_to_ts( peaks ), end ) );
         }
 

@@ -224,6 +224,13 @@ int
 main ( int argc, char **argv )
 {
 
+    printf( "%s %s %s -- %s\n", APP_TITLE, VERSION, "", COPYRIGHT );
+
+    if ( ! Fl::visual( FL_DOUBLE | FL_RGB ) )
+    {
+        WARNING( "Xdbe not supported, FLTK will fake double buffering." );
+    }
+
 #ifdef HAVE_XPM
     fl_open_display(); 
     Pixmap p, mask;
@@ -245,8 +252,6 @@ main ( int argc, char **argv )
     asprintf( &config.user_config_dir, "%s/%s", getenv( "HOME" ), USER_CONFIG_DIR );
     mkdir( config.user_config_dir, 0777 );
 
-    printf( "%s %s %s -- %s\n", APP_TITLE, VERSION, "", COPYRIGHT );
-
     playlist = new sequence;
 
     pattern_c = new Canvas;
@@ -266,8 +271,6 @@ main ( int argc, char **argv )
     song.dirty( false );
 
     init_colors();
-
-    Fl::visual( FL_RGB );
 
     init_crystal_boxtypes();
     init_gleam_boxtypes();

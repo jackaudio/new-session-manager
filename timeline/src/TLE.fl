@@ -165,7 +165,7 @@ Fl::lock();
   }
   Function {TLE()} {open
   } {
-    code {Fl::visual( FL_DOUBLE | FL_RGB8 );
+    code {
 
 make_window();
 	

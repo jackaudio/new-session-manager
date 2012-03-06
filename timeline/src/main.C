@@ -145,6 +145,14 @@ int
 main ( int argc, char **argv )
 {
 
+    printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
+
+    if ( ! Fl::visual( FL_DOUBLE | FL_RGB ) )
+    {
+        WARNING( "Xdbe not supported, FLTK will fake double buffering." );
+    }
+    
+
 #ifdef HAVE_XPM
     fl_open_display(); 
     Pixmap p, mask;
@@ -153,8 +161,6 @@ main ( int argc, char **argv )
                             (char**)icon_16x16, &p, &mask, NULL);
 #endif
 
-    Fl::visual(FL_RGB8);
-    
     Thread::init();
 
     Thread thread( "UI" );
@@ -185,9 +191,6 @@ main ( int argc, char **argv )
 
     if ( ! ensure_dirs() )
         FATAL( "Cannot create required directories" );
-
-    printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
-
 
     instance_name = strdup( APP_NAME );
     bool instance_override = false;

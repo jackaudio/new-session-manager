@@ -1095,11 +1095,15 @@ Timeline::update_cb ( void *arg )
 void
 Timeline::draw_overlay ( void )
 {
+    fl_push_no_clip();
 
     draw_playhead();
 
     if ( ! ( _selection.w && _selection.h ) )
+    {
+        fl_pop_clip();
         return;
+    }
 
     fl_push_clip( tracks->x() + Track::width(), rulers->y() + rulers->h(),  tracks->w() - Track::width(), h() - rulers->h() - hscroll->h() );
 
@@ -1122,6 +1126,7 @@ Timeline::draw_overlay ( void )
 
     fl_pop_clip();
 
+    fl_pop_clip();
 }
 
 /** select sequence widgets within rectangle /r/ */

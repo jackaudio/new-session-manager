@@ -29,7 +29,7 @@
 
 #include "pattern.H"
 #include "phrase.H"
-
+#include <signal.h>
 
 #ifdef HAVE_XPM
 #include "FL/Fl.H"
@@ -231,6 +231,10 @@ main ( int argc, char **argv )
     XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),
                             (char**)icon_16x16, &p, &mask, NULL);
 #endif
+
+    ::signal( SIGTERM, sigterm_handler );
+    ::signal( SIGHUP, sigterm_handler );
+    ::signal( SIGINT, sigterm_handler );
 
     config.follow_playhead = true;
     config.record_mode = MERGE;

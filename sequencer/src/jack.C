@@ -121,17 +121,18 @@ midi_output_event ( int port, const midievent *e )
     event *fe = freelist.first();
 
     if ( ! fe )
+    {
         WARNING( "output buffer underrun" );
+    }
     else
     {
-        freelist.unlink( fe );
-
-        *fe = *e;
-        
         if ( e->is_note_on() )
         {
             if ( notes_on[ port ][ e->channel() ][ e->note() ] == 0 )
             {
+                freelist.unlink( fe );
+                *fe = *e;
+
                 output[ port ].events.insert( fe );
                 ++notes_on[ port ][ e->channel() ][ e->note() ];
             }
@@ -148,13 +149,20 @@ midi_output_event ( int port, const midievent *e )
             }
             else
             {
-                output[ port ].events.insert( fe );
+                freelist.unlink( fe );
+                *fe = *e;
 
+                output[ port ].events.insert( fe );
                 --notes_on[ port ][ e->channel() ][ e->note() ];
             }
         }
         else
+        {
+            freelist.unlink( fe );
+            *fe = *e;
+
             output[ port ].events.insert( fe );
+        }
     }
 }
 

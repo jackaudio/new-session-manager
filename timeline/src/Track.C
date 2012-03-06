@@ -205,24 +205,27 @@ Track::init ( void )
     }
     {
         Fl_Pack *o = pack = new Fl_Pack( width(), 0, 1006, 115 );
+        o->type( Fl_Pack::VERTICAL );
         o->labeltype( FL_NO_LABEL );
         o->resize( x() + width(), y(), w() - width(), h() );
 
         resizable( o );
 
         {
-//            Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 0 );
             Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 1 );
+            o->type( Fl_Pack::VERTICAL );
             o->end();
         }
 
         {
-            Fl_Pack *o = control = new Fl_Pack( width(), 0, pack->w(), 0 );
+            Fl_Pack *o = control = new Fl_Pack( width(), 0, pack->w(), 1 );
+            o->type( Fl_Pack::VERTICAL );
             o->end();
         }
 
         {
-            Fl_Pack *o = takes = new Fl_Pack( width(), 0, pack->w(), 0 );
+            Fl_Pack *o = takes = new Fl_Pack( width(), 0, pack->w(), 1 );
+            o->type( Fl_Pack::VERTICAL );
             o->end();
             o->hide();
         }

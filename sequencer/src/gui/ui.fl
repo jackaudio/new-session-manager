@@ -25,9 +25,6 @@ comment {//
 decl {\#include <FL/Fl_Dial.H>} {public local
 } 
 
-decl {\#include <FL/Fl_Help_Dialog.H>} {private local
-} 
-
 decl {\#include "FL/About_Dialog.H"} {private local
 } 
 
@@ -1336,18 +1333,9 @@ else
   } {
     code {char pat[256];
 
-snprintf( pat, 256, "%s%s.html", DOCUMENT_PATH, file );
+snprintf( pat, 256, "file://%s/non-sequencer/%s.html", DOCUMENT_PATH, file );
 
-Fl_Help_Dialog        *help;          // Help dialog
-
-help = new Fl_Help_Dialog;
-
-help->load( pat );
-
-help->show();
-
-// FIXME: need to delete it somehow.
-//  help->show(1, argv);} {}
+open_url( pat );} {}
   }
   Function {maybe_save_song()} {open return_type bool
   } {

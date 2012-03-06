@@ -55,6 +55,17 @@ else
 	CXXFLAGS := -fno-rtti -fno-exceptions
 endif
 
+
+STATIC_LIBS := lib/fltk/lib/libfltk.a lib/fltk/lib/libfltk_cairo.a lib/fltk/lib/libfltk_images.a lib/fltk/lib/libfltk_forms.a
+# FLTK_LIBS := -lfltk -fltk_images -lfltk_gl -lfltk_forms -lfltk_cairo
+LIBS += $(FLTK_LIBS)
+LIBS += -lpng -lcairo -ljpeg
+INCLUDES := -I. -Iutil -IFL -Inonlib
+INCLUDES += $(FLTK_CFLAGS)
+# INCLUDES += 
+
+// CFLAGS += $(FLTK_CFLAGS)
+
 # include FL/makefile.inc
 include makefile.inc
 
@@ -66,7 +77,7 @@ CFLAGS+=-DVERSION=\"$(VERSION)\" \
 
 CXXFLAGS := $(CFLAGS) $(CXXFLAGS)
 
-INCLUDES := -I. -Iutil -IFL -Inonlib
+
 
 include scripts/colors
 
@@ -80,7 +91,7 @@ endif
 
 .C.o:
 	@ echo $(COMPILING)
-	@ $(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 %.C : %.fl
 	@ cd `dirname $<` && fluid -c `basename $<`

@@ -12,18 +12,18 @@ SRCS:=$(SRCS:.fl=.C)
 SRCS:=$(sort $(SRCS))
 OBJS:=$(SRCS:.C=.o)
 
-LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(LRDF_LIBS) $(LIBLO_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
+LIBS += $(FLTK_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(LRDF_LIBS) $(LIBLO_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
 
-CFLAGS := $(FLTK_CFLAGS) $(JACK_CFLAGS) $(LIBLO_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS)
+CFLAGS += $(FLTK_CFLAGS) $(JACK_CFLAGS) $(LIBLO_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS)
 
-src/mixer: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a
+src/mixer: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a $(STATIC_LIBS)
 	@ echo -n Linking mixer...
-	@ $(CXX) $(CXXFLAGS) $(LIBS) $(OBJS) -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib -ldl && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib -ldl && echo $(DONE)
 
 Mixer: src/mixer
 
 clean:
-	rm -f $(OBJS) src/mixer
+	rm -f $(OBJS) src/mixer .deps
 
 install: all
 	@ echo -n "Installing..."

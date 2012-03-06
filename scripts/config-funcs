@@ -185,6 +185,7 @@ begin ()
     echo -n "Checking sanity..."
     require_command tput tput > /dev/null
     require_command pkg-config pkg-config > /dev/null
+    require_command fltk-config ../lib/fltk/fltk-config >/dev/null
     require_command sed sed > /dev/null
     ok
 }
@@ -355,7 +356,7 @@ require_FLTK ()
 
     echo -n "Checking for ${BOLD}FLTK${SGR0}..."
 
-    FLTK_VERSION=`fltk-config --version`
+    FLTK_VERSION=`lib/fltk/fltk-config --version`
 
     if ! test_version $FLTK_VERSION $1
     then
@@ -373,6 +374,6 @@ require_FLTK ()
         use="$use --use-$1"
     done
 
-    append "FLTK_LIBS=`fltk-config $use --ldflags | sed 's/,\\?--as-needed//g'`"
-    append "FLTK_CFLAGS=`fltk-config $use --cflags`"
+    append "FLTK_LIBS=`lib/fltk/fltk-config $use --ldflags | sed 's/,\\?--as-needed//g'`"
+    append "FLTK_CFLAGS=`lib/fltk/fltk-config $use --cflags`"
 }

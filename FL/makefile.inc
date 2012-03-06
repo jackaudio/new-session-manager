@@ -20,7 +20,7 @@ FL/libfl_widgets.a: $(OBJS)
 FL: FL/libfl_widgets.a
 
 clean:
-	rm -f $(OBJS) FL/libfl_widgets.a
+	rm -f $(OBJS) FL/libfl_widgets.a .deps
 
 install:
 	@

@@ -13,27 +13,27 @@ SRCS:=$(SRCS:.fl=.C)
 SRCS:=$(sort $(SRCS))
 OBJS:=$(SRCS:.C=.o)
 
-LIBS := $(LIBLO_LIBS) $(SIGCPP_LIBS)
-CFLAGS := $(LIBLO_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS) $(FLTK_CFLAGS)
+LIBS += $(LIBLO_LIBS) $(SIGCPP_LIBS)
+CFLAGS += $(LIBLO_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS) $(FLTK_CFLAGS)
 
 src/nsmd: src/nsmd.o nonlib/libnonlib.a
 	@ echo -n Linking session handler.
-	@ $(CXX) $(CXXFLAGS) $(LIBS) src/nsmd.o -o $@ -Lnonlib -lnonlib && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -Lnonlib -lnonlib && echo $(DONE)
 
-src/session-manager: src/session-manager.o nonlib/libnonlib.a
+src/session-manager: src/session-manager.o nonlib/libnonlib.a $(STATIC_LIBS)
 	@ echo -n Linking session handler.
-	@ $(CXX) $(CXXFLAGS) $(FLTK_LIBS) $(XPM_LIBS) $(LIBS) src/session-manager.o -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $(FLTK_LIBS) $(XPM_LIBS) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
 
 src/send_osc: src/send_osc.o nonlib/libnonlib.a
-	@ $(CXX) $(CXXFLAGS) $(LIBS) src/send_osc.o -o $@ -Lnonlib -lnonlib && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -Lnonlib -lnonlib && echo $(DONE)
 
 src/jackpatch: src/jackpatch.o
-	@ $(CXX) $(CXXFLAGS) $(JACK_LIBS) $(LIBLO_LIBS) src/jackpatch.o -o $@ && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $(JACK_LIBS) $(LIBLO_LIBS) $^ -o $@ && echo $(DONE)
 
 Session: src/send_osc src/nsmd src/session-manager src/jackpatch
 
 clean:
-	rm -f $(OBJS) src/nsmd src/session-manager src/jackpatch
+	rm -f $(OBJS) src/nsmd src/session-manager src/jackpatch .deps
 
 
 

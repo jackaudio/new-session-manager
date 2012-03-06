@@ -21,10 +21,9 @@ using DEBUG &&
 
 begin_tests
 
-require_FLTK 1.1.7 images
-require_command FLUID fluid
 require_command ar ar
 require_command makedepend makedepend
+require_FLTK 1.3.0 images cairo
 require_package JACK 0.103.0 jack
 require_package sndfile 1.0.17 sndfile
 require_package liblo 0.23 liblo
@@ -42,24 +41,6 @@ then
     echo "to your /etc/hosts file to fix. And consider switching to a saner distribution."
     echo
     fail "Invalid hostname!"
-fi
-
-if ! test_version 1.1.10 $FLTK_VERSION 
-then
-    warn "*** PERFORMANCE WARNING ***"
-    warn ""
-    warn "Your FLTK version is $FLTK_VERSION."
-    warn ""
-    warn "FLTK version 1.3.0 introduced a bug which slows down the"
-    warn "drawing of Non-DAW's timeline by a factor of thousands."
-    warn ""
-    warn "Install FLTK 1.1.10 and try again."
-    warn ""
-    warn "Alternatively, you can rerun configure and answer 'yes' to"
-    warn "the question 'Use widget for timeline'. It will be fast, but"
-    warn "you won't be able to see the playhead."
-    warn ""
-    warn "Please send any and all complaints to the FLTK developers!"
 fi
 
 test_version `version_of liblo` 0.26 || warn "Version $(version_of liblo) of liblo is slow to create servers. Consider upgrading to 0.26 or later"

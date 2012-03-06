@@ -12,9 +12,9 @@ SRCS:=$(SRCS:.fl=.C)
 SRCS:=$(sort $(SRCS))
 OBJS:=$(SRCS:.C=.o)
 
-LIBS := $(FLTK_LIBS) $(JACK_LIBS) $(SNDFILE_LIBS) $(LIBLO_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
+LIBS += $(JACK_LIBS) $(SNDFILE_LIBS) $(LIBLO_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
 
-CFLAGS := $(SNDFILE_CFLAGS) $(FLTK_CFLAGS) $(JACK_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS)
+CFLAGS += $(SNDFILE_CFLAGS) $(FLTK_CFLAGS) $(JACK_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS)
 
 ifeq ($(USE_UNOPTIMIZED_DRAWING),yes)
 	CFLAGS+=-DUSE_UNOPTIMIZED_DRAWING
@@ -28,14 +28,15 @@ ifeq ($(USE_WIDGET_FOR_TIMELINE),yes)
 	CFLAGS+=-DUSE_WIDGET_FOR_TIMELINE
 endif
 
-src/timeline: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a
+
+src/timeline: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a $(STATIC_LIBS)
 	@ echo -n Linking timeline...
-	@ $(CXX) $(CXXFLAGS) $(INCLUDES) $(LIBS)  $(OBJS) -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
 
 Timeline: src/timeline
 
 clean:
-	rm -f $(OBJS) src/timeline
+	rm -f $(OBJS) src/timeline .deps
 
 install: all
 	@ echo -n "Installing..."

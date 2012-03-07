@@ -12,7 +12,7 @@ SRCS:=$(SRCS:.fl=.C)
 SRCS:=$(sort $(SRCS))
 OBJS:=$(SRCS:.C=.o)
 
-LIBS += $(JACK_LIBS) $(SNDFILE_LIBS) $(LIBLO_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
+LIBS += $(FLTK_LDFLAGS) $(JACK_LIBS) $(SNDFILE_LIBS) $(LIBLO_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
 
 CFLAGS += $(SNDFILE_CFLAGS) $(FLTK_CFLAGS) $(JACK_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS)
 
@@ -29,7 +29,7 @@ ifeq ($(USE_WIDGET_FOR_TIMELINE),yes)
 endif
 
 
-src/timeline: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a $(STATIC_LIBS)
+src/timeline: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a $(FLTK_LIBS)
 	@ echo -n Linking timeline...
 	@ $(CXX) $(CXXFLAGS) $(INCLUDES) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
 

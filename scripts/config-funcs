@@ -259,7 +259,7 @@ require_command ()
 
     if [ -x "$2" ]
     then
-        name="$2"
+        name="$PWD/$2"
         ok
     elif [ -x "`which "$2"`" ]
     then
@@ -270,7 +270,7 @@ require_command ()
 	fatal "Command $1 not found."
     fi
 
-    append "$1=$2"
+    append "$1=$name"
 }
 
 require_package ()
@@ -383,6 +383,7 @@ require_FLTK ()
         use="$use --use-$1"
     done
 
-    append "FLTK_LIBS=`lib/fltk/fltk-config $use --ldflags | sed 's/,\\?--as-needed//g'`"
+    append "FLTK_LIBS=`lib/fltk/fltk-config $use --libs | sed 's/,\\?--as-needed//g'`"
+    append "FLTK_LDFLAGS=`lib/fltk/fltk-config $use --ldflags | sed 's/,\\?--as-needed//g'`"
     append "FLTK_CFLAGS=`lib/fltk/fltk-config $use --cflags`"
 }

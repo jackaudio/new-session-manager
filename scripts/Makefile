@@ -55,11 +55,7 @@ else
 	CXXFLAGS := -fno-rtti -fno-exceptions
 endif
 
-
-STATIC_LIBS := lib/fltk/lib/libfltk.a lib/fltk/lib/libfltk_images.a
-# FLTK_LIBS := -lfltk -fltk_images -lfltk_gl -lfltk_forms -lfltk_cairo
-LIBS += $(FLTK_LIBS)
-LIBS += -lpng -lcairo -ljpeg
+# LIBS := "$(FLTK_LIBS) $(LIBS)"
 
 INCLUDES := -I. -Iutil -IFL -Inonlib
 INCLUDES += $(FLTK_CFLAGS)

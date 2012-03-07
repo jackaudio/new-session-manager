@@ -20,9 +20,9 @@ src/nsmd: src/nsmd.o nonlib/libnonlib.a
 	@ echo -n Linking session handler.
 	@ $(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -Lnonlib -lnonlib && echo $(DONE)
 
-src/session-manager: src/session-manager.o nonlib/libnonlib.a $(STATIC_LIBS)
+src/session-manager: src/session-manager.o nonlib/libnonlib.a $(FLTK_LIBS)
 	@ echo -n Linking session handler.
-	@ $(CXX) $(CXXFLAGS) $(FLTK_LIBS) $(XPM_LIBS) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $(FLTK_LDFLAGS) $(XPM_LIBS) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
 
 src/send_osc: src/send_osc.o nonlib/libnonlib.a
 	@ $(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -Lnonlib -lnonlib && echo $(DONE)

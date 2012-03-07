@@ -12,11 +12,11 @@ SRCS:=$(SRCS:.fl=.C)
 SRCS:=$(sort $(SRCS))
 OBJS:=$(SRCS:.C=.o)
 
-LIBS += $(FLTK_LIBS) $(JACK_LIBS) $(LASH_LIBS) $(LRDF_LIBS) $(LIBLO_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
+LIBS += $(FLTK_LDFLAGS) $(JACK_LIBS) $(LASH_LIBS) $(LRDF_LIBS) $(LIBLO_LIBS) $(SIGCPP_LIBS) $(XPM_LIBS)
 
 CFLAGS += $(FLTK_CFLAGS) $(JACK_CFLAGS) $(LIBLO_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS)
 
-src/mixer: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a $(STATIC_LIBS)
+src/mixer: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a $(FLTK_LIBS)
 	@ echo -n Linking mixer...
 	@ $(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib -ldl && echo $(DONE)
 

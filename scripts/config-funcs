@@ -127,18 +127,18 @@ ask ()
 
 ok ()
 {
-    echo '\r'`tput cuf 30`"$BOLD${GREEN}ok${SGR0} ${*:+${BOLD}${BLACK}($*)${SGR0}}"
+    echo ''`tput cuf 30`"$BOLD${GREEN}ok${SGR0} ${*:+${BOLD}${BLACK}($*)${SGR0}}"
 }
 
 failed ()
 {
-    echo '\r'`tput cuf 30`"$BOLD${RED}failed!${SGR0}" > /dev/stderr
+    echo ''`tput cuf 30`"$BOLD${RED}failed!${SGR0}" > /dev/stderr
     rm -f .config
 }
 
 missing ()
 {
-    echo '\r'`tput cuf 30`"$BOLD${YELLOW}missing!${SGR0}" > /dev/stderr
+    echo ''`tput cuf 30`"$BOLD${YELLOW}missing!${SGR0}" > /dev/stderr
 }
 
 using ()
@@ -255,13 +255,22 @@ require_command ()
 {
     echo -n "Checking for ${BOLD}$1${SGR0}..."
 
-    if ! [ -x "`which $2`" ]
+    local name;
+
+    if [ -x "$2" ]
     then
+        name="$2"
+        ok
+    elif [ -x "`which "$2"`" ]
+    then
+        name="`which "$2"`"
+        ok
+    else
 	failed
 	fatal "Command $1 not found."
-    else
-	ok
     fi
+
+    append "$1=$2"
 }
 
 require_package ()

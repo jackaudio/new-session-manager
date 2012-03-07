@@ -56,12 +56,14 @@ else
 endif
 
 
-STATIC_LIBS := lib/fltk/lib/libfltk.a lib/fltk/lib/libfltk_cairo.a lib/fltk/lib/libfltk_images.a lib/fltk/lib/libfltk_forms.a
+STATIC_LIBS := lib/fltk/lib/libfltk.a lib/fltk/lib/libfltk_images.a
 # FLTK_LIBS := -lfltk -fltk_images -lfltk_gl -lfltk_forms -lfltk_cairo
 LIBS += $(FLTK_LIBS)
 LIBS += -lpng -lcairo -ljpeg
+
 INCLUDES := -I. -Iutil -IFL -Inonlib
 INCLUDES += $(FLTK_CFLAGS)
+
 # INCLUDES += 
 
 // CFLAGS += $(FLTK_CFLAGS)
@@ -81,7 +83,7 @@ CXXFLAGS := $(CFLAGS) $(CXXFLAGS)
 
 include scripts/colors
 
-SPACE+="`tput cuf 20`"
+SPACE:="`tput cuf 20`"
 
 ifneq ($(CALCULATING),yes)
 	COMPILING="$(BOLD)$(BLACK)[$(SGR0) $(PACKAGE)$(SPACE)$(SGR0)$(CYAN)`scripts/percent-complete .files "$<"` $(SGR0)$(BOLD)$(BLACK)]$(SGR0) $(BOLD)$(CYAN)$<$(SGR0)"
@@ -91,10 +93,10 @@ endif
 
 .C.o:
 	@ echo $(COMPILING)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	@ $(CXX) $(INCLUDES) $(CXXFLAGS) -c $< -o $@
 
 %.C : %.fl
-	@ cd `dirname $<` && fluid -c `basename $<`
+	@ cd `dirname $<` && $(FLUID) -c `basename $<`
 
 DONE := $(BOLD)$(GREEN)done$(SGR0)
 

@@ -184,8 +184,7 @@ begin ()
 {
     echo -n "Checking sanity..."
     require_command tput tput > /dev/null
-    require_command pkg-config pkg-config > /dev/null
-    require_command fltk-config lib/fltk/fltk-config >/dev/null
+    require_command pkg_config pkg-config > /dev/null
     require_command sed sed > /dev/null
     ok
 }
@@ -362,6 +361,8 @@ hostname_resolvable ()
 require_FLTK ()
 {
     local use
+
+    require_command fltk_config lib/fltk/fltk-config
 
     echo -n "Checking for ${BOLD}FLTK${SGR0}..."
 

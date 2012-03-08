@@ -185,7 +185,7 @@ begin ()
     echo -n "Checking sanity..."
     require_command tput tput > /dev/null
     require_command pkg-config pkg-config > /dev/null
-    require_command fltk-config ../lib/fltk/fltk-config >/dev/null
+    require_command fltk-config lib/fltk/fltk-config >/dev/null
     require_command sed sed > /dev/null
     ok
 }
@@ -260,11 +260,11 @@ require_command ()
     if [ -x "$2" ]
     then
         name="$PWD/$2"
-        ok
+        ok "$name"
     elif [ -x "`which "$2"`" ]
     then
         name="`which "$2"`"
-        ok
+        ok "$name"
     else
 	failed
 	fatal "Command $1 not found."

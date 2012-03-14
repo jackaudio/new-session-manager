@@ -83,7 +83,7 @@ bool Timeline::snap_magnetic = true;
 bool Timeline::follow_playhead = true;
 bool Timeline::center_playhead = true;
 
-const float UPDATE_FREQ = 0.02f;
+const float UPDATE_FREQ = 1.0 / 18.0f;
 
 extern const char *instance_name;
 extern TLE *tle;
@@ -1064,18 +1064,22 @@ void
 Timeline::redraw_playhead ( void )
 {
     static nframes_t last_playhead = -1;
+    static int last_playhead_x = -1;
 
-    if ( last_playhead != transport->frame )
+    int playhead_x = ts_to_x( transport->frame );
+
+    if ( last_playhead_x != playhead_x )
     {
         redraw_overlay();
         last_playhead = transport->frame;
+        last_playhead_x = playhead_x;
 
         if ( follow_playhead )
         {
             if ( center_playhead && active() )
-                xposition( max( 0, ts_to_x( transport->frame ) - ( ( tracks->w() - Track::width() ) >> 1 ) ) );
-            else if ( ts_to_x( transport->frame ) > ts_to_x( xoffset ) + ( tracks->w() - Track::width() ) )
-                xposition( ts_to_x( transport->frame ) );
+                xposition( max( 0, playhead_x - ( ( tracks->w() - Track::width() ) >> 1 ) ) );
+            else if ( playhead_x > ts_to_x( xoffset ) + ( tracks->w() - Track::width() ) )
+                xposition( playhead_x );
         }
     }
 }

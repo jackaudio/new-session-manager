@@ -22,7 +22,7 @@ comment {//
 } {in_source in_header
 } 
 
-decl {const float STATUS_UPDATE_FREQ = 0.1f;} {private local
+decl {const float STATUS_UPDATE_FREQ = 0.5f;} {private local
 } 
 
 decl {\#include "Fl_Menu_Settings.H"} {private local
@@ -824,11 +824,17 @@ project_name->redraw();} {}
   }
   Function {update_progress( Fl_Progress *p, char *s, float v )} {private return_type {static void}
   } {
-    code {p->value( v );
+    code {
+if ( p->value() != v )
+{
+p->value( v );
 
 snprintf( s, 5, "%d%%", (int)v );
 
-p->label( s );} {}
+p->label( s );
+
+}
+} {}
   }
   Function {update_status()} {open private
   } {
@@ -885,7 +891,9 @@ if ( timeline->session_manager_name() != NULL )
 	find_item( menubar, "&Project/&Open" )->deactivate();
 }
 
-project_name->redraw();} {}
+// project_name->redraw();
+
+} {}
   }
   Function {update_cb( void *v )} {open private return_type {static void}
   } {

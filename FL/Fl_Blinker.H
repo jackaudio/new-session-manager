@@ -55,25 +55,45 @@ public:
 
             _blink_interval = DEFAULT;
 
-            Fl::add_timeout( _blink_interval, update_cb, this );
-
-
             type( FL_TOGGLE_BUTTON );
         }
 
     virtual
     ~Fl_Blinker ()
         {
-            Fl::remove_timeout( update_cb, this );
+            if ( value() )
+                Fl::remove_timeout( update_cb, this );
         }
 
     void
     interval ( float v )
         {
             _blink_interval = v;
-            Fl::remove_timeout( update_cb, this );
-            Fl::add_timeout( _blink_interval, update_cb, this );
+            if ( value() )
+            {
+                Fl::remove_timeout( update_cb, this );
+                Fl::add_timeout( _blink_interval, update_cb, this );
+            }
         }
+
+    virtual void value ( float v )
+        {
+            if ( v )
+            {
+                Fl::add_timeout( _blink_interval, update_cb, this );
+                Fl_Button::value( v );
+                redraw();
+            }
+            else
+            {
+                Fl_Button::value( v );
+                Fl::remove_timeout( update_cb, this );
+                redraw();
+            }
+
+        }
+
+    virtual float value ( void ) { return Fl_Button::value(); }
 
     virtual void
     draw ( void )

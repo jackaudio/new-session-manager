@@ -11,9 +11,9 @@ $(OBJS): fltk/config.h $(SRCS)
 	@ echo Building FLTK
 	cd fltk && make
 
-fltk/config.h:
+fltk/config.h: Makefile
 	@ echo Configuring FLTK
-	cd fltk && ./configure --prefix=/dev/null --disable-shared --disable-gl --enable-threads --enable-xft --enable-xdbe --enable-xinerama
+	cd fltk && ./configure --prefix=/dev/null --disable-shared --disable-gl --enable-threads --enable-xft --disable-xdbe --enable-xinerama
 
 config: $(OBJS)
 

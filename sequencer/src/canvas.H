@@ -157,6 +157,7 @@ public:
     void notes ( char *s );
     char * notes ( void );
     void randomize_row ( int y );
+    int playhead_moved ( void );
 
     void start_cursor ( int x, int y );
     void end_cursor ( int x, int y );

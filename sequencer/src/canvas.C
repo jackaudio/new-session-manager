@@ -483,6 +483,13 @@ Canvas::draw_line ( int x, int flags )
         m.current[ x ][ y ].flags |= flags;
 }
 
+int
+Canvas::playhead_moved ( void )
+{
+    int x = m.grid->ts_to_x( m.grid->index() );
+    
+    return m.playhead != x;
+}
 
 /** draw only the playhead--without reexamining the grid */
 int

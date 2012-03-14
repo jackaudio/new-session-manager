@@ -1591,7 +1591,11 @@ _flags |= FL_DAMAGE_SCROLL;} {}
   }
   Function {draw_playhead( void )} {open return_type void
   } {
-    code {damage( FL_DAMAGE_USER1 );} {}
+    code {
+    if ( _c && _c->playhead_moved() )
+    {
+            damage( FL_DAMAGE_USER1 );
+    }} {}
   }
   Function {draw_border()} {open return_type void
   } {

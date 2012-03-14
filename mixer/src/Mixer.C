@@ -53,8 +53,6 @@
 
 const double STATUS_UPDATE_FREQ = 0.2f;
 
-const double OSC_INTERVAL = 1.0 / 20.0;                          /* 20 hz */
-
 extern char *user_config_dir;
 extern char *instance_name;
 
@@ -89,7 +87,10 @@ static int osc_add_strip ( const char *path, const char *, lo_arg **, int , lo_m
 {
    OSC_DMSG();
 
+   Fl::lock();
    ((Mixer*)(OSC_ENDPOINT())->owner)->command_add_strip();
+
+   Fl::unlock();
 
    OSC_REPLY_OK();
 
@@ -478,21 +479,11 @@ Mixer::init_osc ( const char *osc_port )
 
     osc_endpoint->add_method( "/non/mixer/add_strip", "", osc_add_strip, osc_endpoint, "" );
   
-//    osc_endpoint->start();
-
-    /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
-    Fl::add_timeout( OSC_INTERVAL, check_osc, this );
+    osc_endpoint->start();
 
     return 0;
 }
 
-void
-Mixer::check_osc ( void * v )
-{
-    ((Mixer*)v)->osc_endpoint->check();
-    Fl::repeat_timeout( OSC_INTERVAL, check_osc, v );
-
-}
 
 Mixer::~Mixer ( )
 {

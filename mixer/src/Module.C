@@ -314,6 +314,8 @@ Module::Port::osc_control_change_exact ( float v, void *user_data )
 {
     Module::Port *p = (Module::Port*)user_data;
 
+    Fl::lock();
+
     float f = v;
 
     if ( p->hints.ranged )
@@ -326,6 +328,8 @@ Module::Port::osc_control_change_exact ( float v, void *user_data )
 
     p->control_value( f );
 
+    Fl::unlock();
+
 //    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, f );
 
     return 0;
@@ -337,6 +341,8 @@ Module::Port::osc_control_change_cv ( float v, void *user_data )
     Module::Port *p = (Module::Port*)user_data;
 
     float f = v;
+
+    Fl::lock();
 
     // clamp value to control voltage range.
     if ( f > 1.0 )
@@ -353,9 +359,10 @@ Module::Port::osc_control_change_cv ( float v, void *user_data )
         
         f = ( f * scale ) + offset;
     }
-    
+
     p->control_value( f );
 
+    Fl::unlock();
 //    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, f );
 
     return 0;

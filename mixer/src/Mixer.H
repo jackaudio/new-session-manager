@@ -26,6 +26,8 @@
 #include <FL/Fl_Pack.H>
 #include "Mixer_Strip.H"
 
+#include "Thread.H"
+
 class Fl_Blinker;
 class Fl_Flowpack;
 class Fl_Menu_Bar;
@@ -41,7 +43,7 @@ public:
     Fl_Blinker *sm_blinker;
 
 private:
-    
+
     int _rows;
 
     Fl_Color system_colors[3];
@@ -97,8 +99,6 @@ public:
 
     Mixer ( int X, int Y, int W, int H, const char *L );
     virtual ~Mixer();
-
-    static void check_osc ( void * v );
 
     void reply_to_finger ( lo_message msg );
 

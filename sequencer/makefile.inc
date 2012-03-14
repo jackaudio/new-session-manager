@@ -42,8 +42,7 @@ install: all
 	@ install -m 755 src/sequencer $(DESTDIR)$(prefix)/bin/non-sequencer
 	@ install -d "$(DESTDIR)$(SYSTEM_PATH)/instruments"
 	@ install -m 644 instruments/* "$(DESTDIR)$(SYSTEM_PATH)/instruments"
-	@ install -d "$(DESTDIR)$(DOCUMENT_PATH)"
-	@ install -m 644 doc/*.html doc/*.png "$(DESTDIR)$(DOCUMENT_PATH)"
+	@ $(MAKE) -s -C doc install
 	@ install -d "$(DESTDIR)$(PIXMAP_PATH)"
 	@ install -m 644 icons/hicolor/256x256/apps/non-sequencer.png "$(DESTDIR)$(PIXMAP_PATH)"/icon-256x256.png
 	@ install -d "$(DESTDIR)$(ICON_PATH)/hicolor"

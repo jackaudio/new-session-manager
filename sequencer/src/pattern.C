@@ -89,7 +89,8 @@ pattern::pattern ( const pattern &rhs ) : Grid( rhs )
     _note    = rhs._note;
     _port    = rhs._port;
     _channel = rhs._channel;
-
+    _queued  = rhs._queued;
+    
     mapping = rhs.mapping;
 
     _add();

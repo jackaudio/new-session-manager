@@ -698,7 +698,7 @@ draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
     Fl_Color *color = (Fl_Color*)arg;
 
     fl_color( FL_BLACK );
-    fl_line_style( FL_DASH, 0 );
+    fl_line_style( FL_SOLID, 0 );
 
     if ( bbt.beat )
         ++color;

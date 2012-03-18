@@ -31,7 +31,7 @@
 #include "Track.H"
 
 #include "Engine/Audio_File.H"
-
+#include "Transport.H"
 #include "const.h"
 #include "debug.h"
 
@@ -45,6 +45,7 @@ using std::max;
 extern void draw_full_arrow_symbol ( Fl_Color color );
 
 extern Timeline *timeline;
+extern Transport *transport;
 
 bool Audio_Region::inherit_track_color = true;
 
@@ -237,6 +238,23 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
         _fade_out.type = Fade::Parabolic;
     else if ( ! strcmp( picked, "/Color" ) )
         box_color( fl_show_colormap( box_color() ) );
+    else if ( ! strcmp( picked, "/Split at mouse" ) )
+    {
+	Loggable::block_start();
+	
+	split( timeline->x_to_offset( Fl::event_x() ) );
+	
+	log_end();
+	
+	Loggable::block_end();
+
+	log_start();
+    }
+    else if ( ! strcmp( picked, "/Crop to range" ) )
+    {
+	trim_left( timeline->range_start() );
+	trim_right( timeline->range_end() );
+    }
     else if ( ! strcmp( picked, "/Fade in to mouse" ) )
     {
         nframes_t offset = x_to_offset( Fl::event_x() );
@@ -312,6 +330,8 @@ Audio_Region::menu ( void )
             { 0                   },
             { 0 },
             { "Color",        0, 0, 0,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
+	    { "Split at mouse", 's', 0, 0 },
+	    { "Crop to range", 'c', 0, 0 },
             { "Fade in to mouse", FL_F + 3, 0, 0 },
             { "Fade out to mouse", FL_F + 4, 0, 0 },
             { "Loop point to mouse", 'l', 0, 0 },
@@ -662,6 +682,8 @@ Audio_Region::split ( nframes_t where )
     _fade_in.length = 256;
 
     Audio_Region *copy = new Audio_Region( *this );
+
+    Logger _log( copy );
 
     _fade_in.length = old_fade_in;
     _fade_out.length = 256;

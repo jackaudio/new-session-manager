@@ -114,6 +114,7 @@ class Timeline : public Fl_Single_Window, public RWLock
     int _fpp;                                                 /* frames per pixel, power of two */
 
     nframes_t p1, p2;                                           /* cursors */
+    nframes_t _playhead;
 
     /* not permitted */
     Timeline ( const Timeline &rhs );
@@ -162,8 +163,12 @@ public:
 
     const char *session_manager_name ( void );
 
+    
     nframes_t fpp ( void ) const { return 1 << _fpp; }
     void range ( nframes_t start, nframes_t length );
+    nframes_t range_start ( void ) const { return p1; }
+    nframes_t range_end ( void ) const { return p2; }
+//    nframes_t playhead ( void ) const { return transport->frame; }
     nframes_t length ( void ) const;
     void sample_rate ( nframes_t r ) { _sample_rate = r; }
     nframes_t sample_rate ( void ) const { return _sample_rate; }

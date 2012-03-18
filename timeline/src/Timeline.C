@@ -307,6 +307,8 @@ Timeline::menu_cb ( Fl_Menu_ *m )
             p1 = xoffset + x_to_ts( X );
         }
 
+	fix_range();
+
         /* FIXME: only needs to damage the location of the old cursor! */
         redraw();
     }
@@ -318,6 +320,8 @@ Timeline::menu_cb ( Fl_Menu_ *m )
         {
             p2 = xoffset + x_to_ts( X );
         }
+
+	fix_range();
 
         /* FIXME: only needs to damage the location of the old cursor! */
         redraw();

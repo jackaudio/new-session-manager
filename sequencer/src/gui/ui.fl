@@ -40,6 +40,9 @@ decl {\#include "FL/Fl_Scalepack.H"} {private local
 decl {\#include "FL/Fl_Sometimes_Input.H"} {private local
 } 
 
+decl {\#include "FL/Fl_Menu_Settings.H"} {private local
+} 
+
 decl {\#include <FL/Fl_Shared_Image.H>} {private local
 } 
 
@@ -192,6 +195,26 @@ delete main_window;} {}
   } {
     code {Fl::run();} {}
   }
+  Function {load_settings()} {open return_type void
+  } {
+    code {char *path;
+
+asprintf( &path, "%s/%s", config.user_config_dir, "view" );
+
+((Fl_Menu_Settings*)menu_bar)->load( menu_bar->find_item( "&View" ), path );
+
+free( path );} {}
+  }
+  Function {save_settings()} {open return_type void
+  } {
+    code {char *path;
+
+asprintf( &path, "%s/%s", config.user_config_dir, "view" );
+
+((Fl_Menu_Settings*)menu_bar)->dump( menu_bar->find_item( "&View" ), path );
+
+free( path );} {}
+  }
   Function {make_main_window()} {open
   } {
     Fl_Window main_window {
@@ -201,11 +224,11 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	return;
 	 
 if ( maybe_save_song() )
-	quit();} open selected
+	quit();} open
       xywh {365 131 865 805} type Double color 38 resizable
       code0 {o->color( FL_BACKGROUND_COLOR );} xclass non size_range {700 509 0 0} visible
     } {
-      Fl_Menu_Bar menu_bar {open
+      Fl_Menu_Bar menu_bar {open selected
         xywh {0 0 865 30} color 37
       } {
         Submenu {} {
@@ -412,7 +435,7 @@ config.follow_playhead = val ? true : false;}
               label Square
               callback {pattern::note_shape = SQUARE;
                pattern_canvas_widget->redraw();}
-              xywh {0 0 40 24} type Radio
+              xywh {0 0 40 24} type Radio value 1
             }
           }
         }

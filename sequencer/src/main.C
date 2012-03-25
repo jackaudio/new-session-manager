@@ -66,6 +66,7 @@ void
 quit ( void )
 {
     /* clean up, only for valgrind's sake */
+    ui->save_settings();
 
     delete ui;
 
@@ -79,6 +80,7 @@ quit ( void )
     sleep( 1 );
 
     midi_shutdown();
+
 
     MESSAGE( "Your fun is over" );
 
@@ -318,6 +320,7 @@ main ( int argc, char **argv )
 
     Fl::add_check( check_sigterm );
 
+    ui->load_settings();
     ui->run();
 
     return 0;

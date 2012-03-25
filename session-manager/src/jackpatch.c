@@ -24,6 +24,7 @@
  */
 
 #define _GNU_SOURCE
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 #include <string.h>
 #include <sys/stat.h>
@@ -42,9 +43,11 @@
 
 #include <lo/lo.h>
 
-static const char **all_ports = NULL;
+#include <pthread.h>
 
 jack_client_t *client;
+
+pthread_mutex_t port_lock;
 
 lo_server losrv;
 lo_address nsm_addr;
@@ -52,6 +55,7 @@ int nsm_is_active;
 
 char *project_file;
 
+#undef VERSION
 #define APP_TITLE "JACKPatch"
 #define VERSION	"0.2"
 
@@ -60,8 +64,19 @@ struct patch_record {
 		char *client;
 		char *port;
 	} src , dst;
-	struct patch_record *next;
+    int active;                                                 /* true if patch has already been activate (by us) */
+    struct patch_record *next;
 };
+
+
+struct port_record {
+    char *port;
+    int reg;                                                    /* true if registered, false if unregistered */
+    struct port_record *next;
+};
+
+static struct port_record *new_ports = NULL;
+static struct port_record *known_ports = NULL;
 
 static struct patch_record *patch_list = NULL;
 
@@ -75,7 +90,6 @@ print_patch ( struct patch_record *pr, int mode )
 			pr->src.client, pr->src.port, pr->dst.client, pr->dst.port );
 
 }
-
 
 void
 enqueue ( struct patch_record *p )
@@ -97,6 +111,71 @@ dequeue ( struct patch_record *pr )
 
 	free( pr );
 }
+
+void
+enqueue_port ( struct port_record **q, const char *port, int reg )
+{
+    struct port_record *p = malloc( sizeof( struct port_record ));
+
+    p->port = strdup( port );
+    p->reg = reg;
+    p->next = *q;
+    *q = p;
+}
+
+struct port_record *
+dequeue_port ( struct port_record **q )
+{
+    if ( *q )
+    {
+        struct port_record *p = *q;
+
+        *q = p->next;
+
+        return p;
+    }
+
+    return NULL;
+}
+
+void enqueue_known_port ( const char *port )
+{
+    enqueue_port( &known_ports, port, 1 );
+}
+
+const char * find_known_port ( const char *port )
+{
+    struct port_record *pr;
+
+    for ( pr = known_ports; pr; pr = pr->next )
+        if ( !strcmp( port, pr->port ) )
+            return pr->port;
+
+    return NULL;
+}
+
+
+void
+enqueue_new_port ( const char *port, int reg )
+{
+    pthread_mutex_lock( &port_lock );
+
+    enqueue_port( &new_ports, port, reg );
+
+    pthread_mutex_unlock( &port_lock );
+}
+
+struct port_record *
+dequeue_new_port ( void )
+{
+    pthread_mutex_lock( &port_lock );
+
+    struct port_record *p = dequeue_port( &new_ports );
+
+    pthread_mutex_unlock( &port_lock );
+    return p;
+}
+
 
 int
 process_patch ( const char *patch )
@@ -175,6 +254,7 @@ process_patch ( const char *patch )
             return 0;
     }
 
+    pr->active = 0;
 
     print_patch( pr, 1 );
 
@@ -202,7 +282,6 @@ read_config ( const char *file )
 {
     FILE *fp;
     int i = 0;
-    struct patch_record *pr;
 
     if ( NULL == ( fp = fopen( file, "r" ) ) )
          return 0;
@@ -212,7 +291,7 @@ read_config ( const char *file )
     while ( !feof( fp ) && !ferror( fp ) )
     {
         int retval;
-        int k;
+        unsigned int k;
         char buf[BUFSIZ];
 
         i++;
@@ -255,7 +334,7 @@ read_config ( const char *file )
 
 /* returns 0 if connection failed, true if succeeded. Already connected
  * is not considered failure */
-int
+void
 connect_path ( struct patch_record *pr )
 {
     int r = 0;
@@ -266,6 +345,19 @@ connect_path ( struct patch_record *pr )
     snprintf( srcport, 512, "%s:%s", pr->src.client, pr->src.port );
     snprintf( dstport, 512, "%s:%s", pr->dst.client, pr->dst.port );
 
+    if ( pr->active )
+    {
+        /* patch is already active, don't bother JACK with it... */
+        return;
+    }
+
+    if ( ! ( find_known_port( srcport ) && find_known_port( dstport )  ) )
+    {
+        /* one of the ports doesn't exist yet... don't attempt
+         * connection, jack will just complain. */
+        printf( "Not attempting connection because one of the ports is missing.\n" );
+    }
+
     printf( "Connecting %s |> %s\n", srcport, dstport );
 
     r = jack_connect( client, srcport, dstport );
@@ -273,39 +365,83 @@ connect_path ( struct patch_record *pr )
     print_patch( pr, r );
 
     if ( r == 0 || r == EEXIST )
-        return 1;
+    {
+        pr->active = 1;
+        return;
+    }
     else
     {
-        printf( "Error is %i", r );
-        return 0;
+        pr->active = 0;
+        printf( "Error is %i\n", r );
+        return;
     }
 }
 
 
-int
-activate_patch ( const char *portname )
+void
+do_for_matching_patches ( const char *portname, void (*func)( struct patch_record * ) )
 {
     struct patch_record *pr;
-    int r = 0;
 
     char client[512];
     char port[512];
 
-    sscanf( portname, "%[^:]:%s", client, port );
+    sscanf( portname, "%[^:]:%[^\n]", client, port );
 
     for ( pr = patch_list; pr; pr = pr->next )
     {
-//        printf( "checking %s:%s agains %s:%s\n", pr->src.client, pr->src.port, client, port );
-
         if ( ( !strcmp( client, pr->src.client ) && !strcmp( port, pr->src.port ) ) ||
              ( !strcmp( client, pr->dst.client ) && !strcmp( port, pr->dst.port ) ) )
         {
-            return connect_path( pr );
+            func( pr );
         }
     }
-
-    return 0;
 }
+
+void
+inactivate_path ( struct patch_record *pr )
+{
+    pr->active = 0;
+}
+
+void
+inactivate_patch ( const char *portname )
+{
+    do_for_matching_patches( portname, inactivate_path );
+}
+
+void
+activate_patch ( const char *portname )
+{
+    do_for_matching_patches( portname, connect_path );
+}
+
+void remove_known_port ( const char *port )
+{
+    /* remove it from the list of known ports */
+    {
+        struct port_record *pr;
+        struct port_record *lp = NULL;
+        
+        for ( pr = known_ports; pr; lp = pr, pr = pr->next )
+            if ( !strcmp( port, pr->port ) )
+            {
+                if ( lp )
+                    lp->next = pr->next;
+                else
+                    known_ports = pr->next;
+                
+                free( pr->port );
+                free( pr );
+                
+                break;
+            }
+    }
+    
+    /* now mark all patches including this port as inactive */
+    inactivate_patch ( port );
+}
+
 
 /**
  * Attempt to activate all connections in patch list
@@ -313,70 +449,21 @@ activate_patch ( const char *portname )
 void
 activate_all_patches ( void )
 {
-	struct patch_record *pr;
+    struct patch_record *pr;
 
-	for ( pr = patch_list; pr; pr = pr->next )
-		connect_path( pr );
-}
-
-int
-find_port ( const char *portname )
-{
-    if ( ! all_ports || ! portname )
-        return 0;
-
-    const char **port;
-    for ( port = all_ports; *port; port++ )
-    {
-        if ( 0 == strcmp( *port, portname ) )
-            return 1;
-    }
-
-    return 0;
+    for ( pr = patch_list; pr; pr = pr->next )
+        connect_path( pr );
 }
 
 /** called for every new port */
-int
+void
 handle_new_port ( const char *portname )
 {
+    enqueue_known_port( portname );
+
     printf( "New endpoint '%s' registered.\n", portname );
     /* this is a new port */
-    return activate_patch( portname );
-}
-
-void
-wipe_ports ( void )
-{
-    if ( all_ports )
-        free( all_ports );
-
-    all_ports = NULL;
-}
-
-void
-check_for_new_ports ( void )
-{
-    const char **port;
-    const char **ports = jack_get_ports( client, NULL, NULL, 0 );
-
-    if ( ! ports )
-    {
-        printf( "error, no ports" );
-        return;
-    }
-
-    for ( port = ports; *port; port++ )
-        if ( ! find_port( *port ) )
-            if ( ! handle_new_port( *port ) )
-            {
-                /* failed to connect. Probably because client is inactive. Mark it as invalid and try again later. */
-//                *port = "RETRY";
-            }
-
-    if ( all_ports )
-        free( all_ports );
-
-    all_ports = ports;
+    activate_patch( portname );
 }
 
 void
@@ -463,6 +550,9 @@ set_traps ( void )
 int
 osc_announce_error ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
+    if ( strcmp( types, "sis" ) )
+        return -1;
+
     if ( strcmp( "/nsm/server/announce", &argv[0]->s ) )
          return -1;
 
@@ -501,7 +591,7 @@ int
 osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
     const char *new_path = &argv[0]->s;
-    const char *display_name = &argv[1]->s;
+//    const char *display_name = &argv[1]->s;
 
     char *new_filename;
     
@@ -514,9 +604,9 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
         if ( read_config( new_filename ) )
         {
             printf( "Reading patch definitions from: %s\n", new_filename );
-            wipe_ports();
-            check_for_new_ports();
-//            activate_all_patches();
+            /* wipe_ports(); */
+            /* check_for_new_ports(); */
+            activate_all_patches();
         }
         else
         {
@@ -576,6 +666,33 @@ init_osc ( const char *osc_port )
 }
 
 
+void
+check_for_new_ports ( void )
+{
+    struct port_record *p = NULL;
+
+    while ( ( p = dequeue_new_port() ) )
+    {
+        if ( p->reg )
+            handle_new_port( p->port );
+        else
+            remove_known_port( p->port );
+        
+        free( p->port );
+        free( p );
+    }
+}
+
+void
+port_registration_callback( jack_port_id_t id, int reg, void *arg )
+{
+    jack_port_t *p = jack_port_by_id( client, id );
+    
+    const char *port = jack_port_name( p );
+
+    enqueue_new_port( port, reg );
+}
+
 /*  */
 
 int
@@ -588,16 +705,18 @@ main ( int argc, char **argv )
 
     client = jack_client_open( APP_TITLE, JackNullOption, &status );
 
+    jack_set_port_registration_callback( client, port_registration_callback, NULL );
+
     if ( ! client )
     {
         fprintf( stderr, "Could not register JACK client\n" );
         exit(1);
         
     }
+
+    pthread_mutex_init( &port_lock, NULL  );
     
     jack_activate( client );
-
-//    activate_all_patches();
 
     set_traps();
 
@@ -618,8 +737,8 @@ main ( int argc, char **argv )
             printf( "Monitoring...\n" );
             for ( ;; )
             {
-                check_for_new_ports();
                 usleep( 50000 );
+                check_for_new_ports();
             }
         }
     }

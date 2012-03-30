@@ -582,15 +582,15 @@ Track::remove ( Control_Sequence *t )
     if ( ! control )
         return;
 
-    engine->lock();
+    timeline->wrlock();
 
-    timeline->osc_thread->lock();
+    engine->lock();
 
     control->remove( t );
 
-    timeline->osc_thread->unlock();
-
     engine->unlock();
+
+    timeline->unlock();
 
     resize();
 }

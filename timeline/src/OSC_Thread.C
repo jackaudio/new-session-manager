@@ -51,11 +51,7 @@ OSC_Thread::process ( void )
     {
         usleep( 100 * 1000 );
         
-        lock();
-
         timeline->process_osc();
-
-        unlock();
     }
 }
 

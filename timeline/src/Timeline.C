@@ -1479,15 +1479,15 @@ Timeline::add_track ( Track *track )
 {
     DMESSAGE( "added new track to the timeline" );
 
-    engine->lock();
+    wrlock();
 
-    osc_thread->lock();
+    engine->lock();
 
     tracks->add( track );
 
-    osc_thread->unlock();
-
     engine->unlock();
+
+    unlock();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
@@ -1500,16 +1500,16 @@ Timeline::remove_track ( Track *track )
 {
     DMESSAGE( "removed track from the timeline" );
 
-    engine->lock();
+    wrlock();
 
-    osc_thread->lock();
+    engine->lock();
 
     /* FIXME: what to do about track contents? */
     tracks->remove( track );
 
-    osc_thread->unlock();
-
     engine->unlock();
+
+    unlock();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
@@ -1708,6 +1708,8 @@ Timeline::process_osc ( void )
 {
     THREAD_ASSERT( OSC );
 
+    rdlock();
+
     /* reconnect OSC signals */
     for ( int i = tracks->children(); i-- ; )
     {
@@ -1719,5 +1721,7 @@ Timeline::process_osc ( void )
             c->process_osc();
         }
     }
+
+    unlock();
 }
 

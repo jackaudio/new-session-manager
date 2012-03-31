@@ -27,11 +27,11 @@ clean:
 
 install: all
 	@ echo -n "Installing..."
-	@ install src/mixer "$(DESTDIR)$(prefix)"/bin/non-mixer
-	@ mkdir -p "$(DESTDIR)$(SYSTEM_PATH)"/non-mixer
+	@ install -Dm755 src/mixer "$(DESTDIR)$(prefix)"/bin/non-mixer
+	@ install -d "$(DESTDIR)$(SYSTEM_PATH)"/non-mixer
 	@ $(MAKE) -s -C doc install
 	@ install -d "$(DESTDIR)$(PIXMAP_PATH)/non-mixer"
-	@ install -m 644 icons/hicolor/256x256/apps/non-mixer.png "$(DESTDIR)$(PIXMAP_PATH)"/non-mixer/icon-256x256.png
+	@ install -Dm644 icons/hicolor/256x256/apps/non-mixer.png "$(DESTDIR)$(PIXMAP_PATH)"/non-mixer/icon-256x256.png
 	@ install -d "$(DESTDIR)$(ICON_PATH)/hicolor"
 	@ cp -au icons/hicolor/ "$(DESTDIR)$(ICON_PATH)"
 	@ install -d "$(DESTDIR)$(DESKTOP_PATH)"
@@ -39,6 +39,6 @@ install: all
 	@ echo "$(DONE)"
 ifneq ($(USE_DEBUG),yes)
 	@ echo -n "Stripping..."
-	@ strip $(DESTDIR)$(prefix)/bin/non-mixer
+	@ strip "$(DESTDIR)$(prefix)"/bin/non-mixer
 	@ echo "$(DONE)"
 endif

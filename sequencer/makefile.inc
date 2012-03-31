@@ -38,8 +38,7 @@ endif
 
 install: all
 	@ echo -n "Installing..."
-	@ install -d $(DESTDIR)$(prefix)/bin
-	@ install -m 755 src/sequencer $(DESTDIR)$(prefix)/bin/non-sequencer
+	@ install -Dm755 src/sequencer "$(DESTDIR)$(prefix)"/bin/non-sequencer
 	@ install -d "$(DESTDIR)$(SYSTEM_PATH)/instruments"
 	@ install -m 644 instruments/* "$(DESTDIR)$(SYSTEM_PATH)/instruments"
 	@ $(MAKE) -s -C doc install
@@ -52,7 +51,7 @@ install: all
 	@ echo "$(DONE)"
 ifneq ($(USE_DEBUG),yes)
 	@ echo -n "Stripping..."
-	@ strip $(DESTDIR)$(prefix)/bin/non-sequencer
+	@ strip "$(DESTDIR)$(prefix)"/bin/non-sequencer
 	@ echo "$(DONE)"
 endif
 

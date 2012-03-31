@@ -39,10 +39,10 @@ clean:
 
 install: all
 	@ echo -n "Installing..."
-	@ install src/nsmd "$(DESTDIR)$(prefix)"/bin/nsmd
-	@ install src/session-manager "$(DESTDIR)$(prefix)"/bin/non-session-manager
-	@ install src/jackpatch "$(DESTDIR)$(prefix)"/bin/jackpatch
-	@ mkdir -p "$(DESTDIR)$(SYSTEM_PATH)"/non-session-manager
+	@ install -Dm755 src/nsmd "$(DESTDIR)$(prefix)"/bin/nsmd
+	@ install -Dm755 src/session-manager "$(DESTDIR)$(prefix)"/bin/non-session-manager
+	@ install -Dm755 src/jackpatch "$(DESTDIR)$(prefix)"/bin/jackpatch
+	@ install -d "$(DESTDIR)$(SYSTEM_PATH)"/non-session-manager
 	@ $(MAKE) -s -C doc install
 	@ install -d "$(DESTDIR)$(PIXMAP_PATH)/non-session-manager"
 	@ install -m 644 icons/hicolor/256x256/apps/non-session-manager.png "$(DESTDIR)$(PIXMAP_PATH)"/non-session-manager/icon-256x256.png

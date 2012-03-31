@@ -40,12 +40,11 @@ clean:
 
 install: all
 	@ echo -n "Installing..."
-	@ install src/timeline $(prefix)/bin/non-daw
-	@ mkdir -p $(SYSTEM_PATH)/non-daw
-	@ mkdir -p $(PIXMAP_PATH)/non-daw
+	@ install -Dm755 src/timeline "$(DESTDIR)$(prefix)"/bin/non-daw
+	@ install -d "$(DESTDIR)$(SYSTEM_PATH)"/non-daw
 	@ $(MAKE) -s -C doc install
 	@ install -d "$(DESTDIR)$(PIXMAP_PATH)/non-daw"
-	@ install -m 644 icons/hicolor/256x256/apps/non-daw.png "$(DESTDIR)$(PIXMAP_PATH)"/non-daw/icon-256x256.png
+	@ install -Dm644 icons/hicolor/256x256/apps/non-daw.png "$(DESTDIR)$(PIXMAP_PATH)"/non-daw/icon-256x256.png
 	@ install -d "$(DESTDIR)$(ICON_PATH)/hicolor"
 	@ cp -au icons/hicolor/ "$(DESTDIR)$(ICON_PATH)"
 	@ install -d "$(DESTDIR)$(DESKTOP_PATH)"
@@ -53,6 +52,6 @@ install: all
 	@ echo "$(DONE)"
 ifneq ($(USE_DEBUG),yes)
 	@ echo -n "Stripping..."
-	@ strip $(prefix)/bin/non-daw
+	@ strip "$(DESTDIR)$(prefix)"/bin/non-daw
 	@ echo "$(DONE)"
 endif

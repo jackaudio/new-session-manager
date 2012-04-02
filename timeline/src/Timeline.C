@@ -988,16 +988,19 @@ Timeline::draw ( void )
         else
             fl_scroll( X, Y, W, H, dx, dy, draw_clip, this );
     }
-
+    
     if ( damage() & FL_DAMAGE_CHILD )
     {
         fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
         update_child( *rulers );
         fl_pop_clip();
 
-        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h() - hscroll->h() );
-        update_child( *tracks );
-        fl_pop_clip();
+        if ( ! ( damage() & FL_DAMAGE_SCROLL ) )
+        {
+            fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h() - hscroll->h() );
+            update_child( *tracks );
+            fl_pop_clip();
+        }
 
         update_child( *hscroll );
         update_child( *vscroll );
@@ -1009,8 +1012,6 @@ done:
 
     _old_xposition = xoffset;
     _old_yposition = _yposition;
-
-
 }
 
 /** draw a single cursor line at /frame/ with color /color/ using symbol routine /symbol/ for the cap */
@@ -1419,7 +1420,10 @@ Timeline::xposition ( int X )
 {
     xoffset = x_to_ts( X );
 
-    damage( FL_DAMAGE_SCROLL );
+    int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
+
+    if ( dx )
+        damage( FL_DAMAGE_SCROLL );
 }
 
 /** set vertical scroll position to absolute pixel coordinate /Y/ */
@@ -1428,7 +1432,10 @@ Timeline::yposition ( int Y )
 {
     _yposition = Y;
 
-    damage( FL_DAMAGE_SCROLL );
+    int dy = _old_yposition - _yposition;
+
+    if ( dy )
+        damage( FL_DAMAGE_SCROLL );
 }
 
 /** zoom in by one zoom step */

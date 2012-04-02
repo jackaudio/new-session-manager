@@ -249,11 +249,13 @@ Track::record ( Capture *c, nframes_t frame )
 {
     THREAD_ASSERT( Capture );
 
-    char pat[256];
+    char *pat;
 
-    snprintf( pat, sizeof( pat ), "%s-%llu", name(), uuid() );
+    asprintf( &pat, "%s-%llu", name(), uuid() );
 
     c->audio_file = Audio_File_SF::create( pat, engine->sample_rate(), input.size(), Track::capture_format );
+
+    free( pat );
 
     if ( ! c->audio_file )
         FATAL( "Could not create file for new capture!" );
@@ -287,9 +289,14 @@ Track::finalize ( Capture *c, nframes_t frame )
     /* adjust region start for latency */
     /* FIXME: is just looking at the first channel good enough? */
 
-    c->region->finalize( frame );
     DMESSAGE( "finalizing audio file" );
+    /* must finalize audio before peaks file, otherwise another thread
+     * might think the peaks are out of date and attempt to regenerate
+     * them */
     c->audio_file->finalize();
+
+    /* peaks get finalized here */
+    c->region->finalize( frame );
 
     nframes_t capture_offset = 0;
 

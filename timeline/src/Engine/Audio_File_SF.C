@@ -33,6 +33,7 @@
 
 #include "const.h"
 #include "debug.h"
+#include <stdio.h>
 
 
 
@@ -62,7 +63,9 @@ Audio_File_SF::from_file ( const char *filename )
 
     memset( &si, 0, sizeof( si ) );
 
-    if ( ! ( in = sf_open( realname( filename ), SFM_READ, &si ) ) )
+    char *fp = path( filename );
+
+    if ( ! ( in = sf_open( fp, SFM_READ, &si ) ) )
         return NULL;
 
 /*     if ( si.samplerate != timeline->sample_rate() ) */
@@ -76,6 +79,7 @@ Audio_File_SF::from_file ( const char *filename )
 //    c->_peak_writer  = NULL;
     c->_current_read = 0;
     c->_filename     = strdup( filename );
+    c->_path         = fp;
     c->_length       = si.frames;
     c->_samplerate   = si.samplerate;
     c->_channels     = si.channels;
@@ -99,6 +103,7 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
 
     memset( &si, 0, sizeof( si ) );
 
+
     const Audio_File::format_desc *fd = Audio_File::find_format( Audio_File_SF::supported_formats, format );
 
     if ( ! fd )
@@ -111,7 +116,9 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
     char *name;
     asprintf( &name, "%s.%s", filename, fd->extension );
 
-    if ( ! ( out = sf_open( realname( name ), SFM_WRITE, &si ) ) )
+    char *filepath = path( name );
+
+    if ( ! ( out = sf_open( filepath, SFM_WRITE, &si ) ) )
     {
         printf( "couldn't create soundfile.\n" );
         free( name );
@@ -120,6 +127,7 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
 
     Audio_File_SF *c = new Audio_File_SF;
 
+    c->_path       = filepath;
     c->_filename   = name;
     c->_length     = 0;
     c->_samplerate = samplerate;
@@ -141,7 +149,7 @@ Audio_File_SF::open ( void )
 
     memset( &si, 0, sizeof( si ) );
 
-    if ( ! ( _in = sf_open( realname( _filename ), SFM_READ, &si ) ) )
+    if ( ! ( _in = sf_open( _path, SFM_READ, &si ) ) )
         return false;
 
     _current_read = 0;

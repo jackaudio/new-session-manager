@@ -208,33 +208,21 @@ Audio_Region::write ( nframes_t nframes )
 {
     THREAD_ASSERT( Capture );
 
-    _range.length += nframes;
-
-    /* FIXME: too much? */
-//    _track->damage( FL_DAMAGE_EXPOSE, x() + w(), y(), 10/* FIXME: guess */, h() );
-
     if ( 0 == ( timeline->ts_to_x( _range.length ) % 20 ) )
     {
-        nframes_t oldl = _clip->length();
-
-        /* get the new size. Remember, this is a read-only handle on the source--not the same
-         one being written to */
-        _clip->close();
-        _clip->open();
-
-        int W = timeline->ts_to_x( _clip->length() - oldl );
-
-        /* why - 1? */
+        int W = 20;
 
         if ( W )
         {
-            ++W;
             Fl::lock();
-            sequence()->damage( FL_DAMAGE_ALL, x() + w() - W, y(), W, h() );
-//            Fl::awake();
+//            sequence()->damage( FL_DAMAGE_ALL, ( x() + w() - W ) - 20, y(), W, h() );
+            sequence()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
+            //           Fl::awake();
             Fl::unlock();
         }
     }
+
+    _range.length += nframes;
 
     return nframes;
 }
@@ -255,7 +243,6 @@ Audio_Region::finalize ( nframes_t frame )
     _clip->close();
     _clip->open();
 
-    /* FIXME: should we attempt to truncate the file? */
     Fl::lock();
     redraw();
     Fl::awake();

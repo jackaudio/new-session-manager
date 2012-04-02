@@ -52,6 +52,8 @@ protected:
     };
 
     char *_filename;
+    char *_path;
+
     volatile nframes_t _length;                 /* length of file in samples */
     nframes_t _samplerate;                   /* sample rate */
     int _channels;
@@ -60,13 +62,13 @@ protected:
 
     static const format_desc * find_format ( const format_desc *fd, const char *name );
 
-    static const char *realname ( const char *name );
+    static char *path ( const char *name );
 
 public:
 
     Audio_File ( ) : _peaks( this )
         {
-            _filename = NULL;
+            _path =_filename = NULL;
             _samplerate = 0;
             _length = _channels = 0;
             _refs = 0;

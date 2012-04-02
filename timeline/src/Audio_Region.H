@@ -23,7 +23,6 @@
 #include "Sequence_Region.H"
 
 class Audio_File;
-class Peaks_Redraw_Request;
 
 class Fl_Menu_;
 class Fl_Menu_Button;
@@ -105,8 +104,6 @@ private:
     friend class Track;                                  /* for _clip */
 
     Fl_Menu_Button & menu ( void );
-    static void peaks_pending_cb ( void *v );
-    void peaks_pending_cb ( Peaks_Redraw_Request *r );
 
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( const Fl_Menu_ *m );

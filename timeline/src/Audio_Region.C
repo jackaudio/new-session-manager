@@ -405,44 +405,6 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
     fl_pop_matrix();
 }
 
-struct Peaks_Redraw_Request {
-
-    Audio_Region *region;
-
-    nframes_t start;
-    nframes_t end;
-
-    Peaks_Redraw_Request ( Audio_Region *region, nframes_t start, nframes_t end ) : region( region ), start( start), end( end )
-        {
-        }
-};
-
-/* static wrapper */
-void
-Audio_Region::peaks_pending_cb ( void *v )
-{
-    Peaks_Redraw_Request *r = (Peaks_Redraw_Request*)v;
-
-    r->region->peaks_pending_cb( r );
-}
-
-void
-Audio_Region::peaks_pending_cb ( Peaks_Redraw_Request *r )
-{
-    int npeaks = timeline->ts_to_x( r->end - r->start );
-
-    if ( _clip->peaks()->ready( r->start, npeaks, timeline->fpp() ) )
-    {
-        printf( "damaging from timeout\n" );
-        /* FIXME: only need to damage the affected area! */
-        timeline->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
-
-        delete r;
-    }
-    else
-        Fl::repeat_timeout( 0.5f, &Audio_Region::peaks_pending_cb, (void*)r );
-}
-
 void
 Audio_Region::draw_box( void )
 {
@@ -503,6 +465,8 @@ Audio_Region::draw ( void )
     X -= 2;
     W += 4;
 
+    Fl_Color c = selected() ? fl_invert_color( _color ) : _color;
+
     /* start with region length... */
 //    int rw = timeline->ts_to_x( min( length(), timeline->x_to_ts( sequence()->w() ) ) );
     int rw = W;
@@ -537,6 +501,7 @@ Audio_Region::draw ( void )
     if ( X - rx > 0 )
         offset += timeline->x_to_ts( X - rx );
 
+//    DMESSAGE( "Drawing audio region.");
 
     do {
 
@@ -547,6 +512,12 @@ Audio_Region::draw ( void )
         nframes_t start = _r->offset;
 
         int loop_peaks_needed = _loop ? timeline->ts_to_x( _loop ) : timeline->ts_to_x( _clip->length() );
+
+        if ( this == ((Audio_Sequence*)sequence())->capture_region() )
+        {
+            loop_peaks_needed = timeline->ts_to_x( _range.length );
+            c = FL_BLACK;
+        }
 
         if ( ! loop_peaks_needed )
             break;
@@ -627,15 +598,13 @@ Audio_Region::draw ( void )
                                 loop_peaks_needed,
                                 ch,
                                 pbuf + i, peaks, channels,
-                                selected() ? fl_invert_color( _color ) : _color );
+                               c );
             }
         }
 
         if ( peaks < loop_peaks_needed )
         {
-            /* couldn't read peaks--perhaps they're being generated. Try again later. */
-            Fl::add_timeout( 0.5f, &Audio_Region::peaks_pending_cb,
-                             new Peaks_Redraw_Request( this, start + timeline->x_to_ts( peaks ), end ) );
+//            DMESSAGE( "Peak read came up %lu peaks short", (unsigned long) loop_peaks_needed - peaks );
         }
 
         xo += loop_peaks_needed;

@@ -27,10 +27,20 @@
 
 #include <stdio.h>
 
+#include "Thread.H"
+
+
 class Audio_File;
 
 class Peaks
 {
+    mutable volatile bool _pending;
+
+    mutable Thread _make_peaks_thread;
+    mutable Thread _make_peaks_mipmap_thread;
+
+    static void * make_peaks_mipmap ( void *v );
+    static void * make_peaks ( void *v );
 
     struct peakdata {
 
@@ -114,8 +124,6 @@ public:
     static const int cache_minimum;
     static const int cache_levels;
     static const int cache_step;
-
-
 
     Peaks ( Audio_File *c );
     ~Peaks ( );

@@ -20,6 +20,8 @@
 /* An Audio_Sequence is a sequence of Audio_Regions. Takes and 'track
  * contents' consist of these objects */
 
+#include "debug.h"
+
 #include <sys/time.h>
 #include <FL/fl_ask.H>
 
@@ -33,6 +35,8 @@ using namespace std;
 
 #include "Engine/Audio_File.H" // for ::from_file()
 #include "Transport.H" // for locate()
+
+#include <errno.h>
 
 
 
@@ -278,15 +282,56 @@ Audio_Sequence::handle ( int m )
             fl_cursor( FL_CURSOR_WAIT );
             Fl::check();
 
-            Audio_File *c = Audio_File::from_file( file );
+            char *t = strdup( file );
+
+            char *filebase = strdup( basename( t ) );
+
+            free( t );
+
+            char *s = 0;
+
+            int i = 0;
+
+            for ( ; ; i++ )
+            {
+                if ( i ) 
+                {
+                    free( s );
+                    asprintf( &s, "sources/%s-%i", filebase, i );
+                }
+                else
+                    asprintf( &s, "sources/%s", filebase );
+
+                DMESSAGE( "Symlink %s -> %s", file, s );
+                if ( symlink( file, s ) == 0 )
+                    break;
+                
+                if ( errno != EEXIST )
+                {
+                    WARNING( "Failed to create symlink: %s", strerror( errno ) );
+                    break;
+                }
+            }
+            
+            Audio_File *c = Audio_File::from_file( basename( s ) );
+
+            free( s );
+            free( filebase );
 
             fl_cursor( FL_CURSOR_DEFAULT );
+            Fl::check();
 
-            if ( ! c )
+            if ( ! c || c->dummy() )
             {
-                fl_alert( "Could not import file \"%s\": Unsupported file type.", file );
-                printf( "could not open file\n" );
+                fl_alert( "Could not import file \"%s\"", file );
                 free( file );
+
+                if ( c )
+                {
+                    delete c;
+                    c = NULL;
+                }
+
                 return 0;
             }
 
@@ -296,6 +341,7 @@ Audio_Sequence::handle ( int m )
             new Audio_Region( c, this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ) );
 
             redraw();
+            
             return 1;
         }
         default:

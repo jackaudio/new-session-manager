@@ -118,7 +118,7 @@ Project::write_info ( void )
         strcpy( s, _created_on );
 
     fprintf( fp, "created by\n\t%s\ncreated on\n\t%s\nversion\n\t%d\nsample rate\n\t%lu\n",
-             APP_TITLE " " VERSION,
+             APP_NAME " " VERSION,
              s,
              PROJECT_VERSION,
              (unsigned long)timeline->sample_rate() );
@@ -283,7 +283,8 @@ Project::open ( const char *name )
     if ( ! read_info( &version, &rate, &creation_date, &created_by ) )
         return E_INVALID;
 
-    if ( strncmp( created_by, APP_TITLE, strlen( APP_TITLE ) ) )
+    if ( strncmp( created_by, APP_TITLE, strlen( APP_TITLE ) ) && 
+         strncmp( created_by, APP_NAME, strlen( APP_NAME ) ) )
         return E_INVALID;
 
     if ( version != PROJECT_VERSION )

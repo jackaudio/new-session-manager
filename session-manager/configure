@@ -17,6 +17,7 @@ begin_tests
 require_command ar ar
 require_command makedepend makedepend
 require_FLTK 1.3.0 images 
+require_command FLUID lib/fltk/fluid/fluid
 suggest_package JACK 0.103.0 jack
 require_package liblo 0.23 liblo
 require_package sigcpp 2.0.0 sigc++-2.0

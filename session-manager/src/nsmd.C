@@ -36,9 +36,7 @@
 #include <sys/signalfd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <uuid/uuid.h>
 #include <unistd.h>
-#include <uuid/uuid.h>
 #include <time.h>
 #include <libgen.h>
 #include <dirent.h>
@@ -97,6 +95,10 @@ private:
     int _pending_command;                /*  */
     struct timeval _command_sent_time;
 
+    bool _gui_visible;
+
+    char *_label;
+
 public:
 
     lo_address addr;                   /*  */
@@ -105,7 +107,6 @@ public:
     int pid;                           /* PID of client process */
     float progress;                    /*  */
     bool active;              /* client has registered via announce */
-    bool dead_because_we_said;
 //    bool stopped; /* the client quit, but not because we told it to--user still has to decide to remove it from the session */
     char *client_id;                                            /* short part of client ID */
     char *capabilities;                                         /* client capabilities... will be null for dumb clients */
@@ -113,14 +114,32 @@ public:
     bool pre_existing;
     const char *status;
 
+    const char *label ( void ) const { return _label; }
+    void label ( const char *l )
+        {
+            if ( _label ) 
+                free( _label );
+            _label = strdup( l ); 
+        }
+        
+    bool gui_visible ( void ) const
+        {
+            return _gui_visible;
+        }
+
+    void gui_visible ( bool b ) 
+        {
+            _gui_visible = b;
+        }
+
     bool
-    has_error ( void )
+    has_error ( void ) const
         {
             return _reply_errcode != 0;
         }
 
     int
-    error_code ( void )
+    error_code ( void ) const
         {
             return _reply_errcode;
         }
@@ -173,12 +192,20 @@ public:
             return _pending_command;
         }
 
+// capability should be enclosed in colons. I.e. ":switch:"
+    bool 
+    is_capable_of ( const char *capability ) const
+        {
+            return capabilities &&
+                strstr( capabilities, capability );
+        }
+
     Client ( )
         {
+            _gui_visible = true;
             addr = 0;
             _reply_errcode = 0;
             _reply_message = 0;
-            dead_because_we_said = false;
             pid = 0;
             progress = -0;
             _pending_command = 0;
@@ -265,10 +292,12 @@ handle_client_process_death ( int pid )
     {
         MESSAGE( "Client %s died.", c->name );
 
+        bool dead_because_we_said = false;
+
         if ( c->pending_command() == COMMAND_KILL ||
              c->pending_command() == COMMAND_QUIT )
         {
-            c->dead_because_we_said = true;
+            dead_because_we_said = true;
         }
 
         c->pending_command( COMMAND_NONE );
@@ -276,7 +305,7 @@ handle_client_process_death ( int pid )
         c->active = false;
         c->pid = 0;
 
-        if ( c->dead_because_we_said )
+        if ( dead_because_we_said )
         {
             if ( gui_is_active )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
@@ -770,6 +799,9 @@ OSC_HANDLER( announce )
     {
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "open" );
+
+        if ( c->is_capable_of( ":optional-gui:" ) )
+            osc_server->send( gui_addr, "/nsm/gui/client/has_optional_gui", c->client_id );
     }
 
     {
@@ -824,13 +856,6 @@ client_by_name ( const char *name,
     return NULL;
 }
 
-// capability should be enclosed in colons. I.e. ":switch:"
-bool 
-client_is_capable_of ( Client *c, const char *capability )
-{
-    return c->capabilities &&
-        strstr( c->capabilities, capability );
-}
 
 bool
 dumb_clients_are_alive ( )
@@ -1109,7 +1134,7 @@ load_session_file ( const char * path )
           i != client.end();
           ++i )
     {
-        if ( ! client_is_capable_of( *i, ":switch:" )
+        if ( ! (*i)->is_capable_of( ":switch:" )
              ||
              ! client_by_name( (*i)->name, &new_clients ) )
         {
@@ -1636,6 +1661,39 @@ OSC_HANDLER( is_clean )
     return 0;
 }
 
+OSC_HANDLER( gui_is_hidden )
+{
+    MESSAGE( "Client sends gui hidden" );
+
+    Client *c = get_client_by_address( lo_message_get_source( msg ) );
+
+    if ( ! c )
+        return 0;
+
+    c->gui_visible( false );
+
+    if ( gui_is_active )
+        osc_server->send( gui_addr, "/nsm/gui/client/gui_visible", c->client_id, c->gui_visible() );
+
+    return 0;
+}
+
+OSC_HANDLER( gui_is_shown )
+{
+    MESSAGE( "Client sends gui shown" );
+
+    Client *c = get_client_by_address( lo_message_get_source( msg ) );
+
+    if ( ! c )
+        return 0;
+
+    c->gui_visible( true );
+
+    if ( gui_is_active )
+        osc_server->send( gui_addr, "/nsm/gui/client/gui_visible", c->client_id, c->gui_visible() );
+
+    return 0;
+}
 
 OSC_HANDLER( message )
 {
@@ -1646,6 +1704,24 @@ OSC_HANDLER( message )
 
     if ( gui_is_active )
         osc_server->send( gui_addr, "/nsm/gui/client/message", c->client_id, argv[0]->i, &argv[1]->s );
+
+    return 0;
+}
+
+OSC_HANDLER( label )
+{
+    Client *c = get_client_by_address( lo_message_get_source( msg ) );
+
+    if ( ! c )
+        return 0;
+
+    if ( strcmp( types, "s" ) )
+        return -1;
+    
+    c->label( &argv[0]->s );
+
+    if ( gui_is_active )
+        osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, &argv[0]->s );
 
     return 0;
 }
@@ -1773,6 +1849,38 @@ OSC_HANDLER( client_save )
         if ( c->active )
         {
             command_client_to_save( c );
+        }
+    }
+
+    return 0;
+}
+
+OSC_HANDLER( client_show_optional_gui )
+{
+    Client *c = get_client_by_id( &client, &argv[0]->s );
+
+    /* FIXME: return error if no such client? */
+    if ( c )
+    {
+        if ( c->active )
+        {
+            osc_server->send( c->addr, "/nsm/client/show_optional_gui" );
+        }
+    }
+
+    return 0;
+}
+
+OSC_HANDLER( client_hide_optional_gui )
+{
+    Client *c = get_client_by_id( &client, &argv[0]->s );
+
+    /* FIXME: return error if no such client? */
+    if ( c )
+    {
+        if ( c->active )
+        {
+            osc_server->send( c->addr, "/nsm/client/hide_optional_gui" );
         }
     }
 
@@ -1927,12 +2035,17 @@ int main(int argc, char *argv[])
     osc_server->add_method( "/nsm/client/is_dirty", "", OSC_NAME( is_dirty ), NULL, "dirtiness" );
     osc_server->add_method( "/nsm/client/is_clean", "", OSC_NAME( is_clean ), NULL, "dirtiness" );
     osc_server->add_method( "/nsm/client/message", "is", OSC_NAME( message ), NULL, "message" );
+    osc_server->add_method( "/nsm/client/gui_is_hidden", "", OSC_NAME( gui_is_hidden ), NULL, "message" );
+    osc_server->add_method( "/nsm/client/gui_is_shown", "", OSC_NAME( gui_is_shown ), NULL, "message" );
+    osc_server->add_method( "/nsm/client/label", "s", OSC_NAME( label ), NULL, "message" );
     
     /*  */
     osc_server->add_method( "/nsm/gui/gui_announce", "", OSC_NAME( gui_announce ), NULL, "" );
     osc_server->add_method( "/nsm/gui/client/remove", "s", OSC_NAME( remove ), NULL, "client_id" );
     osc_server->add_method( "/nsm/gui/client/resume", "s", OSC_NAME( resume ), NULL, "client_id" );
     osc_server->add_method( "/nsm/gui/client/save", "s", OSC_NAME( client_save ), NULL, "client_id" );
+    osc_server->add_method( "/nsm/gui/client/show_optional_gui", "s", OSC_NAME( client_show_optional_gui ), NULL, "client_id" );
+    osc_server->add_method( "/nsm/gui/client/hide_optional_gui", "s", OSC_NAME( client_hide_optional_gui ), NULL, "client_id" );
 
     osc_server->add_method( "/osc/ping", "", OSC_NAME( ping ), NULL, "" );
 

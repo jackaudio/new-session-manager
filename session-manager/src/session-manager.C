@@ -83,19 +83,56 @@ static std::list<Daemon*> daemon_list;                                  /* list 
 class NSM_Client : public Fl_Group
 {
     char *_client_id;
+    char *_client_label;
+    char *_client_name;
 
 //    Fl_Box *client_name;
     Fl_Progress *_progress;
     Fl_Light_Button *_dirty;
+    Fl_Light_Button *_gui;
     Fl_Button *_remove_button;
     Fl_Button *_restart_button;
+
+    void
+    set_label ( void )
+        {
+            char *l;
+
+            if ( _client_label )
+                asprintf( &l, "%s (%s)", _client_name, _client_label );
+            else
+                l = strdup( _client_name );
+
+            if ( label() )
+                free((char*)label());
+
+            label( l );
+
+            redraw();
+        }
 
 public:
 
     void
     name ( const char *v )
         {
-            label( strdup( v ) );
+            if ( _client_name )
+                free( _client_name );
+
+            _client_name = strdup( v );
+
+            set_label();
+        }
+
+    void
+    client_label ( const char *s )
+        {
+            if ( _client_label )
+                free( _client_label );
+            
+            _client_label = strdup( s );
+
+            set_label();
         }
     
     void
@@ -119,6 +156,21 @@ public:
         {
             _dirty->value( b );
             _dirty->redraw();
+        }
+
+    void
+    gui_visible ( bool b )
+        {
+            _gui->value( b );
+            _gui->redraw();
+        }
+
+
+    void
+    has_optional_gui ( void )
+        {
+            _gui->show();
+            _gui->redraw();
         }
 
     void
@@ -193,7 +245,18 @@ public:
                     osc->send( (*d)->addr, "/nsm/gui/client/save", _client_id );
                 }
             }
-            if ( o == _remove_button )
+            else if ( o == _gui )
+            {
+                MESSAGE( "Sending hide/show GUI.");
+                foreach_daemon ( d )
+                {
+                    if ( !_gui->value() )
+                        osc->send( (*d)->addr, "/nsm/gui/client/show_optional_gui", _client_id );
+                    else
+                        osc->send( (*d)->addr, "/nsm/gui/client/hide_optional_gui", _client_id );
+                }
+            }
+            else if ( o == _remove_button )
             {
                 MESSAGE( "Sending remove.");
                 foreach_daemon ( d )
@@ -221,46 +284,119 @@ public:
         {
 
             _client_id = NULL;
+            _client_name = NULL;
+            _client_label = NULL;
             
             align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
             color( fl_darker( FL_RED ) );
             box( FL_UP_BOX );
+            
+            int yy = Y + H * 0.25;
+            int hh = H * 0.50;
+            int xx = X + W - ( 200 + Fl::box_dw( box() ) );
+            int ss = 2;
 
-            { Fl_Progress *o = _progress = new Fl_Progress( ( X + W ) - ( W / 4) - 20, Y + 5, ( W / 4 ), H - 10, NULL );
+            /* dummy group */
+            { Fl_Group *o = new Fl_Group( X, Y, 50, 50 );
+                o->end();
+                resizable( o );
+            }
+                
+            { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 200, H * 0.50, NULL );
+                o->box( FL_FLAT_BOX );
+                o->color( FL_BLACK );
                 o->label( strdup( "launch" ) );
                 o->minimum( 0.0f );
                 o->maximum( 1.0f );
             }
-            { Fl_Light_Button *o = _dirty = new Fl_Light_Button( _progress->x() - 30, Y + 7, 25, 25 );
-                o->box( FL_UP_BOX );
-                o->type(0);
-                o->color();
-                o->selection_color( FL_YELLOW );
-                o->value( 0 );
-                o->callback( cb_button, this );
+
+            { Fl_Group *o = new Fl_Group( X + W - 400, Y, 400, H );
+
+                xx -= 50 + ss;
+                
+                { Fl_Light_Button *o = _dirty = new Fl_Light_Button( xx, yy, 50, hh, "SAVE" );
+                                
+                    o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
+                    o->labelsize( 9 );
+                    o->box( FL_UP_BOX );
+                    o->type(0);
+                    o->color();
+                    o->selection_color( FL_YELLOW );
+                    o->value( 0 );
+                    o->callback( cb_button, this );
+                }
+
+                xx -= 40 + ss;
+            
+                { Fl_Light_Button *o = _gui = new Fl_Light_Button( xx, yy, 40, hh, "GUI" );
+
+                    o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
+                    o->labelsize( 9 );
+                    o->box( FL_UP_BOX );
+                    o->type(0);
+                    o->color();
+                    o->selection_color( FL_YELLOW );
+                    o->value( 0 );
+                    o->hide();
+                    o->callback( cb_button, this );
+                }
+
+
+                xx -= 25 + ss;
+
+                { Fl_Button *o = _restart_button = new Fl_Button( xx, yy, 25, hh );
+                    
+                
+                    o->box( FL_UP_BOX );
+                    o->type(0);
+                    o->color( FL_GREEN );
+                    o->value( 0 );
+                    o->label( "@>" );
+                    o->tooltip( "Resume" );
+                    o->hide();
+                    o->callback( cb_button, this );
+                }
+
+                xx -= 25 + ss;
+
+                { Fl_Button *o = _remove_button = new Fl_Button( xx, yy, 25, hh );
+
+                
+                    o->box( FL_UP_BOX );
+                    o->type(0);
+                    o->color( FL_RED );
+                    o->value( 0 );
+                    o->label( "X" );
+                    o->tooltip( "Remove" );
+                    o->hide();
+                    o->callback( cb_button, this );
+                }
+
+
+                o->end();
             }
-            { Fl_Button *o = _remove_button = new Fl_Button( _progress->x() - 60, Y + 7, 25, 25 );
-                o->box( FL_UP_BOX );
-                o->type(0);
-                o->color( FL_RED );
-                o->value( 0 );
-                o->label( "X" );
-                o->tooltip( "Remove" );
-                o->hide();
-                o->callback( cb_button, this );
-            }
-            { Fl_Button *o = _restart_button = new Fl_Button( _progress->x() - 90, Y + 7, 25, 25 );
-                o->box( FL_UP_BOX );
-                o->type(0);
-                o->color( FL_GREEN );
-                o->value( 0 );
-                o->label( "@>" );
-                o->tooltip( "Resume" );
-                o->hide();
-                o->callback( cb_button, this );
+            end();
+        }
+
+    ~NSM_Client ( )
+        {
+            if ( _client_name )
+            {
+                free( _client_name );
+                _client_name = NULL;
             }
 
-            end();
+            if ( _client_label )
+            {
+                free( _client_label );
+                _client_label = NULL;
+            }
+
+            if ( label() )
+            {
+                free( (char*)label() );
+                label( NULL );
+            }
         }
 };
 
@@ -735,6 +871,9 @@ public:
             osc->add_method( "/nsm/gui/client/switch", "ss", osc_handler, osc, "path,display_name" );
             osc->add_method( "/nsm/gui/client/progress", "sf", osc_handler, osc, "path,display_name" );
             osc->add_method( "/nsm/gui/client/dirty", "si", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/has_optional_gui", "s", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/gui_visible", "si", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/label", "ss", osc_handler, osc, "path,display_name" );
 
             osc->start();
 
@@ -852,7 +991,7 @@ private:
             if ( !strncmp( path, "/nsm/gui/client/", strlen( "/nsm/gui/client/" ) ) )
             {
                 if ( !strcmp( path, "/nsm/gui/client/new" ) &&
-                              !strcmp( types, "ss" ) )
+                     !strcmp( types, "ss" ) )
                 {
                     controller->client_new( &argv[0]->s, &argv[1]->s );
                 }
@@ -876,6 +1015,21 @@ private:
                                   !strcmp( types, "si" ))
                         {
                             c->dirty(  argv[1]->i );
+                        }
+                        else if ( !strcmp( path, "/nsm/gui/client/gui_visible" ) &&
+                                  !strcmp( types, "si" ))
+                        {
+                            c->gui_visible(  argv[1]->i );
+                        }
+                        else if ( !strcmp( path, "/nsm/gui/client/label" ) &&
+                                  !strcmp( types, "ss" ))
+                        {
+                            c->client_label( &argv[1]->s );
+                        }
+                        else if ( !strcmp( path, "/nsm/gui/client/has_optional_gui" ) &&
+                                  !strcmp( types, "s" ))
+                        {
+                            c->has_optional_gui();
                         }
                         else if ( !strcmp( path, "/nsm/gui/client/switch" ) && 
                                   !strcmp( types, "ss" ))

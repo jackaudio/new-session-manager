@@ -35,6 +35,7 @@
 #include "debug.h"
 #include <FL/Fl_Browser.H>
 #include <FL/Fl_Select_Browser.H>
+#include <FL/Fl_Tree.H>
 #include <FL/Fl_Hold_Browser.H>
 #include <FL/Fl_Tile.H>
 
@@ -446,7 +447,7 @@ public:
     Fl_Button *add_button;
     Fl_Button *duplicate_button;
 
-    Fl_Hold_Browser *session_browser;
+    Fl_Tree *session_browser;
     
     static void cb_handle ( Fl_Widget *w, void *v )
         {
@@ -514,16 +515,21 @@ public:
             }
             else if ( w == session_browser )
             {
-                const char *name = session_browser->text( session_browser->value());
-
-                /* strip out formatting codes */
-
-                if ( !name )
+                if ( session_browser->callback_reason() != FL_TREE_REASON_SELECTED )
                     return;
+
+                Fl_Tree_Item *item = session_browser->callback_item();
+
+                if ( item->children() )
+                    return;
+
+                char name[1024];
+
+                session_browser->item_pathname( name, sizeof(name), item );
 
                 foreach_daemon ( d )
                 {
-                    osc->send( (*d)->addr, "/nsm/server/open", index( name, ' ' ) + 1 );
+                    osc->send( (*d)->addr, "/nsm/server/open", name );
                 }
             }
             else if ( w == new_button )
@@ -606,22 +612,6 @@ public:
             }
         }
 
-    void
-    ForwardSort( Fl_Browser *b ) {
-        for ( int t=1; t<=b->size(); t++ ) {
-            for ( int r=t+1; r<=b->size(); r++ ) {
-                if ( strcmp(b->text(t), b->text(r)) > 0 ) {
-                    b->swap(t,r);
-                }
-            }
-        }
-    }
-    
-    void
-    sort_sessions ( void )
-        {
-            ForwardSort( session_browser );
-        }
     
     NSM_Client * 
     client_by_id ( const char *id )
@@ -746,20 +736,7 @@ public:
 
     void add_session_to_list ( const char *name )
         {
-            char *s;
-            asprintf( &s, "@S18@C3 %s", name );
-
-            for ( int i = 1; i <= session_browser->size(); i++ )
-            {
-                if ( !strcmp( session_browser->text( i ), s ) )
-                {
-                    free( s );
-                    return;
-                }
-            }
-            
-            session_browser->add( s );
-            free(s);
+            session_browser->add( name );
         }
 
 
@@ -811,9 +788,13 @@ public:
             }
             { Fl_Tile *o = new Fl_Tile( X, Y + 50, W, H - 50 );
                 { 
-                    Fl_Hold_Browser *o = session_browser = new Fl_Hold_Browser( X, Y + 50, W / 3, H - 50 );
+                    Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - 50 );
                     o->callback( cb_handle, (void *)this );
                     o->color( fl_darker( FL_GRAY ) );
+                    o->item_labelbgcolor( o->color() );
+                    o->item_labelfgcolor( FL_YELLOW );
+                    o->sortorder( FL_TREE_SORT_ASCENDING );
+                    o->showroot( 0 );
                     o->selection_color( fl_darker( FL_GREEN ) );
                     o->box( FL_ROUNDED_BOX );
                     o->label( "Sessions" );
@@ -959,7 +940,6 @@ private:
                  ! strcmp( types, "s" ) )
             {
                 controller->add_session_to_list( &argv[0]->s );
-                controller->sort_sessions();
             }
             else if ( !strcmp( path, "/nsm/gui/gui_announce" ) )
             {
@@ -1004,7 +984,6 @@ private:
                 if ( !strcmp( &argv[0]->s, "/nsm/server/list" ) )
                 {
                     controller->add_session_to_list( &argv[1]->s );
-                    controller->sort_sessions();
                 }
                 else if ( !strcmp( &argv[0]->s, "/osc/ping" ) )
                 {

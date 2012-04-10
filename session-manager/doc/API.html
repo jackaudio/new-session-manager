@@ -12,7 +12,7 @@
 <address>
 Jonathan Moore Liles <a href="mailto:male@tuxfamily.org">&lt;male@tuxfamily.org&gt;</a><br>
 August 1, 2010<br>
-Version 1.0
+Version 1.1
 </address><img src="icon.png" alt="logo"><hr></div>
 <div id=body>
 <div id=toc>
@@ -57,13 +57,17 @@ Version 1.0
 
 <ul><li><a href="#n:1.2.3.1.">1.2.3.1. Session is Loaded</a>
 
+<li><a href="#n:1.2.3.2.">1.2.3.2. Show Optional Gui</a>
+
 </ul><li><a href="#n:1.2.4.">1.2.4. Client to Server Informational Messages</a>
 
-<ul><li><a href="#n:1.2.4.1.">1.2.4.1. Progress</a>
+<ul><li><a href="#n:1.2.4.1.">1.2.4.1. Optional GUI</a>
 
-<li><a href="#n:1.2.4.2.">1.2.4.2. Dirtiness</a>
+<li><a href="#n:1.2.4.2.">1.2.4.2. Progress</a>
 
-<li><a href="#n:1.2.4.3.">1.2.4.3. Status Messages</a>
+<li><a href="#n:1.2.4.3.">1.2.4.3. Dirtiness</a>
+
+<li><a href="#n:1.2.4.4.">1.2.4.4. Status Messages</a>
 
 </ul><li><a href="#n:1.2.5.">1.2.5. Error Code Definitions</a>
 
@@ -170,6 +174,7 @@ Note that if the application intends to register JACK clients, <tt>application_n
 <tr><td>dirty</td><td>client knows when it has unsaved changes</td></tr>
 <tr><td>progress</td><td>client can send progress updates during time-consuming operations</td></tr>
 <tr><td>message</td><td>client can send textual status updates </td></tr>
+<tr><td>optional-gui</td><td>client has an optional GUI</td></tr>
 </table></div></center>
 <h4 id="n:1.2.1.2.">1.2.1.2. Response</h4>
 <p>
@@ -198,6 +203,7 @@ Presently, the server <tt>capabilities</tt> are:
 <tr><th>Name</th><th>Description</th></tr>
 <tr><td>server_control</td><td>client-to-server control</td></tr>
 <tr><td>broadcast</td><td>server responds to /nsm/server/broadcast message</td></tr>
+<tr><td>optional-gui</td><td>server responds to optional-gui messages--if this capability is not present then clients with optional-guis MUST always keep them visible</td></tr>
 </table></div></center>
 <p>
 A client should not consider itself to be under session management until it receives this response. For example, the Non applications activate their "SM" blinkers at this time.
@@ -355,11 +361,41 @@ Or
 <p>
 This message does not require a response.
 </p>
+<h4 id="n:1.2.3.2.">1.2.3.2. Show Optional Gui</h4>
+<p>
+If the client has specified the <tt>optional-gui</tt> capability, then it may receive this message from the server when the user wishes to change the visibility state of the GUI. It doesn't matter if the optional GUI is integrated with the program or if it is a separate program \(as is the case with SooperLooper\). When the GUI is hidden, there should be no window mapped and if the GUI is a separate program, it should be killed.
+</p>
+<div class="fig example"><table width=100%><tr><td><pre>
+/nsm/client/show_optional_gui 
+</pre></td></tr>
+</table></div>
+<div class="fig example"><table width=100%><tr><td><pre>
+/nsm/client/hide_optional_gui
+</pre></td></tr>
+</table></div>
+<p>
+No response is message is required.
+</p>
 <h3 id="n:1.2.4.">1.2.4. Client to Server Informational Messages</h3>
 <p>
 These are optional messages which a client can send to the NSM server to inform it about the client's status. The client should not expect any reply to these messages. If a client intends to send a message described in this section, then it <b>MUST</b> add the appropriate value to its <tt>capabilities</tt> string when composing the <tt>announce</tt> message.
 </p>
-<h4 id="n:1.2.4.1.">1.2.4.1. Progress</h4>
+<h4 id="n:1.2.4.1.">1.2.4.1. Optional GUI</h4>
+<p>
+If the client has specified the <tt>optional-gui</tt> capability, then it <b>MUST</b> send this message whenever the state of visibility of the optional GUI has changed. It also <b>MUST</b> send this message after it's announce message to indicate the initial visibility state of the optional GUI.
+</p>
+<div class="fig example"><table width=100%><tr><td><pre>
+/nsm/client/gui_is_hidden
+</pre></td></tr>
+</table></div>
+<div class="fig example"><table width=100%><tr><td><pre>
+/nsm/client/gui_is_shown
+</pre></td></tr>
+</table></div>
+<p>
+No response will be delivered.
+</p>
+<h4 id="n:1.2.4.2.">1.2.4.2. Progress</h4>
 <div class="fig example"><table width=100%><tr><td><pre>
 /nsm/client/progress f:progress
 </pre></td></tr>
@@ -376,7 +412,7 @@ Note that even when using the <tt>progress</tt> feature, the final response to t
 <p>
 Clients which intend to send <tt>progress</tt> messages should include <tt>:progress:</tt> in their <tt>announce</tt> capability string.
 </p>
-<h4 id="n:1.2.4.2.">1.2.4.2. Dirtiness</h4>
+<h4 id="n:1.2.4.3.">1.2.4.3. Dirtiness</h4>
 <div class="fig example"><table width=100%><tr><td><pre>
 /nsm/client/is_dirty
 </pre></td></tr>
@@ -391,7 +427,7 @@ Some clients may be able to inform the server when they have unsaved changes pen
 <p>
 Clients which have this capability should include <tt>:dirty:</tt> in their <tt>announce</tt> capability string.
 </p>
-<h4 id="n:1.2.4.3.">1.2.4.3. Status Messages</h4>
+<h4 id="n:1.2.4.4.">1.2.4.4. Status Messages</h4>
 <div class="fig example"><table width=100%><tr><td><pre>
 /nsm/client/message i:priority s:message
 </pre></td></tr>

@@ -484,6 +484,8 @@ osc_save_signal ( const char *path, const char *types, lo_arg **argv, int argc, 
 int
 osc_start ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
+    snapshot( project_file );
+
     if ( nsm_proxy->start( &argv[0]->s, &argv[1]->s ) );
     {
         hide_gui();

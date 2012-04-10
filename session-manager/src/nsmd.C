@@ -1789,6 +1789,31 @@ OSC_HANDLER( reply )
 /* GUI operations */
 /******************/
 
+
+OSC_HANDLER( stop )
+{
+    Client *c = get_client_by_id( &client, &argv[0]->s );
+
+    if ( c )
+    {
+        if ( c->pid != 0 )
+        {
+            kill( c->pid, SIGTERM );
+
+            if ( gui_is_active )
+                osc_server->send( gui_addr, "/reply", "Client stopped." );
+        }
+    }
+    else
+    {
+        if ( gui_is_active )
+            osc_server->send( gui_addr, "/error", -10, "No such client." );
+    }
+
+   
+    return 0;
+}
+
 OSC_HANDLER( remove )
 {
     Client *c = get_client_by_id( &client, &argv[0]->s );
@@ -2041,6 +2066,7 @@ int main(int argc, char *argv[])
     
     /*  */
     osc_server->add_method( "/nsm/gui/gui_announce", "", OSC_NAME( gui_announce ), NULL, "" );
+    osc_server->add_method( "/nsm/gui/client/stop", "s", OSC_NAME( stop ), NULL, "client_id" );
     osc_server->add_method( "/nsm/gui/client/remove", "s", OSC_NAME( remove ), NULL, "client_id" );
     osc_server->add_method( "/nsm/gui/client/resume", "s", OSC_NAME( resume ), NULL, "client_id" );
     osc_server->add_method( "/nsm/gui/client/save", "s", OSC_NAME( client_save ), NULL, "client_id" );

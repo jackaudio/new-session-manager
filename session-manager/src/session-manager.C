@@ -92,6 +92,7 @@ class NSM_Client : public Fl_Group
     Fl_Light_Button *_gui;
     Fl_Button *_remove_button;
     Fl_Button *_restart_button;
+    Fl_Button *_kill_button;
 
     void
     set_label ( void )
@@ -180,11 +181,17 @@ public:
             {
                 _remove_button->show();
                 _restart_button->show();
+                _kill_button->hide();
+                _gui->deactivate();
+                _dirty->deactivate();
                 color( fl_darker( FL_RED ) );
                 redraw();
             }
             else
             {
+                _gui->activate();
+                _dirty->activate();
+                _kill_button->show();
                 _restart_button->hide();
                 _remove_button->hide();
             }
@@ -272,6 +279,14 @@ public:
                     osc->send( (*d)->addr, "/nsm/gui/client/resume", _client_id );
                 }
             }
+            else if ( o == _kill_button )
+            {
+                MESSAGE( "Sending stop" );
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/gui/client/stop", _client_id );
+                }
+            }
         }
              
 
@@ -341,6 +356,17 @@ public:
                     o->callback( cb_button, this );
                 }
 
+                xx -= 25 + ss;
+
+                { Fl_Button *o = _kill_button = new Fl_Button( xx, yy, 25, hh, "@square" );
+                    o->labelsize( 9 );
+                    o->box( FL_UP_BOX );
+                    o->type(0);
+                    o->color( FL_RED );
+                    o->value( 0 );
+                    o->tooltip( "Stop" );
+                    o->callback( cb_button, this );
+                }
 
                 xx -= 25 + ss;
 

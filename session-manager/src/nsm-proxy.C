@@ -87,7 +87,11 @@ public:
                 free( _arguments );
 
             _executable = strdup( executable );
-            _arguments = strdup( arguments );
+
+            if ( arguments )
+                _arguments = strdup( arguments );
+            else
+                _arguments = NULL;
 
             return start();
         }
@@ -106,7 +110,10 @@ public:
 //                char *args[] = { strdup( executable ), NULL };
 
                 char *cmd;
-                asprintf( &cmd, "exec %s %s", _executable, _arguments );
+                if ( _arguments )
+                    asprintf( &cmd, "exec %s %s", _executable, _arguments );
+                else
+                    asprintf( &cmd, "exec %s", _executable );
 
                 char *args[] = { _executable, "-c", cmd, NULL };
                 

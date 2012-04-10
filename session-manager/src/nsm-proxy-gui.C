@@ -105,6 +105,9 @@ handle_kill ( Fl_Widget *o, void *v )
 void
 handle_start ( Fl_Widget *o, void *v )
 {
+    lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/label", "s",
+                  ui->label_input->value() );
+
     lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/start", "ss",
                   ui->executable_input->value(),
                   ui->arguments_input->value() );

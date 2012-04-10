@@ -585,23 +585,41 @@ public:
                     if ( ! browser->value() )
                         return;
 
-                    const char *name = fl_input( "Add Client" );
+                    const char *n = fl_input( "Add Client" );
                     
-                    if ( !name )
+                    if ( !n )
                         return;
+                    
+                    char *name = strdup( n );
+                    
+                    if ( index( name, ' ' ) )
+                    {
+                        free( name );
+                        name = strdup( "nsm-proxy" );
+                    }
 
                     lo_address nsm_addr = lo_address_new_from_url( browser->text( browser->value() ) );
 
                     osc->send( nsm_addr, "/nsm/server/add", name );
+
+                    free( name );
                     
                     delete win;
                 }
                 else
                 {
-                    const char *name = fl_input( "Add Client" );
+                    const char *n = fl_input( "Add Client" );
                     
-                    if ( !name )
+                    if ( !n )
                         return;
+                    
+                    char *name = strdup( n );
+                    
+                    if ( index( name, ' ' ) )
+                    {
+                        free( name );
+                        name = strdup( "nsm-proxy" );
+                    }
 
                     MESSAGE( "Sending add for: %s", name );
                     /* FIXME: user should get to choose which system to do the add on */
@@ -609,6 +627,8 @@ public:
                     {
                         osc->send( (*d)->addr, "/nsm/server/add", name );
                     }
+
+                    free( name );
                 }
 
             }

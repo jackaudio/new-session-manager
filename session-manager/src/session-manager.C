@@ -520,6 +520,8 @@ public:
 
                 Fl_Tree_Item *item = session_browser->callback_item();
 
+                session_browser->deselect( item, 0 );
+
                 if ( item->children() )
                     return;
 

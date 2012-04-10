@@ -79,7 +79,7 @@ public:
                 ::kill( _pid, SIGTERM );
         }
 
-    void start ( const char *executable, const char *arguments )
+    bool start ( const char *executable, const char *arguments )
         {
             if ( _executable )
                 free( _executable );
@@ -89,11 +89,15 @@ public:
             _executable = strdup( executable );
             _arguments = strdup( arguments );
 
-            start();
+            return start();
         }
 
-    void start ( void )
+    bool start ( void )
         {
+            if ( _pid )
+                /* already running */
+                return true;
+
             int pid;
             if ( ! (pid = fork()) )
             {
@@ -119,6 +123,7 @@ public:
 
             _pid = pid;
 
+            return _pid > 0;
         }
 
     void save_signal ( int s )
@@ -373,11 +378,19 @@ osc_show_gui ( const char *path, const char *types, lo_arg **argv, int argc, lo_
     return 0;
 }
 
+void
+hide_gui ( void )
+{
+    if ( gui_pid )
+    {
+        kill( gui_pid, SIGTERM );
+    }
+}
+
 int
 osc_hide_gui ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
-    if ( gui_pid )
-        kill( gui_pid, SIGTERM );
+    hide_gui();
 
     lo_send_from( nsm_addr, losrv, LO_TT_IMMEDIATE, "/nsm/client/gui_is_hidden", "" );
 
@@ -471,7 +484,10 @@ osc_save_signal ( const char *path, const char *types, lo_arg **argv, int argc, 
 int
 osc_start ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
-    nsm_proxy->start( &argv[0]->s, &argv[1]->s );
+    if ( nsm_proxy->start( &argv[0]->s, &argv[1]->s ) );
+    {
+        hide_gui();
+    }
     
     return 0;
 }
@@ -572,6 +588,8 @@ void handle_sigchld ( )
         if ( pid == gui_pid )
         {
             lo_send_from( nsm_addr, losrv, LO_TT_IMMEDIATE, "/nsm/client/gui_is_hidden", "" );
+
+            gui_pid = 0;
 
             /* don't care... */
             continue;

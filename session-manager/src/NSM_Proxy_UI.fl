@@ -7,40 +7,39 @@ class NSM_Proxy_UI {open
   Function {make_window()} {open
   } {
     Fl_Window {} {
-      label {NSM Proxy} open selected
-      xywh {106 75 485 475} type Double visible
+      label {NSM Proxy} open
+      xywh {1011 106 490 665} type Double color 47 labelcolor 55 visible
     } {
       Fl_Box {} {
-        label {Command-line options are incompatible with robust session management, so the NSM protocol does not support them. This proxy exists to allow programs which require command-line options to be included in an NSM session. Be warned that referring to files outside of the session directory will impair your ability to reliably archive and transport sessions. Patching the program to use NSM natively will result in a better experience.
+        label {Command-line options are incompatible with robust session management for a variety of reasons, so the NSM server does not support them directly. This proxy exists to allow programs which require command-line options to be included in an NSM session. Be warned that referring to files outside of the session directory will impair your ability to reliably archive and transport sessions. Patching the program to use NSM natively will result in a better experience.
 
 The program will be started with its current directory being a uniquely named directory under the current session directory. It is recommended that you only refer to files in the current directory.
-
-The environment variables $NSM_CLIENT_ID and $NSM_SESSION_NAME will contain the unique client ID (suitable for use as e.g. a JACK client name) and the display name for the session, respectively.}
-        xywh {15 14 455 286} box ROUNDED_BOX color 64 labelcolor 55 align 128
+} selected
+        xywh {15 11 460 233} box BORDER_BOX color 41 labelfont 8 labelcolor 55 align 128
       }
       Fl_File_Input executable_input {
         label {Executable: }
-        xywh {115 316 350 33}
+        xywh {115 262 350 33}
       }
       Fl_Input arguments_input {
         label {Arguments:}
-        xywh {115 358 350 28}
+        xywh {115 414 350 28}
       }
       Fl_Input label_input {
         label {Label:}
-        xywh {115 396 350 28}
+        xywh {115 452 350 28}
       }
       Fl_Return_Button start_button {
         label Start
-        xywh {375 435 88 25}
+        xywh {380 625 88 25}
       }
       Fl_Button kill_button {
         label Kill
-        xywh {290 435 80 25} color 72
+        xywh {295 625 80 25} color 72 hide
       }
       Fl_Choice save_signal_choice {
         label {Save Signal:} open
-        tooltip {Some programs may respond to a certain Unix signal by saving their state to the file specified on the command-line. Usually if this is the case, the signal will be SIGUSR1. However, if you pick the wrong one, the client will likely respond as if to KILL.} xywh {115 435 170 25} down_box BORDER_BOX
+        xywh {110 625 170 25} down_box BORDER_BOX
       } {
         MenuItem {} {
           label None
@@ -58,6 +57,14 @@ The environment variables $NSM_CLIENT_ID and $NSM_SESSION_NAME will contain the 
           label SIGINT
           xywh {30 30 40 24}
         }
+      }
+      Fl_Box {} {
+        label {The environment variables $NSM_CLIENT_ID and $NSM_SESSION_NAME will contain the unique client ID (suitable for use as e.g. a JACK client name) and the display name for the session, respectively.}
+        xywh {15 312 460 87} box BORDER_BOX color 41 labelfont 8 labelcolor 55 align 128
+      }
+      Fl_Box {} {
+        label {Some (very few) programs may respond to a specific Unix signal by somehow saving their state. If 'Save Signal' is set to something other than 'None', then NSM Proxy will deliver the specified signal to the proxied process upon an NSM 'Save' event. Most programs will treat these signals just like SIGTERM and die. You have been warned.}
+        xywh {15 497 460 114} box BORDER_BOX color 41 labelfont 8 labelcolor 55 align 128
       }
     }
   }

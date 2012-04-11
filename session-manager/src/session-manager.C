@@ -759,6 +759,7 @@ public:
     void add_session_to_list ( const char *name )
         {
             session_browser->add( name );
+            session_browser->redraw();
         }
 
 

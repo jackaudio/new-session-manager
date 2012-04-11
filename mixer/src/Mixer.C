@@ -35,6 +35,7 @@
 #include "FL/Fl_Menu_Settings.H"
 #include "About_Dialog.H"
 #include <FL/Fl_File_Chooser.H>
+#include "FL/Fl_Theme_Chooser.H"
 
 #include "file.h"
 
@@ -44,7 +45,6 @@
 #include <sys/types.h>
 
 #include "FL/Fl_Value_SliderX.H"
-#include "FL/color_scheme.H"
 #include "OSC/Endpoint.H"
 #include <lo/lo.h>
 #include "FL/Fl_Blinker.H"
@@ -274,37 +274,9 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         rows( 3 );
     }
-    else if (! strcmp( picked, "&Options/&Display/&Style/&Default") )
+    else if (! strcmp( picked, "&View/&Theme") )
     {
-        Fl::scheme( "gtk+" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Style/&Flat") )
-    {
-        Fl::scheme( "gtk+" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Style/&Round") )
-    {
-        Fl::scheme( "plastic" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Colors/&System") )
-    {
-        color_scheme( "system" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Colors/&Dark") )
-    {
-        color_scheme( "dark" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Colors/&Very Dark") )
-    {
-        color_scheme( "very dark" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Colors/&Light") )
-    {
-        color_scheme( "light" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Colors/&Gray") )
-    {
-        color_scheme( "gray" );
+        fl_theme_chooser();
     }
     else if (! strcmp( picked, "&Options/&Display/&Knobs/&Burnished") )
     {
@@ -378,11 +350,6 @@ void Mixer::cb_menu(Fl_Widget* o, void* v) {
 Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
 {
-    get_system_colors();
-
-    Fl::scheme( "plastic" );
-    color_scheme( "dark" );
-
     Loggable::dirty_callback( &Mixer::handle_dirty, this );
 
     _rows = 1;
@@ -399,14 +366,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->add( "&Mixer/&Rows/One", '1', 0, 0 );
         o->add( "&Mixer/&Rows/Two", '2', 0, 0 );
         o->add( "&Mixer/&Rows/Three", '3', 0, 0 );
-        o->add( "_&Options/&Display/&Style/&Default", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
-        o->add( "_&Options/&Display/&Style/&Flat", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Style/&Round", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Colors/&Dark", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
-        o->add( "_&Options/&Display/&Colors/&Very Dark", 0, 0, 0, FL_MENU_RADIO  );
-        o->add( "_&Options/&Display/&Colors/&Light", 0, 0, 0, FL_MENU_RADIO  );
-        o->add( "_&Options/&Display/&Colors/&Gray", 0, 0, 0, FL_MENU_RADIO  );
-        o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
+        o->add( "&View/&Theme", 0, 0, 0 );
         o->add( "_&Options/&Display/&Knobs/&Arc", 0, 0, 0, FL_MENU_RADIO   );
         o->add( "_&Options/&Display/&Knobs/&Burnished", 0, 0, 0, FL_MENU_RADIO );
         o->add( "_&Options/&Display/&Knobs/&Plastic", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );

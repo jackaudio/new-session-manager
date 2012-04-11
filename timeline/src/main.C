@@ -42,8 +42,8 @@
 #include "TLE.H"
 #include "Timeline.H"
 
-#include "FL/Crystal_Boxtypes.H"
-#include "FL/Gleam_Boxtypes.H"
+#include "FL/themes.H"
+#include "FL/Fl_Theme.H"
 
 #include "Project.H"
 #include "Transport.H"
@@ -184,9 +184,6 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Time_Point          );
     LOG_REGISTER_CREATE( Track               );
 
-    init_crystal_boxtypes();
-    init_gleam_boxtypes();
-
     signal( SIGPIPE, SIG_IGN );
 
     if ( ! ensure_dirs() )
@@ -249,6 +246,10 @@ main ( int argc, char **argv )
     tle->main_window->icon((char *)p);
 #endif        
     tle->main_window->show( 0, NULL );
+   
+    fl_register_themes();
+
+    Fl_Theme::set();
         
     char *nsm_url = getenv( "NSM_URL" );
 

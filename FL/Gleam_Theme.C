@@ -23,7 +23,7 @@
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 
-#include "Gleam_Boxtypes.H"
+#include "FL/Fl_Theme.H"
 
 static void gleam_color(Fl_Color c)
 {
@@ -124,15 +124,6 @@ static void up_frame(int x, int y, int w, int h, Fl_Color c)
 	frame_rect_up(x, y, w - 1, h - 1, fl_darker(c));
 }
 
-static void thin_up_box(int x, int y, int w, int h, Fl_Color c)
-{
-
-	shade_rect_up(x + 1, y, w - 2, h - 1, c);
-	frame_rect(x + 1, y + 1, w - 3, h - 3, fl_color_average(c, FL_WHITE, .25f));
-	frame_rect_up(x, y, w - 1, h - 1, fl_darker(c));
-
-}
-
 static void up_box(int x, int y, int w, int h, Fl_Color c)
 {
 	shade_rect_up(x + 1, y, w - 2, h - 1, c);
@@ -155,26 +146,24 @@ static void down_box(int x, int y, int w, int h, Fl_Color c)
 	//frame_rect(x + 1, y + 1, w - 3, h - 3, fl_color_average(c, FL_BLACK, .65));
 }
 
-static void thin_down_box(int x, int y, int w, int h, Fl_Color c)
+static void
+init_theme ( void )
 {
-
-	down_box(x, y, w, h, c);
-
+    /* replace the gtk+ boxes... (is there a better way?) */
+    Fl::set_boxtype(  FL_UP_BOX,         up_box,           2,2,4,4 );
+    Fl::set_boxtype(  FL_DOWN_BOX,       down_box,         2,2,3,3 );
+    Fl::set_boxtype(  FL_THIN_UP_BOX,         up_box,           2,2,3,3 );
+    Fl::set_boxtype(  FL_THIN_DOWN_BOX,       down_box,         2,2,3,3 );
+    Fl::set_boxtype(  FL_UP_FRAME,       up_frame,         2,2,3,3 );
+    Fl::set_boxtype(  FL_DOWN_FRAME,     down_frame,       2,2,3,3 );
+    Fl::set_boxtype(  FL_ROUND_UP_BOX,   up_box,           2,2,3,3 );
+    Fl::set_boxtype(  FL_ROUND_DOWN_BOX, down_box,         2,2,3,3 );
 }
 
 void
-init_gleam_boxtypes ( void )
+init_gleam_theme ( void )
 {
-    /* replace the gtk+ boxes... (is there a better way?) */
-    Fl::set_boxtype(  FL_GTK_UP_BOX,         up_box,           2,2,4,4 );
-    Fl::set_boxtype(  FL_GTK_DOWN_BOX,       down_box,         2,2,3,3 );
-    Fl::set_boxtype(  FL_GTK_THIN_UP_BOX,         up_box,           2,2,3,3 );
-    Fl::set_boxtype(  FL_GTK_THIN_DOWN_BOX,       down_box,         2,2,3,3 );
-    Fl::set_boxtype(  FL_GTK_UP_FRAME,       up_frame,         2,2,3,3 );
-    Fl::set_boxtype(  FL_GTK_DOWN_FRAME,     down_frame,       2,2,3,3 );
-    /* Fl::set_boxtype(  FL_GTK_THIN_UP_BOX,    thin_up_box,      1,1,1,1 ); */
-    /* Fl::set_boxtype(  FL_GTK_THIN_DOWN_BOX,  thin_down_box,    1,1,1,1 ); */
-    Fl::set_boxtype(  FL_GTK_ROUND_UP_BOX,   up_box,           2,2,3,3 );
-    Fl::set_boxtype(  FL_GTK_ROUND_DOWN_BOX, down_box,         2,2,3,3 );
-    }
+    Fl_Theme *t = new Fl_Theme( "Gleam", "", "", init_theme );
 
+    Fl_Theme::add( t );
+}

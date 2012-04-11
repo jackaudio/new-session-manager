@@ -47,9 +47,7 @@
 
 #define APP_NAME "Non Session Manager"
 
-#include "FL/Crystal_Boxtypes.H"
-#include "FL/Gleam_Boxtypes.H"
-#include "FL/color_scheme.H"
+#include "FL/themes.H"
 
 #ifdef HAVE_XPM
 #include "FL/Fl.H"
@@ -944,13 +942,6 @@ main (int argc, char **argv )
                             (char**)icon_16x16, &p, &mask, NULL);
 #endif
 
-    init_crystal_boxtypes();
-    init_gleam_boxtypes();
-
-    Fl::get_system_colors();
-
-    color_scheme( "Dark" );
-    Fl::scheme( "plastic" );
     Fl::lock();
     
     Fl_Double_Window *main_window;
@@ -976,6 +967,10 @@ main (int argc, char **argv )
 #endif        
         o->show( 0, NULL );
     }
+    
+    fl_register_themes();
+    
+    Fl_Theme::set();
 
     static struct option long_options[] = 
         {

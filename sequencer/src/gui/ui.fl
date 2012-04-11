@@ -34,6 +34,9 @@ decl {class Fl_Scalepack;} {public local
 decl {class Fl_Sometimes_Input;} {public local
 } 
 
+decl {\#include "FL/Fl_Theme_Chooser.H"} {private local
+} 
+
 decl {\#include "FL/Fl_Scalepack.H"} {private local
 } 
 
@@ -149,12 +152,6 @@ class UI {open
   } {
     code {fl_register_images();
 
-// // Make her pretty
-// Fl::background( 32, 32, 32 );
-// Fl::background2( 36, 36, 36 );
-// Fl::foreground( 255, 255, 255 );
-// Fl::scheme( "plastic" );
-
 canvas_background_color = FL_GREEN;
 
 playback_mode_menu = NULL;
@@ -225,11 +222,11 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {365 131 865 805} type Double color 38 resizable
+      xywh {798 131 865 805} type Double color 47 resizable
       code0 {o->color( FL_BACKGROUND_COLOR );} xclass non size_range {700 509 0 0} visible
     } {
-      Fl_Menu_Bar menu_bar {open selected
-        xywh {0 0 865 30} color 37
+      Fl_Menu_Bar menu_bar {open
+        xywh {0 0 865 30} color 47
       } {
         Submenu {} {
           label {&File} open
@@ -437,6 +434,11 @@ config.follow_playhead = val ? true : false;}
                pattern_canvas_widget->redraw();}
               xywh {0 0 40 24} type Radio value 1
             }
+          }
+          MenuItem {} {
+            label {&Theme}
+            callback {fl_theme_chooser();}
+            xywh {0 0 40 24}
           }
         }
         Submenu {} {
@@ -763,7 +765,7 @@ if ( playlist->length() )
         }
         Fl_Group phrase_tab {
           label Phrase open
-          xywh {0 98 865 674} color 37
+          xywh {0 98 865 674} color 47 hide
           code0 {update_phrase_widgets();}
         } {
           Fl_Box phrase_canvas_widget {
@@ -814,8 +816,8 @@ o->maximum( phrase::phrases() );}
           }
         }
         Fl_Group pattern_tab {
-          label Pattern open
-          xywh {0 98 865 674} color 37 hide
+          label Pattern open selected
+          xywh {0 98 865 674} color 47
           code0 {update_pattern_widgets();}
         } {
           Fl_Box pattern_canvas_widget {
@@ -828,7 +830,7 @@ o->maximum( phrase::phrases() );}
             class O_Canvas
           }
           Fl_Group {} {open
-            xywh {0 694 865 78}
+            xywh {0 694 865 78} color 47
           } {
             Fl_Input pattern_name_field {
               label {name:}

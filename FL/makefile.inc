@@ -11,13 +11,17 @@ SRCS:=$(SRCS:.fl=.C)
 SRCS:=$(sort $(SRCS))
 OBJS:=$(SRCS:.C=.o)
 
-all: FL/libfl_widgets.a
+all: FL/libfl_widgets.a ntk-chtheme
 
 FL/libfl_widgets.a: $(OBJS)
 	@ ar rcs $@ $(OBJS)
 
 .PHONEY: FL
 FL: FL/libfl_widgets.a
+
+ntk-chtheme: ntk-chtheme.o $(FLTK_LIBS) FL/libfl_widgets.a
+	@ echo -n Linking session handler.
+	@ $(CXX) $(CXXFLAGS) $(FLTK_LDFLAGS) $(LIBS) $^ -o $@ -LFL -lfl_widgets  && echo $(DONE)
 
 clean:
 	rm -f $(OBJS) FL/libfl_widgets.a .deps

@@ -17,6 +17,16 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include <FL/Fl.H>
+#include "FL/themes.H"
+#include "FL/Fl_Theme_Chooser.C"
 
-void init_gleam_boxtypes ( void );
+
+int
+main ( int argc, char **argv )
+{
+    fl_register_themes();
+
+    Fl_Theme::set();
+
+    fl_theme_chooser();
+}

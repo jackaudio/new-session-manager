@@ -20,10 +20,10 @@
 
 #pragma GCC diagnostic ignored "-Wchar-subscripts"
 
-
-#include "Crystal_Boxtypes.H"
 #include <FL/fl_draw.H>
 #include <string.h>
+
+#include "FL/Fl_Theme.H"
 
 /* Crystal boxes, base (obviously) on the FLTK1 'plastic' boxes, but
  * without the rude color blending and with a slightly enhanced
@@ -370,16 +370,26 @@ down_round ( int x, int y, int w, int h, Fl_Color c )
 }
 
 
-void
-init_crystal_boxtypes ( void )
+static void
+init_theme ( void )
 {
+    printf( "Initializing crystal boxtypes" );
+
     /* replace the plastic boxes... (is there a better way?) */
-    Fl::set_boxtype(  FL_PLASTIC_UP_BOX,         up_box,      4,4,8,8 );
-    Fl::set_boxtype(  FL_PLASTIC_DOWN_BOX,       down_box,    2,2,4,4 );
-    Fl::set_boxtype(  FL_PLASTIC_UP_FRAME,       up_frame,    2,2,4,4 );
-    Fl::set_boxtype(  FL_PLASTIC_DOWN_FRAME,     down_frame,  2,2,4,4 );
-    Fl::set_boxtype(  FL_PLASTIC_THIN_UP_BOX,    thin_up_box, 1,1,2,2 );
-    Fl::set_boxtype(  FL_PLASTIC_THIN_DOWN_BOX,  down_box,    1,1,2,2 );
-    Fl::set_boxtype(  FL_PLASTIC_ROUND_UP_BOX,   up_round,    1,1,2,2 );
-    Fl::set_boxtype(  FL_PLASTIC_ROUND_DOWN_BOX, down_round,  1,1,2,2 );
+    Fl::set_boxtype(  FL_UP_BOX,         up_box,      4,4,8,8 );
+    Fl::set_boxtype(  FL_DOWN_BOX,       down_box,    2,2,4,4 );
+    Fl::set_boxtype(  FL_UP_FRAME,       up_frame,    2,2,4,4 );
+    Fl::set_boxtype(  FL_DOWN_FRAME,     down_frame,  2,2,4,4 );
+    Fl::set_boxtype(  FL_THIN_UP_BOX,    thin_up_box, 1,1,2,2 );
+    Fl::set_boxtype(  FL_THIN_DOWN_BOX,  down_box,    1,1,2,2 );
+    Fl::set_boxtype(  FL_ROUND_UP_BOX,   up_round,    1,1,2,2 );
+    Fl::set_boxtype(  FL_ROUND_DOWN_BOX, down_round,  1,1,2,2 );
+}
+
+void
+init_crystal_theme ( void )
+{
+    Fl_Theme *t = new Fl_Theme( "Crystal", "", "", init_theme );
+
+    Fl_Theme::add( t );
 }

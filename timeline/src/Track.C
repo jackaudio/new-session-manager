@@ -106,8 +106,6 @@ Track::~Track ( )
     Loggable::block_end();
 }
 
-#include "FL/Crystal_Boxtypes.H"
-
 void
 Track::init ( void )
 {

@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2010 Jonathan Moore Liles                                     */
+/* Copyright (C) 2012 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -17,5 +17,4 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-void color_scheme ( const char *name );
-void get_system_colors ( void );
+void init_clean_theme ( void );

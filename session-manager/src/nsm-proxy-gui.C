@@ -27,6 +27,8 @@
 #define APP_TITLE "NSM Proxy"
 
 #include "NSM_Proxy_UI.H"
+#include "FL/Fl_Theme.H"
+#include "FL/themes.H"
 #include <lo/lo.h>
 #include <signal.h>
 #include <stdio.h>
@@ -105,9 +107,6 @@ handle_kill ( Fl_Widget *o, void *v )
 void
 handle_start ( Fl_Widget *o, void *v )
 {
-    lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/label", "s",
-                  ui->label_input->value() );
-
     lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/start", "ss",
                   ui->executable_input->value(),
                   ui->arguments_input->value() );
@@ -178,8 +177,12 @@ main ( int argc, char **argv )
     connect_ui();
 
     lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/update", "" );
-
+    
     w->show();
+
+    fl_register_themes();
+
+    Fl_Theme::set();
     
     Fl::lock();
 

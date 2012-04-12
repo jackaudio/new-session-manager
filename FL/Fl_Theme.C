@@ -146,6 +146,9 @@ Fl_Theme::set ( const char *name )
     for ( Fl_Theme *t = first; t; t = t->next )
         if ( !strcasecmp( t->name(), name ) )
         {
+            /* reset boxtypes */
+            Fl::reload_scheme();
+
             printf( "Theme set to %s\n", t->name() );
             t->_init_func();
             Fl_Theme::_current = t;

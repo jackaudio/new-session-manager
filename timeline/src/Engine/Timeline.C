@@ -27,6 +27,8 @@
 
 #include "Thread.H"
 
+#include <unistd.h>
+
 /** Initiate recording for all armed tracks */
 bool
 Timeline::record ( void )

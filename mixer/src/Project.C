@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <sys/fcntl.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "Loggable.H"
 #include "Project.H"

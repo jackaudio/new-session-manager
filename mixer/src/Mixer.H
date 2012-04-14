@@ -28,7 +28,7 @@
 
 #include "Thread.H"
 
-class Fl_Blinker;
+class Fl_Blink_Button;
 class Fl_Flowpack;
 class Fl_Menu_Bar;
 namespace OSC { class Endpoint; }
@@ -40,7 +40,7 @@ class Mixer : public Fl_Group
 public:
 
     OSC::Endpoint *osc_endpoint;
-    Fl_Blinker *sm_blinker;
+    Fl_Button *sm_blinker;
 
 private:
 

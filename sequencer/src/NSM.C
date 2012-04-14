@@ -131,12 +131,12 @@ NSM_Client::command_active ( bool b )
 {
     if ( b )
     {
-        ui->sm_indicator->activate();
+        ui->sm_indicator->value( 1 );
         ui->sm_indicator->tooltip( session_manager_name() );
     }
     else
     {
         ui->sm_indicator->tooltip( NULL );
-        ui->sm_indicator->deactivate();
+        ui->sm_indicator->value( 0 );
     }
 }

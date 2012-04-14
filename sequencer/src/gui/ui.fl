@@ -225,261 +225,12 @@ if ( maybe_save_song() )
       xywh {798 131 865 805} type Double color 47 resizable
       code0 {o->color( FL_BACKGROUND_COLOR );} xclass non size_range {700 509 0 0} visible
     } {
-      Fl_Menu_Bar menu_bar {open
-        xywh {0 0 865 30} color 47
-      } {
-        Submenu {} {
-          label {&File} open
-          xywh {0 0 100 20} color 37
-        } {
-          MenuItem menu_new {
-            label {&New}
-            callback {if ( maybe_save_song() )
-{
-	init_song();
-
-	// Sync the GUI.
-	update_pattern_widgets();
-	update_sequence_widgets();
-	update_phrase_widgets();
-	
-	
-	gui_status( "New song." );
-}}
-            xywh {0 0 40 25}
-          }
-          MenuItem menu_open {
-            label {&Open}
-            callback {char *name = fl_file_chooser( "Open File", "Non Files (*.non)", NULL, 0 );
-
-if ( name )
-{
-	if ( ! load_song( name ) )
-		fl_alert( "Could not load song!" );
-	else
-		gui_status( "Song opened." );
-	
-	update_sequence_widgets();
-	update_pattern_widgets();
-	update_phrase_widgets();
-
-	playback_mode_menu->value( song.play_mode );
-	playback_mode_menu->redraw();
-}}
-            xywh {0 0 40 25} shortcut 0x4006f color 37
-          }
-          MenuItem menu_save {
-            label {&Save}
-            callback {save_dialog( song.filename );}
-            xywh {0 0 40 25} shortcut 0x40073 color 37 deactivate
-            code0 {song.signal_dirty.connect( sigc::mem_fun( o, &Fl_Menu_Item::activate ) );}
-            code1 {song.signal_clean.connect( sigc::mem_fun( o, &Fl_Menu_Item::deactivate ) );}
-          }
-          MenuItem menu_save_as {
-            label {Save &As}
-            callback {save_dialog( NULL );}
-            xywh {0 0 40 25}
-          }
-          MenuItem {} {
-            label {&Import}
-            callback {char *name = fl_file_chooser( "MIDI Import", "MIDI Files (*.mid)", NULL, 0 );
-
-if ( ! name )
-	return;
-
-smf f;
-
-if ( ! f.open( name, smf::READ ) )
-{
-	fl_message( "could not open file" );
-	return;
-}
-
-f.read_header();
-
-switch ( f.format() )
-{
-	case 0:
-		if ( ! pattern::import( &f, 0 ) )
-			fl_message( "Error importing MIDI" );
-		break;
-	case 1: case 2:
-		{
-			char **sa = f.track_listing();
-
-			if ( sa && *sa )
-			{
-				List_Chooser tc( "Select tracks to import:", "Import" );
-
-			 	char *s;
-				for ( int i = 0; (s = sa[i]); ++i )
-				{
-					tc.add( s );
-					free( s );
-				}
-
-				free( sa );
-
-				tc.show();
-
-				while( tc.shown() )
-					Fl::wait();
-
-				int n = 0;
-				for ( int i = 1; i <= tc.browser->size(); ++i )
-				{
-					if ( tc.browser->selected( i ) )
-					{
-						if ( pattern::import( &f , i - 1 ) )
-							++n;
-						else
-							WARNING( "error importing track %d", i - 1 );
-					}
-
-				}
-				// fl_message( "%d patterns imported.", n );
-				gui_status( "Imported %d tracks as patterns", n );
-			}
-
-			break;
-		}
-}}
-            xywh {0 0 40 25}
-            code0 {\#include "../smf.H"}
-          }
-          MenuItem {} {
-            label {&Export}
-            callback {// Fl_File_Chooser::custom_filter_label = "*.mid";
-
-Fl_File_Chooser *fc = new Fl_File_Chooser( ".", "MIDI Files (*.mid)", Fl_File_Chooser::CREATE, "MIDI Export" );
-
-fc->show();
-
-// wait for user to make a choice
-while( fc->shown() )
-      Fl::wait();
-
-if ( ! fc->value() )
-	return;
-
-if ( tabs->value() == pattern_tab )
-	((pattern*)pattern_c->grid())->save( fc->value() );}
-            xywh {0 0 40 25}
-            code0 {\#include <FL/Fl_File_Chooser.H>}
-          }
-          MenuItem {} {
-            label {&Quit}
-            callback {main_window->do_callback();}
-            xywh {0 0 40 25} shortcut 0x40071 color 37
-          }
-        }
-        Submenu edit_menu {
-          label {&Edit} open
-          xywh {0 0 74 25} color 37
-        } {
-          MenuItem {} {
-            label {&Events}
-            callback {event_editor( pattern_c->grid() );}
-            xywh {0 0 40 25}
-          }
-          MenuItem {} {
-            label {&Randomization Settings}
-            callback {randomization_dialog->show();}
-            xywh {0 0 40 25}
-          }
-        }
-        Submenu {} {
-          label {&View} open
-          xywh {10 10 74 25} color 37
-        } {
-          MenuItem {} {
-            label {&Metronome}
-            callback {int val = o->menu()[ o->value() ].value();
-
-if ( val )
-	vmetro_widget->show();
-else
-	vmetro_widget->hide();}
-            xywh {0 0 40 25} type Toggle value 1
-          }
-          MenuItem {} {
-            label {&Compacted}
-            callback {int val = o->menu()[ o->value() ].value();
-
-pattern_c->row_compact( val ? Canvas::ON : Canvas::OFF );
-
-pattern_canvas_widget->redraw();}
-            xywh {10 10 40 25} type Toggle value 1
-          }
-          MenuItem {} {
-            label {&Follow Playhead}
-            callback {int val = o->menu()[ o->value() ].value();
-
-config.follow_playhead = val ? true : false;}
-            xywh {10 10 40 25} type Toggle value 1
-          }
-          Submenu {} {
-            label {Note Shape} open
-            xywh {0 0 74 24}
-          } {
-            MenuItem {} {
-              label Circle
-              callback {pattern::note_shape = CIRCLE;
-               pattern_canvas_widget->redraw();}
-              xywh {0 0 40 24} type Radio
-            }
-            MenuItem {} {
-              label Square
-              callback {pattern::note_shape = SQUARE;
-               pattern_canvas_widget->redraw();}
-              xywh {0 0 40 24} type Radio value 1
-            }
-          }
-          MenuItem {} {
-            label {&Theme}
-            callback {fl_theme_chooser();}
-            xywh {0 0 40 24}
-          }
-        }
-        Submenu {} {
-          label {&Help} open
-          xywh {100 0 74 25} color 37
-        } {
-          MenuItem {} {
-            label {&Keys}
-            callback {show_help_dialog( "KEYS" );}
-            xywh {0 0 40 25}
-          }
-          MenuItem {} {
-            label {&Manual}
-            callback {show_help_dialog( "MANUAL" );}
-            xywh {10 10 40 25} divider
-          }
-          MenuItem {} {
-            label {&About}
-            callback {About_Dialog ab( PIXMAP_PATH "/non-sequencer/icon-256x256.png" );
-
-            ab.logo_box->label( VERSION );
-
-        ab.title->label( "The Non Sequencer" );
-
-        ab.copyright->label( "Copyright (C) 2007-2012 Jonathan Moore Liles" );
-        ab.credits->label( "Non-Sequencer was written from scratch by\\nJonathan Moore Liles for his own use\\n(see the manual).\\n\\nNobody planned. Nobody helped.\\nYou can help now by donating time, money,\\nand/or replacing the rest of Linux Audio\\nwith fast, light, reliable alternatives.\\n" );
-
-        ab.website_url->label( "http://non-sequencer.tuxfamily.org" );
-
-ab.run();}
-            xywh {0 0 40 25} color 37
-            code0 {\#include "../non.H"}
-          }
-        }
-      }
       Fl_Group {} {open
         xywh {0 30 865 70}
       } {
         Fl_Pack {} {
           label Meter open
-          xywh {220 68 175 27} type HORIZONTAL labeltype NO_LABEL labelsize 9 align 0
+          xywh {214 72 175 25} type HORIZONTAL labeltype NO_LABEL labelsize 9 align 0
           code0 {o->spacing( 3 );}
         } {
           Fl_Box {} {
@@ -516,15 +267,15 @@ ab.run();}
           code1 {o->box( FL_NO_BOX );}
           class Visual_Metronome
         } {}
-        Fl_Pack transport_controls_group {open
-          xywh {10 32 152 42} type HORIZONTAL
+        Fl_Pack transport_controls_group {open selected
+          xywh {4 32 160 44} type HORIZONTAL
           code0 {o->spacing( 2 );}
           class Fl_Scalepack
         } {
           Fl_Button play_button {
             label {@>}
             callback {transport.toggle();}
-            xywh {10 34 43 3} shortcut 0x20 labeltype ENGRAVED_LABEL
+            xywh {10 34 43 40} shortcut 0x20 labeltype ENGRAVED_LABEL
           }
           Fl_Button rec_button {
             label {@circle}
@@ -551,12 +302,12 @@ else
 	
 	o->labelcolor( FL_WHITE );
 }}
-            xywh {60 34 43 3} type Toggle shortcut 0x80072 selection_color 47 labeltype ENGRAVED_LABEL when 1
+            xywh {60 34 43 40} type Toggle shortcut 0x80072 selection_color 47 labeltype ENGRAVED_LABEL when 1
           }
           Fl_Button home_button {
             label {@|<}
             callback {transport.locate( 0 );}
-            xywh {110 34 43 3} shortcut 0xff50 labeltype ENGRAVED_LABEL
+            xywh {110 34 43 40} shortcut 0xff50 labeltype ENGRAVED_LABEL
           }
         }
         Fl_Choice record_mode_menu {
@@ -565,7 +316,7 @@ else
 	config.record_mode = (record_mode_e)o->value();
 else
 	o->value( config.record_mode );} open
-          xywh {171 41 100 27} box PLASTIC_DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
+          xywh {171 41 100 27} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
         } {
           MenuItem {} {
             label Merge
@@ -586,7 +337,7 @@ else
         }
         Fl_Choice playback_mode_menu {
           label {Playback &Mode} open
-          xywh {285 41 100 26} box PLASTIC_DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
+          xywh {285 41 100 26} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
         } {
           MenuItem {} {
             label Pattern
@@ -632,12 +383,12 @@ else
 }
 
 menu_bar->redraw();} open
-        xywh {0 76 865 701} color 37 labeltype SHADOW_LABEL labelsize 19 when 1 resizable
+        xywh {0 79 865 698} color 37 labeltype SHADOW_LABEL labelsize 19 when 1 resizable
         code0 {canvas_background_color = fl_rgb_color( 18, 18, 18 );}
       } {
         Fl_Group sequence_tab {
           label Sequence open
-          xywh {0 98 862 674} color 37 hide resizable
+          xywh {0 102 865 674} color 37 hide resizable
           code0 {update_sequence_widgets();}
         } {
           Fl_Group {} {open
@@ -765,19 +516,19 @@ if ( playlist->length() )
         }
         Fl_Group phrase_tab {
           label Phrase open
-          xywh {0 98 865 674} color 47 hide
+          xywh {0 102 865 674} color 47
           code0 {update_phrase_widgets();}
         } {
           Fl_Box phrase_canvas_widget {
             label Phrase
-            xywh {4 102 860 590} box FLAT_BOX color 37 labelsize 100 align 16 resizable
+            xywh {1 103 863 587} box FLAT_BOX color 37 labelsize 100 align 16 resizable
             code0 {o->set_canvas( phrase_c );
             phrase_c->signal_pan.connect( sigc::mem_fun( phrase_canvas_widget, &O_Canvas::handle_pan ) );}
             code1 {o->box( FL_NO_BOX );}
             class O_Canvas
           }
           Fl_Group {} {open
-            xywh {5 697 859 72}
+            xywh {5 697 856 72}
           } {
             Fl_Input phrase_name_field {
               label {name:}
@@ -816,13 +567,13 @@ o->maximum( phrase::phrases() );}
           }
         }
         Fl_Group pattern_tab {
-          label Pattern open selected
-          xywh {0 98 865 674} color 47
+          label Pattern open
+          xywh {0 102 865 674} color 47 hide
           code0 {update_pattern_widgets();}
         } {
           Fl_Box pattern_canvas_widget {
             label Pattern
-            xywh {4 102 860 590} box FLAT_BOX color 37 labelsize 100 align 16 resizable
+            xywh {1 103 863 587} box FLAT_BOX color 37 labelsize 100 align 16 resizable
             code0 {\#include "draw.H"}
             code1 {o->set_canvas( pattern_c );
             pattern_c->signal_pan.connect( sigc::mem_fun( pattern_canvas_widget, &O_Canvas::handle_pan ) );}
@@ -830,7 +581,7 @@ o->maximum( phrase::phrases() );}
             class O_Canvas
           }
           Fl_Group {} {open
-            xywh {0 694 865 78} color 47
+            xywh {0 694 862 78} color 47
           } {
             Fl_Input pattern_name_field {
               label {name:}
@@ -1140,9 +891,266 @@ if ( s != o->label() )
           xywh {460 692 30 18} hide
         }
       }
-      Fl_Box sm_indicator {
-        label SM
-        xywh {810 7 50 13} box ROUNDED_BOX color 50 labelcolor 3 deactivate
+      Fl_Group {} {open
+        xywh {0 0 865 31}
+      } {
+        Fl_Menu_Bar menu_bar {open
+          xywh {0 0 865 30} color 47
+        } {
+          Submenu {} {
+            label {&File} open
+            xywh {0 0 100 20} color 37
+          } {
+            MenuItem menu_new {
+              label {&New}
+              callback {if ( maybe_save_song() )
+{
+	init_song();
+
+	// Sync the GUI.
+	update_pattern_widgets();
+	update_sequence_widgets();
+	update_phrase_widgets();
+	
+	
+	gui_status( "New song." );
+}}
+              xywh {0 0 40 25}
+            }
+            MenuItem menu_open {
+              label {&Open}
+              callback {char *name = fl_file_chooser( "Open File", "Non Files (*.non)", NULL, 0 );
+
+if ( name )
+{
+	if ( ! load_song( name ) )
+		fl_alert( "Could not load song!" );
+	else
+		gui_status( "Song opened." );
+	
+	update_sequence_widgets();
+	update_pattern_widgets();
+	update_phrase_widgets();
+
+	playback_mode_menu->value( song.play_mode );
+	playback_mode_menu->redraw();
+}}
+              xywh {0 0 40 25} shortcut 0x4006f color 37
+            }
+            MenuItem menu_save {
+              label {&Save}
+              callback {save_dialog( song.filename );}
+              xywh {0 0 40 25} shortcut 0x40073 color 37 deactivate
+              code0 {song.signal_dirty.connect( sigc::mem_fun( o, &Fl_Menu_Item::activate ) );}
+              code1 {song.signal_clean.connect( sigc::mem_fun( o, &Fl_Menu_Item::deactivate ) );}
+            }
+            MenuItem menu_save_as {
+              label {Save &As}
+              callback {save_dialog( NULL );}
+              xywh {0 0 40 25}
+            }
+            MenuItem {} {
+              label {&Import}
+              callback {char *name = fl_file_chooser( "MIDI Import", "MIDI Files (*.mid)", NULL, 0 );
+
+if ( ! name )
+	return;
+
+smf f;
+
+if ( ! f.open( name, smf::READ ) )
+{
+	fl_message( "could not open file" );
+	return;
+}
+
+f.read_header();
+
+switch ( f.format() )
+{
+	case 0:
+		if ( ! pattern::import( &f, 0 ) )
+			fl_message( "Error importing MIDI" );
+		break;
+	case 1: case 2:
+		{
+			char **sa = f.track_listing();
+
+			if ( sa && *sa )
+			{
+				List_Chooser tc( "Select tracks to import:", "Import" );
+
+			 	char *s;
+				for ( int i = 0; (s = sa[i]); ++i )
+				{
+					tc.add( s );
+					free( s );
+				}
+
+				free( sa );
+
+				tc.show();
+
+				while( tc.shown() )
+					Fl::wait();
+
+				int n = 0;
+				for ( int i = 1; i <= tc.browser->size(); ++i )
+				{
+					if ( tc.browser->selected( i ) )
+					{
+						if ( pattern::import( &f , i - 1 ) )
+							++n;
+						else
+							WARNING( "error importing track %d", i - 1 );
+					}
+
+				}
+				// fl_message( "%d patterns imported.", n );
+				gui_status( "Imported %d tracks as patterns", n );
+			}
+
+			break;
+		}
+}}
+              xywh {0 0 40 25}
+              code0 {\#include "../smf.H"}
+            }
+            MenuItem {} {
+              label {&Export}
+              callback {// Fl_File_Chooser::custom_filter_label = "*.mid";
+
+Fl_File_Chooser *fc = new Fl_File_Chooser( ".", "MIDI Files (*.mid)", Fl_File_Chooser::CREATE, "MIDI Export" );
+
+fc->show();
+
+// wait for user to make a choice
+while( fc->shown() )
+      Fl::wait();
+
+if ( ! fc->value() )
+	return;
+
+if ( tabs->value() == pattern_tab )
+	((pattern*)pattern_c->grid())->save( fc->value() );}
+              xywh {0 0 40 25}
+              code0 {\#include <FL/Fl_File_Chooser.H>}
+            }
+            MenuItem {} {
+              label {&Quit}
+              callback {main_window->do_callback();}
+              xywh {0 0 40 25} shortcut 0x40071 color 37
+            }
+          }
+          Submenu edit_menu {
+            label {&Edit} open
+            xywh {0 0 74 25} color 37
+          } {
+            MenuItem {} {
+              label {&Events}
+              callback {event_editor( pattern_c->grid() );}
+              xywh {0 0 40 25}
+            }
+            MenuItem {} {
+              label {&Randomization Settings}
+              callback {randomization_dialog->show();}
+              xywh {0 0 40 25}
+            }
+          }
+          Submenu {} {
+            label {&View} open
+            xywh {10 10 74 25} color 37
+          } {
+            MenuItem {} {
+              label {&Metronome}
+              callback {int val = o->menu()[ o->value() ].value();
+
+if ( val )
+	vmetro_widget->show();
+else
+	vmetro_widget->hide();}
+              xywh {0 0 40 25} type Toggle value 1
+            }
+            MenuItem {} {
+              label {&Compacted}
+              callback {int val = o->menu()[ o->value() ].value();
+
+pattern_c->row_compact( val ? Canvas::ON : Canvas::OFF );
+
+pattern_canvas_widget->redraw();}
+              xywh {10 10 40 25} type Toggle value 1
+            }
+            MenuItem {} {
+              label {&Follow Playhead}
+              callback {int val = o->menu()[ o->value() ].value();
+
+config.follow_playhead = val ? true : false;}
+              xywh {10 10 40 25} type Toggle value 1
+            }
+            Submenu {} {
+              label {Note Shape} open
+              xywh {0 0 74 24}
+            } {
+              MenuItem {} {
+                label Circle
+                callback {pattern::note_shape = CIRCLE;
+               pattern_canvas_widget->redraw();}
+                xywh {0 0 40 24} type Radio
+              }
+              MenuItem {} {
+                label Square
+                callback {pattern::note_shape = SQUARE;
+               pattern_canvas_widget->redraw();}
+                xywh {0 0 40 24} type Radio value 1
+              }
+            }
+            MenuItem {} {
+              label {&Theme}
+              callback {fl_theme_chooser();}
+              xywh {0 0 40 24}
+            }
+          }
+          Submenu {} {
+            label {&Help} open
+            xywh {100 0 74 25} color 37
+          } {
+            MenuItem {} {
+              label {&Keys}
+              callback {show_help_dialog( "KEYS" );}
+              xywh {0 0 40 25}
+            }
+            MenuItem {} {
+              label {&Manual}
+              callback {show_help_dialog( "MANUAL" );}
+              xywh {10 10 40 25} divider
+            }
+            MenuItem {} {
+              label {&About}
+              callback {About_Dialog ab( PIXMAP_PATH "/non-sequencer/icon-256x256.png" );
+
+            ab.logo_box->label( VERSION );
+
+        ab.title->label( "The Non Sequencer" );
+
+        ab.copyright->label( "Copyright (C) 2007-2012 Jonathan Moore Liles" );
+        ab.credits->label( "Non-Sequencer was written from scratch by\\nJonathan Moore Liles for his own use\\n(see the manual).\\n\\nNobody planned. Nobody helped.\\nYou can help now by donating time, money,\\nand/or replacing the rest of Linux Audio\\nwith fast, light, reliable alternatives.\\n" );
+
+        ab.website_url->label( "http://non-sequencer.tuxfamily.org" );
+
+ab.run();}
+              xywh {0 0 40 25} color 37
+              code0 {\#include "../non.H"}
+            }
+          }
+        }
+        Fl_Button sm_indicator {
+          label SM
+          xywh {825 8 35 15} box ROUNDED_BOX down_box ROUNDED_BOX color 46 selection_color 93 labelfont 3 labelcolor 39 deactivate
+        }
+        Fl_Box {} {
+          label label
+          xywh {15 15 35 16} hide resizable
+        }
       }
     }
   }

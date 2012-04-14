@@ -20,15 +20,19 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl.H>
 
-class Fl_Blinker : public Fl_Button
+/* Kind of like Fl_Light_Button except that the whole thing is the
+ * indicator and it can optionally blink */
+
+class Fl_Blink_Button : public Fl_Button
 {
     bool _on;
     float _blink_interval;
+    bool _blinking;
 
     static void
     update_cb ( void *v )
         {
-            ((Fl_Blinker*)v)->update_cb();
+            ((Fl_Blink_Button*)v)->update_cb();
         }
 
     void
@@ -40,7 +44,7 @@ class Fl_Blinker : public Fl_Button
 
             redraw();
         }
-
+    
 public:
 
     static const float SLOW = 0.5f;
@@ -48,9 +52,10 @@ public:
     static const float FAST = 0.1f;
     static const float DEFAULT = 0.5f;
 
-    Fl_Blinker ( int X, int Y, int W, int H, const char *L )
+    Fl_Blink_Button ( int X, int Y, int W, int H, const char *L )
         : Fl_Button( X, Y, W, H, L )
         {
+            _blinking = true;
             _on = false;
 
             _blink_interval = DEFAULT;
@@ -59,14 +64,26 @@ public:
         }
 
     virtual
-    ~Fl_Blinker ()
+    ~Fl_Blink_Button ()
         {
             if ( value() )
                 Fl::remove_timeout( update_cb, this );
         }
+    
+    void blink ( bool b )
+        {
+            _blinking = b;
+            if ( ! b )
+                _on = true;
+        }
+
+    bool blink ( void ) const
+        {
+            return _blinking;
+        }
 
     void
-    interval ( float v )
+    blink_interval ( float v )
         {
             _blink_interval = v;
             if ( value() )
@@ -80,7 +97,8 @@ public:
         {
             if ( v )
             {
-                Fl::add_timeout( _blink_interval, update_cb, this );
+                if ( _blinking )
+                    Fl::add_timeout( _blink_interval, update_cb, this );
                 Fl_Button::value( v );
                 redraw();
             }

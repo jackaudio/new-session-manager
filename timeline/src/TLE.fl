@@ -25,6 +25,9 @@ comment {//
 decl {const float STATUS_UPDATE_FREQ = 0.5f;} {private local
 } 
 
+decl {class Fl_Flowpack;} {public global
+} 
+
 decl {\#include "Fl_Menu_Settings.H"} {private local
 } 
 
@@ -41,6 +44,9 @@ decl {\#include "Project.H"} {private local
 } 
 
 decl {\#include "Clock.H"} {public local
+} 
+
+decl {\#include "FL/Fl_Flowpack.H"} {private local
 } 
 
 decl {\#include "New_Project_Dialog.H"} {private local
@@ -224,10 +230,10 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label {Non DAW : Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	timeline->command_quit();} open
-      xywh {705 125 1025 770} type Double resizable xclass Non_DAW visible
+      xywh {485 131 1025 770} type Double resizable xclass Non_DAW size_range {900 300 0 0} visible
     } {
       Fl_Menu_Bar menubar {open
-        private xywh {0 0 1024 25}
+        private xywh {0 0 1025 25}
       } {
         Submenu {} {
           label {&Project} open
@@ -451,7 +457,7 @@ Project::compact();}
           }
           MenuItem {} {
             label {&Theme}
-            callback {fl_theme_chooser();} selected
+            callback {fl_theme_chooser();}
             xywh {10 10 40 24}
             code0 {\#include "FL/Fl_Theme_Chooser.H"}
           }
@@ -590,33 +596,34 @@ ab.run();}
         }
       }
       Fl_Group {} {open
-        xywh {0 1 1025 73}
+        xywh {0 -1 1025 76}
       } {
         Fl_Pack {} {open
-          xywh {5 29 475 40} type HORIZONTAL
+          xywh {3 27 477 44} type HORIZONTAL
           code0 {o->spacing( 10 );}
         } {
           Fl_Box {} {
             label {<Transport>}
-            xywh {5 29 189 40} color 30
+            xywh {5 29 185 37} color 30
             code0 {transport = o;}
             code1 {o->labeltype( FL_NO_LABEL );}
+            code2 {o->spacing( 1 );}
             class Transport
           }
           Fl_Pack clocks_pack {open
-            private xywh {195 29 285 40} type HORIZONTAL
+            private xywh {195 27 285 44} type HORIZONTAL
             code0 {o->spacing( 2 );}
           } {
             Fl_Box {} {
               label PLAYHEAD
-              private xywh {196 29 137 40} box BORDER_BOX color 40
+              private xywh {196 27 137 40} box BORDER_BOX color 40
               code0 {o->type( Clock::HMS );}
               code1 {o->run( &transport->frame );}
               class Clock
             }
             Fl_Box {} {
               label PLAYHEAD
-              xywh {335 29 142 40} box BORDER_BOX color 40
+              xywh {335 31 137 37} box BORDER_BOX color 40
               code0 {o->type( Clock::BBT );}
               code1 {o->run( &transport->frame );}
               class Clock
@@ -625,79 +632,84 @@ ab.run();}
         }
         Fl_Box {} {
           label {<empty>}
-          xywh {480 27 210 42} resizable
+          xywh {475 31 265 40} resizable
           code0 {o->labeltype( FL_NO_LABEL );}
         }
         Fl_Group {} {open
-          xywh {810 26 215 44}
+          xywh {850 22 175 50}
         } {
           Fl_Box {} {
             label {capture:}
-            xywh {865 26 56 14} labelsize 10 align 24
+            xywh {910 26 56 14} labelsize 10 align 24
           }
           Fl_Box {} {
             label {playback:}
-            xywh {865 42 56 14} labelsize 10 align 24
+            xywh {910 42 56 14} labelsize 10 align 24
           }
           Fl_Box {} {
             label {DSP:}
-            xywh {865 56 56 14} labelsize 10 align 24
-          }
-          Fl_Progress capture_buffer_progress {
-            label {50%}
-            private xywh {921 26 104 14} labelsize 10
-          }
-          Fl_Progress cpu_load_progress {
-            label {50%}
-            private xywh {921 56 104 14} labelsize 9
-          }
-          Fl_Progress playback_buffer_progress {
-            label {50%}
-            private xywh {921 41 104 14} labelsize 10
+            xywh {910 56 56 14} labelsize 10 align 24
           }
           Fl_Box {} {
             label filesystem
-            xywh {810 27 55 18} labelsize 10 align 16
+            xywh {855 27 55 18} labelsize 10 align 16
+          }
+          Fl_Progress capture_buffer_progress {
+            label {50%}
+            private xywh {965 26 60 14} labelsize 10
+          }
+          Fl_Progress cpu_load_progress {
+            label {50%}
+            private xywh {965 56 60 14} labelsize 9
+          }
+          Fl_Progress playback_buffer_progress {
+            label {50%}
+            private xywh {965 41 60 14} labelsize 10
           }
           Fl_Progress disk_usage_progress {
             label {50%}
-            private xywh {810 43 55 26} labelsize 10
+            private xywh {855 42 55 28} labelsize 10
+            code0 {o->type( FL_VERTICAL );}
           }
         }
-        Fl_Button solo_blinker {
-          label SOLO
-          xywh {750 30 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 74 selection_color 92 labelfont 2 labelcolor 39 deactivate
-          code0 {\#include "FL/Fl_Blinker.H"}
-          class Fl_Blinker
-        }
-        Fl_Button rec_blinker {
-          label REC
-          xywh {750 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 72 selection_color 88 labelfont 2 labelcolor 39 deactivate
-          code0 {\#include "FL/Fl_Blinker.H"}
-          class Fl_Blinker
-        }
-        Fl_Button sm_blinker {
-          label SM
-          xywh {695 30 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 75 selection_color 86 labelfont 2 labelcolor 39 deactivate
-          code0 {\#include "FL/Fl_Blinker.H"}
-          class Fl_Blinker
-        }
-        Fl_Button selected_blinker {
-          label SEL
-          xywh {695 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 13 selection_color 5 labelfont 2 labelcolor 39 deactivate
-          code0 {\#include "FL/Fl_Blinker.H"}
-          class Fl_Blinker
-        }
-        Fl_Button seek_blinker {
-          label SEEK
-          xywh {640 50 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 10 selection_color 2 labelfont 2 labelcolor 39 hide deactivate
-          code0 {\#include "FL/Fl_Blinker.H"}
-          code1 {o->interval( Fl_Blinker::FAST );}
-          class Fl_Blinker
+        Fl_Group {} {open
+          xywh {740 30 115 40}
+        } {
+          Fl_Button solo_blinker {
+            label SOLO
+            xywh {800 32 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 74 selection_color 92 labelfont 2 labelcolor 39 deactivate
+            code0 {\#include "FL/Fl_Blink_Button.H"}
+            class Fl_Blink_Button
+          }
+          Fl_Button rec_blinker {
+            label REC
+            xywh {800 52 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 72 selection_color 88 labelfont 2 labelcolor 39 deactivate
+            code0 {\#include "FL/Fl_Blink_Button.H"}
+            class Fl_Blink_Button
+          }
+          Fl_Button selected_blinker {
+            label SEL
+            xywh {745 52 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 13 selection_color 5 labelfont 2 labelcolor 39 deactivate
+            code0 {\#include "FL/Fl_Blink_Button.H"}
+            code1 {o->blink( false );}
+            class Fl_Blink_Button
+          }
+          Fl_Button seek_blinker {
+            label SEEK selected
+            xywh {745 32 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 10 selection_color 2 labelfont 2 labelcolor 39 deactivate
+            code0 {\#include "FL/Fl_Blink_Button.H"}
+            code1 {o->blink_interval( Fl_Blink_Button::FAST );}
+            class Fl_Blink_Button
+          }
         }
         Fl_Box stats_box {
           label {<stats>}
-          xywh {810 1 215 21} labelsize 13 labelcolor 53 align 88
+          xywh {745 0 235 24} labelsize 13 labelcolor 53 align 88
+        }
+        Fl_Button sm_blinker {
+          label SM
+          xywh {985 5 35 15} box ROUNDED_BOX down_box ROUNDED_BOX color 45 selection_color 93 labelfont 3 labelcolor 39 deactivate
+          class Fl_Button
         }
       }
       Fl_Progress progress {
@@ -706,13 +718,13 @@ ab.run();}
       }
       Fl_Box {} {
         label {<Timeline>}
-        xywh {0 72 1024 695} box FLAT_BOX color 47 labelsize 100 resizable
+        xywh {0 75 1025 692} box FLAT_BOX color 47 labelsize 100 resizable
         code0 {timeline = o;}
         class Timeline
       }
       Fl_Box project_name {
         label {<project name>}
-        private xywh {450 0 365 22} labeltype SHADOW_LABEL labelfont 2
+        private xywh {440 0 305 24} labeltype SHADOW_LABEL labelfont 2
         code0 {o->label( Project::name() );}
       }
     }

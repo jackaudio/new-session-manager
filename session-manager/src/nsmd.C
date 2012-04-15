@@ -82,7 +82,8 @@ enum {
     COMMAND_QUIT,
     COMMAND_KILL,
     COMMAND_SAVE,
-    COMMAND_OPEN
+    COMMAND_OPEN,
+    COMMAND_START
 };
 
 struct Client
@@ -568,6 +569,7 @@ launch ( const char *executable, const char *client_id )
         }
     }
 
+    c->pending_command( COMMAND_START );
     c->pid = pid;
 
     MESSAGE( "Process has pid: %i", pid );
@@ -743,8 +745,9 @@ OSC_HANDLER( announce )
           i != client.end();
           ++i )
     {
-        if ( ! strcmp( (*i)->executable_path, executable_path ) 
-             && ! (*i)->active )
+        if ( ! strcmp( (*i)->executable_path, executable_path ) &&
+             ! (*i)->active &&
+             (*i)->pending_command() == COMMAND_START )
         {
             // I think we've found the slot we were looking for.
             MESSAGE( "Client was expected." );

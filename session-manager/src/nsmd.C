@@ -596,7 +596,7 @@ command_client_to_save ( Client *c )
         if ( gui_is_active )
             osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "save" );
     }
-    else if ( c->is_dumb_client() )
+    else if ( c->is_dumb_client() && c->pid )
     {
         // this is a dumb client... 
         if ( gui_is_active )

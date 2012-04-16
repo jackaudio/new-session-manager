@@ -51,8 +51,6 @@ class Canvas : public trackable
 
         int margin_left, margin_top;
         int div_w, div_h;
-        int border_w;
-
 
         int old_div_w, old_div_h;
 

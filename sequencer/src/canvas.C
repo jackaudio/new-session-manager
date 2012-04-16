@@ -213,8 +213,6 @@ Canvas::resize ( void )
     m.div_w = (m.width - m.margin_left) / m.vp->w;
     m.div_h = (m.height - m.margin_top) / m.vp->h;
 
-    m.border_w = min( m.div_w, m.div_h ) / 8;
-
     m.mapping_drawn = m.ruler_drawn = false;
 }
 
@@ -358,7 +356,7 @@ Canvas::flip ( void )
                     c->flags |= F_SELECTION;
 
             if ( *c != *p )
-                gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h, m.border_w,
+                gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h,
                                 shape, c->state, c->flags, c->color );
         }
 
@@ -574,7 +572,7 @@ Canvas::redraw ( void )
             if ( m.vp->x + x == m.playhead )
                 c.flags |= F_PLAYHEAD;
 
-            gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h, m.border_w,
+            gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h,
                             shape, c.state, c.flags, c.color );
         }
 }

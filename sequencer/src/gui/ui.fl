@@ -1092,8 +1092,8 @@ config.follow_playhead = val ? true : false;}
               xywh {0 0 74 24}
             } {
               MenuItem {} {
-                label Circle
-                callback {pattern::note_shape = CIRCLE;
+                label Box
+                callback {pattern::note_shape = BOX;
                pattern_canvas_widget->redraw();}
                 xywh {0 0 40 24} type Radio
               }

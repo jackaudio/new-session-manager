@@ -172,7 +172,7 @@ gui_draw_string ( int x, int y, int w, int h, int color, const char *s, bool dra
 }
 
 void
-gui_draw_shape ( int x, int y, int w, int h, int bw, int shape, int state, int flags, int color  )
+gui_draw_shape ( int x, int y, int w, int h, int shape, int state, int flags, int color  )
 {
     /* take advantage of FLTK's clipping */
     if ( ! fl_not_clipped( x, y, w, h ) )
@@ -196,61 +196,29 @@ gui_draw_shape ( int x, int y, int w, int h, int bw, int shape, int state, int f
         c1 = state_colors[ state ];
         c2 = fl_color_average( FL_WHITE, c1, 0.1 );
     }
-    
-    
-    int thickness = 2;
-
-    /* if ( state == EMPTY && shape == SQUARE ) */
-    /*     shape = HOLLOW_SQUARE; */
-
+        
     if ( flags & F_SELECTION )
         fl_color( fl_darker( fl_color() ) );
 
+    int bw = 1;
+
     switch ( shape )
     {
-        case CIRCLE:
-            fl_color( c1 );
-            fl_pie( x + bw / 2, y + bw / 2, w - bw, h - bw, 0, 360 );
-            if ( draw_borders )
-            {
-                fl_color( c2 );
-                fl_line_style( FL_SOLID, thickness );
-                fl_arc( x + bw / 2, y + bw / 2, w - bw, h - bw, 0, 360 );
-                fl_line_style( FL_SOLID, 0 );
-            }
-            break;
         case SQUARE:
+//            fl_rectf( x, y, w, h, FL_BLACK );
+
             fl_color( c1 );
             fl_rectf( x + bw, y + bw, w - bw * 2, h - bw * 2 );
             if ( draw_borders )
             {
                 fl_color( c2 );
-                fl_line_style( FL_SOLID, thickness );
-                fl_rect( x + bw, y + bw, w - bw * 2, h - bw * 2 );
+                fl_line_style( FL_SOLID, 2 );
+                fl_rect( x + bw + 1, y + bw + 1, w - (bw+1) * 2, h - (bw+1) * 2 );
                 fl_line_style( FL_SOLID, 0 );
             }
             break;
-        case HALF_CIRCLE:
-            fl_color( c1 );
-            fl_pie( x + bw / 2, y + bw / 2, w - bw, h - bw, 0, 360 / 2);
-            if ( draw_borders )
-            {
-                fl_color( c2 );
-                fl_line_style( FL_SOLID, thickness );
-                fl_pie( x + bw / 2, y + bw / 2, w - bw, h - bw, 0, 360 / 2);
-                fl_line_style( FL_SOLID, 0 );
-            }
-            break;
-        case DIAMOND:
-            fl_color( c1 );
-            fl_polygon( x + w / 2, y + bw / 2, x + w - bw / 2, y + h / 2, x + w / 2, y + h - bw / 2, x + bw / 2, y + h / 2 );
-            if ( draw_borders )
-            {
-                fl_color( c2 );
-                fl_line_style( FL_SOLID, thickness );
-                fl_loop( x + w / 2, y + bw / 2, x + w - bw / 2, y + h / 2, x + w / 2, y + h - bw / 2, x + bw / 2, y + h / 2 );
-                fl_line_style( FL_SOLID, 0 );
-            }
+        case BOX:
+            fl_draw_box( FL_THIN_UP_BOX, x + bw, y + bw, w - bw * 2, h - bw * 2, c1 );
             break;
         default:
             ASSERTION( "unknown shape" );

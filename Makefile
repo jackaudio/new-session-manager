@@ -19,8 +19,16 @@
 
 SUBDIRS=lib nonlib FL timeline mixer session-manager sequencer
 
+all: .config
+
+.config: configure
+	./configure
+
+config: configure
+	./configure
+
 all:
-	@ for dir in $(SUBDIRS); do $(MAKE) -s -C $$dir; done
+	@ for dir in $(SUBDIRS); do echo Building $$dir; $(MAKE) -s -C $$dir; done
 
 clean:
 	@ for dir in $(SUBDIRS); do $(MAKE) -s -C $$dir clean; done
@@ -28,5 +36,3 @@ clean:
 install:
 	@ for dir in $(SUBDIRS); do $(MAKE) -s -C $$dir install; done
 
-config:
-	@ for dir in $(SUBDIRS); do $(MAKE) -s -C $$dir config; done

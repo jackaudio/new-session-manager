@@ -254,9 +254,9 @@ Module::Port::generate_osc_path ()
 }
 
 void
-Module::Port::handle_signal_connection_state_changed ( OSC::Signal * )
+Module::Port::handle_signal_connection_state_changed ( OSC::Signal *, void *o )
 {
-    module()->redraw();
+    ((Module::Port*)o)->module()->redraw();
 }
 
 void
@@ -286,8 +286,8 @@ Module::Port::change_osc_path ( char *path )
                                                               0.0, 1.0, scaled_default,
                                                               &Module::Port::osc_control_change_cv, this );
 
-            _scaled_signal->signal_connection_state_changed.connect(
-                sigc::mem_fun( this, &Module::Port::handle_signal_connection_state_changed ) );
+            
+            _scaled_signal->connection_state_callback( handle_signal_connection_state_changed, this );
 
             _unscaled_signal = mixer->osc_endpoint->add_signal( unscaled_path,
                                                                 OSC::Signal::Input,

@@ -259,7 +259,7 @@ public:
         OSC::Signal *_scaled_signal;
         OSC::Signal *_unscaled_signal;
 
-        void handle_signal_connection_state_changed ( OSC::Signal *s );
+        static void handle_signal_connection_state_changed ( OSC::Signal *, void *o );
     };
 
     void bbox ( int &X, int &Y, int &W, int &H )

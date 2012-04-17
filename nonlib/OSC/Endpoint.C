@@ -306,7 +306,7 @@ namespace OSC
             
             DMESSAGE( "Peer %s has disconnected from signal %s", p->name, ps->path() );
  
-            s->signal_connection_state_changed( s );
+            s->_connection_state_callback( s, s->_connection_state_userdata );
 
             return 0;
         }
@@ -358,7 +358,7 @@ namespace OSC
         /* make a record of it ourselves */
         ps->_outgoing.push_back( s );
 
-        s->signal_connection_state_changed( s );
+        s->_connection_state_callback( s, s->_connection_state_userdata );
 
         /*     return 0; */
         /* } */
@@ -872,7 +872,7 @@ namespace OSC
                 p->_scanning = false;
                 DMESSAGE( "Done scanning %s", p->name );
 
-                ep->signal_peer_scan_complete();
+                ep->_peer_scan_complete_callback(ep->_peer_scan_complete_userdata);
             }
             else if ( argc == 7 && p->_scanning )
             {

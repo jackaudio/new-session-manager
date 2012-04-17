@@ -25,8 +25,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <sigc++/sigc++.h>
-
 namespace OSC
 {
     class OSC_Value
@@ -163,6 +161,9 @@ namespace OSC
         void *_user_data;
         Parameter_Limits _parameter_limits;
         
+        void (*_connection_state_callback)(OSC::Signal *, void*);
+        void *_connection_state_userdata;
+
     public:
 
         Signal ( const char *path, Direction dir )
@@ -175,7 +176,11 @@ namespace OSC
                 _peer = NULL;
             }
 
-        sigc::signal <void,Signal*> signal_connection_state_changed;
+        void connection_state_callback ( void(*_cb)(OSC::Signal *, void*), void *userdata) 
+            {
+                _connection_state_callback = _cb;
+                _connection_state_userdata = userdata;
+            }
 
         ~Signal ( );
 
@@ -278,6 +283,9 @@ namespace OSC
         void del_signal ( Signal *signal );
         void send_signal_rename_notifications( Signal *s );
 
+        void (*_peer_scan_complete_callback)(void*);
+        void *_peer_scan_complete_userdata;
+
     public:
 
         void list_peer_signals ( void (*callback) (const char *, const OSC::Signal *, void * ), void *v );
@@ -355,7 +363,12 @@ namespace OSC
         // can be used to point back to owning object.
         void *owner;
 
-        sigc::signal <void> signal_peer_scan_complete;
+        void peer_scan_complete_callback ( void(*_cb)(void*), void *userdata) 
+            {
+                _peer_scan_complete_callback = _cb;
+                _peer_scan_complete_userdata = userdata;
+            }
+
 
         friend Signal::~Signal();
         friend void Signal::rename ( const char *name );

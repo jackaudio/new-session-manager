@@ -17,7 +17,6 @@ require_command ar ar
 require_command makedepend makedepend
 require_package JACK 0.103.0 jack
 require_package liblo 0.23 liblo
-require_package sigcpp 2.0.0 sigc++-2.0
 
 test_version `version_of liblo` 0.26 || warn "Version $(version_of liblo) of liblo is slow to create servers. Consider upgrading to 0.26 or later"
 

@@ -122,6 +122,8 @@ class Timeline : public Fl_Single_Window, public RWLock
 
     std::list <const Sequence_Widget*> _tempomap;
 
+    static void handle_peer_scan_complete ( void * v );
+
 public:
 
     OSC::Endpoint *osc;

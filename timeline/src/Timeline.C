@@ -1620,7 +1620,7 @@ Timeline::init_osc ( const char *osc_port )
     /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
     Fl::add_timeout( OSC_INTERVAL, &Timeline::check_osc, this );
 
-    osc->signal_peer_scan_complete.connect( sigc::mem_fun( this, &Timeline::connect_osc ) );
+    osc->peer_scan_complete_callback( &Timeline::handle_peer_scan_complete, this );
 
     if ( ! osc_thread )
     {
@@ -1674,6 +1674,12 @@ Timeline::reply_to_finger ( lo_message msg )
               instance_name );
 
     lo_address_free( reply );
+}
+
+void 
+Timeline::handle_peer_scan_complete ( void *o )
+{
+    ((Timeline*)o)->connect_osc();
 }
 
 void

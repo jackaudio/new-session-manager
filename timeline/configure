@@ -28,7 +28,6 @@ require_command FLUID lib/fltk/fluid/fluid
 require_package JACK 0.103.0 jack
 require_package sndfile 1.0.17 sndfile
 require_package liblo 0.23 liblo
-require_package sigcpp 2.0.0 sigc++-2.0
 suggest_package XPM 2.0.0 xpm
 
 if ! hostname_resolvable

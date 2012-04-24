@@ -31,7 +31,7 @@ endif
 
 src/timeline: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a $(FLTK_LIBS)
 	@ echo -n Linking timeline...
-	@ $(CXX) $(CXXFLAGS) $(INCLUDES) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@ $(LIBS)  -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
 
 Timeline: src/timeline
 

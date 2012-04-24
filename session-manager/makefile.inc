@@ -18,11 +18,11 @@ CFLAGS += $(LIBLO_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_CFLAGS) $(FLTK_CFLAGS)
 
 src/nsmd: src/nsmd.o nonlib/libnonlib.a
 	@ echo -n Linking session handler.
-	@ $(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -Lnonlib -lnonlib && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS) -Lnonlib -lnonlib && echo $(DONE)
 
 src/session-manager: src/session-manager.o nonlib/libnonlib.a $(FLTK_LIBS)
 	@ echo -n Linking session handler.
-	@ $(CXX) $(CXXFLAGS) $(FLTK_LDFLAGS) $(XPM_LIBS) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $^ -o $@ $(FLTK_LDFLAGS) $(XPM_LIBS) $(LIBS) -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
 
 src/nsm-proxy: src/nsm-proxy.o  nonlib/libnonlib.a
 	@ echo -n Linking NSM Proxy.
@@ -36,10 +36,10 @@ src/nsm-proxy-gui: src/NSM_Proxy_UI.o src/nsm-proxy-gui.o nonlib/libnonlib.a $(F
 	@ $(CXX) $(CXXFLAGS) $(FLTK_LDFLAGS) $(XPM_LIBS) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib && echo $(DONE)
 
 src/send_osc: src/send_osc.o nonlib/libnonlib.a
-	@ $(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -Lnonlib -lnonlib && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS) -Lnonlib -lnonlib && echo $(DONE)
 
 src/jackpatch: src/jackpatch.o
-	@ $(CXX) $(CXXFLAGS) $(JACK_LIBS) $(LIBLO_LIBS) $^ -o $@ && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $^ -o $@ $(JACK_LIBS) $(LIBLO_LIBS) && echo $(DONE)
 
 
 Session: src/send_osc src/nsmd src/session-manager src/jackpatch src/nsm-proxy src/nsm-proxy-gui

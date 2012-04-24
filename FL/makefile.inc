@@ -21,7 +21,7 @@ FL: FL/libfl_widgets.a
 
 ntk-chtheme: ntk-chtheme.o $(FLTK_LIBS) FL/libfl_widgets.a
 	@ echo -n Linking session handler.
-	@ $(CXX) $(CXXFLAGS) $(FLTK_LDFLAGS) $(LIBS) $^ -o $@ -LFL -lfl_widgets  && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $^ -o $@ $(FLTK_LDFLAGS) $(LIBS) -LFL -lfl_widgets && echo $(DONE)
 
 clean:
 	rm -f $(OBJS) FL/libfl_widgets.a .deps

@@ -18,7 +18,7 @@ CFLAGS += $(FLTK_CFLAGS) $(JACK_CFLAGS) $(LIBLO_CFLAGS) $(SIGCPP_CFLAGS) $(XPM_C
 
 src/mixer: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a $(FLTK_LIBS)
 	@ echo -n Linking mixer...
-	@ $(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib -ldl && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS) -LFL -lfl_widgets -Lnonlib -lnonlib -ldl && echo $(DONE)
 
 Mixer: src/mixer
 

@@ -29,7 +29,7 @@ clean:
 
 src/sequencer: $(OBJS) FL/libfl_widgets.a nonlib/libnonlib.a $(FLTK_LIBS)
 	@ echo -n Linking sequencer...
-	@ $(CXX) $(CXXFLAGS) $(LIBS) $^ -o $@ -LFL -lfl_widgets -Lnonlib -lnonlib -ldl && echo $(DONE)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS) -LFL -lfl_widgets -Lnonlib -lnonlib -ldl && echo $(DONE)
 
 
 ifeq ($(JACK_MIDI_PROTO_API),yes)

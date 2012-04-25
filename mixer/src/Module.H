@@ -184,7 +184,9 @@ public:
 
         void control_value_no_callback ( float f )
             {
-                THREAD_ASSERT( UI );
+              /* can also be called from the OSC thread */
+                ASSERT( Thread::is( "UI" ) || Thread::is( "OSC" ),
+                        "Function called from wrong thread! (is %s)",  Thread::current()->name() );
 
                 if ( buffer() )
                 {

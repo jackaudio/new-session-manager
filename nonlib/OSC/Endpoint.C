@@ -522,6 +522,7 @@ namespace OSC
             /* reply with current value */
             o = (Signal*)user_data;
             o->_endpoint->send( lo_message_get_source( msg ), "/reply", path, o->value() );
+            return 0;
         }
         else
         {
@@ -533,8 +534,6 @@ namespace OSC
         if ( ep )
             p = ep->find_peer_by_address( lo_message_get_source( msg ) );
 
-        if ( 0 == o->_incoming.size() )
-            return 0;
 
         if ( !p )
         {
@@ -547,6 +546,9 @@ namespace OSC
 
             /* remote signal */
             /* if ( t->_peer ) */
+
+            /* if ( 0 == o->_incoming.size() ) */
+            /*     return 0; */
 
             for ( std::list<Signal*>::const_iterator i = o->_incoming.begin();
                   i != o->_incoming.end();

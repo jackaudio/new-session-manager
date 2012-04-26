@@ -36,6 +36,7 @@ class Audio_Region : public Sequence_Region
 public:
 
     static bool inherit_track_color;
+    static bool show_box;
 
     struct Fade
     {

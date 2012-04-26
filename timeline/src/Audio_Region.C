@@ -48,6 +48,7 @@ extern Timeline *timeline;
 extern Transport *transport;
 
 bool Audio_Region::inherit_track_color = true;
+bool Audio_Region::show_box = true;
 
 Fl_Boxtype Audio_Region::_box = FL_UP_BOX;
 
@@ -361,8 +362,6 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
     const int height = dh;
     const int width = timeline->ts_to_x( fade.length );
 
-    fl_color( fl_lighter( FL_BLACK ) );
-
     fl_push_matrix();
 
     if ( dir == Fade::In )
@@ -428,14 +427,25 @@ Audio_Region::draw_box( void )
         selection_color = fl_inactive( selection_color );
     }
 
-    if ( selected() )
-        fl_draw_box( fl_down( box() ), x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ) + 50, h(), selection_color );
-    else
-        fl_draw_box( box(), x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ) + 50, h(), color );
+    Fl_Boxtype b;
+    Fl_Color c = color;
 
+    if ( Audio_Region::show_box )
+    {
+        b = box();
+    }
+    else
+    {
+        b = FL_DOWN_FRAME;
+    }
+    
+    if ( selected() )
+        fl_draw_box( fl_down( b ), x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ) + 50, h(), selection_color );
+    else
+        fl_draw_box( b, x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ) + 50, h(), c );
+
+    /* used to draw fades here */
     /* draw fades */
-    draw_fade( _fade_in, Fade::In, false, x(), w() );
-    draw_fade( _fade_out, Fade::Out, false, x(), w() );
 
     fl_pop_clip();
 }
@@ -487,9 +497,16 @@ Audio_Region::draw ( void )
 /*     fl_color( FL_RED ); */
 /*     fl_line( rx + rw, y(), rx + rw, y() + h() ); */
 
-    /* draw fade curve outlines--this is only here because of crossfades */
-    draw_fade( _fade_in, Fade::In, true, X, W );
-    draw_fade( _fade_out, Fade::Out, true, X, W );
+    {
+        Fl_Color c = fl_color_average( FL_DARK1,
+                                       Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color,
+                                       0.50f );
+    
+        fl_color( fl_color_add_alpha( c, 127 ) );
+
+        draw_fade( _fade_in, Fade::In, false, W, W );
+        draw_fade( _fade_out, Fade::Out, false, X, W );
+    }
 
     int xo = 0;
 
@@ -586,6 +603,11 @@ Audio_Region::draw ( void )
 //            DMESSAGE( "using cached peaks" );
         }
 
+        Fl_Color c = _color;
+
+
+//            c = fl_color_average( FL_BLACK, FL_RED, 0.20 );
+
         if ( peaks && pbuf )
         {
             int ch = (h() - Fl::box_dh( box() ))  / channels;
@@ -612,7 +634,7 @@ Audio_Region::draw ( void )
     }
     while ( _loop && xo < W );
 
-    timeline->draw_measure_lines( X, Y, W, H, _box_color );
+    timeline->draw_measure_lines( X, Y, W, H );
 
 /*     fl_color( FL_BLACK ); */
 /*     fl_line( rx, Y, rx, Y + H ); */

@@ -523,6 +523,13 @@ timeline->redraw();}
 timeline->redraw();}
                 xywh {50 50 40 25} type Toggle value 1
               }
+              MenuItem {} {
+                label {Show box}
+                callback {Audio_Region::show_box = menu_picked_value( o );
+
+timeline->redraw();}
+                xywh {50 50 40 25} type Toggle value 1
+              }
             }
             Submenu {} {
               label {&Control Sequence} open

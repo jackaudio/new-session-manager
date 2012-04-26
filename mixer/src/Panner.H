@@ -31,6 +31,8 @@ using namespace std;
 class Panner : public Fl_Widget
 {
 
+    void draw_the_box( int, int, int, int );
+
     struct Point
     {
         /* axes */

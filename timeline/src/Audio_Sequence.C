@@ -24,7 +24,7 @@
 
 #include <sys/time.h>
 #include <FL/fl_ask.H>
-
+#include <FL/Fl.H>
 #include "Audio_Sequence.H"
 #include "Waveform.H"
 
@@ -204,17 +204,22 @@ Audio_Sequence::draw ( void )
                              (o->x() + o->w()) - (*r)->x(),
                              o->h() );
 
-                Fl_Color c = fl_color_average( o->box_color(), (*r)->box_color(), 0.50f );
-                c = fl_color_average( c, FL_YELLOW, 0.30f );
+                /* Fl_Color c = fl_color_average( o->color(), (*r)->color(), 0.50f ); */
+                /* c = fl_color_average( c, FL_YELLOW, 0.30f ); */
+                
+                /* Fl_Color c = fl_color_add_alpha( FL_YELLOW, 50 ); */
+                Fl_Color c = FL_YELLOW;
+
+                /* fl_push_use_cairo( true ); */
 
                 fl_push_clip( b.x, b.y, b.w, b.h );
 
                 draw_box( FL_FLAT_BOX, b.x - 100, b.y, b.w + 200, b.h, c );
                 draw_box( FL_UP_FRAME, b.x - 100, b.y, b.w + 200, b.h, c );
 
-
                 fl_pop_clip();
 
+                /* fl_pop_use_cairo(); */
             }
         }
 
@@ -236,9 +241,9 @@ Audio_Sequence::draw ( void )
                 Rectangle b( (*r)->x(), o->y(), (o->x() + o->w()) - (*r)->x(), o->h() );
 
                 /* draw overlapping waveforms in X-ray style. */
-                bool t = Waveform::fill;
+                /* bool t = Waveform::fill; */
 
-                Waveform::fill = false;
+                /* Waveform::fill = false; */
 
                 fl_push_clip( b.x, b.y, b.w, b.h );
 
@@ -246,9 +251,7 @@ Audio_Sequence::draw ( void )
                 (*r)->draw();
 
                 fl_pop_clip();
-
-                Waveform::fill = t;
-
+                /* Waveform::fill = t; */
             }
         }
     }

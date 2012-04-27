@@ -1,23 +1,23 @@
 
-OBJS:= fltk/lib/libfltk.a fltk/lib/libfltk_images.a
-SRCS:= fltk/src/*.cpp fltk/FL/*.H
+OBJS:= ntk/lib/libntk.a ntk/lib/libntk_images.a
+SRCS:= ntk/src/*.cxx ntk/FL/*.H
 
-$(SRCS): fltk/config.h
-	@ echo Building FLTK
-	cd fltk && make
+$(SRCS): ntk/config.h
+	@ echo Building NTK
+	cd ntk && make
 
-$(OBJS): fltk/config.h $(SRCS)
-	@ echo Building FLTK
-	cd fltk && make
+$(OBJS): ntk/config.h $(SRCS)
+	@ echo Building NTK
+	cd ntk && make
 
-config:
-	@ echo Configuring FLTK
-	cd fltk && ./configure --prefix=/dev/null --disable-shared --disable-gl --enable-threads --enable-xft --disable-xdbe --enable-xinerama
+ntk/config.h: Makefile
+	@ echo Configuring NTK
+	cd ntk && ./configure --prefix=/usr/local --enable-shared --disable-gl --enable-threads --enable-xft --enable-cairo --enable-cairoext --enable-xinerama
 
-# config: $(OBJS)
+config: ntk/config.h
 
 clean:
 
 all: $(OBJS)
-	@ echo Building FLTK
-	cd fltk && make
+	@ echo Building NTK
+	cd ntk && make

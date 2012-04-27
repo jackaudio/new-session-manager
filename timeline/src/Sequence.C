@@ -280,7 +280,7 @@ Sequence::draw ( void )
 
 //    printf( "track::draw %d,%d %dx%d\n", X,Y,W,H );
 
-    timeline->draw_measure_lines( X, Y, W, H, color() );
+//    timeline->draw_measure_lines( X, Y, W, H, color() );
 
     for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
         (*r)->draw_box();

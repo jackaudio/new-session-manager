@@ -277,17 +277,17 @@ void Mixer::cb_menu(Fl_Widget* o) {
     }
     else if (! strcmp( picked, "&Options/&Display/&Knobs/&Burnished") )
     {
-        Fl_Arc_Dial::default_style( Fl_Arc_Dial::BURNISHED_DIAL );
+        Fl_Dial::default_style( Fl_Dial::BURNISHED_DIAL );
         redraw_windows();
     }
     else if (! strcmp( picked, "&Options/&Display/&Knobs/&Arc") )
     {
-        Fl_Arc_Dial::default_style( Fl_Arc_Dial::ARC_DIAL );
+        Fl_Dial::default_style( Fl_Dial::ARC_DIAL );
         redraw_windows();
     }
     else if (! strcmp( picked, "&Options/&Display/&Knobs/&Plastic") )
     {
-        Fl_Arc_Dial::default_style( Fl_Arc_Dial::PLASTIC_DIAL );
+        Fl_Dial::default_style( Fl_Dial::PLASTIC_DIAL );
         redraw_windows();
     }
     else if (! strcmp( picked, "&Options/&Display/&Sliders/&Nice") )

@@ -31,7 +31,7 @@
 #include <FL/Fl_Menu_.H>
 #include <FL/Fl_Light_Button.H>
 #include <FL/fl_draw.H>
-#include "FL/Fl_Arc_Dial.H"
+#include "FL/Fl_Dial.H"
 #include "FL/Fl_Labelpad_Group.H"
 #include "FL/Fl_Value_SliderX.H"
 #include "Panner.H"
@@ -381,7 +381,7 @@ Controller_Module::connect_to ( Port *p )
     }
     else
     {
-        { Fl_Arc_Dial *o = new Fl_Arc_Dial( 0, 0, 50, 50, p->name() );
+        { Fl_Dial *o = new Fl_Dial( 0, 0, 50, 50, p->name() );
             w = o;
             control = o;
 

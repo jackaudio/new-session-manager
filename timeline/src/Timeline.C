@@ -21,6 +21,7 @@
  * provides cursor overlays, scrolling, zooming, measure lines, tempo
  * map and just about everything else. */
 
+#include <FL/Fl.H>
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Scrollbar.H>
@@ -701,19 +702,16 @@ draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
 {
     Fl_Color *color = (Fl_Color*)arg;
 
-    fl_color( FL_BLACK );
-    fl_line_style( FL_SOLID, 0 );
+    Fl_Color c = fl_color_average( FL_LIGHT3, FL_RED, 0.50 );
 
     if ( bbt.beat )
-        ++color;
+        c = FL_LIGHT3;
 
-    fl_color( *color );
-
+    fl_color( fl_color_add_alpha( c, 48 ) );
+    
     const int x = timeline->ts_to_x( frame - timeline->xoffset ) + Track::width();
 
-    fl_line( x, 0, x, 5000 );
-
-    fl_line_style( FL_SOLID, 0 );
+    fl_line( x, 0, x, timeline->h() );
 }
 
 /* FIXME: wrong place for this */
@@ -858,25 +856,21 @@ done:
 
 /** maybe draw appropriate measure lines in rectangle defined by X, Y, W, and H, using color /color/ as a base */
 void
-Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
+Timeline::draw_measure_lines ( int X, int Y, int W, int H )
 {
     if ( ! draw_with_measure_lines )
         return;
 
-    Fl_Color colors[2];
-
-    colors[1] = fl_color_average( FL_BLACK, color, 0.65f );
-    colors[0] = fl_color_average( FL_RED, colors[1], 0.65f );
+    fl_line_style( FL_SOLID, 0 );
 
     const nframes_t start = x_to_offset( X );
     const nframes_t length = x_to_ts( W );
 
     fl_push_clip( X, Y, W, H );
 
-    render_tempomap( start, length, draw_measure_cb, &colors );
+    render_tempomap( start, length, draw_measure_cb, NULL );
 
     fl_pop_clip();
-
 }
 
 void
@@ -895,6 +889,7 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
 
     fl_push_clip( tl->tracks->x(), tl->rulers->y() + tl->rulers->h(), tl->tracks->w(), tl->h() - tl->rulers->h() - tl->hscroll->h() );
     tl->draw_child( *tl->tracks );
+
     fl_pop_clip();
 
     fl_pop_clip();
@@ -958,6 +953,7 @@ Timeline::draw ( void )
 
         fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), hscroll->y() - (rulers->y() + rulers->h()) );
         draw_child( *tracks );
+
         fl_pop_clip();
 
         draw_child( *hscroll );
@@ -988,7 +984,7 @@ Timeline::draw ( void )
         else
             fl_scroll( X, Y, W, H, dx, dy, draw_clip, this );
     }
-    
+
     if ( damage() & FL_DAMAGE_CHILD )
     {
         fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
@@ -1012,6 +1008,8 @@ done:
 
     _old_xposition = xoffset;
     _old_yposition = _yposition;
+
+
 }
 
 /** draw a single cursor line at /frame/ with color /color/ using symbol routine /symbol/ for the cap */

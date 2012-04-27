@@ -622,6 +622,8 @@ Track::add ( Control_Sequence *t )
     t->track( this );
 
     control->add( t );
+    
+    t->color( color() );
 
     engine->unlock();
 
@@ -831,6 +833,15 @@ Track::menu ( void ) const
 void
 Track::draw ( void )
 {
+    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
+        return;
+
+    int X, Y, W, H;
+    
+    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
+
+    fl_push_clip( x(), y(), w(), h() );
+
     if ( _selected )
     {
         Fl_Color c = color();
@@ -843,6 +854,10 @@ Track::draw ( void )
     }
     else
         Fl_Group::draw();
+
+    timeline->draw_measure_lines( X, Y, W, H );
+
+    fl_pop_clip();
 }
 
 int

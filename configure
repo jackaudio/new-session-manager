@@ -21,7 +21,7 @@ begin_tests
 require_command ar ar
 require_command makedepend makedepend
 require_FLTK 1.3.0 images
-require_command FLUID lib/fltk/fluid/fluid
+require_command FLUID lib/ntk/fluid/fluid
 require_package JACK 0.103.0 jack
 test_version `version_of jack` 0.105.0 || append "JACK_MIDI_PROTO_API=yes"
 require_package sndfile 1.0.17 sndfile

@@ -19,8 +19,8 @@
 
 /* routines to draw a waveform from peak data */
 
+#include <FL/Fl.H>
 #include <FL/fl_draw.H>
-
 #include "Waveform.H"
 
 #include <math.h>
@@ -63,45 +63,75 @@ Waveform::draw ( int X, int Y, int W, int H,
 
     const int halfheight = H / 2;
     const int mid = Y + halfheight;
+    const int ty = Y + halfheight;
 
     W = min( peaks, W );
-
+    
     if ( Waveform::fill )
     {
-        j = start;
-        for ( int x = X; x < X + W; ++x, j += skip )
+        if ( Waveform::vary_color )
         {
-            const Peak p = pbuf[ j ];
+            j = start;
+            for ( int x = X; x < X + W; ++x, j += skip )
+            {
+                const Peak p = pbuf[ j ];
 
-            const float diff = fabs( p.max - p.min );
-
-            if ( diff > 2.0f )
-                fl_color( FL_RED );
-            else
-                if ( Waveform::vary_color )
-                    fl_color( fl_color_average( FL_WHITE, color, diff * 0.5f ) );
+                const float diff = fabs( p.max - p.min );
+ 
+               if ( diff > 2.0f )
+                    fl_color( FL_RED );
                 else
-                    fl_color( color );
+                    if ( Waveform::vary_color )
+                        fl_color( fl_color_average( FL_WHITE, color, diff * 0.5f ) );
+                    else
+                        fl_color( color );
 
-            const int ty = mid - ( halfheight * p.min );
-            const int by = mid - ( halfheight * p.max );
-            fl_line( x, ty, x, by );
+                const int ty = mid - ( halfheight * p.min );
+                const int by = mid - ( halfheight * p.max );
+                fl_line( x, ty, x, by );
+            }
+        }
+        else
+        {
+
+//            fl_color( fl_color_add_alpha( color, 127 ) );
+            fl_color( color );
+            
+            fl_begin_complex_polygon();
+
+            j = start;
+
+            for ( int x = X; x < X + W; x++, j += skip  )
+                fl_vertex( x, ty - ( halfheight * pbuf[ j ].min ) );
+
+//        fl_end_line();
+
+//        fl_begin_line();
+
+            j = start + ( W * skip );
+
+            for ( int x = X + W; x >= X; x--, j -= skip )
+                fl_vertex( x, ty - ( halfheight * pbuf[ j ].max ) );
+
+            fl_end_complex_polygon();
+
+//        fl_line_style( FL_SOLID, 0 );
         }
     }
-
-    const int ty = Y + halfheight;
 
     if ( Waveform::outline )
     {
         fl_color( fl_darker( fl_darker( color ) ) );
 
-        fl_line_style( FL_SOLID | FL_CAP_FLAT, 2 );
+        fl_line_style( FL_SOLID, 0 );
 
         fl_begin_line();
 
+        unsigned long end = start + W;
+
         j = start;
 
-        for ( int x = X; x < X + W; ++x, j += skip )
+        for ( int x = X; x < X + W; x++, j += skip  )
             fl_vertex( x, ty - ( halfheight * pbuf[ j ].min ) );
 
         fl_end_line();
@@ -110,7 +140,7 @@ Waveform::draw ( int X, int Y, int W, int H,
 
         j = start;
 
-        for ( int x = X; x < X + W; ++x, j += skip )
+        for ( int x = X; x < X + W; x++, j += skip )
             fl_vertex( x, ty - ( halfheight * pbuf[ j ].max ) );
 
         fl_end_line();

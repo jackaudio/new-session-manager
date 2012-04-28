@@ -260,8 +260,8 @@ Grid::prev_note_x ( int x ) const
 void
 Grid::_fix_length ( void )
 {
-    tick_t beats = (_rw->length / PPQN);
-    tick_t rem = _rw->length % PPQN;
+    tick_t beats = (unsigned long)(_rw->length / PPQN);
+    tick_t rem = (unsigned long)_rw->length % PPQN;
 
     _rw->length = (rem ? (beats + 1) : beats) * PPQN;
 }

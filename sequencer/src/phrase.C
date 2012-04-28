@@ -22,6 +22,7 @@
 #include "pattern.H"
 #include "smf.H"
 #include "common.h"
+#include <math.h>
 
 vector <phrase*> phrase::_phrases;
 signal <void> phrase::signal_create_destroy;
@@ -197,7 +198,7 @@ phrase::play ( tick_t start, tick_t end )
     int num_played = tick / d->length;
     tick_t offset = _start + (d->length * num_played);
 
-    _index = tick % d->length;
+    _index = fmod( tick, d->length );
 
     if ( _index < end - start )
         DMESSAGE( "Triggered phrase %d at tick %lu (ls: %lu, le: %lu, o: %lu)", number(), start, _start, _end, offset  );

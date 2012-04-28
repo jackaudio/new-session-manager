@@ -23,8 +23,7 @@
 #include "canvas.H"
 #include "mapping.H"
 // #include "event.H"
-
-typedef unsigned long tick_t;
+#include "common.h"
 
 #include <vector>
 using std::vector;

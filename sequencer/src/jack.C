@@ -312,7 +312,7 @@ process ( jack_nframes_t nframes, void *arg )
 
     /* ph-nph is exclusive. It is important that in normal continuous playback each tick is covered exactly once! */
     const tick_t ph = transport.ticks;
-    const tick_t nph = trunc( transport.ticks + transport.ticks_per_period );
+    const tick_t nph = transport.ticks + transport.ticks_per_period;
 
     if ( ! transport.valid )
         goto schedule;
@@ -320,15 +320,15 @@ process ( jack_nframes_t nframes, void *arg )
     if ( ( ! transport.rolling ) || ph == oph )
         goto schedule;
 
-    if ( ph != onph )
-    {
-        if ( onph > ph )
-            DWARNING( "duplicated %lu ticks (out of %d)", onph - ph, (int)(not_dropped * transport.ticks_per_period) );
-        else
-            DWARNING( "dropped %lu ticks (out of %d)", ph - onph, (int)(not_dropped * transport.ticks_per_period) );
+    /* if ( ph != onph ) */
+    /* { */
+    /*     if ( onph > ph ) */
+    /*         DWARNING( "duplicated %lu ticks (out of %d)", onph - ph, (int)(not_dropped * transport.ticks_per_period) ); */
+    /*     else */
+    /*         DWARNING( "dropped %lu ticks (out of %d), ticks per period = %f", ph - onph, (int)(not_dropped * transport.ticks_per_period) ); */
 
-        not_dropped = 0;
-    }
+    /*     not_dropped = 0; */
+    /* } */
 
     ++not_dropped;
 
@@ -398,7 +398,7 @@ process ( jack_nframes_t nframes, void *arg )
                         {
                             DMESSAGE( "Triggering pattern %i ph=%lu, ts=%lu", e.msb(), ph, e.timestamp() );
                             
-                            p->trigger( e.timestamp(), -1 );
+                            p->trigger( e.timestamp(), INFINITY );
                         }
                     }
                     else
@@ -433,7 +433,7 @@ process ( jack_nframes_t nframes, void *arg )
             {
                 pattern *p = pattern::pattern_by_number( i + 1 );
 
-                p->trigger( 0, -1 );
+                p->trigger( 0, INFINITY );
 
                 p->play( ph, nph );
             }

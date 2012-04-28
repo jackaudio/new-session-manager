@@ -24,6 +24,7 @@
 
 #include "jack.H"
 #include "transport.H"
+#include <math.h>
 
 int pattern::note_shape = SQUARE;
 
@@ -217,7 +218,8 @@ pattern::record_event ( const midievent *me )
                     tick_t duration = off->timestamp() - on->timestamp();
 
                     /* place within loop */
-                    on->timestamp( ( on->timestamp() - p->_start ) % p->_rw->length );
+                    on->timestamp( 
+                        fmod( on->timestamp() - p->_start, p->_rw->length ) );
 
                     on->link( off );
                     on->note_duration( duration );
@@ -234,7 +236,7 @@ pattern::record_event ( const midievent *me )
 
                 // if ( ! filter )
 
-                e->timestamp( e->timestamp() % p->_rw->length );
+                e->timestamp( fmod( e->timestamp(), p->_rw->length ) );
 
                 el->unlink( e );
                 p->_rw->events.insert( e );
@@ -314,7 +316,7 @@ pattern::draw_row_names ( Canvas *c ) const
 void
 pattern::trigger ( tick_t start, tick_t end )
 {
-    ASSERT( start <= end, "programming error: invalid loop trigger! (%lu-%lu)", start, end );
+    /* ASSERT( end != -1 && start <= end, "programming error: invalid loop trigger! (%lu-%lu)", start, end ); */
 
     _start = start;
     _end   = end;
@@ -325,7 +327,7 @@ pattern::trigger ( tick_t start, tick_t end )
 void
 pattern::trigger ( void )
 {
-    trigger( transport.frame / transport.frames_per_tick, -1 );
+    trigger( transport.frame / transport.frames_per_tick, INFINITY );
 }
 
 void
@@ -423,14 +425,14 @@ pattern::play ( tick_t start, tick_t end ) const
 
     const event *e;
 
-    _index = tick % d->length;
+    _index = fmod( tick, d->length );
 
     bool reset_queued = false;
 
     if ( _index < end - start )
     {
         /* period covers the beginning of the loop  */
-        DMESSAGE( "%s pattern %d at tick %lu (ls: %lu, le: %lu, o: %lu)", _playing ? "Looped" : "Triggered", number(), start, _start, _end, offset  );
+        DMESSAGE( "%s pattern %d at tick %f (ls: %f, le: %f, o: %f)", _playing ? "Looped" : "Triggered", number(), start, _start, _end, offset  );
 
         _cleared = false;
 
@@ -535,7 +537,7 @@ done:
     if ( _end == end )
     {
         /* we're done playing this trigger */
-        DMESSAGE( "Pattern %d ended at tick %lu (ls: %lu, le: %lu, o: %lu)", number(), end, _start, _end, offset  );
+        DMESSAGE( "Pattern %d ended at tick %f (ls: %f, le: %f, o: %f)", number(), end, _start, _end, offset  );
 
         stop();
     }

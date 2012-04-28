@@ -24,7 +24,7 @@
 
 #include <sigc++/sigc++.h>
 
-typedef unsigned long tick_t;
+#include "common.h"
 
 using std::vector;
 using std::list;

@@ -21,7 +21,7 @@
 // #pragma once
 
 typedef unsigned char byte_t;
-typedef unsigned long tick_t;
+typedef double tick_t;
 typedef unsigned int uint;
 
 

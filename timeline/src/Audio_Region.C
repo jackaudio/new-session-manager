@@ -50,7 +50,7 @@ extern Transport *transport;
 bool Audio_Region::inherit_track_color = true;
 bool Audio_Region::show_box = true;
 
-Fl_Boxtype Audio_Region::_box = FL_UP_BOX;
+Fl_Boxtype Audio_Region::_box = FL_FLAT_BOX;
 
 Fl_Color Audio_Region::_selection_color = FL_MAGENTA;
 
@@ -407,8 +407,6 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
 void
 Audio_Region::draw_box( void )
 {
-    /* dirty hack to keep the box from flipping to vertical at small sizes */
-
     fl_push_clip( x(), y(), w(), h() );
 
     Fl_Color selection_color = _selection_color;
@@ -440,9 +438,9 @@ Audio_Region::draw_box( void )
     }
     
     if ( selected() )
-        fl_draw_box( fl_down( b ), x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ) + 50, h(), selection_color );
+        fl_draw_box( fl_down( b ), x(), y(), w(), h(), selection_color );
     else
-        fl_draw_box( b, x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ) + 50, h(), c );
+        fl_draw_box( b, x(), y(), w(), h(), c );
 
     /* used to draw fades here */
     /* draw fades */

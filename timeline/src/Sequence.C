@@ -63,7 +63,8 @@ Sequence::init ( void )
 
     _name = NULL;
 
-    box( FL_DOWN_BOX );
+//    box( FL_DOWN_BOX );
+    box( FL_BORDER_BOX );
     color(  FL_BACKGROUND_COLOR );
     align( FL_ALIGN_LEFT );
 

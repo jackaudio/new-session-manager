@@ -74,6 +74,7 @@ static char *session_root;
 #define ERR_BAD_PROJECT      -9
 #define ERR_CREATE_FAILED    -10
 #define ERR_SESSION_LOCKED   -11
+#define ERR_OPERATION_PENDING -12
 
 #define APP_TITLE "Non Session Manager"
 
@@ -83,8 +84,14 @@ enum {
     COMMAND_KILL,
     COMMAND_SAVE,
     COMMAND_OPEN,
-    COMMAND_START
+    COMMAND_START,
+
+    COMMAND_CLOSE,
+    COMMAND_DUPLICATE,
+    COMMAND_NEW
 };
+
+static int pending_operation = COMMAND_NONE;
 
 struct Client
 {
@@ -1220,13 +1227,21 @@ load_session_file ( const char * path )
 
 OSC_HANDLER( save )
 {
+    if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+
     if ( ! session_path )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path, 
                           ERR_NO_SESSION_OPEN,
                           "No session to save.");
                           
-        return 0;
+        goto done;
     }
     
     command_all_clients_to_save();
@@ -1235,18 +1250,31 @@ OSC_HANDLER( save )
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path, "Saved." );
 
+done:
+
+    pending_operation = COMMAND_NONE;
+
     return 0;
 }
 
 OSC_HANDLER( duplicate )
 {
+    if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+
+    pending_operation = COMMAND_DUPLICATE;
+
     if ( ! session_path )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path, 
                           ERR_NO_SESSION_OPEN,
                           "No session to duplicate.");
-                          
-        return 0;
+        goto done;
     }
 
     if ( ! path_is_valid( &argv[0]->s ) )
@@ -1255,7 +1283,7 @@ OSC_HANDLER( duplicate )
                           ERR_CREATE_FAILED,
                           "Invalid session name." );
 
-        return 0;
+        goto done;
     }     
 
     command_all_clients_to_save();
@@ -1266,7 +1294,7 @@ OSC_HANDLER( duplicate )
                           ERR_GENERAL_ERROR,
                           "Some clients could not save" );
 
-        return 0;
+        goto done;
     }
 
 //    save_session_file();
@@ -1307,19 +1335,34 @@ OSC_HANDLER( duplicate )
  
     MESSAGE( "Done" );
 
-
     osc_server->send( lo_message_get_source( msg ), "/reply", path, "Duplicated." );
+
+done:
+
+    pending_operation = COMMAND_NONE;
 
     return 0;
 }
 
 OSC_HANDLER( new )
 {
+    if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+
+    pending_operation = COMMAND_NEW;
+
     if ( ! path_is_valid( &argv[0]->s ) )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_CREATE_FAILED,
                           "Invalid session name." );
+
+        pending_operation = COMMAND_NONE;
 
         return 0;
     }     
@@ -1333,7 +1376,6 @@ OSC_HANDLER( new )
 
     MESSAGE( "Creating new session" );
 
-
     char *spath;
     asprintf( &spath, "%s/%s", session_root, &argv[0]->s );
    
@@ -1344,6 +1386,8 @@ OSC_HANDLER( new )
                           "Could not create the session directory" );
 
         free(spath);
+
+        pending_operation = COMMAND_NONE;
 
         return 0;
     }
@@ -1366,6 +1410,8 @@ OSC_HANDLER( new )
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path,
                               "Session created" );
+
+    pending_operation = COMMAND_NONE;
         
     return 0;
 }
@@ -1419,8 +1465,20 @@ OSC_HANDLER( open )
 {
     DMESSAGE( "Got open" );
 
+    if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+
+    pending_operation = COMMAND_OPEN;
+
+
     if ( session_path )
     {
+
         command_all_clients_to_save();
         
         if ( clients_have_errors() )
@@ -1428,11 +1486,14 @@ OSC_HANDLER( open )
             osc_server->send( lo_message_get_source( msg ), "/error", path,
                               ERR_GENERAL_ERROR,
                               "Some clients could not save" );
+
+            pending_operation = COMMAND_NONE;
             return 0;
         }
         
 //        save_session_file();
     }
+
 
     char *spath;
     asprintf( &spath, "%s/%s", session_root, &argv[0]->s );
@@ -1476,6 +1537,8 @@ OSC_HANDLER( open )
  
     MESSAGE( "Done" );
 
+    pending_operation = COMMAND_NONE;
+
     return 0;
 }
 
@@ -1491,13 +1554,24 @@ OSC_HANDLER( quit )
 
 OSC_HANDLER( abort )
 {
+  if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+  
+  pending_operation = COMMAND_CLOSE;
+
+
     if ( ! session_path )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "No session to abort." );
 
-        return 0;
+        goto done;
     }
 
     MESSAGE( "Commanding attached clients to quit." );
@@ -1508,19 +1582,32 @@ OSC_HANDLER( abort )
                       "Aborted." );
                       
     MESSAGE( "Done" );
+done:
+
+    pending_operation = COMMAND_NONE;
 
     return 0;
 }
 
 OSC_HANDLER( close )
 {
+    if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+
+    pending_operation = COMMAND_CLOSE;
+
     if ( ! session_path )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "No session to close." );
 
-        return 0;
+        goto done;
     }
 
     command_all_clients_to_save();
@@ -1533,6 +1620,10 @@ OSC_HANDLER( close )
                       "Closed." );
                       
     MESSAGE( "Done" );
+
+done:
+
+    pending_operation = COMMAND_NONE;
 
     return 0;
 }

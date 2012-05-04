@@ -48,8 +48,6 @@
 #include "OSC/Endpoint.H"
 #include <lo/lo.h>
 
-#include "OSC/Endpoint.H"
-
 const double STATUS_UPDATE_FREQ = 0.2f;
 
 extern char *user_config_dir;

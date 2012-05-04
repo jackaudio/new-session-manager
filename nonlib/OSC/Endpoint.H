@@ -166,22 +166,7 @@ namespace OSC
 
     public:
 
-        Signal ( const char *path, Direction dir )
-            { 
-                _direction = dir;
-                _path = strdup( path );
-                _id = ++next_id;
-                _value = 0.0f;
-                _endpoint = NULL;
-                _peer = NULL;
-            }
-
-        void connection_state_callback ( void(*_cb)(OSC::Signal *, void*), void *userdata) 
-            {
-                _connection_state_callback = _cb;
-                _connection_state_userdata = userdata;
-            }
-
+        Signal ( const char *path, Direction dir );
         ~Signal ( );
 
         static Signal *get_peer_signal_by_id ( Peer *p, int signal_id );
@@ -201,6 +186,13 @@ namespace OSC
                 _parameter_limits.max = max;
                 _parameter_limits.default_value = default_value;
                 _value = default_value;
+            }
+
+
+        void connection_state_callback ( void(*_cb)(OSC::Signal *, void*), void *userdata) 
+            {
+                _connection_state_callback = _cb;
+                _connection_state_userdata = userdata;
             }
 
         const Parameter_Limits& parameter_limits ( void ) const { return _parameter_limits; }
@@ -239,8 +231,21 @@ namespace OSC
 
     class Endpoint
     {
-        static void error_handler(int num, const char *msg, const char *path);
+        Thread _thread;
 
+//        lo_server_thread _st;
+        lo_server _server;
+
+        std::list<Peer*> _peers;
+        std::list<Signal*> _signals;
+        std::list<Method*> _methods;
+
+        void (*_peer_scan_complete_callback)(void*);
+        void *_peer_scan_complete_userdata;
+
+        char *_name;
+
+        static void error_handler(int num, const char *msg, const char *path);
 
         static int osc_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
 
@@ -256,14 +261,7 @@ namespace OSC
 
         void scan_peer ( const char *name, const char *url );
 
-        Thread _thread;
-
-//        lo_server_thread _st;
-        lo_server _server;
-
-        std::list<Peer*> _peers;
-        std::list<Signal*> _signals;
-        std::list<Method*> _methods;
+    private:
 
         static void *osc_thread ( void *arg );
         void osc_thread ( void );
@@ -278,25 +276,21 @@ namespace OSC
 
         static Signal *find_target_by_peer_address ( std::list<Signal*> *l, lo_address addr );
 
-        char *_name;
-
         void del_signal ( Signal *signal );
         void send_signal_rename_notifications( Signal *s );
 
-        void (*_peer_scan_complete_callback)(void*);
-        void *_peer_scan_complete_userdata;
-
     public:
+
+        // can be used to point back to owning object.
+        void *owner;
 
         void list_peer_signals ( void (*callback) (const char *, const OSC::Signal *, void * ), void *v );
 
         int init ( int proto, const char *port = 0 );
+
         Endpoint ( );
 
         ~Endpoint ( );
-
-
-
     
         bool disconnect_signal ( OSC::Signal *s, OSC::Signal *d );
         bool disconnect_signal ( OSC::Signal *s, const char *peer_name, const char *signal_path );        
@@ -359,9 +353,6 @@ namespace OSC
         int send ( lo_address to, const char *path, const char *v1, const char *v2, int v3, float v4, float v5, float v6 );
 
         int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, int v4, float v5, float v6, float v7 );
-
-        // can be used to point back to owning object.
-        void *owner;
 
         void peer_scan_complete_callback ( void(*_cb)(void*), void *userdata) 
             {

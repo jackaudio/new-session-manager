@@ -56,6 +56,22 @@ namespace OSC
 
     int Signal::next_id = 0;
 
+
+    Signal::Signal ( const char *path, Direction dir )
+    { 
+        _direction = dir;
+        _path = strdup( path );
+        _id = ++next_id;
+        _value = 0.0f;
+        _endpoint = NULL;
+        _peer = NULL;
+        _path = 0;
+        _documentation = 0;
+        _user_data = 0;
+        _connection_state_callback = 0;
+        _connection_state_userdata = 0;
+    }
+
     Signal::~Signal ( )
     {
         if ( _endpoint )
@@ -140,7 +156,9 @@ namespace OSC
 
         return r;
     }
+
 
+
     void
     Endpoint::error_handler(int num, const char *msg, const char *path)
     {
@@ -149,6 +167,11 @@ namespace OSC
 
     Endpoint::Endpoint ( )
     {
+        _peer_scan_complete_callback = 0;
+        _peer_scan_complete_userdata = 0;
+        _server = 0;
+        _name = 0;
+        owner = 0;
     }
 
     int
@@ -163,7 +186,6 @@ namespace OSC
             WARNING( "Error creating OSC server" );
             return -1;
         }
-
 
         add_method( "/signal/hello", "ss", &Endpoint::osc_sig_hello, this, "" );
         add_method( "/signal/connect", "ii", &Endpoint::osc_sig_connect, this, "" );
@@ -183,7 +205,11 @@ namespace OSC
     Endpoint::~Endpoint ( )
     {
 //    lo_server_thread_free( _st );
-        lo_server_free( _server );
+        if ( _server )
+        {
+            lo_server_free( _server );
+            _server = 0;
+        }
     }
 
     OSC::Signal *
@@ -248,6 +274,8 @@ namespace OSC
     void
     Endpoint::hello ( const char *url )
     {
+        assert( name() );
+
         lo_address addr = lo_address_new_from_url ( url );
 
         char *our_url = this->url();
@@ -260,6 +288,7 @@ namespace OSC
     int
     Endpoint::osc_sig_hello ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
     {
+
         Endpoint *ep = (Endpoint*)user_data;
 
         const char *peer_name = &argv[0]->s;
@@ -271,7 +300,14 @@ namespace OSC
         {
             ep->scan_peer( peer_name, peer_url );
 
-            ep->hello( peer_url );
+            if ( ep->name() )
+            {
+                ep->hello( peer_url );
+            }
+            else
+            {
+                DMESSAGE( "Not sending hello because we don't have a name yet!" );
+            }
         }
 
         return 0;

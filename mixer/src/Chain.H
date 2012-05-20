@@ -101,6 +101,7 @@ public:
 
     int modules ( void ) const { return modules_pack->children(); }
     Module *module ( int n ) const { return (Module*)modules_pack->child( n ); }
+    void remove ( Controller_Module *m );
     void remove ( Module *m );
     bool add ( Module *m );
     bool add ( Controller_Module *m );

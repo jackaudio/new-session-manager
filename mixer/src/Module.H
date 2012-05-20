@@ -437,8 +437,8 @@ protected:
 public:
 
     void command_open_parameter_editor();
-    void command_activate ( void );
-    void command_deactivate ( void );
-    void command_remove ( void );
+    virtual void command_activate ( void );
+    virtual void command_deactivate ( void );
+    virtual void command_remove ( void );
 
 };

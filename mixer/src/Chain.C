@@ -293,6 +293,25 @@ void Chain::cb_handle(Fl_Widget* o, void* v) {
     ((Chain*)(v))->cb_handle(o);
 }
 
+void
+Chain::remove ( Controller_Module *m )
+{
+    DMESSAGE( "Removing controller module from chain" );
+
+    engine()->lock();
+
+    m->disconnect();
+
+    controls_pack->remove( m );
+    modules_pack->remove( m );
+
+    build_process_queue();
+
+    engine()->unlock();
+
+    redraw();
+}
+
 
 /* remove a module from the chain. this isn't guaranteed to succeed,
  * because removing the module might result in an invalid routing */
@@ -311,11 +330,15 @@ Chain::remove ( Module *m )
         fl_alert( "Can't remove module at this point because the resultant chain is invalid" );
     }
 
+    engine()->lock();
+
     strip()->handle_module_removed( m );
 
     modules_pack->remove( m );
 
     configure_ports();
+
+    engine()->unlock();
 }
 
 /* determine number of output ports, signal if changed.  */

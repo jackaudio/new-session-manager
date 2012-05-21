@@ -88,12 +88,11 @@ Function {update_transport( void * )} {open return_type void
 
 handle_midi_input();
 
-ui->progress_group->do_callback();
+ ui->progress_group->do_callback();
 
-ui->vmetro_widget->update();	
+ ui->vmetro_widget->update();	
 
-if ( transport.rolling )
-	ui->triggers_widget->update();
+ ui->triggers_widget->update();
 
 Fl::repeat_timeout( TRANSPORT_POLL_INTERVAL, update_transport );
 
@@ -101,6 +100,7 @@ static int oldstate = -1;
 
 if ( transport.rolling != oldstate )
 {
+
 	ui->play_button->label( transport.rolling ? "@square" : "@>" );
 	oldstate = transport.rolling;
 	
@@ -114,6 +114,7 @@ if ( transport.rolling != oldstate )
 		ui->menu_new->activate();
 		ui->menu_open->activate();
 	}
+
 }
 
 if ( nsm && nsm->is_active() )
@@ -122,7 +123,7 @@ if ( nsm && nsm->is_active() )
      {
             ui->menu_new->deactivate();
             ui->menu_open->deactivate();
-            ui->menu_save_as->deactivate();
+            ui->menu_save_as->deactivate(); 
      }
 }
 
@@ -130,10 +131,10 @@ if ( nsm && nsm->is_active() )
 if ( transport.rolling )
 {
 	if ( ui->tabs->value() == ui->pattern_tab )
-		ui->pattern_canvas_widget->draw_playhead();
+		ui->pattern_canvas_widget->redraw_playhead();
 	else
 	if ( ui->tabs->value() == ui->phrase_tab )
-		ui->phrase_canvas_widget->draw_playhead();
+		ui->phrase_canvas_widget->redraw_playhead();
 
 }
 
@@ -264,10 +265,10 @@ if ( maybe_save_song() )
           label Metronome
           xywh {395 34 461 60} type HORIZONTAL box UP_BOX color 40 selection_color 48 labelsize 33 align 0 resizable
           code0 {\#include "widgets.H"}
-          code1 {o->box( FL_NO_BOX );}
+          code1 {o->box( FL_FLAT_BOX );}
           class Visual_Metronome
         } {}
-        Fl_Pack transport_controls_group {open selected
+        Fl_Pack transport_controls_group {open
           xywh {4 32 160 44} type HORIZONTAL
           code0 {o->spacing( 2 );}
           class Fl_Scalepack
@@ -486,8 +487,8 @@ else
           }
           Fl_Box triggers_widget {
             label Patterns
-            xywh {253 125 607 549} box UP_BOX color 72 align 1 resizable
-            code0 {o->box( FL_NO_BOX );}
+            xywh {253 125 607 549} color 48 align 1 resizable
+            code0 {o->color( FL_BACKGROUND_COLOR );}
             class Triggers
           }
           Fl_Group progress_group {
@@ -516,15 +517,14 @@ if ( playlist->length() )
         }
         Fl_Group phrase_tab {
           label Phrase open
-          xywh {0 102 865 674} color 47
+          xywh {0 102 865 674} color 47 hide
           code0 {update_phrase_widgets();}
         } {
           Fl_Box phrase_canvas_widget {
             label Phrase
             xywh {1 103 863 587} box FLAT_BOX color 37 labelsize 100 align 16 resizable
-            code0 {o->set_canvas( phrase_c );
-            phrase_c->signal_pan.connect( sigc::mem_fun( phrase_canvas_widget, &O_Canvas::handle_pan ) );}
-            code1 {o->box( FL_NO_BOX );}
+            code0 {o->set_canvas( phrase_c );}
+            code1 {phrase_c->signal_pan.connect( sigc::mem_fun( phrase_canvas_widget, &O_Canvas::handle_pan ) );}
             class O_Canvas
           }
           Fl_Group {} {open
@@ -568,16 +568,16 @@ o->maximum( phrase::phrases() );}
         }
         Fl_Group pattern_tab {
           label Pattern open
-          xywh {0 102 865 674} color 47 hide
+          xywh {0 102 865 674} color 47
           code0 {update_pattern_widgets();}
         } {
           Fl_Box pattern_canvas_widget {
-            label Pattern
+            label Pattern selected
             xywh {1 103 863 587} box FLAT_BOX color 37 labelsize 100 align 16 resizable
             code0 {\#include "draw.H"}
-            code1 {o->set_canvas( pattern_c );
-            pattern_c->signal_pan.connect( sigc::mem_fun( pattern_canvas_widget, &O_Canvas::handle_pan ) );}
+            code1 {o->set_canvas( pattern_c );}
             code2 {\#include "input.H"}
+            code3 {pattern_c->signal_pan.connect( sigc::mem_fun( pattern_canvas_widget, &O_Canvas::handle_pan ) );}
             class O_Canvas
           }
           Fl_Group {} {open
@@ -1147,10 +1147,6 @@ ab.run();}
           label SM
           xywh {825 8 35 15} box ROUNDED_BOX down_box ROUNDED_BOX color 46 selection_color 93 labelfont 3 labelcolor 39 deactivate
         }
-        Fl_Box {} {
-          label label
-          xywh {15 15 35 16} hide resizable
-        }
       }
     }
   }
@@ -1489,13 +1485,11 @@ class O_Canvas {open : {public Fl_Widget}
   }
   decl {bool _border_drawn;} {private local
   }
-  decl {uint _flags;} {private local
-  }
   Function {O_Canvas( int X, int Y, int W, int H, const char*L=0) : Fl_Widget(X,Y,W,H,L)} {open
   } {
     code {_c = NULL;
 _border_drawn = false;
-_flags = 0;} {}
+              box(FL_FLAT_BOX);} {}
   }
   Function {handle( int m )} {open return_type int
   } {
@@ -1503,7 +1497,7 @@ _flags = 0;} {}
 if ( m == FL_FOCUS || m == FL_UNFOCUS )
 {
 	_border_drawn = false;
-	draw_playhead();
+	redraw_playhead();
 	return 1;
 }
 
@@ -1553,53 +1547,36 @@ if ( _c )
 
 if ( _c )
 {
-
-	damage( _flags );
-	_flags = 0;
-	
-	/*
+/*
 	if ( damage() & FL_DAMAGE_ALL ) printf( " damage_all" );
 	if ( damage() & FL_DAMAGE_SCROLL ) printf( " damage_scroll" );
 	if ( damage() & FL_DAMAGE_USER1 ) printf( " damage_user1" );
 	if ( damage() & FL_DAMAGE_USER2 ) printf( " damage_user2" );
 	if ( damage() & FL_DAMAGE_EXPOSE ) printf(  " damage_expose" );
 	printf("\\n");
-	*/
-
-	if ( damage() & FL_DAMAGE_EXPOSE )
-	{
-		draw_box( FL_FLAT_BOX, x(), y(), w(), h(), canvas_background_color );
-		_c->redraw();
-		return;
-	}
+*/
 	
-	if ( damage() & (FL_DAMAGE_ALL | FL_DAMAGE_USER2) )
-	{
-		draw_box( FL_FLAT_BOX, x(), y(), w(), h(), canvas_background_color );
-		_c->redraw();
-	}
-	
-	
-	if ( damage() & (FL_DAMAGE_ALL | FL_DAMAGE_SCROLL) )
-	{
-		// optimized draw
-		_c->draw();
-	}
-	else
-	if ( damage() & (FL_DAMAGE_ALL | FL_DAMAGE_USER1) )
-	{
-		// playhead
-		_c->draw_playhead();
-	}
-	else
 	if ( damage() & FL_DAMAGE_ALL )
 	{
-		draw_box( FL_FLAT_BOX, x(), y(), w(), h(), canvas_background_color );
+                draw_box( FL_FLAT_BOX, x(), y(), w(), h(), canvas_background_color );
 		_border_drawn = false;
 		draw_border();
-		_c->redraw();
-		
+	        _c->redraw();
+		_c->draw_playhead();
 	}
+        else
+        {
+        	if ( damage() & FL_DAMAGE_SCROLL )
+	        {
+		// optimized draw
+		_c->draw();
+                }
+                if ( damage() & FL_DAMAGE_USER1 )
+                {
+		// playhead
+		_c->draw_playhead();
+                }
+        }
 }
 else
 {
@@ -1612,7 +1589,7 @@ else
 
 _c->resize( x(), y(), w(), h() );
 
-_c->signal_draw.connect( sigc::mem_fun( this, &O_Canvas::draw_notes ) );
+_c->signal_draw.connect( sigc::mem_fun( this, &O_Canvas::redraw_notes ) );
 _c->signal_resize.connect( sigc::mem_fun( this, &O_Canvas::clear ) );
 
 _c->signal_settings_change.connect( sigc::ptr_fun( &UI::update_canvas_widgets ) );
@@ -1624,20 +1601,15 @@ _c->signal_settings_change.connect( sigc::mem_fun( song, &song_settings::set_dir
   }
   Function {clear( void )} {open return_type void
   } {
-    code {// parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
-damage( FL_DAMAGE_USER2 );
-
-_flags |= FL_DAMAGE_USER2;} {}
+    code {redraw();} {}
   }
-  Function {draw_notes( void )} {open return_type void
+  Function {redraw_notes( void )} {open return_type void
   } {
     code {damage( FL_DAMAGE_SCROLL );
 
-// this might be called from within draw(), in which case the above does nothing.
-
-_flags |= FL_DAMAGE_SCROLL;} {}
+// this might be called from within draw(), in which case the above does nothing.} {}
   }
-  Function {draw_playhead( void )} {open return_type void
+  Function {redraw_playhead( void )} {open return_type void
   } {
     code {if ( _c && _c->playhead_moved() )
     {
@@ -1893,6 +1865,9 @@ redraw();} {}
   Function {update( void )} {open return_type void
   } {
     code {++_timer;
+
+    if ( !visible_r() )
+        return;           
 
 if ( ! takesevents() )
 	return;

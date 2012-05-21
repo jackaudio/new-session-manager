@@ -60,9 +60,9 @@ extern NSM_Client *nsm;
 
 #ifdef USE_WIDGET_FOR_TIMELINE
 #define BASE Fl_Group
-#define redraw_overlay()
-#define BX x()
-#define BY y()
+#define redraw_overlay() ((Fl_Overlay_Window*)window())->redraw_overlay()
+#define BX this->x()
+#define BY this->y()
 #else
 #ifdef USE_SINGLEBUFFERED_TIMELINE
 #warning Using singlebuffered timeline window. This may cause flicker and makes the cursors invisible.
@@ -400,12 +400,6 @@ Timeline::ntracks ( void ) const
 
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W, H, L )
 {
-
-    if ( ! can_do_overlay() )
-    {
-        WARNING( "Display lacks hardware overlay visual. Playhead and selection rectangle will flicker." );
-    }
-
     Loggable::snapshot_callback( &Timeline::snapshot, this );
 
     osc_thread = 0;
@@ -711,7 +705,7 @@ draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
     
     const int x = timeline->ts_to_x( frame - timeline->xoffset ) + Track::width();
 
-    fl_line( x, 0, x, timeline->h() );
+    fl_line( x, 0, x, 2000 );
 }
 
 /* FIXME: wrong place for this */
@@ -938,7 +932,7 @@ Timeline::draw ( void )
     adjust_vscroll();
 
 #ifndef USE_UNOPTIMIZED_DRAWING
-    if ( ( damage() & FL_DAMAGE_ALL ) || ( damage() & FL_DAMAGE_EXPOSE ) )
+    if ( ( damage() & FL_DAMAGE_ALL ) )
 #else
     #warning Optimized drawing of timeline disabled. This will waste your CPU.
 #endif
@@ -1026,34 +1020,25 @@ Timeline::draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color
     if ( x > tracks->x() + tracks->w() )
         return;
 
-    fl_color( color );
-
     const int y = rulers->y() + rulers->h();
-    const int h = this->h() - hscroll->h() - 1;
+    const int h = this->h() - rulers->h()  - hscroll->h();
 
     fl_push_clip( tracks->x() + Track::width(), y, tracks->w(), h );
 
-    fl_line( x, y, x, h );
-
-    fl_color( fl_darker( color ) );
-
-    fl_line( x - 1, y, x - 1, h );
-
-    fl_color( FL_BLACK );
-
-    fl_line( x + 1, y, x + 1, h );
+    fl_line_style( FL_SOLID, 0 );
+    fl_color( color );
+    fl_line( x, y, x, y + h );
 
     fl_push_matrix();
-
+   
     fl_translate( x, y );
-    fl_scale( 16, 8 );
-
+    fl_scale( 8, 4 );
+   
     symbol( color );
-
+   
     fl_pop_matrix();
-
+   
     fl_pop_clip();
-
 }
 
 void
@@ -1116,20 +1101,9 @@ Timeline::draw_overlay ( void )
 
     const Rectangle &r = _selection;
 
-    fl_color( FL_BLACK );
-
-    fl_line_style( FL_SOLID, 2 );
-
-    fl_rect( r.x + 2, r.y + 2, r.w, r.h );
     fl_color( FL_MAGENTA );
-    fl_line_style( FL_DASH, 2 );
-    fl_rect( r.x, r.y, r.w, r.h );
-
-    fl_line( r.x, r.y, r.x + r.w, r.y + r.h );
-
-    fl_line( r.x + r.w, r.y, r.x, r.y + r.h );
-
     fl_line_style( FL_SOLID, 0 );
+    fl_rect( r.x, r.y, r.w, r.h );
 
     fl_pop_clip();
 

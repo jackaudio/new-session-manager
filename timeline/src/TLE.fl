@@ -28,6 +28,9 @@ decl {const float STATUS_UPDATE_FREQ = 0.5f;} {private local
 decl {class Fl_Flowpack;} {public global
 } 
 
+decl {\#include <FL/Fl_Overlay_Window.H>} {private local
+} 
+
 decl {\#include "Fl_Menu_Settings.H"} {private local
 } 
 
@@ -95,6 +98,23 @@ decl {extern NSM_Client *nsm;} {private global
 } 
 
 decl {extern char *user_config_dir;} {private global
+} 
+
+class TLE_Window {open : {public Fl_Overlay_Window}
+} {
+  Function {TLE_Window(int W, int H, const char *L = 0) : Fl_Overlay_Window( W, H, L )} {open
+  } {
+    code {} {}
+  }
+  Function {draw_overlay(void)} {open return_type void
+  } {
+    code {timeline->draw_overlay();} {}
+  }
+  Function {~TLE_Window()} {open return_type virtual
+  } {
+    code {} {selected
+    }
+  }
 } 
 
 class TLE {open
@@ -230,7 +250,8 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label {Non DAW : Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	timeline->command_quit();} open
-      xywh {485 131 1025 770} type Double resizable xclass Non_DAW size_range {900 300 0 0} visible
+      xywh {485 131 1025 770} type Double resizable
+      class TLE_Window xclass Non_DAW size_range {900 300 0 0} visible
     } {
       Fl_Menu_Bar menubar {open
         private xywh {0 0 1025 25}
@@ -702,7 +723,7 @@ ab.run();}
             class Fl_Blink_Button
           }
           Fl_Button seek_blinker {
-            label SEEK selected
+            label SEEK
             xywh {745 32 50 15} box ROUNDED_BOX down_box ROUNDED_BOX color 10 selection_color 2 labelfont 2 labelcolor 39 deactivate
             code0 {\#include "FL/Fl_Blink_Button.H"}
             code1 {o->blink_interval( Fl_Blink_Button::FAST );}

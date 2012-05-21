@@ -55,6 +55,9 @@ class Sequence_Widget;
 
 namespace OSC { class Endpoint; }
 
+#define USE_WIDGET_FOR_TIMELINE
+
+
 #include <lo/lo.h>
 
 #ifndef USE_SINGLEBUFFERED_TIMELINE

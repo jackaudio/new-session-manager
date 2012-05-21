@@ -226,142 +226,6 @@ if ( maybe_save_song() )
       xywh {798 131 865 805} type Double color 47 resizable
       code0 {o->color( FL_BACKGROUND_COLOR );} xclass non size_range {700 509 0 0} visible
     } {
-      Fl_Group {} {open
-        xywh {0 30 865 70}
-      } {
-        Fl_Pack {} {
-          label Meter open
-          xywh {214 72 175 25} type HORIZONTAL labeltype NO_LABEL labelsize 9 align 0
-          code0 {o->spacing( 3 );}
-        } {
-          Fl_Box {} {
-            label {BPM:}
-            xywh {220 68 35 27} resizable
-          }
-          Fl_Value_Input {} {
-            callback {transport.set_beats_per_minute( o->value() );}
-            xywh {265 68 55 27} when 8
-            code1 {transport.signal_tempo_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
-            code2 {o->value( transport.beats_per_minute );}
-          }
-          Fl_Value_Input {} {
-            callback {transport.set_beats_per_bar( o->value() );}
-            xywh {325 68 26 27}
-            code0 {transport.signal_bpb_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
-            code1 {o->value( transport.beats_per_bar );}
-          }
-          Fl_Box {} {
-            label {/}
-            xywh {346 68 19 27}
-          }
-          Fl_Value_Input {} {
-            callback {transport.set_beat_type( o->value() );}
-            xywh {365 68 24 27}
-            code0 {transport.signal_beat_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
-            code1 {o->value( transport.beat_type );}
-          }
-        }
-        Fl_Pack vmetro_widget {
-          label Metronome
-          xywh {395 34 461 60} type HORIZONTAL box UP_BOX color 40 selection_color 48 labelsize 33 align 0 resizable
-          code0 {\#include "widgets.H"}
-          code1 {o->box( FL_FLAT_BOX );}
-          class Visual_Metronome
-        } {}
-        Fl_Pack transport_controls_group {open
-          xywh {4 32 160 44} type HORIZONTAL
-          code0 {o->spacing( 2 );}
-          class Fl_Scalepack
-        } {
-          Fl_Button play_button {
-            label {@>}
-            callback {transport.toggle();}
-            xywh {10 34 43 40} shortcut 0x20 labeltype ENGRAVED_LABEL
-          }
-          Fl_Button rec_button {
-            label {@circle}
-            callback {transport.recording = o->value();
-
-
-if ( o->value() )
-{
-	if ( config.record_mode == NEW )
-	{
-		pattern *p = new pattern;
-		p->length( -1 );
-		
-		pattern_c->grid( p );
-	}
-	
-	((pattern*)pattern_c->grid())->record( 0 );
-	
-	o->labelcolor( FL_RED );
-}
-else
-{
-	pattern::recording()->record_stop();
-	
-	o->labelcolor( FL_WHITE );
-}}
-            xywh {60 34 43 40} type Toggle shortcut 0x80072 selection_color 47 labeltype ENGRAVED_LABEL when 1
-          }
-          Fl_Button home_button {
-            label {@|<}
-            callback {transport.locate( 0 );}
-            xywh {110 34 43 40} shortcut 0xff50 labeltype ENGRAVED_LABEL
-          }
-        }
-        Fl_Choice record_mode_menu {
-          label {&Record Mode}
-          callback {if ( ! transport.recording )
-	config.record_mode = (record_mode_e)o->value();
-else
-	o->value( config.record_mode );} open
-          xywh {171 41 100 27} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
-        } {
-          MenuItem {} {
-            label Merge
-            xywh {15 15 40 25}
-          }
-          MenuItem {} {
-            label Overwrite
-            xywh {25 25 40 25}
-          }
-          MenuItem {} {
-            label Layer
-            xywh {35 35 40 25}
-          }
-          MenuItem {} {
-            label New
-            xywh {45 45 40 25}
-          }
-        }
-        Fl_Choice playback_mode_menu {
-          label {Playback &Mode} open
-          xywh {285 41 100 26} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
-        } {
-          MenuItem {} {
-            label Pattern
-            callback {song.play_mode = PATTERN;}
-            xywh {5 5 40 25}
-          }
-          MenuItem {} {
-            label Sequence
-            callback {song.play_mode = SEQUENCE;}
-            xywh {15 15 40 25}
-          }
-          MenuItem {} {
-            label Trigger
-            callback {song.play_mode = TRIGGER;}
-            xywh {25 25 40 25}
-          }
-          MenuItem {} {
-            label Queue
-            callback {song.play_mode = QUEUE;}
-            xywh {0 0 40 24}
-          }
-        }
-      }
       Fl_Tabs tabs {
         callback {((Fl_Group*)o->value())->child( 0 )->take_focus();
 
@@ -383,7 +247,7 @@ else
 	edit_menu->activate();
 }
 
-menu_bar->redraw();} open
+menu_bar->redraw();}
         xywh {0 79 865 698} color 37 labeltype SHADOW_LABEL labelsize 19 when 1 resizable
         code0 {canvas_background_color = fl_rgb_color( 18, 18, 18 );}
       } {
@@ -840,6 +704,142 @@ pattern_c->changed_mapping();}
                 }
               }
             }
+          }
+        }
+      }
+      Fl_Group {} {
+        xywh {0 30 865 70}
+      } {
+        Fl_Pack {} {
+          label Meter open
+          xywh {214 72 175 25} type HORIZONTAL labeltype NO_LABEL labelsize 9 align 0
+          code0 {o->spacing( 3 );}
+        } {
+          Fl_Box {} {
+            label {BPM:}
+            xywh {220 68 35 27} resizable
+          }
+          Fl_Value_Input {} {
+            callback {transport.set_beats_per_minute( o->value() );}
+            xywh {265 68 55 27} when 8
+            code1 {transport.signal_tempo_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
+            code2 {o->value( transport.beats_per_minute );}
+          }
+          Fl_Value_Input {} {
+            callback {transport.set_beats_per_bar( o->value() );}
+            xywh {325 68 26 27}
+            code0 {transport.signal_bpb_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
+            code1 {o->value( transport.beats_per_bar );}
+          }
+          Fl_Box {} {
+            label {/}
+            xywh {346 68 19 27}
+          }
+          Fl_Value_Input {} {
+            callback {transport.set_beat_type( o->value() );}
+            xywh {365 68 24 27}
+            code0 {transport.signal_beat_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
+            code1 {o->value( transport.beat_type );}
+          }
+        }
+        Fl_Pack vmetro_widget {
+          label Metronome
+          xywh {395 34 461 60} type HORIZONTAL box UP_BOX color 40 selection_color 48 labelsize 33 align 0 resizable
+          code0 {\#include "widgets.H"}
+          code1 {o->box( FL_FLAT_BOX );}
+          class Visual_Metronome
+        } {}
+        Fl_Pack transport_controls_group {open
+          xywh {4 32 160 44} type HORIZONTAL
+          code0 {o->spacing( 2 );}
+          class Fl_Scalepack
+        } {
+          Fl_Button play_button {
+            label {@>}
+            callback {transport.toggle();}
+            xywh {10 34 43 40} shortcut 0x20 labeltype ENGRAVED_LABEL
+          }
+          Fl_Button rec_button {
+            label {@circle}
+            callback {transport.recording = o->value();
+
+
+if ( o->value() )
+{
+	if ( config.record_mode == NEW )
+	{
+		pattern *p = new pattern;
+		p->length( -1 );
+		
+		pattern_c->grid( p );
+	}
+	
+	((pattern*)pattern_c->grid())->record( 0 );
+	
+	o->labelcolor( FL_RED );
+}
+else
+{
+	pattern::recording()->record_stop();
+	
+	o->labelcolor( FL_WHITE );
+}}
+            xywh {60 34 43 40} type Toggle shortcut 0x80072 selection_color 47 labeltype ENGRAVED_LABEL when 1
+          }
+          Fl_Button home_button {
+            label {@|<}
+            callback {transport.locate( 0 );}
+            xywh {110 34 43 40} shortcut 0xff50 labeltype ENGRAVED_LABEL
+          }
+        }
+        Fl_Choice record_mode_menu {
+          label {&Record Mode}
+          callback {if ( ! transport.recording )
+	config.record_mode = (record_mode_e)o->value();
+else
+	o->value( config.record_mode );} open
+          xywh {171 41 100 27} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
+        } {
+          MenuItem {} {
+            label Merge
+            xywh {15 15 40 25}
+          }
+          MenuItem {} {
+            label Overwrite
+            xywh {25 25 40 25}
+          }
+          MenuItem {} {
+            label Layer
+            xywh {35 35 40 25}
+          }
+          MenuItem {} {
+            label New
+            xywh {45 45 40 25}
+          }
+        }
+        Fl_Choice playback_mode_menu {
+          label {Playback &Mode} open
+          xywh {285 41 100 26} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
+        } {
+          MenuItem {} {
+            label Pattern
+            callback {song.play_mode = PATTERN;}
+            xywh {5 5 40 25}
+          }
+          MenuItem {} {
+            label Sequence
+            callback {song.play_mode = SEQUENCE;}
+            xywh {15 15 40 25}
+          }
+          MenuItem {} {
+            label Trigger
+            callback {song.play_mode = TRIGGER;}
+            xywh {25 25 40 25}
+          }
+          MenuItem {} {
+            label Queue
+            callback {song.play_mode = QUEUE;}
+            xywh {0 0 40 24}
           }
         }
       }

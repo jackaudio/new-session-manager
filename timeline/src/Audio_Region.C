@@ -362,18 +362,40 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
     const int height = dh;
     const int width = timeline->ts_to_x( fade.length );
 
-    fl_push_matrix();
-
+    if ( ! width )
+        /* too small to draw */
+        return;
+ 
+    int fx;
+                                                
     if ( dir == Fade::In )
-        fl_translate( line_x(), dy );
+    {
+        fx = line_x();
+     
+        if ( fx + width < X ||
+             fx > X + W )
+            /* clipped */
+            return;
+    }
     else
     {
-        fl_translate( line_x() + abs_w(), dy );
-        /* flip */
-        fl_scale( -1.0, 1.0 );
-    }
+        fx = line_x() + abs_w();
 
-    fl_scale( width, height );
+        if ( fx - width > X + W || 
+             fx < X )
+            /* clipped */
+            return;
+    }
+    
+
+    fl_push_matrix();
+
+    fl_translate( fx, dy );
+
+    if ( dir == Fade::In )
+        fl_scale( width, height );
+    else
+        fl_scale( -width, height );
 
     if ( line )
         fl_begin_line();
@@ -390,7 +412,7 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
         nframes_t ts = 0;
 
         for ( int i = 0; i < width; ++i, ts += tsx )
-            fl_vertex( i / (float)width, 1.0f - fade.gain( ts / (float)fade.length ) );
+            fl_vertex( i / (double)width, 1.0f - fade.gain( ts / (double)fade.length ) );
 
     }
 
@@ -497,12 +519,12 @@ Audio_Region::draw ( void )
 
     {
         Fl_Color c = fl_color_average( FL_DARK1,
-                                       Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color,
-                                       0.50f );
+                                   Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color,
+                                   0.50f );
     
         fl_color( fl_color_add_alpha( c, 127 ) );
 
-        draw_fade( _fade_in, Fade::In, false, W, W );
+        draw_fade( _fade_in, Fade::In, false, X, W );
         draw_fade( _fade_out, Fade::Out, false, X, W );
     }
 

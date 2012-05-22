@@ -149,10 +149,10 @@ Track::init ( void )
                 Fl_Button *o = record_button =
                     new Fl_Button( 6, 28, 26, 24, "@circle" );
                 o->type( 1 );
-                o->box( FL_ROUNDED_BOX );
-                o->down_box( FL_ROUNDED_BOX );
-                o->color( FL_LIGHT1 );
+                o->box( FL_ASYM_BOX );
+                o->down_box( FL_ASYM_BOX );
                 o->selection_color( FL_RED );
+                o->color( fl_color_average( FL_GRAY, o->selection_color(), 0.80 ) );
                 o->labelsize( 9 );
                 o->callback( cb_button, this );
             }
@@ -160,10 +160,10 @@ Track::init ( void )
                 Fl_Button *o = mute_button =
                     new Fl_Button( 35, 28, 26, 24, "m" );
                 o->selection_color( fl_color_average( FL_YELLOW, FL_GREEN, 0.50 ) );
+                o->color( fl_color_average( FL_GRAY, o->selection_color(), 0.80 ) );
                 o->type( 1 );
-                o->box( FL_ROUNDED_BOX );
-                o->down_box( FL_ROUNDED_BOX );
-                o->color( FL_LIGHT1 );
+                o->box( FL_ASYM_BOX );
+                o->down_box( FL_ASYM_BOX );
                 o->labelsize( 15 );
                 o->callback( cb_button, this );
             }
@@ -171,17 +171,17 @@ Track::init ( void )
                 Fl_Button *o = solo_button =
                     new Fl_Button( 66, 28, 26, 24, "s" );
                 o->selection_color( fl_color_average( FL_YELLOW, FL_RED, 0.50 ) );
+                o->color( fl_color_average( FL_GRAY, o->selection_color(), 0.80 ) );
                 o->type( 1 );
-                o->box( FL_ROUNDED_BOX );
-                o->down_box( FL_ROUNDED_BOX );
-                o->color( FL_LIGHT1 );
+                o->box( FL_ASYM_BOX );
+                o->down_box( FL_ASYM_BOX );
                 o->labelsize( 15 );
                 o->callback( cb_button, this );
             }
             {
                 Fl_Menu_Button *o = take_menu =
                     new Fl_Menu_Button( 97, 28, 47, 24, "T" );
-                o->box( FL_THIN_UP_BOX );
+                o->box( FL_UP_BOX );
                 o->color( FL_LIGHT1 );
                 o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
                 o->callback( cb_button, this );
@@ -833,14 +833,11 @@ Track::menu ( void ) const
 void
 Track::draw ( void )
 {
-    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
-        return;
-
     int X, Y, W, H;
     
-    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
-
     fl_push_clip( x(), y(), w(), h() );
+    
+    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
     if ( _selected )
     {

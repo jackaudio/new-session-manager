@@ -1,23 +1,20 @@
 
 OBJS:= ntk/lib/libntk.a ntk/lib/libntk_images.a
-SRCS:= ntk/src/*.cxx ntk/FL/*.H
+SRCS:= $(wildcard ntk/src/*.cxx ntk/FL/*.H)
 
 $(SRCS): ntk/config.h
 	@ echo Building NTK
-	cd ntk && make
+	$(MAKE) -C ntk
 
-$(OBJS): ntk/config.h $(SRCS)
-	@ echo Building NTK
-	cd ntk && make
+$(OBJS): $(SRCS)
 
 ntk/config.h: Makefile
 	@ echo Configuring NTK
 	cd ntk && ./configure --prefix=/usr/local --enable-debug --enable-shared --disable-gl --enable-threads --enable-xft --enable-cairo --enable-cairoext --enable-xinerama
-
+	@ touch ntk/config.h
+	
 config: ntk/config.h
 
 clean:
 
 all: $(OBJS)
-	@ echo Building NTK
-	cd ntk && make

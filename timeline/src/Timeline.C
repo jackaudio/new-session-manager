@@ -55,8 +55,8 @@
 #include "OSC_Thread.H"
 #include "OSC/Endpoint.H"
 
-#include "NSM.H"
-extern NSM_Client *nsm;
+#include <nsm.h>
+extern nsm_client_t *nsm;
 
 #ifdef USE_WIDGET_FOR_TIMELINE
 #define BASE Fl_Group
@@ -1556,7 +1556,7 @@ Timeline::command_new ( const char *name, const char *display_name )
 const char *
 Timeline::session_manager_name ( void )
 {
-    return nsm->session_manager_name();
+    return nsm_get_session_manager_name( nsm );
 }
 
 
@@ -1673,14 +1673,14 @@ Timeline::connect_osc ( void )
 void
 Timeline::discover_peers ( void )
 {
-    if ( nsm->is_active() )
+    if ( nsm_is_active( nsm ) )
     {
         lo_message m = lo_message_new();
         
         lo_message_add_string( m, "/non/finger" );
         lo_message_add_string( m, osc->url() );
 
-        nsm->broadcast( m );
+        nsm_send_broadcast( nsm, m );
         
         lo_message_free( m );
     }

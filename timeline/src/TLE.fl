@@ -91,10 +91,10 @@ decl {\#include "FL/About_Dialog.H"} {private local
 decl {extern char project_display_name[256];} {private global
 } 
 
-decl {\#include "NSM.H"} {private local
+decl {\#include <nsm.h>} {private local
 } 
 
-decl {extern NSM_Client *nsm;} {private global
+decl {extern nsm_client_t *nsm;} {private global
 } 
 
 decl {extern char *user_config_dir;} {private global
@@ -905,7 +905,7 @@ else if ( 0 == p )
 
 static char pat[10];
 
-nsm->progress( p / 100.0f );
+nsm_send_progress( nsm, p / 100.0f );
 update_progress( progress, pat, p );
 
 progress->redraw();

@@ -51,7 +51,9 @@
 
 #include "Thread.H"
 
-#include "NSM.H"
+#include <nsm.h>
+
+extern void set_nsm_callbacks ( nsm_client_t *nsm );
 
 #ifdef HAVE_XPM
 #include "FL/Fl.H"
@@ -64,7 +66,7 @@ Engine *engine;
 Timeline *timeline;
 Transport *transport;
 TLE *tle;
-NSM_Client *nsm;
+nsm_client_t *nsm;
 
 char *instance_name = NULL;
 
@@ -118,7 +120,7 @@ extern Timeline *timeline;
 void
 check_nsm ( void * v )
 {
-    nsm->check();
+    nsm_check_nowait( nsm );
     Fl::repeat_timeout( NSM_CHECK_INTERVAL, check_nsm, v );
 }
 
@@ -234,7 +236,8 @@ main ( int argc, char **argv )
 
     tle = new TLE;
 
-    nsm = new NSM_Client;
+    nsm = nsm_new();
+    set_nsm_callbacks( nsm );
 
     MESSAGE( "Starting GUI" );
 
@@ -255,7 +258,7 @@ main ( int argc, char **argv )
 
     if ( nsm_url )
     {
-        if ( ! nsm->init( nsm_url ) )
+        if ( ! nsm_init( nsm, nsm_url ) )
         {
             if ( instance_override )
                 WARNING( "--instance option is not available when running under session management, ignoring." );
@@ -263,7 +266,7 @@ main ( int argc, char **argv )
             if ( optind < argc )
                 WARNING( "Loading files from the command-line is incompatible with session management, ignoring." );
 
-            nsm->announce( APP_NAME, ":progress:switch:", argv[0] );
+            nsm_send_announce( nsm, APP_NAME, ":progress:switch:", argv[0] );
 
             /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
             Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
@@ -297,7 +300,7 @@ main ( int argc, char **argv )
     delete tle;
     tle = NULL;
 
-    delete nsm;
+    nsm_free( nsm );
     nsm = NULL;
     
     MESSAGE( "Your fun is over" );

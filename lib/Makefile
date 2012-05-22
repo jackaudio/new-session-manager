@@ -12,7 +12,7 @@ $(OBJS): ntk/config.h $(SRCS)
 
 ntk/config.h: Makefile
 	@ echo Configuring NTK
-	cd ntk && ./configure --prefix=/usr/local --enable-shared --disable-gl --enable-threads --enable-xft --enable-cairo --enable-cairoext --enable-xinerama
+	cd ntk && ./configure --prefix=/usr/local --enable-debug --enable-shared --disable-gl --enable-threads --enable-xft --enable-cairo --enable-cairoext --enable-xinerama
 
 config: ntk/config.h
 

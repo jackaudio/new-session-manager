@@ -19,7 +19,10 @@
 
 SUBDIRS=lib nonlib FL timeline mixer session-manager sequencer
 
-all: .config
+all: lib/.built .config
+
+lib/.built: 
+	@ make -C lib
 
 .config: configure
 	./configure

@@ -5,6 +5,7 @@ SRCS:= $(wildcard ntk/src/*.cxx ntk/FL/*.H)
 $(SRCS): ntk/config.h
 	@ echo Building NTK
 	$(MAKE) -C ntk
+	@ touch .built
 
 $(OBJS): $(SRCS)
 

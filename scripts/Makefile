@@ -62,7 +62,7 @@ INCLUDES += $(FLTK_CFLAGS)
 
 # INCLUDES += 
 
-// CFLAGS += $(FLTK_CFLAGS)
+# CFLAGS += $(FLTK_CFLAGS)
 
 # include FL/makefile.inc
 include makefile.inc

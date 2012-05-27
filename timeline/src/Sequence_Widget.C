@@ -249,8 +249,8 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color,
 //    lab.type = FL_SHADOW_LABEL;
     lab.type = FL_NORMAL_LABEL;
     lab.value = label;
-    lab.font = FL_HELVETICA;
-    lab.size = 14;
+    lab.font = FL_HELVETICA_ITALIC;
+    lab.size = 9;
 
     int lw = 0, lh = 0;
 
@@ -264,25 +264,22 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color,
         dx = min( 32767, scroll_x() - abs_x() );
 
     const Fl_Boxtype b = FL_ROUNDED_BOX;
-    const int bx = Fl::box_dx( b ) + 1;
-    const int bw = Fl::box_dw( b ) + 1;
-//    const int by = Fl::box_dy( b ) + 1;
-    const int bh = Fl::box_dh( b ) + 1;
+    const int bx = Fl::box_dx( b ) + 2;
+    const int bw = Fl::box_dw( b ) + 4;
+    const int by = Fl::box_dy( b ) + 2;
+    const int bh = Fl::box_dh( b ) + 4;
 
     /* FIXME: why do we have to do this here? why doesn't Fl_Label::draw take care of this stuff? */
     if ( align & FL_ALIGN_INSIDE )
     {
-        X += Fl::box_dx( box() );
-        Y += Fl::box_dy( box() );
-        W -= Fl::box_dw( box() );
-        H -= Fl::box_dh( box() );
-
-
         if ( align & FL_ALIGN_RIGHT )
             X += abs_w() - (lw + bw);
 
         if ( align & FL_ALIGN_BOTTOM  )
-            Y += h() - (lh + (bh << 1));
+        {
+            Y += h() - (lh + bh);
+            X += 2;
+        }
     }
     else
     {
@@ -297,10 +294,11 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color,
             Y -= lh + bh;
     }
 
-    fl_draw_box( b, ( X - dx ), Y, lw + bw, lh, FL_GRAY );
+    fl_draw_box( b, ( X - dx ), Y - by, lw + bw, lh + bh, fl_color_add_alpha( FL_DARK1, 150 )  );
 
     fl_color( color );
-    fl_draw( label, ( X - dx ) + bx, Y, lw, lh, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_CENTER ) );
+
+    fl_draw( label, ( X - dx ), Y, lw + bw, lh, (Fl_Align)(FL_ALIGN_CENTER) );
 
     if ( align & FL_ALIGN_CLIP ) fl_pop_clip();
 }

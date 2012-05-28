@@ -692,16 +692,14 @@ Timeline::x_to_offset ( int x ) const
 
 /** draws a single measure line */
 static void
-draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
+draw_measure_cb ( nframes_t frame, const BBT &bbt, void * )
 {
-    Fl_Color *color = (Fl_Color*)arg;
-
-    Fl_Color c = fl_color_average( FL_LIGHT3, FL_RED, 0.50 );
+    Fl_Color c = FL_LIGHT3;
 
     if ( bbt.beat )
-        c = FL_LIGHT3;
+        c = FL_DARK1;
 
-    fl_color( fl_color_add_alpha( c, 48 ) );
+    fl_color( fl_color_add_alpha( c, 64 ) );
     
     const int x = timeline->ts_to_x( frame - timeline->xoffset ) + Track::width();
 

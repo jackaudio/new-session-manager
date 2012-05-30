@@ -320,7 +320,6 @@ pattern::trigger ( tick_t start, tick_t end )
 
     _start = start;
     _end   = end;
-    _index = 0;
 }
 
 /* trigger forever */

@@ -226,8 +226,7 @@ try_again:
             {
                 pattern *p = pattern::pattern_by_number( 1 + note_to_y( e->note() ) );
             
-                if ( ! p->playing() )
-                    p->trigger( ts, tse );
+                p->trigger( ts, tse );
                 
                 p->play( start, end );
             }

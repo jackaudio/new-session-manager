@@ -38,6 +38,8 @@ using namespace std;
 
 #include <errno.h>
 
+#include <unistd.h> // for symlink()
+
 
 
 Audio_Sequence::Audio_Sequence ( Track *track, const char *name ) : Sequence( track )

@@ -248,7 +248,7 @@ Track::set ( Log_Entry &e )
         if ( ! strcmp( s, ":height" ) )
         {
             size( atoi( v ) );
-            resize();
+            adjust_size();
         }
         else if ( ! strcmp( s, ":selected" ) )
             _selected = atoi( v );
@@ -444,7 +444,7 @@ static int pack_visible( Fl_Pack *p )
 
 /* adjust size of widget and children */
 void
-Track::resize ( void )
+Track::adjust_size ( void )
 {
     for ( int i = takes->children(); i--; )
         takes->child( i )->size( w(), height()  );
@@ -496,7 +496,7 @@ Track::size ( int v )
 
     _size = v;
 
-    resize();
+    adjust_size();
 }
 
 void
@@ -558,7 +558,7 @@ Track::remove ( Audio_Sequence *t )
 
     timeline->unlock();
 
-    resize();
+    adjust_size();
 
     update_take_menu();
 }
@@ -571,7 +571,7 @@ Track::remove ( Annotation_Sequence *t )
 
     annotation->remove( t );
 
-    resize();
+    adjust_size();
 }
 
 void
@@ -590,7 +590,7 @@ Track::remove ( Control_Sequence *t )
 
     timeline->unlock();
 
-    resize();
+    adjust_size();
 }
 
 void
@@ -609,7 +609,7 @@ Track::sequence ( Audio_Sequence * t )
 
     update_take_menu();
 
-    resize();
+    adjust_size();
 }
 
 void
@@ -627,7 +627,7 @@ Track::add ( Control_Sequence *t )
 
     engine->unlock();
 
-    resize();
+    adjust_size();
 }
 
 void
@@ -639,7 +639,7 @@ Track::add ( Annotation_Sequence *t )
 
     annotation->add( t );
 
-    resize();
+    adjust_size();
 }
 
 /** add all widget on this track falling within the given rectangle to

@@ -30,7 +30,7 @@
 
 #include <stdio.h>
 
-struct Transport : public jack_position_t, public Fl_Pack
+class Transport : public jack_position_t, public Fl_Pack
 {
 
 private:

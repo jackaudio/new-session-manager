@@ -53,7 +53,14 @@ public:
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }
 
-    Sequence * clone_empty ( const char *name = 0 )
+    virtual Sequence * clone_empty ( void )
+	{
+            Audio_Sequence *t = new Audio_Sequence( track() );
+
+            return t;
+	}
+	
+    virtual Sequence * clone_empty ( const char *name )
         {
             Audio_Sequence *t = new Audio_Sequence( track(), name );
 

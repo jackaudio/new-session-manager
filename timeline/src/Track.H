@@ -150,7 +150,7 @@ public:
 
     int ncontrols ( void ) { return control->children(); }
 
-    void resize ( void );
+    void adjust_size ( void );
     void size ( int v );
 
     int height ( void ) const
@@ -163,7 +163,7 @@ public:
     void show_all_takes ( bool b )
         {
             _show_all_takes = b;
-            resize();
+            adjust_size();
         }
 
     void name ( const char *name )

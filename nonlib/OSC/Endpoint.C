@@ -65,7 +65,6 @@ namespace OSC
         _value = 0.0f;
         _endpoint = NULL;
         _peer = NULL;
-        _path = 0;
         _documentation = 0;
         _user_data = 0;
         _connection_state_callback = 0;

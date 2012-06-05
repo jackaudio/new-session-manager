@@ -470,6 +470,15 @@ Audio_Region::draw_box( void )
     fl_pop_clip();
 }
 
+void
+Audio_Region::peaks_ready_callback ( void *v )
+{
+    Fl::lock();
+    ((Audio_Region*)v)->redraw();
+    Fl::unlock();
+    Fl::awake();
+}
+
 /** Draw (part of) region. X, Y, W and H are the rectangle we're clipped to. */
 void
 Audio_Region::draw ( void )
@@ -540,11 +549,11 @@ Audio_Region::draw ( void )
 
 //    DMESSAGE( "Drawing audio region.");
 
+    int channels;
+    int peaks;
+    Peak *pbuf = NULL;
+    
     do {
-
-        int channels;
-        int peaks;
-        Peak *pbuf;
 
         nframes_t start = _r->offset;
 
@@ -577,22 +586,7 @@ Audio_Region::draw ( void )
 
             assert( loop_peaks_needed >= 0 );
 
-            if ( _loop && offset < _loop )
-            {
-                const int x = timeline->ts_to_x( _loop - offset );
-
-                /* FIXME: is there no way to draw these symbols direclty? */
-                fl_color( FL_WHITE );
-                
-                fl_push_matrix();
-                
-                fl_translate( X + x + 2, y() + h() - 14 );
-                fl_scale( - 16, 8 );
-                
-                draw_full_arrow_symbol( FL_BLACK );
-                
-                fl_pop_matrix();
-            }
+       
         }
 
         if ( xo + loop_peaks_needed > total_peaks_needed )
@@ -607,15 +601,26 @@ Audio_Region::draw ( void )
 
         if ( start != ostart || end != oend )
         {
-            if ( _clip->read_peaks( timeline->fpp(),
-                                    start,
-                                    end,
-                                    &peaks, &pbuf, &channels ) )
+            if ( _clip->peaks()->peakfile_ready() )
             {
-                Waveform::scale( pbuf, peaks * channels, _scale );
+                if ( _clip->read_peaks( timeline->fpp(),
+                                        start,
+                                        end,
+                                        &peaks, &pbuf, &channels ) )
+                {
+                    Waveform::scale( pbuf, peaks * channels, _scale );
 
-                ostart = start;
-                oend = end;
+                    ostart = start;
+                    oend = end;
+                }
+            }
+            else
+            {
+                if ( ! transport->rolling )
+                {
+                    /* create a thread to make the peaks */
+                    _clip->peaks()->make_peaks_asynchronously( Audio_Region::peaks_ready_callback, this );
+                }
             }
         }
         else
@@ -640,7 +645,7 @@ Audio_Region::draw ( void )
                                 loop_peaks_needed,
                                 ch,
                                 pbuf + i, peaks, channels,
-                               c );
+                                c );
             }
         }
 
@@ -656,6 +661,21 @@ Audio_Region::draw ( void )
 
     timeline->draw_measure_lines( X, Y, W, H );
 
+    if ( _loop && offset < _loop )
+    {
+        const int x = timeline->ts_to_x( _loop - offset );
+
+        /* FIXME: is there no way to draw these symbols direclty? */
+
+        fl_push_matrix();
+                
+        fl_translate( X + x + 2, y() + h() - 7 );
+        fl_scale( - 8, 8 );
+                
+        draw_full_arrow_symbol( FL_WHITE );
+                
+        fl_pop_matrix();
+    }
 /*     fl_color( FL_BLACK ); */
 /*     fl_line( rx, Y, rx, Y + H ); */
 /*     fl_line( rx + rw - 1, Y, rx + rw - 1, Y + H ); */

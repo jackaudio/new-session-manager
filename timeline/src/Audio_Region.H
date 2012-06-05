@@ -33,6 +33,8 @@ class Audio_Region : public Sequence_Region
     /* not permitted */
     Audio_Region & operator = ( const Audio_Region &rhs );
 
+    static void peaks_ready_callback ( void *v );
+
 public:
 
     static bool inherit_track_color;

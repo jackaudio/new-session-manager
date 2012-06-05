@@ -20,6 +20,7 @@
 /* Controls the audio transport */
 
 #include "Transport.H"
+#include "Timeline.H"
 
 #include "Engine/Engine.H"
 

@@ -31,6 +31,7 @@
 
 
 class Audio_File;
+class Peakfile;
 
 class Peaks
 {
@@ -62,6 +63,8 @@ class Peaks
                 size = len = 0;
             }
     };
+    
+    Peakfile *_peakfile;
 
     class Streamer
     {
@@ -87,7 +90,7 @@ class Peaks
     class Builder
     {
         FILE *fp;
-        size_t last_block_pos;
+        off_t last_block_pos;
         const Peaks *_peaks;
 
         void write_block_header ( nframes_t chunksize );
@@ -100,22 +103,25 @@ class Peaks
         Builder ( const Peaks *peaks );
     };
 
+    /* FIXME: Is this ever accessed by multiple threads? */
     static peakbuffer _peakbuf;
 
     Audio_File *_clip;
 
     mutable float _fpp;
 
-    int read_peaks ( nframes_t s, int npeaks, nframes_t chunksize ) const;
-    int read_source_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const;
-    int read_source_peaks ( Peak *peaks, int npeaks, nframes_t chunksize ) const;
-    int read_peakfile_peaks ( Peak *peaks, nframes_t s, int npeaks, nframes_t chunksize ) const;
+    nframes_t read_peaks ( nframes_t s, nframes_t npeaks, nframes_t chunksize ) const;
+    nframes_t read_source_peaks ( Peak *peaks, nframes_t s, nframes_t npeaks, nframes_t chunksize ) const;
+    nframes_t read_source_peaks ( Peak *peaks, nframes_t npeaks, nframes_t chunksize ) const;
+    nframes_t read_peakfile_peaks ( Peak *peaks, nframes_t s, nframes_t npeaks, nframes_t chunksize ) const;
 
     Streamer * volatile _peak_writer; /* exists when streaming peaks to disk */
 
     /* not permitted */
     Peaks ( const Peaks &rhs );
     const Peaks &operator= ( const Peaks &rhs );
+
+    bool current ( void ) const;
 
 public:
 
@@ -133,14 +139,17 @@ public:
 
     int fill_buffer ( float fpp, nframes_t s, nframes_t e ) const;
 
-    void read ( int X, float *hi, float *lo ) const;
-    bool ready ( nframes_t s, int npeaks, nframes_t chunksize ) const;
+    bool peakfile_ready ( void ) const;
 
-    bool current ( void ) const;
+    void read ( int X, float *hi, float *lo ) const;
+    bool ready ( nframes_t s, nframes_t npeaks, nframes_t chunksize ) const;
+
     bool make_peaks ( void ) const;
-    bool make_peaks_mipmap ( void ) const;
+    bool make_peaks_mipmap ( void ) const;    
+    void make_peaks_asynchronously ( void(*callback)(void*), void *userdata ) const;
 
     void prepare_for_writing ( void );
     void finish_writing ( void );
     void write ( sample_t *buf, nframes_t nframes );
+
 };

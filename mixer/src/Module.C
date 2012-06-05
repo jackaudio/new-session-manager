@@ -41,6 +41,8 @@
 
 #include "OSC/Endpoint.H"
 
+#include "string_util.h"
+
 
 
 Module *Module::_copied_module_empty = 0;
@@ -243,12 +245,11 @@ Module::Port::generate_osc_path ()
     else
         asprintf( &path, "/strip/%s/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
 
-    // Hack to keep spaces out of OSC URL... Probably need to handle other special characters similarly.
-    for ( int i = strlen( path ); i--; )
-    {
-        if ( path[i] == ' ' || path[i] == ',' )
-            path[i] = '_';
-    }
+    char *s = escape_url( path );
+    
+    free( path );
+
+    path = s;
 
     return path;
 }

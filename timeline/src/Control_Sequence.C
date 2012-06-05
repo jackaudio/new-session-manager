@@ -34,6 +34,8 @@ using std::list;
 
 #include "OSC/Endpoint.H"
 
+#include "string_util.h"
+
 
 
 bool Control_Sequence::draw_with_gradient = true;
@@ -234,6 +236,12 @@ Control_Sequence::mode ( Mode m )
     {
         char *path;
         asprintf( &path, "/track/%s/control/%i", track()->name(), track()->ncontrols() );
+
+        char *s = escape_url( path );
+
+        free( path );
+
+        path = s;
         
         _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, 0, 1, 0, NULL, NULL );
         
@@ -536,11 +544,20 @@ Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig )
              sig->parameter_limits().max == 1.0 ) )
         return;         
     
-    asprintf( &s, "%s/%s%s", peer_prefix, name, sig->path() );
+
+    assert( sig->path() );
+
+    char *path = strdup( sig->path() );
+
+    unescape_url( path );
+
+    asprintf( &s, "%s/%s%s", peer_prefix, name, path );
 
     peer_menu->add( s, 0, NULL, (void*)( sig ),
                     FL_MENU_TOGGLE |
                     ( _osc_output->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) );
+
+    free( path );
 
     free( s );
 

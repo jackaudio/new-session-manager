@@ -40,6 +40,8 @@ using namespace std;
 
 #include <unistd.h> // for symlink()
 
+#include "string_util.h"
+
 
 
 Audio_Sequence::Audio_Sequence ( Track *track, const char *name ) : Sequence( track )
@@ -129,35 +131,6 @@ Audio_Sequence::set ( Log_Entry &e )
     }
 }
 
-
-static
-void
-deurlify ( char *url )
-{
-    char *r, *w;
-
-    r = w = url;
-
-    for ( ; *r; r++, w++ )
-    {
-        if ( *r == '%' )
-        {
-            char data[3] = { *(r + 1), *(r + 2), 0 };
-
-            int c;
-
-            sscanf( data, "%2X", &c );
-
-            *w = c;
-
-            r += 2;
-        }
-        else
-            *w = *r;
-    }
-
-    *w = 0;
-}
 
 void
 Audio_Sequence::handle_widget_change ( nframes_t start, nframes_t length )
@@ -280,7 +253,7 @@ Audio_Sequence::handle ( int m )
                 return 0;
             }
 
-            deurlify( file );
+            unescape_url( file );
 
             printf( "pasted file \"%s\"\n", file );
 

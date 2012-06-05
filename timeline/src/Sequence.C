@@ -120,7 +120,11 @@ Sequence::x_to_offset ( int X )
 void
 Sequence::sort ( void )
 {
+    timeline->wrlock();
+
     _widgets.sort( Sequence_Widget::sort_func );
+
+    timeline->unlock();
 }
 
 /** return a pointer to the widget that /r/ overlaps, or NULL if none. */
@@ -140,11 +144,7 @@ Sequence::overlaps ( Sequence_Widget *r )
 void
 Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
-    timeline->wrlock();
-
     sort();
-
-    timeline->unlock();
 //    timeline->update_length( start + length );
 }
 

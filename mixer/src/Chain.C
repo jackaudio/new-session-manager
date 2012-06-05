@@ -386,14 +386,9 @@ Chain::get_module_instance_number ( Module *m )
 {
     int n = 0;
 
-    for ( int i = 0; i < modules(); ++i )
-    {
-        if ( module(i) == m )
-            break;
-
-        if ( ! strcmp( module(i)->name(), m->name() ) )
+    for ( int i = 0; i < modules() && module(i) != m; ++i )
+        if ( ! strcmp( module(i)->label(), m->label() ) )
             n++;
-    }
 
     return n;
 } 

@@ -123,6 +123,7 @@ Audio_Region::set ( Log_Entry &e )
 void
 Audio_Region::init ( void )
 {
+    _adjusting_gain = 0;
     _loop = 0;
     _sequence = NULL;
     _scale = 1.0f;
@@ -149,6 +150,11 @@ Audio_Region::Audio_Region ( const Audio_Region & rhs ) : Sequence_Region( rhs )
     _fade_out  = rhs._fade_out;
 
     _loop  = rhs._loop;
+
+    _box_color = rhs._box_color;
+    _color = rhs._color;
+    
+    _adjusting_gain = false;
 
     log_create();
 }
@@ -272,6 +278,12 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
         if ( offset > 0 )
             _fade_out.length = offset;
     }
+    else if ( ! strcmp( picked, "/Gain with mouse vertical drag" ) )
+    {
+        /* float g = h() / (y() - Fl::event_y() ); */
+
+        /* _scale = g; */
+    }
     else if ( ! strcmp( picked, "/Loop point to mouse" ) )
     {
         nframes_t offset = x_to_offset( Fl::event_x() );
@@ -333,6 +345,7 @@ Audio_Region::menu ( void )
             { "Color",        0, 0, 0,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
 	    { "Split at mouse", 's', 0, 0 },
 	    { "Crop to range", 'c', 0, 0 },
+            { "Gain with mouse vertical drag", 'g', 0, 0 },
             { "Fade in to mouse", FL_F + 3, 0, 0 },
             { "Fade out to mouse", FL_F + 4, 0, 0 },
             { "Loop point to mouse", 'l', 0, 0 },
@@ -362,7 +375,7 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
     const int height = dh;
     const int width = timeline->ts_to_x( fade.length );
 
-    if ( ! width )
+    if ( width < 4 )
         /* too small to draw */
         return;
  
@@ -373,7 +386,7 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
         fx = line_x();
      
         if ( fx + width < X ||
-             fx > X + W )
+                          fx > X + W )
             /* clipped */
             return;
     }
@@ -528,8 +541,8 @@ Audio_Region::draw ( void )
 
     {
         Fl_Color c = fl_color_average( FL_DARK1,
-                                   Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color,
-                                   0.50f );
+                                       Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color,
+                                       0.75f );
     
         fl_color( fl_color_add_alpha( c, 127 ) );
 
@@ -676,6 +689,27 @@ Audio_Region::draw ( void )
                 
         fl_pop_matrix();
     }
+
+    if ( _adjusting_gain  )
+    {
+        fl_color( fl_color_add_alpha( FL_DARK1, 127 ) );
+
+        fl_rectf( X, ( y() + h() ) - ( h() * ( _scale * 0.25 ) ), X + W, y() + h() );
+
+        fl_line_style( FL_DASH, 1 );
+        
+        fl_color( fl_color_add_alpha( FL_GREEN, 200 ) );
+        
+        float j = 5;
+
+        for ( int i = y() + h(); i > y(); i -= j, j *= 1.2 )
+        {
+            fl_line( X, i, X + W, i );
+        }
+        
+        fl_line_style( FL_SOLID, 0 );
+    }
+
 /*     fl_color( FL_BLACK ); */
 /*     fl_line( rx, Y, rx, Y + H ); */
 /*     fl_line( rx + rw - 1, Y, rx + rw - 1, Y + H ); */
@@ -740,7 +774,21 @@ Audio_Region::handle ( int m )
         case FL_FOCUS:
         case FL_UNFOCUS:
             return 1;
+        case FL_KEYUP:
+            if ( Fl::event_key() == 'g' )
+            {
+                _adjusting_gain = false;
+                redraw();
+                return 1;
+            }
+            break;
         case FL_KEYBOARD:
+            if ( Fl::event_key() == 'g' )
+            {
+                _adjusting_gain = true;
+                redraw();
+                return 1;
+            }
             return menu().test_shortcut() != 0;
         case FL_ENTER:
             return Sequence_Region::handle( m );
@@ -748,6 +796,9 @@ Audio_Region::handle ( int m )
             return Sequence_Region::handle( m );
         case FL_PUSH:
         {
+            if ( Fl::event_key() == 'g' )
+                return 1;
+
             /* splitting  */
             if ( test_press( FL_BUTTON2 | FL_SHIFT ) )
             {
@@ -801,10 +852,21 @@ Audio_Region::handle ( int m )
             return 1;
         }
         case FL_DRAG:
+
             if ( ! _drag )
             {
                 begin_drag( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
                 _log.hold();
+            }
+
+            if ( Fl::event_key() == 'g' )
+            {
+                float d = (float)h() / ( y() - Fl::event_y() );
+
+                _scale = -0.5f * d;
+
+                redraw();
+                return 1;
             }
 
             if ( test_press( FL_BUTTON1 | FL_SHIFT | FL_CTRL ) )

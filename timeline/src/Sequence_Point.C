@@ -109,21 +109,24 @@ Sequence_Point::draw_box ( void )
 //    Sequence_Widget::draw_box();
 
     const int X = x() - (abs_w() >> 1);
-//    const int Y = y() + Fl::box_dy( box() );
+/* //    const int Y = y() + Fl::box_dy( box() ); */
 
     const int Y = y();
 
-    fl_color( color() );
+    /* fl_draw_box( FL_ASYM_BOX, x() - ( abs_w() / 2 ), y(), abs_w(), h(), color() ); */
+
+    /* fl_color( color() ); */
 
     fl_push_matrix();
-    fl_translate( X, Y + ( h() >> 3 ) );
-    fl_scale( w(), h() - ( h() >> 3 ) );
+    fl_translate( X, Y );
+    fl_scale( abs_w(), h() );
 
     draw_marker( color() );
 
     fl_pop_matrix();
 
-//    fl_line( X, Y, X, Y + h() - Fl::box_dh( box() ) );
+    /* fl_color( FL_WHITE ); */
+    /* fl_line( x(), y(), x(), y() + h() ); */
 }
 
 void

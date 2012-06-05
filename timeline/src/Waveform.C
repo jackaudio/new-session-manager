@@ -66,6 +66,9 @@ Waveform::draw ( int X, int Y, int W, int H,
     const int ty = Y + halfheight;
 
     W = min( peaks, W );
+
+    if ( ! W )
+        return;
     
     if ( Waveform::fill )
     {
@@ -93,29 +96,21 @@ Waveform::draw ( int X, int Y, int W, int H,
         }
         else
         {
-
-//            fl_color( fl_color_add_alpha( color, 127 ) );
             fl_color( color );
             
             fl_begin_complex_polygon();
-
+            
             j = start;
-
+            
             for ( int x = X; x < X + W; x++, j += skip  )
                 fl_vertex( x, ty - ( halfheight * pbuf[ j ].min ) );
-
-//        fl_end_line();
-
-//        fl_begin_line();
-
-            j = start + ( W * skip );
-
+            
+            //    j = start + ( W * skip );
+            
             for ( int x = X + W; x >= X; x--, j -= skip )
                 fl_vertex( x, ty - ( halfheight * pbuf[ j ].max ) );
-
+            
             fl_end_complex_polygon();
-
-//        fl_line_style( FL_SOLID, 0 );
         }
     }
 

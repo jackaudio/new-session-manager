@@ -565,6 +565,8 @@ Audio_Region::draw ( void )
     int peaks;
     Peak *pbuf = NULL;
     
+//    Fl_Color c = _color;
+
     do {
 
         nframes_t start = _r->offset;
@@ -640,9 +642,6 @@ Audio_Region::draw ( void )
 //            DMESSAGE( "using cached peaks" );
         }
 
-        Fl_Color c = _color;
-
-
 //            c = fl_color_average( FL_BLACK, FL_RED, 0.20 );
 
         if ( peaks && pbuf )
@@ -668,26 +667,11 @@ Audio_Region::draw ( void )
 
         xo += loop_peaks_needed;
 
+        c = fl_color_average( FL_GRAY, _color, 0.70 );
     }
     while ( _loop && xo < W );
 
     timeline->draw_measure_lines( X, Y, W, H );
-
-    if ( _loop && offset < _loop )
-    {
-        const int x = timeline->ts_to_x( _loop - offset );
-
-        /* FIXME: is there no way to draw these symbols direclty? */
-
-        fl_push_matrix();
-                
-        fl_translate( X + x + 2, y() + h() - 7 );
-        fl_scale( - 8, 8 );
-                
-        draw_full_arrow_symbol( FL_WHITE );
-                
-        fl_pop_matrix();
-    }
 
     if ( _adjusting_gain  )
     {

@@ -399,44 +399,43 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
             /* clipped */
             return;
     }
-    
-
-    fl_push_matrix();
-
-    fl_translate( fx, dy );
-
-    if ( dir == Fade::In )
-        fl_scale( width, height );
-    else
-        fl_scale( -width, height );
 
     if ( line )
         fl_begin_line();
     else
         fl_begin_polygon();
 
-    fl_vertex( 0.0, 0.0 );
-    fl_vertex( 0.0, 1.0 );
+    fl_vertex( fx, dy );
+    fl_vertex( fx, dy + height );
 
-
-//    if ( draw_real_fade_curve )
     {
         nframes_t tsx = timeline->x_to_ts( 1 );
-        nframes_t ts = 0;
 
-        for ( int i = 0; i < width; ++i, ts += tsx )
-            fl_vertex( i / (double)width, 1.0f - fade.gain( ts / (double)fade.length ) );
+        if ( dir == Fade::In )
+        {
+            nframes_t ts = 0;
 
+            for ( int i = 0; i < width; ++i, ts += tsx )
+                fl_vertex( fx + i, dy + height - ( height * fade.gain( ts / (double)fade.length ) ));
+        }
+        else
+        {
+            nframes_t ts = tsx * width;
+
+            for ( int i = 0; i < width; ++i, ts -= tsx )
+                fl_vertex( fx - i, dy + ( height * fade.gain( ts / (double)fade.length ) ));
+        }
     }
-
-    fl_vertex( 1.0, 0.0 );
+    
+    if ( dir == Fade::In )
+        fl_vertex( fx + width, dy );
+    else
+        fl_vertex( fx - width, dy );
 
     if ( line )
         fl_end_line();
     else
         fl_end_polygon();
-
-    fl_pop_matrix();
 }
 
 void

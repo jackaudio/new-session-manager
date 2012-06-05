@@ -25,8 +25,10 @@
 
 Sequence_Point::Sequence_Point ( const Sequence_Point &rhs ) : Sequence_Widget( rhs )
 {
-    if ( _label )
+    if ( rhs._label )
         _label = strdup( rhs._label );
+    else
+        _label = 0;
 }
 
 Sequence_Point::Sequence_Point ( )

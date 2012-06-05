@@ -125,7 +125,7 @@ Track::init ( void )
     Fl_Group::size( timeline->w(), height() );
 
     Track *o = this;
-    o->box( FL_NO_BOX );
+    o->box( FL_FLAT_BOX );
 
     {
         Fl_Group *o = new Fl_Group( 0, 0, 149, 70 );
@@ -839,6 +839,8 @@ Track::draw ( void )
     
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
+    timeline->draw_measure_lines( X, Y, W, H );
+
     if ( _selected )
     {
         Fl_Color c = color();
@@ -852,7 +854,6 @@ Track::draw ( void )
     else
         Fl_Group::draw();
 
-    timeline->draw_measure_lines( X, Y, W, H );
 
     fl_pop_clip();
 }
@@ -883,7 +884,7 @@ Track::handle ( int m )
             Logger log( this );
 
             if ( ! Fl::event_shift() )
-                return 0;
+                return Fl_Group::handle( m );
 
             int d = Fl::event_dy();
 

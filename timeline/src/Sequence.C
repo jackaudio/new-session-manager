@@ -63,8 +63,7 @@ Sequence::init ( void )
 
     _name = NULL;
 
-//    box( FL_DOWN_BOX );
-    box( FL_BORDER_BOX );
+    box( FL_FLAT_BOX );
     color(  FL_BACKGROUND_COLOR );
     align( FL_ALIGN_LEFT );
 
@@ -281,7 +280,7 @@ Sequence::draw ( void )
 
 //    printf( "track::draw %d,%d %dx%d\n", X,Y,W,H );
 
-//    timeline->draw_measure_lines( X, Y, W, H, color() );
+    timeline->draw_measure_lines( X, Y, W, H );
 
     for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
         (*r)->draw_box();

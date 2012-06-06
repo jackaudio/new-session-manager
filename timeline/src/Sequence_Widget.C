@@ -263,23 +263,29 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color,
     if ( abs_x() < scroll_x() )
         dx = min( 32767, scroll_x() - abs_x() );
 
-    const Fl_Boxtype b = FL_ROUNDED_BOX;
-    const int bx = Fl::box_dx( b ) + 2;
-    const int bw = Fl::box_dw( b ) + 4;
-    const int by = Fl::box_dy( b ) + 2;
-    const int bh = Fl::box_dh( b ) + 4;
+    const Fl_Boxtype b = FL_BORDER_BOX;
+    const int bx = Fl::box_dx( b );
+    const int bw = Fl::box_dw( b );
+    const int by = Fl::box_dy( b );
+    const int bh = Fl::box_dh( b );
 
     /* FIXME: why do we have to do this here? why doesn't Fl_Label::draw take care of this stuff? */
     if ( align & FL_ALIGN_INSIDE )
     {
-        if ( align & FL_ALIGN_RIGHT )
-            X += abs_w() - (lw + bw);
-
         if ( align & FL_ALIGN_BOTTOM  )
-        {
-            Y += h() - (lh + bh);
-            X += 2;
-        }
+            Y += h() - ( lh + bh );
+        else if ( align & FL_ALIGN_TOP )
+            Y += by;
+        else
+            Y += ( h() / 2 ) - ( lh + bh );
+
+        if ( align & FL_ALIGN_RIGHT )
+            X += abs_w() - ( lw + bw );
+        else if ( align & FL_ALIGN_LEFT )
+            X += bx;
+        else
+            X += ( abs_w() / 2 ) - ( ( lw + bw ) / 2 );
+
     }
     else
     {
@@ -287,11 +293,15 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color,
             X += abs_w();
         else if ( align & FL_ALIGN_LEFT )
             X -= lw + bw;
+        else
+            X += ( abs_w() / 2 ) - ( ( lw + bw ) / 2 );
 
         if ( align & FL_ALIGN_BOTTOM  )
             Y += h();
         else if ( align & FL_ALIGN_TOP )
             Y -= lh + bh;
+        else
+            Y += ( h() / 2 ) - ( ( lh + bh ) / 2 );
     }
 
     fl_draw_box( b, ( X - dx ), Y - by, lw + bw, lh + bh, fl_color_add_alpha( FL_DARK1, 150 )  );

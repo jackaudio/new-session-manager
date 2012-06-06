@@ -81,6 +81,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef void * nsm_client_t;
 typedef int (nsm_open_callback)( const char *name, const char *display_name, const char *client_id, char **out_msg, void *userdata );
@@ -89,7 +90,7 @@ typedef void (nsm_active_callback)( int b, void *userdata );
 typedef void (nsm_session_is_loaded_callback)( void *userdata );
 typedef int (nsm_broadcast_callback)( const char *, lo_message m, void *userdata );
 
-#define _NSM() ((_nsm_client_t*)nsm)
+#define _NSM() ((struct _nsm_client_t*)nsm)
 
 #define NSM_EXPORT __attribute__((unused)) static
 
@@ -350,8 +351,12 @@ nsm_set_broadcast_callback( nsm_client_t *nsm, nsm_broadcast_callback *broadcast
 #define OSC_REPLY_ERR( errcode, value ) lo_send_from( ((struct _nsm_client_t*)user_data)->nsm_addr, ((struct _nsm_client_t*)user_data)->_server, LO_TT_IMMEDIATE, "/error", "sis", path, errcode, value )
 
 
-NSM_EXPORT int _nsm_osc_open ( const char *path, const char *, lo_arg **argv, int , lo_message, void *user_data )
+NSM_EXPORT int _nsm_osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
+    (void) types;
+    (void) argc;
+    (void) msg;
+
     char *out_msg = NULL;
     
     struct _nsm_client_t *nsm = (struct _nsm_client_t*)user_data;
@@ -374,8 +379,13 @@ NSM_EXPORT int _nsm_osc_open ( const char *path, const char *, lo_arg **argv, in
     return 0;
 }
 
-NSM_EXPORT int _nsm_osc_save ( const char *path, const char *, lo_arg **, int , lo_message , void *user_data )
+NSM_EXPORT int _nsm_osc_save ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
+    (void) types;
+    (void) argv;
+    (void) argc;
+    (void) msg;
+
     char *out_msg = NULL;
     
     struct _nsm_client_t *nsm = (struct _nsm_client_t*)user_data;
@@ -396,8 +406,12 @@ NSM_EXPORT int _nsm_osc_save ( const char *path, const char *, lo_arg **, int , 
     return 0;
 }
 
-NSM_EXPORT int _nsm_osc_announce_reply ( const char *, const char *, lo_arg **argv, int , lo_message msg, void *user_data )
+NSM_EXPORT int _nsm_osc_announce_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
+    (void) path;
+    (void) types;
+    (void) argc;
+
     if ( strcmp( &argv[0]->s, "/nsm/server/announce" ) )
         return -1;
     
@@ -415,8 +429,13 @@ NSM_EXPORT int _nsm_osc_announce_reply ( const char *, const char *, lo_arg **ar
     return 0;
 }
 
-NSM_EXPORT int _nsm_osc_error ( const char *, const char *, lo_arg **argv, int , lo_message , void *user_data )
+NSM_EXPORT int _nsm_osc_error ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
+    (void) path;
+    (void) types;
+    (void) argc;
+    (void) msg;
+
     if ( strcmp( &argv[0]->s, "/nsm/server/announce" ) )
         return -1;
 
@@ -432,8 +451,14 @@ NSM_EXPORT int _nsm_osc_error ( const char *, const char *, lo_arg **argv, int ,
     return 0;
 }
 
-NSM_EXPORT int _nsm_osc_session_is_loaded ( const char *, const char *, lo_arg **, int , lo_message , void *user_data )
+NSM_EXPORT int _nsm_osc_session_is_loaded ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
+    (void) path;
+    (void) types;
+    (void) argv;
+    (void) argc;
+    (void) msg;
+
     struct _nsm_client_t *nsm = (struct _nsm_client_t*)user_data;
 
     if ( ! nsm->session_is_loaded )
@@ -444,8 +469,12 @@ NSM_EXPORT int _nsm_osc_session_is_loaded ( const char *, const char *, lo_arg *
     return 0;
 }
 
-NSM_EXPORT int _nsm_osc_broadcast ( const char *path, const char *, lo_arg **, int , lo_message msg, void *user_data )
+NSM_EXPORT int _nsm_osc_broadcast ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
+    (void) types;
+    (void) argv;
+    (void) argc;
+
     struct _nsm_client_t *nsm = (struct _nsm_client_t*)user_data;
 
     if ( ! nsm->broadcast )

@@ -109,7 +109,7 @@ public:
             if ( m == FL_RELEASE )
             {
                 sequence()->sort();
-                timeline->redraw();
+                redraw();
             }
 
             return r;

@@ -60,7 +60,7 @@ Control_Point::set ( Log_Entry &e )
         if ( ! strcmp( s, ":y" ) )
             _y = atof( v );
 
-        timeline->redraw();
+        redraw();
 
         //          _make_label();
     }

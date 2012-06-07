@@ -267,13 +267,16 @@ public:
     virtual void
     redraw ( void )
         {
+            if ( ! _sequence )
+                return;
+
             if ( ! (align() & FL_ALIGN_INSIDE) )
             {
                 // FIXME: to better..
                 _sequence->redraw();
             }
             else
-                _sequence->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
+                _sequence->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
         }
 
     virtual void draw_box ( void );

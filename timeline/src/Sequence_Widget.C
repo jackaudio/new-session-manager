@@ -466,8 +466,7 @@ Sequence_Widget::handle ( int m )
 //                    timeline->update_length( start() + length() );
 
                     /* FIXME: why isn't this enough? */
-//                sequence()->redraw();
-                    timeline->redraw();
+                    sequence()->redraw();
                 }
 
                 if ( ! selected() || _selection.size() == 1 )

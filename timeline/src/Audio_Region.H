@@ -119,8 +119,14 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
 
+    void draw_label ( const char *label, Fl_Align align )
+        {
+            Sequence_Widget::draw_label( label, align );
+        }
+
     int handle ( int m );
-    void draw_box( void );
+    void draw_label ( void );
+    void draw_box ( void );
     void draw ( void );
     void resize ( void );
 
@@ -152,7 +158,7 @@ public:
     ~Audio_Region ( );
 
     Fl_Boxtype box ( void ) const { return Audio_Region::_box; }
-    Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE); }
+    Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE | FL_ALIGN_CLIP ); }
 
     void normalize ( void );
     void split ( nframes_t where );

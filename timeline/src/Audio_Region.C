@@ -452,7 +452,7 @@ Audio_Region::draw_box( void )
     }
 
     Fl_Boxtype b;
-    Fl_Color c = color;
+    Fl_Color c = selected() ? selection_color : color;
 
     if ( Audio_Region::show_box )
     {
@@ -462,14 +462,8 @@ Audio_Region::draw_box( void )
     {
         b = FL_DOWN_FRAME;
     }
-    
-    if ( selected() )
-        fl_draw_box( fl_down( b ), x(), y(), w(), h(), selection_color );
-    else
-        fl_draw_box( b, x(), y(), w(), h(), c );
 
-    /* used to draw fades here */
-    /* draw fades */
+    fl_draw_box( b, x(), y(), w(), h(), c );
 
     fl_pop_clip();
 }
@@ -633,15 +627,13 @@ Audio_Region::draw ( void )
 //            DMESSAGE( "using cached peaks" );
         }
 
-        Fl_Color c = _color;
+        Fl_Color c = Fl::get_color( _color );
 
-
-//            c = fl_color_average( FL_BLACK, FL_RED, 0.20 );
+        c = fl_color_add_alpha( c, 220 );
 
         if ( peaks && pbuf )
         {
             int ch = (h() - Fl::box_dh( box() ))  / channels;
-
 
             for ( int i = 0; i < channels; ++i )
             {
@@ -663,8 +655,6 @@ Audio_Region::draw ( void )
 
     }
     while ( _loop && xo < W );
-
-    timeline->draw_measure_lines( X, Y, W, H );
 
     if ( _loop && offset < _loop )
     {
@@ -703,14 +693,7 @@ Audio_Region::draw ( void )
 /*     fl_line( rx, Y, rx, Y + H ); */
 /*     fl_line( rx + rw - 1, Y, rx + rw - 1, Y + H ); */
 
-    if ( _clip->dummy() )
-    {
-        char pat[256];
-        snprintf( pat, sizeof( pat ), "Missing Source!: %s", _clip->name() );
-        draw_label( pat, align() );
-    }
-    else
-        draw_label( _clip->name(), align() );
+  
 
 /*     if ( current() ) */
 /*     { */
@@ -725,6 +708,19 @@ Audio_Region::draw ( void )
 
     fl_pop_clip();
 
+}
+
+void
+Audio_Region::draw_label ( void )
+{
+  if ( _clip->dummy() )
+    {
+        char pat[256];
+        snprintf( pat, sizeof( pat ), "Missing Source!: %s", _clip->name() );
+        draw_label( pat, align() );
+    }
+    else
+        draw_label( _clip->name(), align() );
 }
 
 /** split region at absolute frame /where/ */

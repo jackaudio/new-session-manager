@@ -310,13 +310,13 @@ Control_Sequence::draw_curve ( bool flip, bool filled )
 void
 Control_Sequence::draw ( void )
 {
-    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
-        return;
+//    draw_box();
 
     fl_push_clip( x(), y(), w(), h() );
 
+    
     /* draw the box with the ends cut off. */
-    draw_box( box(), x() - Fl::box_dx( box() ), y(), w() + Fl::box_dw( box() ) + 1, h(), color() );
+//    draw_box( box(), x() - Fl::box_dx( box() ), y(), w() + Fl::box_dw( box() ) + 1, h(), color() );
 
     const int bx = x();
     const int by = y() + Fl::box_dy( box() );
@@ -387,7 +387,7 @@ Control_Sequence::draw ( void )
         fl_line_style( FL_SOLID, 0 );
     }
 
-    //   timeline->draw_measure_lines( x(), y(), w(), h(), color );
+    timeline->draw_measure_lines( X, Y, W, H );
 
     if ( interpolation() == None || _highlighted || Fl::focus() == this )
         for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )

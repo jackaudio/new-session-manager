@@ -247,7 +247,7 @@ Sequence_Region::handle ( int m )
 void
 Sequence_Region::draw_box ( void )
 {
-    fl_draw_box( box(), line_x(), y(), abs_w(), h(), box_color() );
+    fl_draw_box( box(), line_x(), y(), abs_w(), h(), fl_color_add_alpha( box_color(), 127 ) );
 }
 
 void

@@ -281,6 +281,7 @@ public:
 
     virtual void draw_box ( void );
     virtual void draw ( void );
+    virtual void draw_label ( void );
 
     bool
     operator< ( const Sequence_Widget & rhs ) const

@@ -164,7 +164,6 @@ Audio_Sequence::draw ( void )
         {
             if ( *o <= **r )
             {
-
 /*                 if ( o->x() == (*r)->x() && o->w() == (*r)->w() ) */
 /*                     printf( "complete superposition\n" ); */
 
@@ -189,8 +188,8 @@ Audio_Sequence::draw ( void )
 
                 fl_push_clip( b.x, b.y, b.w, b.h );
 
-                draw_box( FL_FLAT_BOX, b.x - 100, b.y, b.w + 200, b.h, c );
-                draw_box( FL_UP_FRAME, b.x - 100, b.y, b.w + 200, b.h, c );
+                Fl_Widget::draw_box( FL_FLAT_BOX, b.x - 100, b.y, b.w + 200, b.h, c );
+                Fl_Widget::draw_box( FL_UP_FRAME, b.x - 100, b.y, b.w + 200, b.h, c );
 
                 fl_pop_clip();
 

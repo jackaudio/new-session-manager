@@ -136,6 +136,7 @@ public:
     virtual void snap ( Sequence_Widget *r );
     virtual int handle ( int m );
     virtual void draw ( void );
+    virtual void draw_box ( void );
 
     virtual nframes_t process ( nframes_t ) { return 0; }
 

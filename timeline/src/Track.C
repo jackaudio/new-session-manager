@@ -839,8 +839,6 @@ Track::draw ( void )
     
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
-    timeline->draw_measure_lines( X, Y, W, H );
-
     if ( _selected )
     {
         Fl_Color c = color();
@@ -853,7 +851,6 @@ Track::draw ( void )
     }
     else
         Fl_Group::draw();
-
 
     fl_pop_clip();
 }

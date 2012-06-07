@@ -231,6 +231,11 @@ Sequence_Widget::start ( nframes_t where )
 }
 
 void
+Sequence_Widget::draw_label ( void )
+{
+}
+
+void
 Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color, int xo, int yo )
 {
     int X = x();

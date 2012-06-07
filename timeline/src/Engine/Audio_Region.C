@@ -33,31 +33,18 @@
 
 
 
-/** Apply a (portion of) fade from /start/ to /end/ assuming a
- * buffer size of /nframes/. /start/ and /end/ are relative to the
- * given buffer, and /start/ may be negative. */
+/** Apply a (portion of) fade from /start/ to a buffer up to size /nframes/. */
 void
-Audio_Region::Fade::apply ( sample_t *buf, Audio_Region::Fade::fade_dir_e dir, long start, nframes_t end, nframes_t nframes ) const
+Audio_Region::Fade::apply ( sample_t *buf, Audio_Region::Fade::fade_dir_e dir, nframes_t start, nframes_t nframes ) const
 {
 //    printf( "apply fade %s: start=%ld end=%lu\n", dir == Fade::Out ? "out" : "in", start, end );
-
     if ( ! nframes )
         return;
 
-    const nframes_t i = start > 0 ? start : 0;
-    const nframes_t e = end > nframes ? nframes : end;
+    nframes_t n = nframes;
 
-    assert( i < nframes );
-
-    const float inc = increment();
-    float fi = ( i - start ) / (float)length;
-
-//    buf += i;
-    buf = &buf[ i ];
-
-    nframes_t n = e - i;
-
-    assert( i + n <= nframes );
+    const double inc = increment();
+    double fi = start / (double)length;
 
     if ( dir == Fade::Out )
     {
@@ -94,18 +81,22 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
     /* calculate offsets into file and sample buffer */
 
-    nframes_t sofs, ofs, cnt;
+    nframes_t sofs,                                              /* offset into source */
+        ofs,                                                    /* offset into buffer */
+        cnt;
 
     cnt = nframes;
 
     if ( pos < r.start )
     {
+        /* region starts somewhere after the beginning of this buffer */
         sofs = 0;
         ofs = r.start - pos;
         cnt -= ofs;
     }
     else
     {
+        /* region started before this buffer */
         ofs = 0;
         sofs = pos - r.start;
     }
@@ -161,34 +152,22 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
     declick.type   = Fade::Linear;
 
     {
+        assert( cnt <= nframes );
+            
         Fade fade;
 
         fade = declick < _fade_in ? _fade_in : declick;
 
         /* do fade in if necessary */
         if ( sofs < fade.length )
-        {
-            const long d = 0L - (long)sofs;
-
-            assert( cnt <= nframes );
-
-            fade.apply( buf + ofs, Fade::In, d, d + fade.length, cnt );
-        }
+            fade.apply( buf + ofs, Fade::In, sofs , cnt );
 
         fade = declick < _fade_out ? _fade_out : declick;
 
         /* do fade out if necessary */
-//        if ( start + cnt + fade.length > r.end )
-        if ( start + fade.length > ( r.offset + r.length ) )
-        {
-            const nframes_t d = ( r.offset + r.length )  - start;
-
-            assert( cnt <= nframes );
-
-            fade.apply( buf, Fade::Out, cnt + (long)d - fade.length, cnt + d, cnt );
-        }
+        if ( start + fade.length > r.offset + r.length )
+            fade.apply( buf, Fade::Out, ( start + fade.length ) - ( r.offset + r.length ), cnt );                
     }
-//    printf( "read %lu frames\n", cnt );
 
     return cnt;
 }

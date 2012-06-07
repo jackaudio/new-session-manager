@@ -60,17 +60,17 @@ public:
                 return length < rhs.length;
             }
 
-        float increment ( void ) const
+        double increment ( void ) const
             {
-                return 1.0f / (float)length;
+                return 1.0f / length;
             }
 
         /** Return gain for frame /index/ of /nframes/ on a gain curve
          * of type /type/.*/
         /* FIXME: calling a function per sample is bad, switching on
          * type mid fade is bad. */
-        inline float
-        gain ( const float fi ) const
+        inline double
+        gain ( const double fi ) const
             {
                 switch ( type )
                 {
@@ -87,7 +87,7 @@ public:
                 }
             }
 
-        void apply ( sample_t *buf, fade_dir_e dir, long start, nframes_t end, nframes_t nframes ) const;
+        void apply ( sample_t *buf, fade_dir_e dir, nframes_t start, nframes_t nframes ) const;
     };
 
 /*     struct Fade_In : public Fade; */

@@ -94,8 +94,6 @@ Audio_Region::set ( Log_Entry &e )
 
         if ( ! strcmp( s, ":gain" ) )
             _scale = atof( v );
-        else if ( ! strcmp( s, ":color" ) )
-            _box_color = (Fl_Color)atoi( v );
         else if ( ! strcmp( s, ":fade-in-type" ) )
             _fade_in.type = (Fade::fade_type_e)atoi( v );
         else if ( ! strcmp( s, ":fade-in-duration" ) )
@@ -129,8 +127,8 @@ Audio_Region::init ( void )
     _scale = 1.0f;
     _clip = NULL;
 
-    _box_color = FL_CYAN;
-    _color = FL_BLUE;
+    _color = FL_FOREGROUND_COLOR;
+    _box_color = FL_GRAY;
 
     _fade_in.length = 256;
     _fade_in.type = Fade::Sigmoid;
@@ -192,13 +190,7 @@ Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
     while ( sum >> 8 )
         sum = (sum & 0xFF) + (sum >> 8);
 
-    _color = (Fl_Color)sum;
-
-/*     _color = fl_color_average( FL_YELLOW, (Fl_Color)sum, 0.80 ); */
-
-//    _color = FL_YELLOW;
-
-    _box_color = FL_WHITE;
+    _box_color = (Fl_Color)sum;
 
     log_create();
 }
@@ -485,6 +477,7 @@ Audio_Region::draw_box( void )
 void
 Audio_Region::peaks_ready_callback ( void *v )
 {
+    DMESSAGE("Damaging region from peaks ready callback");
     Fl::lock();
     ((Audio_Region*)v)->redraw();
     Fl::unlock();

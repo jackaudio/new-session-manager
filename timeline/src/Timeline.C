@@ -398,6 +398,12 @@ Timeline::ntracks ( void ) const
 }
 
 
+Timeline::~Timeline ( )
+{
+    delete osc_thread;
+    osc_thread = 0;
+}
+
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W, H, L )
 {
     Loggable::snapshot_callback( &Timeline::snapshot, this );
@@ -1698,13 +1704,16 @@ Timeline::process_osc ( void )
     {
         Track *t = (Track*)tracks->child( i );
         
-        for ( int j = t->control->children(); j--; )
+        if ( t->control )
         {
-            Control_Sequence *c = (Control_Sequence*)t->control->child( j );
-            c->process_osc();
+            for ( int j = t->control->children(); j--; )
+            {
+                Control_Sequence *c = (Control_Sequence*)t->control->child( j );
+                c->process_osc();
+            }
         }
     }
-
+    
     unlock();
 }
 

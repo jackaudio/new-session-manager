@@ -163,6 +163,8 @@ public:
     nframes_t _sample_rate;
 
     Timeline ( int X, int Y, int W, int H, const char *L=0 );
+    
+    virtual ~Timeline ( );
 
     void update_tempomap ( void );
 

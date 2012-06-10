@@ -858,12 +858,18 @@ Audio_Region::handle ( int m )
             {
                 /* panning */
                 int d = (ox + X) - x();
-                long td = timeline->x_to_ts( d );
 
-                if ( td > 0 && os < (nframes_t)td )
-                    _r->offset = 0;
+                bool negative = d < 0;
+
+                if ( d < 0 )
+                    _r->offset = os + timeline->x_to_ts( 0 - d );
                 else
-                    _r->offset = os - td;
+                {
+                    if ( os < timeline->x_to_ts( d ) )
+                        _r->offset = 0;
+                    else
+                        _r->offset = os - timeline->x_to_ts( d );
+                }
 
                 redraw();
                 return 1;

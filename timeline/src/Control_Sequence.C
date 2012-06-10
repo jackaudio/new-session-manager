@@ -50,18 +50,12 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 
     _track = track;
 
-    _osc_output = 0;
-    _output = 0;
-
-    _mode = CV;
-
     mode( OSC );
 
     if ( track )
         track->add( this );
 
     log_create();
-
 }
 
 
@@ -116,7 +110,7 @@ Control_Sequence::init ( void )
     _highlighted = false;
     _output = NULL;
     _osc_output = NULL;
-//    color( );
+    _mode = (Mode)-1;
 
     interpolation( Linear );
 }

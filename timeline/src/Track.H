@@ -70,8 +70,16 @@ public:
 
     struct Capture
     {
+        nframes_t last_frame_drawn;
         Audio_File *audio_file;
         Audio_Region *region;
+
+        Capture ( )
+            {
+                last_frame_drawn = 0;
+                region = 0;
+                audio_file = 0;
+            }
     };
 
     Fl_Color color ( void ) const { return child(0)->color(); }
@@ -213,6 +221,7 @@ public:
 
     /* Engine */
     const Audio_Region *capture_region ( void ) const;
+    Capture *capture ( void );
 
     void resize_buffers ( nframes_t nframes );
     nframes_t process_input ( nframes_t nframes );

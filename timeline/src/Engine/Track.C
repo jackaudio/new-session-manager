@@ -40,6 +40,15 @@ Track::capture_region ( void ) const
         return NULL;
 }
 
+Track::Capture *
+Track::capture ( void )
+{
+    if ( record_ds )
+        return record_ds->capture();
+    else
+        return NULL;
+}
+
 void
 Track::update_port_names ( void )
 {
@@ -261,9 +270,9 @@ Track::record ( Capture *c, nframes_t frame )
         FATAL( "Could not create file for new capture!" );
 
     /* open it again for reading in the GUI thread */
-    Audio_File *af = Audio_File::from_file( c->audio_file->name() );
+    //   Audio_File *af = Audio_File::from_file( c->audio_file->name() );
 
-    c->region = new Audio_Region( af, sequence(), frame );
+    c->region = new Audio_Region( c->audio_file, sequence(), frame );
 
     c->region->prepare();
 }
@@ -315,5 +324,5 @@ Track::finalize ( Capture *c, nframes_t frame )
 
     c->region->offset( capture_offset );
 
-    delete c->audio_file;
+//    delete c->audio_file;
 }

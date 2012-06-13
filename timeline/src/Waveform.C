@@ -99,7 +99,7 @@ Waveform::draw ( int X, int Y, int W, int H,
             fl_color( color );
             
             fl_begin_complex_polygon();
-
+            
             j = start;
 
             for ( int x = X; x <= X + W; x++, j += skip  )
@@ -109,7 +109,7 @@ Waveform::draw ( int X, int Y, int W, int H,
 
             for ( int x = X + W; x >= X; x--, j -= skip )
                 fl_vertex( x, ty - ( halfheight * pbuf[ j ].max ) );
-
+            
             fl_end_complex_polygon();
         }
     }

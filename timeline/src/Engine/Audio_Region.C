@@ -83,7 +83,7 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
     nframes_t sofs,                                              /* offset into source */
         ofs,                                                    /* offset into buffer */
-        cnt;
+        cnt;                                                    /* number of frames to read  */
 
     cnt = nframes;
 
@@ -105,8 +105,8 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
         return 0;
 
 //    const nframes_t start = ofs + r.start + sofs;
-    const nframes_t start =  r.offset + sofs;
-    const nframes_t len = min( cnt, nframes - ofs );
+    const nframes_t start = r.offset + sofs;
+    const nframes_t len = cnt;
 
     if ( len == 0 )
         return 0;
@@ -138,6 +138,9 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
     }
     else
         cnt = _clip->read( buf + ofs, channel, start, len );
+
+    if ( ! cnt )
+        return 0;
 
     /* apply gain */
 
@@ -194,9 +197,7 @@ Audio_Region::write ( nframes_t nframes )
         if ( W )
         {
             Fl::lock();
-//            sequence()->damage( FL_DAMAGE_ALL, ( x() + w() - W ) - 20, y(), W, h() );
-            sequence()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
-            //           Fl::awake();
+            sequence()->damage(FL_DAMAGE_USER1, x(), y(), w(), h());
             Fl::unlock();
         }
     }

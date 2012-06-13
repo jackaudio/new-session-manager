@@ -147,22 +147,14 @@ Audio_File::release ( void )
 bool
 Audio_File::read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, Peak **pbuf, int *channels )
 {
-//    Peaks pk;
-
+    *peaks = 0;
+    *channels = 0;
+    *pbuf = NULL;
+    
     if ( dummy() )
-    {
-        *peaks = (end - start) / fpp;
-        *channels = 0;
-        *pbuf = NULL;
-
         return false;
-    }
     else
     {
-        *peaks    = 0;
-        *channels = 0;
-        *pbuf     = NULL;
-
         *peaks = _peaks.fill_buffer( fpp, start, end );
 
         *channels = this->channels();

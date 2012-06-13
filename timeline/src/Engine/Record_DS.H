@@ -63,6 +63,7 @@ public:
 /*     bool seek_pending ( void ); */
 /*     void seek ( nframes_t frame ); */
     const Audio_Region * capture_region ( void ) const;
+    Track::Capture * capture ( void );
 
     void start ( nframes_t frame );
     void stop ( nframes_t frame );

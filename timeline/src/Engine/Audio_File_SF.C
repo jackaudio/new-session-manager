@@ -242,13 +242,13 @@ Audio_File_SF::write ( sample_t *buf, nframes_t nframes )
 {
     _peaks.write( buf, nframes );
 
-//    lock();
+    lock();
 
     nframes_t l = sf_writef_float( _in, buf, nframes );
 
     _length += l;
 
-//    unlock();
+    unlock();
 
     return l;
 }

@@ -202,7 +202,7 @@ Track::process_output ( nframes_t nframes )
     }
 
     /* FIXME: should we blank the control output here or leave it floating? */
-    for ( int i = control->children(); i--; )
+    for ( int i = 0; i < control->children(); i++ )
         ((Control_Sequence*)control->child( i ))->process( nframes );
 
     if ( playback_ds )

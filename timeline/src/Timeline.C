@@ -1058,6 +1058,15 @@ Timeline::redraw_playhead ( void )
     static nframes_t last_playhead = -1;
     static int last_playhead_x = -1;
 
+
+    /* FIXME: kind of a hackish way to invoke punch stop from the UI thread... */
+
+    if ( transport->rolling &&
+         transport->rec_enabled() &&
+         transport->punch_enabled() &&
+         transport->frame > range_end() )
+        transport->stop();
+
     int playhead_x = ts_to_x( transport->frame );
 
     if ( last_playhead_x != playhead_x )

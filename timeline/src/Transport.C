@@ -45,7 +45,7 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
     frame_rate = 48000;
     frame = 0;
 
-    const int bw = W / 3;
+    const int bw = W / 5;
 
     type( HORIZONTAL );
 
@@ -75,6 +75,16 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
     o->shortcut( 'R' );
     o->callback( cb_button, this );
     o->when( FL_WHEN_CHANGED );
+    o->box( FL_UP_BOX );
+
+    _punch_button = o = new Fl_Button( 0, 0, bw, 0, "Punch" );
+    o->type( FL_TOGGLE_BUTTON );
+    o->labelsize( 9 );
+    o->labeltype( FL_NORMAL_LABEL );
+    o->shortcut( 'P' );
+    o->callback( cb_button, this );
+    o->when( FL_WHEN_CHANGED );
+    o->color2( FL_GREEN );
     o->box( FL_UP_BOX );
 
     end();
@@ -145,6 +155,12 @@ bool
 Transport::rec_enabled ( void ) const
 {
     return _record_button->value();
+}
+
+bool
+Transport::punch_enabled ( void ) const
+{
+    return _punch_button->value();
 }
 
 int

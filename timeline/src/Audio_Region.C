@@ -519,7 +519,13 @@ Audio_Region::draw ( void )
     /* calculate waveform offset due to scrolling */
     /* offset is the number of frames into the waveform the value of X translates to */
     nframes_t x_frame = timeline->xoffset + timeline->x_to_ts( X - _sequence->x() );
-    nframes_t offset = x_frame - start();
+    nframes_t offset = 0;
+
+    if ( x_frame < start() )
+        /* sometimes X is one pixel too soon... */
+        offset = 0;
+    else
+        offset = x_frame - start();
 
     nframes_t fo = 0;                                           
     nframes_t ostart = 0, oend = 0;

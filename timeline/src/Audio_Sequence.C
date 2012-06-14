@@ -155,6 +155,8 @@ Audio_Sequence::draw ( void )
 
     int xfades = 0;
 
+    fl_push_clip( x(), y(), w(), h() );
+
     /* draw crossfades */
     for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
     {
@@ -178,57 +180,16 @@ Audio_Sequence::draw ( void )
                              (o->x() + o->w()) - (*r)->x(),
                              o->h() );
 
-                /* Fl_Color c = fl_color_average( o->color(), (*r)->color(), 0.50f ); */
-                /* c = fl_color_average( c, FL_YELLOW, 0.30f ); */
-                
-                /* Fl_Color c = fl_color_add_alpha( FL_YELLOW, 50 ); */
-                Fl_Color c = FL_YELLOW;
+                Fl_Color c = fl_color_add_alpha( FL_YELLOW, 127 );
 
-                /* fl_push_use_cairo( true ); */
-
-                fl_push_clip( b.x, b.y, b.w, b.h );
-
-                Fl_Widget::draw_box( FL_FLAT_BOX, b.x - 100, b.y, b.w + 200, b.h, c );
-                Fl_Widget::draw_box( FL_UP_FRAME, b.x - 100, b.y, b.w + 200, b.h, c );
-
-                fl_pop_clip();
-
-                /* fl_pop_use_cairo(); */
+                fl_color( c );
+                fl_rectf( b.x, b.y, b.w, b.h );
             }
         }
 
     }
 
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-    {
-        Sequence_Widget *o = overlaps( *r );
-
-        if ( o )
-        {
-            if ( *o <= **r )
-            {
-
-                if ( o->contains( *r ) )
-                    /* completely inside */
-                    continue;
-
-                Rectangle b( (*r)->x(), o->y(), (o->x() + o->w()) - (*r)->x(), o->h() );
-
-                /* draw overlapping waveforms in X-ray style. */
-                /* bool t = Waveform::fill; */
-
-                /* Waveform::fill = false; */
-
-                fl_push_clip( b.x, b.y, b.w, b.h );
-
-                o->draw();
-                (*r)->draw();
-
-                fl_pop_clip();
-                /* Waveform::fill = t; */
-            }
-        }
-    }
+    fl_pop_clip();
 }
 
 /** event handler that supports DND of audio clips */

@@ -387,6 +387,10 @@ Timeline::menu_cb ( Fl_Menu_ *m )
 
         redraw();
     }
+    else if ( ! strcmp( picked, "Redraw" ) )
+    {
+        redraw();
+    }
     else
         WARNING( "programming error: Unknown menu item" );
 }
@@ -441,6 +445,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
     menu->add( "Swap P2 and playhead", FL_CTRL + FL_SHIFT + ']', 0, 0 );
     menu->add( "P1 to playhead", FL_CTRL + '[', 0, 0 );
     menu->add( "P2 to playhead", FL_CTRL + ']', 0, 0 );
+    menu->add( "Redraw", FL_CTRL + 'l', 0, 0 );
 
     menu_set_callback( const_cast<Fl_Menu_Item*>(menu->menu()), &Timeline::menu_cb, (void*)this );
 

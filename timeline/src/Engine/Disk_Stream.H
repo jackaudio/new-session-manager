@@ -94,10 +94,11 @@ protected:
     virtual void flush ( void ) = 0;
 
     void run ( void );
-    void shutdown ( void );
     void detach ( void );
 
 public:
+
+    void shutdown ( void );
 
     /* must be set before any Disk_Streams are created */
     static float seconds_to_buffer;

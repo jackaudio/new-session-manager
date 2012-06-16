@@ -36,6 +36,8 @@
 // #include "const.h"
 #include "debug.h"
 
+#include "Mutex.H"
+
 #include <algorithm>
 using std::min;
 using std::max;
@@ -64,8 +66,11 @@ void *Loggable::_dirty_callback_arg = NULL;
 
 
 
+static Mutex _lock;
+
 Loggable::~Loggable ( )
 {
+    Locker lock( _lock );;
     _loggables[ _id ].loggable = NULL;
 }
 
@@ -74,12 +79,15 @@ Loggable::~Loggable ( )
 void
 Loggable::block_start ( void )
 {
+    Locker lock( _lock );;
     ++Loggable::_level;
 }
 
 void
 Loggable::block_end ( void )
 {
+    Locker lock( _lock );;
+
     --Loggable::_level;
 
     ASSERT( Loggable::_level >= 0, "Programming error" );
@@ -559,6 +567,8 @@ Loggable::compact ( void )
 void
 Loggable::log ( const char *fmt, ... )
 {
+    Locker lock( _lock );
+
     static char * buf = NULL;
     static size_t i = 0;
     static size_t buf_size = 0;
@@ -689,6 +699,8 @@ Loggable::log_print( const Log_Entry *o, const Log_Entry *n ) const
 void
 Loggable::log_start ( void )
 {
+    Locker lock( _lock );;
+
     if ( ! _old_state )
     {
         _old_state = new Log_Entry;
@@ -702,6 +714,8 @@ Loggable::log_start ( void )
 void
 Loggable::log_end ( void )
 {
+    Locker lock( _lock );;
+
     ASSERT( _old_state, "Programming error: log_end() called before log_start()" );
 
     if ( --_nest > 0 )
@@ -737,6 +751,8 @@ Loggable::log_end ( void )
 void
 Loggable::log_create ( void ) const
 {
+    Locker lock( _lock );;
+
     set_dirty();
 
     if ( ! _fp )
@@ -786,6 +802,8 @@ Loggable::record_unjournaled ( void ) const
 void
 Loggable::log_destroy ( void ) const
 {
+    Locker lock( _lock );;
+
     /* the unjournaled state may have changed: make a note of it. */
     record_unjournaled();
 

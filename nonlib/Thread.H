@@ -52,5 +52,6 @@ public:
     bool clone ( void *(*entry_point)(void *), void *arg );
     void detach ( void );
     void join ( void );
+    void exit ( void *retval = 0 );
 
 };

@@ -175,11 +175,14 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
     return cnt;
 }
 
-
 /** prepare for capturing */
 void
 Audio_Region::prepare ( void )
 {
+    THREAD_ASSERT( Capture );
+
+    DMESSAGE( "Preparing capture region" );
+
     log_start();
 }
 
@@ -218,15 +221,10 @@ Audio_Region::finalize ( nframes_t frame )
 
     _range.length = frame - _range.start;
 
-    log_end();
-
     _clip->close();
     _clip->open();
 
-    Fl::lock();
-    redraw();
-    Fl::awake();
-    Fl::unlock();
+    log_end();
 
     return true;
 }

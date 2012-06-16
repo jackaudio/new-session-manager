@@ -30,6 +30,7 @@ class Audio_Sequence;
 #include "const.h"
 #include "debug.h"
 
+#include <unistd.h>
 
 
 
@@ -140,13 +141,23 @@ Disk_Stream::detach ( void )
 void
 Disk_Stream::shutdown ( void )
 {
-    _terminate = true;
-
-    /* try to wake the thread so it'll see that it's time to die */
-    block_processed();
-
     if ( _thread.running() )
+    {
+        _terminate = true;
+        
+        /* try to wake the thread so it'll see that it's time to die */
+        while ( _terminate )
+        {
+            usleep( 100 );
+            block_processed();
+        }
+        
         _thread.join();
+
+        sem_destroy( &_blocks );
+
+        sem_init( &_blocks, 0, 0 );
+    }
 }
 
 Track *

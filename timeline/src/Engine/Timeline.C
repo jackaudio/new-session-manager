@@ -75,6 +75,17 @@ Timeline::stop ( void )
             t->record_ds->stop( frame );
     }
 
+    /* wait until finalization is complete before continuing */
+
+    DMESSAGE( "Waiting for record threads to shutdown" );
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+        
+        if ( t->armed() && t->record_ds )
+            t->record_ds->shutdown();
+    }
+   
     Loggable::block_end();
 
     activate();

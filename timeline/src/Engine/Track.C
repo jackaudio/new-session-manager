@@ -304,7 +304,6 @@ Track::finalize ( Capture *c, nframes_t frame )
      * them */
     c->audio_file->finalize();
 
-    /* peaks get finalized here */
     c->region->finalize( frame );
 
     nframes_t capture_offset = 0;

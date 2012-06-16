@@ -74,9 +74,9 @@ Record_DS::disk_thread ( void )
 {
     _thread.name( "Capture" );
 
-    track()->record( _capture, _frame );
-
     DMESSAGE( "capture thread running..." );
+
+    track()->record( _capture, _frame );
 
     const nframes_t nframes = _nframes * _disk_io_blocks;
 
@@ -211,7 +211,10 @@ Record_DS::disk_thread ( void )
     delete c;
 
     _terminate = false;
+
     DMESSAGE( "capture thread gone" );
+
+    _thread.exit();
 }
 
 
@@ -258,7 +261,7 @@ Record_DS::stop ( nframes_t frame )
 
     _stop_frame = frame;
 
-    detach();
+//    detach();
 
     DMESSAGE( "recording finished" );
 }

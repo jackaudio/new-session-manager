@@ -389,11 +389,6 @@ Sequence_Widget::handle ( int m )
                 /* traditional selection model */
                 if ( Fl::event_ctrl() )
                     select();
-                else if ( ! selected() )
-                {
-                    select_none();
-                    select();
-                }
 
                 fl_cursor( FL_CURSOR_MOVE );
 

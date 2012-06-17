@@ -1482,6 +1482,8 @@ Timeline::add_track ( Track *track )
 
     tracks->add( track );
 
+//    update_track_order();
+
     engine->unlock();
 
     unlock();
@@ -1489,6 +1491,91 @@ Timeline::add_track ( Track *track )
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
 
+}
+
+void
+Timeline::insert_track ( Track *track, int n )
+{
+    if ( n > tracks->children() || n < 0 )
+        return;
+
+    wrlock();
+
+    engine->lock();
+
+    tracks->insert( *track, n );
+
+    update_track_order();
+
+    tracks->redraw();
+
+    engine->unlock();
+
+    unlock();
+
+    /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
+//    redraw();    
+}
+
+static 
+bool
+compare_tracks ( Track *a, Track *b )
+{
+    return *a < *b;
+}
+
+void
+Timeline::apply_track_order ( void )
+{
+    wrlock();
+
+    engine->lock();
+
+    std::list<Track*> tl;
+    
+    for ( int i = 0; i < tracks->children(); i++ )
+        tl.push_back( (Track*)tracks->child( i ) );
+
+    tl.sort(compare_tracks);
+
+    Fl_Widget **a = const_cast<Fl_Widget**>(tracks->array());
+    
+    int j = 0;
+    for ( std::list<Track*>::const_iterator i = tl.begin();
+          i != tl.end();
+          i++, j++ )
+        a[j] = *i;
+
+    update_track_order();
+
+    engine->unlock();
+    
+    unlock();
+}
+
+void
+Timeline::update_track_order ( void )
+{
+    for ( int i = 0; i < tracks->children(); i++ )
+        ((Track*)tracks->child( i ))->row( i );
+}
+
+int
+Timeline::find_track ( const Track *track ) const
+{
+    return tracks->find( *track );
+}
+
+void
+Timeline::move_track_up ( Track *track )
+{
+    insert_track( track, find_track( track ) - 1 );
+}
+
+void
+Timeline::move_track_down ( Track *track )
+{
+    insert_track( track, find_track( track ) + 2 );
 }
 
 /** remove /track/ from the timeline */
@@ -1504,9 +1591,12 @@ Timeline::remove_track ( Track *track )
     /* FIXME: what to do about track contents? */
     tracks->remove( track );
 
+    update_track_order();
+
     engine->unlock();
 
     unlock();
+
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
@@ -1545,6 +1635,8 @@ Timeline::command_load ( const char *name, const char *display_name )
 
   Project::set_name ( display_name ? display_name : name );
 
+  apply_track_order();
+  
    return true;
 }
 

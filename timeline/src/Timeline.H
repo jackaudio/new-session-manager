@@ -127,6 +127,10 @@ class Timeline : public Fl_Single_Window, public RWLock
 
     static void handle_peer_scan_complete ( void * v );
 
+    void update_track_order ( void );
+    void apply_track_order ( void );
+    void insert_track ( Track *track, int n );
+    
 public:
 
     OSC::Endpoint *osc;
@@ -221,6 +225,11 @@ public:
 
     void add_track ( Track *track );
     void remove_track ( Track *track );
+
+    void move_track_up ( Track *track );
+    void move_track_down ( Track *track );
+
+    int find_track ( const Track * track ) const;
 
     int ntracks ( void ) const;
 

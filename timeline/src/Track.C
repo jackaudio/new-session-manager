@@ -109,6 +109,7 @@ Track::~Track ( )
 void
 Track::init ( void )
 {
+    _row = 0;
     _sequence = NULL;
     _name = NULL;
     _selected = false;
@@ -294,7 +295,8 @@ Track::set ( Log_Entry &e )
             }
 
         }
-
+        else if ( ! strcmp( s, ":row" ) )
+            row( atoi( v ) );
     }
 }
 
@@ -317,6 +319,19 @@ Track::get_unjournaled ( Log_Entry &e ) const
     e.add( ":armed",           armed()          );
     e.add( ":mute",            mute()           );
     e.add( ":solo",            solo()           );
+    e.add( ":row",             timeline->find_track( this ) );
+}
+
+int
+Track::row ( void ) const 
+{
+    return _row;
+}
+
+void
+Track::row ( int n )
+{
+    _row = n;
 }
 
 void
@@ -780,6 +795,14 @@ Track::menu_cb ( const Fl_Menu_ *m )
     {
         ((Fl_Sometimes_Input*)name_field)->take_focus();
     }
+    else if ( ! strcmp( picked, "/Move Up" ) )
+    {
+        timeline->move_track_up( this );
+    }
+    else if ( ! strcmp( picked, "/Move Down" ) )
+    {
+        timeline->move_track_down( this );
+    }
 }
 
 #include "FL/menu_popup.H"
@@ -816,6 +839,8 @@ Track::menu ( void ) const
             { "Mute",            FL_CTRL + 'm', 0, 0, FL_MENU_TOGGLE | ( mute() ? FL_MENU_VALUE : 0 ) },
             { "Solo",           FL_CTRL + 's', 0, 0, FL_MENU_TOGGLE | ( solo() ? FL_MENU_VALUE : 0 ) },
             { 0 },
+            { "Move Up",        FL_SHIFT + '1', 0, 0 },
+            { "Move Down",        FL_SHIFT + '2', 0, 0 },
             { "Remove",          0, 0, 0 }, // transport->rolling ? FL_MENU_INACTIVE : 0 },
             { 0 },
         };

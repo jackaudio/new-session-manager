@@ -85,6 +85,11 @@ public:
     Fl_Color color ( void ) const { return child(0)->color(); }
     void color ( Fl_Color c ) { child(0)->color( c ); }
 
+    bool operator< ( const Track &rhs ) const
+        {
+            return _row < rhs._row;
+        }
+
 private:
 
     static int _soloing;
@@ -96,6 +101,8 @@ private:
     bool _show_all_takes;
 
     int _size;
+
+    int _row;
 
     enum { AUDIO } _type;
 
@@ -198,6 +205,8 @@ public:
 
     bool selected ( void ) const { return _selected; }
 
+    int row ( void ) const;
+    void row ( int );
 
     static void cb_input_field ( Fl_Widget *w, void *v );
     void cb_input_field ( void );

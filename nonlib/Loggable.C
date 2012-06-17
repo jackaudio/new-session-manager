@@ -244,17 +244,17 @@ Loggable::close ( void )
     if ( ! snapshot( "snapshot" ) )
         WARNING( "Failed to create snapshot" );
 
+    if ( ! save_unjournaled_state() )
+        WARNING( "Failed to save unjournaled state" );
+
     for ( std::map <unsigned int, Loggable::log_pair >::iterator i = _loggables.begin();
           i != _loggables.end(); ++i )
+    {
         if ( i->second.loggable )
             delete i->second.loggable;
-
-    save_unjournaled_state();
-
-    for ( std::map <unsigned int, Loggable::log_pair >::iterator i = _loggables.begin();
-          i != _loggables.end(); ++i )
         if ( i->second.unjournaled_state )
             delete i->second.unjournaled_state;
+    }
 
     _loggables.clear();
 
@@ -279,6 +279,10 @@ Loggable::save_unjournaled_state ( void )
     for ( std::map <unsigned int, Loggable::log_pair >::iterator i = _loggables.begin();
           i != _loggables.end(); ++i )
     {
+        /* get the latest state */
+        if ( i->second.loggable )
+            i->second.loggable->record_unjournaled();
+
         if ( i->second.unjournaled_state )
         {
             char *s = i->second.unjournaled_state->print();
@@ -782,19 +786,18 @@ Loggable::record_unjournaled ( void ) const
 
     get_unjournaled( *e );
 
-    Log_Entry *le = _loggables[ _id ].unjournaled_state;
+    Log_Entry **le = &_loggables[ _id ].unjournaled_state;
 
-    if ( le )
-        delete le;
+    if ( *le )
+    {
+        delete *le;
+        *le = NULL;
+    }
 
     if ( e->size() )
-        _loggables[ _id ].unjournaled_state = e;
+        *le = e;
     else
-    {
-        /* don't waste space on loggables with no unjournaled properties */
-        _loggables[ _id ].unjournaled_state = NULL;
         delete e;
-    }
 }
 
 /** Log object destruction. *Must* be called at the beginning of the
@@ -804,14 +807,14 @@ Loggable::log_destroy ( void ) const
 {
     Locker lock( _lock );;
 
-    /* the unjournaled state may have changed: make a note of it. */
-    record_unjournaled();
-
     set_dirty();
 
     if ( ! _fp )
         /* tearing down... don't bother */
         return;
+
+    /* the unjournaled state may have changed: make a note of it. */
+    record_unjournaled();
 
     log( "%s 0x%X destroy << ", class_name(), _id );
 

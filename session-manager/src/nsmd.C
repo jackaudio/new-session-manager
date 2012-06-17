@@ -127,7 +127,10 @@ public:
         {
             if ( _label ) 
                 free( _label );
-            _label = strdup( l ); 
+            if ( l )
+                _label = strdup( l ); 
+            else
+                _label = NULL;
         }
         
     bool gui_visible ( void ) const
@@ -210,6 +213,7 @@ public:
 
     Client ( )
         {
+            _label = 0;
             _gui_visible = true;
             addr = 0;
             _reply_errcode = 0;

@@ -17,7 +17,6 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#define _GNU_SOURCE
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 #define _MODULE_ "nsm-proxy"
@@ -115,12 +114,12 @@ public:
                 else
                     asprintf( &cmd, "exec %s", _executable );
 
-                char *args[] = { _executable, "-c", cmd, NULL };
+                const char *args[] = { _executable, "-c", cmd, NULL };
                 
                 setenv( "NSM_CLIENT_ID", nsm_client_id, 1 );
                 setenv( "NSM_SESSION_NAME", nsm_display_name, 1 );
                 
-                if ( -1 == execvp( "/bin/sh", args ) )
+                if ( -1 == execvp( "/bin/sh", (char**)args ) )
                 {
                     WARNING( "Error starting process: %s", strerror( errno ) );
                     
@@ -358,9 +357,9 @@ show_gui ( void )
         
         char *url = lo_server_get_url( losrv );
 
-        char *args[] = { executable, "--connect-to", url, NULL };
+        const char *args[] = { executable, "--connect-to", url, NULL };
         
-        if ( -1 == execvp( executable, args ) )
+        if ( -1 == execvp( executable, (char**)args ) )
         {
             WARNING( "Error starting process: %s", strerror( errno ) );
             
@@ -493,7 +492,7 @@ osc_start ( const char *path, const char *types, lo_arg **argv, int argc, lo_mes
 {
     snapshot( project_file );
 
-    if ( nsm_proxy->start( &argv[0]->s, &argv[1]->s ) );
+    if ( nsm_proxy->start( &argv[0]->s, &argv[1]->s ) )
     {
         hide_gui();
     }

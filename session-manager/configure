@@ -20,7 +20,6 @@ require_FLTK 1.3.0 images
 require_command FLUID lib/ntk/fluid/fluid
 suggest_package JACK 0.103.0 jack
 require_package liblo 0.23 liblo
-require_package sigcpp 2.0.0 sigc++-2.0
 suggest_package XPM 2.0.0 xpm
 
 test_version `version_of liblo` 0.26 || warn "Version $(version_of liblo) of liblo is slow to create servers. Consider upgrading to 0.26 or later"

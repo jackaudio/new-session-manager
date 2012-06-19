@@ -106,27 +106,19 @@ draw_marker ( Fl_Color c )
 void
 Sequence_Point::draw_box ( void )
 {
-//    Sequence_Widget::draw_box();
-
     const int X = x() - (abs_w() >> 1);
-/* //    const int Y = y() + Fl::box_dy( box() ); */
 
     const int Y = y();
-
-    /* fl_draw_box( FL_ASYM_BOX, x() - ( abs_w() / 2 ), y(), abs_w(), h(), color() ); */
-
-    /* fl_color( color() ); */
 
     fl_push_matrix();
     fl_translate( X, Y );
     fl_scale( abs_w(), h() );
 
-    draw_marker( color() );
+    Fl_Color c = selected() ? selection_color() : color();
+
+    draw_marker( c );
 
     fl_pop_matrix();
-
-    /* fl_color( FL_WHITE ); */
-    /* fl_line( x(), y(), x(), y() + h() ); */
 }
 
 void

@@ -247,10 +247,21 @@ Sequence_Region::handle ( int m )
 void
 Sequence_Region::draw_box ( void )
 {
-    fl_draw_box( box(), line_x(), y(), abs_w(), h(), fl_color_add_alpha( box_color(), 127 ) );
+    Fl_Color c = selected() ? selection_color() : box_color();
+    fl_draw_box( box(), line_x(), y(), abs_w(), h(), fl_color_add_alpha( c, 127 ) );
 }
 
 void
 Sequence_Region::draw ( void )
 {
+
 }
+
+void
+Sequence_Region::draw_label ( const char *label, Fl_Align align )
+{
+    fl_color( FL_WHITE );
+    fl_font( FL_HELVETICA_ITALIC, 9 );
+    fl_draw( label, x(), y(), abs_w(), h(), align );
+}
+

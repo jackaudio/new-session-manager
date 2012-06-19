@@ -37,9 +37,11 @@ protected:
     Sequence_Region ( const Sequence_Region &rhs );
     virtual ~Sequence_Region ( );
 
+    virtual Fl_Align align ( void ) const { return FL_ALIGN_INSIDE | FL_ALIGN_CENTER | FL_ALIGN_WRAP; }
     virtual int handle ( int m );
     virtual void draw_box( void );
     virtual void draw ( void );
+    virtual void draw_label ( const char *label, Fl_Align align );
 
 public:
 

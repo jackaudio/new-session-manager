@@ -70,13 +70,11 @@ public:
 
     struct Capture
     {
-        nframes_t last_frame_drawn;
         Audio_File *audio_file;
         Audio_Region *region;
 
         Capture ( )
             {
-                last_frame_drawn = 0;
                 region = 0;
                 audio_file = 0;
             }

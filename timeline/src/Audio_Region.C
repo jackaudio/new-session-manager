@@ -441,7 +441,7 @@ Audio_Region::draw_box( void )
 
     color = fl_color_average( color, sequence()->color(), 0.75f );
 
-    if ( this == ((Audio_Sequence*)sequence())->capture_region() )
+    if ( recording() )
     {
         color = FL_RED;
     }
@@ -478,6 +478,12 @@ Audio_Region::peaks_ready_callback ( void *v )
     Fl::awake();
 }
 
+bool
+Audio_Region::recording ( void ) const
+{
+    return this == sequence()->track()->capture_region();
+}
+
 /** Draw (part of) region. X, Y, W and H are the rectangle we're clipped to. */
 void
 Audio_Region::draw ( void )
@@ -505,15 +511,10 @@ Audio_Region::draw ( void )
 
     Fl_Color c = selected() ? fl_invert_color( _color ) : _color;
 
-    if ( sequence()->damage() & FL_DAMAGE_USER1 && this == sequence()->track()->capture_region() )
+    if ( sequence()->damage() & FL_DAMAGE_USER1 && 
+         recording() )
     {
-        /* just draw the section with the updated peaks... */
-
-        nframes_t absolute_frame = _r->start + sequence()->track()->capture()->last_frame_drawn;
-        int nx = sequence()->x() + timeline->ts_to_x( absolute_frame - scroll_ts() );
-        
-        W -= nx - X;
-        X = nx;
+        /* TODO: limit drawing. */
     }
 
     /* calculate waveform offset due to scrolling */
@@ -555,7 +556,7 @@ Audio_Region::draw ( void )
         
         Fl_Color c = Fl::get_color( _color );
 
-        if ( this == ((Audio_Sequence*)sequence())->capture_region() )
+        if ( recording() )
         {
 //            loop_peaks_needed = timeline->ts_to_x( _range.length );
             c = FL_BLACK;
@@ -640,9 +641,6 @@ Audio_Region::draw ( void )
         }
         else
             WARNING( "Pbuf == %p, peaks = %lu", pbuf, (unsigned long)peaks );
-
-        if ( sequence()->damage() & FL_DAMAGE_USER1 && this == sequence()->track()->capture_region() )
-            sequence()->track()->capture()->last_frame_drawn = start + peaks;
         
         if ( peaks < loop_peaks_needed )
         {

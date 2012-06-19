@@ -162,6 +162,7 @@ public:
 
     void normalize ( void );
     void split ( nframes_t where );
+    bool recording ( void ) const;
 
     /* Engine */
     nframes_t read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const;

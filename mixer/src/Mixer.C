@@ -100,19 +100,29 @@ Mixer::reply_to_finger ( lo_message msg )
     int argc = lo_message_get_argc( msg );
     lo_arg **argv = lo_message_get_argv( msg );
 
-    if ( argc < 1 )
-        return;
+    if ( argc >= 4 )
+    {
+        const char *url = &argv[0]->s;
+        const char *name = &argv[1]->s;
+        const char *version = &argv[2]->s;
+        const char *id = &argv[3]->s;
 
-    lo_address to = lo_address_new_from_url( &argv[0]->s );
+        MESSAGE( "Discovered NON peer %s (%s) @ %s with ID \"%s\"", name, version, url, id );
+        MESSAGE( "Registering Signals" );
 
-    osc_endpoint->send( to,
-                        "/non/hello",
-                        osc_endpoint->url(),
-                        APP_NAME,
-                        VERSION,
-                        instance_name );
-
-    lo_address_free( to );
+        lo_address to = lo_address_new_from_url( &argv[0]->s );
+        
+        osc_endpoint->send( to,
+                            "/non/hello",
+                            osc_endpoint->url(),
+                            APP_NAME,
+                            VERSION,
+                            instance_name );
+        
+        mixer->osc_endpoint->hello( url );
+    
+        lo_address_free( to );
+    }
 }
 
 void

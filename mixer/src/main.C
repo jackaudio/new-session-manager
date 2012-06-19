@@ -285,6 +285,8 @@ main ( int argc, char **argv )
         }
     }
 
+    mixer->say_hello();
+
     Fl::add_check( check_sigterm );
 
     Fl::run();

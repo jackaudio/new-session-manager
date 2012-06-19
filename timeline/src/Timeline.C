@@ -1755,6 +1755,8 @@ Timeline::reply_to_finger ( lo_message msg )
               VERSION,
               instance_name );
 
+    osc->hello( &argv[0]->s );
+
     lo_address_free( reply );
 }
 
@@ -1787,12 +1789,14 @@ Timeline::discover_peers ( void )
     {
         lo_message m = lo_message_new();
         
-        lo_message_add_string( m, "/non/finger" );
-        lo_message_add_string( m, osc->url() );
-
-        nsm_send_broadcast( nsm, m );
+        lo_message_add( m, "sssss",
+                        "/non/hello",
+                        osc->url(),
+                        APP_NAME,
+                        VERSION,
+                        instance_name );
         
-        lo_message_free( m );
+        nsm_send_broadcast( nsm, m );
     }
 }
 

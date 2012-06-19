@@ -99,7 +99,7 @@ command_broadcast ( const char *path, lo_message msg, void *userdata )
     int argc = lo_message_get_argc( msg );
 //    lo_arg **argv = lo_message_get_argv( msg );
 
-    if ( argc == 1 && !strcmp( path, "/non/finger" ) )
+    if ( !strcmp( path, "/non/hello" ) )
     {
         timeline->reply_to_finger( msg );
         return 0;

@@ -360,7 +360,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Loggable::dirty_callback( &Mixer::handle_dirty, this );
 
     _rows = 1;
-    box( FL_NO_BOX );
+    box( FL_FLAT_BOX );
     labelsize( 96 );
     { Fl_Group *o = new Fl_Group( X, Y, W, 24 );
 
@@ -411,14 +411,14 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->end();
     }
     { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - 24 );
-        o->box( FL_NO_BOX );
+        o->box( FL_FLAT_BOX );
 //        o->type( Fl_Scroll::HORIZONTAL_ALWAYS );
 //        o->box( Fl_Scroll::BOTH );
         {
             Fl_Flowpack *o = mixer_strips = new Fl_Flowpack( X, Y + 24, W, H - 18 - 24 );
-            label( "Non-Mixer" );
+//            label( "Non-Mixer" );
             align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE) );
-            o->box( FL_NO_BOX );
+            o->box( FL_FLAT_BOX );
             o->type( Fl_Pack::HORIZONTAL );
             o->hspacing( 2 );
             o->vspacing( 2 );

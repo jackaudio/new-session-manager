@@ -55,7 +55,7 @@ DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
     if ( DPM::_gradient[ 0 ] == 0 )
         DPM::blend( FL_GREEN, FL_RED );
 
-    box( FL_ROUNDED_BOX );
+    box( FL_FLAT_BOX );
     color( FL_BACKGROUND_COLOR );
 }
 

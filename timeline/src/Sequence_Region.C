@@ -261,7 +261,7 @@ void
 Sequence_Region::draw_label ( const char *label, Fl_Align align )
 {
     fl_color( FL_WHITE );
-    fl_font( FL_HELVETICA_ITALIC, 9 );
-    fl_draw( label, x(), y(), abs_w(), h(), align );
+    fl_font( FL_HELVETICA_ITALIC, 10 );
+    fl_draw( label, line_x() + Fl::box_dx( box() ), y() + Fl::box_dy( box() ), abs_w() - Fl::box_dw( box() ), h() - Fl::box_dh( box() ), align );
 }
 

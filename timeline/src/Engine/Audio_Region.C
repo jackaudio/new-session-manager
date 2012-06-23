@@ -115,14 +115,21 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
     //    printf( "reading region ofs = %lu, sofs = %lu, %lu-%lu\n", ofs, sofs, start, end  );
 
+    /* FIXME: keep the declick defults someplace else */
+    Fade declick;
+
+    declick.length = 256;
+    declick.type   = Fade::Sigmoid;
+
     if ( _loop )
     {
         nframes_t lofs = sofs % _loop;
         nframes_t lstart = r.offset + lofs;
 
+
         if ( lofs + len > _loop )
         {
-            /* this buffer covers a loop bounary */
+            /* this buffer covers a loop binary */
 
             /* read the first part */
             cnt = _clip->read( buf + ofs, channel, lstart, len - ( ( lofs + len ) - _loop ) );
@@ -135,6 +142,47 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
         }
         else
             cnt = _clip->read( buf + ofs, channel, lstart, len );
+
+        /* this buffer is inside declicking proximity to the loop boundary */
+
+        if ( lofs + cnt + declick.length > _loop /* buffer ends within declick length of the end of loop */
+             &&
+             sofs + declick.length < r.length /* not the last loop */
+            )
+        {
+            /* */
+            /* fixme: what if loop is shorter than declick? */
+            const nframes_t declick_start = _loop - declick.length;
+
+            /* when the buffer covers the beginning of the
+             * declick, how many frames between the beginning of
+             * the buffer and the beginning of the declick */
+            const nframes_t declick_onset_offset = declick_start > lofs ? declick_start - lofs : 0;
+
+            /* how far into the declick we are */
+            const nframes_t declick_offset = lofs > declick_start ? lofs - declick_start : 0;
+
+            /* this is the end side of the loop boundary */
+
+            const nframes_t fl = cnt - declick_onset_offset;
+
+            declick.apply( buf + ofs + declick_onset_offset,
+                           Fade::Out,
+                           declick_offset, fl );
+        }
+            
+        if ( lofs < declick.length /* buffer begins within declick length of beginning of loop */
+             &&
+             sofs > _loop )               /* not the first loop */
+        {
+                
+            const nframes_t declick_end = declick.length;
+                
+            const nframes_t click_len = lofs + cnt > declick_end ? declick_end - lofs : cnt;
+
+            /* this is the beginning of the loop next boundary */
+            declick.apply( buf + ofs, Fade::In, lofs, click_len );
+        }
     }
     else
         cnt = _clip->read( buf + ofs, channel, start, len );
@@ -148,11 +196,6 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
     /* perform declicking if necessary */
 
-    /* FIXME: keep the declick defults someplace else */
-    Fade declick;
-
-    declick.length = 256;
-    declick.type   = Fade::Linear;
 
     {
         assert( cnt <= nframes );
@@ -163,7 +206,7 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
         /* do fade in if necessary */
         if ( sofs < fade.length )
-            fade.apply( buf + ofs, Fade::In, sofs , cnt );
+            fade.apply( buf + ofs, Fade::In, sofs, cnt );
 
         fade = declick < _fade_out ? _fade_out : declick;
 
@@ -211,7 +254,7 @@ Audio_Region::write ( nframes_t nframes )
 }
 
 /** finalize region capture. Assumes that this *is* a captured region
- and that no other regions refer to the same source */
+    and that no other regions refer to the same source */
 bool
 Audio_Region::finalize ( nframes_t frame )
 {

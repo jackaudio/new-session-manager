@@ -114,6 +114,8 @@ DPM::resize ( int X, int Y, int W, int H )
 void
 DPM::draw ( void )
 {
+    if ( !_segments )
+        return;
 
     snprintf( peak_string, sizeof( peak_string ), "%.1f", peak() );
     tooltip( peak_string );

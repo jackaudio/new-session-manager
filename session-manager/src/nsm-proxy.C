@@ -109,17 +109,18 @@ public:
 //                char *args[] = { strdup( executable ), NULL };
 
                 char *cmd;
+
                 if ( _arguments )
                     asprintf( &cmd, "exec %s %s", _executable, _arguments );
                 else
                     asprintf( &cmd, "exec %s", _executable );
 
-                const char *args[] = { _executable, "-c", cmd, NULL };
+                char *args[] = { _executable, strdup( "-c" ), cmd, NULL };
                 
                 setenv( "NSM_CLIENT_ID", nsm_client_id, 1 );
                 setenv( "NSM_SESSION_NAME", nsm_display_name, 1 );
                 
-                if ( -1 == execvp( "/bin/sh", (char**)args ) )
+                if ( -1 == execvp( "/bin/sh", args ) )
                 {
                     WARNING( "Error starting process: %s", strerror( errno ) );
                     
@@ -357,9 +358,9 @@ show_gui ( void )
         
         char *url = lo_server_get_url( losrv );
 
-        const char *args[] = { executable, "--connect-to", url, NULL };
+        char *args[] = { executable, strdup( "--connect-to" ), url, NULL };
         
-        if ( -1 == execvp( executable, (char**)args ) )
+        if ( -1 == execvp( executable, args ) )
         {
             WARNING( "Error starting process: %s", strerror( errno ) );
             

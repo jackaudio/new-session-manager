@@ -164,6 +164,8 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
         }
     }
 
+    fl_line_style( FL_SOLID, 0 );
+
 }
 
 void
@@ -198,6 +200,8 @@ Panner::draw ( void )
 
     if ( damage() & FL_DAMAGE_ALL )
         draw_the_box( tx, ty, tw, th );
+
+    fl_line_style( FL_SOLID, 2 );
 
 //    fl_color( FL_RED );
 
@@ -313,6 +317,8 @@ Panner::draw ( void )
 
     }
 done:
+
+    fl_line_style( FL_SOLID, 0 );
 
     fl_pop_clip();
 }

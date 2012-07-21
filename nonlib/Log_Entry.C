@@ -280,6 +280,19 @@ Log_Entry::get ( int n, const char **name, const char **value ) const
 }
 
 
+void
+Log_Entry::remove ( const char *name )
+{
+    for ( int i = 0; i < _i; i++ )
+    {
+        if ( !strcmp( _sa[ i ], name ) )
+        {
+            free( _sa[i] );
+            _sa[i] = NULL;
+        }
+    }
+}
+
 char **
 Log_Entry::sa ( void )
 {

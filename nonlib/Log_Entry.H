@@ -88,6 +88,9 @@ public:
 /*             _sa.push( p ); \ */
 /*         } \ */
 
+
+    void remove ( const char *s );
+
     ADD( int, "%d", v );
     ADD( nframes_t, "%lu", (unsigned long)v );
     ADD( unsigned long, "%lu", v );

@@ -190,8 +190,15 @@ Module::paste_before ( void )
 {
     Module *m = _copied_module_empty;
 
-    m->chain( chain() );
     Log_Entry le( _copied_module_settings );
+    le.remove( ":chain" );
+
+    char *print = le.print();
+
+    DMESSAGE( "Pasting settings: %s", print );
+
+    free( print );
+
     m->set( le );
 
     if ( ! chain()->insert( this, m ) )
@@ -203,7 +210,7 @@ Module::paste_before ( void )
     _copied_module_settings = NULL;
     _copied_module_empty = NULL;
 
-    /* set up for another copy */
+    /* set up for another paste */
     m->copy();
 }
 
@@ -428,6 +435,26 @@ Module::set ( Log_Entry &e )
 
 
 
+
+void
+Module::chain ( Chain *v )
+{
+    if ( _chain != v )
+    {
+        DMESSAGE( "Adding module %s in to chain %s", label(), v ? v->name() : "NULL" );
+
+        _chain = v; 
+
+        for ( int i = 0; i < ncontrol_inputs(); ++i )
+        {
+            control_input[i].update_osc_port();
+        }
+    }
+    else
+    {
+        DMESSAGE( "Module %s already belongs to chain %s", label(), v ? v->name() : "NULL" );
+    }
+}
 
 /* return a string serializing this module's parameter settings.  The
    format is 1.0:2.0:... Where 1.0 is the value of the first control

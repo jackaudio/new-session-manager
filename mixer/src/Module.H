@@ -373,18 +373,7 @@ public:
         }
 
     Chain *chain ( void ) const { return _chain; }
-    void chain ( Chain * v )
-        {
-            if ( _chain != v )
-            {
-                _chain = v; 
-
-                for ( int i = 0; i < ncontrol_inputs(); ++i )
-                {
-                    control_input[i].update_osc_port();
-                }
-            }
-        }
+    void chain ( Chain * v );
 
     char *get_parameters ( void ) const;
     void set_parameters ( const char * );

@@ -57,6 +57,7 @@
 #include "NSM.H"
 
 #include <signal.h>
+#include <unistd.h>
 
 #ifdef HAVE_XPM
 #include "FL/Fl.H"
@@ -107,7 +108,7 @@ check_nsm ( void * v )
     Fl::repeat_timeout( NSM_CHECK_INTERVAL, check_nsm, v );
 }
 
-static int got_sigterm = 0;
+static volatile int got_sigterm = 0;
 
 void
 sigterm_handler ( int )
@@ -129,20 +130,9 @@ check_sigterm ( void * )
 int
 main ( int argc, char **argv )
 {
+    bool no_ui = false;
+
     printf( "%s %s %s -- %s\n", APP_TITLE, VERSION, "", COPYRIGHT );
-
-    if ( ! Fl::visual( FL_DOUBLE | FL_RGB ) )
-    {
-        WARNING( "Xdbe not supported, FLTK will fake double buffering." );
-    }
-
-#ifdef HAVE_XPM
-    fl_open_display(); 
-    Pixmap p, mask;
-
-    XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),
-                            (char**)icon_16x16, &p, &mask, NULL);
-#endif
 
     Thread::init();
 
@@ -160,9 +150,6 @@ main ( int argc, char **argv )
     Fl_Tooltip::size( 14 );
     Fl_Tooltip::hoverdelay( 0.1f );
 
-    Fl::visible_focus( 0 );
-
-    fl_register_images();
 
     LOG_REGISTER_CREATE( Mixer_Strip );
     LOG_REGISTER_CREATE( Chain );
@@ -176,36 +163,6 @@ main ( int argc, char **argv )
 
     signal( SIGPIPE, SIG_IGN );
 
-    Fl::lock();
-
-    Fl_Double_Window *main_window;
-
-    {
-        Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, "Non-DAW : Mixer" );
-        {
-            main_window->xclass( APP_NAME );
-
-            { 
-                Fl_Widget *o = mixer = new Mixer( 0, 0, main_window->w(), main_window->h(), NULL );
-                Fl_Group::current()->resizable(o);
-            }
-        }
-        o->end();
-
-        o->size_range( main_window->w(), mixer->min_h(), 0, 0 );
-
-        o->callback( (Fl_Callback*)cb_main, main_window );
-
-
-#ifdef HAVE_XPM
-        o->icon((char *)p);
-#endif
-        o->show( 0, 0 );
-    }
-
-    fl_register_themes();
-
-    Fl_Theme::set();
 
     const char *osc_port = NULL;
 
@@ -219,6 +176,7 @@ main ( int argc, char **argv )
             { "help", no_argument, 0, '?' },
             { "instance", required_argument, 0, 'i' },
             { "osc-port", required_argument, 0, 'p' },
+            { "no-ui", no_argument, 0, 'u' },
             { 0, 0, 0, 0 }
         };
 
@@ -240,11 +198,79 @@ main ( int argc, char **argv )
                 instance_name = strdup( optarg );
                 instance_override = true;
                 break;
+            case 'u':
+                DMESSAGE( "Disabling user interface" );
+                no_ui = true;
+                break;
             case '?':
                 printf( "\nUsage: %s [--instance instance_name] [--osc-port portnum] [path_to_project]\n\n", argv[0] );
                 exit(0);
                 break;
         }
+    }
+
+    {
+        char *name = strdup( argv[0] );
+        char *n = basename( name );
+
+        if ( ! strcmp( n, "non-mixer-noui" ) )
+            no_ui = true;
+        
+        free( name );
+    }
+    
+    Pixmap p, mask;
+
+    if ( ! no_ui )
+    {
+        Fl::visual( FL_DOUBLE | FL_RGB );
+        
+#ifdef HAVE_XPM
+        fl_open_display(); 
+        
+        XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),
+                                (char**)icon_16x16, &p, &mask, NULL);
+#endif
+        
+        Fl::visible_focus( 0 );
+
+        fl_register_images();
+    }
+
+    Fl::lock();
+
+    Fl_Double_Window *main_window;
+
+    {
+        Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, "Non-DAW : Mixer" );
+        {
+            main_window->xclass( APP_NAME );
+
+            { 
+                Fl_Widget *o = mixer = new Mixer( 0, 0, main_window->w(), main_window->h(), NULL );
+                Fl_Group::current()->resizable(o);
+            }
+        }
+        o->end();
+
+        o->size_range( main_window->w(), mixer->min_h(), 0, 0 );
+
+        o->callback( (Fl_Callback*)cb_main, main_window );
+
+        if ( ! no_ui )
+        {
+#ifdef HAVE_XPM
+            o->icon((char *)p);
+#endif
+            o->show( 0, 0 );
+        }
+    }
+
+    if ( ! no_ui )
+    {
+        fl_register_themes();
+
+        Fl_Theme::set();
     }
 
     Plugin_Module::spawn_discover_thread();
@@ -265,8 +291,11 @@ main ( int argc, char **argv )
 
             nsm->announce( APP_NAME, ":switch:dirty:", argv[0] );
 
-            // poll so we can keep OSC handlers running in the GUI thread and avoid extra sync
-            Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
+            /* if ( ! no_ui ) */
+            /* { */
+                // poll so we can keep OSC handlers running in the GUI thread and avoid extra sync
+                Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
+            /* } */
         }
     }
     else
@@ -288,8 +317,22 @@ main ( int argc, char **argv )
     mixer->say_hello();
 
     Fl::add_check( check_sigterm );
+    
+    if ( ! no_ui )
+    {
+        DMESSAGE( "Running UI..." );
 
-    Fl::run();
+        Fl::run();
+    }
+    else
+    {
+        DMESSAGE( "Not Running UI..." );
+        while ( ! got_sigterm )
+        {
+            Fl::check();
+            usleep( 200 * 1000 );
+        }
+    }
 
     delete main_window;
     main_window = NULL;

@@ -23,7 +23,6 @@
 #include "Sequence_Region.H"
 
 class Audio_File;
-class Peaks_Redraw_Request;
 
 class Fl_Menu_;
 class Fl_Menu_Button;
@@ -34,9 +33,12 @@ class Audio_Region : public Sequence_Region
     /* not permitted */
     Audio_Region & operator = ( const Audio_Region &rhs );
 
+    static void peaks_ready_callback ( void *v );
+
 public:
 
     static bool inherit_track_color;
+    static bool show_box;
 
     struct Fade
     {
@@ -58,17 +60,17 @@ public:
                 return length < rhs.length;
             }
 
-        float increment ( void ) const
+        double increment ( void ) const
             {
-                return 1.0f / (float)length;
+                return 1.0f / length;
             }
 
         /** Return gain for frame /index/ of /nframes/ on a gain curve
          * of type /type/.*/
         /* FIXME: calling a function per sample is bad, switching on
          * type mid fade is bad. */
-        inline float
-        gain ( const float fi ) const
+        inline double
+        gain ( const double fi ) const
             {
                 switch ( type )
                 {
@@ -85,7 +87,7 @@ public:
                 }
             }
 
-        void apply ( sample_t *buf, fade_dir_e dir, long start, nframes_t end, nframes_t nframes ) const;
+        void apply ( sample_t *buf, fade_dir_e dir, nframes_t start, nframes_t nframes ) const;
     };
 
 /*     struct Fade_In : public Fade; */
@@ -95,6 +97,7 @@ private:
 
     Audio_File *_clip;                                          /* clip this region represents */
 
+    bool _adjusting_gain;
     float _scale;                                               /* amplitude adjustment */
 
     Fade _fade_in;
@@ -105,8 +108,6 @@ private:
     friend class Track;                                  /* for _clip */
 
     Fl_Menu_Button & menu ( void );
-    static void peaks_pending_cb ( void *v );
-    void peaks_pending_cb ( Peaks_Redraw_Request *r );
 
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( const Fl_Menu_ *m );
@@ -118,8 +119,14 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
 
+    void draw_label ( const char *label, Fl_Align align )
+        {
+            Sequence_Widget::draw_label( label, align );
+        }
+
     int handle ( int m );
-    void draw_box( void );
+    void draw_label ( void );
+    void draw_box ( void );
     void draw ( void );
     void resize ( void );
 
@@ -151,10 +158,11 @@ public:
     ~Audio_Region ( );
 
     Fl_Boxtype box ( void ) const { return Audio_Region::_box; }
-    Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM /*| FL_ALIGN_CLIP*/ | FL_ALIGN_INSIDE); }
+    Fl_Align align ( void ) const { return  (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE | FL_ALIGN_CLIP ); }
 
     void normalize ( void );
     void split ( nframes_t where );
+    bool recording ( void ) const;
 
     /* Engine */
     nframes_t read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const;

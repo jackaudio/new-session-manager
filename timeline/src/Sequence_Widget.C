@@ -231,6 +231,11 @@ Sequence_Widget::start ( nframes_t where )
 }
 
 void
+Sequence_Widget::draw_label ( void )
+{
+}
+
+void
 Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color, int xo, int yo )
 {
     int X = x();
@@ -249,8 +254,8 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color,
 //    lab.type = FL_SHADOW_LABEL;
     lab.type = FL_NORMAL_LABEL;
     lab.value = label;
-    lab.font = FL_HELVETICA;
-    lab.size = 14;
+    lab.font = FL_HELVETICA_ITALIC;
+    lab.size = 9;
 
     int lw = 0, lh = 0;
 
@@ -263,26 +268,29 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color,
     if ( abs_x() < scroll_x() )
         dx = min( 32767, scroll_x() - abs_x() );
 
-    const Fl_Boxtype b = FL_ROUNDED_BOX;
-    const int bx = Fl::box_dx( b ) + 1;
-    const int bw = Fl::box_dw( b ) + 1;
-//    const int by = Fl::box_dy( b ) + 1;
-    const int bh = Fl::box_dh( b ) + 1;
+    const Fl_Boxtype b = FL_BORDER_BOX;
+    const int bx = Fl::box_dx( b );
+    const int bw = Fl::box_dw( b );
+    const int by = Fl::box_dy( b );
+    const int bh = Fl::box_dh( b );
 
     /* FIXME: why do we have to do this here? why doesn't Fl_Label::draw take care of this stuff? */
     if ( align & FL_ALIGN_INSIDE )
     {
-        X += Fl::box_dx( box() );
-        Y += Fl::box_dy( box() );
-        W -= Fl::box_dw( box() );
-        H -= Fl::box_dh( box() );
-
+        if ( align & FL_ALIGN_BOTTOM  )
+            Y += h() - ( lh + bh );
+        else if ( align & FL_ALIGN_TOP )
+            Y += by;
+        else
+            Y += ( h() / 2 ) - ( lh + bh );
 
         if ( align & FL_ALIGN_RIGHT )
-            X += abs_w() - (lw + bw);
+            X += abs_w() - ( lw + bw );
+        else if ( align & FL_ALIGN_LEFT )
+            X += bx;
+        else
+            X += ( abs_w() / 2 ) - ( ( lw + bw ) / 2 );
 
-        if ( align & FL_ALIGN_BOTTOM  )
-            Y += h() - (lh + (bh << 1));
     }
     else
     {
@@ -290,17 +298,22 @@ Sequence_Widget::draw_label ( const char *label, Fl_Align align, Fl_Color color,
             X += abs_w();
         else if ( align & FL_ALIGN_LEFT )
             X -= lw + bw;
+        else
+            X += ( abs_w() / 2 ) - ( ( lw + bw ) / 2 );
 
         if ( align & FL_ALIGN_BOTTOM  )
             Y += h();
         else if ( align & FL_ALIGN_TOP )
             Y -= lh + bh;
+        else
+            Y += ( h() / 2 ) - ( ( lh + bh ) / 2 );
     }
 
-    fl_draw_box( b, ( X - dx ), Y, lw + bw, lh, FL_GRAY );
+    fl_draw_box( b, ( X - dx ), Y - by, lw + bw, lh + bh, fl_color_add_alpha( FL_DARK1, 150 )  );
 
     fl_color( color );
-    fl_draw( label, ( X - dx ) + bx, Y, lw, lh, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_CENTER ) );
+
+    fl_draw( label, ( X - dx ), Y, lw + bw, lh, (Fl_Align)(FL_ALIGN_CENTER) );
 
     if ( align & FL_ALIGN_CLIP ) fl_pop_clip();
 }
@@ -376,11 +389,6 @@ Sequence_Widget::handle ( int m )
                 /* traditional selection model */
                 if ( Fl::event_ctrl() )
                     select();
-                else if ( ! selected() )
-                {
-                    select_none();
-                    select();
-                }
 
                 fl_cursor( FL_CURSOR_MOVE );
 
@@ -458,8 +466,7 @@ Sequence_Widget::handle ( int m )
 //                    timeline->update_length( start() + length() );
 
                     /* FIXME: why isn't this enough? */
-//                sequence()->redraw();
-                    timeline->redraw();
+                    sequence()->redraw();
                 }
 
                 if ( ! selected() || _selection.size() == 1 )

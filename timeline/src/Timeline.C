@@ -21,6 +21,7 @@
  * provides cursor overlays, scrolling, zooming, measure lines, tempo
  * map and just about everything else. */
 
+#include <FL/Fl.H>
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Scrollbar.H>
@@ -54,14 +55,14 @@
 #include "OSC_Thread.H"
 #include "OSC/Endpoint.H"
 
-#include "NSM.H"
-extern NSM_Client *nsm;
+#include <nsm.h>
+extern nsm_client_t *nsm;
 
 #ifdef USE_WIDGET_FOR_TIMELINE
 #define BASE Fl_Group
-#define redraw_overlay()
-#define BX x()
-#define BY y()
+#define redraw_overlay() ((Fl_Overlay_Window*)window())->redraw_overlay()
+#define BX this->x()
+#define BY this->y()
 #else
 #ifdef USE_SINGLEBUFFERED_TIMELINE
 #warning Using singlebuffered timeline window. This may cause flicker and makes the cursors invisible.
@@ -83,7 +84,7 @@ bool Timeline::snap_magnetic = true;
 bool Timeline::follow_playhead = true;
 bool Timeline::center_playhead = true;
 
-const float UPDATE_FREQ = 0.02f;
+const float UPDATE_FREQ = 1.0 / 18.0f;
 
 extern const char *instance_name;
 extern TLE *tle;
@@ -307,6 +308,8 @@ Timeline::menu_cb ( Fl_Menu_ *m )
             p1 = xoffset + x_to_ts( X );
         }
 
+	fix_range();
+
         /* FIXME: only needs to damage the location of the old cursor! */
         redraw();
     }
@@ -318,6 +321,8 @@ Timeline::menu_cb ( Fl_Menu_ *m )
         {
             p2 = xoffset + x_to_ts( X );
         }
+
+	fix_range();
 
         /* FIXME: only needs to damage the location of the old cursor! */
         redraw();
@@ -382,6 +387,10 @@ Timeline::menu_cb ( Fl_Menu_ *m )
 
         redraw();
     }
+    else if ( ! strcmp( picked, "Redraw" ) )
+    {
+        redraw();
+    }
     else
         WARNING( "programming error: Unknown menu item" );
 }
@@ -393,14 +402,14 @@ Timeline::ntracks ( void ) const
 }
 
 
+Timeline::~Timeline ( )
+{
+    delete osc_thread;
+    osc_thread = 0;
+}
+
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W, H, L )
 {
-
-    if ( ! can_do_overlay() )
-    {
-        WARNING( "Display lacks hardware overlay visual. Playhead and selection rectangle will flicker." );
-    }
-
     Loggable::snapshot_callback( &Timeline::snapshot, this );
 
     osc_thread = 0;
@@ -436,6 +445,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
     menu->add( "Swap P2 and playhead", FL_CTRL + FL_SHIFT + ']', 0, 0 );
     menu->add( "P1 to playhead", FL_CTRL + '[', 0, 0 );
     menu->add( "P2 to playhead", FL_CTRL + ']', 0, 0 );
+    menu->add( "Redraw", FL_CTRL + 'l', 0, 0 );
 
     menu_set_callback( const_cast<Fl_Menu_Item*>(menu->menu()), &Timeline::menu_cb, (void*)this );
 
@@ -693,23 +703,18 @@ Timeline::x_to_offset ( int x ) const
 
 /** draws a single measure line */
 static void
-draw_measure_cb ( nframes_t frame, const BBT &bbt, void *arg )
+draw_measure_cb ( nframes_t frame, const BBT &bbt, void * )
 {
-    Fl_Color *color = (Fl_Color*)arg;
-
-    fl_color( FL_BLACK );
-    fl_line_style( FL_DASH, 0 );
+    Fl_Color c = FL_LIGHT3;
 
     if ( bbt.beat )
-        ++color;
+        c = FL_DARK1;
 
-    fl_color( *color );
-
+    fl_color( fl_color_add_alpha( c, 64 ) );
+    
     const int x = timeline->ts_to_x( frame - timeline->xoffset ) + Track::width();
 
-    fl_line( x, 0, x, 5000 );
-
-    fl_line_style( FL_SOLID, 0 );
+    fl_line( x, 0, x, 2000 );
 }
 
 /* FIXME: wrong place for this */
@@ -854,25 +859,21 @@ done:
 
 /** maybe draw appropriate measure lines in rectangle defined by X, Y, W, and H, using color /color/ as a base */
 void
-Timeline::draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color )
+Timeline::draw_measure_lines ( int X, int Y, int W, int H )
 {
     if ( ! draw_with_measure_lines )
         return;
 
-    Fl_Color colors[2];
-
-    colors[1] = fl_color_average( FL_BLACK, color, 0.65f );
-    colors[0] = fl_color_average( FL_RED, colors[1], 0.65f );
+    fl_line_style( FL_SOLID, 0 );
 
     const nframes_t start = x_to_offset( X );
     const nframes_t length = x_to_ts( W );
 
     fl_push_clip( X, Y, W, H );
 
-    render_tempomap( start, length, draw_measure_cb, &colors );
+    render_tempomap( start, length, draw_measure_cb, NULL );
 
     fl_pop_clip();
-
 }
 
 void
@@ -891,6 +892,7 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
 
     fl_push_clip( tl->tracks->x(), tl->rulers->y() + tl->rulers->h(), tl->tracks->w(), tl->h() - tl->rulers->h() - tl->hscroll->h() );
     tl->draw_child( *tl->tracks );
+
     fl_pop_clip();
 
     fl_pop_clip();
@@ -939,7 +941,7 @@ Timeline::draw ( void )
     adjust_vscroll();
 
 #ifndef USE_UNOPTIMIZED_DRAWING
-    if ( ( damage() & FL_DAMAGE_ALL ) || ( damage() & FL_DAMAGE_EXPOSE ) )
+    if ( ( damage() & FL_DAMAGE_ALL ) )
 #else
     #warning Optimized drawing of timeline disabled. This will waste your CPU.
 #endif
@@ -954,6 +956,7 @@ Timeline::draw ( void )
 
         fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), hscroll->y() - (rulers->y() + rulers->h()) );
         draw_child( *tracks );
+
         fl_pop_clip();
 
         draw_child( *hscroll );
@@ -991,9 +994,12 @@ Timeline::draw ( void )
         update_child( *rulers );
         fl_pop_clip();
 
-        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h() - hscroll->h() );
-        update_child( *tracks );
-        fl_pop_clip();
+        if ( ! ( damage() & FL_DAMAGE_SCROLL ) )
+        {
+            fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h() - hscroll->h() );
+            update_child( *tracks );
+            fl_pop_clip();
+        }
 
         update_child( *hscroll );
         update_child( *vscroll );
@@ -1023,34 +1029,25 @@ Timeline::draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color
     if ( x > tracks->x() + tracks->w() )
         return;
 
-    fl_color( color );
-
     const int y = rulers->y() + rulers->h();
-    const int h = this->h() - hscroll->h() - 1;
+    const int h = this->h() - rulers->h()  - hscroll->h();
 
     fl_push_clip( tracks->x() + Track::width(), y, tracks->w(), h );
 
-    fl_line( x, y, x, h );
-
-    fl_color( fl_darker( color ) );
-
-    fl_line( x - 1, y, x - 1, h );
-
-    fl_color( FL_BLACK );
-
-    fl_line( x + 1, y, x + 1, h );
+    fl_line_style( FL_SOLID, 0 );
+    fl_color( color );
+    fl_line( x, y, x, y + h );
 
     fl_push_matrix();
-
+   
     fl_translate( x, y );
-    fl_scale( 16, 8 );
-
+    fl_scale( 8, 4 );
+   
     symbol( color );
-
+   
     fl_pop_matrix();
-
+   
     fl_pop_clip();
-
 }
 
 void
@@ -1064,18 +1061,31 @@ void
 Timeline::redraw_playhead ( void )
 {
     static nframes_t last_playhead = -1;
+    static int last_playhead_x = -1;
 
-    if ( last_playhead != transport->frame )
+
+    /* FIXME: kind of a hackish way to invoke punch stop from the UI thread... */
+
+    if ( transport->rolling &&
+         transport->rec_enabled() &&
+         transport->punch_enabled() &&
+         transport->frame > range_end() )
+        transport->stop();
+
+    int playhead_x = ts_to_x( transport->frame );
+
+    if ( last_playhead_x != playhead_x )
     {
         redraw_overlay();
         last_playhead = transport->frame;
+        last_playhead_x = playhead_x;
 
         if ( follow_playhead )
         {
             if ( center_playhead && active() )
-                xposition( max( 0, ts_to_x( transport->frame ) - ( ( tracks->w() - Track::width() ) >> 1 ) ) );
-            else if ( ts_to_x( transport->frame ) > ts_to_x( xoffset ) + ( tracks->w() - Track::width() ) )
-                xposition( ts_to_x( transport->frame ) );
+                xposition( max( 0, playhead_x - ( ( tracks->w() - Track::width() ) >> 1 ) ) );
+            else if ( playhead_x > ts_to_x( xoffset ) + ( tracks->w() - Track::width() ) )
+                xposition( playhead_x );
         }
     }
 }
@@ -1095,33 +1105,27 @@ Timeline::update_cb ( void *arg )
 void
 Timeline::draw_overlay ( void )
 {
+    fl_push_no_clip();
 
     draw_playhead();
 
     if ( ! ( _selection.w && _selection.h ) )
+    {
+        fl_pop_clip();
         return;
+    }
 
     fl_push_clip( tracks->x() + Track::width(), rulers->y() + rulers->h(),  tracks->w() - Track::width(), h() - rulers->h() - hscroll->h() );
 
     const Rectangle &r = _selection;
 
-    fl_color( FL_BLACK );
-
-    fl_line_style( FL_SOLID, 2 );
-
-    fl_rect( r.x + 2, r.y + 2, r.w, r.h );
     fl_color( FL_MAGENTA );
-    fl_line_style( FL_DASH, 2 );
-    fl_rect( r.x, r.y, r.w, r.h );
-
-    fl_line( r.x, r.y, r.x + r.w, r.y + r.h );
-
-    fl_line( r.x + r.w, r.y, r.x, r.y + r.h );
-
     fl_line_style( FL_SOLID, 0 );
+    fl_rect( r.x, r.y, r.w, r.h );
 
     fl_pop_clip();
 
+    fl_pop_clip();
 }
 
 /** select sequence widgets within rectangle /r/ */
@@ -1406,7 +1410,10 @@ Timeline::xposition ( int X )
 {
     xoffset = x_to_ts( X );
 
-    damage( FL_DAMAGE_SCROLL );
+    int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
+
+    if ( dx )
+        damage( FL_DAMAGE_SCROLL );
 }
 
 /** set vertical scroll position to absolute pixel coordinate /Y/ */
@@ -1415,7 +1422,10 @@ Timeline::yposition ( int Y )
 {
     _yposition = Y;
 
-    damage( FL_DAMAGE_SCROLL );
+    int dy = _old_yposition - _yposition;
+
+    if ( dy )
+        damage( FL_DAMAGE_SCROLL );
 }
 
 /** zoom in by one zoom step */
@@ -1466,19 +1476,106 @@ Timeline::add_track ( Track *track )
 {
     DMESSAGE( "added new track to the timeline" );
 
-    engine->lock();
+    wrlock();
 
-    osc_thread->lock();
+    engine->lock();
 
     tracks->add( track );
 
-    osc_thread->unlock();
+//    update_track_order();
 
     engine->unlock();
+
+    unlock();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
 
+}
+
+void
+Timeline::insert_track ( Track *track, int n )
+{
+    if ( n > tracks->children() || n < 0 )
+        return;
+
+    wrlock();
+
+    engine->lock();
+
+    tracks->insert( *track, n );
+
+    update_track_order();
+
+    tracks->redraw();
+
+    engine->unlock();
+
+    unlock();
+
+    /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
+//    redraw();    
+}
+
+static 
+bool
+compare_tracks ( Track *a, Track *b )
+{
+    return *a < *b;
+}
+
+void
+Timeline::apply_track_order ( void )
+{
+    wrlock();
+
+    engine->lock();
+
+    std::list<Track*> tl;
+    
+    for ( int i = 0; i < tracks->children(); i++ )
+        tl.push_back( (Track*)tracks->child( i ) );
+
+    tl.sort(compare_tracks);
+
+    Fl_Widget **a = const_cast<Fl_Widget**>(tracks->array());
+    
+    int j = 0;
+    for ( std::list<Track*>::const_iterator i = tl.begin();
+          i != tl.end();
+          i++, j++ )
+        a[j] = *i;
+
+    update_track_order();
+
+    engine->unlock();
+    
+    unlock();
+}
+
+void
+Timeline::update_track_order ( void )
+{
+    for ( int i = 0; i < tracks->children(); i++ )
+        ((Track*)tracks->child( i ))->row( i );
+}
+
+int
+Timeline::find_track ( const Track *track ) const
+{
+    return tracks->find( *track );
+}
+
+void
+Timeline::move_track_up ( Track *track )
+{
+    insert_track( track, find_track( track ) - 1 );
+}
+
+void
+Timeline::move_track_down ( Track *track )
+{
+    insert_track( track, find_track( track ) + 2 );
 }
 
 /** remove /track/ from the timeline */
@@ -1487,16 +1584,19 @@ Timeline::remove_track ( Track *track )
 {
     DMESSAGE( "removed track from the timeline" );
 
-    engine->lock();
+    wrlock();
 
-    osc_thread->lock();
+    engine->lock();
 
     /* FIXME: what to do about track contents? */
     tracks->remove( track );
 
-    osc_thread->unlock();
+    update_track_order();
 
     engine->unlock();
+
+    unlock();
+
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
@@ -1535,6 +1635,8 @@ Timeline::command_load ( const char *name, const char *display_name )
 
   Project::set_name ( display_name ? display_name : name );
 
+  apply_track_order();
+  
    return true;
 }
 
@@ -1564,7 +1666,7 @@ Timeline::command_new ( const char *name, const char *display_name )
 const char *
 Timeline::session_manager_name ( void )
 {
-    return nsm->session_manager_name();
+    return nsm_get_session_manager_name( nsm );
 }
 
 
@@ -1600,7 +1702,7 @@ Timeline::init_osc ( const char *osc_port )
     /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
     Fl::add_timeout( OSC_INTERVAL, &Timeline::check_osc, this );
 
-    osc->signal_peer_scan_complete.connect( sigc::mem_fun( this, &Timeline::connect_osc ) );
+    osc->peer_scan_complete_callback( &Timeline::handle_peer_scan_complete, this );
 
     if ( ! osc_thread )
     {
@@ -1653,7 +1755,15 @@ Timeline::reply_to_finger ( lo_message msg )
               VERSION,
               instance_name );
 
+    osc->hello( &argv[0]->s );
+
     lo_address_free( reply );
+}
+
+void 
+Timeline::handle_peer_scan_complete ( void *o )
+{
+    ((Timeline*)o)->connect_osc();
 }
 
 void
@@ -1675,16 +1785,18 @@ Timeline::connect_osc ( void )
 void
 Timeline::discover_peers ( void )
 {
-    if ( nsm->is_active() )
+    if ( nsm_is_active( nsm ) )
     {
         lo_message m = lo_message_new();
         
-        lo_message_add_string( m, "/non/finger" );
-        lo_message_add_string( m, osc->url() );
-
-        nsm->broadcast( m );
+        lo_message_add( m, "sssss",
+                        "/non/hello",
+                        osc->url(),
+                        APP_NAME,
+                        VERSION,
+                        instance_name );
         
-        lo_message_free( m );
+        nsm_send_broadcast( nsm, m );
     }
 }
 
@@ -1695,16 +1807,23 @@ Timeline::process_osc ( void )
 {
     THREAD_ASSERT( OSC );
 
+    rdlock();
+
     /* reconnect OSC signals */
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
         
-        for ( int j = t->control->children(); j--; )
+        if ( t->control )
         {
-            Control_Sequence *c = (Control_Sequence*)t->control->child( j );
-            c->process_osc();
+            for ( int j = t->control->children(); j--; )
+            {
+                Control_Sequence *c = (Control_Sequence*)t->control->child( j );
+                c->process_osc();
+            }
         }
     }
+    
+    unlock();
 }
 

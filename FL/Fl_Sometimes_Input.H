@@ -28,7 +28,6 @@
 
 class Fl_Sometimes_Input : public Fl_Input
 {
-
     Fl_Boxtype _up_box;
 
 public:
@@ -38,7 +37,7 @@ public:
         {
             clear_visible_focus();
             up_box( FL_NO_BOX );
-            when(FL_WHEN_ENTER_KEY_ALWAYS);
+            when(FL_WHEN_ENTER_KEY);
         }
 
     void up_box ( Fl_Boxtype b ) { _up_box = b;  }
@@ -73,20 +72,19 @@ public:
 
             switch ( m )
             {
+                case FL_KEYDOWN:
+                {
+                    if ( r && Fl::event_key() == FL_Enter )
+                        Fl::focus( NULL );
+                }
                 case FL_FOCUS:
+                case FL_UNFOCUS:
                     redraw();
                     return 1;
                 case FL_PUSH:
                     take_focus();
                     redraw();
                     return 1;
-                case FL_UNFOCUS:
-
-                    if ( window() )
-                        window()->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
-
-                    redraw();
-                    return r;
                 default:
                     return r;
             }

@@ -34,6 +34,8 @@ using std::list;
 
 #include "OSC/Endpoint.H"
 
+#include "string_util.h"
+
 
 
 bool Control_Sequence::draw_with_gradient = true;
@@ -48,18 +50,12 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 
     _track = track;
 
-    _osc_output = 0;
-    _output = 0;
-
-    _mode = CV;
-
     mode( OSC );
-    
+
     if ( track )
         track->add( this );
 
     log_create();
-
 }
 
 
@@ -114,7 +110,7 @@ Control_Sequence::init ( void )
     _highlighted = false;
     _output = NULL;
     _osc_output = NULL;
-    color( fl_darker( FL_YELLOW ) );
+    _mode = (Mode)-1;
 
     interpolation( Linear );
 }
@@ -234,6 +230,12 @@ Control_Sequence::mode ( Mode m )
     {
         char *path;
         asprintf( &path, "/track/%s/control/%i", track()->name(), track()->ncontrols() );
+
+        char *s = escape_url( path );
+
+        free( path );
+
+        path = s;
         
         _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, 0, 1, 0, NULL, NULL );
         
@@ -248,7 +250,6 @@ Control_Sequence::mode ( Mode m )
 void
 Control_Sequence::draw_curve ( bool flip, bool filled )
 {
-
     const int bx = x();
     const int by = y() + Fl::box_dy( box() );
     const int bw = w();
@@ -303,13 +304,13 @@ Control_Sequence::draw_curve ( bool flip, bool filled )
 void
 Control_Sequence::draw ( void )
 {
-    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
-        return;
+//    draw_box();
 
     fl_push_clip( x(), y(), w(), h() );
 
+    
     /* draw the box with the ends cut off. */
-    draw_box( box(), x() - Fl::box_dx( box() ), y(), w() + Fl::box_dw( box() ) + 1, h(), color() );
+//    draw_box( box(), x() - Fl::box_dx( box() ), y(), w() + Fl::box_dw( box() ) + 1, h(), color() );
 
     const int bx = x();
     const int by = y() + Fl::box_dy( box() );
@@ -328,11 +329,8 @@ Control_Sequence::draw ( void )
 
     if ( draw_with_gradient )
     {
-/*         const Fl_Color c2 = fl_color_average( selection_color, FL_WHITE, 0.90f ); */
-/*         const Fl_Color c1 = fl_color_average( color, c2, 0.60f ); */
-
-        const Fl_Color c1 = fl_color_average( selection_color, FL_WHITE, 0.90f );
-        const Fl_Color c2 = fl_color_average( color, c1, 0.60f );
+        const Fl_Color c1 = fl_color_average( selection_color, FL_BLACK, 0.50f );
+        const Fl_Color c2 = fl_color_average( color, FL_WHITE, 0.60f );
 
         for ( int gy = 0; gy < bh; gy++ )
         {
@@ -356,7 +354,7 @@ Control_Sequence::draw ( void )
     {
         if ( draw_with_polygon )
         {
-            fl_color( draw_with_gradient ? color : fl_color_average( color, selection_color, 0.45f ) );
+            fl_color( color );
 
             fl_begin_complex_polygon();
             draw_curve( draw_with_gradient, true );
@@ -383,7 +381,7 @@ Control_Sequence::draw ( void )
         fl_line_style( FL_SOLID, 0 );
     }
 
-    timeline->draw_measure_lines( x(), y(), w(), h(), color );
+    timeline->draw_measure_lines( X, Y, W, H );
 
     if ( interpolation() == None || _highlighted || Fl::focus() == this )
         for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
@@ -540,11 +538,20 @@ Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig )
              sig->parameter_limits().max == 1.0 ) )
         return;         
     
-    asprintf( &s, "%s/%s%s", peer_prefix, name, sig->path() );
+
+    assert( sig->path() );
+
+    char *path = strdup( sig->path() );
+
+    unescape_url( path );
+
+    asprintf( &s, "%s/%s%s", peer_prefix, name, path );
 
     peer_menu->add( s, 0, NULL, (void*)( sig ),
                     FL_MENU_TOGGLE |
                     ( _osc_output->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) );
+
+    free( path );
 
     free( s );
 

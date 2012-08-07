@@ -42,6 +42,12 @@ Record_DS::capture_region ( void ) const
         return NULL;
 }
 
+Track::Capture *
+Record_DS::capture ( void )
+{
+    return _capture;
+}
+
 /** write /nframes/ from buf to the capture file of the attached track */
 void
 Record_DS::write_block ( sample_t *buf, nframes_t nframes )
@@ -68,9 +74,9 @@ Record_DS::disk_thread ( void )
 {
     _thread.name( "Capture" );
 
-    track()->record( _capture, _frame );
-
     DMESSAGE( "capture thread running..." );
+
+    track()->record( _capture, _frame );
 
     const nframes_t nframes = _nframes * _disk_io_blocks;
 
@@ -205,7 +211,10 @@ Record_DS::disk_thread ( void )
     delete c;
 
     _terminate = false;
+
     DMESSAGE( "capture thread gone" );
+
+    _thread.exit();
 }
 
 
@@ -252,7 +261,7 @@ Record_DS::stop ( nframes_t frame )
 
     _stop_frame = frame;
 
-    detach();
+//    detach();
 
     DMESSAGE( "recording finished" );
 }

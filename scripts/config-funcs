@@ -127,18 +127,18 @@ ask ()
 
 ok ()
 {
-    echo '\r'`tput cuf 30`"$BOLD${GREEN}ok${SGR0} ${*:+${BOLD}${BLACK}($*)${SGR0}}"
+    echo ''`tput cuf 30`"$BOLD${GREEN}ok${SGR0} ${*:+${BOLD}${BLACK}($*)${SGR0}}"
 }
 
 failed ()
 {
-    echo '\r'`tput cuf 30`"$BOLD${RED}failed!${SGR0}" > /dev/stderr
+    echo ''`tput cuf 30`"$BOLD${RED}failed!${SGR0}" > /dev/stderr
     rm -f .config
 }
 
 missing ()
 {
-    echo '\r'`tput cuf 30`"$BOLD${YELLOW}missing!${SGR0}" > /dev/stderr
+    echo ''`tput cuf 30`"$BOLD${YELLOW}missing!${SGR0}" > /dev/stderr
 }
 
 using ()
@@ -184,7 +184,7 @@ begin ()
 {
     echo -n "Checking sanity..."
     require_command tput tput > /dev/null
-    require_command pkg-config pkg-config > /dev/null
+    require_command pkg_config pkg-config > /dev/null
     require_command sed sed > /dev/null
     ok
 }
@@ -254,13 +254,22 @@ require_command ()
 {
     echo -n "Checking for ${BOLD}$1${SGR0}..."
 
-    if ! [ -x "`which $2`" ]
+    local name;
+
+    if [ -x "$2" ]
     then
+        name="$PWD/$2"
+        ok "$name"
+    elif [ -x "`which "$2"`" ]
+    then
+        name="`which "$2"`"
+        ok "$name"
+    else
 	failed
 	fatal "Command $1 not found."
-    else
-	ok
     fi
+
+    append "$1=$name"
 }
 
 require_package ()
@@ -352,10 +361,13 @@ hostname_resolvable ()
 require_FLTK ()
 {
     local use
+    local appendflags
+
+    require_command ntk_config lib/ntk/ntk-config
 
     echo -n "Checking for ${BOLD}FLTK${SGR0}..."
 
-    FLTK_VERSION=`fltk-config --version`
+    FLTK_VERSION=`lib/ntk/ntk-config --version`
 
     if ! test_version $FLTK_VERSION $1
     then
@@ -366,13 +378,18 @@ require_FLTK ()
     fi
 
     use=
+    appendflags=
 
     while [ $# -gt 1 ]
     do
         shift 1
+
+        [ "$1" = 'cairo' ] && appendflags="-DFLTK_HAVE_CAIRO=1 -DUSE_X11=1"
+           
         use="$use --use-$1"
     done
 
-    append "FLTK_LIBS=`fltk-config $use --ldflags | sed 's/,\\?--as-needed//g'`"
-    append "FLTK_CFLAGS=`fltk-config $use --cflags`"
+    append "FLTK_LIBS=`lib/ntk/ntk-config $use --libs | sed 's/,\\?--as-needed//g'`"
+    append "FLTK_LDFLAGS=`lib/ntk/ntk-config $use --ldflags | sed 's/,\\?--as-needed//g'`"
+    append "FLTK_CFLAGS=`lib/ntk/ntk-config $use --cflags` $appendflags"
 }

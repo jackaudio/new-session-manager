@@ -31,7 +31,7 @@
 #include "Track.H"
 
 #include "Engine/Audio_File.H"
-
+#include "Transport.H"
 #include "const.h"
 #include "debug.h"
 
@@ -45,10 +45,12 @@ using std::max;
 extern void draw_full_arrow_symbol ( Fl_Color color );
 
 extern Timeline *timeline;
+extern Transport *transport;
 
 bool Audio_Region::inherit_track_color = true;
+bool Audio_Region::show_box = true;
 
-Fl_Boxtype Audio_Region::_box = FL_UP_BOX;
+Fl_Boxtype Audio_Region::_box = FL_FLAT_BOX;
 
 Fl_Color Audio_Region::_selection_color = FL_MAGENTA;
 
@@ -92,8 +94,6 @@ Audio_Region::set ( Log_Entry &e )
 
         if ( ! strcmp( s, ":gain" ) )
             _scale = atof( v );
-        else if ( ! strcmp( s, ":color" ) )
-            _box_color = (Fl_Color)atoi( v );
         else if ( ! strcmp( s, ":fade-in-type" ) )
             _fade_in.type = (Fade::fade_type_e)atoi( v );
         else if ( ! strcmp( s, ":fade-in-duration" ) )
@@ -121,13 +121,14 @@ Audio_Region::set ( Log_Entry &e )
 void
 Audio_Region::init ( void )
 {
+    _adjusting_gain = 0;
     _loop = 0;
     _sequence = NULL;
     _scale = 1.0f;
     _clip = NULL;
 
-    _box_color = FL_CYAN;
-    _color = FL_BLUE;
+    _color = FL_FOREGROUND_COLOR;
+    _box_color = FL_GRAY;
 
     _fade_in.length = 256;
     _fade_in.type = Fade::Sigmoid;
@@ -147,6 +148,11 @@ Audio_Region::Audio_Region ( const Audio_Region & rhs ) : Sequence_Region( rhs )
     _fade_out  = rhs._fade_out;
 
     _loop  = rhs._loop;
+
+    _box_color = rhs._box_color;
+    _color = rhs._color;
+    
+    _adjusting_gain = false;
 
     log_create();
 }
@@ -184,13 +190,7 @@ Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
     while ( sum >> 8 )
         sum = (sum & 0xFF) + (sum >> 8);
 
-    _color = (Fl_Color)sum;
-
-/*     _color = fl_color_average( FL_YELLOW, (Fl_Color)sum, 0.80 ); */
-
-//    _color = FL_YELLOW;
-
-    _box_color = FL_WHITE;
+    _box_color = (Fl_Color)sum;
 
     log_create();
 }
@@ -237,6 +237,23 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
         _fade_out.type = Fade::Parabolic;
     else if ( ! strcmp( picked, "/Color" ) )
         box_color( fl_show_colormap( box_color() ) );
+    else if ( ! strcmp( picked, "/Split at mouse" ) )
+    {
+	Loggable::block_start();
+	
+	split( timeline->x_to_offset( Fl::event_x() ) );
+	
+	log_end();
+	
+	Loggable::block_end();
+
+	log_start();
+    }
+    else if ( ! strcmp( picked, "/Crop to range" ) )
+    {
+	trim_left( timeline->range_start() );
+	trim_right( timeline->range_end() );
+    }
     else if ( ! strcmp( picked, "/Fade in to mouse" ) )
     {
         nframes_t offset = x_to_offset( Fl::event_x() );
@@ -252,6 +269,12 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
 
         if ( offset > 0 )
             _fade_out.length = offset;
+    }
+    else if ( ! strcmp( picked, "/Gain with mouse vertical drag" ) )
+    {
+        /* float g = h() / (y() - Fl::event_y() ); */
+
+        /* _scale = g; */
     }
     else if ( ! strcmp( picked, "/Loop point to mouse" ) )
     {
@@ -312,6 +335,9 @@ Audio_Region::menu ( void )
             { 0                   },
             { 0 },
             { "Color",        0, 0, 0,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
+	    { "Split at mouse", 's', 0, 0 },
+	    { "Crop to range", 'c', 0, 0 },
+            { "Gain with mouse vertical drag", 'g', 0, 0 },
             { "Fade in to mouse", FL_F + 3, 0, 0 },
             { "Fade out to mouse", FL_F + 4, 0, 0 },
             { "Loop point to mouse", 'l', 0, 0 },
@@ -341,93 +367,72 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
     const int height = dh;
     const int width = timeline->ts_to_x( fade.length );
 
-    fl_color( fl_lighter( FL_BLACK ) );
-
-    fl_push_matrix();
-
+    if ( width < 4 )
+        /* too small to draw */
+        return;
+ 
+    int fx;
+                                                
     if ( dir == Fade::In )
-        fl_translate( line_x(), dy );
+    {
+        fx = line_x();
+     
+        if ( fx + width < X ||
+                          fx > X + W )
+            /* clipped */
+            return;
+    }
     else
     {
-        fl_translate( line_x() + abs_w(), dy );
-        /* flip */
-        fl_scale( -1.0, 1.0 );
-    }
+        fx = line_x() + abs_w();
 
-    fl_scale( width, height );
+        if ( fx - width > X + W || 
+             fx < X )
+            /* clipped */
+            return;
+    }
 
     if ( line )
         fl_begin_line();
     else
         fl_begin_polygon();
 
-    fl_vertex( 0.0, 0.0 );
-    fl_vertex( 0.0, 1.0 );
+    fl_vertex( fx, dy );
+    fl_vertex( fx, dy + height );
 
-
-//    if ( draw_real_fade_curve )
     {
         nframes_t tsx = timeline->x_to_ts( 1 );
-        nframes_t ts = 0;
 
-        for ( int i = 0; i < width; ++i, ts += tsx )
-            fl_vertex( i / (float)width, 1.0f - fade.gain( ts / (float)fade.length ) );
+        if ( dir == Fade::In )
+        {
+            nframes_t ts = 0;
 
+            for ( int i = 0; i < width; ++i, ts += tsx )
+                fl_vertex( fx + i, dy + height - ( height * fade.gain( ts / (double)fade.length ) ));
+        }
+        else
+        {
+            nframes_t ts = tsx * width;
+
+            for ( int i = 0; i < width; ++i, ts -= tsx )
+                fl_vertex( fx - i, dy + ( height * fade.gain( ts / (double)fade.length ) ));
+        }
     }
-
-    fl_vertex( 1.0, 0.0 );
+    
+    if ( dir == Fade::In )
+        fl_vertex( fx + width, dy );
+    else
+        fl_vertex( fx - width, dy );
 
     if ( line )
         fl_end_line();
     else
         fl_end_polygon();
-
-    fl_pop_matrix();
-}
-
-struct Peaks_Redraw_Request {
-
-    Audio_Region *region;
-
-    nframes_t start;
-    nframes_t end;
-
-    Peaks_Redraw_Request ( Audio_Region *region, nframes_t start, nframes_t end ) : region( region ), start( start), end( end )
-        {
-        }
-};
-
-/* static wrapper */
-void
-Audio_Region::peaks_pending_cb ( void *v )
-{
-    Peaks_Redraw_Request *r = (Peaks_Redraw_Request*)v;
-
-    r->region->peaks_pending_cb( r );
-}
-
-void
-Audio_Region::peaks_pending_cb ( Peaks_Redraw_Request *r )
-{
-    int npeaks = timeline->ts_to_x( r->end - r->start );
-
-    if ( _clip->peaks()->ready( r->start, npeaks, timeline->fpp() ) )
-    {
-        printf( "damaging from timeout\n" );
-        /* FIXME: only need to damage the affected area! */
-        timeline->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
-
-        delete r;
-    }
-    else
-        Fl::repeat_timeout( 0.1f, &Audio_Region::peaks_pending_cb, (void*)r );
 }
 
 void
 Audio_Region::draw_box( void )
 {
-    /* dirty hack to keep the box from flipping to vertical at small sizes */
-
     fl_push_clip( x(), y(), w(), h() );
 
     Fl_Color selection_color = _selection_color;
@@ -436,7 +441,7 @@ Audio_Region::draw_box( void )
 
     color = fl_color_average( color, sequence()->color(), 0.75f );
 
-    if ( this == ((Audio_Sequence*)sequence())->capture_region() )
+    if ( recording() )
     {
         color = FL_RED;
     }
@@ -446,16 +451,37 @@ Audio_Region::draw_box( void )
         selection_color = fl_inactive( selection_color );
     }
 
-    if ( selected() )
-        fl_draw_box( fl_down( box() ), x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ) + 50, h(), selection_color );
-    else
-        fl_draw_box( box(), x() - ( h() >> 1 ), y(), w() + ( h() >> 1 ) + 50, h(), color );
+    Fl_Boxtype b;
+    Fl_Color c = selected() ? selection_color : color;
 
-    /* draw fades */
-    draw_fade( _fade_in, Fade::In, false, x(), w() );
-    draw_fade( _fade_out, Fade::Out, false, x(), w() );
+    if ( Audio_Region::show_box )
+    {
+        b = box();
+    }
+    else
+    {
+        b = FL_DOWN_FRAME;
+    }
+
+    fl_draw_box( b, x(), y(), w(), h(), c );
 
     fl_pop_clip();
+}
+
+void
+Audio_Region::peaks_ready_callback ( void *v )
+{
+    DMESSAGE("Damaging region from peaks ready callback");
+    Fl::lock();
+    ((Audio_Region*)v)->redraw();
+    Fl::unlock();
+    Fl::awake();
+}
+
+bool
+Audio_Region::recording ( void ) const
+{
+    return this == sequence()->track()->capture_region();
 }
 
 /** Draw (part of) region. X, Y, W and H are the rectangle we're clipped to. */
@@ -472,6 +498,7 @@ Audio_Region::draw ( void )
         /* no coverage */
         return;
 
+    
     if ( start() > timeline->xoffset + timeline->x_to_ts( sequence()->w() ) ||
          start() + length() < timeline->xoffset )
         /* not in viewport */
@@ -479,59 +506,65 @@ Audio_Region::draw ( void )
 
     fl_push_clip( X, Y, W, H );
 
-    /* account for waveform outlines... */
-    X -= 2;
-    W += 4;
+    /* overdraw a little to avoid artifacts when scrolling */
+    W += 2;
 
-    /* start with region length... */
-//    int rw = timeline->ts_to_x( min( length(), timeline->x_to_ts( sequence()->w() ) ) );
-    int rw = W;
+    Fl_Color c = selected() ? fl_invert_color( _color ) : _color;
 
-    /* calculate waveform offset due to scrolling */
-    nframes_t offset = 0;
-    if ( start() < timeline->xoffset )
+    if ( sequence()->damage() & FL_DAMAGE_USER1 && 
+         recording() )
     {
-        offset = timeline->xoffset - start();
-
-//        rw -= timeline->ts_to_x( offset );
+        /* TODO: limit drawing. */
     }
 
-/*     DMESSAGE( "rw = %d", rw ); */
+    /* calculate waveform offset due to scrolling */
+    /* offset is the number of frames into the waveform the value of X translates to */
+    nframes_t x_frame = timeline->xoffset + timeline->x_to_ts( X - _sequence->x() );
+    nframes_t offset = 0;
 
-    const int rx = x();
+    if ( x_frame < start() )
+        /* sometimes X is one pixel too soon... */
+        offset = 0;
+    else
+        offset = x_frame - start();
 
-/*     fl_color( FL_RED ); */
-/*     fl_line( rx + rw, y(), rx + rw, y() + h() ); */
-
-    /* draw fade curve outlines--this is only here because of crossfades */
-    draw_fade( _fade_in, Fade::In, true, X, W );
-    draw_fade( _fade_out, Fade::Out, true, X, W );
-
-    int xo = 0;
-
+    nframes_t fo = 0;                                           
     nframes_t ostart = 0, oend = 0;
+    const int total_peaks_needed = W;
+    nframes_t total_frames_needed = timeline->x_to_ts( total_peaks_needed );
 
-    const int total_peaks_needed = rw;
+    {
+        Fl_Color c = fl_color_average( FL_DARK1,
+                                       Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color,
+                                       0.75f );
+    
+        fl_color( fl_color_add_alpha( c, 127 ) );
 
-    /* compensate for scrolling */
-    if ( X - rx > 0 )
-        offset += timeline->x_to_ts( X - rx );
+        draw_fade( _fade_in, Fade::In, false, X, W );
+        draw_fade( _fade_out, Fade::Out, false, X, W );
+    }
 
+    int channels = 0;
+    int peaks = 0;
+    Peak *pbuf = NULL;  
 
     do {
-
-        int channels;
-        int peaks;
-        Peak *pbuf;
-
         nframes_t start = _r->offset;
 
-        int loop_peaks_needed = _loop ? timeline->ts_to_x( _loop ) : timeline->ts_to_x( _clip->length() );
+        nframes_t loop_frames_needed = _loop ? _loop : total_frames_needed;
+        int loop_peaks_needed = timeline->ts_to_x( loop_frames_needed );
+        
+        Fl_Color c = Fl::get_color( _color );
 
-        if ( ! loop_peaks_needed )
-            break;
+        if ( recording() )
+        {
+//            loop_peaks_needed = timeline->ts_to_x( _range.length );
+            c = FL_BLACK;
+        }
+        
+        c = fl_color_add_alpha( c, 220 );
 
-        if ( ! xo )                                             /* first loop... */
+        if ( ! fo )                                             /* first loop... */
         {
             if ( _loop )
                 start += offset % _loop;
@@ -541,64 +574,60 @@ Audio_Region::draw ( void )
 /*             DMESSAGE( "offset = %lu", (unsigned long) offset ); */
 /*             DMESSAGE( "loop peaks needed = %d", loop_peaks_needed ); */
 
-            loop_peaks_needed -= timeline->ts_to_x( offset % timeline->x_to_ts( loop_peaks_needed ) );
-
-            loop_peaks_needed = min( loop_peaks_needed, total_peaks_needed );
-
+            if ( _loop )
+            {
+                loop_frames_needed -= offset % loop_frames_needed;
+                loop_peaks_needed = timeline->ts_to_x( loop_frames_needed );
+            }
 /*             DMESSAGE( "loop peaks needed = %d", loop_peaks_needed ); */
 
             assert( loop_peaks_needed >= 0 );
-
-            if ( _loop && offset < _loop )
-            {
-                const int x = timeline->ts_to_x( _loop - offset );
-
-                /* FIXME: is there no way to draw these symbols direclty? */
-                fl_color( FL_WHITE );
-                
-                fl_push_matrix();
-                
-                fl_translate( X + x + 2, y() + h() - 14 );
-                fl_scale( - 16, 8 );
-                
-                draw_full_arrow_symbol( FL_BLACK );
-                
-                fl_pop_matrix();
-            }
         }
 
-        if ( xo + loop_peaks_needed > total_peaks_needed )
+        if ( fo + loop_frames_needed > total_frames_needed )
         {
-            loop_peaks_needed -= ( xo + loop_peaks_needed ) - total_peaks_needed;
+            loop_frames_needed -= ( fo + loop_frames_needed ) - total_frames_needed;
+            loop_peaks_needed = timeline->ts_to_x( loop_frames_needed );
         }
 
-        if ( 0 == loop_peaks_needed )
+        if ( !loop_peaks_needed )
             break;
 
-        const nframes_t end = start + timeline->x_to_ts( loop_peaks_needed );
+        const nframes_t end = start + loop_frames_needed;
 
         if ( start != ostart || end != oend )
         {
-            if ( _clip->read_peaks( timeline->fpp(),
-                                    start,
-                                    end,
-                                    &peaks, &pbuf, &channels ) )
+            if ( _clip->peaks()->peakfile_ready() )
             {
-                Waveform::scale( pbuf, peaks * channels, _scale );
-
-                ostart = start;
-                oend = end;
+                if ( _clip->read_peaks( timeline->fpp(),
+                                                 start,
+                                                 end,
+                                        &peaks, &pbuf, &channels ) )
+                {
+                    Waveform::scale( pbuf, peaks * channels, _scale );
+                    
+                    ostart = start;
+                    oend = end;
+                }
+            }
+            else
+            {
+                if ( ! transport->rolling )
+                {
+                    /* create a thread to make the peaks */
+                    _clip->peaks()->make_peaks_asynchronously( Audio_Region::peaks_ready_callback, this );
+                }
             }
         }
         else
         {
 //            DMESSAGE( "using cached peaks" );
         }
-
+        
         if ( peaks && pbuf )
         {
             int ch = (h() - Fl::box_dh( box() ))  / channels;
-
+            int xo = timeline->ts_to_x( fo );
 
             for ( int i = 0; i < channels; ++i )
             {
@@ -607,36 +636,54 @@ Audio_Region::draw ( void )
                                 loop_peaks_needed,
                                 ch,
                                 pbuf + i, peaks, channels,
-                                selected() ? fl_invert_color( _color ) : _color );
+                                c );
             }
         }
-
+        else
+            WARNING( "Pbuf == %p, peaks = %lu", pbuf, (unsigned long)peaks );
+        
         if ( peaks < loop_peaks_needed )
         {
-            /* couldn't read peaks--perhaps they're being generated. Try again later. */
-            Fl::add_timeout( 0.1f, &Audio_Region::peaks_pending_cb,
-                             new Peaks_Redraw_Request( this, start + timeline->x_to_ts( peaks ), end ) );
+            DMESSAGE( "Peak read came up %lu peaks short", (unsigned long)loop_peaks_needed - peaks );
         }
 
-        xo += loop_peaks_needed;
-
+        fo += loop_frames_needed;
     }
-    while ( _loop && xo < W );
+    while ( _loop && fo < total_frames_needed );
 
-    timeline->draw_measure_lines( X, Y, W, H, _box_color );
-
-/*     fl_color( FL_BLACK ); */
-/*     fl_line( rx, Y, rx, Y + H ); */
-/*     fl_line( rx + rw - 1, Y, rx + rw - 1, Y + H ); */
-
-    if ( _clip->dummy() )
+    
+    if ( _loop && offset < _loop )
     {
-        char pat[256];
-        snprintf( pat, sizeof( pat ), "Missing Source!: %s", _clip->name() );
-        draw_label( pat, align() );
+        const int lx = get_x( start() + _loop );
+
+        if ( lx < X + W )
+        {
+            fl_color( FL_RED );
+            fl_line_style( FL_DASH, 0 );
+            fl_line( lx, y(), lx, y() + h() );
+            fl_line_style( FL_SOLID, 0 );
+        }
     }
-    else
-        draw_label( _clip->name(), align() );
+
+    if ( _adjusting_gain  )
+    {
+        fl_color( fl_color_add_alpha( FL_DARK1, 127 ) );
+
+        fl_rectf( X, ( y() + h() ) - ( h() * ( _scale * 0.25 ) ), X + W, y() + h() );
+
+        fl_line_style( FL_DASH, 1 );
+        
+        fl_color( fl_color_add_alpha( FL_GREEN, 200 ) );
+        
+        float j = 5;
+
+        for ( int i = y() + h(); i > y(); i -= j, j *= 1.2 )
+        {
+            fl_line( X, i, X + W, i );
+        }
+        
+        fl_line_style( FL_SOLID, 0 );
+    }
 
 /*     if ( current() ) */
 /*     { */
@@ -653,6 +700,19 @@ Audio_Region::draw ( void )
 
 }
 
+void
+Audio_Region::draw_label ( void )
+{
+  if ( _clip->dummy() )
+    {
+        char pat[256];
+        snprintf( pat, sizeof( pat ), "Missing Source!: %s", _clip->name() );
+        draw_label( pat, align() );
+    }
+    else
+        draw_label( _clip->name(), align() );
+}
+
 /** split region at absolute frame /where/ */
 void
 Audio_Region::split ( nframes_t where )
@@ -662,6 +722,8 @@ Audio_Region::split ( nframes_t where )
     _fade_in.length = 256;
 
     Audio_Region *copy = new Audio_Region( *this );
+
+    Logger _log( copy );
 
     _fade_in.length = old_fade_in;
     _fade_out.length = 256;
@@ -687,7 +749,21 @@ Audio_Region::handle ( int m )
         case FL_FOCUS:
         case FL_UNFOCUS:
             return 1;
+        case FL_KEYUP:
+            if ( Fl::event_key() == 'g' )
+            {
+                _adjusting_gain = false;
+                redraw();
+                return 1;
+            }
+            break;
         case FL_KEYBOARD:
+            if ( Fl::event_key() == 'g' )
+            {
+                _adjusting_gain = true;
+                redraw();
+                return 1;
+            }
             return menu().test_shortcut() != 0;
         case FL_ENTER:
             return Sequence_Region::handle( m );
@@ -695,6 +771,9 @@ Audio_Region::handle ( int m )
             return Sequence_Region::handle( m );
         case FL_PUSH:
         {
+            if ( Fl::event_key() == 'g' )
+                return 1;
+
             /* splitting  */
             if ( test_press( FL_BUTTON2 | FL_SHIFT ) )
             {
@@ -748,22 +827,39 @@ Audio_Region::handle ( int m )
             return 1;
         }
         case FL_DRAG:
+
             if ( ! _drag )
             {
                 begin_drag( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
                 _log.hold();
             }
 
+            if ( Fl::event_key() == 'g' )
+            {
+                float d = (float)h() / ( y() - Fl::event_y() );
+
+                _scale = -0.5f * d;
+
+                redraw();
+                return 1;
+            }
+
             if ( test_press( FL_BUTTON1 | FL_SHIFT | FL_CTRL ) )
             {
                 /* panning */
                 int d = (ox + X) - x();
-                long td = timeline->x_to_ts( d );
 
-                if ( td > 0 && os < (nframes_t)td )
-                    _r->offset = 0;
+                bool negative = d < 0;
+
+                if ( d < 0 )
+                    _r->offset = os + timeline->x_to_ts( 0 - d );
                 else
-                    _r->offset = os - td;
+                {
+                    if ( os < timeline->x_to_ts( d ) )
+                        _r->offset = 0;
+                    else
+                        _r->offset = os - timeline->x_to_ts( d );
+                }
 
                 redraw();
                 return 1;

@@ -2,7 +2,7 @@
 ! title		Non Session Management API
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
 ! date		August 1, 2010
-! revision	Version 1.0
+! revision	Version 1.1
 ! extra		#(image,logo,icon.png)
 
 -- Table Of Contents
@@ -156,6 +156,7 @@
 [[ dirty, client knows when it has unsaved changes
 [[ progress, client can send progress updates during time-consuming operations
 [[ message, client can send textual status updates 
+[[ optional-gui, client has an optional GUI
 
 :::: Response
 
@@ -179,6 +180,7 @@
 [[ Name, Description
 [[ server_control, client-to-server control
 [[ broadcast, server responds to /nsm/server/broadcast message
+[[ optional-gui, server responds to optional-gui messages--if this capability is not present then clients with optional-guis MUST always keep them visible
 
   A client should not consider itself to be under session management
   until it receives this response. For example, the Non applications
@@ -366,6 +368,22 @@
 
   This message does not require a response.
 
+:::: Show Optional Gui
+
+  If the client has specified the `optional-gui` capability, then it
+  may receive this message from the server when the user wishes to
+  change the visibility state of the GUI. It doesn't matter if the
+  optional GUI is integrated with the program or if it is a separate
+  program \(as is the case with SooperLooper\). When the GUI is
+  hidden, there should be no window mapped and if the GUI is a
+  separate program, it should be killed.
+
+> /nsm/client/show_optional_gui 
+
+> /nsm/client/hide_optional_gui
+
+  No response is message is required.
+
 ::: Client to Server Informational Messages
 
   These are optional messages which a client can send to the NSM
@@ -374,6 +392,20 @@
   message described in this section, then it *MUST* add the
   appropriate value to its `capabilities` string when composing the
   `announce` message.
+
+:::: Optional GUI
+
+  If the client has specified the `optional-gui` capability, then it
+  *MUST* send this message whenever the state of visibility of the
+  optional GUI has changed. It also *MUST* send this message after
+  it's announce message to indicate the initial visibility state of
+  the optional GUI.
+
+> /nsm/client/gui_is_hidden
+
+> /nsm/client/gui_is_shown
+
+  No response will be delivered.
 
 :::: Progress
 

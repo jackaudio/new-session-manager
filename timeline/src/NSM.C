@@ -21,26 +21,22 @@
 #include "debug.h"
 #include "Timeline.H"
 #include "TLE.H"
-#include "NSM.H"
 #include "Project.H"
 #include "OSC/Endpoint.H"
+
+#include <nsm.h>
 
 #define OSC_INTERVAL 0.2f
 
 extern char *instance_name;
 extern Timeline *timeline;
 
-extern NSM_Client *nsm;
+// extern NSM_Client *nsm;
 
-NSM_Client::NSM_Client ( )
-{
-}
 
-int command_open ( const char *name, const char *display_name, const char *client_id, char **out_msg );
-int command_save ( char **out_msg );
 
-int
-NSM_Client::command_save ( char **out_msg )
+static int 
+command_save ( char **out_msg, void *userdata )
 {
    if ( timeline->command_save() )
        return ERR_OK;
@@ -51,8 +47,8 @@ NSM_Client::command_save ( char **out_msg )
    }
 }
 
-int 
-NSM_Client::command_open ( const char *name, const char *display_name, const char *client_id, char **out_msg )
+static int 
+command_open ( const char *name, const char *display_name, const char *client_id, char **out_msg, void *userdata )
 {
     if ( instance_name )
         free( instance_name );
@@ -89,21 +85,21 @@ NSM_Client::command_open ( const char *name, const char *display_name, const cha
     return r;
 }
 
-void
-NSM_Client::command_session_is_loaded ( void )
+static void
+command_session_is_loaded ( void *userdata )
 {
     MESSAGE( "NSM says session is loaded." );
 
     timeline->discover_peers();
 }
 
-int
-NSM_Client::command_broadcast ( const char *path, lo_message msg )
+static int
+command_broadcast ( const char *path, lo_message msg, void *userdata )
 {
     int argc = lo_message_get_argc( msg );
 //    lo_arg **argv = lo_message_get_argv( msg );
 
-    if ( argc == 1 && !strcmp( path, "/non/finger" ) )
+    if ( !strcmp( path, "/non/hello" ) )
     {
         timeline->reply_to_finger( msg );
         return 0;
@@ -111,4 +107,13 @@ NSM_Client::command_broadcast ( const char *path, lo_message msg )
     else 
         return -1;
 
+}
+
+void
+set_nsm_callbacks ( nsm_client_t *nsm )
+{
+    nsm_set_open_callback( nsm, command_open, 0 );
+    nsm_set_save_callback( nsm, command_save, 0 );
+    nsm_set_broadcast_callback( nsm, command_broadcast, 0 );
+    nsm_set_session_is_loaded_callback( nsm, command_session_is_loaded, 0 );
 }

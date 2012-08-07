@@ -42,8 +42,8 @@
 #include "TLE.H"
 #include "Timeline.H"
 
-#include "FL/Crystal_Boxtypes.H"
-#include "FL/Gleam_Boxtypes.H"
+#include "FL/themes.H"
+#include "FL/Fl_Theme.H"
 
 #include "Project.H"
 #include "Transport.H"
@@ -51,7 +51,9 @@
 
 #include "Thread.H"
 
-#include "NSM.H"
+#include <nsm.h>
+
+extern void set_nsm_callbacks ( nsm_client_t *nsm );
 
 #ifdef HAVE_XPM
 #include "FL/Fl.H"
@@ -64,7 +66,7 @@ Engine *engine;
 Timeline *timeline;
 Transport *transport;
 TLE *tle;
-NSM_Client *nsm;
+nsm_client_t *nsm;
 
 char *instance_name = NULL;
 
@@ -118,7 +120,7 @@ extern Timeline *timeline;
 void
 check_nsm ( void * v )
 {
-    nsm->check();
+    nsm_check_nowait( nsm );
     Fl::repeat_timeout( NSM_CHECK_INTERVAL, check_nsm, v );
 }
 
@@ -145,6 +147,14 @@ int
 main ( int argc, char **argv )
 {
 
+    printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
+
+    if ( ! Fl::visual( FL_DOUBLE | FL_RGB ) )
+    {
+        WARNING( "Xdbe not supported, FLTK will fake double buffering." );
+    }
+    
+
 #ifdef HAVE_XPM
     fl_open_display(); 
     Pixmap p, mask;
@@ -153,8 +163,6 @@ main ( int argc, char **argv )
                             (char**)icon_16x16, &p, &mask, NULL);
 #endif
 
-    Fl::visual(FL_RGB8);
-    
     Thread::init();
 
     Thread thread( "UI" );
@@ -178,16 +186,10 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Time_Point          );
     LOG_REGISTER_CREATE( Track               );
 
-    init_crystal_boxtypes();
-    init_gleam_boxtypes();
-
     signal( SIGPIPE, SIG_IGN );
 
     if ( ! ensure_dirs() )
         FATAL( "Cannot create required directories" );
-
-    printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
-
 
     instance_name = strdup( APP_NAME );
     bool instance_override = false;
@@ -234,7 +236,8 @@ main ( int argc, char **argv )
 
     tle = new TLE;
 
-    nsm = new NSM_Client;
+    nsm = nsm_new();
+    set_nsm_callbacks( nsm );
 
     MESSAGE( "Starting GUI" );
 
@@ -246,12 +249,16 @@ main ( int argc, char **argv )
     tle->main_window->icon((char *)p);
 #endif        
     tle->main_window->show( 0, NULL );
+   
+    fl_register_themes();
+
+    Fl_Theme::set();
         
     char *nsm_url = getenv( "NSM_URL" );
 
     if ( nsm_url )
     {
-        if ( ! nsm->init( nsm_url ) )
+        if ( ! nsm_init( nsm, nsm_url ) )
         {
             if ( instance_override )
                 WARNING( "--instance option is not available when running under session management, ignoring." );
@@ -259,7 +266,7 @@ main ( int argc, char **argv )
             if ( optind < argc )
                 WARNING( "Loading files from the command-line is incompatible with session management, ignoring." );
 
-            nsm->announce( APP_NAME, ":progress:switch:", argv[0] );
+            nsm_send_announce( nsm, APP_NAME, ":progress:switch:", argv[0] );
 
             /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
             Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
@@ -293,7 +300,7 @@ main ( int argc, char **argv )
     delete tle;
     tle = NULL;
 
-    delete nsm;
+    nsm_free( nsm );
     nsm = NULL;
     
     MESSAGE( "Your fun is over" );

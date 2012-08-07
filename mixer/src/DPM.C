@@ -55,7 +55,7 @@ DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
     if ( DPM::_gradient[ 0 ] == 0 )
         DPM::blend( FL_GREEN, FL_RED );
 
-    box( FL_ROUNDED_BOX );
+    box( FL_FLAT_BOX );
     color( FL_BACKGROUND_COLOR );
 }
 
@@ -114,6 +114,8 @@ DPM::resize ( int X, int Y, int W, int H )
 void
 DPM::draw ( void )
 {
+    if ( !_segments )
+        return;
 
     snprintf( peak_string, sizeof( peak_string ), "%.1f", peak() );
     tooltip( peak_string );
@@ -128,6 +130,8 @@ DPM::draw ( void )
 
     int v = pos( value() );
     int pv = pos( peak() );
+
+    int clipv = pos( 0 );
 
     int bh = h() / _segments;
     int bw = w() / _segments;
@@ -170,11 +174,15 @@ DPM::draw ( void )
 
     for ( int p = lo; p <= hi; p++ )
     {
-        Fl_Color c = DPM::div_color( p );
+        Fl_Color c;
 
         if ( p > v && p != pv )
             c = dim_div_color( p );
-
+        else if ( p != clipv )
+            c = div_color( p );
+        else
+            c = fl_color_average( FL_YELLOW, div_color( p ), 0.40 );
+        
         if ( ! active )
             c = fl_inactive( c );
 

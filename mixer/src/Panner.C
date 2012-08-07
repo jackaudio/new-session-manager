@@ -18,9 +18,11 @@
 /*******************************************************************************/
 
 #include "Panner.H"
-
+#include <FL/x.H>
+#include <FL/Fl.H>
 #include <stdio.h>
 #include <math.h>
+// #include <FL/fl_draw.H>
 
 /* 2D Panner widget. Supports various multichannel configurations. */
 
@@ -81,8 +83,11 @@ Panner::point_bbox ( const Point *p, int *X, int *Y, int *W, int *H ) const
 
     bbox( tx, ty, tw, th );
 
-    tw -= pw();
-    th -= ph();
+    const float PW = pw(); 
+    const float PH = ph();
+
+    tw -= PW;
+    th -= PH;
 
     float px, py;
 
@@ -91,8 +96,8 @@ Panner::point_bbox ( const Point *p, int *X, int *Y, int *W, int *H ) const
     *X = tx + ((tw / 2) * px + (tw / 2));
     *Y = ty + ((th / 2) * py + (th / 2));
 
-    *W = pw();
-    *H = ph();
+    *W = PW;
+    *H = PH;
 }
 
 Panner::Point *
@@ -115,36 +120,13 @@ Panner::event_point ( void )
     return NULL;
 }
 
+
 void
-Panner::draw ( void )
+Panner::draw_the_box ( int tx, int ty, int tw, int th )
 {
     draw_box();
-//    draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
-    draw_label();
 
-
-    if ( _bypassed )
-    {
-        fl_color( 0 );
-        fl_font( FL_HELVETICA, 12 );
-        fl_draw( "(bypass)", x(), y(), w(), h(), FL_ALIGN_CENTER );
-        return;
-    }
-
-    int tw, th, tx, ty;
-
-    bbox( tx, ty, tw, th );
-
-    fl_push_clip( tx, ty, tw, th );
-
-    fl_color( FL_RED );
-
-    const int b = 10;
-
-    tx += b;
-    ty += b;
-    tw -= b * 2;
-    th -= b * 2;
+    fl_line_style( FL_SOLID, 2 );
 
     /* draw perimeter */
     {
@@ -154,8 +136,8 @@ Panner::draw ( void )
         if ( Fl::belowmouse() == this )
         {
             iter = 12;
-            c1 = fl_darker( FL_RED );
-            c2 = FL_GRAY;
+            c1 = fl_darker( fl_darker( FL_RED ) );
+            c2 = FL_BLACK;
         }
         else
         {
@@ -172,11 +154,58 @@ Panner::draw ( void )
 
             fl_arc( tx + (i * (tw / iter)) / 2, ty + (i * (th / iter)) / 2, tw - (i * (tw / iter)), th - (i * ( th / iter )), 0, 360 );
 
+            /* fl_arc( cr, */
+            /*               tx + tw / 2, */
+            /*               ty + th / 2, */
+            /*               ((float)tw / iter) / 2, */
+            /*               0, 360 ); */
+
             c = fl_color_average( c1, c2, (float)i / iter);
         }
     }
 
-/*     fl_color( FL_WHITE ); */
+    fl_line_style( FL_SOLID, 0 );
+
+}
+
+void
+Panner::draw ( void )
+{
+    int tw, th, tx, ty;
+
+    bbox( tx, ty, tw, th );
+
+    fl_push_clip( tx, ty, tw, th );
+
+
+    const int b = 10;
+
+//    draw_box();
+    draw_label();
+
+    if ( _bypassed )
+    {
+        draw_box();
+        fl_color( 0 );
+        fl_font( FL_HELVETICA, 12 );
+        fl_draw( "(bypass)", x(), y(), w(), h(), FL_ALIGN_CENTER );
+        goto done;
+    }
+   
+
+    tx += b;
+    ty += b;
+    tw -= b * 2;
+    th -= b * 2;
+
+    if ( damage() & FL_DAMAGE_ALL )
+        draw_the_box( tx, ty, tw, th );
+
+    fl_line_style( FL_SOLID, 2 );
+
+//    fl_color( FL_RED );
+
+    fl_color( FL_WHITE );
 
 /*     fl_arc( tx, ty, tw, th, 0, 360 ); */
 
@@ -225,23 +254,52 @@ Panner::draw ( void )
         int px, py, pw, ph;
         point_bbox( p, &px, &py, &pw, &ph );
 
-        /* draw point */
-        if ( p != drag )
-            fl_color( c );
-        else
-            fl_color( FL_WHITE );
 
-        fl_pie( px, py, pw, ph, 0, 360 );
 
-        /* draw echo */
-        fl_color( c = fl_darker( c ) );
-        fl_arc( px - 5, py - 5, pw + 10, ph + 10, 0, 360 );
-        if ( Fl::belowmouse() == this )
         {
+
+            const float S = ( 0.5 + ( 1.0f - p->d ) );
+
+            float po = 5 * S;
+
+            fl_push_clip( px - ( po * 12 ), 
+                          py - ( po * 12 ),
+                          pw + ( po * 24 ), ph + (po * 24 ));
+
+            if ( damage() & FL_DAMAGE_EXPOSE )
+                draw_the_box( tx, ty, tw, th );
+
+            fl_color( FL_WHITE );
+            
+            /* draw point */
+            if ( p != drag )
+                fl_color( c );
+            
+            fl_pie( px, py, pw, ph, 0, 360 );
+            
+            /* draw echo */
             fl_color( c = fl_darker( c ) );
-            fl_arc( px - 10, py - 10, pw + 20, ph + 20, 0, 360 );
+//            fl_color_alpha( c = fl_darker( c ), 0.5 );
+        
+//            fl_arc( cr, px, py, pw + po * 1, 0, 360 );
+            fl_arc( px - po, py - po, pw + ( po * 2 ), ph + ( po * 2 ), 0, 360 );
+
+            if ( Fl::belowmouse() == this )
+            {
+                fl_color( c = fl_darker( c ) );
+            
+//                fl_color_alpha( c = fl_darker( c ), 0.5 );
+                fl_arc( px - ( po * 2 ), py - ( po * 2 ), pw + ( po * 4 ), ph + ( po * 4 ), 0, 360 );
+                /* fl_arc( cr, px, py, pw + po * 1, 0, 360 ); */
+
             fl_color( c = fl_darker( c ) );
-            fl_arc( px - 30, py - 30, pw + 60, ph + 60, 0, 360 );
+
+//                fl_color_alpha( c = fl_darker( c ), 0.5 );
+                fl_arc( px - ( po * 4 ), py - ( po * 4 ), pw + ( po * 8 ), ph + (po * 8 ), 0, 360 );
+                /* fl_arc( cr, px, py, pw + po * 1, 0, 360 ); */
+            }
+
+            fl_pop_clip();
         }
 
         /* draw number */
@@ -258,6 +316,9 @@ Panner::draw ( void )
 /*         fl_line( bx + pw() / 2, by + ph() / 2, tx + (tw / 2), ty + (th / 2) ); */
 
     }
+done:
+
+    fl_line_style( FL_SOLID, 0 );
 
     fl_pop_clip();
 }
@@ -281,17 +342,19 @@ Panner::handle ( int m )
             redraw();
             return 1;
         case FL_PUSH:
-
+        {
             if ( Fl::event_button2() )
             {
                 _bypassed = ! _bypassed;
                 redraw();
                 return 1;
             }
-            else if ( Fl::event_button1() && ( drag = event_point() ) )
-                return 1;
-            else
-                return 0;
+
+            if ( Fl::event_button1() )
+                drag = event_point();
+
+            return 1;
+        }
         case FL_RELEASE:
             if ( Fl::event_button1() && drag )
             {
@@ -311,6 +374,10 @@ Panner::handle ( int m )
             if ( ! drag )
                 return 0;
 
+            /* else if ( Fl::event_button1() && ( drag = event_point() ) ) */
+            /*     return 1; */
+            /* else */
+
             float X = Fl::event_x() - x();
             float Y = Fl::event_y() - y();
 
@@ -325,7 +392,7 @@ Panner::handle ( int m )
             if ( when() & FL_WHEN_CHANGED )
                 do_callback();
 
-            redraw();
+            damage(FL_DAMAGE_EXPOSE);
 
             return 1;
         }

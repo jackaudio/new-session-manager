@@ -27,9 +27,8 @@
 #include <FL/fl_draw.H>
 #include <FL/Fl_Counter.H>
 #include <FL/Fl_Light_Button.H>
-#include "FL/Crystal_Boxtypes.H"
 
-#include "FL/Fl_Arc_Dial.H"
+#include "FL/Fl_Dial.H"
 #include "FL/Fl_Labelpad_Group.H"
 #include "FL/Fl_Scalepack.H"
 
@@ -49,7 +48,7 @@ Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
     : Module ( is_default, 50, 100, name() )
 {
     box( FL_FLAT_BOX );
-    color( FL_GREEN );
+    color( FL_BACKGROUND_COLOR );
 
     _pad = true;
     control_value = 0;
@@ -57,6 +56,8 @@ Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
     add_port( Port( this, Port::INPUT, Port::CONTROL ) );
 
     dpm_pack = new Fl_Scalepack( x(), y(), w(), h() );
+    dpm_pack->color( FL_BACKGROUND_COLOR );
+    dpm_pack->box( FL_FLAT_BOX );
     dpm_pack->type( FL_HORIZONTAL );
 
     end();

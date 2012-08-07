@@ -18,7 +18,7 @@
 /*******************************************************************************/
 
 class Fl_Menu_;
-class Fl_Menu_Item;
+struct Fl_Menu_Item;
 class Fl_Widget;
 
 bool menu_popup ( Fl_Menu_ *m, int X, int Y );

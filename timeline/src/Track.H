@@ -72,10 +72,21 @@ public:
     {
         Audio_File *audio_file;
         Audio_Region *region;
+
+        Capture ( )
+            {
+                region = 0;
+                audio_file = 0;
+            }
     };
 
     Fl_Color color ( void ) const { return child(0)->color(); }
     void color ( Fl_Color c ) { child(0)->color( c ); }
+
+    bool operator< ( const Track &rhs ) const
+        {
+            return _row < rhs._row;
+        }
 
 private:
 
@@ -88,6 +99,8 @@ private:
     bool _show_all_takes;
 
     int _size;
+
+    int _row;
 
     enum { AUDIO } _type;
 
@@ -150,7 +163,7 @@ public:
 
     int ncontrols ( void ) { return control->children(); }
 
-    void resize ( void );
+    void adjust_size ( void );
     void size ( int v );
 
     int height ( void ) const
@@ -163,7 +176,7 @@ public:
     void show_all_takes ( bool b )
         {
             _show_all_takes = b;
-            resize();
+            adjust_size();
         }
 
     void name ( const char *name )
@@ -190,6 +203,8 @@ public:
 
     bool selected ( void ) const { return _selected; }
 
+    int row ( void ) const;
+    void row ( int );
 
     static void cb_input_field ( Fl_Widget *w, void *v );
     void cb_input_field ( void );
@@ -213,6 +228,7 @@ public:
 
     /* Engine */
     const Audio_Region *capture_region ( void ) const;
+    Capture *capture ( void );
 
     void resize_buffers ( nframes_t nframes );
     nframes_t process_input ( nframes_t nframes );

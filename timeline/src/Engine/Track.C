@@ -40,6 +40,15 @@ Track::capture_region ( void ) const
         return NULL;
 }
 
+Track::Capture *
+Track::capture ( void )
+{
+    if ( record_ds )
+        return record_ds->capture();
+    else
+        return NULL;
+}
+
 void
 Track::update_port_names ( void )
 {
@@ -193,7 +202,7 @@ Track::process_output ( nframes_t nframes )
     }
 
     /* FIXME: should we blank the control output here or leave it floating? */
-    for ( int i = control->children(); i--; )
+    for ( int i = 0; i < control->children(); i++ )
         ((Control_Sequence*)control->child( i ))->process( nframes );
 
     if ( playback_ds )
@@ -249,19 +258,21 @@ Track::record ( Capture *c, nframes_t frame )
 {
     THREAD_ASSERT( Capture );
 
-    char pat[256];
+    char *pat;
 
-    snprintf( pat, sizeof( pat ), "%s-%llu", name(), uuid() );
+    asprintf( &pat, "%s-%llu", name(), uuid() );
 
     c->audio_file = Audio_File_SF::create( pat, engine->sample_rate(), input.size(), Track::capture_format );
+
+    free( pat );
 
     if ( ! c->audio_file )
         FATAL( "Could not create file for new capture!" );
 
     /* open it again for reading in the GUI thread */
-    Audio_File *af = Audio_File::from_file( c->audio_file->name() );
+    //   Audio_File *af = Audio_File::from_file( c->audio_file->name() );
 
-    c->region = new Audio_Region( af, sequence(), frame );
+    c->region = new Audio_Region( c->audio_file, sequence(), frame );
 
     c->region->prepare();
 }
@@ -287,9 +298,13 @@ Track::finalize ( Capture *c, nframes_t frame )
     /* adjust region start for latency */
     /* FIXME: is just looking at the first channel good enough? */
 
-    c->region->finalize( frame );
     DMESSAGE( "finalizing audio file" );
+    /* must finalize audio before peaks file, otherwise another thread
+     * might think the peaks are out of date and attempt to regenerate
+     * them */
     c->audio_file->finalize();
+
+    c->region->finalize( frame );
 
     nframes_t capture_offset = 0;
 
@@ -308,5 +323,5 @@ Track::finalize ( Capture *c, nframes_t frame )
 
     c->region->offset( capture_offset );
 
-    delete c->audio_file;
+//    delete c->audio_file;
 }

@@ -106,11 +106,10 @@ Track::~Track ( )
     Loggable::block_end();
 }
 
-#include "FL/Crystal_Boxtypes.H"
-
 void
 Track::init ( void )
 {
+    _row = 0;
     _sequence = NULL;
     _name = NULL;
     _selected = false;
@@ -127,7 +126,7 @@ Track::init ( void )
     Fl_Group::size( timeline->w(), height() );
 
     Track *o = this;
-    o->box( FL_NO_BOX );
+    o->box( FL_FLAT_BOX );
 
     {
         Fl_Group *o = new Fl_Group( 0, 0, 149, 70 );
@@ -151,10 +150,10 @@ Track::init ( void )
                 Fl_Button *o = record_button =
                     new Fl_Button( 6, 28, 26, 24, "@circle" );
                 o->type( 1 );
-                o->box( FL_ROUNDED_BOX );
-                o->down_box( FL_ROUNDED_BOX );
-                o->color( FL_LIGHT1 );
+                o->box( FL_ASYM_BOX );
+                o->down_box( FL_ASYM_BOX );
                 o->selection_color( FL_RED );
+                o->color( fl_color_average( FL_GRAY, o->selection_color(), 0.80 ) );
                 o->labelsize( 9 );
                 o->callback( cb_button, this );
             }
@@ -162,10 +161,10 @@ Track::init ( void )
                 Fl_Button *o = mute_button =
                     new Fl_Button( 35, 28, 26, 24, "m" );
                 o->selection_color( fl_color_average( FL_YELLOW, FL_GREEN, 0.50 ) );
+                o->color( fl_color_average( FL_GRAY, o->selection_color(), 0.80 ) );
                 o->type( 1 );
-                o->box( FL_ROUNDED_BOX );
-                o->down_box( FL_ROUNDED_BOX );
-                o->color( FL_LIGHT1 );
+                o->box( FL_ASYM_BOX );
+                o->down_box( FL_ASYM_BOX );
                 o->labelsize( 15 );
                 o->callback( cb_button, this );
             }
@@ -173,17 +172,17 @@ Track::init ( void )
                 Fl_Button *o = solo_button =
                     new Fl_Button( 66, 28, 26, 24, "s" );
                 o->selection_color( fl_color_average( FL_YELLOW, FL_RED, 0.50 ) );
+                o->color( fl_color_average( FL_GRAY, o->selection_color(), 0.80 ) );
                 o->type( 1 );
-                o->box( FL_ROUNDED_BOX );
-                o->down_box( FL_ROUNDED_BOX );
-                o->color( FL_LIGHT1 );
+                o->box( FL_ASYM_BOX );
+                o->down_box( FL_ASYM_BOX );
                 o->labelsize( 15 );
                 o->callback( cb_button, this );
             }
             {
                 Fl_Menu_Button *o = take_menu =
                     new Fl_Menu_Button( 97, 28, 47, 24, "T" );
-                o->box( FL_THIN_UP_BOX );
+                o->box( FL_UP_BOX );
                 o->color( FL_LIGHT1 );
                 o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
                 o->callback( cb_button, this );
@@ -205,24 +204,27 @@ Track::init ( void )
     }
     {
         Fl_Pack *o = pack = new Fl_Pack( width(), 0, 1006, 115 );
+        o->type( Fl_Pack::VERTICAL );
         o->labeltype( FL_NO_LABEL );
         o->resize( x() + width(), y(), w() - width(), h() );
 
         resizable( o );
 
         {
-//            Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 0 );
             Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 1 );
+            o->type( Fl_Pack::VERTICAL );
             o->end();
         }
 
         {
-            Fl_Pack *o = control = new Fl_Pack( width(), 0, pack->w(), 0 );
+            Fl_Pack *o = control = new Fl_Pack( width(), 0, pack->w(), 1 );
+            o->type( Fl_Pack::VERTICAL );
             o->end();
         }
 
         {
-            Fl_Pack *o = takes = new Fl_Pack( width(), 0, pack->w(), 0 );
+            Fl_Pack *o = takes = new Fl_Pack( width(), 0, pack->w(), 1 );
+            o->type( Fl_Pack::VERTICAL );
             o->end();
             o->hide();
         }
@@ -247,7 +249,7 @@ Track::set ( Log_Entry &e )
         if ( ! strcmp( s, ":height" ) )
         {
             size( atoi( v ) );
-            resize();
+            adjust_size();
         }
         else if ( ! strcmp( s, ":selected" ) )
             _selected = atoi( v );
@@ -293,7 +295,8 @@ Track::set ( Log_Entry &e )
             }
 
         }
-
+        else if ( ! strcmp( s, ":row" ) )
+            row( atoi( v ) );
     }
 }
 
@@ -316,6 +319,19 @@ Track::get_unjournaled ( Log_Entry &e ) const
     e.add( ":armed",           armed()          );
     e.add( ":mute",            mute()           );
     e.add( ":solo",            solo()           );
+    e.add( ":row",             timeline->find_track( this ) );
+}
+
+int
+Track::row ( void ) const 
+{
+    return _row;
+}
+
+void
+Track::row ( int n )
+{
+    _row = n;
 }
 
 void
@@ -443,7 +459,7 @@ static int pack_visible( Fl_Pack *p )
 
 /* adjust size of widget and children */
 void
-Track::resize ( void )
+Track::adjust_size ( void )
 {
     for ( int i = takes->children(); i--; )
         takes->child( i )->size( w(), height()  );
@@ -495,7 +511,7 @@ Track::size ( int v )
 
     _size = v;
 
-    resize();
+    adjust_size();
 }
 
 void
@@ -557,7 +573,7 @@ Track::remove ( Audio_Sequence *t )
 
     timeline->unlock();
 
-    resize();
+    adjust_size();
 
     update_take_menu();
 }
@@ -570,7 +586,7 @@ Track::remove ( Annotation_Sequence *t )
 
     annotation->remove( t );
 
-    resize();
+    adjust_size();
 }
 
 void
@@ -579,17 +595,17 @@ Track::remove ( Control_Sequence *t )
     if ( ! control )
         return;
 
-    engine->lock();
+    timeline->wrlock();
 
-    timeline->osc_thread->lock();
+    engine->lock();
 
     control->remove( t );
 
-    timeline->osc_thread->unlock();
-
     engine->unlock();
 
-    resize();
+    timeline->unlock();
+
+    adjust_size();
 }
 
 void
@@ -608,7 +624,7 @@ Track::sequence ( Audio_Sequence * t )
 
     update_take_menu();
 
-    resize();
+    adjust_size();
 }
 
 void
@@ -621,10 +637,12 @@ Track::add ( Control_Sequence *t )
     t->track( this );
 
     control->add( t );
+    
+    t->color( color() );
 
     engine->unlock();
 
-    resize();
+    adjust_size();
 }
 
 void
@@ -636,7 +654,7 @@ Track::add ( Annotation_Sequence *t )
 
     annotation->add( t );
 
-    resize();
+    adjust_size();
 }
 
 /** add all widget on this track falling within the given rectangle to
@@ -777,6 +795,14 @@ Track::menu_cb ( const Fl_Menu_ *m )
     {
         ((Fl_Sometimes_Input*)name_field)->take_focus();
     }
+    else if ( ! strcmp( picked, "/Move Up" ) )
+    {
+        timeline->move_track_up( this );
+    }
+    else if ( ! strcmp( picked, "/Move Down" ) )
+    {
+        timeline->move_track_down( this );
+    }
 }
 
 #include "FL/menu_popup.H"
@@ -813,6 +839,8 @@ Track::menu ( void ) const
             { "Mute",            FL_CTRL + 'm', 0, 0, FL_MENU_TOGGLE | ( mute() ? FL_MENU_VALUE : 0 ) },
             { "Solo",           FL_CTRL + 's', 0, 0, FL_MENU_TOGGLE | ( solo() ? FL_MENU_VALUE : 0 ) },
             { 0 },
+            { "Move Up",        FL_SHIFT + '1', 0, 0 },
+            { "Move Down",        FL_SHIFT + '2', 0, 0 },
             { "Remove",          0, 0, 0 }, // transport->rolling ? FL_MENU_INACTIVE : 0 },
             { 0 },
         };
@@ -830,6 +858,12 @@ Track::menu ( void ) const
 void
 Track::draw ( void )
 {
+    int X, Y, W, H;
+    
+    fl_push_clip( x(), y(), w(), h() );
+    
+    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
+
     if ( _selected )
     {
         Fl_Color c = color();
@@ -842,6 +876,8 @@ Track::draw ( void )
     }
     else
         Fl_Group::draw();
+
+    fl_pop_clip();
 }
 
 int
@@ -870,7 +906,7 @@ Track::handle ( int m )
             Logger log( this );
 
             if ( ! Fl::event_shift() )
-                return 0;
+                return Fl_Group::handle( m );
 
             int d = Fl::event_dy();
 

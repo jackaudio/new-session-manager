@@ -17,8 +17,8 @@ upload: all
 	@ rm -f index.html
 
 install:
-	@ mkdir -p $(DOCUMENT_PATH)/non-daw
-	@ cp $(OBJS) *.png mup.css ../../COPYING $(DOCUMENT_PATH)/non-daw
+	@ install -d "$(DESTDIR)$(DOCUMENT_PATH)"/non-daw
+	@ cp $(OBJS) *.png mup.css ../../COPYING "$(DESTDIR)$(DOCUMENT_PATH)"/non-daw
 #	@ ln -sf $(PIXMAP_PATH)/logo.png $(DOCUMENT_PATH)
 
 clean:

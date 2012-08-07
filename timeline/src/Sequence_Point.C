@@ -25,8 +25,10 @@
 
 Sequence_Point::Sequence_Point ( const Sequence_Point &rhs ) : Sequence_Widget( rhs )
 {
-    if ( _label )
+    if ( rhs._label )
         _label = strdup( rhs._label );
+    else
+        _label = 0;
 }
 
 Sequence_Point::Sequence_Point ( )
@@ -104,24 +106,19 @@ draw_marker ( Fl_Color c )
 void
 Sequence_Point::draw_box ( void )
 {
-//    Sequence_Widget::draw_box();
-
     const int X = x() - (abs_w() >> 1);
-//    const int Y = y() + Fl::box_dy( box() );
 
     const int Y = y();
 
-    fl_color( color() );
-
     fl_push_matrix();
-    fl_translate( X, Y + ( h() >> 3 ) );
-    fl_scale( w(), h() - ( h() >> 3 ) );
+    fl_translate( X, Y );
+    fl_scale( abs_w(), h() );
 
-    draw_marker( color() );
+    Fl_Color c = selected() ? selection_color() : color();
+
+    draw_marker( c );
 
     fl_pop_matrix();
-
-//    fl_line( X, Y, X, Y + h() - Fl::box_dh( box() ) );
 }
 
 void

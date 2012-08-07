@@ -184,7 +184,9 @@ public:
 
         void control_value_no_callback ( float f )
             {
-                THREAD_ASSERT( UI );
+              /* can also be called from the OSC thread */
+                ASSERT( Thread::is( "UI" ) || Thread::is( "OSC" ),
+                        "Function called from wrong thread! (is %s)",  Thread::current()->name() );
 
                 if ( buffer() )
                 {
@@ -259,7 +261,7 @@ public:
         OSC::Signal *_scaled_signal;
         OSC::Signal *_unscaled_signal;
 
-        void handle_signal_connection_state_changed ( OSC::Signal *s );
+        static void handle_signal_connection_state_changed ( OSC::Signal *, void *o );
     };
 
     void bbox ( int &X, int &Y, int &W, int &H )
@@ -371,18 +373,7 @@ public:
         }
 
     Chain *chain ( void ) const { return _chain; }
-    void chain ( Chain * v )
-        {
-            if ( _chain != v )
-            {
-                _chain = v; 
-
-                for ( int i = 0; i < ncontrol_inputs(); ++i )
-                {
-                    control_input[i].update_osc_port();
-                }
-            }
-        }
+    void chain ( Chain * v );
 
     char *get_parameters ( void ) const;
     void set_parameters ( const char * );
@@ -435,8 +426,8 @@ protected:
 public:
 
     void command_open_parameter_editor();
-    void command_activate ( void );
-    void command_deactivate ( void );
-    void command_remove ( void );
+    virtual void command_activate ( void );
+    virtual void command_deactivate ( void );
+    virtual void command_remove ( void );
 
 };

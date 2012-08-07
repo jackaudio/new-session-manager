@@ -55,6 +55,9 @@ class Sequence_Widget;
 
 namespace OSC { class Endpoint; }
 
+#define USE_WIDGET_FOR_TIMELINE
+
+
 #include <lo/lo.h>
 
 #ifndef USE_SINGLEBUFFERED_TIMELINE
@@ -114,6 +117,7 @@ class Timeline : public Fl_Single_Window, public RWLock
     int _fpp;                                                 /* frames per pixel, power of two */
 
     nframes_t p1, p2;                                           /* cursors */
+    nframes_t _playhead;
 
     /* not permitted */
     Timeline ( const Timeline &rhs );
@@ -121,6 +125,12 @@ class Timeline : public Fl_Single_Window, public RWLock
 
     std::list <const Sequence_Widget*> _tempomap;
 
+    static void handle_peer_scan_complete ( void * v );
+
+    void update_track_order ( void );
+    void apply_track_order ( void );
+    void insert_track ( Track *track, int n );
+    
 public:
 
     OSC::Endpoint *osc;
@@ -157,13 +167,19 @@ public:
     nframes_t _sample_rate;
 
     Timeline ( int X, int Y, int W, int H, const char *L=0 );
+    
+    virtual ~Timeline ( );
 
     void update_tempomap ( void );
 
     const char *session_manager_name ( void );
 
+    
     nframes_t fpp ( void ) const { return 1 << _fpp; }
     void range ( nframes_t start, nframes_t length );
+    nframes_t range_start ( void ) const { return p1; }
+    nframes_t range_end ( void ) const { return p2; }
+//    nframes_t playhead ( void ) const { return transport->frame; }
     nframes_t length ( void ) const;
     void sample_rate ( nframes_t r ) { _sample_rate = r; }
     nframes_t sample_rate ( void ) const { return _sample_rate; }
@@ -182,8 +198,8 @@ public:
     typedef void (measure_line_callback)( nframes_t frame, const BBT & bbt, void *arg );
 
     position_info solve_tempomap ( nframes_t when ) const;
-    void draw_measure_lines ( int X, int Y, int W, int H, Fl_Color color );
-    void draw_measure_BBT ( int X, int Y, int W, int H, Fl_Color color );
+    void draw_measure_lines ( int X, int Y, int W, int H );
+    void draw_measure_BBT ( int X, int Y, int W, int H );
     position_info render_tempomap ( nframes_t start, nframes_t length, measure_line_callback *cb, void *arg ) const;
 
     void xposition ( int X );
@@ -209,6 +225,11 @@ public:
 
     void add_track ( Track *track );
     void remove_track ( Track *track );
+
+    void move_track_up ( Track *track );
+    void move_track_down ( Track *track );
+
+    int find_track ( const Track * track ) const;
 
     int ntracks ( void ) const;
 

@@ -60,7 +60,7 @@ Control_Point::set ( Log_Entry &e )
         if ( ! strcmp( s, ":y" ) )
             _y = atof( v );
 
-        timeline->redraw();
+        redraw();
 
         //          _make_label();
     }
@@ -87,7 +87,19 @@ Control_Point::draw_box ( void )
         char val[10];
         snprintf( val, sizeof( val ), "%+.2f", 1.0 - _y * 2 );
 
-        draw_label( val, (Fl_Align)( FL_ALIGN_TOP | FL_ALIGN_LEFT ), FL_FOREGROUND_COLOR );
+        Fl_Align a = 0;
+
+        if ( x() < _sequence->x() + ( _sequence->w() / 2 ) )
+            a |= FL_ALIGN_RIGHT;
+        else
+            a |= FL_ALIGN_LEFT;
+
+        if ( y() < _sequence->y() + ( _sequence->h() / 2 ) )
+            a |= FL_ALIGN_BOTTOM;
+        else
+            a |= FL_ALIGN_TOP;
+            
+        draw_label( val, a, FL_FOREGROUND_COLOR );
     }
 }
 

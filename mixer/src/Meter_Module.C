@@ -192,11 +192,7 @@ get_peak_sample ( const sample_t* buf, nframes_t nframes )
 
     for ( int j = nframes; j--; ++f )
     {
-        float s = *f;
-
-        /* rectify */
-        if ( s < 0.0f )
-            s = 0 - s;
+        const float s = fabs( *f );
 
         if ( s > p )
             p = s;
@@ -212,7 +208,8 @@ Meter_Module::process ( nframes_t nframes )
     {
         if ( audio_input[i].connected() )
         {
-            float dB = 20 * log10( get_peak_sample( (float*)audio_input[i].buffer(), nframes ) / 2.0f );
+//            float dB = 20 * log10( get_peak_sample( (float*)audio_input[i].buffer(), nframes ) / 2.0f );
+            float dB = 20 * log10( get_peak_sample( (float*)audio_input[i].buffer(), nframes ) );
 
             ((float*)control_output[0].buffer())[i] = dB;
             control_value[i] = dB;

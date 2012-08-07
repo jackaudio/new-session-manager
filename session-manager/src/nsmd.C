@@ -36,9 +36,7 @@
 #include <sys/signalfd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <uuid/uuid.h>
 #include <unistd.h>
-#include <uuid/uuid.h>
 #include <time.h>
 #include <libgen.h>
 #include <dirent.h>
@@ -76,6 +74,7 @@ static char *session_root;
 #define ERR_BAD_PROJECT      -9
 #define ERR_CREATE_FAILED    -10
 #define ERR_SESSION_LOCKED   -11
+#define ERR_OPERATION_PENDING -12
 
 #define APP_TITLE "Non Session Manager"
 
@@ -84,8 +83,15 @@ enum {
     COMMAND_QUIT,
     COMMAND_KILL,
     COMMAND_SAVE,
-    COMMAND_OPEN
+    COMMAND_OPEN,
+    COMMAND_START,
+
+    COMMAND_CLOSE,
+    COMMAND_DUPLICATE,
+    COMMAND_NEW
 };
+
+static int pending_operation = COMMAND_NONE;
 
 struct Client
 {
@@ -97,6 +103,10 @@ private:
     int _pending_command;                /*  */
     struct timeval _command_sent_time;
 
+    bool _gui_visible;
+
+    char *_label;
+
 public:
 
     lo_address addr;                   /*  */
@@ -105,7 +115,6 @@ public:
     int pid;                           /* PID of client process */
     float progress;                    /*  */
     bool active;              /* client has registered via announce */
-    bool dead_because_we_said;
 //    bool stopped; /* the client quit, but not because we told it to--user still has to decide to remove it from the session */
     char *client_id;                                            /* short part of client ID */
     char *capabilities;                                         /* client capabilities... will be null for dumb clients */
@@ -113,14 +122,35 @@ public:
     bool pre_existing;
     const char *status;
 
+    const char *label ( void ) const { return _label; }
+    void label ( const char *l )
+        {
+            if ( _label ) 
+                free( _label );
+            if ( l )
+                _label = strdup( l ); 
+            else
+                _label = NULL;
+        }
+        
+    bool gui_visible ( void ) const
+        {
+            return _gui_visible;
+        }
+
+    void gui_visible ( bool b ) 
+        {
+            _gui_visible = b;
+        }
+
     bool
-    has_error ( void )
+    has_error ( void ) const
         {
             return _reply_errcode != 0;
         }
 
     int
-    error_code ( void )
+    error_code ( void ) const
         {
             return _reply_errcode;
         }
@@ -173,12 +203,21 @@ public:
             return _pending_command;
         }
 
+// capability should be enclosed in colons. I.e. ":switch:"
+    bool 
+    is_capable_of ( const char *capability ) const
+        {
+            return capabilities &&
+                strstr( capabilities, capability );
+        }
+
     Client ( )
         {
+            _label = 0;
+            _gui_visible = true;
             addr = 0;
             _reply_errcode = 0;
             _reply_message = 0;
-            dead_because_we_said = false;
             pid = 0;
             progress = -0;
             _pending_command = 0;
@@ -265,10 +304,12 @@ handle_client_process_death ( int pid )
     {
         MESSAGE( "Client %s died.", c->name );
 
+        bool dead_because_we_said = false;
+
         if ( c->pending_command() == COMMAND_KILL ||
              c->pending_command() == COMMAND_QUIT )
         {
-            c->dead_because_we_said = true;
+            dead_because_we_said = true;
         }
 
         c->pending_command( COMMAND_NONE );
@@ -276,7 +317,7 @@ handle_client_process_death ( int pid )
         c->active = false;
         c->pid = 0;
 
-        if ( c->dead_because_we_said )
+        if ( dead_because_we_said )
         {
             if ( gui_is_active )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
@@ -539,6 +580,7 @@ launch ( const char *executable, const char *client_id )
         }
     }
 
+    c->pending_command( COMMAND_START );
     c->pid = pid;
 
     MESSAGE( "Process has pid: %i", pid );
@@ -565,7 +607,7 @@ command_client_to_save ( Client *c )
         if ( gui_is_active )
             osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "save" );
     }
-    else if ( c->is_dumb_client() )
+    else if ( c->is_dumb_client() && c->pid )
     {
         // this is a dumb client... 
         if ( gui_is_active )
@@ -714,8 +756,9 @@ OSC_HANDLER( announce )
           i != client.end();
           ++i )
     {
-        if ( ! strcmp( (*i)->executable_path, executable_path ) 
-             && ! (*i)->active )
+        if ( ! strcmp( (*i)->executable_path, executable_path ) &&
+             ! (*i)->active &&
+             (*i)->pending_command() == COMMAND_START )
         {
             // I think we've found the slot we were looking for.
             MESSAGE( "Client was expected." );
@@ -770,6 +813,9 @@ OSC_HANDLER( announce )
     {
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "open" );
+
+        if ( c->is_capable_of( ":optional-gui:" ) )
+            osc_server->send( gui_addr, "/nsm/gui/client/has_optional_gui", c->client_id );
     }
 
     {
@@ -824,13 +870,6 @@ client_by_name ( const char *name,
     return NULL;
 }
 
-// capability should be enclosed in colons. I.e. ":switch:"
-bool 
-client_is_capable_of ( Client *c, const char *capability )
-{
-    return c->capabilities &&
-        strstr( c->capabilities, capability );
-}
 
 bool
 dumb_clients_are_alive ( )
@@ -1109,7 +1148,7 @@ load_session_file ( const char * path )
           i != client.end();
           ++i )
     {
-        if ( ! client_is_capable_of( *i, ":switch:" )
+        if ( ! (*i)->is_capable_of( ":switch:" )
              ||
              ! client_by_name( (*i)->name, &new_clients ) )
         {
@@ -1192,13 +1231,21 @@ load_session_file ( const char * path )
 
 OSC_HANDLER( save )
 {
+    if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+
     if ( ! session_path )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path, 
                           ERR_NO_SESSION_OPEN,
                           "No session to save.");
                           
-        return 0;
+        goto done;
     }
     
     command_all_clients_to_save();
@@ -1207,18 +1254,31 @@ OSC_HANDLER( save )
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path, "Saved." );
 
+done:
+
+    pending_operation = COMMAND_NONE;
+
     return 0;
 }
 
 OSC_HANDLER( duplicate )
 {
+    if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+
+    pending_operation = COMMAND_DUPLICATE;
+
     if ( ! session_path )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path, 
                           ERR_NO_SESSION_OPEN,
                           "No session to duplicate.");
-                          
-        return 0;
+        goto done;
     }
 
     if ( ! path_is_valid( &argv[0]->s ) )
@@ -1227,7 +1287,7 @@ OSC_HANDLER( duplicate )
                           ERR_CREATE_FAILED,
                           "Invalid session name." );
 
-        return 0;
+        goto done;
     }     
 
     command_all_clients_to_save();
@@ -1238,7 +1298,7 @@ OSC_HANDLER( duplicate )
                           ERR_GENERAL_ERROR,
                           "Some clients could not save" );
 
-        return 0;
+        goto done;
     }
 
 //    save_session_file();
@@ -1279,19 +1339,34 @@ OSC_HANDLER( duplicate )
  
     MESSAGE( "Done" );
 
-
     osc_server->send( lo_message_get_source( msg ), "/reply", path, "Duplicated." );
+
+done:
+
+    pending_operation = COMMAND_NONE;
 
     return 0;
 }
 
 OSC_HANDLER( new )
 {
+    if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+
+    pending_operation = COMMAND_NEW;
+
     if ( ! path_is_valid( &argv[0]->s ) )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_CREATE_FAILED,
                           "Invalid session name." );
+
+        pending_operation = COMMAND_NONE;
 
         return 0;
     }     
@@ -1305,7 +1380,6 @@ OSC_HANDLER( new )
 
     MESSAGE( "Creating new session" );
 
-
     char *spath;
     asprintf( &spath, "%s/%s", session_root, &argv[0]->s );
    
@@ -1316,6 +1390,8 @@ OSC_HANDLER( new )
                           "Could not create the session directory" );
 
         free(spath);
+
+        pending_operation = COMMAND_NONE;
 
         return 0;
     }
@@ -1338,6 +1414,8 @@ OSC_HANDLER( new )
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path,
                               "Session created" );
+
+    pending_operation = COMMAND_NONE;
         
     return 0;
 }
@@ -1391,8 +1469,20 @@ OSC_HANDLER( open )
 {
     DMESSAGE( "Got open" );
 
+    if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+
+    pending_operation = COMMAND_OPEN;
+
+
     if ( session_path )
     {
+
         command_all_clients_to_save();
         
         if ( clients_have_errors() )
@@ -1400,11 +1490,14 @@ OSC_HANDLER( open )
             osc_server->send( lo_message_get_source( msg ), "/error", path,
                               ERR_GENERAL_ERROR,
                               "Some clients could not save" );
+
+            pending_operation = COMMAND_NONE;
             return 0;
         }
         
 //        save_session_file();
     }
+
 
     char *spath;
     asprintf( &spath, "%s/%s", session_root, &argv[0]->s );
@@ -1448,6 +1541,8 @@ OSC_HANDLER( open )
  
     MESSAGE( "Done" );
 
+    pending_operation = COMMAND_NONE;
+
     return 0;
 }
 
@@ -1463,13 +1558,24 @@ OSC_HANDLER( quit )
 
 OSC_HANDLER( abort )
 {
+  if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+  
+  pending_operation = COMMAND_CLOSE;
+
+
     if ( ! session_path )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "No session to abort." );
 
-        return 0;
+        goto done;
     }
 
     MESSAGE( "Commanding attached clients to quit." );
@@ -1480,19 +1586,32 @@ OSC_HANDLER( abort )
                       "Aborted." );
                       
     MESSAGE( "Done" );
+done:
+
+    pending_operation = COMMAND_NONE;
 
     return 0;
 }
 
 OSC_HANDLER( close )
 {
+    if ( pending_operation != COMMAND_NONE )
+    {
+            osc_server->send( lo_message_get_source( msg ), "/error", path,
+                              ERR_OPERATION_PENDING,
+                              "An operation pending." );
+            return 0;
+    }
+
+    pending_operation = COMMAND_CLOSE;
+
     if ( ! session_path )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "No session to close." );
 
-        return 0;
+        goto done;
     }
 
     command_all_clients_to_save();
@@ -1505,6 +1624,10 @@ OSC_HANDLER( close )
                       "Closed." );
                       
     MESSAGE( "Done" );
+
+done:
+
+    pending_operation = COMMAND_NONE;
 
     return 0;
 }
@@ -1636,6 +1759,39 @@ OSC_HANDLER( is_clean )
     return 0;
 }
 
+OSC_HANDLER( gui_is_hidden )
+{
+    MESSAGE( "Client sends gui hidden" );
+
+    Client *c = get_client_by_address( lo_message_get_source( msg ) );
+
+    if ( ! c )
+        return 0;
+
+    c->gui_visible( false );
+
+    if ( gui_is_active )
+        osc_server->send( gui_addr, "/nsm/gui/client/gui_visible", c->client_id, c->gui_visible() );
+
+    return 0;
+}
+
+OSC_HANDLER( gui_is_shown )
+{
+    MESSAGE( "Client sends gui shown" );
+
+    Client *c = get_client_by_address( lo_message_get_source( msg ) );
+
+    if ( ! c )
+        return 0;
+
+    c->gui_visible( true );
+
+    if ( gui_is_active )
+        osc_server->send( gui_addr, "/nsm/gui/client/gui_visible", c->client_id, c->gui_visible() );
+
+    return 0;
+}
 
 OSC_HANDLER( message )
 {
@@ -1646,6 +1802,24 @@ OSC_HANDLER( message )
 
     if ( gui_is_active )
         osc_server->send( gui_addr, "/nsm/gui/client/message", c->client_id, argv[0]->i, &argv[1]->s );
+
+    return 0;
+}
+
+OSC_HANDLER( label )
+{
+    Client *c = get_client_by_address( lo_message_get_source( msg ) );
+
+    if ( ! c )
+        return 0;
+
+    if ( strcmp( types, "s" ) )
+        return -1;
+    
+    c->label( &argv[0]->s );
+
+    if ( gui_is_active )
+        osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, &argv[0]->s );
 
     return 0;
 }
@@ -1713,6 +1887,31 @@ OSC_HANDLER( reply )
 /* GUI operations */
 /******************/
 
+
+OSC_HANDLER( stop )
+{
+    Client *c = get_client_by_id( &client, &argv[0]->s );
+
+    if ( c )
+    {
+        if ( c->pid != 0 )
+        {
+            kill( c->pid, SIGTERM );
+
+            if ( gui_is_active )
+                osc_server->send( gui_addr, "/reply", "Client stopped." );
+        }
+    }
+    else
+    {
+        if ( gui_is_active )
+            osc_server->send( gui_addr, "/error", -10, "No such client." );
+    }
+
+   
+    return 0;
+}
+
 OSC_HANDLER( remove )
 {
     Client *c = get_client_by_id( &client, &argv[0]->s );
@@ -1773,6 +1972,38 @@ OSC_HANDLER( client_save )
         if ( c->active )
         {
             command_client_to_save( c );
+        }
+    }
+
+    return 0;
+}
+
+OSC_HANDLER( client_show_optional_gui )
+{
+    Client *c = get_client_by_id( &client, &argv[0]->s );
+
+    /* FIXME: return error if no such client? */
+    if ( c )
+    {
+        if ( c->active )
+        {
+            osc_server->send( c->addr, "/nsm/client/show_optional_gui" );
+        }
+    }
+
+    return 0;
+}
+
+OSC_HANDLER( client_hide_optional_gui )
+{
+    Client *c = get_client_by_id( &client, &argv[0]->s );
+
+    /* FIXME: return error if no such client? */
+    if ( c )
+    {
+        if ( c->active )
+        {
+            osc_server->send( c->addr, "/nsm/client/hide_optional_gui" );
         }
     }
 
@@ -1927,12 +2158,18 @@ int main(int argc, char *argv[])
     osc_server->add_method( "/nsm/client/is_dirty", "", OSC_NAME( is_dirty ), NULL, "dirtiness" );
     osc_server->add_method( "/nsm/client/is_clean", "", OSC_NAME( is_clean ), NULL, "dirtiness" );
     osc_server->add_method( "/nsm/client/message", "is", OSC_NAME( message ), NULL, "message" );
+    osc_server->add_method( "/nsm/client/gui_is_hidden", "", OSC_NAME( gui_is_hidden ), NULL, "message" );
+    osc_server->add_method( "/nsm/client/gui_is_shown", "", OSC_NAME( gui_is_shown ), NULL, "message" );
+    osc_server->add_method( "/nsm/client/label", "s", OSC_NAME( label ), NULL, "message" );
     
     /*  */
     osc_server->add_method( "/nsm/gui/gui_announce", "", OSC_NAME( gui_announce ), NULL, "" );
+    osc_server->add_method( "/nsm/gui/client/stop", "s", OSC_NAME( stop ), NULL, "client_id" );
     osc_server->add_method( "/nsm/gui/client/remove", "s", OSC_NAME( remove ), NULL, "client_id" );
     osc_server->add_method( "/nsm/gui/client/resume", "s", OSC_NAME( resume ), NULL, "client_id" );
     osc_server->add_method( "/nsm/gui/client/save", "s", OSC_NAME( client_save ), NULL, "client_id" );
+    osc_server->add_method( "/nsm/gui/client/show_optional_gui", "s", OSC_NAME( client_show_optional_gui ), NULL, "client_id" );
+    osc_server->add_method( "/nsm/gui/client/hide_optional_gui", "s", OSC_NAME( client_hide_optional_gui ), NULL, "client_id" );
 
     osc_server->add_method( "/osc/ping", "", OSC_NAME( ping ), NULL, "" );
 

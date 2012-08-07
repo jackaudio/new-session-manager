@@ -461,11 +461,19 @@ Plugin_Module::load ( unsigned long id )
                 {
                     p.hints.ranged = true;
                     p.hints.minimum = _idata->descriptor->PortRangeHints[i].LowerBound;
+                    if ( LADSPA_IS_HINT_SAMPLE_RATE(hd) )
+                    {
+                        p.hints.minimum *= Engine::sample_rate();
+                    }
                 }
                 if ( LADSPA_IS_HINT_BOUNDED_ABOVE(hd) )
                 {
                     p.hints.ranged = true;
                     p.hints.maximum = _idata->descriptor->PortRangeHints[i].UpperBound;
+                    if ( LADSPA_IS_HINT_SAMPLE_RATE(hd) )
+                    {
+                        p.hints.maximum *= Engine::sample_rate();
+                    }
                 }
 
                 if ( LADSPA_IS_HINT_HAS_DEFAULT(hd) )

@@ -55,6 +55,15 @@ else
 	CXXFLAGS := -fno-rtti -fno-exceptions
 endif
 
+# LIBS := "$(FLTK_LIBS) $(LIBS)"
+
+INCLUDES := -I. -Iutil -IFL -Inonlib
+INCLUDES += $(FLTK_CFLAGS)
+
+# INCLUDES += 
+
+# CFLAGS += $(FLTK_CFLAGS)
+
 # include FL/makefile.inc
 include makefile.inc
 
@@ -66,24 +75,24 @@ CFLAGS+=-DVERSION=\"$(VERSION)\" \
 
 CXXFLAGS := $(CFLAGS) $(CXXFLAGS)
 
-INCLUDES := -I. -Iutil -IFL -Inonlib
+
 
 include scripts/colors
 
-SPACE+="`tput cuf 20`"
+SPACE:="`tput cuf 20`"
 
 ifneq ($(CALCULATING),yes)
-	COMPILING="$(BOLD)$(BLACK)$(PACKAGE)$(SPACE)$(SGR0)$(CYAN)`scripts/percent-complete .files "$<"`$(SGR0)$(BOLD)$(BLACK)]$(SGR0) $(BOLD)$(CYAN)$<$(SGR0)"
+	COMPILING="$(BOLD)$(BLACK)[$(SGR0) $(PACKAGE)$(SPACE)$(SGR0)$(CYAN)`scripts/percent-complete .files "$<"` $(SGR0)$(BOLD)$(BLACK)]$(SGR0) $(BOLD)$(CYAN)$<$(SGR0)"
 else
 	COMPILING="Compiling: $<"
 endif
 
 .C.o:
 	@ echo $(COMPILING)
-	@ $(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	@ $(CXX) $(INCLUDES) $(CXXFLAGS) -c $< -o $@
 
 %.C : %.fl
-	@ cd `dirname $<` && fluid -c ../$<
+	@ cd `dirname $<` && $(FLUID) -c `basename $<`
 
 DONE := $(BOLD)$(GREEN)done$(SGR0)
 

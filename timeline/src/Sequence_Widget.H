@@ -193,9 +193,16 @@ public:
     virtual int h ( void ) const { return _sequence->h(); }
 
     /* used by regions */
+    
+    int get_x( nframes_t frame ) const
+        {
+            return  frame < timeline->xoffset ? _sequence->x() : min( _sequence->x() + _sequence->w(), _sequence->x() + timeline->ts_to_x( frame - timeline->xoffset ) );
+
+        }
+
     virtual int x ( void ) const
         {
-            return  _r->start < timeline->xoffset ? _sequence->x() : min( _sequence->x() + _sequence->w(), _sequence->x() + timeline->ts_to_x( _r->start - timeline->xoffset ) );
+            return get_x( _r->start );
         }
 
     /* use this as x() when you need to draw lines between widgets */
@@ -267,17 +274,21 @@ public:
     virtual void
     redraw ( void )
         {
+            if ( ! _sequence )
+                return;
+
             if ( ! (align() & FL_ALIGN_INSIDE) )
             {
                 // FIXME: to better..
                 _sequence->redraw();
             }
             else
-                _sequence->damage( FL_DAMAGE_EXPOSE, x(), y(), w(), h() );
+                _sequence->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
         }
 
     virtual void draw_box ( void );
     virtual void draw ( void );
+    virtual void draw_label ( void );
 
     bool
     operator< ( const Sequence_Widget & rhs ) const

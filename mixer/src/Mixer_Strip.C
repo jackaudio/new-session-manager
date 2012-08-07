@@ -359,8 +359,7 @@ Mixer_Strip::init ( )
     _gain_controller_mode = 0;
     _chain = 0;
 
-//    box(FL_THIN_UP_BOX);
-    box( FL_RFLAT_BOX );
+    box( FL_BORDER_BOX );
     labeltype( FL_NO_LABEL );
 
     Fl_Group::color( FL_BACKGROUND_COLOR );

@@ -23,14 +23,12 @@
 #include <jack/transport.h>
 #include "types.h"
 
-#include "Timeline.H"
-
 #include <FL/Fl_Pack.H>
 #include <FL/Fl_Button.H>
 
 #include <stdio.h>
 
-struct Transport : public jack_position_t, public Fl_Pack
+class Transport : public jack_position_t, public Fl_Pack
 {
 
 private:
@@ -48,6 +46,7 @@ private:
     Fl_Button *_end_button;
     Fl_Button *_play_button;
     Fl_Button *_record_button;
+    Fl_Button *_punch_button;
 
     void update_record_state ( void );
 
@@ -56,6 +55,7 @@ public:
     Transport ( int X, int Y, int W, int H, const char *L=0 );
 
     bool rec_enabled ( void ) const;
+    bool punch_enabled ( void ) const;
 
     void stop_disables_record ( bool b ) { _stop_disables_record = b; }
     bool stop_disables_record ( void ) const { return _stop_disables_record; }

@@ -24,16 +24,23 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "debug.h"
+
 extern Timeline *timeline;
 
 OSC_Thread::OSC_Thread ( )
 {
     //   _thread.init();
+    _shutdown = false;
 }
 
 OSC_Thread::~OSC_Thread ( )
 {
-
+    if ( _shutdown == false )
+    {
+        _shutdown = true;
+        _thread.join();
+    }
 }
 
 void
@@ -43,20 +50,26 @@ OSC_Thread::start ( )
 }
 
 void
+OSC_Thread::join ( )
+{
+    _thread.join();
+}
+
+void
 OSC_Thread::process ( void )
 {
     _thread.name( "OSC" );
 
-    for ( ;; )
+    DMESSAGE( "OSC Thread starting" );
+    
+    while ( !_shutdown )
     {
         usleep( 100 * 1000 );
         
-        lock();
-
         timeline->process_osc();
-
-        unlock();
     }
+
+    DMESSAGE( "OSC Thread stopping." );
 }
 
 void *

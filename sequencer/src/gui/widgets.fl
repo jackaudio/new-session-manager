@@ -1,0 +1,209 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0108 
+header_name {.H} 
+code_name {.C}
+comment {//
+// Copyright (C) 2008 Jonathan Moore Liles
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+} {in_source in_header
+} 
+
+class List_Chooser {} {
+  Function {List_Chooser( const char *name, const char *action )} {open
+  } {
+    Fl_Window window {open
+      xywh {696 57 310 524} type Single non_modal size_range {310 524 0 0} visible
+    } {
+      Fl_Pack {} {open
+        xywh {2 10 303 501}
+        code0 {o->spacing( 20 );}
+      } {
+        Fl_Browser browser {
+          label name
+          xywh {15 30 280 447} type Multi color 32 selection_color 47 align 1 textcolor 55 resizable
+          code0 {o->label( name );}
+        }
+        Fl_Group {} {open
+          xywh {17 485 278 26}
+        } {
+          Fl_Button {} {
+            label Cancel
+            callback {browser->clear();
+window->hide();}
+            xywh {17 485 75 26}
+          }
+          Fl_Return_Button button {
+            label action
+            callback {window->hide();}
+            xywh {105 485 190 26}
+            code0 {o->label( action );}
+          }
+        }
+      }
+    }
+  }
+  Function {show()} {open
+  } {
+    code {window->show();} {}
+  }
+  Function {shown()} {open return_type bool
+  } {
+    code {return window->shown();} {}
+  }
+  Function {add( const char *item )} {open
+  } {
+    code {browser->add( item );} {}
+  }
+} 
+
+decl {\#include "../transport.H"} {public
+} 
+
+decl {extern Fl_Color velocity_colors[];} {} 
+
+decl {\#include <FL/Fl_Box.H>} {} 
+
+decl {\#include <stdio.h>} {} 
+
+decl {\#include <stdlib.h>} {} 
+
+widget_class Visual_Metronome {open selected
+  xywh {763 217 1278 1003} type Single resizable
+  code0 {_bpb = _tpb = -1; _beat = _tick = _flip = 0;}
+  code1 {this->box( FL_NO_BOX );}
+  code2 {this->label( 0 );}
+  class Fl_Group visible
+} {
+  Fl_Slider progress {
+    private xywh {119 95 1149 23} type Horizontal box THIN_UP_BOX color 32 selection_color 71
+    code0 {o->resize( x(), (y() + h()) - (h() / 3), w(), h() / 3 );}
+    code1 {o->slider_size( 0.25 );}
+    code2 {o->slider( FL_THIN_UP_BOX );}
+  }
+  Fl_Pack pack {open
+    private xywh {119 7 1149 78} type HORIZONTAL resizable
+    code0 {o->resize( x(), y(), w(), h() - progress->h() );}
+  } {}
+  decl {int _bpb} {}
+  decl {int _tpb} {}
+  decl {int _beat} {}
+  decl {bool _flip} {}
+  decl {int _tick} {}
+  Function {bpb( int b )} {open private return_type void
+  } {
+    code {if ( b == _bpb )
+	return;
+
+_bpb = b;
+
+pack->clear();
+
+int bw = w() / _bpb;
+
+for ( int i = 1; i <= b; ++i )
+{
+	Fl_Box *box = new Fl_Box( FL_THIN_UP_BOX, 0, 0, bw, 1, 0 );
+	
+	char *pat = (char *)malloc( 4 );
+	
+	sprintf( pat, "%d", i );
+	
+	box->label( pat );
+	box->color( fl_lighter( FL_GRAY ) );
+        box->color2( FL_GRAY );
+	pack->add( box );
+}
+
+
+// try to clear the background.
+
+parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
+redraw();} {}
+  }
+  Function {tpb( int ticks )} {open private return_type void
+  } {
+    code {_tpb = ticks;
+
+progress->minimum( 0 );
+progress->maximum( ticks );} {}
+  }
+  Function {beat( int b )} {open private return_type void
+  } {
+    code {if ( b == _beat || b >= _bpb )
+	return;
+
+
+pack->child( _beat )->color( fl_lighter( FL_GRAY ) );
+pack->child( _beat )->redraw();
+
+pack->child( b )->color( velocity_colors[ b * 127 / _bpb ] );
+pack->child( b )->redraw();
+
+_flip = ! _flip;
+
+_beat = b;} {}
+  }
+  Function {tick( int tick )} {open private return_type void
+  } {
+    code {if ( tick == _tick )
+	return;
+	
+if ( _beat < 0 )
+	return;
+
+if ( _flip )
+{
+	progress->selection_color( FL_RED );
+	progress->value( _tpb - tick );
+}
+else
+{
+	progress->selection_color( FL_GREEN );
+	progress->value( tick );
+}
+
+\#if 0
+Fl_Widget *c = pack->child( _beat );
+
+if ( c )
+{
+	c->color( velocity_colors[ tick * 127 / _tpb ] );
+	c->redraw();
+}
+\#endif
+
+_tick = tick;} {}
+  }
+  Function {resize( int X, int Y, int W, int H )} {open return_type void
+  } {
+    code {// pack->resize( 0, 0, W, pack->h() );
+
+
+Fl_Group::resize( X, Y, W, H );
+
+for ( int i = pack->children(); i-- ; )
+	pack->child( i )->resize( 0, 0, W / pack->children(), pack->h() );} {}
+  }
+  Function {update( void )} {open return_type void
+  } {
+    code {if ( transport.beats_per_bar ) {
+bpb( transport.beats_per_bar );
+tpb( transport.ticks_per_beat );
+beat( transport.beat - 1 );
+tick( transport.tick - 1 );}} {}
+  }
+} 

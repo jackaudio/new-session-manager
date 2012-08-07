@@ -28,8 +28,6 @@
 
 #include "Transport.H" // for locate()
 
-#include "FL/Crystal_Boxtypes.H"
-
 #include "const.h"
 #include "debug.h"
 
@@ -65,7 +63,7 @@ Sequence::init ( void )
 
     _name = NULL;
 
-    box( FL_DOWN_BOX );
+    box( FL_FLAT_BOX );
     color(  FL_BACKGROUND_COLOR );
     align( FL_ALIGN_LEFT );
 
@@ -122,7 +120,11 @@ Sequence::x_to_offset ( int X )
 void
 Sequence::sort ( void )
 {
+    timeline->wrlock();
+
     _widgets.sort( Sequence_Widget::sort_func );
+
+    timeline->unlock();
 }
 
 /** return a pointer to the widget that /r/ overlaps, or NULL if none. */
@@ -142,11 +144,7 @@ Sequence::overlaps ( Sequence_Widget *r )
 void
 Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
-    timeline->wrlock();
-
     sort();
-
-    timeline->unlock();
 //    timeline->update_length( start + length );
 }
 
@@ -258,41 +256,36 @@ Sequence::snap ( Sequence_Widget *r )
 
 
 void
+Sequence::draw_box ( void )
+{
+    /* draw the box with the ends cut off. */
+    Fl_Widget::draw_box( box(), x() - Fl::box_dx( box() ) - 1, y(), w() + Fl::box_dw( box() ) + 2, h(), color() );
+}
+                                                            
+void
 Sequence::draw ( void )
 {
-
-    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
-        return;
-
     fl_push_clip( x(), y(), w(), h() );
 
-    /* draw the box with the ends cut off. */
-    draw_box( box(), x() - Fl::box_dx( box() ) - 1, y(), w() + Fl::box_dw( box() ) + 2, h(), color() );
+    draw_box();
+
+    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
+            (*r)->draw_box();
+
+
+    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
+            (*r)->draw();
 
     int X, Y, W, H;
 
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
-/*     if ( Sequence_Widget::pushed() && Sequence_Widget::pushed()->sequence() == this ) */
-/*     { */
-/*         /\* make sure the Sequence_Widget::pushed widget is above all others *\/ */
-/*         remove( Sequence_Widget::pushed() ); */
-/*         add( Sequence_Widget::pushed() ); */
-/*     } */
-
-//    printf( "track::draw %d,%d %dx%d\n", X,Y,W,H );
-
-    timeline->draw_measure_lines( X, Y, W, H, color() );
+    timeline->draw_measure_lines( X, Y, W, H );
 
     for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
-        (*r)->draw_box();
-
-
-    for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); ++r )
-        (*r)->draw();
+        (*r)->draw_label();
 
     fl_pop_clip();
-
 }
 
 #include "FL/test_press.H"

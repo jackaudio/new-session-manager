@@ -26,12 +26,16 @@ class OSC_Thread : public Mutex
 {
     Thread _thread;                                    /* io thread */
 
+    volatile bool _shutdown;
+
 public:
 
     OSC_Thread ( );
 
     virtual ~OSC_Thread ( );
 
+    void join ( void );
+    void shutdown ( void ) { _shutdown = true; }
     void start ( void );
     void process ( void );
     static void *process ( void * );

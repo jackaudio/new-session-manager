@@ -35,6 +35,7 @@
 #include "FL/Fl_Menu_Settings.H"
 #include "About_Dialog.H"
 #include <FL/Fl_File_Chooser.H>
+#include "FL/Fl_Theme_Chooser.H"
 
 #include "file.h"
 
@@ -44,16 +45,10 @@
 #include <sys/types.h>
 
 #include "FL/Fl_Value_SliderX.H"
-#include "FL/color_scheme.H"
 #include "OSC/Endpoint.H"
 #include <lo/lo.h>
-#include "FL/Fl_Blinker.H"
-
-#include "OSC/Endpoint.H"
 
 const double STATUS_UPDATE_FREQ = 0.2f;
-
-const double OSC_INTERVAL = 1.0 / 20.0;                          /* 20 hz */
 
 extern char *user_config_dir;
 extern char *instance_name;
@@ -89,7 +84,10 @@ static int osc_add_strip ( const char *path, const char *, lo_arg **, int , lo_m
 {
    OSC_DMSG();
 
+   Fl::lock();
    ((Mixer*)(OSC_ENDPOINT())->owner)->command_add_strip();
+
+   Fl::unlock();
 
    OSC_REPLY_OK();
 
@@ -102,19 +100,29 @@ Mixer::reply_to_finger ( lo_message msg )
     int argc = lo_message_get_argc( msg );
     lo_arg **argv = lo_message_get_argv( msg );
 
-    if ( argc < 1 )
-        return;
+    if ( argc >= 4 )
+    {
+        const char *url = &argv[0]->s;
+        const char *name = &argv[1]->s;
+        const char *version = &argv[2]->s;
+        const char *id = &argv[3]->s;
 
-    lo_address to = lo_address_new_from_url( &argv[0]->s );
+        MESSAGE( "Discovered NON peer %s (%s) @ %s with ID \"%s\"", name, version, url, id );
+        MESSAGE( "Registering Signals" );
 
-    osc_endpoint->send( to,
-                        "/non/hello",
-                        osc_endpoint->url(),
-                        APP_NAME,
-                        VERSION,
-                        instance_name );
-
-    lo_address_free( to );
+        lo_address to = lo_address_new_from_url( &argv[0]->s );
+        
+        osc_endpoint->send( to,
+                            "/non/hello",
+                            osc_endpoint->url(),
+                            APP_NAME,
+                            VERSION,
+                            instance_name );
+        
+        mixer->osc_endpoint->hello( url );
+    
+        lo_address_free( to );
+    }
 }
 
 void
@@ -273,51 +281,23 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         rows( 3 );
     }
-    else if (! strcmp( picked, "&Options/&Display/&Style/&Default") )
+    else if (! strcmp( picked, "&View/&Theme") )
     {
-        Fl::scheme( "gtk+" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Style/&Flat") )
-    {
-        Fl::scheme( "gtk+" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Style/&Round") )
-    {
-        Fl::scheme( "plastic" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Colors/&System") )
-    {
-        color_scheme( "system" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Colors/&Dark") )
-    {
-        color_scheme( "dark" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Colors/&Very Dark") )
-    {
-        color_scheme( "very dark" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Colors/&Light") )
-    {
-        color_scheme( "light" );
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Colors/&Gray") )
-    {
-        color_scheme( "gray" );
+        fl_theme_chooser();
     }
     else if (! strcmp( picked, "&Options/&Display/&Knobs/&Burnished") )
     {
-        Fl_Arc_Dial::default_style( Fl_Arc_Dial::BURNISHED_DIAL );
+        Fl_Dial::default_style( Fl_Dial::BURNISHED_DIAL );
         redraw_windows();
     }
     else if (! strcmp( picked, "&Options/&Display/&Knobs/&Arc") )
     {
-        Fl_Arc_Dial::default_style( Fl_Arc_Dial::ARC_DIAL );
+        Fl_Dial::default_style( Fl_Dial::ARC_DIAL );
         redraw_windows();
     }
     else if (! strcmp( picked, "&Options/&Display/&Knobs/&Plastic") )
     {
-        Fl_Arc_Dial::default_style( Fl_Arc_Dial::PLASTIC_DIAL );
+        Fl_Dial::default_style( Fl_Dial::PLASTIC_DIAL );
         redraw_windows();
     }
     else if (! strcmp( picked, "&Options/&Display/&Sliders/&Nice") )
@@ -377,74 +357,68 @@ void Mixer::cb_menu(Fl_Widget* o, void* v) {
 Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
 {
-    get_system_colors();
-
-    Fl::scheme( "plastic" );
-    color_scheme( "dark" );
-
     Loggable::dirty_callback( &Mixer::handle_dirty, this );
 
     _rows = 1;
-    box( FL_NO_BOX );
+    box( FL_FLAT_BOX );
     labelsize( 96 );
-    { Fl_Menu_Bar *o = menubar = new Fl_Menu_Bar( X, Y, W, 24 );
-        o->add( "&Project/&New" );
-        o->add( "&Project/&Open" );
-        o->add( "&Project/&Save", FL_CTRL + 's', 0, 0 );
-        o->add( "&Project/&Quit", FL_CTRL + 'q', 0, 0 );
-        o->add( "&Mixer/&Add Strip", 'a', 0, 0 );
-        o->add( "&Mixer/Add &N Strips" );
-        o->add( "&Mixer/&Import Strip" );
-        o->add( "&Mixer/&Rows/One", '1', 0, 0 );
-        o->add( "&Mixer/&Rows/Two", '2', 0, 0 );
-        o->add( "&Mixer/&Rows/Three", '3', 0, 0 );
-        o->add( "_&Options/&Display/&Style/&Default", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
-        o->add( "_&Options/&Display/&Style/&Flat", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Style/&Round", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Colors/&Dark", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
-        o->add( "_&Options/&Display/&Colors/&Very Dark", 0, 0, 0, FL_MENU_RADIO  );
-        o->add( "_&Options/&Display/&Colors/&Light", 0, 0, 0, FL_MENU_RADIO  );
-        o->add( "_&Options/&Display/&Colors/&Gray", 0, 0, 0, FL_MENU_RADIO  );
-        o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Knobs/&Arc", 0, 0, 0, FL_MENU_RADIO   );
-        o->add( "_&Options/&Display/&Knobs/&Burnished", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Knobs/&Plastic", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
-        o->add( "_&Options/&Display/&Sliders/&Nice", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
-        o->add( "_&Options/&Display/&Sliders/&Fill", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Sliders/&Simple", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
-        o->add( "&Help/&Manual" );
-        o->add( "&Help/&About" );
-        o->callback( cb_menu, this );
+    { Fl_Group *o = new Fl_Group( X, Y, W, 24 );
+
+        { Fl_Menu_Bar *o = menubar = new Fl_Menu_Bar( X, Y, W, 24 );
+            o->add( "&Project/&New" );
+            o->add( "&Project/&Open" );
+            o->add( "&Project/&Save", FL_CTRL + 's', 0, 0 );
+            o->add( "&Project/&Quit", FL_CTRL + 'q', 0, 0 );
+            o->add( "&Mixer/&Add Strip", 'a', 0, 0 );
+            o->add( "&Mixer/Add &N Strips" );
+            o->add( "&Mixer/&Import Strip" );
+            o->add( "&Mixer/&Rows/One", '1', 0, 0 );
+            o->add( "&Mixer/&Rows/Two", '2', 0, 0 );
+            o->add( "&Mixer/&Rows/Three", '3', 0, 0 );
+            o->add( "&View/&Theme", 0, 0, 0 );
+            o->add( "_&Options/&Display/&Knobs/&Arc", 0, 0, 0, FL_MENU_RADIO   );
+            o->add( "_&Options/&Display/&Knobs/&Burnished", 0, 0, 0, FL_MENU_RADIO );
+            o->add( "_&Options/&Display/&Knobs/&Plastic", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
+            o->add( "_&Options/&Display/&Sliders/&Nice", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
+            o->add( "_&Options/&Display/&Sliders/&Fill", 0, 0, 0, FL_MENU_RADIO );
+            o->add( "_&Options/&Display/&Sliders/&Simple", 0, 0, 0, FL_MENU_RADIO );
+            o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
+            o->add( "&Help/&Manual" );
+            o->add( "&Help/&About" );
+            o->callback( cb_menu, this );
+        }
+        { Fl_Box *o = project_name = new Fl_Box( X + 150, Y, W, 24 );
+            o->labelfont( FL_HELVETICA_ITALIC );
+            o->label( 0 );
+            o->align( FL_ALIGN_INSIDE | FL_ALIGN_CENTER );
+            o->labeltype( FL_SHADOW_LABEL );
+            Fl_Group::current()->resizable( o );
+        }
+        { sm_blinker = new Fl_Button( ( X + W) - 37, Y + 4, 35, 15, "SM");
+            sm_blinker->box(FL_ROUNDED_BOX);
+            sm_blinker->down_box(FL_ROUNDED_BOX);
+            sm_blinker->color(FL_DARK2);
+            sm_blinker->selection_color((Fl_Color)93);
+            sm_blinker->labeltype(FL_NORMAL_LABEL);
+            sm_blinker->labelfont(3);
+            sm_blinker->labelsize(14);
+            sm_blinker->labelcolor(FL_DARK3);
+            sm_blinker->align(Fl_Align(FL_ALIGN_CENTER));
+            sm_blinker->when(FL_WHEN_RELEASE);
+            sm_blinker->deactivate();
+
+        } // Fl_Blink_Button* sm_blinker
+        o->end();
     }
-    { Fl_Box *o = project_name = new Fl_Box( X + 150, Y, W, 24 );
-        o->labelfont( FL_HELVETICA_ITALIC );
-        o->label( 0 );
-        o->align( FL_ALIGN_INSIDE | FL_ALIGN_CENTER );
-        o->labeltype( FL_SHADOW_LABEL );
-    }
-    { sm_blinker = new Fl_Blinker( ( X + W) - 52, Y + 4, 50, 15, "SM");
-        sm_blinker->box(FL_ROUNDED_BOX);
-        sm_blinker->down_box(FL_ROUNDED_BOX);
-        sm_blinker->color((Fl_Color)75);
-        sm_blinker->selection_color((Fl_Color)86);
-        sm_blinker->labeltype(FL_NORMAL_LABEL);
-        sm_blinker->labelfont(2);
-        sm_blinker->labelsize(14);
-        sm_blinker->labelcolor(FL_DARK3);
-        sm_blinker->align(Fl_Align(FL_ALIGN_CENTER));
-        sm_blinker->when(FL_WHEN_RELEASE);
-        sm_blinker->deactivate();
-      } // Fl_Blinker* sm_blinker
     { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - 24 );
-        o->box( FL_NO_BOX );
+        o->box( FL_FLAT_BOX );
 //        o->type( Fl_Scroll::HORIZONTAL_ALWAYS );
 //        o->box( Fl_Scroll::BOTH );
         {
             Fl_Flowpack *o = mixer_strips = new Fl_Flowpack( X, Y + 24, W, H - 18 - 24 );
-            label( "Non-Mixer" );
+//            label( "Non-Mixer" );
             align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE) );
-            o->box( FL_NO_BOX );
+            o->box( FL_FLAT_BOX );
             o->type( Fl_Pack::HORIZONTAL );
             o->hspacing( 2 );
             o->vspacing( 2 );
@@ -478,21 +452,11 @@ Mixer::init_osc ( const char *osc_port )
 
     osc_endpoint->add_method( "/non/mixer/add_strip", "", osc_add_strip, osc_endpoint, "" );
   
-//    osc_endpoint->start();
-
-    /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
-    Fl::add_timeout( OSC_INTERVAL, check_osc, this );
+    osc_endpoint->start();
 
     return 0;
 }
 
-void
-Mixer::check_osc ( void * v )
-{
-    ((Mixer*)v)->osc_endpoint->check();
-    Fl::repeat_timeout( OSC_INTERVAL, check_osc, v );
-
-}
 
 Mixer::~Mixer ( )
 {

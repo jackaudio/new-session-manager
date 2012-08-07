@@ -35,6 +35,7 @@
 #include "debug.h"
 #include <FL/Fl_Browser.H>
 #include <FL/Fl_Select_Browser.H>
+#include <FL/Fl_Tree.H>
 #include <FL/Fl_Hold_Browser.H>
 #include <FL/Fl_Tile.H>
 
@@ -47,9 +48,7 @@
 
 #define APP_NAME "Non Session Manager"
 
-#include "FL/Crystal_Boxtypes.H"
-#include "FL/Gleam_Boxtypes.H"
-#include "FL/color_scheme.H"
+#include "FL/themes.H"
 
 #ifdef HAVE_XPM
 #include "FL/Fl.H"
@@ -85,19 +84,57 @@ static std::list<Daemon*> daemon_list;                                  /* list 
 class NSM_Client : public Fl_Group
 {
     char *_client_id;
+    char *_client_label;
+    char *_client_name;
 
 //    Fl_Box *client_name;
     Fl_Progress *_progress;
     Fl_Light_Button *_dirty;
+    Fl_Light_Button *_gui;
     Fl_Button *_remove_button;
     Fl_Button *_restart_button;
+    Fl_Button *_kill_button;
+
+    void
+    set_label ( void )
+        {
+            char *l;
+
+            if ( _client_label )
+                asprintf( &l, "%s (%s)", _client_name, _client_label );
+            else
+                l = strdup( _client_name );
+
+            if ( label() )
+                free((char*)label());
+
+            label( l );
+
+            redraw();
+        }
 
 public:
 
     void
     name ( const char *v )
         {
-            label( strdup( v ) );
+            if ( _client_name )
+                free( _client_name );
+
+            _client_name = strdup( v );
+
+            set_label();
+        }
+
+    void
+    client_label ( const char *s )
+        {
+            if ( _client_label )
+                free( _client_label );
+            
+            _client_label = strdup( s );
+
+            set_label();
         }
     
     void
@@ -124,17 +161,38 @@ public:
         }
 
     void
+    gui_visible ( bool b )
+        {
+            _gui->value( b );
+            _gui->redraw();
+        }
+
+
+    void
+    has_optional_gui ( void )
+        {
+            _gui->show();
+            _gui->redraw();
+        }
+
+    void
     stopped ( bool b )
         {
             if ( b )
             {
                 _remove_button->show();
                 _restart_button->show();
+                _kill_button->hide();
+                _gui->deactivate();
+                _dirty->deactivate();
                 color( fl_darker( FL_RED ) );
                 redraw();
             }
             else
             {
+                _gui->activate();
+                _dirty->activate();
+                _kill_button->show();
                 _restart_button->hide();
                 _remove_button->hide();
             }
@@ -195,7 +253,18 @@ public:
                     osc->send( (*d)->addr, "/nsm/gui/client/save", _client_id );
                 }
             }
-            if ( o == _remove_button )
+            else if ( o == _gui )
+            {
+                MESSAGE( "Sending hide/show GUI.");
+                foreach_daemon ( d )
+                {
+                    if ( !_gui->value() )
+                        osc->send( (*d)->addr, "/nsm/gui/client/show_optional_gui", _client_id );
+                    else
+                        osc->send( (*d)->addr, "/nsm/gui/client/hide_optional_gui", _client_id );
+                }
+            }
+            else if ( o == _remove_button )
             {
                 MESSAGE( "Sending remove.");
                 foreach_daemon ( d )
@@ -211,6 +280,14 @@ public:
                     osc->send( (*d)->addr, "/nsm/gui/client/resume", _client_id );
                 }
             }
+            else if ( o == _kill_button )
+            {
+                MESSAGE( "Sending stop" );
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/gui/client/stop", _client_id );
+                }
+            }
         }
              
 
@@ -223,46 +300,130 @@ public:
         {
 
             _client_id = NULL;
+            _client_name = NULL;
+            _client_label = NULL;
             
             align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
             color( fl_darker( FL_RED ) );
             box( FL_UP_BOX );
+            
+            int yy = Y + H * 0.25;
+            int hh = H * 0.50;
+            int xx = X + W - ( 200 + Fl::box_dw( box() ) );
+            int ss = 2;
 
-            { Fl_Progress *o = _progress = new Fl_Progress( ( X + W ) - ( W / 4) - 20, Y + 5, ( W / 4 ), H - 10, NULL );
+            /* dummy group */
+            { Fl_Group *o = new Fl_Group( X, Y, 50, 50 );
+                o->end();
+                resizable( o );
+            }
+                
+            { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 200, H * 0.50, NULL );
+                o->box( FL_FLAT_BOX );
+                o->color( FL_BLACK );
                 o->label( strdup( "launch" ) );
                 o->minimum( 0.0f );
                 o->maximum( 1.0f );
             }
-            { Fl_Light_Button *o = _dirty = new Fl_Light_Button( _progress->x() - 30, Y + 7, 25, 25 );
-                o->box( FL_UP_BOX );
-                o->type(0);
-                o->color();
-                o->selection_color( FL_YELLOW );
-                o->value( 0 );
-                o->callback( cb_button, this );
+
+            { Fl_Group *o = new Fl_Group( X + W - 400, Y, 400, H );
+
+                xx -= 50 + ss;
+                
+                { Fl_Light_Button *o = _dirty = new Fl_Light_Button( xx, yy, 50, hh, "SAVE" );
+                                
+                    o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
+                    o->labelsize( 9 );
+                    o->box( FL_UP_BOX );
+                    o->type(0);
+                    o->color();
+                    o->selection_color( FL_YELLOW );
+                    o->value( 0 );
+                    o->callback( cb_button, this );
+                }
+
+                xx -= 40 + ss;
+            
+                { Fl_Light_Button *o = _gui = new Fl_Light_Button( xx, yy, 40, hh, "GUI" );
+
+                    o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
+                    o->labelsize( 9 );
+                    o->box( FL_UP_BOX );
+                    o->type(0);
+                    o->color();
+                    o->selection_color( FL_YELLOW );
+                    o->value( 0 );
+                    o->hide();
+                    o->callback( cb_button, this );
+                }
+
+                xx -= 25 + ss;
+
+                { Fl_Button *o = _kill_button = new Fl_Button( xx, yy, 25, hh, "@square" );
+                    o->labelsize( 9 );
+                    o->box( FL_UP_BOX );
+                    o->type(0);
+                    o->color( FL_RED );
+                    o->value( 0 );
+                    o->tooltip( "Stop" );
+                    o->callback( cb_button, this );
+                }
+
+                xx -= 25 + ss;
+
+                { Fl_Button *o = _restart_button = new Fl_Button( xx, yy, 25, hh );
+                    
+                
+                    o->box( FL_UP_BOX );
+                    o->type(0);
+                    o->color( FL_GREEN );
+                    o->value( 0 );
+                    o->label( "@>" );
+                    o->tooltip( "Resume" );
+                    o->hide();
+                    o->callback( cb_button, this );
+                }
+
+                xx -= 25 + ss;
+
+                { Fl_Button *o = _remove_button = new Fl_Button( xx, yy, 25, hh );
+
+                
+                    o->box( FL_UP_BOX );
+                    o->type(0);
+                    o->color( FL_RED );
+                    o->value( 0 );
+                    o->label( "X" );
+                    o->tooltip( "Remove" );
+                    o->hide();
+                    o->callback( cb_button, this );
+                }
+
+
+                o->end();
             }
-            { Fl_Button *o = _remove_button = new Fl_Button( _progress->x() - 60, Y + 7, 25, 25 );
-                o->box( FL_UP_BOX );
-                o->type(0);
-                o->color( FL_RED );
-                o->value( 0 );
-                o->label( "X" );
-                o->tooltip( "Remove" );
-                o->hide();
-                o->callback( cb_button, this );
-            }
-            { Fl_Button *o = _restart_button = new Fl_Button( _progress->x() - 90, Y + 7, 25, 25 );
-                o->box( FL_UP_BOX );
-                o->type(0);
-                o->color( FL_GREEN );
-                o->value( 0 );
-                o->label( "@>" );
-                o->tooltip( "Resume" );
-                o->hide();
-                o->callback( cb_button, this );
+            end();
+        }
+
+    ~NSM_Client ( )
+        {
+            if ( _client_name )
+            {
+                free( _client_name );
+                _client_name = NULL;
             }
 
-            end();
+            if ( _client_label )
+            {
+                free( _client_label );
+                _client_label = NULL;
+            }
+
+            if ( label() )
+            {
+                free( (char*)label() );
+                label( NULL );
+            }
         }
 };
 
@@ -286,7 +447,7 @@ public:
     Fl_Button *add_button;
     Fl_Button *duplicate_button;
 
-    Fl_Hold_Browser *session_browser;
+    Fl_Tree *session_browser;
     
     static void cb_handle ( Fl_Widget *w, void *v )
         {
@@ -354,16 +515,23 @@ public:
             }
             else if ( w == session_browser )
             {
-                const char *name = session_browser->text( session_browser->value());
-
-                /* strip out formatting codes */
-
-                if ( !name )
+                if ( session_browser->callback_reason() != FL_TREE_REASON_SELECTED )
                     return;
+
+                Fl_Tree_Item *item = session_browser->callback_item();
+
+                session_browser->deselect( item, 0 );
+
+                if ( item->children() )
+                    return;
+
+                char name[1024];
+
+                session_browser->item_pathname( name, sizeof(name), item );
 
                 foreach_daemon ( d )
                 {
-                    osc->send( (*d)->addr, "/nsm/server/open", index( name, ' ' ) + 1 );
+                    osc->send( (*d)->addr, "/nsm/server/open", name );
                 }
             }
             else if ( w == new_button )
@@ -417,23 +585,41 @@ public:
                     if ( ! browser->value() )
                         return;
 
-                    const char *name = fl_input( "Add Client" );
+                    const char *n = fl_input( "Add Client" );
                     
-                    if ( !name )
+                    if ( !n )
                         return;
+                    
+                    char *name = strdup( n );
+                    
+                    if ( index( name, ' ' ) )
+                    {
+                        free( name );
+                        name = strdup( "nsm-proxy" );
+                    }
 
                     lo_address nsm_addr = lo_address_new_from_url( browser->text( browser->value() ) );
 
                     osc->send( nsm_addr, "/nsm/server/add", name );
+
+                    free( name );
                     
                     delete win;
                 }
                 else
                 {
-                    const char *name = fl_input( "Add Client" );
+                    const char *n = fl_input( "Add Client" );
                     
-                    if ( !name )
+                    if ( !n )
                         return;
+                    
+                    char *name = strdup( n );
+                    
+                    if ( index( name, ' ' ) )
+                    {
+                        free( name );
+                        name = strdup( "nsm-proxy" );
+                    }
 
                     MESSAGE( "Sending add for: %s", name );
                     /* FIXME: user should get to choose which system to do the add on */
@@ -441,27 +627,13 @@ public:
                     {
                         osc->send( (*d)->addr, "/nsm/server/add", name );
                     }
+
+                    free( name );
                 }
 
             }
         }
 
-    void
-    ForwardSort( Fl_Browser *b ) {
-        for ( int t=1; t<=b->size(); t++ ) {
-            for ( int r=t+1; r<=b->size(); r++ ) {
-                if ( strcmp(b->text(t), b->text(r)) > 0 ) {
-                    b->swap(t,r);
-                }
-            }
-        }
-    }
-    
-    void
-    sort_sessions ( void )
-        {
-            ForwardSort( session_browser );
-        }
     
     NSM_Client * 
     client_by_id ( const char *id )
@@ -586,20 +758,8 @@ public:
 
     void add_session_to_list ( const char *name )
         {
-            char *s;
-            asprintf( &s, "@S18@C3 %s", name );
-
-            for ( int i = 1; i <= session_browser->size(); i++ )
-            {
-                if ( !strcmp( session_browser->text( i ), s ) )
-                {
-                    free( s );
-                    return;
-                }
-            }
-            
-            session_browser->add( s );
-            free(s);
+            session_browser->add( name );
+            session_browser->redraw();
         }
 
 
@@ -651,9 +811,13 @@ public:
             }
             { Fl_Tile *o = new Fl_Tile( X, Y + 50, W, H - 50 );
                 { 
-                    Fl_Hold_Browser *o = session_browser = new Fl_Hold_Browser( X, Y + 50, W / 3, H - 50 );
+                    Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - 50 );
                     o->callback( cb_handle, (void *)this );
                     o->color( fl_darker( FL_GRAY ) );
+                    o->item_labelbgcolor( o->color() );
+                    o->item_labelfgcolor( FL_YELLOW );
+                    o->sortorder( FL_TREE_SORT_ASCENDING );
+                    o->showroot( 0 );
                     o->selection_color( fl_darker( FL_GREEN ) );
                     o->box( FL_ROUNDED_BOX );
                     o->label( "Sessions" );
@@ -737,6 +901,9 @@ public:
             osc->add_method( "/nsm/gui/client/switch", "ss", osc_handler, osc, "path,display_name" );
             osc->add_method( "/nsm/gui/client/progress", "sf", osc_handler, osc, "path,display_name" );
             osc->add_method( "/nsm/gui/client/dirty", "si", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/has_optional_gui", "s", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/gui_visible", "si", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/client/label", "ss", osc_handler, osc, "path,display_name" );
 
             osc->start();
 
@@ -796,7 +963,6 @@ private:
                  ! strcmp( types, "s" ) )
             {
                 controller->add_session_to_list( &argv[0]->s );
-                controller->sort_sessions();
             }
             else if ( !strcmp( path, "/nsm/gui/gui_announce" ) )
             {
@@ -841,7 +1007,6 @@ private:
                 if ( !strcmp( &argv[0]->s, "/nsm/server/list" ) )
                 {
                     controller->add_session_to_list( &argv[1]->s );
-                    controller->sort_sessions();
                 }
                 else if ( !strcmp( &argv[0]->s, "/osc/ping" ) )
                 {
@@ -854,7 +1019,7 @@ private:
             if ( !strncmp( path, "/nsm/gui/client/", strlen( "/nsm/gui/client/" ) ) )
             {
                 if ( !strcmp( path, "/nsm/gui/client/new" ) &&
-                              !strcmp( types, "ss" ) )
+                     !strcmp( types, "ss" ) )
                 {
                     controller->client_new( &argv[0]->s, &argv[1]->s );
                 }
@@ -878,6 +1043,21 @@ private:
                                   !strcmp( types, "si" ))
                         {
                             c->dirty(  argv[1]->i );
+                        }
+                        else if ( !strcmp( path, "/nsm/gui/client/gui_visible" ) &&
+                                  !strcmp( types, "si" ))
+                        {
+                            c->gui_visible(  argv[1]->i );
+                        }
+                        else if ( !strcmp( path, "/nsm/gui/client/label" ) &&
+                                  !strcmp( types, "ss" ))
+                        {
+                            c->client_label( &argv[1]->s );
+                        }
+                        else if ( !strcmp( path, "/nsm/gui/client/has_optional_gui" ) &&
+                                  !strcmp( types, "s" ))
+                        {
+                            c->has_optional_gui();
                         }
                         else if ( !strcmp( path, "/nsm/gui/client/switch" ) && 
                                   !strcmp( types, "ss" ))
@@ -944,13 +1124,6 @@ main (int argc, char **argv )
                             (char**)icon_16x16, &p, &mask, NULL);
 #endif
 
-    init_crystal_boxtypes();
-    init_gleam_boxtypes();
-
-    Fl::get_system_colors();
-
-    color_scheme( "Dark" );
-    Fl::scheme( "plastic" );
     Fl::lock();
     
     Fl_Double_Window *main_window;
@@ -976,6 +1149,10 @@ main (int argc, char **argv )
 #endif        
         o->show( 0, NULL );
     }
+    
+    fl_register_themes();
+    
+    Fl_Theme::set();
 
     static struct option long_options[] = 
         {

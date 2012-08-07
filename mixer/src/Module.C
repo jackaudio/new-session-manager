@@ -41,6 +41,8 @@
 
 #include "OSC/Endpoint.H"
 
+#include "string_util.h"
+
 
 
 Module *Module::_copied_module_empty = 0;
@@ -188,8 +190,15 @@ Module::paste_before ( void )
 {
     Module *m = _copied_module_empty;
 
-    m->chain( chain() );
     Log_Entry le( _copied_module_settings );
+    le.remove( ":chain" );
+
+    char *print = le.print();
+
+    DMESSAGE( "Pasting settings: %s", print );
+
+    free( print );
+
     m->set( le );
 
     if ( ! chain()->insert( this, m ) )
@@ -201,7 +210,7 @@ Module::paste_before ( void )
     _copied_module_settings = NULL;
     _copied_module_empty = NULL;
 
-    /* set up for another copy */
+    /* set up for another paste */
     m->copy();
 }
 
@@ -243,20 +252,19 @@ Module::Port::generate_osc_path ()
     else
         asprintf( &path, "/strip/%s/%s/%s", module()->chain()->name(), p->module()->label(), p->name() );
 
-    // Hack to keep spaces out of OSC URL... Probably need to handle other special characters similarly.
-    for ( int i = strlen( path ); i--; )
-    {
-        if ( path[i] == ' ' || path[i] == ',' )
-            path[i] = '_';
-    }
+    char *s = escape_url( path );
+    
+    free( path );
+
+    path = s;
 
     return path;
 }
 
 void
-Module::Port::handle_signal_connection_state_changed ( OSC::Signal * )
+Module::Port::handle_signal_connection_state_changed ( OSC::Signal *, void *o )
 {
-    module()->redraw();
+    ((Module::Port*)o)->module()->redraw();
 }
 
 void
@@ -286,8 +294,8 @@ Module::Port::change_osc_path ( char *path )
                                                               0.0, 1.0, scaled_default,
                                                               &Module::Port::osc_control_change_cv, this );
 
-            _scaled_signal->signal_connection_state_changed.connect(
-                sigc::mem_fun( this, &Module::Port::handle_signal_connection_state_changed ) );
+            
+            _scaled_signal->connection_state_callback( handle_signal_connection_state_changed, this );
 
             _unscaled_signal = mixer->osc_endpoint->add_signal( unscaled_path,
                                                                 OSC::Signal::Input,
@@ -314,6 +322,8 @@ Module::Port::osc_control_change_exact ( float v, void *user_data )
 {
     Module::Port *p = (Module::Port*)user_data;
 
+    Fl::lock();
+
     float f = v;
 
     if ( p->hints.ranged )
@@ -326,6 +336,8 @@ Module::Port::osc_control_change_exact ( float v, void *user_data )
 
     p->control_value( f );
 
+    Fl::unlock();
+
 //    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, f );
 
     return 0;
@@ -337,6 +349,8 @@ Module::Port::osc_control_change_cv ( float v, void *user_data )
     Module::Port *p = (Module::Port*)user_data;
 
     float f = v;
+
+    Fl::lock();
 
     // clamp value to control voltage range.
     if ( f > 1.0 )
@@ -353,9 +367,10 @@ Module::Port::osc_control_change_cv ( float v, void *user_data )
         
         f = ( f * scale ) + offset;
     }
-    
+
     p->control_value( f );
 
+    Fl::unlock();
 //    mixer->osc_endpoint->send( lo_message_get_source( msg ), "/reply", path, f );
 
     return 0;
@@ -420,6 +435,26 @@ Module::set ( Log_Entry &e )
 
 
 
+
+void
+Module::chain ( Chain *v )
+{
+    if ( _chain != v )
+    {
+        DMESSAGE( "Adding module %s in to chain %s", label(), v ? v->name() : "NULL" );
+
+        _chain = v; 
+
+        for ( int i = 0; i < ncontrol_inputs(); ++i )
+        {
+            control_input[i].update_osc_port();
+        }
+    }
+    else
+    {
+        DMESSAGE( "Module %s already belongs to chain %s", label(), v ? v->name() : "NULL" );
+    }
+}
 
 /* return a string serializing this module's parameter settings.  The
    format is 1.0:2.0:... Where 1.0 is the value of the first control

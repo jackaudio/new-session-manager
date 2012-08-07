@@ -40,7 +40,7 @@ public:
     bool open ( void ) { return true; }
     void close ( void ) { }
     void seek ( nframes_t ) { }
-    nframes_t read ( sample_t *, int, nframes_t len ) { return len; }
-    nframes_t read ( sample_t *, int,  nframes_t start, nframes_t end ) { return end - start; }
+    nframes_t read ( sample_t *, int, nframes_t len ) { return 0; }
+    nframes_t read ( sample_t *, int,  nframes_t start, nframes_t end ) { return 0; }
     nframes_t write ( sample_t *, nframes_t nframes ) { return nframes; }
 };

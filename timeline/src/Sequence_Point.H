@@ -60,12 +60,7 @@ public:
 
     virtual int x ( void ) const
         {
-            const int x = Sequence_Widget::x();
-
-            if ( x >= sequence()->x() + sequence()->w() )
-                return sequence()->x() + sequence()->w() + abs_w();
-            else
-                return x;
+            return line_x();
         }
 
     nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }

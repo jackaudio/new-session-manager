@@ -56,6 +56,21 @@ namespace OSC
 
     int Signal::next_id = 0;
 
+
+    Signal::Signal ( const char *path, Direction dir )
+    { 
+        _direction = dir;
+        _path = strdup( path );
+        _id = ++next_id;
+        _value = 0.0f;
+        _endpoint = NULL;
+        _peer = NULL;
+        _documentation = 0;
+        _user_data = 0;
+        _connection_state_callback = 0;
+        _connection_state_userdata = 0;
+    }
+
     Signal::~Signal ( )
     {
         if ( _endpoint )
@@ -140,7 +155,9 @@ namespace OSC
 
         return r;
     }
+
 
+
     void
     Endpoint::error_handler(int num, const char *msg, const char *path)
     {
@@ -149,6 +166,11 @@ namespace OSC
 
     Endpoint::Endpoint ( )
     {
+        _peer_scan_complete_callback = 0;
+        _peer_scan_complete_userdata = 0;
+        _server = 0;
+        _name = 0;
+        owner = 0;
     }
 
     int
@@ -163,7 +185,6 @@ namespace OSC
             WARNING( "Error creating OSC server" );
             return -1;
         }
-
 
         add_method( "/signal/hello", "ss", &Endpoint::osc_sig_hello, this, "" );
         add_method( "/signal/connect", "ii", &Endpoint::osc_sig_connect, this, "" );
@@ -183,7 +204,11 @@ namespace OSC
     Endpoint::~Endpoint ( )
     {
 //    lo_server_thread_free( _st );
-        lo_server_free( _server );
+        if ( _server )
+        {
+            lo_server_free( _server );
+            _server = 0;
+        }
     }
 
     OSC::Signal *
@@ -248,6 +273,8 @@ namespace OSC
     void
     Endpoint::hello ( const char *url )
     {
+        assert( name() );
+
         lo_address addr = lo_address_new_from_url ( url );
 
         char *our_url = this->url();
@@ -260,6 +287,7 @@ namespace OSC
     int
     Endpoint::osc_sig_hello ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
     {
+
         Endpoint *ep = (Endpoint*)user_data;
 
         const char *peer_name = &argv[0]->s;
@@ -271,7 +299,14 @@ namespace OSC
         {
             ep->scan_peer( peer_name, peer_url );
 
-            ep->hello( peer_url );
+            if ( ep->name() )
+            {
+                ep->hello( peer_url );
+            }
+            else
+            {
+                DMESSAGE( "Not sending hello because we don't have a name yet!" );
+            }
         }
 
         return 0;
@@ -306,7 +341,8 @@ namespace OSC
             
             DMESSAGE( "Peer %s has disconnected from signal %s", p->name, ps->path() );
  
-            s->signal_connection_state_changed( s );
+            if ( s->_connection_state_callback )
+                s->_connection_state_callback( s, s->_connection_state_userdata );
 
             return 0;
         }
@@ -358,7 +394,8 @@ namespace OSC
         /* make a record of it ourselves */
         ps->_outgoing.push_back( s );
 
-        s->signal_connection_state_changed( s );
+        if ( s->_connection_state_callback )
+            s->_connection_state_callback( s, s->_connection_state_userdata );
 
         /*     return 0; */
         /* } */
@@ -522,6 +559,7 @@ namespace OSC
             /* reply with current value */
             o = (Signal*)user_data;
             o->_endpoint->send( lo_message_get_source( msg ), "/reply", path, o->value() );
+            return 0;
         }
         else
         {
@@ -533,8 +571,6 @@ namespace OSC
         if ( ep )
             p = ep->find_peer_by_address( lo_message_get_source( msg ) );
 
-        if ( 0 == o->_incoming.size() )
-            return 0;
 
         if ( !p )
         {
@@ -547,6 +583,9 @@ namespace OSC
 
             /* remote signal */
             /* if ( t->_peer ) */
+
+            /* if ( 0 == o->_incoming.size() ) */
+            /*     return 0; */
 
             for ( std::list<Signal*>::const_iterator i = o->_incoming.begin();
                   i != o->_incoming.end();
@@ -872,7 +911,8 @@ namespace OSC
                 p->_scanning = false;
                 DMESSAGE( "Done scanning %s", p->name );
 
-                ep->signal_peer_scan_complete();
+                if ( ep->_peer_scan_complete_callback )
+                    ep->_peer_scan_complete_callback(ep->_peer_scan_complete_userdata);
             }
             else if ( argc == 7 && p->_scanning )
             {

@@ -109,7 +109,7 @@ public:
 
     void remove_selected ( void );
 
-    Fl_Color color ( void ) const { return this == Fl::focus() ? fl_color_average( FL_FOREGROUND_COLOR, Fl_Widget::color(), 0.50f ) : Fl_Widget::color(); }
+    Fl_Color color ( void ) const { return this == Fl::focus() ? fl_color_average( FL_FOREGROUND_COLOR, Fl_Widget::color(), 0.20f ) : Fl_Widget::color(); }
     void color ( Fl_Color v ) { Fl_Widget::color( v ); }
 
     const std::list <Sequence_Widget *> widgets ( void ) const { return _widgets; }
@@ -136,6 +136,7 @@ public:
     virtual void snap ( Sequence_Widget *r );
     virtual int handle ( int m );
     virtual void draw ( void );
+    virtual void draw_box ( void );
 
     virtual nframes_t process ( nframes_t ) { return 0; }
 

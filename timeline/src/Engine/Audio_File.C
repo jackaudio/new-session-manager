@@ -37,6 +37,9 @@ Audio_File::~Audio_File ( )
 
     if ( _filename )
         free( _filename );
+
+    if ( _path )
+        free( _path );
 }
 
 const Audio_File::format_desc *
@@ -66,23 +69,23 @@ is_absolute ( const char *name )
     return *name == '/';
 }
 
-/** return a static pointer to /name/ corrected for relative path. */
-const char *Audio_File::realname ( const char *name )
+/** return pointer to /name/ corrected for relative path. */
+char *Audio_File::path ( const char *name )
 {
-    static char rname[512];
+    char *path = 0;
 
     if ( is_absolute( name ) )
-        strncpy( rname, name, sizeof( rname ) );
+        path = strdup( name );
     else
-        snprintf( rname, sizeof( rname ), "sources/%s", name );
+        asprintf( &path, "sources/%s", name );
 
-    return rname;
+    return path;
 }
 
 const char *
 Audio_File::filename ( void ) const
 {
-    return realname( _filename );
+    return _path;
 }
 
 /** attempt to open any supported filetype */
@@ -144,22 +147,14 @@ Audio_File::release ( void )
 bool
 Audio_File::read_peaks( float fpp, nframes_t start, nframes_t end, int *peaks, Peak **pbuf, int *channels )
 {
-//    Peaks pk;
-
+    *peaks = 0;
+    *channels = 0;
+    *pbuf = NULL;
+    
     if ( dummy() )
-    {
-        *peaks = (end - start) / fpp;
-        *channels = 0;
-        *pbuf = NULL;
-
         return false;
-    }
     else
     {
-        *peaks    = 0;
-        *channels = 0;
-        *pbuf     = NULL;
-
         *peaks = _peaks.fill_buffer( fpp, start, end );
 
         *channels = this->channels();

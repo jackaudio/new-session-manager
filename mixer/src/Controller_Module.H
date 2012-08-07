@@ -78,9 +78,12 @@ public:
 
     void connect_to ( Port *p );
     bool connect_spatializer_to ( Module *m );
+    void disconnect ( void );
 
     void handle_control_changed ( Port *p );
     void handle_chain_name_changed ( void );
+
+    virtual void command_remove ( void );
 
     LOG_CREATE_FUNC( Controller_Module );
 

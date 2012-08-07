@@ -116,3 +116,10 @@ Thread::join ( void )
     pthread_join( _thread, NULL );
     _thread = 0;
 }
+
+void
+Thread::exit ( void *retval )
+{
+    pthread_exit( retval );
+    _thread = 0;
+}

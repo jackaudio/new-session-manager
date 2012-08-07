@@ -19,7 +19,7 @@ nonlib/libnonlib.a: $(OBJS)
 nonlib: nonlib/libnonlib.a
 
 clean:
-	rm -f $(OBJS) nonlib/libnonlib.a
+	rm -f $(OBJS) nonlib/libnonlib.a .deps
 
 install:
 	@

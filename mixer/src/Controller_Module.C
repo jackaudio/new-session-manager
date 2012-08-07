@@ -30,9 +30,8 @@
 #include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Menu_.H>
 #include <FL/Fl_Light_Button.H>
-#include "FL/Crystal_Boxtypes.H"
 #include <FL/fl_draw.H>
-#include "FL/Fl_Arc_Dial.H"
+#include "FL/Fl_Dial.H"
 #include "FL/Fl_Labelpad_Group.H"
 #include "FL/Fl_Value_SliderX.H"
 #include "Panner.H"
@@ -92,6 +91,17 @@ Controller_Module::handle_chain_name_changed()
 //    change_osc_path( generate_osc_path() );
 }
 
+void
+Controller_Module::disconnect ( void )
+{
+    for ( std::vector<Module::Port>::iterator i = control_output.begin();
+          i != control_output.end();
+          ++i )
+    {
+        (*i).disconnect();
+    }
+}
+
 
 
 void
@@ -100,11 +110,21 @@ Controller_Module::get ( Log_Entry &e ) const
     Module::get( e );
 
     Port *p = control_output[0].connected_port();
-    Module *m = p->module();
 
-    e.add( ":module", m );
-    e.add( ":port", m->control_input_port_index( p ) );
-    e.add( ":mode", mode() );
+    if ( !p )
+    {
+        e.add( ":module", "" );
+        e.add( ":port", "" );
+        e.add( ":mode", "" );
+    }
+    else
+    {
+        Module *m = p->module();
+        
+        e.add( ":module", m );
+        e.add( ":port", m->control_input_port_index( p ) );
+        e.add( ":mode", mode() );
+    }
 }
 
 void
@@ -361,7 +381,7 @@ Controller_Module::connect_to ( Port *p )
     }
     else
     {
-        { Fl_Arc_Dial *o = new Fl_Arc_Dial( 0, 0, 50, 50, p->name() );
+        { Fl_Dial *o = new Fl_Dial( 0, 0, 50, 50, p->name() );
             w = o;
             control = o;
 
@@ -486,6 +506,8 @@ Controller_Module::menu_cb ( const Fl_Menu_ *m )
         mode( GUI );
     else if ( ! strcmp( picked, "Mode/Control Voltage (JACK)" ) )
         mode( CV );
+    else if ( ! strcmp( picked, "/Remove" ) )
+        command_remove();
 }
 
 /** build the context menu for this control */
@@ -499,7 +521,8 @@ Controller_Module::menu ( void )
             { "Mode",             0, 0, 0,  FL_SUBMENU    },
             { "GUI + OSC",       0, 0, 0,  FL_MENU_RADIO | ( mode() == GUI ? FL_MENU_VALUE : 0 ) },
             { "Control Voltage (JACK)",           0, 0, 0,  FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) },
-            { 0                   },
+            { 0 },
+            { "Remove", 0, 0, 0, 0 },
             { 0 },
         };
 
@@ -567,6 +590,18 @@ Controller_Module::handle_control_changed ( Port *p )
             ((Fl_Button*)control)->value(control_value);
         else
             control->value(control_value);
+    }
+}
+
+void
+Controller_Module::command_remove ( void )
+{
+    if ( is_default() )
+        fl_alert( "Default modules may not be deleted." );
+    else
+    {
+        chain()->remove( this );
+        Fl::delete_widget( this );
     }
 }
 

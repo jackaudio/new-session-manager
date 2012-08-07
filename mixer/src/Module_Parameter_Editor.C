@@ -17,6 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#include <FL/Fl.H>
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,11 +29,10 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Counter.H>
-#include "FL/Crystal_Boxtypes.H"
 #include "FL/Fl_Flowpack.H"
 #include "FL/Fl_Labelpad_Group.H"
 #include "FL/Fl_Value_SliderX.H"
-#include "FL/Fl_Arc_Dial.H"
+#include "FL/Fl_Dial.H"
 
 #include "Module.H"
 #include "Module_Parameter_Editor.H"
@@ -43,7 +44,7 @@
 
 
 
-Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_Window( 0, 0, 800, 600 )
+Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_Window( 800, 600 )
 {
     _module = module;
     _resized = false;
@@ -199,7 +200,7 @@ Module_Parameter_Editor::make_controls ( void )
         {
             if ( mode_choice->value() == 0 )
             {
-                Fl_Arc_Dial *o = new Fl_Arc_Dial( 0, 0, 60, 60, p->name() );
+                Fl_Dial *o = new Fl_Dial( 0, 0, 60, 60, p->name() );
                 w = o;
 
                 if ( p->hints.ranged )

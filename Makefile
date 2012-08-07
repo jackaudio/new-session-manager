@@ -19,7 +19,11 @@
 
 SUBDIRS=lib nonlib FL timeline mixer session-manager sequencer
 
-all: lib/.built .config
+all: lib/ntk/configure lib/.built .config
+	@ for dir in $(SUBDIRS); do echo Building $$dir; $(MAKE) -s -C $$dir; done
+
+lib/ntk/configure:
+	@ git submodule update --init
 
 lib/.built: 
 	@ make -C lib
@@ -30,12 +34,8 @@ lib/.built:
 config: configure
 	./configure
 
-all:
-	@ for dir in $(SUBDIRS); do echo Building $$dir; $(MAKE) -s -C $$dir; done
-
 clean:
 	@ for dir in $(SUBDIRS); do $(MAKE) -s -C $$dir clean; done
 
 install:
 	@ for dir in $(SUBDIRS); do $(MAKE) -s -C $$dir install; done
-

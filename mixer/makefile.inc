@@ -28,7 +28,7 @@ clean:
 install: all
 	@ echo -n "Installing..."
 	@ install -Dm755 src/mixer "$(DESTDIR)$(prefix)"/bin/non-mixer
-	@ ln -s "$(DESTDIR)$(prefix)"/bin/non-mixer "$(DESTDIR)$(prefix)"/bin/non-mixer-noui
+	@ ln -sf "$(DESTDIR)$(prefix)"/bin/non-mixer "$(DESTDIR)$(prefix)"/bin/non-mixer-noui
 	@ install -d "$(DESTDIR)$(SYSTEM_PATH)"/non-mixer
 	@ $(MAKE) -s -C doc install
 	@ install -d "$(DESTDIR)$(PIXMAP_PATH)/non-mixer"

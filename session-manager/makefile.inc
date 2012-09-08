@@ -33,7 +33,7 @@ src/nsm-proxy: src/nsm-proxy.o  nonlib/libnonlib.a
 
 src/nsm-proxy-gui: src/NSM_Proxy_UI.o src/nsm-proxy-gui.o $(FLTK_LIBS)
 	@ echo -n Linking NSM Proxy...
-	@ $(CXX) $(CXXFLAGS) $(FLTK_LDFLAGS) $^ -o $@ $(XPM_LIBS) $(LIBLO_LIBS) $(FLTK_LIBS) -LFL -lfl_widgets && echo $(DONE)
+	@ $(CXX) $(CXXFLAGS) $^ -o $@ $(FLTK_LDFLAGS) $(XPM_LIBS) $(LIBLO_LIBS) $(FLTK_LIBS) -LFL -lfl_widgets && echo $(DONE)
 
 src/send_osc: src/send_osc.o nonlib/libnonlib.a
 	@ $(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS) -Lnonlib -lnonlib && echo $(DONE)

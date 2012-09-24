@@ -12,7 +12,7 @@
 <address>
 Jonathan Moore Liles <a href="mailto:male@tuxfamily.org">&lt;male@tuxfamily.org&gt;</a><br>
 August 1, 2010<br>
-Version 1.1
+Version 1.2
 </address><img src="icon.png" alt="logo"><hr></div>
 <div id=body>
 <div id=toc>
@@ -21,19 +21,27 @@ Version 1.1
 <li><a href="#n:1.">1. Non Session Management API</a>
 <ul><li><a href="#n:1.1.">1.1. Client Behavior Under Session Management</a>
 
-<ul><li><a href="#n:1.1.1.">1.1.1. New</a>
+<ul><li><a href="#n:1.1.1.">1.1.1. File Menu</a>
 
-<li><a href="#n:1.1.2.">1.1.2. Open</a>
+<ul><li><a href="#n:1.1.1.1.">1.1.1.1. New</a>
 
-<li><a href="#n:1.1.3.">1.1.3. Save</a>
+<li><a href="#n:1.1.1.2.">1.1.1.2. Open</a>
 
-<li><a href="#n:1.1.4.">1.1.4. Save As</a>
+<li><a href="#n:1.1.1.3.">1.1.1.3. Save</a>
 
-<li><a href="#n:1.1.5.">1.1.5. Close (as distinguished from Quit or Exit)</a>
+<li><a href="#n:1.1.1.4.">1.1.1.4. Save As</a>
 
-<li><a href="#n:1.1.6.">1.1.6. Quit or Exit</a>
+<li><a href="#n:1.1.1.5.">1.1.1.5. Close (as distinguished from Quit or Exit)</a>
 
-</ul><li><a href="#n:1.2.">1.2. NSM OSC Protocol</a>
+<li><a href="#n:1.1.1.6.">1.1.1.6. Quit or Exit</a>
+
+</ul><li><a href="#n:1.1.2.">1.1.2. Data Storage</a>
+
+<ul><li><a href="#n:1.1.2.1.">1.1.2.1. Internal Files</a>
+
+<li><a href="#n:1.1.2.2.">1.1.2.2. External Files</a>
+
+</ul></ul><li><a href="#n:1.2.">1.2. NSM OSC Protocol</a>
 
 <ul><li><a href="#n:1.2.1.">1.2.1. Establishing a Connection</a>
 
@@ -104,39 +112,54 @@ These are: New, Open, Save, Save As, Close and Quit or Exit.
 <p>
 The following sub-sections describe how these options should behave when the application is part of an NSM session. These rules only apply when session management is active (that is, after the <tt>announce</tt> handshake described in the <a class=int href="#n:1.2.">1.2. NSM OSC Protocol</a> section).   In order to provide a consistent and predictable user experience, it is critically important for applications to adhere to these guidelines.
 </p>
-<h3 id="n:1.1.1.">1.1.1. New</h3>
+<h3 id="n:1.1.1.">1.1.1. File Menu</h3>
+<h4 id="n:1.1.1.1.">1.1.1.1. New</h4>
 <p>
 This option may empty/reset the current file or project (possibly after user confirmation). <b>UNDER NO CIRCUMSTANCES</b> should it allow the user to create a new project/file in another location.
 </p>
-<h3 id="n:1.1.2.">1.1.2. Open</h3>
+<h4 id="n:1.1.1.2.">1.1.1.2. Open</h4>
 <p>
 This option <b>MUST</b> be disabled. 
 </p>
 <p>
 The application may, however, elect to implement an option called 'Import into Session', creates a copy of a file/project which is then saved at the session path provided by NSM.
 </p>
-<h3 id="n:1.1.3.">1.1.3. Save</h3>
+<h4 id="n:1.1.1.3.">1.1.1.3. Save</h4>
 <p>
 This option should behave as normal, saving the current file/project as established by the NSM <tt>open</tt> message.
 </p>
 <p>
 <b>UNDER NO CIRCUMSTANCES</b> should this option present the user with a choice of where to save the file.
 </p>
-<h3 id="n:1.1.4.">1.1.4. Save As</h3>
+<h4 id="n:1.1.1.4.">1.1.1.4. Save As</h4>
 <p>
 This option <b>MUST</b> be disabled.
 </p>
 <p>
 The application may, however, elect to implement an option called 'Export from Session', which creates a copy of the current file/project which is then saved in a user-specified location outside of the session path provided by NSM.
 </p>
-<h3 id="n:1.1.5.">1.1.5. Close (as distinguished from Quit or Exit)</h3>
+<h4 id="n:1.1.1.5.">1.1.1.5. Close (as distinguished from Quit or Exit)</h4>
 <p>
  This option <b>MUST</b> be disabled unless its meaning is to disconnect the application from session management.
 </p>
-<h3 id="n:1.1.6.">1.1.6. Quit or Exit</h3>
+<h4 id="n:1.1.1.6.">1.1.1.6. Quit or Exit</h4>
 <p>
 This option may behave as normal (possibly asking the user to confirm exiting).
 </p>
+<h3 id="n:1.1.2.">1.1.2. Data Storage</h3>
+<h4 id="n:1.1.2.1.">1.1.2.1. Internal Files</h4>
+<p>
+All project specific data created by a client <b>MUST</b> be stored in the per-client storage area provided by NSM. This includes all recorded audio and MIDI files, snapshots, etc. Only global configuration items, exports, and renders of the project may be stored elsewhere (wherever the user specifies).
+</p>
+<h4 id="n:1.1.2.2.">1.1.2.2. External Files</h4>
+<p>
+Files required by the project but external to it (typically read-only data such as audio samples) <b>SHOULD</b> be referenced by creating a symbolic link within the assigned session area, and then referring to the symlink. This allows sessions to be archived and transported simply (e.g. with "tar -h") by tools that have no knowledge of the project formats of the various clients in the session. The symlinks thus created should, at the very least, be named after the files they refer to (some unique component may be required to prevent collisions)
+</p>
+<div class="fig example"><table width=100%><tr><td><pre>
+samples/drumbeat-1.wav
+samples/drumbeat-2.wav
+</pre></td></tr>
+</table></div>
 <h2 id="n:1.2.">1.2. NSM OSC Protocol</h2>
 <p>
 All message parameters are <b>REQUIRED</b>. All messages <b>MUST</b> be sent from the same socket as the <tt>announce</tt> message, using the <tt>lo_send_from</tt> method of liblo or its equivalent, as the server uses the return addresses to distinguish between clients.

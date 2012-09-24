@@ -2,7 +2,7 @@
 ! title		Non Session Management API
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
 ! date		August 1, 2010
-! revision	Version 1.1
+! revision	Version 1.2
 ! extra		#(image,logo,icon.png)
 
 -- Table Of Contents
@@ -63,13 +63,15 @@
   is critically important for applications to adhere to these
   guidelines.
 
-::: New
+::: File Menu
+
+:::: New
 
   This option may empty\/reset the current file or project (possibly
   after user confirmation). *UNDER NO CIRCUMSTANCES* should it allow
   the user to create a new project\/file in another location.
 
-::: Open
+:::: Open
 
   This option *MUST* be disabled. 
 
@@ -77,7 +79,7 @@
   'Import into Session', creates a copy of a file\/project which is
   then saved at the session path provided by NSM.
 
-::: Save
+:::: Save
 
   This option should behave as normal, saving the current
   file\/project as established by the NSM `open` message.
@@ -85,7 +87,7 @@
   *UNDER NO CIRCUMSTANCES* should this option present the user with a
   choice of where to save the file.
 
-::: Save As
+:::: Save As
 
   This option *MUST* be disabled.
 
@@ -94,15 +96,40 @@
   file\/project which is then saved in a user-specified location
   outside of the session path provided by NSM.
 
-::: Close (as distinguished from Quit or Exit)
+:::: Close (as distinguished from Quit or Exit)
   
   This option *MUST* be disabled unless its meaning is to disconnect
   the application from session management.
 
-::: Quit or Exit
+:::: Quit or Exit
 
   This option may behave as normal (possibly asking the user to
   confirm exiting).
+
+::: Data Storage
+
+:::: Internal Files
+
+  All project specific data created by a client *MUST* be stored in
+  the per-client storage area provided by NSM. This includes all
+  recorded audio and MIDI files, snapshots, etc. Only global
+  configuration items, exports, and renders of the project may be
+  stored elsewhere (wherever the user specifies).
+
+:::: External Files
+
+  Files required by the project but external to it (typically
+  read-only data such as audio samples) *SHOULD* be referenced by
+  creating a symbolic link within the assigned session area, and then
+  referring to the symlink. This allows sessions to be archived and
+  transported simply (e.g. with "tar -h") by tools that have no
+  knowledge of the project formats of the various clients in the
+  session. The symlinks thus created should, at the very least, be
+  named after the files they refer to (some unique component may be
+  required to prevent collisions)
+
+> samples/drumbeat-1.wav
+> samples/drumbeat-2.wav
 
 :: NSM OSC Protocol
 

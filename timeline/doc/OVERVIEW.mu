@@ -247,21 +247,19 @@
 
 ; Distribution
 
-  Development of the Non-DAW and Non-Mixer can be followed with Git:
+  Development of the Non-DAW can be followed with Git:
 
-> git clone git://git.tuxfamily.org/gitroot/non/daw.git
+> git clone git://git.tuxfamily.org/gitroot/non/non.git
 
   There are no pre-compiled binaries available.
 
 ; Requirements
 
-  The following libraries are required to build Non DAW and Non Mixer
+  The following libraries are required to build Non DAW.
 
-* FLTK >= 1.1.7 (with `fluid`)
 * JACK >= 0.103.0
 * libsndfile >= 0.18.0
 * liblo >= 0.26
-* libsigc++ >= 2.0.0
 
 ; Community
 

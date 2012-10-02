@@ -12,8 +12,8 @@ OBJS=$(SRCS:.mu=.html)
 all: $(OBJS)
 
 upload: all
-	@ ln -sf OVERVIEW.html index.html
-	@ rsync -L mup.css MANUAL.html index.html *.png ssh.tuxfamily.org:/home/non/non-mixer.tuxfamily.org-web/htdocs
+	@ ln -sf MANUAL.html index.html
+	@ rsync -L mup.css MANUAL.html API.html index.html *.png ssh.tuxfamily.org:/home/non/non.tuxfamily.org-web/htdocs/nsm
 	@ rm -f index.html
 
 install:

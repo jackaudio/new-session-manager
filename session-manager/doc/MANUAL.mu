@@ -258,3 +258,10 @@
   Imagining a useful application of this feature is left as an
   exercise for the reader.
 
+; Distribution
+
+  Development of the Non Session Manager can be followed with Git:
+
+> git clone git://git.tuxfamily.org/gitroot/non/non.git
+
+  There are no pre-compiled binaries available.

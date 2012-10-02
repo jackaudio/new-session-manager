@@ -61,20 +61,14 @@
 
   Development of the Non Sequencer can be followed with Git:
 
-> git clone git://git.tuxfamily.org/gitroot/non/sequencer.git
-
-#  or
-#
-# > git clone git://repo.or.gz/src/git/non.git
+> git clone git://git.tuxfamily.org/gitroot/non/non.git
 
   There are no pre-compiled binaries available.
 
 ; Requirements
 
-  The following libraries are required to build Non.
+  The following libraries are required to build Non:
 
-
-* FLTK >= 1.1.7 (with `fluid`)
 * JACK >= 0.103.0
 * sigc++ 2.0
 

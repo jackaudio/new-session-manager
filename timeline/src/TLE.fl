@@ -856,7 +856,7 @@ if ( engine && engine->zombified() && ! zombie )
 
 solo_blinker->value( Track::soloing() );
 
-if ( transport->punch_enabled() )
+if ( transport->punch_enabled() && timeline->range_start() != timeline->range_end() )
         rec_blinker->value( transport->rolling &&
                             transport->rec_enabled() &&
                             transport->frame >= timeline->range_start() &&

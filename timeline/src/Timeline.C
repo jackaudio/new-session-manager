@@ -1068,8 +1068,7 @@ Timeline::redraw_playhead ( void )
 
     if ( transport->rolling &&
          transport->rec_enabled() &&
-         transport->punch_enabled() &&
-         transport->frame > range_end() )
+         ( ( transport->punch_enabled() && range_start() != range_end() ) && transport->frame > range_end() ) )
         transport->stop();
 
     int playhead_x = ts_to_x( transport->frame );

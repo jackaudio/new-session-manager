@@ -40,7 +40,7 @@ Timeline::record ( void )
 
     nframes_t frame = transport->frame;
 
-    if ( transport->punch_enabled() && frame < range_start() )
+    if ( transport->punch_enabled() && range_start() != range_end() && frame < range_start() )
         frame = range_start();
 
     DMESSAGE( "Going to record starting at frame %lu", (unsigned long)frame );
@@ -64,7 +64,7 @@ Timeline::stop ( void )
 {
     nframes_t frame = transport->frame;
 
-    if ( transport->punch_enabled() && frame > range_end() )
+    if ( transport->punch_enabled() && range_start() != range_end() && frame > range_end() )
         frame = range_end();
 
     for ( int i = tracks->children(); i-- ; )

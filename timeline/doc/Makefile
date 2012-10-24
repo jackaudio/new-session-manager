@@ -12,9 +12,7 @@ OBJS=$(SRCS:.mu=.html)
 all: $(OBJS)
 
 upload: all
-	@ ln -sf OVERVIEW.html index.html
-	@ rsync -L mup.css MANUAL.html index.html *.png ssh.tuxfamily.org:/home/non/non-daw.tuxfamily.org-web/htdocs
-	@ rm -f index.html
+	@ rsync -L mup.css MANUAL.html *.png ssh.tuxfamily.org:/home/non/non-daw.tuxfamily.org-web/htdocs
 
 install:
 	@ install -d "$(DESTDIR)$(DOCUMENT_PATH)"/non-daw

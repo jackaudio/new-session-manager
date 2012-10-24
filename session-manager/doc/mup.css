@@ -1,8 +1,15 @@
 
 /* Example CSS Style for MUP */
 
+body
+{
+    font: normal normal 14pt "Helvetica", sans-serif;
+/*    background: url("http://non.tuxfamily.org/background-pattern.png") fixed; */
+    background-color: #121212; color: lightgray; padding: 0; margin: 0;
+}
+
 a:link {
-    color: yellow;
+    color: white;
 }
 a:visited {
     color: olive;
@@ -82,14 +89,17 @@ p:contains("Warning:") {
 }
 #cover {
     position: relative;
-    background: #da0;
-    color: black;
+/*    background: #da0;*/
+    background: #555;
+    color: #aaa;
     text-align: center;
     margin: 0;
     padding: 0.5em;
+    border-top: 4px solid black;
+    border-bottom: 4px solid black;
 }
 #cover h1, #cover h3 {
-    text-shadow: #444 0.2em 0.2em 0.2em;
+    text-shadow: #222 0.2em 0.2em 0.2em;
     color: white;
     border: none;
     letter-spacing: 0.2em;
@@ -98,7 +108,7 @@ p:contains("Warning:") {
     margin-right: 2em;
 }
 #cover h1:before, #cover h1:after {
-    content: "::";
+/*    content: "::"; */
     font-size: 300%;
     color: black;
 }
@@ -162,26 +172,26 @@ hr {
     border-bottom: 0;
 }
 
-body {
-    margin: 0;
-    background: #222;
-    color: white;
-    font-family: Arial, sans-serif;
-}
 /*  */
 #body {
     position: relative;
-    margin: 0.5em;
+    margin: 0 auto;
     padding: 0.5em;
+    max-width: 900px;
+    background-color: #1c1c1c;
 }
 /* ;, : */
 h1 {
-    color: #ff0;
+    color: #fff;
     border-bottom: solid #444 0.1em;
+    text-shadow: 1px 1px 2px #000;
+
 }
 /* ::, :::, ::::, :::::, :::::: */
 h2, h3, h4, h5, h6 {
-    color: #dd0;
+    color: #fff;
+    text-shadow: 1px 1px 2px #000;
+    
 }
 
 /* tables, figures */
@@ -215,17 +225,19 @@ h2, h3, h4, h5, h6 {
 /* < */
 
 .fig.image table {
-    border: dashed silver 0.2em;
+    border: none;
     background: transparent;
-    /* Every browser should support border radii */
-    -moz-border-radius: 0.5em;
-    border-radius: 0.5em;
-
+    max-width: 100%;
 }
 .fig.image tr, .fig.image td {
     border: none;
     background: transparent;
     padding: 0;
+}
+
+.fig.image img 
+{
+	max-width: 900px;
 }
 
 /*  */
@@ -265,14 +277,14 @@ p {
     margin-top: 0;
     font-family: Monospace;
     padding: 1em;
-    border: dashed 0.3em gray;
-    background: #111;
+    border: solid 1px black;
+    background: #222;
     color: white;
     display: block;
     overflow: auto;
     /* Every browser should support border radii */
-    -moz-border-radius: 0.5em;
-    border-radius: 0.5em;
+/*    -moz-border-radius: 0.5em;
+    border-radius: 0.5em; */
 }
 /* " */
 /*
@@ -431,7 +443,7 @@ dl {
 dt {
     background: #181818;
     padding: 0.2em;
-/*    font-variant: small-caps; */
+    font-variant: small-caps;
     font-weight: bold;
     color: #f0f;
 }

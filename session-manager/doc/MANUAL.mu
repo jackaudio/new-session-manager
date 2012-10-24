@@ -1,7 +1,6 @@
 
 ! title		Non Session Manager User Manual
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
-! date		February 25, 2012
 ! extra		#(image,logo,icon.png)
 
 -- Table Of Contents

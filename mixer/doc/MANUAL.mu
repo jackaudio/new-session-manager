@@ -1,7 +1,6 @@
 
 ! title		Non Mixer User Manual
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
-! date		January 21, 2010
 
 -- Table Of Contents
 

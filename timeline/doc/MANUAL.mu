@@ -1,7 +1,6 @@
 
 ! title		Non DAW User Manual
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
-! date		June 20, 2008
 
 -- Table Of Contents
 

@@ -46,18 +46,56 @@
   previous object in the sequence.  `Ctrl+Right` moves it to the beginning of
   the next object in the sequence.
 
-:::: Range
+::: Cursors
 
-/ Selecting a range
+/ Cursor Strips
+< cursors.png
+
+  Active cursors are displayed the the cursor strip along the top of
+  the timeline. The default cursors define regions of time. All
+  cursors can be manipulated in their tracks by dragging with the
+  mouse or other operations that apply to regions on the timeline.
+
+  `Ctrl+RightClick` will remove a cursor.
+
+:::: Edit Cursor
+
+/ Edit Cursor
 < range.png
 
-  `Ctrl+[` moves the left range cursor (P1) to the position of the playhead.
-  `Ctrl+]` moves the right range cursor (P2) to the position of the playhead.
+  The edit cursor defines a region to apply an operation to. The edit
+  cursor is also used to define the region other cursors, such as
+  Punch and Playback, are created from.
 
-  The range cursors can be set individually with the mouse by positioning the
-  pointer over the desired location and pressing `[` or `]`. Alternatively,
-  both may be set at once by holding `R` and left-click+dragging the selection
-  rectangle.
+  `Ctrl+[` moves the beginning of the edit cursor to the position of
+  the playhead.  `Ctrl+]` moves the end of the edit cursor to the
+  position of the playhead.
+
+  The edit cursor ends can be set individually with the mouse by
+  positioning the pointer over the desired location and pressing `[`
+  or `]`. Alternatively, both may be set at once by holding the `r`
+  key and left-click+dragging the selection rectangle.
+
+:::: Playback Cursor
+
+  The Playback Cursor defines the start and stop of playback,
+  affecting the action of the Home and End transport buttons. Setting
+  the menu option 'Options/Behavior/Transport/Loop Playback' will
+  result in playback looping over the region defined by the Playback
+  Cursor. 
+
+  Hitting `Ctrl+Shift+L` sets the playback cursor to the same
+  dimensions and position as the Edit Cursor.
+
+:::: Punch Cursors
+
+  Punch Cursors define regions where recording will occur when
+  recording in Punch Mode.
+
+  Hitting `Ctrl+Shift+P` defines a new Punch Cursor with the same
+  dimensions and position as the Edit Cursor.
+
+  Any number of punch cursors may be defined.
 
 ::: Projects
 

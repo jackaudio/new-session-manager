@@ -39,7 +39,8 @@ Function {fl_text_edit( const char *title, const char *button_text, const char *
 
 tew.return_button->label( button_text );
 tew.title_box->label( title );
-tew.text_editor->buffer()->text( initial_text );
+if ( initial_text )
+	tew.text_editor->buffer()->text( initial_text );
 
 tew.show();
 

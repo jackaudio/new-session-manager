@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/* Copyright (C) 2012 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -19,48 +19,56 @@
 
 #pragma once
 
-#include "Sequence_Widget.H"
+#include "Sequence_Region.H"
+#include "Cursor_Sequence.H"
 
-class Sequence_Point : public Sequence_Widget
+class Cursor_Region : public Sequence_Region
 {
-    /* not permitted  */
-    Sequence_Point & operator= ( const Sequence_Point &rhs );
+    /* not permitted */
+    Cursor_Region & operator = ( const Cursor_Region &rhs );
+
+    char *_type;
 
 protected:
 
-    void get ( Log_Entry &e ) const;
-    void set ( Log_Entry &e );
+    virtual void get ( Log_Entry &e ) const;
+    virtual void set ( Log_Entry &e );
 
+    Cursor_Region ( )
+        {
+            _label = NULL;
+            _type = NULL;
+        }
 
-    virtual void draw_box ( void );
-    virtual void draw ( void );
-
-    Sequence_Point ( const Sequence_Point &rhs );
-    Sequence_Point ( );
-    ~Sequence_Point ( );
+    Cursor_Region ( const Cursor_Region &rhs );
 
 public:
 
-    const char *label ( void ) const { return _label; }
-    void label ( const char *s )
-        {
-            if ( _label )
-                free( _label );
-            _label = strdup( s );
-            redraw();
+    virtual Fl_Color box_color ( void ) const;
+    virtual void box_color ( Fl_Color c );
+
+    /* for loggable */
+    LOG_CREATE_FUNC( Cursor_Region );
+    SEQUENCE_WIDGET_CLONE_FUNC( Cursor_Region );
+
+    Cursor_Region ( nframes_t when, nframes_t length, const char *type, const char *label );
+    virtual ~Cursor_Region ( );
+
+    void draw_box ( void );
+    void draw ( void );
+    int handle ( int m );
+
+
+    const char * type ( void ) const { return _type; }
+    void type ( const char *v )
+        { 
+            if ( _type ) 
+                free( _type );
+            
+            _type = NULL;
+            
+            if ( v )
+                _type = strdup( v );
         }
-
-    Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
-    virtual int abs_w ( void ) const { return 8; }
-
-//    virtual int abs_x ( void ) const { return Sequence_Widget::abs_x() - ( abs_w() >> 1 ); }
-//    virtual int x ( void ) const { return Sequence_Widget::line_x() - ( abs_w() >> 1 ); }
-
-    virtual int x ( void ) const
-        {
-            return line_x();
-        }
-
-    nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
 
 };

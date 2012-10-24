@@ -26,6 +26,7 @@
 #include "Playback_DS.H"
 
 #include "Thread.H"
+#include "../Cursor_Sequence.H"
 
 #include <unistd.h>
 
@@ -34,14 +35,48 @@ bool
 Timeline::record ( void )
 {
     /* FIXME: right place for this? */
+
+    if ( Timeline::automatically_create_takes &&
+         ! _created_new_takes )
+    {
+        add_take_for_armed_tracks();
+        _created_new_takes = true;
+    }
+
     transport->recording = true;
+
+    deactivate();
 
     Loggable::block_start();
 
     nframes_t frame = transport->frame;
 
-    if ( transport->punch_enabled() && range_start() != range_end() && frame < range_start() )
-        frame = range_start();
+    if ( transport->punch_enabled() )
+    {
+        const Sequence_Widget *w = punch_cursor_track->next( frame );
+        
+        if ( w && w->start() >= frame )
+        {
+            frame = w->start();
+            _punch_out_frame = w->start() + w->length();
+        }
+    }
+
+    _punch_in_frame = frame;
+
+    punch_in( frame );
+
+    return true;
+}
+
+void
+Timeline::punch_in ( nframes_t frame )
+{
+    if ( _punched_in )
+    {
+        WARNING( "Programming error. Attempt to punch in twice" );
+        return;
+    }
 
     DMESSAGE( "Going to record starting at frame %lu", (unsigned long)frame );
 
@@ -53,20 +88,12 @@ Timeline::record ( void )
             t->record_ds->start( frame );
     }
 
-    deactivate();
-
-    return true;
+    _punched_in = true;
 }
 
-/** stop recording for all armed tracks */
 void
-Timeline::stop ( void )
+Timeline::punch_out ( nframes_t frame )
 {
-    nframes_t frame = transport->frame;
-
-    if ( transport->punch_enabled() && range_start() != range_end() && frame > range_end() )
-        frame = range_end();
-
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
@@ -85,6 +112,27 @@ Timeline::stop ( void )
         if ( t->armed() && t->record_ds )
             t->record_ds->shutdown();
     }
+
+    _punched_in = false;
+    _punch_in_frame = 0;
+    _punch_out_frame = 0;
+}
+
+/** stop recording for all armed tracks. Does not affect transport. */
+void
+Timeline::stop ( void )
+{
+    nframes_t frame = transport->frame;
+
+    if ( transport->punch_enabled() )
+    {
+        const Sequence_Widget *w = punch_cursor_track->prev( frame );
+
+        if ( w && w->start() + w->length() < frame )
+            frame = w->start() + w->length();
+    }
+    
+    punch_out( frame );
    
     Loggable::block_end();
 

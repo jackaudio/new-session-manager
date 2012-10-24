@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/* Copyright (C) 2012 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -17,50 +17,46 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#pragma once
+#include "Cursor_Sequence.H"
+#include "Cursor_Point.H"
+#include "Timeline.H"
 
-#include "Sequence_Widget.H"
-
-class Sequence_Point : public Sequence_Widget
+void
+Cursor_Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
-    /* not permitted  */
-    Sequence_Point & operator= ( const Sequence_Point &rhs );
+    sort();
+    timeline->redraw();
+}
 
-protected:
+Sequence_Widget *
+Cursor_Sequence::active_cursor ( void )
+{
+    if ( _widgets.size() )
+        return _widgets.front();
+    else
+        return 0;
+}
 
-    void get ( Log_Entry &e ) const;
-    void set ( Log_Entry &e );
+int
+Cursor_Sequence::handle ( int m )
+{
+    int r = Sequence::handle( m );
 
+    if ( r )
+        return r;
 
-    virtual void draw_box ( void );
-    virtual void draw ( void );
+    switch ( m )
+    {
+        case FL_PUSH:
+            /* if ( Fl::event_button1() ) */
+            /* { */
+            /*     add( new Cursor_Point( timeline->x_to_offset( Fl::event_x() ), "NONE" ) ); */
+            /*     timeline->redraw(); */
+            /*     return 0; */
+            /* } */
+            return 0;
+        default:
+            return 0;
 
-    Sequence_Point ( const Sequence_Point &rhs );
-    Sequence_Point ( );
-    ~Sequence_Point ( );
-
-public:
-
-    const char *label ( void ) const { return _label; }
-    void label ( const char *s )
-        {
-            if ( _label )
-                free( _label );
-            _label = strdup( s );
-            redraw();
-        }
-
-    Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
-    virtual int abs_w ( void ) const { return 8; }
-
-//    virtual int abs_x ( void ) const { return Sequence_Widget::abs_x() - ( abs_w() >> 1 ); }
-//    virtual int x ( void ) const { return Sequence_Widget::line_x() - ( abs_w() >> 1 ); }
-
-    virtual int x ( void ) const
-        {
-            return line_x();
-        }
-
-    nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
-
-};
+    }
+}

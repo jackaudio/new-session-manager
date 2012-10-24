@@ -37,6 +37,7 @@
 #include "Time_Sequence.H"
 #include "Annotation_Sequence.H"
 #include "Control_Sequence.H"
+#include "Cursor_Sequence.H"
 #include "Track.H"
 
 #include "TLE.H"
@@ -184,6 +185,8 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Control_Sequence    );
     LOG_REGISTER_CREATE( Tempo_Point         );
     LOG_REGISTER_CREATE( Time_Point          );
+    LOG_REGISTER_CREATE( Cursor_Point        );
+    LOG_REGISTER_CREATE( Cursor_Region       );
     LOG_REGISTER_CREATE( Track               );
 
     signal( SIGPIPE, SIG_IGN );

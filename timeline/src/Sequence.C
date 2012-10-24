@@ -303,12 +303,20 @@ Sequence::handle ( int m )
         case FL_SHORTCUT:
             if ( Fl::test_shortcut( FL_CTRL + FL_Right ) )
             {
-                transport->locate( next( transport->frame ) );
+                const Sequence_Widget *w = next( transport->frame );
+                
+                if ( w )
+                    transport->locate( w->start() );
+
                 return 1;
             }
             else if ( Fl::test_shortcut( FL_CTRL + FL_Left ) )
             {
-                transport->locate( prev( transport->frame ) );
+                const Sequence_Widget *w = prev( transport->frame );
+                
+                if ( w )
+                    transport->locate( w->start() );
+
                 return 1;
             }
             else if ( Fl::test_shortcut( FL_CTRL + ' ' ) )
@@ -496,29 +504,29 @@ Sequence::handle ( int m )
     }
 
 /** return the location of the next widget from frame /from/ */
-    nframes_t
+const Sequence_Widget *
         Sequence::next ( nframes_t from ) const
     {
         for ( list <Sequence_Widget*>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
             if ( (*i)->start() > from )
-                return (*i)->start();
+                return *i;
 
         if ( _widgets.size() )
-            return _widgets.back()->start();
+            return _widgets.back();
         else
             return 0;
     }
 
 /** return the location of the next widget from frame /from/ */
-    nframes_t
+const Sequence_Widget *
         Sequence::prev ( nframes_t from ) const
     {
         for ( list <Sequence_Widget*>::const_reverse_iterator i = _widgets.rbegin(); i != _widgets.rend(); i++ )
             if ( (*i)->start() < from )
-                return (*i)->start();
+                return *i;
 
         if ( _widgets.size() )
-            return _widgets.front()->start();
+            return _widgets.front();
         else
             return 0;
     }

@@ -49,7 +49,7 @@
 extern Transport *transport;
 extern TLE *tle;
 
-const int PROJECT_VERSION = 1;
+const int PROJECT_VERSION = 2;
 
 extern char *instance_name;
 
@@ -287,8 +287,13 @@ Project::open ( const char *name )
          strncmp( created_by, APP_NAME, strlen( APP_NAME ) ) )
         return E_INVALID;
 
-    if ( version != PROJECT_VERSION )
+    if ( version > PROJECT_VERSION )
         return E_VERSION;
+
+    if ( version < 2 )
+    {
+        /* FIXME: Version 1->2 adds Cursor_Sequence and Cursor_Point to default project... */
+    }
 
     /* normally, engine will be NULL after a close or on an initial open, 
      but 'new' will have already created it to get the sample rate. */

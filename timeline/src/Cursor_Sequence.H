@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/* Copyright (C) 2012 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -19,48 +19,36 @@
 
 #pragma once
 
-#include "Sequence_Widget.H"
+#include "Sequence.H"
+#include "Cursor_Point.H"
+#include "Cursor_Region.H"
 
-class Sequence_Point : public Sequence_Widget
+class Cursor_Sequence : public Sequence
 {
-    /* not permitted  */
-    Sequence_Point & operator= ( const Sequence_Point &rhs );
+
+    Fl_Color _cursor_color;
 
 protected:
 
-    void get ( Log_Entry &e ) const;
-    void set ( Log_Entry &e );
-
-
-    virtual void draw_box ( void );
-    virtual void draw ( void );
-
-    Sequence_Point ( const Sequence_Point &rhs );
-    Sequence_Point ( );
-    ~Sequence_Point ( );
+    /* not used */
+    void get ( Log_Entry & ) const { }
+    void set ( Log_Entry & ) { }
 
 public:
 
-    const char *label ( void ) const { return _label; }
-    void label ( const char *s )
+    Sequence_Widget *active_cursor ( void );
+
+    Fl_Color cursor_color ( void ) const { return _cursor_color; }
+    void cursor_color ( Fl_Color c ) { _cursor_color = c; }
+    
+    Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }
+
+    Cursor_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
         {
-            if ( _label )
-                free( _label );
-            _label = strdup( s );
-            redraw();
+            _cursor_color = FL_CYAN;
         }
 
-    Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
-    virtual int abs_w ( void ) const { return 8; }
 
-//    virtual int abs_x ( void ) const { return Sequence_Widget::abs_x() - ( abs_w() >> 1 ); }
-//    virtual int x ( void ) const { return Sequence_Widget::line_x() - ( abs_w() >> 1 ); }
-
-    virtual int x ( void ) const
-        {
-            return line_x();
-        }
-
-    nframes_t length ( void ) const { return timeline->x_to_ts( abs_w() ); }
-
+    void handle_widget_change ( nframes_t start, nframes_t length );
+    int handle ( int m );
 };

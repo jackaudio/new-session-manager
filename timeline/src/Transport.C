@@ -84,7 +84,7 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
     o->shortcut( 'P' );
     o->callback( cb_button, this );
     o->when( FL_WHEN_CHANGED );
-    o->color2( FL_GREEN );
+    o->color2( FL_RED );
     o->box( FL_UP_BOX );
 
     end();
@@ -135,13 +135,15 @@ void
 Transport::cb_button ( Fl_Widget *w )
 {
     if ( w == _home_button )
-        locate( 0 );
+        locate( timeline->playback_home() );
     else if ( w == _end_button )
-        locate( timeline->length() );
+        locate( timeline->playback_end() );
     else if ( w == _play_button )
         toggle();
     else if ( w == _record_button )
         update_record_state();
+    else if ( w == _punch_button )
+        timeline->redraw();
 }
 
 void
@@ -196,8 +198,15 @@ Transport::locate ( nframes_t frame )
         return;
 
     if ( ! recording )
+    {
         // don't allow seeking while record is in progress
         engine->transport_locate( frame );
+
+        /* so there isn't a race waiting for the transport to sync */
+        this->frame = frame;
+    }
+
+    timeline->_created_new_takes = false;
 }
 
 
@@ -223,6 +232,8 @@ Transport::stop ( void )
     {
         if ( _stop_disables_record )
             _record_button->value( 0 );
+
+        timeline->_created_new_takes = false;
 
         update_record_state();
     }

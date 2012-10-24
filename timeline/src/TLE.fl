@@ -504,6 +504,13 @@ Project::compact();}
 timeline->redraw();}
                   xywh {15 15 40 25} type Toggle value 1
                 }
+                MenuItem {} {
+                  label {&Cursor Overlay}
+                  callback {Timeline::draw_with_cursor_overlay = menu_picked_value( o );
+
+timeline->redraw();}
+                  xywh {15 14 40 25} type Toggle value 1
+                }
               }
               Submenu {} {
                 label {&Waveform} open
@@ -593,6 +600,16 @@ timeline->redraw();}
                   label {Stop Disables Record}
                   callback {transport->stop_disables_record( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE );}
                   xywh {10 10 40 25} type Toggle value 1
+                }
+                MenuItem {} {
+                  label {Loop Playback}
+                  callback {timeline->loop_playback = ( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE );}
+                  xywh {10 10 40 25} type Toggle value 0
+                }
+                MenuItem {} {
+                  label {Automatically Create Takes}
+                  callback {timeline->automatically_create_takes = ( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE );}
+                  xywh {10 10 40 25} type Toggle value 0
                 }
               }
             }

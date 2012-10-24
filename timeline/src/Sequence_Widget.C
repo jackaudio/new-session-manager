@@ -39,6 +39,7 @@ Fl_Color Sequence_Widget::_selection_color = FL_MAGENTA;
 
 Sequence_Widget::Sequence_Widget ( )
 {
+    _label = 0;
     _sequence = NULL;
 
     _r = &_range;
@@ -55,6 +56,9 @@ Sequence_Widget::Sequence_Widget ( )
 Sequence_Widget::Sequence_Widget ( const Sequence_Widget &rhs ) : Loggable( rhs )
 {
     _drag = NULL;
+
+    if ( rhs._label )
+        _label = strdup( rhs._label );
 
     _sequence = rhs._sequence;
 
@@ -77,6 +81,9 @@ Sequence_Widget::operator= ( const Sequence_Widget &rhs )
     _box_color = rhs._box_color;
     _color     = rhs._color;
 
+    if ( rhs._label )
+        _label = strdup( rhs._label );
+
     return *this;
 }
 
@@ -89,6 +96,8 @@ Sequence_Widget::~Sequence_Widget ( )
 
     if ( this == _belowmouse )
         _belowmouse = NULL;
+
+    label( NULL );
 
     _sequence->remove( this );
 

@@ -48,10 +48,13 @@ struct BBT;
 class Tempo_Sequence;
 class Time_Sequence;
 class Annotation_Sequence;
+class Cursor_Sequence;
 class Track;
 class Scalebar;
 class Sequence;
 class Sequence_Widget;
+class Cursor_Region;
+class Cursor_Point;
 
 namespace OSC { class Endpoint; }
 
@@ -116,7 +119,7 @@ class Timeline : public Fl_Single_Window, public RWLock
 
     int _fpp;                                                 /* frames per pixel, power of two */
 
-    nframes_t p1, p2;                                           /* cursors */
+//    nframes_t p1, p2;                                           /* cursors */
     nframes_t _playhead;
 
     /* not permitted */
@@ -147,18 +150,33 @@ public:
         None
     };
 
+    /* configuration values */
     static bool draw_with_measure_lines;
+    static bool draw_with_cursor_overlay;
     static snap_e snap_to;
     static bool snapping_on_hold;
     static bool snap_magnetic;
     static bool follow_playhead;
     static bool center_playhead;
+    static bool loop_playback;
+    static bool automatically_create_takes;
+
+
+
 
     Tempo_Sequence *tempo_track;
     Time_Sequence  *time_track;
     Annotation_Sequence *ruler_track;
+    Cursor_Sequence *edit_cursor_track;
+    Cursor_Sequence *punch_cursor_track;
+    Cursor_Sequence *play_cursor_track;
 
     Fl_Menu_Button *menu;
+
+    int _punched_in;
+    nframes_t _punch_out_frame;
+    nframes_t _punch_in_frame;
+    bool _created_new_takes;
 
     nframes_t xoffset;
 
@@ -177,8 +195,15 @@ public:
     
     nframes_t fpp ( void ) const { return 1 << _fpp; }
     void range ( nframes_t start, nframes_t length );
-    nframes_t range_start ( void ) const { return p1; }
-    nframes_t range_end ( void ) const { return p2; }
+
+    nframes_t range_start ( void ) const;
+    nframes_t range_end ( void ) const;
+    void range_start ( nframes_t n );
+    void range_end ( nframes_t n );
+    void reset_range ( void );
+    nframes_t playback_home ( void ) const;
+    nframes_t playback_end ( void ) const;
+
 //    nframes_t playhead ( void ) const { return transport->frame; }
     nframes_t length ( void ) const;
     void sample_rate ( nframes_t r ) { _sample_rate = r; }
@@ -205,6 +230,7 @@ public:
     void xposition ( int X );
     void yposition ( int Y );
     void draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color) ) const;
+    void draw_cursors ( Cursor_Sequence *o ) const;
     void draw_cursors ( void ) const;
     void draw_playhead ( void );
     void redraw_playhead ( void );
@@ -249,6 +275,8 @@ public:
 
     bool record ( void );
     void stop ( void );
+    void punch_in ( nframes_t frame );
+    void punch_out ( nframes_t frame );
 
     void wait_for_buffers ( void );
     bool seek_pending ( void );
@@ -274,8 +302,13 @@ public:
 
     void reply_to_finger ( lo_message msg );
 
-private:
+    void add_cursor ( Cursor_Region *o );
+    void add_cursor ( Cursor_Point *o );
 
+private:
+    
+    void add_take_for_armed_tracks();
+    void resize_rulers ( void );
 
     static void snapshot ( void *v ) { ((Timeline*)v)->snapshot(); }
     void snapshot ( void );

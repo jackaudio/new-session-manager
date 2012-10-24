@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/* Copyright (C) 2012 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -21,20 +21,35 @@
 #include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
 
-#include "Annotation_Region.H"
+#include "Cursor_Region.H"
+#include "Cursor_Sequence.H"
+#include "Timeline.H"
+
+Fl_Color Cursor_Region::box_color ( void ) const
+{
+    return ((Cursor_Sequence*)sequence())->cursor_color();
+}
+
+
+void Cursor_Region::box_color ( Fl_Color c )
+{
+    ((Cursor_Sequence*)sequence())->cursor_color( c );
+}
 
 
 
 void
-Annotation_Region::get ( Log_Entry &e ) const
+Cursor_Region::get ( Log_Entry &e ) const
 {
-    Sequence_Region::get( e );
-
-    e.add( ":label", _label );
+//    Sequence_Region::get( e );
+    e.add( ":start", start() );
+    e.add( ":length", length() );
+    e.add( ":label", label() );
+    e.add( ":type", type() );
 }
 
 void
-Annotation_Region::set ( Log_Entry &e )
+Cursor_Region::set ( Log_Entry &e )
 {
     Sequence_Region::set( e );
 
@@ -46,47 +61,60 @@ Annotation_Region::set ( Log_Entry &e )
 
         if ( ! strcmp( s, ":label" ) )
             label( v );
+        if ( ! strcmp( s, ":type" ) )
+        {
+            type( v );
+            timeline->add_cursor( this );
+        }
     }
 
 //            timeline->redraw();
 }
 
-Annotation_Region::Annotation_Region ( Sequence *sequence, nframes_t when, const char *label )
+Cursor_Region::Cursor_Region ( nframes_t when, nframes_t length, const char *type, const char *label )
 {
-    _sequence = sequence;
+    _label = NULL;
+    _type = NULL;
 
-    _r->start = when;
+    this->label( label );
+    this->type( type );
 
-    /* FIXME: hack */
-    _r->length = 400;
+    timeline->add_cursor( this );
 
-    _label = strdup( label );
+    start( when );
+
+    this->length( length );
 
     log_create();
 }
 
-Annotation_Region::Annotation_Region ( const Annotation_Region &rhs ) : Sequence_Region( rhs )
+Cursor_Region::Cursor_Region ( const Cursor_Region &rhs ) : Sequence_Region( rhs )
 {
     _label = strdup( rhs._label );
+    _type = strdup( rhs._type );
 
     log_create();
 }
 
 
-Annotation_Region::~Annotation_Region ( )
+Cursor_Region::~Cursor_Region ( )
 {
+//    timeline->cursor_track->remove( this );
+
     log_destroy();
-    if ( _label ) free( _label );
+
+    label(NULL);
+    type(NULL);
 }
 
 void
-Annotation_Region::draw_box ( void )
+Cursor_Region::draw_box ( void )
 {
     Sequence_Region::draw_box();
 }
 
 void
-Annotation_Region::draw ( void )
+Cursor_Region::draw ( void )
 {
     draw_label( _label, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_CLIP ) );
 }
@@ -95,7 +123,7 @@ Annotation_Region::draw ( void )
 #include "FL/test_press.H"
 
 int
-Annotation_Region::handle ( int m )
+Cursor_Region::handle ( int m )
 {
     Logger _log( this );
 
@@ -103,7 +131,7 @@ Annotation_Region::handle ( int m )
     {
         if ( test_press( FL_BUTTON3 ) )
         {
-            char *s = fl_text_edit( "Annotation text:", "&Save", label() );
+            char *s = fl_text_edit( "Cursor text:", "&Save", label() );
 
             if ( s )
                 label( s );

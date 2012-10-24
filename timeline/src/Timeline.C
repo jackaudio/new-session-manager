@@ -32,6 +32,7 @@
 #include "Timeline.H"
 #include "Tempo_Sequence.H"
 #include "Time_Sequence.H"
+#include "Cursor_Sequence.H"
 #include "Audio_Sequence.H"
 #include "Control_Sequence.H"
 #include "Scalebar.H"
@@ -54,6 +55,8 @@
 
 #include "OSC_Thread.H"
 #include "OSC/Endpoint.H"
+
+#include <unistd.h>
 
 #include <nsm.h>
 extern nsm_client_t *nsm;
@@ -78,11 +81,14 @@ extern nsm_client_t *nsm;
 
 
 bool Timeline::draw_with_measure_lines = true;
+bool Timeline::draw_with_cursor_overlay = true;
 Timeline::snap_e Timeline::snap_to = Bars;
 bool Timeline::snapping_on_hold = false;
 bool Timeline::snap_magnetic = true;
 bool Timeline::follow_playhead = true;
 bool Timeline::center_playhead = true;
+bool Timeline::loop_playback = false;
+bool Timeline::automatically_create_takes = false;
 
 const float UPDATE_FREQ = 1.0 / 18.0f;
 
@@ -138,6 +144,72 @@ draw_full_arrow_symbol ( Fl_Color color )
 
 
 
+nframes_t 
+Timeline::range_start ( void ) const
+{
+    if ( edit_cursor_track->active_cursor() )
+        return edit_cursor_track->active_cursor()->start();
+    else
+        return 0;
+}
+
+nframes_t
+Timeline::range_end ( void ) const 
+{ 
+    if ( edit_cursor_track->active_cursor() )
+        return edit_cursor_track->active_cursor()->start() + edit_cursor_track->active_cursor()->length();
+    else
+        return 0;
+}
+
+void
+Timeline::range_start ( nframes_t n )
+{
+    if ( ! edit_cursor_track->active_cursor() )
+        new Cursor_Region( 0, 0, "Edit", NULL );
+
+    Logger log( edit_cursor_track->active_cursor() );
+
+    edit_cursor_track->active_cursor()->set_left( n );
+}
+
+void
+Timeline::range_end ( nframes_t n )
+{
+    if ( ! edit_cursor_track->active_cursor() )
+        new Cursor_Region( 0, 0, "Edit", NULL );
+
+    Logger log( edit_cursor_track->active_cursor() );
+
+    edit_cursor_track->active_cursor()->set_right( n );
+}
+
+/** return first frame of playback (might not be 0) */
+nframes_t 
+Timeline::playback_home ( void ) const
+{
+    if ( play_cursor_track->active_cursor() )
+        return play_cursor_track->active_cursor()->start();
+    else
+        return 0;
+}
+
+/** return last frame of playback */
+nframes_t
+Timeline::playback_end ( void ) const
+{
+    if ( play_cursor_track->active_cursor() )
+        return play_cursor_track->active_cursor()->start() + play_cursor_track->active_cursor()->length();
+    else
+        return length();
+}
+
+void
+Timeline::reset_range ( void )
+{
+    delete edit_cursor_track->active_cursor();
+}
+
 /** callback used by Loggable class to create a snapshot of system
  * state. */
 void
@@ -145,6 +217,9 @@ Timeline::snapshot ( void )
 {
     tempo_track->log_children();
     time_track->log_children();
+    edit_cursor_track->log_children();
+    punch_cursor_track->log_children();
+    play_cursor_track->log_children();
 
     for ( int i = 0; i < tracks->children(); ++i )
     {
@@ -211,15 +286,15 @@ Timeline::menu_cb ( Fl_Widget *w, void *v )
     ((Timeline*)v)->menu_cb( (Fl_Menu_*)w );
 }
 
-/** ensure that p1 is less than p2 */
+/** ensure that p1 is less than range_end() */
 void
 Timeline::fix_range ( void )
 {
-    if ( p1 > p2 )
+    if ( range_start() > range_end() )
     {
-        nframes_t t = p2;
-        p2 = p1;
-        p1 = t;
+        nframes_t t = range_end();
+        range_end( range_start() );
+        range_start( t );
     }
 }
 
@@ -227,10 +302,23 @@ Timeline::fix_range ( void )
 void
 Timeline::range ( nframes_t start, nframes_t length )
 {
-    p1 = start;
-    p2 = start + length;
+    range_start( start );
+    range_end( start + length );
 
     redraw();
+}
+
+/** create a new take for every armed track */
+void
+Timeline::add_take_for_armed_tracks ( void )
+{
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+    
+        if ( t->armed() && t->sequence()->_widgets.size() )
+            t->sequence( new Audio_Sequence( t ) );
+    }
 }
 
 void
@@ -245,7 +333,7 @@ Timeline::menu_cb ( Fl_Menu_ *m )
 
     DMESSAGE( "%s", picked );
 
-    if ( ! strcmp( picked, "Add Audio Track" ) )
+    if ( ! strcmp( picked, "Add audio track" ) )
     {
         /* FIXME: prompt for I/O config? */
 
@@ -266,28 +354,28 @@ Timeline::menu_cb ( Fl_Menu_ *m )
 
         Loggable::block_end();
     }
-    else if ( ! strcmp( picked, "Tempo from range (beat)" ) )
+    else if ( ! strcmp( picked, "Tempo from edit (beat)" ) )
     {
-        if ( p1 != p2 )
+        if ( range_start() != range_end() )
         {
             fix_range();
 
-            beats_per_minute( p1, sample_rate() * 60 / (float)( p2 - p1 ) );
+            beats_per_minute( range_start(), sample_rate() * 60 / (float)( range_end() - range_start() ) );
 
-            p2 = p1;
+            range_end( range_start() );
         }
     }
-    else if ( ! strcmp( picked, "Tempo from range (bar)" ) )
+    else if ( ! strcmp( picked, "Tempo from edit (bar)" ) )
     {
-        if ( p1 != p2 )
+        if ( range_start() != range_end() )
         {
             fix_range();
 
-            position_info pi = solve_tempomap( p1 );
+            position_info pi = solve_tempomap( range_start() );
 
-            beats_per_minute( p1, sample_rate() * 60 / (float)( ( p2 - p1 ) / pi.beats_per_bar ) );
+            beats_per_minute( range_start(), sample_rate() * 60 / (float)( ( range_end() - range_start() ) / pi.beats_per_bar ) );
 
-            p2 = p1;
+            range_end( range_start() );
         }
     }
     else if ( ! strcmp( picked, "Playhead to mouse" ) )
@@ -299,13 +387,13 @@ Timeline::menu_cb ( Fl_Menu_ *m )
             transport->locate( xoffset + x_to_ts( X ) );
         }
     }
-    else if ( ! strcmp( picked, "P1 to mouse" ) )
+    else if ( ! strcmp( picked, "Edit start to mouse" ) )
     {
         int X = Fl::event_x() - Track::width();
 
         if ( X > 0 )
         {
-            p1 = xoffset + x_to_ts( X );
+            range_start( xoffset + x_to_ts( X ) );
         }
 
 	fix_range();
@@ -313,13 +401,13 @@ Timeline::menu_cb ( Fl_Menu_ *m )
         /* FIXME: only needs to damage the location of the old cursor! */
         redraw();
     }
-    else if ( ! strcmp( picked, "P2 to mouse" ) )
+    else if ( ! strcmp( picked, "Edit end to mouse" ) )
     {
         int X = Fl::event_x() - Track::width();
 
         if ( X > 0 )
         {
-            p2 = xoffset + x_to_ts( X );
+            range_end( xoffset + x_to_ts( X ) );
         }
 
 	fix_range();
@@ -355,35 +443,72 @@ Timeline::menu_cb ( Fl_Menu_ *m )
         if ( next_line( &f, true ) )
             transport->locate( f );
     }
-    else if ( ! strcmp( picked, "Swap P1 and playhead" ) )
+    else if ( ! strcmp( picked, "Swap edit start and playhead" ) )
     {
         nframes_t t = transport->frame;
 
-        transport->locate( p1 );
+        transport->locate( range_start() );
 
-        p1 = t;
+        range_start( t );
 
         redraw();
     }
-    else if ( ! strcmp( picked, "Swap P2 and playhead" ) )
+    else if ( ! strcmp( picked, "Swap edit end and playhead" ) )
     {
         nframes_t t = transport->frame;
 
-        transport->locate( p2 );
+        transport->locate( range_end() );
 
-        p2 = t;
-
-        redraw();
-    }
-    else if ( ! strcmp( picked, "P1 to playhead" ) )
-    {
-        p1 = transport->frame;
+        range_end( t );
 
         redraw();
     }
-    else if ( ! strcmp( picked, "P2 to playhead" ) )
+    else if ( ! strcmp( picked, "Edit start to playhead" ) )
     {
-        p2 = transport->frame;
+        range_start( transport->frame );
+
+        redraw();
+    }
+    else if ( ! strcmp( picked, "Edit end to playhead" ) )
+    {
+        range_end( transport->frame );
+
+        redraw();
+    }
+    else if ( ! strcmp( picked, "Punch from edit" ) )
+    {
+        if ( range_start() != range_end() )
+        {
+            Loggable::block_start();
+
+            Cursor_Region *o = new Cursor_Region( range_start(), range_end() - range_start(), "Punch", NULL );
+            reset_range();
+
+            Loggable::block_end();
+        }
+
+        redraw();
+    }
+    else if ( ! strcmp( picked, "Playback from edit" ) )
+    {
+        if ( range_start() != range_end() )
+        {
+            Loggable::block_start();
+
+            if ( play_cursor_track->active_cursor() )
+            {
+                play_cursor_track->active_cursor()->start( range_start() );
+                play_cursor_track->active_cursor()->set_right( range_end() );
+            }
+            else
+            {
+                Cursor_Region *o = new Cursor_Region( range_start(), range_end() - range_start(), "Playback", NULL );
+            }
+
+            reset_range();
+
+            Loggable::block_end();
+        }
 
         redraw();
     }
@@ -412,6 +537,14 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
 {
     Loggable::snapshot_callback( &Timeline::snapshot, this );
 
+    edit_cursor_track = NULL;
+    punch_cursor_track = NULL;
+    play_cursor_track = NULL;
+
+    _created_new_takes = 0;
+    _punched_in = 0;
+    _punch_in_frame = 0;
+    _punch_out_frame = 0;
     osc_thread = 0;
     _sample_rate = 44100;
 
@@ -425,26 +558,28 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
     X = Y = 0;
 #endif
 
-    p1 = p2 = 0;
+//    range_start( range_end( 0 ) );
 
     menu = new Fl_Menu_Button( 0, 0, 0, 0, "Timeline" );
 
 /*     menu->add( "Add Track", 0, 0, 0  ); */
 
-    menu->add( "Add Audio Track", 'a', 0, 0 );
-    menu->add( "Tempo from range (beat)", 't', 0, 0 );
-    menu->add( "Tempo from range (bar)", FL_CTRL + 't', 0, 0 );
+    menu->add( "Add audio track", 'a', 0, 0 );
+    menu->add( "Tempo from edit (beat)", 't', 0, 0 );
+    menu->add( "Tempo from edit (bar)", FL_CTRL + 't', 0, 0 );
     menu->add( "Playhead to mouse", 'p', 0, 0 );
-    menu->add( "P1 to mouse", '[', 0, 0 );
-    menu->add( "P2 to mouse", ']', 0, 0 );
+    menu->add( "Edit start to mouse", '[', 0, 0 );
+    menu->add( "Edit end to mouse", ']', 0, 0 );
     menu->add( "Playhead left beat", FL_SHIFT + FL_Left, 0, 0 );
     menu->add( "Playhead right beat", FL_SHIFT + FL_Right, 0, 0 );
     menu->add( "Playhead left bar", FL_CTRL + FL_SHIFT + FL_Left, 0, 0 );
     menu->add( "Playhead right bar", FL_CTRL + FL_SHIFT + FL_Right, 0, 0 );
-    menu->add( "Swap P1 and playhead", FL_CTRL + FL_SHIFT + '[', 0, 0 );
-    menu->add( "Swap P2 and playhead", FL_CTRL + FL_SHIFT + ']', 0, 0 );
-    menu->add( "P1 to playhead", FL_CTRL + '[', 0, 0 );
-    menu->add( "P2 to playhead", FL_CTRL + ']', 0, 0 );
+    menu->add( "Swap edit start and playhead", FL_CTRL + FL_SHIFT + '[', 0, 0 );
+    menu->add( "Swap edit end and playhead", FL_CTRL + FL_SHIFT + ']', 0, 0 );
+    menu->add( "Edit start to playhead", FL_CTRL + '[', 0, 0 );
+    menu->add( "Edit end to playhead", FL_CTRL + ']', 0, 0 );
+    menu->add( "Punch from edit", FL_CTRL + FL_SHIFT + 'p', 0, 0 );
+    menu->add( "Playback from edit", FL_CTRL + FL_SHIFT + 'l', 0, 0 );
     menu->add( "Redraw", FL_CTRL + 'l', 0, 0 );
 
     menu_set_callback( const_cast<Fl_Menu_Item*>(menu->menu()), &Timeline::menu_cb, (void*)this );
@@ -478,10 +613,11 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
         o->type( Fl_Pack::VERTICAL );
 
         {
-            Tempo_Sequence *o = new Tempo_Sequence( 0, 0, 800, 24 );
+            Tempo_Sequence *o = new Tempo_Sequence( 0, 0, 800, 18 );
 
-            o->color( fl_gray_ramp( 18 ) );
+            o->color( FL_GRAY );
 
+            o->labelsize( 12 );
             o->label( "Tempo" );
             o->align( FL_ALIGN_LEFT );
 
@@ -489,16 +625,55 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
         }
 
         {
-            Time_Sequence *o = new Time_Sequence( 0, 24, 800, 24 );
+            Time_Sequence *o = new Time_Sequence( 0, 24, 800, 18 );
 
-            o->color( fl_gray_ramp( 16 ) );
+            o->color( fl_lighter( FL_GRAY ) );
 
+            o->labelsize( 12 );
             o->label( "Time" );
             o->align( FL_ALIGN_LEFT );
 
             time_track = o;
         }
 
+        {
+            Cursor_Sequence *o = new Cursor_Sequence( 0, 24, 800, 18 );
+
+            o->color( FL_GRAY );
+
+            o->labelsize( 12 );
+            o->label( "Edit" );
+            o->align( FL_ALIGN_LEFT );
+            o->cursor_color( FL_YELLOW );
+
+            edit_cursor_track = o;
+        }
+
+        {
+            Cursor_Sequence *o = new Cursor_Sequence( 0, 24, 800, 18 );
+
+            o->color( fl_lighter( FL_GRAY ) );
+
+            o->labelsize( 12 );
+            o->label( "Punch" );
+            o->align( FL_ALIGN_LEFT );
+            o->cursor_color( FL_RED );
+
+            punch_cursor_track = o;
+        }
+
+        {
+            Cursor_Sequence *o = new Cursor_Sequence( 0, 24, 800, 18 );
+
+            o->color( FL_GRAY );
+
+            o->labelsize( 12 );
+            o->label( "Playback" );
+            o->align( FL_ALIGN_LEFT );
+            o->cursor_color( FL_GREEN );
+
+            play_cursor_track = o;
+        }
 
 /*         { */
 /*             Annotation_Sequence *o = new Annotation_Sequence( 0, 24, 800, 24 ); */
@@ -511,8 +686,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
 /*             ruler_track = o; */
 /*         } */
 
-        o->size( o->w(), o->child( 0 )->h() * o->children() );
         rulers = o;
+        o->size( o->w(), o->child( 0 )->h() * o->children() );
         o->end();
     }
 
@@ -893,6 +1068,8 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
     fl_push_clip( tl->tracks->x(), tl->rulers->y() + tl->rulers->h(), tl->tracks->w(), tl->h() - tl->rulers->h() - tl->hscroll->h() );
     tl->draw_child( *tl->tracks );
 
+    tl->draw_cursors();
+
     fl_pop_clip();
 
     fl_pop_clip();
@@ -914,20 +1091,83 @@ Timeline::resize ( int X, int Y, int W, int H )
     tracks->resize( BX, BY + rulers->h(), W - vscroll->w(), H - vscroll->h() );
 }
 
+
+void
+Timeline::add_cursor ( Cursor_Region *o )
+{    
+    if ( !strcmp( o->type(), "Edit" ) )
+    {
+        DMESSAGE( "Adding cursor to edit track" );
+        edit_cursor_track->add( o );
+    }
+    else if ( !strcmp( o->type(), "Punch" ) )
+    {
+        DMESSAGE( "Adding cursor to punch track" );
+        punch_cursor_track->add( o );       
+    }
+    else if ( !strcmp( o->type(), "Playback" ) )
+    {
+        DMESSAGE( "Adding cursor to punch track" );
+        play_cursor_track->add( o );       
+    }
+
+}
+
+void
+Timeline::add_cursor ( Cursor_Point *o )
+{
+    if ( !strcmp( o->type(), "Edit" ) )
+        edit_cursor_track->add( o );
+    else if ( !strcmp( o->type(), "Punch" ) )
+        punch_cursor_track->add( o );
+}
+
+void
+Timeline::draw_cursors ( Cursor_Sequence *o ) const
+{
+    fl_push_clip( tracks->x() + Track::width(), rulers->y() + rulers->h(), tracks->w() - Track::width(), h() - rulers->h() - hscroll->h() );
+
+    if ( o && o->_widgets.size() > 0 )
+    {
+        for ( std::list<Sequence_Widget*>::const_iterator i = o->_widgets.begin();
+              i != o->_widgets.end();
+              i++ )
+        {
+            if ( Timeline::draw_with_cursor_overlay )
+            {
+                fl_color( fl_color_add_alpha( (*i)->box_color(), 50 ) );
+                
+                fl_rectf( (*i)->line_x(), tracks->y(), (*i)->abs_w(), tracks->h() );
+            }
+
+            fl_color( fl_color_add_alpha( (*i)->box_color(), 127  ));
+
+            fl_line( (*i)->line_x(), tracks->y(), (*i)->line_x(), 9000 );
+
+            fl_line( (*i)->line_x() + (*i)->abs_w(), tracks->y(), (*i)->line_x() + (*i)->abs_w(), tracks->h() );
+        }
+    }
+
+    fl_pop_clip();
+}
+
 /** draw ancillary cursors (not necessarily in the overlay plane) */
 void
 Timeline::draw_cursors ( void ) const
 {
-    if ( p1 != p2 )
-    {
-        draw_cursor( p1, FL_BLUE, draw_full_arrow_symbol );
-        draw_cursor( p2, FL_GREEN, draw_full_arrow_symbol );
-    }
+    draw_cursors( edit_cursor_track );
+
+    if ( transport->punch_enabled() )
+        draw_cursors( punch_cursor_track );
 }
+ 
 
 void
 Timeline::draw ( void )
 {
+
+//    resize_rulers();
+
     int X, Y, W, H;
 
     int bdx = 0;
@@ -943,7 +1183,7 @@ Timeline::draw ( void )
 #ifndef USE_UNOPTIMIZED_DRAWING
     if ( ( damage() & FL_DAMAGE_ALL ) )
 #else
-    #warning Optimized drawing of timeline disabled. This will waste your CPU.
+#warning Optimized drawing of timeline disabled. This will waste your CPU.
 #endif
     {
         DMESSAGE( "complete redraw" );
@@ -957,12 +1197,13 @@ Timeline::draw ( void )
         fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), hscroll->y() - (rulers->y() + rulers->h()) );
         draw_child( *tracks );
 
+        draw_cursors();
+
         fl_pop_clip();
 
         draw_child( *hscroll );
         draw_child( *vscroll );
 
-        draw_cursors();
 
         redraw_overlay();
 
@@ -998,13 +1239,14 @@ Timeline::draw ( void )
         {
             fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h() - hscroll->h() );
             update_child( *tracks );
+
+            draw_cursors();
+            
             fl_pop_clip();
         }
 
         update_child( *hscroll );
         update_child( *vscroll );
-
-        draw_cursors();
     }
 
 done:
@@ -1063,13 +1305,63 @@ Timeline::redraw_playhead ( void )
     static nframes_t last_playhead = -1;
     static int last_playhead_x = -1;
 
-
-    /* FIXME: kind of a hackish way to invoke punch stop from the UI thread... */
+    /* FIXME: kind of a hackish way to invoke punch / looping stuff from the UI thread... */
 
     if ( transport->rolling &&
          transport->rec_enabled() &&
-         ( ( transport->punch_enabled() && range_start() != range_end() ) && transport->frame > range_end() ) )
-        transport->stop();
+         transport->punch_enabled() )
+    {
+        if ( _punched_in &&
+             transport->frame > _punch_in_frame && 
+             transport->frame > _punch_out_frame )
+        {
+            punch_out( _punch_out_frame );
+        }
+        else if ( ! _punched_in )
+        {
+            /* we've passed one or more punch regions... punch in for the next, if available. */
+            const Sequence_Widget *w = punch_cursor_track->next( transport->frame );
+            
+            if ( w && 
+                 w->start() > transport->frame )
+            {
+                _punch_in_frame = w->start();
+                _punch_out_frame = w->start() + w->length();
+
+                punch_in( w->start() );
+            }
+        }            
+    }
+    
+
+    if ( transport->rolling )
+    {
+        if ( play_cursor_track->active_cursor() )
+        {
+            if ( Timeline::loop_playback )
+            {
+                if ( transport->frame > playback_end() )
+                {
+                    if ( ! seek_pending() )
+                    {
+                        if ( transport->recording )
+                        {
+                            stop();
+                            transport->locate( playback_home() );
+                            record();
+                        }
+                        else
+                        {
+                            transport->locate( playback_home() );
+                        }
+                    }
+                }
+            }
+            else
+                if ( transport->frame > playback_end() )
+                    transport->stop();
+        }
+    }
 
     int playhead_x = ts_to_x( transport->frame );
 
@@ -1314,8 +1606,8 @@ Timeline::handle ( int m )
 
                     if ( range )
                     {
-                        p1 = x_to_offset( _selection.x );
-                        p2 = x_to_offset( _selection.x + _selection.w );
+                        range_start( x_to_offset( _selection.x ) );
+                        range_end( x_to_offset( _selection.x + _selection.w ) );
                         redraw();
                     }
 
@@ -1331,8 +1623,8 @@ Timeline::handle ( int m )
 
                     if ( range )
                     {
-                        p1 = x_to_offset( _selection.x );
-                        p2 = x_to_offset( _selection.x + _selection.w );
+                        range_start( x_to_offset( _selection.x ) );
+                        range_end( x_to_offset( _selection.x + _selection.w ) );
                         redraw();
                     }
                     else
@@ -1608,35 +1900,35 @@ Timeline::remove_track ( Track *track )
 void
 Timeline::command_quit ( )
 {
-  Project::close();
+    Project::close();
   
-  command_save();
+    command_save();
   
-  while ( Fl::first_window() ) Fl::first_window()->hide();
+    while ( Fl::first_window() ) Fl::first_window()->hide();
 }
 
 bool
 Timeline::command_load ( const char *name, const char *display_name )
 {
-  if ( ! name )
-      return false;
+    if ( ! name )
+        return false;
   
-  int r = Project::open( name );
+    int r = Project::open( name );
   
-  if ( r < 0 )
-  {
+    if ( r < 0 )
+    {
   	const char *s = Project::errstr( r );
   	
   	fl_alert( "Could not open project \"%s\":\n\n\t%s", name, s );
 
         return false;
-  }
+    }
 
-  Project::set_name ( display_name ? display_name : name );
+    Project::set_name ( display_name ? display_name : name );
 
-  apply_track_order();
+    apply_track_order();
   
-   return true;
+    return true;
 }
 
 bool
@@ -1659,7 +1951,7 @@ Timeline::command_new ( const char *name, const char *display_name )
 
     /* tle->main_window->redraw(); */
     
-   return b;
+    return b;
 }
 
 const char *
@@ -1748,11 +2040,11 @@ Timeline::reply_to_finger ( lo_message msg )
     lo_address reply = lo_address_new_from_url( &argv[0]->s );
     
     osc->send( reply,
-              "/non/hello",
-              osc->url(),
-              APP_NAME,
-              VERSION,
-              instance_name );
+               "/non/hello",
+               osc->url(),
+               APP_NAME,
+               VERSION,
+               instance_name );
 
     osc->hello( &argv[0]->s );
 

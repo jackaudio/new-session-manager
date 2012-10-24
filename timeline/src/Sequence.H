@@ -96,8 +96,8 @@ public:
     void sort ( void );
     void clear ( void );
 
-    nframes_t next ( nframes_t from ) const;
-    nframes_t prev ( nframes_t from ) const;
+    const Sequence_Widget *next ( nframes_t from ) const;
+    const Sequence_Widget *prev ( nframes_t from ) const;
 
     Track *track ( void ) const { return _track; }
     void track ( Track *t ) { _track = t; }

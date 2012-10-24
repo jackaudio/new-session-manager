@@ -30,7 +30,7 @@ class Annotation_Point : public Sequence_Point
 
 protected:
 
-//    const char *class_name ( void ) { return "Annotation_Point"; }
+//    const char *class_label ( void ) { return "Annotation_Point"; }
 
     virtual void  get ( Log_Entry &e ) const
         {
@@ -51,7 +51,7 @@ protected:
                 e.get( i, &s, &v );
 
                 if ( ! strcmp( s, ":label" ) )
-                    name( v );
+                    label( v );
             }
 
 //            timeline->redraw();
@@ -67,13 +67,13 @@ public:
     LOG_CREATE_FUNC( Annotation_Point );
     SEQUENCE_WIDGET_CLONE_FUNC( Annotation_Point );
 
-    Annotation_Point ( Sequence *sequence, nframes_t when, const char *name )
+    Annotation_Point ( Sequence *sequence, nframes_t when, const char *label )
         {
             _sequence = sequence;
 
             _r->start = when;
 
-            _label = strdup( name );
+            _label = strdup( label );
 
             log_create();
         }
@@ -96,10 +96,10 @@ public:
 
             if ( m == FL_PUSH && Fl::test_shortcut( FL_BUTTON3 ) && ! Fl::event_shift() )
             {
-                const char *s = fl_input( "New name for mark:", name() );
+                const char *s = fl_input( "New label for mark:", label() );
 
                 if ( s )
-                    name( s );
+                    label( s );
 
                 return 0;
             }

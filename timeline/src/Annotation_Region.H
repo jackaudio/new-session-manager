@@ -30,19 +30,6 @@ class Annotation_Region : public Sequence_Region
     /* not permitted */
     Annotation_Region & operator = ( const Annotation_Region &rhs );
 
-    char *_label;
-
-public:
-
-    const char *name ( void ) const { return _label; }
-    void name ( const char *s )
-        {
-            if ( _label )
-                free( _label );
-            _label = strdup( s );
-            redraw();
-        }
-
 protected:
 
     virtual void get ( Log_Entry &e ) const;
@@ -50,7 +37,6 @@ protected:
 
     Annotation_Region ( )
         {
-            _label = NULL;
         }
 
     Annotation_Region ( const Annotation_Region &rhs );

@@ -136,6 +136,8 @@ class Sequence_Widget : public Loggable
 
 
 protected:
+    
+    char *_label;
 
     Sequence *_sequence;                                              /* track this region belongs to */
 
@@ -208,7 +210,7 @@ public:
     /* use this as x() when you need to draw lines between widgets */
     int line_x ( void ) const
         {
-            return _r->start < timeline->xoffset ? max( -32768, _sequence->x() -  timeline->ts_to_x( timeline->xoffset - _r->start )) : min( 32767, _sequence->x() + timeline->ts_to_x( _r->start - timeline->xoffset ) );
+            return _r->start < timeline->xoffset ? max( -32767, _sequence->x() -  timeline->ts_to_x( timeline->xoffset - _r->start )) : min( 32767, _sequence->x() + timeline->ts_to_x( _r->start - timeline->xoffset ) );
         }
 
     virtual int w ( void ) const
@@ -229,8 +231,8 @@ public:
 
     Fl_Color color ( void ) const { return _color; }
     void color ( Fl_Color v ) { _color = v; }
-    Fl_Color box_color ( void ) const { return _box_color; }
-    void box_color ( Fl_Color v ) { _box_color = v; }
+    virtual Fl_Color box_color ( void ) const { return _box_color; }
+    virtual void box_color ( Fl_Color v ) { _box_color = v; }
     virtual Fl_Color selection_color ( void ) const { return _selection_color; }
     virtual void selection_color ( Fl_Color v ) { _selection_color = v; }
 
@@ -242,11 +244,27 @@ public:
 /*     void start ( nframes_t o ) { _r->start = o; } */
 
     void start ( nframes_t where );
-
     void length ( nframes_t v ) { _r->length = v; }
     virtual nframes_t length ( void ) const { return _r->length; }
     void offset ( nframes_t v ) { _r->offset = v; }
     nframes_t offset ( void ) const { return _r->offset; }
+
+    void set_left ( nframes_t v ) { _r->set_left( v ); }
+    void set_right ( nframes_t v ) { _r->set_right( v ); }
+
+    const char *label ( void ) const { return _label; }
+    void label ( const char *s )
+        {
+            if ( _label )
+                free( _label );
+            
+            _label = NULL;
+            
+            if ( s )
+                _label = strdup( s );
+            
+            redraw();
+        }
 
     /** convert a screen x coord into an start into the region */
     nframes_t x_to_offset ( int X )

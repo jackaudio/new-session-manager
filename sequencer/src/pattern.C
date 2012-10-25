@@ -26,8 +26,6 @@
 #include "transport.H"
 #include <math.h>
 
-int pattern::note_shape = SQUARE;
-
 event_list pattern::_recorded_events;
 vector <pattern*> pattern::_patterns;
 int pattern::_solo;

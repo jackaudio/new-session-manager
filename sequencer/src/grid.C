@@ -649,37 +649,42 @@ Grid::print ( void ) const
         e->print();
 }
 
-void
-Grid::draw ( Canvas *c, int bx, int by, int bw, int bh )
-{
-    c->clear();
 
-    tick_t start = x_to_ts( bx );
-    tick_t end = x_to_ts( bx + bw );
+/*  */
+
+/** Invoke /draw_note/ function for every note in the viewport */
+void
+Grid::draw_notes ( draw_note_func_t draw_note, void *userdata ) const 
+{
+    int bx = viewport.x;
+    int by = viewport.y;
+    int bw = viewport.w;
+    int bh = viewport.h;
+
+    const tick_t start = x_to_ts( bx );
+    const tick_t end = x_to_ts( bx + bw );
 
     data *d = const_cast< data *>( _rd );
 
-    for ( event *e = d->events.first(); e; e = e->next() )
+    for ( const event *e = d->events.first(); e; e = e->next() )
     {
         if ( ! e->is_note_on() )
             continue;
 
-        tick_t ts = e->timestamp();
+        const tick_t ts = e->timestamp();
 
         ASSERT( e->link(), "found a non-linked note" );
 
-        tick_t tse = e->link()->timestamp();
+        const tick_t tse = e->link()->timestamp();
 
-//        if ( ts >= start && ts <= end )
         if ( tse >= start && ts <= end )
-            c->draw_dash( ts_to_x( ts ), note_to_y( e->note() ), ts_to_x( tse - ts ),
-                          draw_shape(), e->note_velocity(), e->selected() );
+            draw_note( ts_to_x( ts ),
+                       note_to_y( e->note() ),
+                       ts_to_x( tse - ts ),
+                       e->note_velocity(), 
+                       userdata );
     }
-
-    c->flip();
 }
-
-
 
  /*******************************************/
  /* Generic accessors -- boy C++ is verbose */

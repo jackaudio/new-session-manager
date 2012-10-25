@@ -20,29 +20,17 @@
 #pragma once
 
 #include "grid.H"
-#include "gui/draw.H"
+#include <FL/Fl_Widget.H>
 
 #include <sigc++/sigc++.h>
 using namespace sigc;
 
 class Mapping;
 
-struct cell_t {
-    unsigned char color : 8;
-    unsigned char state : 4;
-    unsigned char flags : 4;
-
-    bool
-    operator!= ( const cell_t &rhs )
-        {
-            return color != rhs.color || state != rhs.state || flags != rhs.flags;
-        }
-};
-
 enum { LEFT, RIGHT, UP, DOWN, TO_PLAYHEAD, TO_NEXT_NOTE, TO_PREV_NOTE };
 
 
-class Canvas : public trackable
+class Canvas : public Fl_Widget, public trackable
 {
 
     struct {
@@ -68,7 +56,6 @@ class Canvas : public trackable
         Grid *grid;                                             /* grid currently connected to this canvas */
 
         size_t size;
-        cell_t **current, **previous;
 
         bool draw;                                              /* really drawing, or just checking size? */
 
@@ -79,8 +66,6 @@ class Canvas : public trackable
         /* tables used for row-compaction */
         int rtn[128];                                           /* row-to-note */
         int ntr[128];                                           /* note-to-row */
-
-        int shape;
 
         Viewport *vp;
         int w, h;
@@ -93,7 +78,6 @@ class Canvas : public trackable
     int ntr ( int n ) const;
 
     void _update_row_mapping ( void );
-    cell_t ** _alloc_array ( void );
 
     void redraw_ruler ( void );
     void redraw_mapping ( void );
@@ -117,25 +101,25 @@ public:
     signal <void> signal_resize;
     signal <void> signal_pan;
 
-    Canvas ( );
+    Canvas ( int X, int Y, int W, int H, const char *L=0 );
 
     void handle_event_change ( void );
     void set ( int x, int y );
     void grid ( Grid *g );
     void changed_mapping ( void );
     Grid * grid ( void );
-    void resize ( void );
+    void adj_size ( void );
     void resize_grid ( void );
     void resize ( int x, int y, int w, int h );
     void copy ( void );
     void clear ( void );
     void flip ( void );
     void draw_row_name ( int y, const char *name, int color );
-    void draw_shape ( int x, int y, int shape, int state, int color, bool selected );
-    void draw_dash ( int x, int y, int l, int shape, int color, bool selected );
+    void draw_shape ( int x, int y, int w, int color );
+    static void draw_dash ( int x, int y, int l, int color, void *userdata );
     int draw_playhead ( void );
     void draw ( void );
-    void redraw ( void );
+    /* void redraw ( void ); */
     bool grid_pos ( int *x, int *y ) const;
     int is_row_name ( int x, int y );
     void unset ( int x, int y );

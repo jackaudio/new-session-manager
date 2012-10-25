@@ -101,7 +101,6 @@ struct Viewport {
 
 class Grid : public trackable
 {
-
 protected:
 
     unsigned int     _height;
@@ -145,6 +144,10 @@ private:
     volatile int _locked;
 
 public:
+
+    typedef void draw_note_func_t ( int x, int y, int l, int velocity, void *userdata );
+
+    void draw_notes ( draw_note_func_t draw_note, void *userdata ) const;
 
     signal <void> signal_events_change;
     signal <void> signal_settings_change;
@@ -199,7 +202,6 @@ public:
     char * notes ( void ) const;
     virtual void mode ( int m );
     virtual int mode ( void ) const;
-    virtual int draw_shape ( void ) const = 0;
     int next_note_x ( int x ) const;
     int prev_note_x ( int x ) const;
 

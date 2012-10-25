@@ -27,40 +27,12 @@
 #include "common.h"
 
 #include "non.H"
+#include <FL/fl_draw.H>
 
-cell_t **
-Canvas::_alloc_array ( void )
-{
-    cell_t **a;
+extern Fl_Color velocity_colors[];
+const int ruler_height = 14;
 
-    int one = sizeof( typeof( a ) ) * m.vp->w;
-    int two = sizeof( typeof( a[0] ) ) * (m.vp->h * m.vp->w);
-
-    a = (cell_t **) malloc( one + two );
-
-    m.size = one + two;
-
-    cell_t *c = (cell_t *) (((unsigned char *)a) + one);
-
-    for ( uint x = m.vp->w; x-- ; )
-    {
-        a[x] = c;
-        c += m.vp->h;
-        for ( uint y = m.vp->h; y-- ; )
-        {
-            a[ x ][ y ].flags = 0;
-            a[ x ][ y ].state = -1;
-            a[ x ][ y ].color = 0;
-        }
-    }
-
-    m.w = m.vp->w;
-    m.h = m.vp->h;
-
-    return a;
-}
-
-Canvas::Canvas ( )
+Canvas::Canvas ( int X, int Y, int W, int H, const char *L ) : Fl_Widget( X,Y,W,H,L )
 {
     m.origin_x = m.origin_y = m.height = m.width = m.div_w = m.div_h = m.playhead = m.margin_top = m.margin_left = m.playhead = m.w = m.h = m.p1 = m.p2 = m.p3 = m.p4 = 0;
 
@@ -71,7 +43,7 @@ Canvas::Canvas ( )
     m.mapping_drawn = false;
     m.grid_drawn = false;
 
-    m.current = m.previous = NULL;
+//    m.current = m.previous = NULL;
 
     m.row_compact = true;
 
@@ -160,7 +132,7 @@ Canvas::update_mapping ( void )
 
     m.mapping_drawn = false;
 
-    resize();
+    adj_size();
 
     int old_margin = m.margin_left;
 
@@ -205,7 +177,7 @@ Canvas::grid ( void )
 
 /** recalculate node sizes based on physical dimensions */
 void
-Canvas::resize ( void )
+Canvas::adj_size ( void )
 {
     if ( ! m.vp )
         return;
@@ -221,8 +193,8 @@ void
 Canvas::resize_grid ( void )
 {
     //   _update_row_mapping();
-
-    resize();
+    
+    adj_size();
 
     if ( m.vp )
     {
@@ -241,15 +213,6 @@ Canvas::resize_grid ( void )
 
     DMESSAGE( "resizing grid %dx%d", m.vp->w, m.vp->h );
 
-    if ( m.previous )
-    {
-        free( m.previous );
-        free( m.current );
-    }
-
-    m.current = _alloc_array();
-    m.previous = _alloc_array();
-
     m.grid_drawn = false;
 }
 
@@ -262,8 +225,10 @@ Canvas::resize ( int x, int y, int w, int h )
 
     m.width = w;
     m.height = h;
+    
+    Fl_Widget::resize(x,y,w,h);
 
-    resize();
+    adj_size();
 }
 
 
@@ -272,52 +237,31 @@ Canvas::resize ( int x, int y, int w, int h )
 /* Drawing */
 /***********/
 
-/** copy last buffer into current */
-void
-Canvas::copy ( void )
-{
-    for ( uint y = m.vp->h; y-- ; )
-        for ( uint x = m.vp->w; x-- ; )
-            m.current[ x ][ y ] = m.previous[ x ][ y ];
-}
-
-
-/** reset last buffer */
-void
-Canvas::_reset ( void )
-{
-    cell_t empty = {0,0,0};
-
-    for ( uint y = m.vp->h; y-- ; )
-        for ( uint x = m.vp->w; x-- ; )
-            m.current[ x ][ y ] = empty;
-}
-
 /** prepare current buffer for drawing (draw "background") */
 void
 Canvas::clear ( void )
 {
-    uint rule = m.grid->ppqn();
+    /* uint rule = m.grid->ppqn(); */
 
-    uint lx = m.grid->ts_to_x( m.grid->length() );
+    /* uint lx = m.grid->ts_to_x( m.grid->length() ); */
 
-    for ( uint y = m.vp->h; y--; )
-        for ( uint x = m.vp->w; x--; )
-        {
-            m.current[ x ][ y ].color = 0;
-            m.current[ x ][ y ].state = EMPTY;
-            m.current[ x ][ y ].flags = 0;
-        }
+    /* for ( uint y = m.vp->h; y--; ) */
+    /*     for ( uint x = m.vp->w; x--; ) */
+    /*     { */
+    /*         m.current[ x ][ y ].color = 0; */
+    /*         m.current[ x ][ y ].state = EMPTY; */
+    /*         m.current[ x ][ y ].flags = 0; */
+    /*     } */
 
-    for ( int x = m.vp->w - rule; x >= 0; x -= rule )
-        for ( uint y = m.vp->h; y-- ; )
-            m.current[ x ][ y ].state = LINE;
+    /* for ( int x = m.vp->w - rule; x >= 0; x -= rule ) */
+    /*     for ( uint y = m.vp->h; y-- ; ) */
+    /*         m.current[ x ][ y ].state = LINE; */
 
-    int sx = (int)(lx - m.vp->x) >= 0 ? lx - m.vp->x : 0;
+    /* int sx = (int)(lx - m.vp->x) >= 0 ? lx - m.vp->x : 0; */
 
-    for ( int x = sx; x < m.vp->w; ++x )
-        for ( int y = m.vp->h; y-- ; )
-            m.current[ x ][ y ].state = PARTIAL;
+    /* for ( int x = sx; x < m.vp->w; ++x ) */
+    /*     for ( int y = m.vp->h; y-- ; ) */
+    /*         m.current[ x ][ y ].state = PARTIAL; */
 
 }
 
@@ -332,38 +276,131 @@ Canvas::viewable_x ( int x )
 void
 Canvas::flip ( void )
 {
-    /* FIXME: should this not go in clear()? */
-    if ( m.p1 != m.p2 )
-    {
-        if ( viewable_x( m.p1 ) ) draw_line( m.p1 - m.vp->x, F_P1 );
-        if ( viewable_x( m.p2 ) ) draw_line( m.p2 - m.vp->x, F_P2 );
-    }
+    /* /\* FIXME: should this not go in clear()? *\/ */
+    /* if ( m.p1 != m.p2 ) */
+    /* { */
+    /*     if ( viewable_x( m.p1 ) ) draw_line( m.p1 - m.vp->x, F_P1 ); */
+    /*     if ( viewable_x( m.p2 ) ) draw_line( m.p2 - m.vp->x, F_P2 ); */
+    /* } */
 
-    if ( viewable_x( m.playhead ) ) draw_line( m.playhead - m.vp->x, F_PLAYHEAD );
+    /* if ( viewable_x( m.playhead ) ) draw_line( m.playhead - m.vp->x, F_PLAYHEAD ); */
 
-    const int shape = m.grid->draw_shape();
+    /* const int shape = m.grid->draw_shape(); */
 
-    for ( uint y = m.vp->h; y--; )
-        for ( uint x = m.vp->w; x--; )
+    /* for ( uint y = m.vp->h; y--; ) */
+    /*     for ( uint x = m.vp->w; x--; ) */
+    /*     { */
+    /*         cell_t *c = &m.current[ x ][ y ]; */
+    /*         cell_t *p = &m.previous[ x ][ y ]; */
+
+    /*         /\* draw selection rect *\/ */
+    /*         if ( m.p3 != m.p4 ) */
+    /*             if ( y + m.vp->y >= m.p3 && x + m.vp->x >= m.p1 && */
+    /*                  y + m.vp->y <= m.p4 && x + m.vp->x < m.p2 ) */
+    /*                 c->flags |= F_SELECTION; */
+
+    /*         if ( *c != *p ) */
+    /*             gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h, */
+    /*                             shape, c->state, c->flags, c->color ); */
+    /*     } */
+
+    /* cell_t **tmp = m.previous; */
+
+    /* m.previous = m.current; */
+    /* m.current = tmp; */
+}
+
+
+static
+int
+gui_draw_ruler ( int x, int y, int w, int div_w, int div, int ofs, int p1, int p2 )
+{
+    /* Across the top */
+
+    fl_font( FL_TIMES, ruler_height );
+
+    int h = ruler_height;
+
+    fl_color( FL_BACKGROUND_COLOR );
+
+    //  fl_rectf( x, y, x + (div_w * w), y + h );
+    fl_rectf( x, y, (div_w * w), h );
+
+    fl_color( FL_RED );
+
+    fl_line( x + div_w / 2, y, x + div_w * w, y );
+
+    char pat[40];
+    int z = div;
+    int i;
+    for ( i = 0; i < w; i++ )
+        if ( 0 == i % z )
         {
-            cell_t *c = &m.current[ x ][ y ];
-            cell_t *p = &m.previous[ x ][ y ];
+            int nx = x + (i * div_w) + (div_w / 2);
 
-            /* draw selection rect */
-            if ( m.p3 != m.p4 )
-                if ( y + m.vp->y >= m.p3 && x + m.vp->x >= m.p1 &&
-                     y + m.vp->y <= m.p4 && x + m.vp->x < m.p2 )
-                    c->flags |= F_SELECTION;
+            fl_color( FL_RED );
 
-            if ( *c != *p )
-                gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h,
-                                shape, c->state, c->flags, c->color );
+            fl_line( nx, y, nx, y + h );
+
+            int k = ofs + i;
+            sprintf( pat, "%i", 1 + (k / z ));
+
+            fl_color( FL_WHITE );
+            fl_draw( pat, nx + div_w / 2, y + h + 1 / 2 );
         }
 
-    cell_t **tmp = m.previous;
+    if ( p1 != p2 )
+    {
+        if ( p1 >= 0 )
+        {
+            if ( p1 < p2 )
+                fl_color( FL_GREEN );
+            else
+                fl_color( FL_RED );
 
-    m.previous = m.current;
-    m.current = tmp;
+            fl_rectf( x + (div_w * p1), y + h / 2, div_w, h / 2 );
+
+        }
+        if ( p2 >= 0 )
+        {
+            if ( p2 < p1 )
+                fl_color( FL_GREEN );
+            else
+                fl_color( FL_RED );
+            fl_rectf( x + (div_w * p2), y + h / 2, div_w, h / 2 );
+
+        }
+    }
+
+    return h;
+}
+
+static
+int
+gui_draw_string ( int x, int y, int w, int h, int color, const char *s, bool draw )
+{
+    int rw;
+
+    if ( ! s )
+        return 0;
+
+    fl_font( FL_COURIER, min( h, 18 ) );
+
+    rw = fl_width( s );
+
+    if ( fl_not_clipped( x, y, rw, h ) && draw )
+    {
+        fl_rectf( x,y,w,h, FL_BACKGROUND_COLOR );
+
+        if ( color )
+            fl_color( velocity_colors[ color ] );
+        else
+            fl_color( FL_DARK_CYAN );
+
+        fl_draw( s, x, y + h / 2 + fl_descent() );
+    }
+
+    return rw;
 }
 
 /** redraw the ruler at the top of the canvas */
@@ -398,7 +435,7 @@ Canvas::draw_row_name ( int y, const char *name, int color )
         draw = false;
 
     if ( clear && draw )
-        gui_clear_area( bx, by, bw, bh );
+        fl_rectf( bx, by, bw, bh, FL_BACKGROUND_COLOR );
     else
         m.margin_left = max( m.margin_left, gui_draw_string( bx, by,
                                                              bw, bh,
@@ -417,7 +454,7 @@ Canvas::redraw_mapping ( void )
 
     m.grid->draw_row_names( this );
 
-    resize();
+    adj_size();
 
     m.draw = true;
 
@@ -440,7 +477,7 @@ Canvas::draw_ruler ( void )
 
 /** "draw" a shape in the backbuffer */
 void
-Canvas::draw_shape ( int x, int y, int shape, int state, int color, bool selected )
+Canvas::draw_shape ( int x, int y, int w, int color )
 {
     y = ntr( y );
 
@@ -455,30 +492,31 @@ Canvas::draw_shape ( int x, int y, int shape, int state, int color, bool selecte
     if ( x < 0 || y < 0 || x >= m.vp->w || y >= m.vp->h )
         return;
 
-    m.current[ x ][ y ].color = color;
-    m.current[ x ][ y ].state = (uint)m.vp->x + x > m.grid->ts_to_x( m.grid->length() ) ? PARTIAL : state;
-    if ( selected )
-        m.current[ x ][ y ].state = SELECTED;
-    m.current[ x ][ y ].flags = 0;
+    fl_rectf( m.origin_x + m.margin_left + x * m.div_w,
+              m.origin_y + m.margin_top + y * m.div_h + 1,
+              m.div_w * w, 
+              m.div_h - 1, 
+              color );
 }
 
 /** callback used by Grid::draw()  */
 void
-Canvas::draw_dash ( int x, int y, int l, int shape, int color, bool selected )
+Canvas::draw_dash ( int x, int y, int l, int color, void *userdata )
 {
-    draw_shape( x, y, shape, FULL, color, selected );
-    for ( int i = x + l - 1; i > x; i-- )
-    {
-        draw_shape( i, y, shape, CONTINUED, 0, selected );
-    }
+    Canvas *o = (Canvas*)userdata;
+
+    color = velocity_colors[ color ];
+
+    o->draw_shape( x, y, 1, fl_color_average( FL_WHITE, color, 0.5 ) );
+    o->draw_shape( x + 1, y, l - 1, color ); 
 }
 
 /** draw a vertical line with flags */
 void
 Canvas::draw_line ( int x, int flags )
 {
-    for ( uint y = m.vp->h; y-- ; )
-        m.current[ x ][ y ].flags |= flags;
+    /* for ( uint y = m.vp->h; y-- ; ) */
+    /*     m.current[ x ][ y ].flags |= flags; */
 }
 
 int
@@ -493,43 +531,43 @@ Canvas::playhead_moved ( void )
 int
 Canvas::draw_playhead ( void )
 {
-    int x = m.grid->ts_to_x( m.grid->index() );
+    /* int x = m.grid->ts_to_x( m.grid->index() ); */
 
-    if ( m.playhead == x )
-        return 0;
+    /* if ( m.playhead == x ) */
+    /*     return 0; */
 
-    m.playhead = x;
+    /* m.playhead = x; */
 
-    if ( m.playhead < m.vp->x || m.playhead >= m.vp->x + m.vp->w )
-    {
-        if ( config.follow_playhead )
-        {
-            m.vp->x = m.playhead / m.vp->w * m.vp->w;
+    /* if ( m.playhead < m.vp->x || m.playhead >= m.vp->x + m.vp->w ) */
+    /* { */
+    /*     if ( config.follow_playhead ) */
+    /*     { */
+    /*         m.vp->x = m.playhead / m.vp->w * m.vp->w; */
 
-            m.ruler_drawn = false;
+    /*         m.ruler_drawn = false; */
 
-            signal_draw();
+    /*         signal_draw(); */
 
-            return 0;
-        }
-    }
+    /*         return 0; */
+    /*     } */
+    /* } */
 
-    copy();
+    /* copy(); */
 
-    for ( uint x = m.vp->w; x-- ; )
-        for ( uint y = m.vp->h; y-- ; )
-            m.current[ x ][ y ].flags &= ~ (F_PLAYHEAD | F_P1 | F_P2 );
+    /* for ( uint x = m.vp->w; x-- ; ) */
+    /*     for ( uint y = m.vp->h; y-- ; ) */
+    /*         m.current[ x ][ y ].flags &= ~ (F_PLAYHEAD | F_P1 | F_P2 ); */
 
-    flip();
+    /* flip(); */
 
-    /* actually if we're recording, we should draw the grid once per
-     * playhead movement also */
-    if ( pattern::recording() == m.grid )
-    {
-        draw();
-    }
+    /* /\* actually if we're recording, we should draw the grid once per */
+    /*  * playhead movement also *\/ */
+    /* if ( pattern::recording() == m.grid ) */
+    /* { */
+    /*     draw(); */
+    /* } */
 
-    return 1;
+    /* return 1; */
 }
 
 /** draw ONLY those nodes necessary to bring the canvas up-to-date with the grid */
@@ -543,39 +581,56 @@ Canvas::draw ( void )
 
     m.grid_drawn = true;
 
-    m.grid->draw( this, m.vp->x, m.vp->y, m.vp->w, m.vp->h );
+    fl_rectf( m.origin_x + m.margin_left, m.origin_y + m.margin_top, w(), h(), velocity_colors[10] );
+    
+    /* draw grid */
+    
+    fl_color( FL_BLACK  );
+    for ( int gx = m.origin_x + m.margin_left; 
+          gx < m.origin_x + m.margin_left + ( m.div_w * m.vp->w );
+          gx += m.div_w )
+        fl_line( gx, m.origin_y + m.margin_top, gx, m.origin_y + m.margin_top + ( m.div_w * m.vp->w ) );
+
+    for ( int gy = m.origin_y + m.margin_top; 
+          gy < m.origin_y + m.margin_top + ( m.div_h * m.vp->h );
+          gy += m.div_h )
+        fl_line( m.origin_x + m.margin_left, gy, m.origin_x + m.margin_left + ( m.div_w * m.vp->w ), gy );
+
+    
+    m.grid->draw_notes( draw_dash, this );
+
 }
 
-/** redraw every node on the canvas from the buffer (without
- * necessarily reexamining the grid) */
-void
-Canvas::redraw ( void )
-{
-    DMESSAGE( "redrawing canvas" );
+/* /\** redraw every node on the canvas from the buffer (without */
+/*  * necessarily reexamining the grid) *\/ */
+/* void */
+/* Canvas::redraw ( void ) */
+/* { */
+/*     DMESSAGE( "redrawing canvas" ); */
 
-    if ( ! m.grid_drawn )
-        draw();
+/*     if ( ! m.grid_drawn ) */
+/*         draw(); */
 
-    m.ruler_drawn = false;
-    m.mapping_drawn = false;
+/*     m.ruler_drawn = false; */
+/*     m.mapping_drawn = false; */
 
-    draw_mapping();
-    draw_ruler();
+/*     draw_mapping(); */
+/*     draw_ruler(); */
 
-    const int shape = m.grid->draw_shape();
+/*     const int shape = m.grid->draw_shape(); */
 
-    for ( int y = m.vp->h; y--; )
-        for ( int x = m.vp->w; x--; )
-        {
-            cell_t c = m.previous[ x ][ y ];
+/*     for ( int y = m.vp->h; y--; ) */
+/*         for ( int x = m.vp->w; x--; ) */
+/*         { */
+/*             cell_t c = m.previous[ x ][ y ]; */
 
-            if ( m.vp->x + x == m.playhead )
-                c.flags |= F_PLAYHEAD;
+/*             if ( m.vp->x + x == m.playhead ) */
+/*                 c.flags |= F_PLAYHEAD; */
 
-            gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h,
-                            shape, c.state, c.flags, c.color );
-        }
-}
+/*             gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h, */
+/*                             shape, c.state, c.flags, c.color ); */
+/*         } */
+/* } */
 
 /** convert pixel coords into grid coords. returns true if valid */
 bool
@@ -879,7 +934,7 @@ Canvas::row_compact ( int n )
             row_compact( m.row_compact ? OFF : ON );
             break;
     }
-    _reset();
+//    _reset();
     m.mapping_drawn = false;
 }
 

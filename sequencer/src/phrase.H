@@ -38,8 +38,6 @@ public:
 
     static signal <void> signal_create_destroy;
 
-    int draw_shape ( void ) const { return SQUARE; }
-
     phrase ( void );
     ~phrase ( void );
     phrase ( const phrase &rhs );

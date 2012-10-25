@@ -1167,23 +1167,6 @@ pattern_canvas_widget->redraw();}
 config.follow_playhead = val ? true : false;}
               xywh {10 10 40 25} type Toggle value 1
             }
-            Submenu {} {
-              label {Note Shape} open
-              xywh {0 0 74 24}
-            } {
-              MenuItem {} {
-                label Box
-                callback {pattern::note_shape = BOX;
-               pattern_canvas_widget->redraw();}
-                xywh {0 0 40 24} type Radio
-              }
-              MenuItem {} {
-                label Square
-                callback {pattern::note_shape = SQUARE;
-               pattern_canvas_widget->redraw();}
-                xywh {0 0 40 24} type Radio value 1
-              }
-            }
             MenuItem {} {
               label {&Theme}
               callback {fl_theme_chooser();}
@@ -1636,6 +1619,8 @@ if ( _c )
 	printf("\\n");
 */
 	
+        _c->draw();
+/*
 	if ( damage() & FL_DAMAGE_ALL )
 	{
                 draw_box( FL_FLAT_BOX, x(), y(), w(), h(), canvas_background_color );
@@ -1657,6 +1642,7 @@ if ( _c )
 		_c->draw_playhead();
                 }
         }
+*/
 }
 else
 {

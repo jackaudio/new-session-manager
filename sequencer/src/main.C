@@ -237,9 +237,9 @@ main ( int argc, char **argv )
 
     playlist = new sequence;
 
-    pattern_c = new Canvas;
-    phrase_c = new Canvas;
-    trigger_c = new Canvas;
+    pattern_c = new Canvas(0,0,1,1);
+    phrase_c = new Canvas(0,0,1,1);
+    trigger_c = new Canvas(0,0,1,1);
 
     nsm = new NSM_Client;
 

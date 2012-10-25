@@ -566,20 +566,6 @@ timeline->redraw();}
                 xywh {15 15 74 25}
               } {
                 MenuItem {} {
-                  label Polygon
-                  callback {Control_Sequence::draw_with_polygon = menu_picked_value( o );
-
-timeline->redraw();}
-                  xywh {35 35 40 25} type Toggle value 1
-                }
-                MenuItem {} {
-                  label Graded
-                  callback {Control_Sequence::draw_with_gradient = menu_picked_value( o );
-
-timeline->redraw();}
-                  xywh {45 45 40 25} type Toggle value 1
-                }
-                MenuItem {} {
                   label Ruled
                   callback {Control_Sequence::draw_with_grid = menu_picked_value( o );
 

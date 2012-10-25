@@ -38,9 +38,8 @@ using std::list;
 
 
 
-bool Control_Sequence::draw_with_gradient = true;
-bool Control_Sequence::draw_with_polygon = true;
 bool Control_Sequence::draw_with_grid = true;
+bool Control_Sequence::draw_with_polygon = true;
 
 
 
@@ -248,7 +247,7 @@ Control_Sequence::mode ( Mode m )
 }
 
 void
-Control_Sequence::draw_curve ( bool flip, bool filled )
+Control_Sequence::draw_curve ( bool filled )
 {
     const int bx = x();
     const int by = y() + Fl::box_dy( box() );
@@ -265,36 +264,18 @@ Control_Sequence::draw_curve ( bool flip, bool filled )
 
             if ( r == _widgets.begin() )
             {
-                if ( flip )
-                {
-                    if ( filled )
-                        fl_vertex( bx, by );
-                    fl_vertex( bx, ry );
-                }
-                else
-                {
-                    if ( filled )
-                        fl_vertex( bx, bh + by );
-                    fl_vertex( bx, ry );
-                }
+                if ( filled )
+                    fl_vertex( bx, bh + by );
+                fl_vertex( bx, ry );
             }
 
             fl_vertex( (*r)->line_x(), ry );
 
             if ( r == e )
             {
-                if ( flip )
-                {
-                    fl_vertex( bx + bw, ry );
-                    if ( filled )
-                        fl_vertex( bx + bw, by );
-                }
-                else
-                {
-                    fl_vertex( bx + bw, ry );
-                    if ( filled )
-                        fl_vertex( bx + bw, bh + by );
-                }
+                fl_vertex( bx + bw, ry );
+                if ( filled )
+                    fl_vertex( bx + bw, bh + by );
                 break;
             }
 
@@ -326,22 +307,11 @@ Control_Sequence::draw ( void )
     const Fl_Color color = active ? this->color() : fl_inactive( this->color() );
     const Fl_Color selection_color = active ? this->selection_color() : fl_inactive( this->selection_color() );
 
-
-    if ( draw_with_gradient )
-    {
-        const Fl_Color c1 = fl_color_average( selection_color, FL_BLACK, 0.50f );
-        const Fl_Color c2 = fl_color_average( color, FL_WHITE, 0.60f );
-
-        for ( int gy = 0; gy < bh; gy++ )
-        {
-            fl_color( fl_color_average( c1, c2, gy / (float)bh) );
-            fl_line( X, by + gy, X + W, by + gy );
-        }
-    }
-
+    fl_rectf( X, Y, W, H, fl_color_average( FL_WHITE, FL_BACKGROUND_COLOR, 0.3 ) );
+    
     if ( draw_with_grid )
     {
-        fl_color( fl_darker( color ) );
+        fl_color( FL_GRAY );
 
         const int inc = bh / 10;
         if ( inc )
@@ -354,29 +324,20 @@ Control_Sequence::draw ( void )
     {
         if ( draw_with_polygon )
         {
-            fl_color( color );
+            fl_color( fl_color_add_alpha( color, 100 ) );
 
             fl_begin_complex_polygon();
-            draw_curve( draw_with_gradient, true );
+            draw_curve( true );
             fl_end_complex_polygon();
 
-            fl_color( selection_color );
-            fl_line_style( FL_SOLID, 2 );
-
-            fl_begin_line();
-            draw_curve( draw_with_gradient, false );
-            fl_end_line();
         }
-        else
-        {
-//        fl_color( fl_color_average( selection_color, color, 0.70f ) );
-            fl_color( selection_color );
-            fl_line_style( FL_SOLID, 2 );
 
-            fl_begin_line();
-            draw_curve( draw_with_gradient, false );
-            fl_end_line();
-        }
+        fl_color( fl_color_average( FL_WHITE, color, 0.5 ) );
+        fl_line_style( FL_SOLID, 3 );
+        
+        fl_begin_line();
+        draw_curve( false );
+        fl_end_line();
 
         fl_line_style( FL_SOLID, 0 );
     }

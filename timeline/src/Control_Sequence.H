@@ -65,7 +65,7 @@ private:
 
     void init ( void );
 
-    void draw_curve ( bool flip, bool filled );
+    void draw_curve ( bool filled );
 
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( const Fl_Menu_ *m );
@@ -98,7 +98,6 @@ public:
 
     void connect_osc ( void );
 
-    static bool draw_with_gradient;
     static bool draw_with_polygon;
     static bool draw_with_grid;
 

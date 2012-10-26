@@ -471,8 +471,6 @@ else
       Fl_Tabs tabs {
         callback {((Fl_Group*)o->value())->child( 0 )->take_focus();
 
-ui->pan_indicators->show();
-
 if ( o->value() == pattern_tab )
 	pattern_canvas_widget->handle_pan();
 else if ( o->value() == phrase_tab )
@@ -480,8 +478,6 @@ else if ( o->value() == phrase_tab )
 	
 if ( o->value() != pattern_tab )
 {
-	if ( o->value() != phrase_tab )
-		ui->pan_indicators->hide();
 	edit_menu->deactivate();
 }
 else
@@ -490,7 +486,7 @@ else
 }
 
 menu_bar->redraw();} open
-        xywh {0 79 865 698} box BORDER_BOX color 47 labeltype SHADOW_LABEL labelsize 19 when 1 resizable
+        xywh {0 79 865 711} box BORDER_BOX color 47 labeltype SHADOW_LABEL labelsize 19 when 1 resizable
         code0 {canvas_background_color = fl_rgb_color( 18, 18, 18 );}
       } {
         Fl_Group sequence_tab {
@@ -674,7 +670,7 @@ o->maximum( phrase::phrases() );}
         }
         Fl_Group pattern_tab {
           label Pattern open
-          xywh {0 102 865 674} box FLAT_BOX color 47
+          xywh {0 102 865 688} box FLAT_BOX color 47
           code0 {update_pattern_widgets();}
         } {
           Fl_Box pattern_canvas_widget {
@@ -687,7 +683,7 @@ o->maximum( phrase::phrases() );}
             class O_Canvas
           }
           Fl_Group {} {open
-            xywh {0 694 862 78} box FLAT_BOX color 47
+            xywh {0 694 862 96} box FLAT_BOX color 47
           } {
             Fl_Input pattern_name_field {
               label {name:}
@@ -695,18 +691,6 @@ o->maximum( phrase::phrases() );}
               xywh {5 704 155 24} box ROUNDED_BOX color 49 align 20 when 1 textfont 2 textcolor 55
               code0 {o->up_box( FL_ROUNDED_BOX );}
               class Fl_Sometimes_Input
-            }
-            Fl_Spinner pattern_number_spinner {
-              label {Pattern:}
-              callback {pattern *p = ((pattern *)pattern_c->grid())->by_number( o->value() );
-
-if ( p )
-    pattern_c->grid( p );
-
-o->maximum( pattern::patterns() );}
-              xywh {165 704 55 24} color 36 labelsize 9 align 1 when 1
-              code0 {o->maximum( 1 );}
-              code1 {// pattern::signal_create_destroy.connect( sigc::mem_fun( o, static_cast<void (Fl_Spinner::*)(double)>(&Fl_Spinner::maximum) ) );}
             }
             Fl_Light_Button pattern_mute_button {
               label Mute
@@ -717,7 +701,7 @@ g->mode( g->mode() == MUTE ? PLAY : MUTE );
 o->value( g->mode() == MUTE );
 
 pattern_solo_button->value( 0 );}
-              xywh {10 738 65 25} type Normal color 37
+              xywh {167 704 60 25} type Normal color 37
             }
             Fl_Light_Button pattern_solo_button {
               label Solo
@@ -728,12 +712,12 @@ g->mode( g->mode() == SOLO ? PLAY : SOLO );
 o->value( g->mode() == SOLO );
 
 pattern_mute_button->value( 0 );}
-              xywh {80 738 65 25} type Normal color 37
+              xywh {167 744 60 25} type Normal color 37
             }
             Fl_Text_Editor pattern_notes_edit {
               label {Notes:}
               callback {pattern_c->grid()->notes( o->buffer()->text() );}
-              xywh {230 713 227 48} selection_color 48 labelsize 12 textcolor 94 resizable
+              xywh {235 710 222 58} selection_color 48 labelsize 12 textcolor 94 resizable
               code0 {o->buffer( pattern_notes_buffer = new Fl_Text_Buffer );}
             }
             Fl_Group pattern_settings_group {open
@@ -946,6 +930,16 @@ pattern_c->changed_mapping();}
                 }
               }
             }
+            Fl_Value_Slider pattern_number_spinner {
+              label Pattern
+              callback {pattern *p = ((pattern *)pattern_c->grid())->by_number( o->value() );
+
+if ( p )
+    pattern_c->grid( p );
+
+o->maximum( pattern::patterns() );} selected
+              xywh {5 744 155 24} type Horizontal labelsize 10 align 1 minimum 1 maximum 128 step 1 value 1 textsize 14
+            }
           }
         }
       }
@@ -975,26 +969,6 @@ if ( s != o->label() )
 		o->color( fl_darker( FL_GREEN ) );
 }}
           xywh {783 776 82 31} box THIN_UP_BOX align 64
-        }
-      }
-      Fl_Group pan_indicators {open
-        xywh {370 692 120 20}
-      } {
-        Fl_Box scroll_up_box {
-          label {@2<}
-          xywh {400 694 30 18}
-        }
-        Fl_Box scroll_down_box {
-          label {@2>}
-          xywh {430 694 30 18}
-        }
-        Fl_Box scroll_left_box {
-          label {@<}
-          xywh {370 692 30 18} hide
-        }
-        Fl_Box scroll_right_box {
-          label {@>}
-          xywh {460 692 30 18} hide
         }
       }
       Fl_Group {} {open
@@ -1740,28 +1714,6 @@ _border_drawn = true;} {}
   }
   Function {handle_pan( void )} {open return_type void
   } {
-    code {int up, left, right, down;
-
-if ( ! ui )
-   return;
-_c->can_scroll( &left, &right, &up, &down );
-
-if ( left == 0 )
-	ui->scroll_left_box->hide();
-else
-	ui->scroll_left_box->show();
-	
-if ( up == 0 )
-	ui->scroll_up_box->hide();
-else
-	ui->scroll_up_box->show();
-	
-if ( down == 0 )
-	ui->scroll_down_box->hide();
-else
-	ui->scroll_down_box->show();
-
-ui->scroll_right_box->hide();} {}
   }
 } 
 

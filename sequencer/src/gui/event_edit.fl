@@ -1,5 +1,5 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0108 
+version 1.0300 
 header_name {.H} 
 code_name {.C}
 comment {//
@@ -22,22 +22,30 @@ comment {//
 } {in_source in_header
 } 
 
-decl {\#include "../grid.H"} {} 
+decl {\#include "../grid.H"} {private local
+} 
 
-decl {\#include "../scale.H"} {} 
+decl {\#include "../scale.H"} {private local
+} 
 
-decl {extern Fl_Color velocity_colors[];} {} 
+decl {extern Fl_Color velocity_colors[];} {private local
+} 
 
-decl {class Event_Widget;} {public
+decl {class Event_Widget;} {public local
 } 
 
 class Event_Editor {open
 } {
-  decl {int _h;} {}
-  decl {Grid *_grid;} {}
-  decl {event_list *_old;} {}
-  decl {event_list *_el;} {}
-  decl {int _y;} {}
+  decl {int _h;} {private local
+  }
+  decl {Grid *_grid;} {private local
+  }
+  decl {event_list *_old;} {private local
+  }
+  decl {event_list *_el;} {private local
+  }
+  decl {int _y;} {private local
+  }
   Function {make_window( Grid *g )} {open
   } {
     Fl_Window window {
@@ -53,28 +61,18 @@ _el = _old = NULL;
 o->hide();
 
 Fl::delete_widget( o );} open
-      xywh {620 82 655 800} type Double box DOWN_BOX resizable
+      xywh {966 99 655 805} type Double resizable
       code0 {\#include "event_edit.H"}
       code1 {\#include "../grid.H"}
       code2 {\#include "../event_list.H"} modal size_range {0 0 659 803} visible
     } {
-      Fl_Pack {} {
-        label {Event List} open selected
-        xywh {10 23 640 738} type HORIZONTAL resizable
+      Fl_Scroll {} {
+        label {Event List} open
+        xywh {10 29 635 737} type VERTICAL_ALWAYS box FLAT_BOX
       } {
-        Fl_Group {} {open
-          xywh {10 24 620 737} box DOWN_FRAME resizable
-        } {
-          Fl_Pack pack {open
-            xywh {14 28 612 727} color 47 when 6 resizable
-          } {}
-        }
-        Fl_Scrollbar scroll_bar {
-          user_data this user_data_type {Event_Editor*}
-          callback {v->scroll( o->value() );
-v->update_widgets();}
-          xywh {629 23 20 738} when 3
-        }
+        Fl_Pack pack {open
+          xywh {10 29 635 737} color 47 when 6 resizable
+        } {}
       }
       Fl_Return_Button {} {
         label {&Save}
@@ -179,21 +177,6 @@ _y = 0;
 
 _h = pack->h() / 24;
 
-// create widgets.
-
-for ( int n = _h; n--; )
-{
-	Event_Widget *ew = new Event_Widget( 0, 0, pack->w() - Fl::box_dw( pack->box() ), 24, 0 );
-	
-	ew->callback( cb_changed, (void*)this );
-	ew->when( FL_WHEN_CHANGED );
-	
-	pack->add( ew );
-}
-
-scroll_bar->minimum( 0 );
-scroll_bar->maximum( _el->size() - _h );
-
 update_widgets();} {}
   }
   Function {sync( void )} {open return_type void
@@ -206,51 +189,31 @@ update_widgets();} {}
   }
   Function {update_widgets( void )} {open return_type void
   } {
-    code {// draw em
-
-
-int i = 0;
+    code {int i = 0;
 if ( ! _el->empty() )
-for ( event* e = (*_el)[_y]; e && i < _h; (e = e->next()), i++ )
+
+for ( event* e = (*_el)[0]; e = e->next(); i++ )
 {
-	Event_Widget *ew = (Event_Widget *)(pack->child( i ));
+	Event_Widget *ew;
 	
-	ew->ev( e );	
-	ew->show();
+	if ( i < pack->children() )
+	{
+		ew = (Event_Widget*)pack->child(i);
+	}
+	else
+	{
+		
+		ew = new Event_Widget( 0, 0, pack->w() - Fl::box_dw( pack->box() ), 24, 0 );
+	
+		ew->callback( cb_changed, (void*)this );
+		ew->when( FL_WHEN_CHANGED );
+		pack->add( ew );
+	}
+
+	ew->ev( e );
 }
 
-// hide unused widgets.
-
-for ( int j = i; j < _h; j++ )
-{
-	Event_Widget *ew = (Event_Widget *)(pack->child( j ));
-	ew->ev( NULL );
-	ew->hide();
-}
-
-// ajdust scrollbar
-
-int sbmax = _el->size() - _h;
-
-if ( sbmax > 0 )
-{
-	scroll_bar->maximum( sbmax );
-	scroll_bar->show();
-
-//	scroll_w->size( scroll_w->parent()->w() - scroll_bar->w(), scroll_w->parent()->h() );
-}
-else
-{
-	scroll_bar->maximum( 0 );
-	scroll_bar->hide();
-//	scroll_w->size( scroll_w->parent()->w(), scroll_w->parent()->h() );
-}
-
-pack->parent()->redraw();} {}
-  }
-  Function {scroll( int y )} {open return_type void
-  } {
-    code {_y = y;} {}
+// pack->parent()->redraw();} {}
   }
   Function {value( void )} {return_type {Event_Widget *}
   } {
@@ -290,19 +253,27 @@ while( w->shown() )
 } 
 
 widget_class Event_Widget {user_data_type {void *} open
-  xywh {685 357 590 30} type Single box NO_BOX
+  xywh {943 216 590 30} type Single
   code0 {\#include "../event.H"}
   code1 {_event = NULL;}
   class Fl_Group size_range {400 24 0 24} visible
 } {
-  decl {static const Fl_Color note_color = FL_BLACK;} {}
-  decl {static const Fl_Color control_color = FL_BLUE;} {}
-  decl {static const Fl_Color prog_color = FL_RED;} {}
-  decl {static const Fl_Color pressure_color = FL_YELLOW;} {}
-  decl {static const Fl_Color after_color = FL_CYAN;} {}
-  decl {static const Fl_Color pitch_color = FL_GREEN} {}
-  decl {event *_event;} {}
-  decl {Fl_Group *tab;} {}
+  decl {static const Fl_Color note_color = FL_BLACK;} {private local
+  }
+  decl {static const Fl_Color control_color = FL_BLUE;} {private local
+  }
+  decl {static const Fl_Color prog_color = FL_RED;} {private local
+  }
+  decl {static const Fl_Color pressure_color = FL_YELLOW;} {private local
+  }
+  decl {static const Fl_Color after_color = FL_CYAN;} {private local
+  }
+  decl {static const Fl_Color pitch_color = FL_GREEN} {private local
+  }
+  decl {event *_event;} {private local
+  }
+  decl {Fl_Group *tab;} {private local
+  }
   Function {ev( event * e )} {open return_type void
   } {
     code {if ( e && ( _event == NULL ) )
@@ -443,19 +414,19 @@ do_callback();}
     xywh {132 -1 149 25} type Toggle when 1
   }
   Fl_Group note_tab {open
-    xywh {282 0 309 24} align 16
+    xywh {282 -3 324 37} align 16
   } {
-    Fl_Counter {} {
+    Fl_Value_Input {} {
       label {Note:}
       user_data this
       callback cb_note
-      xywh {359 0 76 24} type Simple align 4 minimum 0 maximum 127 step 1
+      xywh {359 0 51 24} when 4 maximum 127 step 1
     }
-    Fl_Counter {} {
+    Fl_Value_Slider {} {
       label {Velocity:}
-      user_data this
+      user_data this user_data_type {void *}
       callback cb_msb
-      xywh {518 0 73 24} type Simple align 4 minimum 0 maximum 127 step 1
+      xywh {480 0 110 24} type {Horz Fill} selection_color 80 align 4 when 4 maximum 127 step 1
     }
     Fl_Box note_name {
       label {A\#}
@@ -463,45 +434,45 @@ do_callback();}
     }
   }
   Fl_Group after_tab {open
-    xywh {317 0 277 24} align 16 hide
+    xywh {317 0 277 25} align 16 hide
   } {
-    Fl_Counter {} {
+    Fl_Value_Input {} {
       label {Note:}
       user_data this
       callback cb_note
-      xywh {359 0 76 24} type Simple align 4 minimum 0 maximum 127 step 1
+      xywh {359 0 51 24} when 4 maximum 127 step 1
     }
-    Fl_Counter {} {
+    Fl_Value_Slider {} {
       label {Pressure:}
-      user_data this
+      user_data this user_data_type {void *}
       callback cb_msb
-      xywh {518 0 76 24} type Simple align 4 minimum 0 maximum 127 step 1
+      xywh {480 0 110 24} type {Horz Fill} selection_color 80 align 4 when 4 maximum 127 step 1
     }
   }
   Fl_Group control_tab {open
-    xywh {358 0 238 24} align 16 hide
+    xywh {358 0 238 34} align 16 hide
   } {
-    Fl_Counter {} {
+    Fl_Value_Input {} {
       label {Control:}
       user_data this
       callback cb_lsb
-      xywh {360 0 76 24} type Simple align 4 minimum 0 maximum 127 step 1
+      xywh {359 0 51 24} when 4 maximum 127 step 1
     }
-    Fl_Counter {} {
+    Fl_Value_Input {} {
       label {Value:}
       user_data this
       callback cb_msb
-      xywh {517 0 76 24} type Simple align 4 minimum 0 maximum 127 step 1
+      xywh {480 0 51 24} when 4 maximum 127 step 1
     }
   }
   Fl_Group prog_tab {open
-    xywh {287 0 238 24} align 16 hide
+    xywh {287 0 238 25} align 16 hide
   } {
-    Fl_Counter {} {
+    Fl_Value_Input {} {
       label {Program:}
       user_data this
       callback cb_lsb
-      xywh {360 0 76 24} type Simple align 4 minimum 0 maximum 127 step 1
+      xywh {359 0 51 24} when 4 maximum 127 step 1
     }
   }
   Fl_Group pitch_tab {open
@@ -511,17 +482,17 @@ do_callback();}
       label {Pitch:} user_data_type {void *}
       callback {_event->pitch( o->value() );
 do_callback();}
-      xywh {358 0 238 24} type Horizontal align 4 when 4 minimum -8192 maximum 8191 step 1
+      xywh {358 0 231 24} type Horizontal align 4 when 4 minimum -8192 maximum 8191 step 1
     }
   }
   Fl_Group pressure_tab {open
-    xywh {307 0 290 24} align 16 hide
+    xywh {307 0 291 24} align 16 hide
   } {
     Fl_Slider {} {
       label {Pressure:}
       user_data this
-      callback cb_lsb
-      xywh {358 0 239 24} type Horizontal align 4 when 4 maximum 127 step 1
+      callback cb_lsb selected
+      xywh {359 0 230 24} type {Horz Fill} align 4 when 4 maximum 127 step 1
     }
   }
   Function {select( bool b )} {open return_type void

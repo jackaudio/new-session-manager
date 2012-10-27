@@ -252,8 +252,8 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       xywh {551 117 1025 770} type Double resizable
       class TLE_Window xclass Non_DAW size_range {900 300 0 0} visible
     } {
-      Fl_Group {} {open
-        xywh {0 0 1025 72} box FLAT_BOX
+      Fl_Group {} {
+        xywh {0 0 1025 73} box FLAT_BOX
       } {
         Fl_Menu_Bar menubar {open
           private xywh {0 0 1025 25}
@@ -584,8 +584,8 @@ timeline->redraw();}
 timeline->redraw();}
                   xywh {45 45 40 25} type Toggle value 1
                 }
+              }
             }
-            }           
             Submenu {} {
               label {&Behavior} open
               xywh {5 5 74 25}
@@ -602,12 +602,12 @@ timeline->redraw();}
                 MenuItem {} {
                   label {Loop Playback}
                   callback {timeline->loop_playback = ( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE );}
-                  xywh {10 10 40 25} type Toggle value 0
+                  xywh {10 10 40 25} type Toggle
                 }
                 MenuItem {} {
                   label {Automatically Create Takes}
                   callback {timeline->automatically_create_takes = ( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE );}
-                  xywh {10 10 40 25} type Toggle value 0
+                  xywh {10 10 40 25} type Toggle
                 }
               }
             }
@@ -698,19 +698,19 @@ ab.run();}
           }
           Fl_Progress capture_buffer_progress {
             label {50%}
-            private xywh {965 27 60 14} labelsize 10
+            private xywh {965 27 60 14} selection_color 0 labelsize 10
           }
           Fl_Progress cpu_load_progress {
             label {50%}
-            private xywh {965 57 60 14} labelsize 9
+            private xywh {965 57 60 14} selection_color 0 labelsize 9
           }
           Fl_Progress playback_buffer_progress {
             label {50%}
-            private xywh {965 42 60 14} labelsize 10
+            private xywh {965 42 60 14} selection_color 0 labelsize 10
           }
           Fl_Progress disk_usage_progress {
             label {50%}
-            private xywh {855 43 55 28} labelsize 10
+            private xywh {855 43 55 28} selection_color 0 labelsize 10
             code0 {o->type( FL_VERTICAL );}
           }
         }
@@ -754,12 +754,20 @@ ab.run();}
           class Fl_Button
         }
       }
-      Fl_Progress progress {
-        label {0%}
-        private xywh {15 394 995 41} hide
+      Fl_Group progress_group {open selected
+        xywh {295 352 450 79} hide
+      } {
+        Fl_Progress progress {
+          label {0%}
+          private xywh {295 394 450 37} box ROUNDED_BOX selection_color 55 labelfont 1 labelsize 22
+        }
+        Fl_Box {} {
+          label {Loading...}
+          xywh {295 362 450 31} labelfont 1 labelsize 17 align 18
+        }
       }
       Fl_Box {} {
-        label {<Timeline>} selected
+        label {<Timeline>}
         xywh {0 75 1025 692} box FLAT_BOX color 47 labeltype NO_LABEL labelsize 100 resizable
         code0 {timeline = o;}
         class Timeline
@@ -914,15 +922,15 @@ Track::capture_format = o->menu()[ o->value() ].label();} {}
   }
   Function {progress_cb( int p )} {private return_type void
   } {
-    code {if ( ! progress->visible() )
+    code {if ( ! progress_group->visible() )
 {
 	timeline->hide();
-	progress->show();
+	progress_group->show();
 }
 else if ( 0 == p )
 {
 	timeline->show();
-	progress->hide();
+	progress_group->hide();
 }
 
 static char pat[10];
@@ -975,7 +983,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {105 612 520 775} type Double modal visible
+      private xywh {1232 180 520 775} type Double modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}
@@ -1032,7 +1040,7 @@ window->do_callback();}
       }
       Fl_Box {} {
         label {Project Info}
-        xywh {25 18 470 33} box RSHADOW_BOX color 133 labelsize 20 labelcolor 32
+        xywh {25 18 470 33} box RSHADOW_BOX color 0 labelsize 20 labelcolor 32
       }
       Fl_Button {} {
         label {&Discard}

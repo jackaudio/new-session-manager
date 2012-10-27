@@ -573,7 +573,19 @@ timeline->redraw();}
                   xywh {55 55 40 25} type Toggle value 1
                 }
               }
+              Submenu {} {
+                label {&Track} open
+                xywh {15 15 74 25}
+              } {
+                MenuItem {} {
+                  label {Colored tracks}
+                  callback {Track::colored_tracks = menu_picked_value( o );
+
+timeline->redraw();}
+                  xywh {45 45 40 25} type Toggle value 1
+                }
             }
+            }           
             Submenu {} {
               label {&Behavior} open
               xywh {5 5 74 25}

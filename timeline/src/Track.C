@@ -46,6 +46,7 @@
 int Track::_soloing = 0;
 
 const char *Track::capture_format = "Wav 24";
+bool Track::colored_tracks = true;
 
 
 
@@ -864,6 +865,14 @@ Track::draw ( void )
     
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
+    Fl_Color saved_color;
+
+    if ( ! Track::colored_tracks )
+    {
+        saved_color = color();
+        color( FL_GRAY );
+    }
+
     if ( _selected )
     {
         Fl_Color c = color();
@@ -876,6 +885,9 @@ Track::draw ( void )
     }
     else
         Fl_Group::draw();
+
+    if ( ! Track::colored_tracks )
+        color( saved_color );
 
     fl_pop_clip();
 }

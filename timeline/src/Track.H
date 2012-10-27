@@ -68,6 +68,8 @@ public:
 
     static const char *capture_format;
 
+    static bool colored_tracks;
+
     struct Capture
     {
         Audio_File *audio_file;

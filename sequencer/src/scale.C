@@ -21,6 +21,9 @@
 #include "common.h"
 
 #include "stdlib.h"
+#include <MIDI/midievent.H>
+
+using namespace MIDI;
 
 /* Define some scales. These don't really need to be stored on
    disk. Scales don't change that often. */
@@ -189,13 +192,20 @@ const char *
 Scale::note_name ( int k, int n ) const
 {
     /* all the magic is here */
+    static char s[5];
 
-    n %= 12;
+    const int mod_n = n % 12;
 
     // FIXME: searching is not efficient!
     for ( int i = _notes; i-- ; )
-        if ( n == (_degrees[ i ] + k) % 12 )
-            return chromatic_names[ n ];
+        if ( mod_n == (_degrees[ i ] + k) % 12 )
+        {
+            snprintf( s, sizeof(s), "%s%i", 
+                      chromatic_names[ mod_n ],
+                      n / 12 );
+
+            return s;
+        }
 
     return NULL;
 }

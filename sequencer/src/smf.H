@@ -20,7 +20,6 @@
 #pragma once
 
 #include "grid.H"
-#include "event.H"
 
 class pattern;
 class phrase;
@@ -104,7 +103,7 @@ public:
     void write_meta_event ( byte_t type, int n );
     void write_meta_event ( byte_t type, const char *s );
 
-    void write_event ( const midievent *e );
+    void write_event ( const MIDI::midievent *e );
     void write_header ( int tracks );
 
     void open_chunk ( const char *id );
@@ -116,7 +115,7 @@ public:
 
     void cue ( bool b );
 
-    list <midievent> * read_track_events ( tick_t *length );
+    list <MIDI::midievent> * read_track_events ( tick_t *length );
 
     void write_phrase_info ( const phrase *p );
 

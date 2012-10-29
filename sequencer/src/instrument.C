@@ -33,7 +33,11 @@
 
 
 #include <list>
+
 #include <string>
+
+#include <MIDI/event.H>
+using namespace MIDI;
 
 using std::list;
 using std::string;

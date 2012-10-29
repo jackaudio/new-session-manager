@@ -20,7 +20,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Single_Window.H>
-#include <FL/Fl_Scalepack.H>
+#include <FL/Fl_Pack.H>
 #include <FL/Fl_Choice.H>
 #include <FL/fl_draw.H>
 #include <sys/time.h>
@@ -131,7 +131,7 @@ main ( int argc, char **argv )
     }
 
     {
-        Fl_Scalepack *o = new Fl_Scalepack( 0, 24, 800, 600 - 24 );
+        Fl_Pack *o = new Fl_Pack( 0, 24, 800, 600 - 24 );
         o->type( 0 );
         
         {

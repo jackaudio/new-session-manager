@@ -26,6 +26,9 @@
 #include "transport.H"
 #include <math.h>
 
+#include <MIDI/event_list.H>
+using namespace MIDI;
+
 event_list pattern::_recorded_events;
 vector <pattern*> pattern::_patterns;
 int pattern::_solo;
@@ -276,10 +279,26 @@ pattern::by_number ( int n ) const
     return pattern::pattern_by_number( n );
 }
 
+/** what to do when the row name is pressed */
+void
+pattern::row_name_press ( int y )
+{
+    /* echo note */
+    midievent e;
+    
+    e.status( event::NOTE_ON );
+    e.channel( _channel );
+    e.timestamp( default_length() );
+    e.note( y );
+    e.note_velocity( 64 );
+    
+    midi_output_immediate_event ( _port, &e );
+}
+
 void
 pattern::put ( int x, int y, tick_t l )
 {
-    l = l ? l : PPQN * 4 / _note;
+    l = l ? l : default_length();
 
     Grid::put( x, y, l );
 

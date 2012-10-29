@@ -21,6 +21,7 @@
 
 #include "scale.H"
 #include "instrument.H"
+#include <MIDI/midievent.H>
 
 /* C++'s inheritance system falls down dead for this application, so we
    have to do it backwards, using the base class (Mapping) as an interface
@@ -64,7 +65,7 @@ public:
     void key ( int n );
 
     /* inspection */
-    bool translate ( midievent *e ) const;
+    bool translate ( MIDI::midievent *e ) const;
     const char * note_name ( int n ) const;
     int velocity ( int n ) const;
     int key ( void ) const;

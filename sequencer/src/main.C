@@ -36,8 +36,6 @@
 
 const double NSM_CHECK_INTERVAL = 0.25f;
 
-Canvas *pattern_c, *phrase_c, *trigger_c;
-
 sequence *playlist;
 
 global_settings config;
@@ -59,10 +57,6 @@ quit ( void )
 
     delete ui;
 
-    delete pattern_c;
-    delete phrase_c;
-    delete trigger_c;
-
     midi_all_sound_off();
 
     // wait for it...
@@ -81,13 +75,14 @@ clear_song ( void )
 {
 //    song.filename = NULL;
 
-    pattern_c->grid( NULL );
-    phrase_c->grid( NULL );
+    ui->pattern_canvas_widget->grid( NULL );
+    ui->phrase_canvas_widget->grid( NULL );
 
     playlist->reset();
     playlist->insert( 0, 1 );
-    pattern_c->grid( new pattern );
-    phrase_c->grid( new phrase );
+
+    ui->pattern_canvas_widget->grid( new pattern );
+    ui->phrase_canvas_widget->grid( new phrase );
 
     song.dirty( false );
 }
@@ -125,11 +120,11 @@ load_song ( const char *name )
 
     MESSAGE( "loading song \"%s\"", name );
 
-    Grid *pattern_grid = pattern_c->grid();
-    Grid *phrase_grid = phrase_c->grid();
+    Grid *pattern_grid = ui->pattern_canvas_widget->grid();
+    Grid *phrase_grid = ui->phrase_canvas_widget->grid();
 
-    pattern_c->grid( NULL );
-    phrase_c->grid( NULL );
+    ui->pattern_canvas_widget->grid( NULL );
+    ui->phrase_canvas_widget->grid( NULL );
 
     if ( ! playlist->load( name ) )
     {
@@ -137,8 +132,8 @@ load_song ( const char *name )
         goto failed;
     }
 
-    pattern_c->grid( pattern::pattern_by_number( 1 ) );
-    phrase_c->grid( phrase::phrase_by_number( 1 ) );
+    ui->pattern_canvas_widget->grid( pattern::pattern_by_number( 1 ) );
+    ui->phrase_canvas_widget->grid( phrase::phrase_by_number( 1 ) );
 
     song.filename = strdup( name );
 
@@ -148,8 +143,8 @@ load_song ( const char *name )
 
 failed:
 
-    pattern_c->grid( pattern_grid );
-    phrase_c->grid( phrase_grid );
+    ui->pattern_canvas_widget->grid( pattern_grid );
+    ui->phrase_canvas_widget->grid( phrase_grid );
 
     return false;
 }
@@ -237,26 +232,23 @@ main ( int argc, char **argv )
 
     playlist = new sequence;
 
-    pattern_c = new Canvas(0,0,1,1);
-    phrase_c = new Canvas(0,0,1,1);
-    trigger_c = new Canvas(0,0,1,1);
-
     nsm = new NSM_Client;
 
     song.filename = NULL;
-    clear_song();
-
-    pattern::signal_create_destroy.connect( mem_fun( phrase_c,  &Canvas::v_zoom_fit ) );
-    pattern::signal_create_destroy.connect( mem_fun( song, &song_settings::set_dirty ) );
-    phrase::signal_create_destroy.connect( mem_fun( song, &song_settings::set_dirty ) );
-
-    //
-    song.dirty( false );
-
-    init_colors();
 
     ui = new UI;
 
+    pattern::signal_create_destroy.connect( mem_fun( ui->phrase_canvas_widget,  &Canvas::v_zoom_fit ) );
+    pattern::signal_create_destroy.connect( mem_fun( song, &song_settings::set_dirty ) );
+    phrase::signal_create_destroy.connect( mem_fun( song, &song_settings::set_dirty ) );
+
+    song.dirty( false );
+
+    clear_song();
+
+#ifdef HAVE_XPM
+    ui->main_window->icon((char *)p);
+#endif
     ui->main_window->show( 0, 0 );
 
     instance_name = strdup( APP_NAME );

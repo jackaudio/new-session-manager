@@ -21,6 +21,7 @@
 #include "phrase.H"
 #include "pattern.H"
 
+using namespace MIDI;
 
 smf::smf ( void )
 {

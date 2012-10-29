@@ -22,7 +22,7 @@
 #include <list>
 using std::list;
 
-#include "event.H"
+#include <MIDI/midievent.H>
 
 struct i_map {
   char *name;
@@ -55,7 +55,7 @@ public:
     void note_name ( int n, char *s );
 
     /* inspection */
-    bool translate ( midievent *e ) const;
+    bool translate ( MIDI::midievent *e ) const;
     const char * note_name ( int n ) const;
     int height ( void ) const;
     const char * name ( void ) const;

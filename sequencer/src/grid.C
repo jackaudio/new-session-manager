@@ -25,6 +25,8 @@
 
 #include "smf.H"
 
+using namespace MIDI;
+
 Grid::Grid ( void )
 {
     _name = NULL;
@@ -44,7 +46,8 @@ Grid::Grid ( void )
     d->length = 0;
 
     _bpb = 4;
-    _ppqn = 1;
+    /* how many grid positions there are per beat */
+    _ppqn = 4;                        
 
     viewport.h = 32;
     viewport.w = 32;
@@ -184,31 +187,6 @@ Grid::_delete ( int x, int y )
     return false;
 }
 
-bool
-Grid::_get ( struct dash *d, int x, int y ) const
-{
-    event *e = _event ( x, y, false );
-
-    if ( e )
-    {
-        tick_t ts = e->timestamp();
-        tick_t l = 0;
-
-        if ( e->linked() )
-            l = e->link()->timestamp() - ts;
-        else
-            WARNING( "Found unlinked note on" );
-
-        d->timestamp = ts_to_x( ts );
-        d->length = ts_to_x( l  );
-        d->color = e->note_velocity();
-        return true;
-    }
-
-    return false;
-}
-
-
 void
 Grid::clear ( void )
 {
@@ -217,13 +195,6 @@ Grid::clear ( void )
     _rw->events.clear();
 
     unlock();
-}
-
-
-int
-Grid::get ( struct dash *d, int x, int y ) const
-{
-    return _get( d, x, y );
 }
 
 void
@@ -318,8 +289,15 @@ Grid::expand ( void )
     unlock();
 }
 
+/** returns true if there is a note event at x,y */
+bool
+Grid::is_set ( int x, int y ) const
+{
+    return _event( x, y, false );
+}
+
 void
-Grid::put ( int x, int y, tick_t l )
+Grid::put ( int x, int y, tick_t l, int velocity )
 {
 
     int xl = ts_to_x( l );
@@ -328,10 +306,8 @@ Grid::put ( int x, int y, tick_t l )
     event *on = new event;
     event *off = new event;
 
-    struct dash d;
-
     // Don't allow overlap (Why not?)
-    if ( get( &d, x, y ) || get( &d, x + xl - 1, y ) )
+    if ( _event( x, y, false ) || _event( x + xl - 1, y, false ) )
         return;
 
     DMESSAGE( "put %d,%d", x, y );
@@ -343,17 +319,18 @@ Grid::put ( int x, int y, tick_t l )
     on->status( event::NOTE_ON );
     on->note( note );
     on->timestamp( ts );
-    on->note_velocity( 64 );
+    on->note_velocity( velocity );
     on->link( off );
 
     off->status( event::NOTE_OFF );
     off->note( note );
     off->timestamp( ts + l );
-    off->note_velocity( 64 );
+    off->note_velocity( velocity );
     off->link( on );
 
     _rw->events.insert( on );
     _rw->events.insert( off );
+
 
     expand();
 
@@ -458,6 +435,95 @@ Grid::adj_duration ( int x, int y, int l )
 }
 
 void
+Grid::set_duration ( int x, int y, int ex )
+{
+    if ( ex < 1 )
+        return;
+
+    lock();
+
+    event *e = _event( x, y, true );
+
+    if ( e )
+    {
+        DMESSAGE( "adjusting duration" );
+
+        e->note_duration( x_to_ts( ex ) );
+        
+        _rw->events.sort( e->link() );
+    }
+
+    unlock();
+}
+
+void
+Grid::get_note_properties ( int x, int y, note_properties *p ) const
+{
+    const event *e = _event( x, y, false );
+    
+    e->get_note_properties( p );
+
+    p->start = p->start;
+    p->duration = p->duration;
+    p->note = note_to_y( p->note );
+}
+
+/* void */
+/* Grid::set_note_properties ( int x, int y, const note_properties *p ) */
+/* { */
+/*     lock(); */
+
+/*     const event *e = _event( x, y, true ); */
+    
+/*     e->set_note_properties( p ); */
+
+/*     unlock(); */
+/* } */
+
+
+
+
+/** if there's a note at grid coordinates x,y, then adjust them to the beginning of the note */
+int
+Grid::get_start ( int *x, int *y ) const
+{
+    const event *e = _event( *x, *y, false );
+    
+    if ( e )
+    {
+        *x = ts_to_x( e->timestamp() );
+        return 1;
+    }
+    else
+        return 0;
+}
+
+void
+Grid::set_end ( int x, int y, int ex )
+{
+    lock();
+
+    event *e = _event( x, y, true );
+
+    if ( e )
+    {
+        DMESSAGE( "adjusting duration" );
+
+        tick_t ts = x_to_ts( ex );
+
+        if ( ts > e->timestamp() &&
+             ts - e->timestamp() > x_to_ts( 1 ) )
+        {
+            e->note_duration( ts - e->timestamp() );
+            
+            _rw->events.sort( e->link() );
+        }
+    }
+
+    unlock();
+}
+
+void
 Grid::toggle_select ( int x, int y )
 {
     lock();
@@ -540,6 +606,16 @@ Grid::select_none ( void )
     lock();
 
     _rw->events.select_none();
+
+    unlock();
+}
+
+void
+Grid::select_all ( void )
+{
+    lock();
+
+    _rw->events.select_all();
 
     unlock();
 }
@@ -656,13 +732,13 @@ Grid::print ( void ) const
 void
 Grid::draw_notes ( draw_note_func_t draw_note, void *userdata ) const 
 {
-    int bx = viewport.x;
-    int by = viewport.y;
-    int bw = viewport.w;
-    int bh = viewport.h;
+    /* int bx = viewport.x; */
+    /* int by = viewport.y; */
+    /* int bw = viewport.w + 100;                                  /\* FIXME: hack *\/ */
+    /* int bh = viewport.h; */
 
-    const tick_t start = x_to_ts( bx );
-    const tick_t end = x_to_ts( bx + bw );
+    /* const tick_t start = x_to_ts( bx ); */
+    /* const tick_t end = x_to_ts( bx + bw ); */
 
     data *d = const_cast< data *>( _rd );
 
@@ -677,12 +753,14 @@ Grid::draw_notes ( draw_note_func_t draw_note, void *userdata ) const
 
         const tick_t tse = e->link()->timestamp();
 
-        if ( tse >= start && ts <= end )
-            draw_note( ts_to_x( ts ),
-                       note_to_y( e->note() ),
-                       ts_to_x( tse - ts ),
-                       e->note_velocity(), 
-                       userdata );
+        /* if ( tse >= start && ts <= end ) */
+        draw_note( // ts_to_x( ts ),
+            ts,
+            note_to_y( e->note() ),
+            tse - ts,
+            e->note_velocity(), 
+            e->selected(),
+            userdata );
     }
 }
 
@@ -768,11 +846,16 @@ Grid::ppqn ( void ) const
 void
 Grid::resolution ( unsigned int n )
 {
-    if ( n < 4 )
-        ASSERTION( "bad resolution: %d", n );
+    /* if ( n < 4 ) */
+    /*     ASSERTION( "bad resolution: %d", n ); */
 
-    _ppqn = n / 4;
+//    _ppqn = n / 4;
+    _ppqn = n;
     DMESSAGE( "%d setting resolution to %d", n, _ppqn );
+
+    /* ensure that the correct number of bars are in the viewport */
+
+    viewport.w = _ppqn * _bpb * 2;
 
     signal_events_change();
 

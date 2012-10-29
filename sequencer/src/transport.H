@@ -23,7 +23,7 @@
 
 using namespace sigc;
 
-#include "event.H" // just for tick_t
+#include <MIDI/types.h> // just for tick_t
 
 #include <jack/transport.h>
 

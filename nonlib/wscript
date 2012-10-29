@@ -21,6 +21,9 @@ dsp.C
 file.C
 MIDI/midievent.C
 string_util.C
+MIDI/event_list.C
+MIDI/event.C
+MIDI/midievent.C
 ''',
         includes = '.',
         export_incdirs = [ '.', 'nonlib'],

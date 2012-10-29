@@ -20,27 +20,178 @@
 /* This is a generic double-buffering, optimizing canvas interface to
    grids (patterns and phrases). It draws only what is necessary to keep
    the display up-to-date. Actual drawing functions are in draw.C */
+#include <FL/Fl.H>
+#include <FL/Fl_Cairo.H>
 
 #include "canvas.H"
 #include "pattern.H"
-#include "gui/draw.H"
 #include "common.h"
 
 #include "non.H"
 #include <FL/fl_draw.H>
+#include <FL/Fl.H>
+#include "gui/ui.H"
+#include <FL/Fl_Panzoomer.H>
+#include <FL/Fl_Slider.H>
+
+using namespace MIDI;
+extern UI *ui;
 
 extern Fl_Color velocity_colors[];
 const int ruler_height = 14;
 
-Canvas::Canvas ( int X, int Y, int W, int H, const char *L ) : Fl_Widget( X,Y,W,H,L )
+
+
+
+class Canvas::Canvas_Panzoomer : public Fl_Panzoomer
 {
-    m.origin_x = m.origin_y = m.height = m.width = m.div_w = m.div_h = m.playhead = m.margin_top = m.margin_left = m.playhead = m.w = m.h = m.p1 = m.p2 = m.p3 = m.p4 = 0;
+    Fl_Offscreen backbuffer;
+
+public:
+
+    Canvas_Panzoomer( int X, int Y,int W, int H, const char *L = 0 )
+        : Fl_Panzoomer(X,Y,W,H,L)
+        {
+            backbuffer = 0;
+        }
+
+    Canvas *canvas;
+
+private:
+
+    static void draw_dash ( tick_t x, int y, tick_t l, int color, int selected, void *userdata )
+        {
+            Canvas_Panzoomer *o = (Canvas_Panzoomer*)userdata;
+            
+            o->draw_dash( x,y,l,color,selected );
+        }
+
+    void draw_dash ( tick_t x, int y, tick_t w, int color, int selected ) const
+        {
+            if ( selected )
+                color = FL_MAGENTA;
+            else
+                color = velocity_colors[ color ];
+            
+            Canvas *c = canvas;
+    
+            double VS = (double)this->h() / c->m.maxh;
+            double HS = (double)this->w() / ( _xmax - _xmin );
+
+            y = c->ntr( y );
+            
+            if ( y < 0 )
+                return;
+            
+            y *= VS;
+            
+            fl_color( fl_color_average( color, FL_GRAY, 0.5 ) );
+
+            fl_rectf(
+                x * HS,
+                y,
+                (w * HS) + 0.5,
+                1 * VS + 0.5 );
+        }
+    
+protected:
+
+    void draw_background ( int X, int Y, int W, int H )
+        {
+
+            /* DMESSAGE( "%s%s%s%s%s%s", */
+            /*           damage() & FL_DAMAGE_CHILD ? "CHILD " : "", */
+            /*           damage() & FL_DAMAGE_ALL ? "ALL " : "", */
+            /*           damage() & FL_DAMAGE_USER1 ? "USER 1 ": "", */
+            /*           damage() & FL_DAMAGE_EXPOSE ? "EXPOSE " : "", */
+            /*           damage() & FL_DAMAGE_SCROLL ? "SCROLL " : "", */
+            /*           damage() & FL_DAMAGE_OVERLAY ? "OVERLAY " : ""); */
+
+            if ( ! backbuffer ||
+                 ! ( damage() & FL_DAMAGE_USER1 ) )
+            {
+                if ( !backbuffer )
+                    backbuffer = fl_create_offscreen( W, H );
+
+                DMESSAGE( "redrawing preview" );
+
+                fl_begin_offscreen(backbuffer);
+         
+                fl_rectf( 0, 0, W, H, color() );
+                canvas->m.grid->draw_notes( draw_dash, this );
+
+                fl_end_offscreen();
+            }
+
+            fl_copy_offscreen( X,Y,W,H,backbuffer,0, 0 );
+        }
+public:
+
+    void resize ( int X, int Y, int W, int H )
+        {
+            Fl_Panzoomer::resize( X,Y,W,H );
+            if ( backbuffer )
+                fl_delete_offscreen( backbuffer );
+            backbuffer = 0;
+            redraw();
+        }
+
+    void draw_overlay ( void )
+        {
+            Canvas *c = canvas;
+
+            double HS = (double)w() /(  _xmax - _xmin );
+
+            tick_t new_x = c->grid()->index();
+
+            fl_color( fl_color_add_alpha( FL_GREEN, 100 ) );
+            fl_line( x() + new_x * HS, y(), x() + new_x * HS, y() + h() );
+        }
+
+};
+
+static note_properties *ghost_note = 0;
+
+Canvas::Canvas ( int X, int Y, int W, int H, const char *L ) : Fl_Group( X,Y,W,H,L )
+{
+
+    { Fl_Box *o = new Fl_Box( X, Y, W, H - 75 );
+        /* this is a dummy group where the canvas goes */
+        Fl_Group::current()->resizable( o );
+    }
+    { Fl_Group *o = new Fl_Group( X, Y + H - 75, W, 75 );
+        
+        {
+            Canvas_Panzoomer *o = new Canvas_Panzoomer( X, Y + H - 75, W - 14, 75 );
+            o->canvas = this;
+            o->box( FL_FLAT_BOX );
+//        o->color(fl_color_average( FL_BLACK, FL_WHITE, 0.90 ));
+            o->color( FL_BLACK );
+//        o->color(FL_BACKGROUND_COLOR);
+//        o->type( FL_HORIZONTAL );
+            o->callback( cb_scroll, this );
+            o->when( FL_WHEN_CHANGED );
+            panzoomer = o;
+        }
+        
+        {
+            Fl_Slider *o = new Fl_Slider( X + W - 14, Y + H - panzoomer->h(), 14, panzoomer->h() );
+            o->range( 1, 128 );
+            o->step( 1 );
+            o->type( FL_VERTICAL );
+            o->tooltip( "Vertical Zoom" );
+            o->callback( cb_scroll, this );
+            vzoom = o;
+        }
+        o->end();
+    }
+
+    m.origin_x = m.origin_y = m.height = m.width = m.div_w = m.div_h = m.margin_top = m.margin_left = m.playhead = m.w = m.h = m.p1 = m.p2 = m.p3 = m.p4 = 0;
 
     m.margin_top = ruler_height;
 
     m.draw = false;
     m.ruler_drawn = false;
-    m.mapping_drawn = false;
     m.grid_drawn = false;
 
 //    m.current = m.previous = NULL;
@@ -50,6 +201,13 @@ Canvas::Canvas ( int X, int Y, int W, int H, const char *L ) : Fl_Widget( X,Y,W,
     m.maxh = 128;
 
     m.vp = NULL;
+
+    end();
+}
+
+Canvas::~Canvas ( ) 
+{
+
 }
 
 void
@@ -58,7 +216,9 @@ Canvas::handle_event_change ( void )
     /* mark the song as dirty and pass the signal on */
     song.set_dirty();
 
-    signal_draw();
+//    panzoomer->redraw();
+
+    redraw();
 }
 
 /** change grid to /g/, returns TRUE if new grid size differs from old */
@@ -80,18 +240,20 @@ Canvas::grid ( Grid *g )
 
     resize_grid();
 
+    vzoom->range( 1, m.maxh );
+    vzoom->value( m.vp->h );
+    
     update_mapping();
-
-//    m.shape = m.grid->draw_shape();
 
     /* connect signals */
     /* FIXME: what happens when we do this twice? */
     g->signal_events_change.connect( mem_fun( this, &Canvas::handle_event_change ) );
     g->signal_settings_change.connect( signal_settings_change.make_slot() );
+    
+    redraw();
 
-    signal_draw();
-    signal_settings_change();
-    signal_pan();
+//     parent()->redraw();
+//    signal_settings_change();
 }
 
 /** keep row compaction tables up-to-date */
@@ -122,6 +284,8 @@ Canvas::_update_row_mapping ( void )
         m.maxh = 128;
 
     m.vp->h = min( m.vp->h, m.maxh );
+
+    resize_grid();
 }
 
 /** update everything about mapping, leaving the viewport alone */
@@ -129,8 +293,6 @@ void
 Canvas::update_mapping ( void )
 {
     _update_row_mapping();
-
-    m.mapping_drawn = false;
 
     adj_size();
 
@@ -144,13 +306,14 @@ Canvas::update_mapping ( void )
 
     m.draw = true;
 
-    if ( m.margin_left != old_margin )
-    {
-        signal_resize();
-        signal_draw();
-    }
-    else
-        signal_draw();
+/*     if ( m.margin_left != old_margin ) */
+/*     { */
+/* //        signal_resize(); */
+/*         redraw(); */
+/*     } */
+/*     else */
+
+    damage(FL_DAMAGE_USER1);
 
 }
 
@@ -164,8 +327,6 @@ Canvas::changed_mapping ( void )
 
     if ( m.vp->y + m.vp->h > m.maxh )
         m.vp->y = (m.maxh / 2) - (m.vp->h / 2);
-
-    signal_pan();
 }
 
 Grid *
@@ -184,36 +345,24 @@ Canvas::adj_size ( void )
 
     m.div_w = (m.width - m.margin_left) / m.vp->w;
     m.div_h = (m.height - m.margin_top) / m.vp->h;
-
-    m.mapping_drawn = m.ruler_drawn = false;
 }
 
 /** reallocate buffers to match grid dimensions */
 void
 Canvas::resize_grid ( void )
 {
-    //   _update_row_mapping();
-    
     adj_size();
-
-    if ( m.vp )
-    {
-        if ( m.vp->w != m.w || m.vp->h != m.h ||
-            m.div_w != m.old_div_w || m.div_h != m.old_div_h )
-        {
-            if ( m.grid_drawn )
-                signal_resize();
-
-            m.old_div_w = m.div_w;
-            m.old_div_h = m.div_h;
-        }
-        else
-            return;
-    }
-
+    
     DMESSAGE( "resizing grid %dx%d", m.vp->w, m.vp->h );
 
-    m.grid_drawn = false;
+    Grid *g = grid();
+    panzoomer->x_value( g->x_to_ts( m.vp->x), g->x_to_ts( m.vp->w ), 0, g->length());
+    panzoomer->y_value( m.vp->y, m.vp->h, 0, m.maxh  );
+
+    panzoomer->zoom_range( 2, 16 );
+
+//    m.vp->w = max( 32, min( (int)(m.vp->w * n), 256 ) );
+
 }
 
 /** inform the canvas with new phsyical dimensions */
@@ -224,9 +373,9 @@ Canvas::resize ( int x, int y, int w, int h )
     m.origin_y = y;
 
     m.width = w;
-    m.height = h;
+    m.height = h - 75;
     
-    Fl_Widget::resize(x,y,w,h);
+    Fl_Group::resize(x,y,w,h);
 
     adj_size();
 }
@@ -237,79 +386,12 @@ Canvas::resize ( int x, int y, int w, int h )
 /* Drawing */
 /***********/
 
-/** prepare current buffer for drawing (draw "background") */
-void
-Canvas::clear ( void )
-{
-    /* uint rule = m.grid->ppqn(); */
-
-    /* uint lx = m.grid->ts_to_x( m.grid->length() ); */
-
-    /* for ( uint y = m.vp->h; y--; ) */
-    /*     for ( uint x = m.vp->w; x--; ) */
-    /*     { */
-    /*         m.current[ x ][ y ].color = 0; */
-    /*         m.current[ x ][ y ].state = EMPTY; */
-    /*         m.current[ x ][ y ].flags = 0; */
-    /*     } */
-
-    /* for ( int x = m.vp->w - rule; x >= 0; x -= rule ) */
-    /*     for ( uint y = m.vp->h; y-- ; ) */
-    /*         m.current[ x ][ y ].state = LINE; */
-
-    /* int sx = (int)(lx - m.vp->x) >= 0 ? lx - m.vp->x : 0; */
-
-    /* for ( int x = sx; x < m.vp->w; ++x ) */
-    /*     for ( int y = m.vp->h; y-- ; ) */
-    /*         m.current[ x ][ y ].state = PARTIAL; */
-
-}
-
 /** is /x/ within the viewport? */
 bool
 Canvas::viewable_x ( int x )
 {
     return x >= m.vp->x && x < m.vp->x + m.vp->w;
 }
-
-/** flush delta of last and current buffers to screen, then flip them */
-void
-Canvas::flip ( void )
-{
-    /* /\* FIXME: should this not go in clear()? *\/ */
-    /* if ( m.p1 != m.p2 ) */
-    /* { */
-    /*     if ( viewable_x( m.p1 ) ) draw_line( m.p1 - m.vp->x, F_P1 ); */
-    /*     if ( viewable_x( m.p2 ) ) draw_line( m.p2 - m.vp->x, F_P2 ); */
-    /* } */
-
-    /* if ( viewable_x( m.playhead ) ) draw_line( m.playhead - m.vp->x, F_PLAYHEAD ); */
-
-    /* const int shape = m.grid->draw_shape(); */
-
-    /* for ( uint y = m.vp->h; y--; ) */
-    /*     for ( uint x = m.vp->w; x--; ) */
-    /*     { */
-    /*         cell_t *c = &m.current[ x ][ y ]; */
-    /*         cell_t *p = &m.previous[ x ][ y ]; */
-
-    /*         /\* draw selection rect *\/ */
-    /*         if ( m.p3 != m.p4 ) */
-    /*             if ( y + m.vp->y >= m.p3 && x + m.vp->x >= m.p1 && */
-    /*                  y + m.vp->y <= m.p4 && x + m.vp->x < m.p2 ) */
-    /*                 c->flags |= F_SELECTION; */
-
-    /*         if ( *c != *p ) */
-    /*             gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h, */
-    /*                             shape, c->state, c->flags, c->color ); */
-    /*     } */
-
-    /* cell_t **tmp = m.previous; */
-
-    /* m.previous = m.current; */
-    /* m.current = tmp; */
-}
-
 
 static
 int
@@ -323,10 +405,12 @@ gui_draw_ruler ( int x, int y, int w, int div_w, int div, int ofs, int p1, int p
 
     fl_color( FL_BACKGROUND_COLOR );
 
+    w += 100;            /* FIXME: hack */
+
     //  fl_rectf( x, y, x + (div_w * w), y + h );
     fl_rectf( x, y, (div_w * w), h );
 
-    fl_color( FL_RED );
+    fl_color( FL_FOREGROUND_COLOR );
 
     fl_line( x + div_w / 2, y, x + div_w * w, y );
 
@@ -334,43 +418,45 @@ gui_draw_ruler ( int x, int y, int w, int div_w, int div, int ofs, int p1, int p
     int z = div;
     int i;
     for ( i = 0; i < w; i++ )
-        if ( 0 == i % z )
+    {
+        int k = ofs + i;
+        if ( 0 == k % z )
         {
             int nx = x + (i * div_w) + (div_w / 2);
 
-            fl_color( FL_RED );
+            fl_color( FL_FOREGROUND_COLOR );
 
-            fl_line( nx, y, nx, y + h );
+            fl_line( nx, y, nx, y + h - 1 );
 
-            int k = ofs + i;
             sprintf( pat, "%i", 1 + (k / z ));
 
-            fl_color( FL_WHITE );
+            fl_color( FL_FOREGROUND_COLOR );
             fl_draw( pat, nx + div_w / 2, y + h + 1 / 2 );
         }
-
-    if ( p1 != p2 )
-    {
-        if ( p1 >= 0 )
-        {
-            if ( p1 < p2 )
-                fl_color( FL_GREEN );
-            else
-                fl_color( FL_RED );
-
-            fl_rectf( x + (div_w * p1), y + h / 2, div_w, h / 2 );
-
-        }
-        if ( p2 >= 0 )
-        {
-            if ( p2 < p1 )
-                fl_color( FL_GREEN );
-            else
-                fl_color( FL_RED );
-            fl_rectf( x + (div_w * p2), y + h / 2, div_w, h / 2 );
-
-        }
     }
+
+    /* if ( p1 != p2 ) */
+    /* { */
+    /*     if ( p1 >= 0 ) */
+    /*     { */
+    /*         if ( p1 < p2 ) */
+    /*             fl_color( FL_GREEN ); */
+    /*         else */
+    /*             fl_color( FL_RED ); */
+
+    /*         fl_rectf( x + (div_w * p1), y + h / 2, div_w, h / 2 ); */
+
+    /*     } */
+    /*     if ( p2 >= 0 ) */
+    /*     { */
+    /*         if ( p2 < p1 ) */
+    /*             fl_color( FL_GREEN ); */
+    /*         else */
+    /*             fl_color( FL_RED ); */
+    /*         fl_rectf( x + (div_w * p2), y + h / 2, div_w, h / 2 ); */
+
+    /*     } */
+    /* } */
 
     return h;
 }
@@ -390,7 +476,7 @@ gui_draw_string ( int x, int y, int w, int h, int color, const char *s, bool dra
 
     if ( fl_not_clipped( x, y, rw, h ) && draw )
     {
-        fl_rectf( x,y,w,h, FL_BACKGROUND_COLOR );
+//        fl_rectf( x,y,w,h, FL_BACKGROUND_COLOR );
 
         if ( color )
             fl_color( velocity_colors[ color ] );
@@ -401,15 +487,6 @@ gui_draw_string ( int x, int y, int w, int h, int color, const char *s, bool dra
     }
 
     return rw;
-}
-
-/** redraw the ruler at the top of the canvas */
-void
-Canvas::redraw_ruler ( void )
-{
-    m.margin_top = gui_draw_ruler( m.origin_x + m.margin_left, m.origin_y, m.vp->w, m.div_w, m.grid->division(), m.vp->x,
-                                   m.p1 - m.vp->x, m.p2 - m.vp->x );
-    m.ruler_drawn = true;
 }
 
 /** callback called by Grid::draw_row_names() to draw an individual row name  */
@@ -434,20 +511,24 @@ Canvas::draw_row_name ( int y, const char *name, int color )
     if ( y < 0 || y >= m.vp->h )
         draw = false;
 
-    if ( clear && draw )
-        fl_rectf( bx, by, bw, bh, FL_BACKGROUND_COLOR );
-    else
-        m.margin_left = max( m.margin_left, gui_draw_string( bx, by,
-                                                             bw, bh,
-                                                             color,
-                                                             name,
-                                                             draw ) );
+    if ( draw && name )
+    {
+        fl_rectf( bx, by, bw, bh, index(name, '#') ? FL_GRAY : FL_BLACK );
+        fl_rect( bx, by, bw, bh, FL_BLACK );
+    }
+    
+    m.margin_left = max( m.margin_left, gui_draw_string( bx + 1, by + 2,
+                                                         bw - 1, bh - 4,
+                                                         color,
+                                                         name,
+                                                         draw ) );    
 }
 
-/** redraw row names */
 void
-Canvas::redraw_mapping ( void )
+Canvas::draw_mapping ( void )
 {
+    int old_margin = m.margin_left;
+
     m.margin_left = 0;
 
     m.draw = false;
@@ -459,64 +540,89 @@ Canvas::redraw_mapping ( void )
     m.draw = true;
 
     m.grid->draw_row_names( this );
-
-    m.mapping_drawn = true;
-}
-
-void
-Canvas::draw_mapping ( void )
-{
-    if ( ! m.mapping_drawn ) redraw_mapping();
 }
 
 void
 Canvas::draw_ruler ( void )
 {
-    if ( ! m.ruler_drawn ) redraw_ruler();
+    m.margin_top = gui_draw_ruler( m.origin_x + m.margin_left, 
+                                   m.origin_y, 
+                                   m.vp->w,
+                                   m.div_w,
+                                   m.grid->division(),
+                                   m.vp->x,
+                                   m.p1 - m.vp->x,
+                                   m.p2 - m.vp->x );
 }
 
-/** "draw" a shape in the backbuffer */
 void
-Canvas::draw_shape ( int x, int y, int w, int color )
+Canvas::damage_grid ( tick_t x, int y, tick_t w, int h = 1 )
 {
     y = ntr( y );
 
     if ( y < 0 )
         return;
-
+   
     // adjust for viewport.
-
+   
+    x = m.grid->ts_to_x(x);
+    w = m.grid->ts_to_x(w);
+   
     x -= m.vp->x;
     y -= m.vp->y;
 
     if ( x < 0 || y < 0 || x >= m.vp->w || y >= m.vp->h )
         return;
+   
+    damage(FL_DAMAGE_USER1, m.origin_x + m.margin_left + x * m.div_w,
+           m.origin_y + m.margin_top + y * m.div_h,
+           m.div_w * w,
+           m.div_h * h );
+}
 
-    fl_rectf( m.origin_x + m.margin_left + x * m.div_w,
-              m.origin_y + m.margin_top + y * m.div_h + 1,
-              m.div_w * w, 
-              m.div_h - 1, 
-              color );
+void
+Canvas::draw_dash ( tick_t x, int y, tick_t w, int color, int selected ) const
+{
+    if ( m.grid->velocity_sensitive() )
+        color = velocity_colors[ color ];
+    else
+        color = velocity_colors[ 127 ];
+
+    y = ntr( y );
+    
+    if ( y < 0 )
+        return;
+
+    // adjust for viewport.
+
+    x = m.grid->ts_to_x(x);
+    w = m.grid->ts_to_x(w);
+
+    x -= m.vp->x;
+    y -= m.vp->y;
+
+    x = m.origin_x + m.margin_left + x * m.div_w;
+    y = m.origin_y + m.margin_top + y * m.div_h;
+    w *= m.div_w;
+
+    /* fl_rectf( x, y + 1, w, m.div_h - 1, fl_color_add_alpha( color, 170 ) ); */
+
+    /* fl_rect( x, y + 1, w, m.div_h - 1, selected ? FL_MAGENTA : fl_lighter( FL_BACKGROUND_COLOR )); */
+
+    fl_draw_box( FL_ROUNDED_BOX, x, y + 1, w, m.div_h - 1, color );
+    if ( selected )
+        fl_draw_box( FL_ROUNDED_FRAME, x, y + 1, w, m.div_h - 1, FL_MAGENTA );
+
+// fl_color_add_alpha( color, 170 ));
 }
 
 /** callback used by Grid::draw()  */
 void
-Canvas::draw_dash ( int x, int y, int l, int color, void *userdata )
+Canvas::draw_dash ( tick_t x, int y, tick_t w, int color, int selected, void *userdata )
 {
     Canvas *o = (Canvas*)userdata;
-
-    color = velocity_colors[ color ];
-
-    o->draw_shape( x, y, 1, fl_color_average( FL_WHITE, color, 0.5 ) );
-    o->draw_shape( x + 1, y, l - 1, color ); 
-}
-
-/** draw a vertical line with flags */
-void
-Canvas::draw_line ( int x, int flags )
-{
-    /* for ( uint y = m.vp->h; y-- ; ) */
-    /*     m.current[ x ][ y ].flags |= flags; */
+    
+    o->draw_dash( x,y,w,color,selected );
 }
 
 int
@@ -527,120 +633,267 @@ Canvas::playhead_moved ( void )
     return m.playhead != x;
 }
 
+void
+Canvas::redraw_playhead ( void )
+{
+    int old_x = m.playhead;
+    
+    int new_x = m.grid->ts_to_x( m.grid->index() );
+
+    if ( old_x != new_x )
+    {
+        window()->damage( FL_DAMAGE_OVERLAY );
+    }
+
+    if ( m.playhead < m.vp->x || m.playhead >= m.vp->x + m.vp->w )
+    {
+        if ( config.follow_playhead )
+        {
+            new_x = m.playhead;
+
+            panzoomer->x_value( m.grid->index() );
+            panzoomer->do_callback();
+        }
+    }
+}
+
+void
+Canvas::draw_overlay ( void )
+{
+    if ( ! visible_r() )
+        return;
+
+    fl_push_no_clip();
+    
+    fl_push_clip( x() + m.margin_left,
+                  y() + m.margin_top,
+                  w() - m.margin_left,
+                  h() - panzoomer->h() - m.margin_top );
+
+    draw_playhead();
+
+    fl_pop_clip();
+
+    panzoomer->draw_overlay();
+
+    fl_pop_clip();
+}
+
 /** draw only the playhead--without reexamining the grid */
-int
+void
 Canvas::draw_playhead ( void )
 {
-    /* int x = m.grid->ts_to_x( m.grid->index() ); */
+    int x = m.grid->ts_to_x( m.grid->index() );
 
-    /* if ( m.playhead == x ) */
-    /*     return 0; */
+    if ( m.playhead == x )
+        return;
 
-    /* m.playhead = x; */
+    m.playhead = x;
 
-    /* if ( m.playhead < m.vp->x || m.playhead >= m.vp->x + m.vp->w ) */
-    /* { */
-    /*     if ( config.follow_playhead ) */
-    /*     { */
-    /*         m.vp->x = m.playhead / m.vp->w * m.vp->w; */
+    if ( m.playhead < m.vp->x || m.playhead >= m.vp->x + m.vp->w )
+        return;
 
-    /*         m.ruler_drawn = false; */
+    int px = m.origin_x + m.margin_left + ( x - m.vp->x ) * m.div_w;
 
-    /*         signal_draw(); */
+    int X,Y,W,H;
+ 
+    X = px;
+    Y = m.origin_y + m.margin_top;
+    W = m.div_w;
+    H = m.origin_y + m.margin_top + m.vp->h * m.div_h;
 
-    /*         return 0; */
-    /*     } */
-    /* } */
-
-    /* copy(); */
-
-    /* for ( uint x = m.vp->w; x-- ; ) */
-    /*     for ( uint y = m.vp->h; y-- ; ) */
-    /*         m.current[ x ][ y ].flags &= ~ (F_PLAYHEAD | F_P1 | F_P2 ); */
-
-    /* flip(); */
-
-    /* /\* actually if we're recording, we should draw the grid once per */
-    /*  * playhead movement also *\/ */
-    /* if ( pattern::recording() == m.grid ) */
-    /* { */
-    /*     draw(); */
-    /* } */
-
-    /* return 1; */
+    fl_rectf( X,Y,W,H, fl_color_add_alpha( FL_RED, 127 ) );
 }
+
+void
+Canvas::draw_clip ( void *v, int X, int Y, int W, int H )
+{
+    ((Canvas*)v)->draw_clip( X,Y,W,H );
+}
+
+void
+Canvas::draw_clip ( int X, int Y, int W, int H )
+{
+    box( FL_FLAT_BOX );
+    labeltype( FL_NO_LABEL );
+
+    fl_push_clip( X,Y,W,H );
+
+
+    fl_push_clip( m.origin_x + m.margin_left,
+                  m.origin_y + m.margin_top,
+                  w() - m.margin_left,
+                  h() - m.margin_top - panzoomer->h() );
+
+    fl_rectf( m.origin_x + m.margin_left, m.origin_y + m.margin_top, w(), h(), FL_BLACK );
+
+    /* draw bar/beat lines */
+
+    for ( int gx = m.vp->x;
+          gx < m.vp->x + m.vp->w + 200;                                   /* hack */
+          gx++ )
+    {
+        if ( gx % m.grid->division() == 0 )
+            fl_color( fl_color_add_alpha( FL_GRAY, 50 ));
+        else if ( gx % m.grid->subdivision() == 0 )
+            fl_color( fl_color_add_alpha( FL_GRAY, 30 ));
+        else
+            continue;
+        
+
+        fl_rectf( m.origin_x + m.margin_left + ( ( gx - m.vp->x ) * m.div_w ),
+                  m.origin_y + m.margin_top, 
+                  m.div_w, 
+                  y() + h() - m.margin_top );
+    }
+
+    m.grid->draw_notes( draw_dash, this );
+
+    if ( ghost_note )
+        draw_dash( ghost_note->start,
+                   ghost_note->note,
+                   ghost_note->duration,
+                   ghost_note->velocity,
+                   1 );
+
+    fl_color( fl_color_add_alpha( fl_rgb_color( 127,127,127 ), 50 ));
+
+    /* draw grid */
+    
+    if ( m.div_w > 4 )
+    {
+        for ( int gx = m.origin_x + m.margin_left;
+              gx < x() + w();
+              gx += m.div_w )
+            fl_line( gx, m.origin_y + m.margin_top, gx, y() + h() );
+    }
+
+    if ( m.div_h > 2 )
+    {
+        for ( int gy = m.origin_y + m.margin_top;
+              gy < y() + h();
+              gy += m.div_h )
+            fl_line( m.origin_x + m.margin_left, gy, x() + w(), gy );
+    }
+
+
+    fl_pop_clip();
+
+    fl_pop_clip();
+}
+
 
 /** draw ONLY those nodes necessary to bring the canvas up-to-date with the grid */
 void
 Canvas::draw ( void )
 {
-    DMESSAGE( "drawing canvas" );
+    box( FL_NO_BOX );
+    labeltype( FL_NO_LABEL );
 
-    draw_mapping();
-    draw_ruler();
+    /* DMESSAGE( "%s%s%s%s%s%s", */
+    /*           damage() & FL_DAMAGE_CHILD ? "CHILD " : "", */
+    /*           damage() & FL_DAMAGE_ALL ? "ALL " : "", */
+    /*           damage() & FL_DAMAGE_USER1 ? "USER 1 ": "", */
+    /*           damage() & FL_DAMAGE_EXPOSE ? "EXPOSE " : "", */
+    /*           damage() & FL_DAMAGE_SCROLL ? "SCROLL " : "", */
+    /*           damage() & FL_DAMAGE_OVERLAY ? "OVERLAY " : ""); */
 
-    m.grid_drawn = true;
 
-    fl_rectf( m.origin_x + m.margin_left, m.origin_y + m.margin_top, w(), h(), velocity_colors[10] );
-    
-    /* draw grid */
-    
-    fl_color( FL_BLACK  );
-    for ( int gx = m.origin_x + m.margin_left; 
-          gx < m.origin_x + m.margin_left + ( m.div_w * m.vp->w );
-          gx += m.div_w )
-        fl_line( gx, m.origin_y + m.margin_top, gx, m.origin_y + m.margin_top + ( m.div_w * m.vp->w ) );
+    if ( damage() & FL_DAMAGE_SCROLL )
+    {
+        draw_ruler();
 
-    for ( int gy = m.origin_y + m.margin_top; 
-          gy < m.origin_y + m.margin_top + ( m.div_h * m.vp->h );
-          gy += m.div_h )
-        fl_line( m.origin_x + m.margin_left, gy, m.origin_x + m.margin_left + ( m.div_w * m.vp->w ), gy );
+        int dx = ( _old_scroll_x - m.vp->x ) * m.div_w;
+        int dy = ( _old_scroll_y - m.vp->y ) * m.div_h;
 
-    
-    m.grid->draw_notes( draw_dash, this );
+        fl_scroll( m.origin_x + m.margin_left,
+                   m.origin_y + m.margin_top,
+                   w() - m.margin_left,
+                   h() - m.margin_top - panzoomer->h(),
+                   dx, dy, 
+                   draw_clip,
+                   this );
+
+        if ( dy )
+            draw_mapping();
+
+        _old_scroll_x = m.vp->x;
+        _old_scroll_y = m.vp->y;
+
+        if ( damage() & FL_DAMAGE_CHILD )
+            clear_damage( FL_DAMAGE_CHILD );
+    }
+    else if ( damage() & ~FL_DAMAGE_CHILD )
+    {
+        draw_mapping();
+        draw_ruler();
+
+        draw_clip( x(), y(), w(), h() );
+    }
+
+    draw_children();
+}
+
+void
+Canvas::cb_scroll ( Fl_Widget *w, void *v )
+{
+    ((Canvas*)v)->cb_scroll( w );
+}
+
+void
+Canvas::cb_scroll ( Fl_Widget *w )
+{
+    if ( w == panzoomer )
+    {
+        Fl_Panzoomer *o = (Fl_Panzoomer*)w;
+
+        _old_scroll_x = m.vp->x;
+
+        m.vp->x = grid()->ts_to_x( o->x_value() );
+        m.vp->y = o->y_value();
+
+        damage( FL_DAMAGE_SCROLL );
+
+        if ( o->zoom_changed() )
+        {
+            m.vp->w = m.grid->division() * o->zoom();
+            resize_grid();
+            redraw();
+        }
+    }
+    else if ( w == vzoom )
+    {
+        Fl_Slider *o = (Fl_Slider*)w;
+        
+        float n = o->value();
+
+        m.vp->h = min( (int)n, m.maxh );
+
+        resize_grid();
+        
+        song.set_dirty();
+
+        redraw();
+    }
 
 }
 
-/* /\** redraw every node on the canvas from the buffer (without */
-/*  * necessarily reexamining the grid) *\/ */
-/* void */
-/* Canvas::redraw ( void ) */
-/* { */
-/*     DMESSAGE( "redrawing canvas" ); */
-
-/*     if ( ! m.grid_drawn ) */
-/*         draw(); */
-
-/*     m.ruler_drawn = false; */
-/*     m.mapping_drawn = false; */
-
-/*     draw_mapping(); */
-/*     draw_ruler(); */
-
-/*     const int shape = m.grid->draw_shape(); */
-
-/*     for ( int y = m.vp->h; y--; ) */
-/*         for ( int x = m.vp->w; x--; ) */
-/*         { */
-/*             cell_t c = m.previous[ x ][ y ]; */
-
-/*             if ( m.vp->x + x == m.playhead ) */
-/*                 c.flags |= F_PLAYHEAD; */
-
-/*             gui_draw_shape( m.origin_x + m.margin_left + x * m.div_w, m.origin_y + m.margin_top + y * m.div_h, m.div_w, m.div_h, */
-/*                             shape, c.state, c.flags, c.color ); */
-/*         } */
-/* } */
 
 /** convert pixel coords into grid coords. returns true if valid */
 bool
 Canvas::grid_pos ( int *x, int *y ) const
 {
+    /* if ( ( *x < m.origin_x + m.margin_left ) || */
+    /*        ( *y < m.origin_y + m.margin_top ) || */
+    /*          ( *x > m.origin_x + w() ) || */
+    /*        (*y > m.origin_y + h() - panzoomer->h() ) ) */
+    /*     return false; */
+
     *y = (*y - m.margin_top - m.origin_y) / m.div_h;
     *x = (*x - m.margin_left - m.origin_x) / m.div_w;
 
-    if ( *x < 0 || *y < 0 || *x >= m.vp->w || *y >= m.vp->h )
-        return false;
+    /* if ( *x < 0 || *y < 0 || *x >= m.vp->w || *y >= m.vp->h ) */
+    /*     return false; */
 
     /* adjust for viewport */
     *x += m.vp->x;
@@ -663,16 +916,23 @@ Canvas::grid_pos ( int *x, int *y ) const
 
 /** if coords correspond to a row name entry, return the (absolute) note number, otherwise return -1 */
 int
-Canvas::is_row_name ( int x, int y )
+Canvas::is_row_press ( void ) const
 {
-    if ( x - m.origin_x >= m.margin_left )
+    if ( Fl::event_inside( this->x(),
+                           this->y() + this->m.margin_top,
+                           this->m.margin_left,
+                           ( this->h() - this->m.margin_top ) - this->panzoomer->h() ) )
+    {
+        int dx,dy;
+        dx = Fl::event_x();
+        dy = Fl::event_y();
+
+        grid_pos( &dx, &dy );
+
+        return m.grid->y_to_note(dy );
+    }
+    else
         return -1;
-
-    x = m.margin_left;
-
-    grid_pos( &x, &y );
-
-    return m.grid->y_to_note( y );
 }
 
 void
@@ -688,7 +948,7 @@ Canvas::start_cursor ( int x, int y )
 
     _lr();
 
-    signal_draw();
+    redraw();
 }
 
 void
@@ -704,61 +964,7 @@ Canvas::end_cursor ( int x, int y )
 
     _lr();
 
-    signal_draw();
-}
-
-void
-Canvas::set ( int x, int y )
-{
-    if ( y - m.origin_y < m.margin_top )
-        /* looks like a click on the ruler */
-    {
-        if ( x - m.margin_left - m.origin_x >= 0 )
-        {
-            m.p1 = m.vp->x + ((x - m.margin_left - m.origin_x) / m.div_w);
-            m.ruler_drawn = false;
-
-            m.p3 = m.p4 = 0;
-        }
-
-        _lr();
-
-        signal_draw();
-
-        return;
-    }
-
-    if ( ! grid_pos( &x, &y ) )
-        return;
-
-    m.grid->put( x, y, 0 );
-}
-
-void
-Canvas::unset ( int x, int y )
-{
-    if ( y - m.origin_y < m.margin_top )
-        /* looks like a click on the ruler */
-    {
-        if ( x - m.margin_left - m.origin_x >= 0 )
-        {
-            m.p2 = m.vp->x + ((x - m.margin_left - m.origin_x) / m.div_w);
-            m.ruler_drawn = false;
-
-            m.p3 = m.p4 = 0;
-        }
-
-        _lr();
-
-        signal_draw();
-
-        return;
-    }
-
-    if ( ! grid_pos( &x, &y ) )
-        return;
-
-    m.grid->del( x, y );
+    redraw();
 }
 
 void
@@ -777,6 +983,15 @@ Canvas::adj_length ( int x, int y, int n )
         return;
 
     m.grid->adj_duration( x, y, n );
+}
+
+void
+Canvas::set_end ( int x, int y, int n )
+{
+    if ( ! grid_pos( &x, &y ) )
+        return;
+
+    m.grid->set_end( x, y, n );
 }
 
 void
@@ -935,7 +1150,6 @@ Canvas::row_compact ( int n )
             break;
     }
 //    _reset();
-    m.mapping_drawn = false;
 }
 
 void
@@ -951,7 +1165,6 @@ Canvas::pan ( int dir, int n )
             break;
         default:
             n *= 5;
-            m.mapping_drawn = false;
             break;
     }
 
@@ -986,8 +1199,7 @@ Canvas::pan ( int dir, int n )
         }
     }
 
-    signal_draw();
-    signal_pan();
+    damage(FL_DAMAGE_USER1);
 }
 
 void
@@ -1049,4 +1261,401 @@ char *
 Canvas::notes ( void )
 {
     return m.grid->notes();
+}
+        
+int
+Canvas::handle ( int m )
+{
+    Canvas *c = this;
+
+    int ow, oh;
+
+    int x, y;
+    int processed = 1;
+
+    x = Fl::event_x();
+    y = Fl::event_y();
+
+    static int drag_x;
+    static int drag_y;
+    static bool delete_note;
+    static note_properties *drag_note;
+    static int adjusting_velocity;
+
+//    static note_properties;
+
+    ow = c->grid()->viewport.w;
+    oh = c->grid()->viewport.h;
+
+    switch ( m )
+    {
+        case FL_FOCUS:
+        case FL_UNFOCUS:
+            return 1;
+        case FL_ENTER:
+        case FL_LEAVE:
+            fl_cursor( FL_CURSOR_DEFAULT );
+            return 1;
+        case FL_MOVE:
+        {
+            if ( Fl::event_inside( this->x() + this->m.margin_left,
+                                   this->y() + this->m.margin_top,
+                                   this->w() - this->m.margin_left,
+                                   ( this->h() - this->m.margin_top ) - this->panzoomer->h() ) )
+                fl_cursor( FL_CURSOR_HAND );
+            else
+                fl_cursor( FL_CURSOR_DEFAULT );
+
+            return 1;
+            break;
+        }
+        case FL_KEYBOARD:
+        {
+
+/*             if ( Fl::event_state() & FL_ALT || Fl::event_state() & FL_CTRL ) */
+/*                 // this is more than a simple keypress. */
+/*                 return 0; */
+
+
+            if ( Fl::event_state() & FL_CTRL )
+            {
+                switch ( Fl::event_key() )
+                {
+                    case FL_Delete:
+                        c->delete_time();
+                        break;
+                    case FL_Insert:
+                        c->insert_time();
+                        break;
+                    case FL_Right:
+                        c->pan( TO_NEXT_NOTE, 0 );
+                        break;
+                    case FL_Left:
+                        c->pan( TO_PREV_NOTE, 0 );
+                        break;
+                    default:
+                        return 0;
+                }
+            }
+            else
+                if ( Fl::event_state() & FL_ALT )
+                    return 0;
+
+            switch ( Fl::event_key() )
+            {
+                case FL_Left:
+                    c->pan( LEFT, 1 );
+                    break;
+                case FL_Right:
+                    c->pan( RIGHT, 1 );
+                    break;
+                case FL_Up:
+                    c->pan( UP, 1 );
+                    break;
+                case FL_Down:
+                    c->pan( DOWN, 1 );
+                    break;
+                default:
+                    /* have to do this to get shifted keys */
+                    switch ( *Fl::event_text() )
+                    {
+                        case 'f':
+                            c->pan( TO_PLAYHEAD, 0 );
+                            break;
+                        case 'r':
+                            c->select_range();
+                            break;
+                        case 'q':
+                            c->grid()->select_none();
+                            break;
+                        case 'i':
+                            c->invert_selection();
+                            break;
+                            /* case '1': */
+                            /*     c->h_zoom( 2.0f ); */
+                            /*     break; */
+                            /* case '2': */
+                            /*     c->h_zoom( 0.5f ); */
+                            /*     break; */
+                            /* case '3': */
+                            /*     c->v_zoom( 2.0f ); */
+                            /*     break; */
+                            /* case '4': */
+                            /*     c->v_zoom( 0.5f ); */
+                            /*     break; */
+                            /* case ' ': */
+                            /*     transport.toggle(); */
+                            /*     break; */
+
+#define IS_PATTERN (parent() == ui->pattern_tab)
+#define IS_PHRASE (parent() == ui->phrase_tab)
+#define IS_SEQUENCE (parent() == ui->sequence_tab)
+                        case '<':
+                            c->move_selected( LEFT, 1 );
+                            break;
+                        case '>':
+                            c->move_selected( RIGHT, 1 );
+                            break;
+                        case ',':
+                            c->move_selected( UP, 1 );
+                            break;
+                        case '.':
+                            c->move_selected( DOWN, 1 );
+                            break;
+                        case 'C':
+                            c->crop();
+                            break;
+                        case 'd':
+                        {
+                            MESSAGE( "duplicating thing" );
+                            c->grid( c->grid()->clone() );
+
+                            // number of phrases may have changed.
+                            ui->update_sequence_widgets();
+
+                            break;
+
+                        }
+                        case 'D':
+                            c->duplicate_range();
+                            break;
+                        case 't':
+                            c->grid()->trim();
+                            break;
+                        default:
+                            processed = 0;
+                            break;
+                    }
+                    break;
+            }
+            break;
+        }
+        case FL_PUSH:
+        {
+            switch ( Fl::event_button() )
+            {
+                case 1:
+                {
+                    delete_note = true;
+                    adjusting_velocity = 0;
+
+                    if ( Fl::event_ctrl() )
+                    {
+                        c->select( x, y );
+                        processed = 2;
+                        break;
+                    }
+
+                    int dx = x;
+                    int dy = y;
+                    
+                    grid_pos( &dx, &dy );
+
+                    int note;
+                    if ( ( note = c->is_row_press() ) >= 0 )
+                    {
+                        if ( IS_PATTERN )
+                            ((pattern *)c->grid())->row_name_press( note );
+                        
+                        processed = 2;
+                        break;
+                    }
+
+                    if ( Fl::event_inside( this->x() + this->m.margin_left,
+                                           this->y() + this->m.margin_top,
+                                           this->w() - this->m.margin_left,
+                                           ( this->h() - this->m.margin_top ) - this->panzoomer->h() ) )
+                    {
+
+                        if ( ! this->m.grid->is_set( dx,dy ))
+                        {
+                            ghost_note = new note_properties;
+                        
+                            ghost_note->start = this->m.grid->x_to_ts( dx );
+                            ghost_note->note = dy;
+                            ghost_note->duration = this->m.grid->default_length();
+                            ghost_note->velocity = 64;
+                    
+                            delete_note = false;
+
+                            processed = 1;
+                            break;
+                        }
+                        else
+                        {
+                            ghost_note = new note_properties;
+                            drag_note = new note_properties;
+                            this->m.grid->get_note_properties( dx, dy, ghost_note );
+                            this->m.grid->get_note_properties( dx, dy, drag_note );
+                            this->m.grid->del( dx, dy );
+
+                            delete_note = true;
+                        }
+
+                        this->m.grid->get_start( &dx, &dy );                    
+
+                        drag_x = x;
+                        drag_y = y;
+                    
+                        take_focus();
+                    }
+                    else
+                        processed = 0;
+
+                    break;
+                }
+                case 3:
+                {
+                    int note;
+                    if ( ( note = is_row_press() ) >= 0 )
+                    {
+                        /* inside the note headings */
+
+                        DMESSAGE( "click on row %d", note );
+                        if ( IS_PATTERN )
+                        {
+                            Instrument *i = ((pattern *)c->grid())->mapping.instrument();
+
+                            if ( i )
+                            {
+                                ui->edit_instrument_row( i, note );
+
+                                c->changed_mapping();
+                            }
+                        }
+                    }
+                    else
+                        if ( Fl::event_state() & FL_SHIFT )
+                        {
+                            c->end_cursor( x, y );
+                            break;
+                        }
+                    break;
+                }
+                default:
+                    processed = 0;
+            }
+            break;
+        }
+        case FL_RELEASE:
+            switch ( Fl::event_button() )
+            {
+                case 1:
+                {
+                    int dx = x;
+                    int dy = y;
+                    grid_pos( &dx, &dy );
+
+                    if ( IS_PATTERN && Fl::event_state() & ( FL_ALT  | FL_CTRL ) )
+                        c->randomize_row( y );
+                    else
+                    {
+                        if ( delete_note )
+                        {
+//                            this->m.grid->del( dx, dy );
+                            if ( ghost_note )
+                            {
+                                damage_grid( ghost_note->start, ghost_note->note, ghost_note->duration, 1 );
+
+                                delete ghost_note;
+                            }
+                            ghost_note = 0;
+                        }
+                        else
+                            if ( ghost_note )
+                            {
+                                this->m.grid->put( this->m.grid->ts_to_x( ghost_note->start ), 
+                                                   ghost_note->note,
+                                                   ghost_note->duration,
+                                                   ghost_note->velocity);
+
+                                delete_note = false;
+                                
+                                delete ghost_note;
+                                ghost_note = 0;
+                            }
+                    }
+
+                    if ( drag_note )
+                        delete drag_note;
+                    drag_note = 0;
+
+                    break;
+                }
+                default:
+                    processed = 0;
+                    break;
+            }
+            break;
+        case FL_DRAG:
+            if ( Fl::event_button1() )
+            {
+                int dx = x;
+                int dy = y;
+
+                grid_pos( &dx, &dy );
+
+                if ( ghost_note )
+                {
+                    damage_grid( ghost_note->start, ghost_note->note, ghost_note->duration, 1 );
+
+                    if ( drag_note )
+                    {
+                        int ody = drag_y;
+                        int odx = drag_x;
+                        
+                        grid_pos( &odx, &ody );
+                        
+                        if ( ody != dy )
+                        {
+                            adjusting_velocity = 1;
+
+                            ghost_note->velocity =
+                                drag_note->velocity +
+                                ( (drag_y - y) / 3.0f );
+                            
+                            if ( ghost_note->velocity < 0 )
+                                ghost_note->velocity = 0;
+                            else if ( ghost_note->velocity > 127 )
+                                ghost_note->velocity = 127;
+                        }
+                    }
+                    
+                    if ( ! adjusting_velocity )
+                    {
+                        if ( dx > this->m.grid->ts_to_x( ghost_note->start ) )
+                        {
+                            ghost_note->duration = this->m.grid->x_to_ts( dx  ) - ghost_note->start;
+                        }
+                        
+                        damage_grid( ghost_note->start, ghost_note->note, ghost_note->duration, 1 );
+                    }
+                    else
+                        ghost_note->duration = drag_note->duration;
+
+                    delete_note = false;
+
+                    processed = 2;
+             
+                }
+            }
+            break;
+        default:
+            processed = 0;
+    }
+
+    int nw, nh;
+    nw = c->grid()->viewport.w;
+    nh = c->grid()->viewport.h;
+
+    if ( processed )
+        window()->damage(FL_DAMAGE_OVERLAY);
+
+    if ( processed == 1 )
+        damage(FL_DAMAGE_USER1);
+
+    if ( ! processed )
+        return Fl_Group::handle( m );
+    
+    return processed;
 }

@@ -28,6 +28,15 @@ decl {\#include "../grid.H"} {private local
 decl {\#include "../scale.H"} {private local
 } 
 
+decl {\#include <MIDI/event.H>} {public global
+} 
+
+decl {\#include <MIDI/event_list.H>} {selected public global
+} 
+
+decl {using namespace MIDI;} {private local
+} 
+
 decl {extern Fl_Color velocity_colors[];} {private local
 } 
 
@@ -40,9 +49,9 @@ class Event_Editor {open
   }
   decl {Grid *_grid;} {private local
   }
-  decl {event_list *_old;} {private local
+  decl {MIDI::event_list *_old;} {private local
   }
-  decl {event_list *_el;} {private local
+  decl {MIDI::event_list *_el;} {private local
   }
   decl {int _y;} {private local
   }
@@ -61,10 +70,9 @@ _el = _old = NULL;
 o->hide();
 
 Fl::delete_widget( o );} open
-      xywh {966 99 655 805} type Double resizable
+      xywh {968 122 655 805} type Double resizable
       code0 {\#include "event_edit.H"}
-      code1 {\#include "../grid.H"}
-      code2 {\#include "../event_list.H"} modal size_range {0 0 659 803} visible
+      code1 {\#include "../grid.H"} modal size_range {0 0 659 803} visible
     } {
       Fl_Scroll {} {
         label {Event List} open
@@ -192,7 +200,7 @@ update_widgets();} {}
     code {int i = 0;
 if ( ! _el->empty() )
 
-for ( event* e = (*_el)[0]; e = e->next(); i++ )
+for ( event* e = (*_el)[0]; ( e = e->next() ); i++ )
 {
 	Event_Widget *ew;
 	
@@ -253,9 +261,8 @@ while( w->shown() )
 } 
 
 widget_class Event_Widget {user_data_type {void *} open
-  xywh {943 216 590 30} type Single
-  code0 {\#include "../event.H"}
-  code1 {_event = NULL;}
+  xywh {945 239 590 30} type Single
+  code0 {_event = NULL;}
   class Fl_Group size_range {400 24 0 24} visible
 } {
   decl {static const Fl_Color note_color = FL_BLACK;} {private local
@@ -270,11 +277,11 @@ widget_class Event_Widget {user_data_type {void *} open
   }
   decl {static const Fl_Color pitch_color = FL_GREEN} {private local
   }
-  decl {event *_event;} {private local
+  decl {MIDI::event *_event;} {private local
   }
   decl {Fl_Group *tab;} {private local
   }
-  Function {ev( event * e )} {open return_type void
+  Function {ev( MIDI::event * e )} {open return_type void
   } {
     code {if ( e && ( _event == NULL ) )
 	activate();
@@ -374,7 +381,7 @@ name->redraw();
 
 // redraw();} {}
   }
-  Function {ev( void )} {open return_type {event *}
+  Function {ev( void )} {open return_type {MIDI::event *}
   } {
     code {return _event;} {}
   }
@@ -491,7 +498,7 @@ do_callback();}
     Fl_Slider {} {
       label {Pressure:}
       user_data this
-      callback cb_lsb selected
+      callback cb_lsb
       xywh {359 0 230 24} type {Horz Fill} align 4 when 4 maximum 127 step 1
     }
   }

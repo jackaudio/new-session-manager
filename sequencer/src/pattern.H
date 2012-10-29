@@ -22,7 +22,6 @@
 #include "grid.H"
 #include "canvas.H"
 #include "mapping.H"
-// #include "event.H"
 #include "common.h"
 
 #include <vector>
@@ -30,7 +29,7 @@ using std::vector;
 
 class pattern : public Grid
 {
-    static event_list _recorded_events;
+    static MIDI::event_list _recorded_events;
     static vector <pattern *> _patterns;
     static int _solo;
     static int _pattern_recording;
@@ -68,7 +67,7 @@ public:
     static pattern * import ( smf *f, int track );
 
     static pattern * recording ( void );
-    static void record_event ( const midievent *e );
+    static void record_event ( const MIDI::midievent *e );
 
     pattern * create ( void );
     pattern * by_number ( int n ) const;
@@ -91,6 +90,7 @@ public:
     int queue ( void ) const;
 
     void randomize_row ( int y, int feel, float probability );
+    void row_name_press ( int y );
 
     int port ( void ) const;
     void port ( int p );
@@ -111,5 +111,10 @@ public:
 
     int ppqn ( void ) const;
     void ppqn ( int n );
+
+    virtual tick_t default_length ( void ) const
+        {
+            return PPQN * 4 / _note;
+        }
 
 };

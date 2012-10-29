@@ -19,9 +19,8 @@
 
 #pragma once
 
-#include "event.H"
-#include "event_list.H"
-#include "dash.H"
+#include <MIDI/event.H>
+#include <MIDI/event_list.H>
 #include "const.h"
 #include "instrument.H"
 
@@ -48,7 +47,7 @@ struct data {
 
     tick_t           length;
     int              state;
-    event_list       events;
+    MIDI::event_list       events;
 
     data( void )
         {
@@ -107,7 +106,7 @@ protected:
     char     *_notes;
     char     *_name;
     int      _number;
-
+    
     bool     _suspend_update;
 
     unsigned int     _bpb;                                  /* beats per bar */
@@ -131,9 +130,8 @@ protected:
     list <data *> _history;
 
     void _remove_marked ( void );
-    event * _event ( int x, int y, bool write ) const;
+    MIDI::event * _event ( int x, int y, bool write ) const;
     bool _delete ( int x, int y  );
-    bool _get ( struct dash *d, int x, int y ) const;
     void _link ( void );
     void _relink ( void );
     void _fix_length ( void );
@@ -145,7 +143,7 @@ private:
 
 public:
 
-    typedef void draw_note_func_t ( int x, int y, int l, int velocity, void *userdata );
+    typedef void draw_note_func_t ( tick_t x, int y, tick_t l, int velocity, int selected, void *userdata );
 
     void draw_notes ( draw_note_func_t draw_note, void *userdata ) const;
 
@@ -158,10 +156,12 @@ public:
     virtual ~Grid ( void );
     Grid ( const Grid &rhs );
 
+    virtual bool velocity_sensitive ( void ) const { return true; }
+
     int y_to_note ( int y ) const;
     int note_to_y ( int n ) const;
-    tick_t x_to_ts ( uint x ) const;
-    uint ts_to_x ( tick_t ts ) const;
+    tick_t x_to_ts ( tick_t x ) const;
+    tick_t ts_to_x ( tick_t ts ) const;
 
     virtual Grid * create ( void ) = 0;
     virtual Grid * clone ( void ) = 0;
@@ -170,17 +170,20 @@ public:
 
     virtual Grid * by_number ( int n ) const = 0;
 
-    virtual void put ( int x, int y, tick_t l );
+    virtual void put ( int x, int y, tick_t l, int velocity = 64 );
+    virtual bool is_set ( int x, int y ) const;
 
     void lock ( void );
     void unlock ( void );
     void clear ( void );
-    int get ( struct dash *d, int x, int y ) const;
     void del ( int x, int y );
     void adj_velocity ( int x, int y, int n );
     void adj_duration ( int x, int y, int l );
+    void set_duration ( int x, int y, int l );
+    void set_end ( int x, int y, int l );
+    int get_start ( int *x, int *y ) const;
     void move ( int x, int y, int nx, int ny );
-    void record_event ( event *e );
+    void record_event ( MIDI::event *e );
     tick_t index ( void ) const;
     bool playing ( void ) const;
 
@@ -219,6 +222,7 @@ public:
     void select ( int start, int end, int t, int b );
     void delete_time ( int start, int end );
     void select_none ( void );
+    void select_all ( void );
     void invert_selection ( void );
 
     void resolution ( unsigned int n );
@@ -228,10 +232,18 @@ public:
     void draw ( Canvas *c, int bx, int by, int bw, int bh );
     void print ( void ) const;
 
-    event_list * events ( void ) const;
-    void events ( const event_list * el );
+    MIDI::event_list * events ( void ) const;
+    void events ( const MIDI::event_list * el );
+
+    void get_note_properties ( int x, int y, MIDI::note_properties *p ) const;
+
+    virtual tick_t default_length ( void ) const
+        {
+            return PPQN;
+        }
 
 };
+
 
 inline int
 Grid::y_to_note ( int y ) const
@@ -246,14 +258,14 @@ Grid::note_to_y ( int n ) const
 }
 
 inline tick_t
-Grid::x_to_ts ( unsigned int x ) const
+Grid::x_to_ts ( tick_t x ) const
 {
     return (x * PPQN) / _ppqn;
 
 //    return x * (PPQN / _ppqn);
 }
 
-inline unsigned int
+inline tick_t
 Grid::ts_to_x ( tick_t ts ) const
 {
     return (ts * _ppqn) / PPQN;

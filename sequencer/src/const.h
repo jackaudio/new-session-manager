@@ -27,7 +27,7 @@ const int MAX_PATTERN = 128;
 const unsigned int PPQN = 480;
 
 /* interval between GUI updates for playhead movement, etc. */
-const double TRANSPORT_POLL_INTERVAL = 0.05;
+const double TRANSPORT_POLL_INTERVAL = 0.02;
 
 const char APP_NAME[]   = "Non-Sequencer";
 const char APP_TITLE[]  = "The Non-Sequencer";

@@ -20,7 +20,9 @@
 #include "mapping.H"
 #include "stdlib.h"
 #include "common.h"
+#include <MIDI/midievent.H>
 
+using namespace MIDI;
 /* Is C++'s dispatching useless or what? */
 
 #define IS_INSTRUMENT ( _type == INSTRUMENT )

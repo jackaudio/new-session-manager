@@ -20,7 +20,7 @@
 #pragma once
 
 #include "grid.H"
-#include <FL/Fl_Widget.H>
+#include <FL/Fl_Group.H>
 
 #include <sigc++/sigc++.h>
 using namespace sigc;
@@ -29,9 +29,19 @@ class Mapping;
 
 enum { LEFT, RIGHT, UP, DOWN, TO_PLAYHEAD, TO_NEXT_NOTE, TO_PREV_NOTE };
 
+class Fl_Scrollbar;
+class Fl_Slider;
 
-class Canvas : public Fl_Widget, public trackable
+class Canvas : public Fl_Group, public trackable
 {
+    class Canvas_Panzoomer;
+
+    Canvas_Panzoomer *panzoomer;
+    Fl_Slider *vzoom;
+
+    /* these are grid coords, not pixels */
+    int _old_scroll_x;
+    int _old_scroll_y;
 
     struct {
         int origin_x, origin_y;
@@ -79,8 +89,6 @@ class Canvas : public Fl_Widget, public trackable
 
     void _update_row_mapping ( void );
 
-    void redraw_ruler ( void );
-    void redraw_mapping ( void );
     void draw_mapping ( void );
     void draw_ruler ( void );
 
@@ -88,21 +96,24 @@ class Canvas : public Fl_Widget, public trackable
     void _lr ( void );
 
     bool viewable_x ( int x );
-    void draw_line ( int x, int flags );
 
     void update_mapping ( void );
+
+    static void cb_scroll (  Fl_Widget *w, void *v );
+    void cb_scroll ( Fl_Widget *w );
+    static void draw_clip ( void *v, int X, int Y, int W, int H );
+    void draw_clip ( int X, int Y, int W, int H );
 
 public:
 
     enum { OFF, ON, TOGGLE };
 
     signal <void> signal_settings_change;
-    signal <void> signal_draw;
-    signal <void> signal_resize;
-    signal <void> signal_pan;
 
     Canvas ( int X, int Y, int W, int H, const char *L=0 );
+    virtual ~Canvas ( );
 
+    void redraw_playhead ( void );
     void handle_event_change ( void );
     void set ( int x, int y );
     void grid ( Grid *g );
@@ -112,19 +123,20 @@ public:
     void resize_grid ( void );
     void resize ( int x, int y, int w, int h );
     void copy ( void );
-    void clear ( void );
-    void flip ( void );
     void draw_row_name ( int y, const char *name, int color );
-    void draw_shape ( int x, int y, int w, int color );
-    static void draw_dash ( int x, int y, int l, int color, void *userdata );
-    int draw_playhead ( void );
+    //    void draw_shape ( int x, int y, int w, int color );
+    static void draw_dash ( tick_t x, int y, tick_t l, int color, int selected, void *userdata );
+    void draw_dash ( tick_t x, int y, tick_t w, int color, int selected ) const;
+    void damage_grid ( tick_t x, int y, tick_t w, int h );
+    void draw_overlay ( void );
+    void draw_playhead ( void );
     void draw ( void );
-    /* void redraw ( void ); */
     bool grid_pos ( int *x, int *y ) const;
-    int is_row_name ( int x, int y );
+    int is_row_press ( void ) const;
     void unset ( int x, int y );
     void adj_color ( int x, int y, int n );
     void adj_length ( int x, int y, int n );
+    void set_end ( int x, int y, int n );
     void select ( int x, int y );
     void select_range ( void );
     void invert_selection ( void );
@@ -148,6 +160,8 @@ public:
     void insert_time ( void );
 
     void move_selected ( int dir, int n );
+
+    virtual int handle ( int m );
 
 };
 

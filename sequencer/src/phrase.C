@@ -18,11 +18,12 @@
 /*******************************************************************************/
 
 #include "phrase.H"
-#include "gui/draw.H"
 #include "pattern.H"
 #include "smf.H"
 #include "common.h"
 #include <math.h>
+
+using namespace MIDI;
 
 vector <phrase*> phrase::_phrases;
 signal <void> phrase::signal_create_destroy;

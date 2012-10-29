@@ -32,7 +32,10 @@
 #include "transport.H"
 #include "pattern.H"
 #include "phrase.H"
-#include "event_list.H"
+#include <MIDI/event_list.H>
+#include <MIDI/midievent.H>
+
+using namespace MIDI;
 
 #ifdef JACK_MIDI_PROTO_API
 /* correct for prototype version of API */

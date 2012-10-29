@@ -46,6 +46,8 @@ public:
     static phrase * phrase_by_number ( int n );
     static void reset ( void );
 
+    virtual bool velocity_sensitive ( void ) const { return false; }
+
     phrase *create ( void );
     phrase * by_number ( int n ) const;
 

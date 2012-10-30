@@ -270,6 +270,7 @@ require_command ()
     fi
 
     append "$1=$name"
+    eval "${1}='${name}'"
 }
 
 require_package ()
@@ -358,16 +359,27 @@ hostname_resolvable ()
     ping -c1 `hostname` >/dev/null 2>/dev/null
 }
 
-require_FLTK ()
+require_NTK ()
 {
     local use
     local appendflags
+    local is_local
 
-    require_command ntk_config lib/ntk/ntk-config
+    is_local=
 
-    echo -n "Checking for ${BOLD}FLTK${SGR0}..."
+    echo -n "Checking for ${BOLD}NTK${SGR0}..."
 
-    FLTK_VERSION=`lib/ntk/ntk-config --version`
+    if [ -n "`which ntk-config`" ]
+    then
+	echo "found system NTK..."
+   	require_command ntk_config ntk-config
+    else
+	echo "no system NTK found... checking for bundled version..."
+        require_command ntk_config lib/ntk/ntk-config
+	is_local=yes
+     fi
+
+    FLTK_VERSION=`${ntk_config} --version`
 
     if ! test_version $FLTK_VERSION $1
     then
@@ -375,6 +387,13 @@ require_FLTK ()
         fatal "The installed FLTK version ($FLTK_VERSION) is too old."
     else
         ok $FLTK_VERSION
+    fi
+
+    if [ "x$is_local" = "xyes" ]
+    then
+        require_command FLUID lib/ntk/fluid/ntk-fluid
+    else
+        require_command FLUID ntk-fluid
     fi
 
     use=
@@ -389,7 +408,7 @@ require_FLTK ()
         use="$use --use-$1"
     done
 
-    append "FLTK_LIBS=`lib/ntk/ntk-config $use --libs | sed 's/,\\?--as-needed//g'`"
-    append "FLTK_LDFLAGS=`lib/ntk/ntk-config $use --ldflags | sed 's/,\\?--as-needed//g'`"
-    append "FLTK_CFLAGS=`lib/ntk/ntk-config $use --cflags` $appendflags"
+    append "FLTK_LIBS=`${ntk_config} $use --libs | sed 's/,\\?--as-needed//g'`"
+    append "FLTK_LDFLAGS=`${ntk_config} $use --ldflags | sed 's/,\\?--as-needed//g'`"
+    append "FLTK_CFLAGS=`${ntk_config} $use --cflags` $appendflags"
 }

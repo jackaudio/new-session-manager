@@ -16,8 +16,7 @@ begin_tests
 
 require_command ar ar
 require_command makedepend makedepend
-require_FLTK 1.3.0 images
-require_command FLUID lib/ntk/fluid/fluid
+require_NTK 1.3.0 images
 require_package JACK 0.103.0 jack
 require_package lrdf 0.4.0 lrdf
 require_package liblo 0.23 liblo

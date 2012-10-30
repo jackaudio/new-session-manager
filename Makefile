@@ -17,10 +17,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  #
 ###############################################################################
 
-SUBDIRS=lib nonlib FL timeline mixer session-manager sequencer
+SUBDIRS=nonlib FL timeline mixer session-manager sequencer
 
-all: lib/ntk/configure lib/.built .config
+all: .config
+	@ echo '!!! If you have any trouble here try reading README.build !!!'
 	@ for dir in $(SUBDIRS); do echo Building $$dir; $(MAKE) -s -C $$dir; done
+
+ntk: lib/.built lib/ntk/configure
 
 lib/ntk/configure:
 	@ git submodule update --init

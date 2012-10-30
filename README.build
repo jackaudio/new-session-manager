@@ -1,7 +1,13 @@
 
 This repository contains all of the non-* software.
 
-To build it, just type 'make'. Stuff will happen. Eventually, you'll
-have to answer some build questions. Just answer them. Don't make
-things harder on yourself by trying to build everything
-individually. Just type 'make'. I'm serious. It's that simple.
+If you don't have NTK packages installed (which isn't very likely yet)
+you *MUST* begin by typing:
+
+    make ntk
+
+Then, to build everything else, just type 'make'. Stuff will
+happen. Eventually, you'll have to answer some build questions. Just
+answer them. Don't make things harder on yourself by trying to build
+everything individually. Just type 'make'. I'm serious. It's that
+simple.

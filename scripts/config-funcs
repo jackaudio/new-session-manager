@@ -28,8 +28,8 @@ fatal ()
     exit 255
 }
 
-UPDATE=no
 HELP=no
+INTERACTIVE=no
 
 split ()
 {
@@ -43,14 +43,14 @@ split ()
 if [ $# -gt 0 ]
 then
     case "$1" in
-        --update)
-            UPDATE=yes
-            shift 1
-            ;;
-        --help)
+        --help|-h)
             HELP=yes
             shift 1
             ;;
+	--interactive|-i)
+	    INTERACTIVE=yes
+	    shift 1
+	    ;;
         *)
 #            fatal "This is not an autoconf script. Run it without any options and you will be prompted."
             ;;
@@ -67,11 +67,11 @@ s/--enable-\([^ =]\+\)/USE_\1=yes/g;
 s/--disable-\([^ =]\+\)/USE_\1=no/g;
 s/--\([^ =]\+\)/\1/g;
 ' | sed -n '/^[^ =]\+=./p' >> .config
-        UPDATE=yes;
+        INTERACTIVE=no;
     fi
 fi
 
-if [ $HELP != yes ] && [ $UPDATE != yes ]
+if [ $HELP != yes ] && [ $INTERACTIVE != no ]
 then
     if ! ( [ -t 0 ] && [ -t 1 ] )
     then
@@ -102,7 +102,7 @@ ask ()
 
     echo -n "$BLACK$BOLD::$SGR0 ${1}? [$BOLD${D}$SGR0] "
 
-    if [ $UPDATE = yes ]
+    if [ $INTERACTIVE = no ]
     then
         A="$D"
         echo
@@ -207,7 +207,7 @@ begin_options ()
     if [ $HELP = yes ]
     then
         echo
-        warn "This is a ${BOLD}non-configure${SGR0} script. Run without any arguments and you will be prompted"
+        warn "This is a ${BOLD}non-configure${SGR0} script. Run with ${BOLD}--interactive${SGR0} argument and you will be prompted"
         warn "with configuration choices. Alternatively, you may use the following autoconf style"
         warn "arguments for non-interactive configuration."
         echo
@@ -218,11 +218,11 @@ begin_options ()
         append "# This file was automatically generated on `date`. Any changes may be lost!"
         append "## options"
 
-        if [ $UPDATE = yes ]
+        if [ $INTERACTIVE = no ]
         then
-            info "Updating configuration"
+            info "Non-interactively updating configuration"
         else
-            info "Configuration required"
+            info "Interactive configuration requested"
         fi
     fi
 }

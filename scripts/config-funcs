@@ -246,7 +246,7 @@ append ()
 
 end ()
 {
-    info "Configuration complete"
+    info "Configuration complete. You may now run 'make'"
     touch .config
 }
 

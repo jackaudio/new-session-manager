@@ -17,7 +17,14 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  #
 ###############################################################################
 
+include scripts/colors
+
 SUBDIRS=nonlib FL timeline mixer session-manager sequencer
+
+.config: configure
+	@ echo $(BOLD)$(YELLOW)Hey! You need to run 'configure' first.
+	@ echo If that fails because of NTK stuff, then you need to run 'make ntk' first.$(SGR0)
+	@ exit 1
 
 all: .config
 	@ echo '!!! If you have any trouble here try reading README.build !!!'
@@ -30,12 +37,6 @@ lib/ntk/configure:
 
 lib/.built: 
 	@ make -C lib
-
-.config: configure
-	./configure
-
-config: configure
-	./configure
 
 clean:
 	@ for dir in $(SUBDIRS); do $(MAKE) -s -C $$dir clean; done

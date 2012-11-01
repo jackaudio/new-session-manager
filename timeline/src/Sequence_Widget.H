@@ -160,6 +160,7 @@ protected:
 
 public:
 
+
     virtual ~Sequence_Widget ( );
 
     virtual Sequence_Widget *clone ( void ) const = 0;
@@ -235,6 +236,7 @@ public:
     virtual void box_color ( Fl_Color v ) { _box_color = v; }
     virtual Fl_Color selection_color ( void ) const { return _selection_color; }
     virtual void selection_color ( Fl_Color v ) { _selection_color = v; }
+    virtual Fl_Color actual_box_color ( void ) const { return box_color(); }
 
     Sequence * sequence ( void ) const { return _sequence; }
     void sequence ( Sequence *t ) { _sequence = t; }

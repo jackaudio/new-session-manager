@@ -430,6 +430,12 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
         fl_end_polygon();
 }
 
+Fl_Color
+Audio_Region::actual_box_color ( void ) const
+{
+    return Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color;
+}
+
 void
 Audio_Region::draw_box( void )
 {
@@ -437,7 +443,7 @@ Audio_Region::draw_box( void )
 
     Fl_Color selection_color = _selection_color;
 
-    Fl_Color color = Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color;
+    Fl_Color color = actual_box_color();
 
     color = fl_color_average( color, sequence()->color(), 0.75f );
 

@@ -28,6 +28,7 @@
 #include <FL/Fl_Widget.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Menu_Button.H>
+#include <FL/Fl_Panzoomer.H>
 
 #include "Timeline.H"
 #include "Tempo_Sequence.H"
@@ -35,12 +36,10 @@
 #include "Cursor_Sequence.H"
 #include "Audio_Sequence.H"
 #include "Control_Sequence.H"
-#include "Scalebar.H"
 #include "Sequence.H"
 #include "Annotation_Sequence.H"
 #include "Track.H"
 #include "Transport.H"
-
 #include "Engine/Engine.H" // for lock()
 
 #include "FL/menu_popup.H"
@@ -227,18 +226,13 @@ Timeline::snapshot ( void )
     }
 }
 
-/** recalculate the size of vertical scrolling area and inform scrollbar */
-void
-Timeline::adjust_vscroll ( void )
-{
-    vscroll->value( _yposition, h() - rulers->h() - hscroll->h(), 0, pack_visible_height( tracks ) );
-}
 
 /** recalculate the size of horizontal scrolling area and inform scrollbar */
 void
 Timeline::adjust_hscroll ( void )
 {
-    hscroll->value( ts_to_x( xoffset ), tracks->w() - Track::width(), 0, ts_to_x( length() ) );
+    hscroll->y_value( hscroll->y_value(), h() - rulers->h() - hscroll->h(), 0, pack_visible_height( tracks ));
+    hscroll->x_value( ts_to_x( xoffset ), tracks->w() - Track::width(), 0, ts_to_x( length() ) );
 }
 
 void
@@ -250,33 +244,31 @@ Timeline::cb_scroll ( Fl_Widget *w, void *v )
 void
 Timeline::cb_scroll ( Fl_Widget *w )
 {
-    if ( w == vscroll )
+    //adjust_hscroll();
+
+    if ( hscroll->zoom_changed() )
     {
-        tracks->position( tracks->x(), (rulers->y() + rulers->h()) - vscroll->value() );
+        nframes_t under_mouse = x_to_offset( Fl::event_x() );
 
-        yposition( vscroll->value() );
+        _fpp = hscroll->zoom();
 
-        adjust_vscroll();
+        const int tw = tracks->w() - Track::width();
+
+        hscroll->x_value( ts_to_x( under_mouse ) );
+
+        redraw();
     }
-    else
+
+    if ( _old_yposition != hscroll->y_value() )
     {
-        if ( hscroll->zoom_changed() )
-        {
+        tracks->position( tracks->x(), (rulers->y() + rulers->h()) - hscroll->y_value() );  
+        damage( FL_DAMAGE_SCROLL );
+    }
 
-            nframes_t under_mouse = x_to_offset( Fl::event_x() );
-
-            _fpp = hscroll->zoom();
-
-            const int tw = tracks->w() - Track::width();
-//            hscroll->value( ts_to_x( xoffset ), tw, 0, ts_to_x( length() ) );
-
-            hscroll->value( max( 0, ts_to_x( under_mouse ) - ( Fl::event_x() - tracks->x() - Track::width() ) ),
-                            tw, 0, ts_to_x( length() ) );
-
-            redraw();
-        }
-
-        xposition( hscroll->value() );
+    if ( _old_xposition != x_to_ts( hscroll->x_value() ))
+    {
+        damage( FL_DAMAGE_SCROLL );
+        xposition( hscroll->x_value() );
     }
 }
 
@@ -550,7 +542,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
 
     box( FL_FLAT_BOX );
     xoffset = 0;
-    _yposition = 0;
     _old_yposition = 0;
     _old_xposition = 0;
 
@@ -585,31 +576,26 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
     menu_set_callback( const_cast<Fl_Menu_Item*>(menu->menu()), &Timeline::menu_cb, (void*)this );
 
     {
-        Scalebar *o = new Scalebar( X, Y + H - 18, W - 18, 18 );
+        Fl_Panzoomer *o = new Fl_Panzoomer( X, Y + H - 100, W, 100 );
 
-        o->range( 0, 48000 * 300 );
+//        o->range( 0, 48000 * 300 );
 //        o->zoom_range( 1, 16384 );
 //        o->zoom_range( 1, 65536 << 4 );
         o->zoom_range( 1, 20 );
-
         o->zoom( 8 );
 
+        o->box( FL_FLAT_BOX );
+        o->color( FL_BACKGROUND_COLOR );
         o->type( FL_HORIZONTAL );
         o->callback( cb_scroll, this );
+
+        o->draw_thumbnail_view_callback( &Timeline::draw_thumbnail_view, this );
 
         hscroll = o;
     }
 
     {
-        Fl_Scrollbar *o = new Fl_Scrollbar( X + W - 18, Y, 18, H - 18 );
-
-        o->type( FL_VERTICAL );
-        o->callback( cb_scroll, this );
-        vscroll = o;
-    }
-
-    {
-        Fl_Pack *o = new Fl_Pack( X + Track::width(), Y, (W - Track::width()) - vscroll->w(), H - hscroll->h(), "rulers" );
+        Fl_Pack *o = new Fl_Pack( X + Track::width(), Y, (W - Track::width()), H - hscroll->h(), "rulers" );
         o->type( Fl_Pack::VERTICAL );
 
         {
@@ -701,7 +687,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
 //        length() = x_to_ts( W );
 
         {
-            Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W - vscroll->w(), 1 );
+            Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W, 1 );
             o->type( Fl_Pack::VERTICAL );
             o->spacing( 1 );
 
@@ -715,10 +701,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
     add( rulers );
 
     /* make sure scrollbars are on top */
-    add( vscroll );
     add( hscroll );
 
-    vscroll->range( 0, tracks->h() );
+//    vscroll->range( 0, tracks->h() );
 
     redraw();
 
@@ -1082,13 +1067,12 @@ Timeline::resize ( int X, int Y, int W, int H )
     BASE::resize( X, Y, W, H );
 
     /* why is this necessary? */
-    rulers->resize( BX + Track::width(), BY, W - Track::width() - vscroll->w(), rulers->h() );
+    rulers->resize( BX + Track::width(), BY, W - Track::width(), rulers->h() );
 
     /* why is THIS necessary? */
-    hscroll->resize( BX, BY + H - 18, hscroll->w(), 18 );
-    vscroll->size( vscroll->w(), H - 18 );
+    hscroll->resize( BX, BY + H - 100, hscroll->w(), 100 );
 
-    tracks->resize( BX, BY + rulers->h(), W - vscroll->w(), H - vscroll->h() );
+    tracks->resize( BX, BY + rulers->h(), W, H - hscroll->h() );
 }
 
 
@@ -1121,6 +1105,55 @@ Timeline::add_cursor ( Cursor_Point *o )
     else if ( !strcmp( o->type(), "Punch" ) )
         punch_cursor_track->add( o );
 }
+
+void
+Timeline::draw_thumbnail_view ( int X, int Y, int W, int H, void *v )
+{
+    ((Timeline*)v)->draw_thumbnail_view( X,Y,W,H );
+}
+
+void
+Timeline::draw_thumbnail_view ( int X, int Y, int W, int H ) const
+{
+    nframes_t sf = 0;
+    nframes_t ef = timeline->length();
+    
+    double ty = Y;
+
+    for ( int i = 0; i < timeline->tracks->children(); i++ )
+    {
+        Track *t = (Track*)timeline->tracks->child( i );
+        
+        Sequence *s = t->sequence();
+        
+        if ( !s )
+            continue;
+        
+        fl_color( FL_BLACK );
+
+        const double scale = (double)H / ( pack_visible_height( tracks ) );
+        
+//        double th =  (double)H / timeline->tracks->children();
+        const double th = t->h() * scale;
+        
+        fl_line( X, ty,
+                 X + W, ty );
+        
+        for ( list <Sequence_Widget *>::const_iterator r = s->_widgets.begin(); 
+              r != s->_widgets.end(); ++r )
+        {
+            fl_rectf(
+                X + ( W * ( (double)(*r)->start() / ef ) ),
+                ty,
+                W * ( (double)(*r)->length() / ef ),
+                th,
+                (*r)->actual_box_color());
+        }
+
+        ty += th;
+    }
+}
+
 
 void
 Timeline::draw_cursors ( Cursor_Sequence *o ) const
@@ -1165,9 +1198,6 @@ Timeline::draw_cursors ( void ) const
 void
 Timeline::draw ( void )
 {
-
-//    resize_rulers();
-
     int X, Y, W, H;
 
     int bdx = 0;
@@ -1178,13 +1208,40 @@ Timeline::draw ( void )
     W = tracks->w() - bdw - 1;
     H = tracks->h();
 
-    adjust_vscroll();
+    adjust_hscroll();
+    hscroll->redraw();
 
-#ifndef USE_UNOPTIMIZED_DRAWING
-    if ( ( damage() & FL_DAMAGE_ALL ) )
-#else
-#warning Optimized drawing of timeline disabled. This will waste your CPU.
-#endif
+    int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
+    int dy = _old_yposition - hscroll->y_value();
+
+    int c = damage();
+
+    if ( c & FL_DAMAGE_SCROLL )
+    {
+        /* if ( dx && dy ) */
+        /* { */
+        /*     /\* FIXME: scrolling both at once is... problematic *\/ */
+    
+        /*     c |= FL_DAMAGE_ALL; */
+        /* } */
+        /* else */
+        {
+         /*         draw_child( *rulers ); */
+
+            Y = rulers->y() + rulers->h();
+            H = h() - rulers->h() - hscroll->h();
+            
+            if ( dy )
+                fl_scroll( X, Y, Track::width(), H, 0, dy, draw_clip, this );
+            
+            if ( dx )
+                fl_scroll( rulers->x(), rulers->y(), rulers->w(), rulers->h(), dx, 0, draw_clip, this );
+            
+            fl_scroll( X + Track::width(), Y, W - Track::width(), H, dx, dy, draw_clip, this );
+        }
+    }
+    
+    if ( c & FL_DAMAGE_ALL )
     {
         DMESSAGE( "complete redraw" );
 
@@ -1202,59 +1259,38 @@ Timeline::draw ( void )
         fl_pop_clip();
 
         draw_child( *hscroll );
-        draw_child( *vscroll );
-
 
         redraw_overlay();
 
         goto done;
     }
 
-    if ( damage() & FL_DAMAGE_SCROLL )
-    {
-        int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
-        int dy = _old_yposition - _yposition;
-
-/*         draw_child( *rulers ); */
-
-        if ( ! dy )
-            fl_scroll( rulers->x(), rulers->y(), rulers->w(), rulers->h(), dx, 0, draw_clip, this );
-
-        Y = rulers->y() + rulers->h();
-        H = h() - rulers->h() - hscroll->h();
-
-        if ( dy == 0 )
-            fl_scroll( X + Track::width(), Y, W - Track::width(), H, dx, dy, draw_clip, this );
-        else
-            fl_scroll( X, Y, W, H, dx, dy, draw_clip, this );
-    }
-
-    if ( damage() & FL_DAMAGE_CHILD )
+    if ( c & FL_DAMAGE_CHILD )
     {
         fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
         update_child( *rulers );
         fl_pop_clip();
 
-        if ( ! ( damage() & FL_DAMAGE_SCROLL ) )
-        {
+        /* if ( ! ( damage() & FL_DAMAGE_SCROLL ) ) */
+        /* { */
             fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h() - hscroll->h() );
             update_child( *tracks );
 
             draw_cursors();
             
             fl_pop_clip();
-        }
+        /* } */
 
         update_child( *hscroll );
-        update_child( *vscroll );
     }
 
 done:
 
+    /* hscroll->redraw(); */
+    /* update_child( *hscroll ); */
+
     _old_xposition = xoffset;
-    _old_yposition = _yposition;
-
-
+    _old_yposition = hscroll->y_value();
 }
 
 /** draw a single cursor line at /frame/ with color /color/ using symbol routine /symbol/ for the cap */
@@ -1377,6 +1413,7 @@ Timeline::redraw_playhead ( void )
                 xposition( max( 0, playhead_x - ( ( tracks->w() - Track::width() ) >> 1 ) ) );
             else if ( playhead_x > ts_to_x( xoffset ) + ( tracks->w() - Track::width() ) )
                 xposition( playhead_x );
+            adjust_hscroll();
         }
     }
 }
@@ -1481,7 +1518,7 @@ Timeline::handle_scroll ( int m )
     if ( m == FL_KEYBOARD &&
          Fl::event_key() != FL_Home &&
          Fl::event_key() != FL_End )
-        return menu->test_shortcut() || hscroll->handle( m ) || vscroll->handle( m );
+        return menu->test_shortcut() || hscroll->handle( m );
     else
         return 0;
 }
@@ -1704,18 +1741,6 @@ Timeline::xposition ( int X )
     int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
 
     if ( dx )
-        damage( FL_DAMAGE_SCROLL );
-}
-
-/** set vertical scroll position to absolute pixel coordinate /Y/ */
-void
-Timeline::yposition ( int Y )
-{
-    _yposition = Y;
-
-    int dy = _old_yposition - _yposition;
-
-    if ( dy )
         damage( FL_DAMAGE_SCROLL );
 }
 

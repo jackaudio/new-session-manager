@@ -50,11 +50,11 @@ class Time_Sequence;
 class Annotation_Sequence;
 class Cursor_Sequence;
 class Track;
-class Scalebar;
 class Sequence;
 class Sequence_Widget;
 class Cursor_Region;
 class Cursor_Point;
+class Fl_Panzoomer;
 
 namespace OSC { class Endpoint; }
 
@@ -96,7 +96,8 @@ class Timeline : public Fl_Single_Window, public RWLock
 
 {
     static void draw_clip ( void * v, int X, int Y, int W, int H );
-
+    static void draw_thumbnail_view( int X, int Y,int W, int H, void *v);
+    void draw_thumbnail_view( int X, int Y,int W, int H) const;
  
     int _old_xposition;
     int _old_yposition;
@@ -106,10 +107,8 @@ class Timeline : public Fl_Single_Window, public RWLock
     Fl_Scroll    *scroll;
     Fl_Pack      *tracks;
     Fl_Pack      *rulers;
-    Scalebar     *hscroll;
-    Fl_Scrollbar *vscroll;
+    Fl_Panzoomer *hscroll;
 
-    void adjust_vscroll ( void );
     void adjust_hscroll ( void );
     static void cb_scroll ( Fl_Widget *w, void *v );
     void cb_scroll ( Fl_Widget *w );
@@ -133,7 +132,7 @@ class Timeline : public Fl_Single_Window, public RWLock
     void update_track_order ( void );
     void apply_track_order ( void );
     void insert_track ( Track *track, int n );
-    
+
 public:
 
     OSC::Endpoint *osc;
@@ -179,8 +178,6 @@ public:
     bool _created_new_takes;
 
     nframes_t xoffset;
-
-    int _yposition;
 
     nframes_t _sample_rate;
 
@@ -228,7 +225,6 @@ public:
     position_info render_tempomap ( nframes_t start, nframes_t length, measure_line_callback *cb, void *arg ) const;
 
     void xposition ( int X );
-    void yposition ( int Y );
     void draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color) ) const;
     void draw_cursors ( Cursor_Sequence *o ) const;
     void draw_cursors ( void ) const;

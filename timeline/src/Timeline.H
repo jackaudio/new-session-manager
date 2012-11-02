@@ -55,6 +55,7 @@ class Sequence_Widget;
 class Cursor_Region;
 class Cursor_Point;
 class Fl_Panzoomer;
+class Fl_Tile;
 
 namespace OSC { class Endpoint; }
 
@@ -103,10 +104,12 @@ class Timeline : public Fl_Single_Window, public RWLock
     int _old_yposition;
 
     Rectangle _selection;
-
+    
+    Fl_Group     *track_window;
     Fl_Pack      *tracks;
     Fl_Pack      *rulers;
     Fl_Panzoomer *panzoomer;
+    Fl_Tile      *tile;
 
     void adjust_panzoomer ( void );
     static void cb_scroll ( Fl_Widget *w, void *v );

@@ -29,6 +29,7 @@
 #include <FL/fl_draw.H>
 #include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Panzoomer.H>
+#include <FL/Fl_Tile.H>
 
 #include "Timeline.H"
 #include "Tempo_Sequence.H"
@@ -575,27 +576,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
 
     menu_set_callback( const_cast<Fl_Menu_Item*>(menu->menu()), &Timeline::menu_cb, (void*)this );
 
-    {
-        Fl_Panzoomer *o = new Fl_Panzoomer( X, Y + H - 100, W, 100 );
-
-//        o->range( 0, 48000 * 300 );
-//        o->zoom_range( 1, 16384 );
-//        o->zoom_range( 1, 65536 << 4 );
-        o->zoom_range( 1, 20 );
-        o->zoom( 8 );
-
-        o->box( FL_FLAT_BOX );
-        o->color( FL_BACKGROUND_COLOR );
-        o->type( FL_HORIZONTAL );
-        o->callback( cb_scroll, this );
-
-        o->draw_thumbnail_view_callback( &Timeline::draw_thumbnail_view, this );
-
-        panzoomer = o;
-    }
 
     {
-        Fl_Pack *o = new Fl_Pack( X + Track::width(), Y, (W - Track::width()), H - panzoomer->h(), "rulers" );
+        Fl_Pack *o = new Fl_Pack( X + Track::width(), Y, (W - Track::width()), 1, "rulers" );
         o->type( Fl_Pack::VERTICAL );
 
         {
@@ -677,31 +660,66 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
         o->end();
     }
 
-
-    {
-//        sample_rate() = engine->sample_rate();
-        _fpp = 8;
-//        length() = sample_rate() * 60 * 2;
-
-        /* FIXME: hack */
-//        length() = x_to_ts( W );
-
-        {
-            Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W, 1 );
-            o->type( Fl_Pack::VERTICAL );
-            o->spacing( 1 );
-
-            tracks = o;
+    { 
+        Fl_Tile *o = new Fl_Tile( X, rulers->y() + rulers->h(), W, H - rulers->h() );
+        o->box(FL_FLAT_BOX);
+        o->when( FL_WHEN_RELEASE );
+        { 
+            Fl_Group *o = new Fl_Group( X, rulers->y() + rulers->h(), W, ( H - rulers->h() ) - 50 );
+            {
+                _fpp = 8;
+                Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W, 1 );
+                o->type( Fl_Pack::VERTICAL );
+                o->spacing( 1 );
+                
+                tracks = o;
+                o->end();
+                resizable( o );
+            }
+            
             o->end();
-            resizable( o );
+            track_window = o;
         }
+        {
+            Fl_Panzoomer *o = new Fl_Panzoomer( X, 
+                                                track_window->y() + track_window->h(),
+                                                W,
+                                                50 );
+        
+            o->zoom_range( 1, 20 );
+            o->zoom( 8 );
+        
+            o->box( FL_FLAT_BOX );
+            o->color( FL_BACKGROUND_COLOR );
+            o->type( FL_HORIZONTAL );
+            o->callback( cb_scroll, this );
+        
+            o->draw_thumbnail_view_callback( &Timeline::draw_thumbnail_view, this );
+        
+            //resizable(o);
+            panzoomer = o;
+        }
+        
+        Fl_Box *spacebox = new Fl_Box( 0,0,1,1 );
+
+        o->end();
+        o->resizable( spacebox);
+
+        spacebox->resize( X, rulers->y() + ( ( H - rulers->h() ) - 50 ),
+            W, 125 );
+
+        o->position( panzoomer->x(), panzoomer->y(),
+                     panzoomer->x(), track_window->y() + track_window->h() );
+
+        resizable(o);
+        tile = o;
     }
 
     /* rulers go above tracks... */
     add( rulers );
 
     /* make sure scrollbars are on top */
-    add( panzoomer );
+    /* add( panzoomer ); */
 
 //    vscroll->range( 0, tracks->h() );
 
@@ -1043,19 +1061,13 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
 
     fl_push_clip( X, Y, W, H );
 
-/*     fl_color( rand() ); */
-/*     fl_rectf( X, Y, X + W, Y + H ); */
-
     tl->draw_box();
+
+    tl->draw_child( *tl->tile );
 
     tl->draw_child( *tl->rulers );
 
-    fl_push_clip( tl->tracks->x(), tl->rulers->y() + tl->rulers->h(), tl->tracks->w(), tl->h() - tl->rulers->h() - tl->panzoomer->h() );
-    tl->draw_child( *tl->tracks );
-
     tl->draw_cursors();
-
-    fl_pop_clip();
 
     fl_pop_clip();
 }
@@ -1066,13 +1078,27 @@ Timeline::resize ( int X, int Y, int W, int H )
 {
     BASE::resize( X, Y, W, H );
 
-    /* why is this necessary? */
-    rulers->resize( BX + Track::width(), BY, W - Track::width(), rulers->h() );
+    tile->resizable()->resize( X,
+                               tile->y() + tile->h() - 150,
+                      W, 125 );
 
     /* why is THIS necessary? */
-    panzoomer->resize( BX, BY + H - 100, panzoomer->w(), 100 );
+    panzoomer->resize( X, 
+                       tile->y() + tile->h() - 50,
+                       W,
+                       50 );
 
-    tracks->resize( BX, BY + rulers->h(), W, H - panzoomer->h() );
+    track_window->resize( X, 
+                          tile->y(),
+                          W,
+                          tile->h() - 50);
+
+    rulers->resize( X + Track::width(),
+                    rulers->y(),
+                    W - Track::width(),
+                    rulers->h() );
+
+    tile->redraw();
 }
 
 
@@ -1213,12 +1239,13 @@ Timeline::draw ( void )
     H = tracks->h();
 
     adjust_panzoomer();
-    panzoomer->redraw();
 
     int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
     int dy = _old_yposition - panzoomer->y_value();
 
     int c = damage();
+
+//    c = FL_DAMAGE_ALL;
 
     if ( c & FL_DAMAGE_SCROLL )
     {
@@ -1232,8 +1259,8 @@ Timeline::draw ( void )
         {
          /*         draw_child( *rulers ); */
 
-            Y = rulers->y() + rulers->h();
-            H = h() - rulers->h() - panzoomer->h();
+            Y = track_window->y();
+            H = track_window->h();
             
             if ( dy )
                 fl_scroll( X, Y, Track::width(), H, 0, dy, draw_clip, this );
@@ -1244,6 +1271,8 @@ Timeline::draw ( void )
             fl_scroll( X + Track::width(), Y, W - Track::width(), H, dx, dy, draw_clip, this );
         }
     }
+
+    panzoomer->redraw();
     
     if ( c & FL_DAMAGE_ALL )
     {
@@ -1251,47 +1280,46 @@ Timeline::draw ( void )
 
         draw_box( box(), BX, BY, w(), h(), color() );
 
-        fl_push_clip( BX, rulers->y(), w(), rulers->h() );
         draw_child( *rulers );
-        fl_pop_clip();
 
-        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), panzoomer->y() - (rulers->y() + rulers->h()) );
-        draw_child( *tracks );
+        fl_push_clip( tile->x(),
+                      tile->y(),
+                      tile->w(),
+                      tile->h() );
+
+        draw_child(*tile);
 
         draw_cursors();
-
+        
         fl_pop_clip();
-
-        draw_child( *panzoomer );
-
+        
         redraw_overlay();
-
+        
         goto done;
     }
 
     if ( c & FL_DAMAGE_CHILD )
     {
-        fl_push_clip( rulers->x(), rulers->y(), rulers->w(), rulers->h() );
-        update_child( *rulers );
+        update_child(*rulers);
+
+        fl_push_clip( tile->x(),
+                      tile->y(),
+                      tile->w(),
+                      tile->h() );
+
+        update_child(*tile);
+        
+        draw_cursors();        
+
         fl_pop_clip();
-
-        /* if ( ! ( damage() & FL_DAMAGE_SCROLL ) ) */
-        /* { */
-            fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h() - panzoomer->h() );
-            update_child( *tracks );
-
-            draw_cursors();
-            
-            fl_pop_clip();
-        /* } */
-
-        update_child( *panzoomer );
+        
+        redraw_overlay();
     }
 
 done:
 
     /* panzoomer->redraw(); */
-    /* update_child( *panzoomer ); */
+//    update_child( *panzoomer );
 
     _old_xposition = xoffset;
     _old_yposition = panzoomer->y_value();

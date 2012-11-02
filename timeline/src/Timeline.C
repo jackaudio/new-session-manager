@@ -1150,6 +1150,10 @@ Timeline::draw_thumbnail_view ( int X, int Y, int W, int H ) const
                 (*r)->actual_box_color());
         }
 
+        fl_font( FL_HELVETICA, th );
+        fl_color( FL_FOREGROUND_COLOR );
+        fl_draw( t->name(), X, ty, W, th, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_INSIDE ));
+
         ty += th;
     }
 }

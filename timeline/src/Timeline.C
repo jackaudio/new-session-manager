@@ -144,6 +144,64 @@ draw_full_arrow_symbol ( Fl_Color color )
 
 
 
+class Timeline::Timeline_Panzoomer : public Fl_Panzoomer 
+{
+public:
+    Timeline_Panzoomer ( int X,int Y,int W,int H, const char *L=0)
+        : Fl_Panzoomer(X,Y,W,H)
+        {
+        }
+protected:
+    void
+    draw_background ( int X, int Y,int W, int H )
+        {
+            nframes_t sf = 0;
+            nframes_t ef = timeline->length();
+            
+            double ty = Y;
+            
+            for ( int i = 0; i < timeline->tracks->children(); i++ )
+            {
+                Track *t = (Track*)timeline->tracks->child( i );
+                
+                Sequence *s = t->sequence();
+                
+                if ( !s )
+                    continue;
+                
+                fl_color( FL_BLACK );
+                
+                const double scale = (double)H / ( pack_visible_height( timeline->tracks ) );
+                
+//        double th =  (double)H / timeline->tracks->children();
+                const double th = t->h() * scale;
+                
+                fl_line( X, ty,
+                         X + W, ty );
+                
+                for ( list <Sequence_Widget *>::const_iterator r = s->_widgets.begin(); 
+                      r != s->_widgets.end(); ++r )
+                {
+                    fl_rectf(
+                        X + ( W * ( (double)(*r)->start() / ef ) ),
+                        ty,
+                        W * ( (double)(*r)->length() / ef ),
+                        th,
+                        (*r)->actual_box_color());
+                }
+                
+                fl_font( FL_HELVETICA, th );
+                fl_color( FL_FOREGROUND_COLOR );
+                fl_draw( t->name(), X, ty, W, th, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_INSIDE ));
+                
+                ty += th;
+            }
+        }
+};
+
+
+
+
 nframes_t 
 Timeline::range_start ( void ) const
 {
@@ -681,7 +739,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
             track_window = o;
         }
         {
-            Fl_Panzoomer *o = new Fl_Panzoomer( X, 
+            Fl_Panzoomer *o = new Timeline_Panzoomer( X, 
                                                 track_window->y() + track_window->h(),
                                                 W,
                                                 50 );
@@ -693,8 +751,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
             o->color( FL_BACKGROUND_COLOR );
             o->type( FL_HORIZONTAL );
             o->callback( cb_scroll, this );
-        
-            o->draw_thumbnail_view_callback( &Timeline::draw_thumbnail_view, this );
         
             //resizable(o);
             panzoomer = o;
@@ -1131,59 +1187,6 @@ Timeline::add_cursor ( Cursor_Point *o )
     else if ( !strcmp( o->type(), "Punch" ) )
         punch_cursor_track->add( o );
 }
-
-void
-Timeline::draw_thumbnail_view ( int X, int Y, int W, int H, void *v )
-{
-    ((Timeline*)v)->draw_thumbnail_view( X,Y,W,H );
-}
-
-void
-Timeline::draw_thumbnail_view ( int X, int Y, int W, int H ) const
-{
-    nframes_t sf = 0;
-    nframes_t ef = timeline->length();
-    
-    double ty = Y;
-
-    for ( int i = 0; i < timeline->tracks->children(); i++ )
-    {
-        Track *t = (Track*)timeline->tracks->child( i );
-        
-        Sequence *s = t->sequence();
-        
-        if ( !s )
-            continue;
-        
-        fl_color( FL_BLACK );
-
-        const double scale = (double)H / ( pack_visible_height( tracks ) );
-        
-//        double th =  (double)H / timeline->tracks->children();
-        const double th = t->h() * scale;
-        
-        fl_line( X, ty,
-                 X + W, ty );
-        
-        for ( list <Sequence_Widget *>::const_iterator r = s->_widgets.begin(); 
-              r != s->_widgets.end(); ++r )
-        {
-            fl_rectf(
-                X + ( W * ( (double)(*r)->start() / ef ) ),
-                ty,
-                W * ( (double)(*r)->length() / ef ),
-                th,
-                (*r)->actual_box_color());
-        }
-
-        fl_font( FL_HELVETICA, th );
-        fl_color( FL_FOREGROUND_COLOR );
-        fl_draw( t->name(), X, ty, W, th, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_INSIDE ));
-
-        ty += th;
-    }
-}
-
 
 void
 Timeline::draw_cursors ( Cursor_Sequence *o ) const

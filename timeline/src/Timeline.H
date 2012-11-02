@@ -95,10 +95,12 @@ class Timeline : public Fl_Single_Window, public RWLock
 #endif
 #endif
 
+
 {
+
+    class Timeline_Panzoomer;
+
     static void draw_clip ( void * v, int X, int Y, int W, int H );
-    static void draw_thumbnail_view( int X, int Y,int W, int H, void *v);
-    void draw_thumbnail_view( int X, int Y,int W, int H) const;
  
     int _old_xposition;
     int _old_yposition;

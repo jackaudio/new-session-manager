@@ -229,10 +229,10 @@ Timeline::snapshot ( void )
 
 /** recalculate the size of horizontal scrolling area and inform scrollbar */
 void
-Timeline::adjust_hscroll ( void )
+Timeline::adjust_panzoomer ( void )
 {
-    hscroll->y_value( hscroll->y_value(), h() - rulers->h() - hscroll->h(), 0, pack_visible_height( tracks ));
-    hscroll->x_value( ts_to_x( xoffset ), tracks->w() - Track::width(), 0, ts_to_x( length() ) );
+    panzoomer->y_value( panzoomer->y_value(), h() - rulers->h() - panzoomer->h(), 0, pack_visible_height( tracks ));
+    panzoomer->x_value( ts_to_x( xoffset ), tracks->w() - Track::width(), 0, ts_to_x( length() ) );
 }
 
 void
@@ -244,31 +244,31 @@ Timeline::cb_scroll ( Fl_Widget *w, void *v )
 void
 Timeline::cb_scroll ( Fl_Widget *w )
 {
-    //adjust_hscroll();
+    //adjust_panzoomer();
 
-    if ( hscroll->zoom_changed() )
+    if ( panzoomer->zoom_changed() )
     {
         nframes_t under_mouse = x_to_offset( Fl::event_x() );
 
-        _fpp = hscroll->zoom();
+        _fpp = panzoomer->zoom();
 
         const int tw = tracks->w() - Track::width();
 
-        hscroll->x_value( ts_to_x( under_mouse ) );
+        panzoomer->x_value( ts_to_x( under_mouse ) );
 
         redraw();
     }
 
-    if ( _old_yposition != hscroll->y_value() )
+    if ( _old_yposition != panzoomer->y_value() )
     {
-        tracks->position( tracks->x(), (rulers->y() + rulers->h()) - hscroll->y_value() );  
+        tracks->position( tracks->x(), (rulers->y() + rulers->h()) - panzoomer->y_value() );  
         damage( FL_DAMAGE_SCROLL );
     }
 
-    if ( _old_xposition != x_to_ts( hscroll->x_value() ))
+    if ( _old_xposition != x_to_ts( panzoomer->x_value() ))
     {
         damage( FL_DAMAGE_SCROLL );
-        xposition( hscroll->x_value() );
+        xposition( panzoomer->x_value() );
     }
 }
 
@@ -591,11 +591,11 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
 
         o->draw_thumbnail_view_callback( &Timeline::draw_thumbnail_view, this );
 
-        hscroll = o;
+        panzoomer = o;
     }
 
     {
-        Fl_Pack *o = new Fl_Pack( X + Track::width(), Y, (W - Track::width()), H - hscroll->h(), "rulers" );
+        Fl_Pack *o = new Fl_Pack( X + Track::width(), Y, (W - Track::width()), H - panzoomer->h(), "rulers" );
         o->type( Fl_Pack::VERTICAL );
 
         {
@@ -701,7 +701,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
     add( rulers );
 
     /* make sure scrollbars are on top */
-    add( hscroll );
+    add( panzoomer );
 
 //    vscroll->range( 0, tracks->h() );
 
@@ -1050,7 +1050,7 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
 
     tl->draw_child( *tl->rulers );
 
-    fl_push_clip( tl->tracks->x(), tl->rulers->y() + tl->rulers->h(), tl->tracks->w(), tl->h() - tl->rulers->h() - tl->hscroll->h() );
+    fl_push_clip( tl->tracks->x(), tl->rulers->y() + tl->rulers->h(), tl->tracks->w(), tl->h() - tl->rulers->h() - tl->panzoomer->h() );
     tl->draw_child( *tl->tracks );
 
     tl->draw_cursors();
@@ -1070,9 +1070,9 @@ Timeline::resize ( int X, int Y, int W, int H )
     rulers->resize( BX + Track::width(), BY, W - Track::width(), rulers->h() );
 
     /* why is THIS necessary? */
-    hscroll->resize( BX, BY + H - 100, hscroll->w(), 100 );
+    panzoomer->resize( BX, BY + H - 100, panzoomer->w(), 100 );
 
-    tracks->resize( BX, BY + rulers->h(), W, H - hscroll->h() );
+    tracks->resize( BX, BY + rulers->h(), W, H - panzoomer->h() );
 }
 
 
@@ -1162,7 +1162,7 @@ Timeline::draw_thumbnail_view ( int X, int Y, int W, int H ) const
 void
 Timeline::draw_cursors ( Cursor_Sequence *o ) const
 {
-    fl_push_clip( tracks->x() + Track::width(), rulers->y() + rulers->h(), tracks->w() - Track::width(), h() - rulers->h() - hscroll->h() );
+    fl_push_clip( tracks->x() + Track::width(), rulers->y() + rulers->h(), tracks->w() - Track::width(), h() - rulers->h() - panzoomer->h() );
 
     if ( o && o->_widgets.size() > 0 )
     {
@@ -1212,11 +1212,11 @@ Timeline::draw ( void )
     W = tracks->w() - bdw - 1;
     H = tracks->h();
 
-    adjust_hscroll();
-    hscroll->redraw();
+    adjust_panzoomer();
+    panzoomer->redraw();
 
     int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
-    int dy = _old_yposition - hscroll->y_value();
+    int dy = _old_yposition - panzoomer->y_value();
 
     int c = damage();
 
@@ -1233,7 +1233,7 @@ Timeline::draw ( void )
          /*         draw_child( *rulers ); */
 
             Y = rulers->y() + rulers->h();
-            H = h() - rulers->h() - hscroll->h();
+            H = h() - rulers->h() - panzoomer->h();
             
             if ( dy )
                 fl_scroll( X, Y, Track::width(), H, 0, dy, draw_clip, this );
@@ -1255,14 +1255,14 @@ Timeline::draw ( void )
         draw_child( *rulers );
         fl_pop_clip();
 
-        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), hscroll->y() - (rulers->y() + rulers->h()) );
+        fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), panzoomer->y() - (rulers->y() + rulers->h()) );
         draw_child( *tracks );
 
         draw_cursors();
 
         fl_pop_clip();
 
-        draw_child( *hscroll );
+        draw_child( *panzoomer );
 
         redraw_overlay();
 
@@ -1277,7 +1277,7 @@ Timeline::draw ( void )
 
         /* if ( ! ( damage() & FL_DAMAGE_SCROLL ) ) */
         /* { */
-            fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h() - hscroll->h() );
+            fl_push_clip( tracks->x(), rulers->y() + rulers->h(), tracks->w(), h() - rulers->h() - panzoomer->h() );
             update_child( *tracks );
 
             draw_cursors();
@@ -1285,16 +1285,16 @@ Timeline::draw ( void )
             fl_pop_clip();
         /* } */
 
-        update_child( *hscroll );
+        update_child( *panzoomer );
     }
 
 done:
 
-    /* hscroll->redraw(); */
-    /* update_child( *hscroll ); */
+    /* panzoomer->redraw(); */
+    /* update_child( *panzoomer ); */
 
     _old_xposition = xoffset;
-    _old_yposition = hscroll->y_value();
+    _old_yposition = panzoomer->y_value();
 }
 
 /** draw a single cursor line at /frame/ with color /color/ using symbol routine /symbol/ for the cap */
@@ -1312,7 +1312,7 @@ Timeline::draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color
         return;
 
     const int y = rulers->y() + rulers->h();
-    const int h = this->h() - rulers->h()  - hscroll->h();
+    const int h = this->h() - rulers->h()  - panzoomer->h();
 
     fl_push_clip( tracks->x() + Track::width(), y, tracks->w(), h );
 
@@ -1417,7 +1417,7 @@ Timeline::redraw_playhead ( void )
                 xposition( max( 0, playhead_x - ( ( tracks->w() - Track::width() ) >> 1 ) ) );
             else if ( playhead_x > ts_to_x( xoffset ) + ( tracks->w() - Track::width() ) )
                 xposition( playhead_x );
-            adjust_hscroll();
+            adjust_panzoomer();
         }
     }
 }
@@ -1447,7 +1447,7 @@ Timeline::draw_overlay ( void )
         return;
     }
 
-    fl_push_clip( tracks->x() + Track::width(), rulers->y() + rulers->h(),  tracks->w() - Track::width(), h() - rulers->h() - hscroll->h() );
+    fl_push_clip( tracks->x() + Track::width(), rulers->y() + rulers->h(),  tracks->w() - Track::width(), h() - rulers->h() - panzoomer->h() );
 
     const Rectangle &r = _selection;
 
@@ -1522,7 +1522,7 @@ Timeline::handle_scroll ( int m )
     if ( m == FL_KEYBOARD &&
          Fl::event_key() != FL_Home &&
          Fl::event_key() != FL_End )
-        return menu->test_shortcut() || hscroll->handle( m );
+        return menu->test_shortcut() || panzoomer->handle( m );
     else
         return 0;
 }
@@ -1731,7 +1731,7 @@ Timeline::length ( void ) const
     for ( int i = tracks->children(); i--; )
         l = max( l, ((Track*)tracks->child( i ))->sequence()->length() );
 
-//    adjust_hscroll();
+//    adjust_panzoomer();
 
     return l;
 }
@@ -1752,14 +1752,14 @@ Timeline::xposition ( int X )
 void
 Timeline::zoom_in ( void )
 {
-    hscroll->zoom_in();
+    panzoomer->zoom_in();
 }
 
 /** zoom out by one zoom step */
 void
 Timeline::zoom_out ( void )
 {
-    hscroll->zoom_out();
+    panzoomer->zoom_out();
 }
 
 /** zoom the display to show /secs/ seconds per screen */
@@ -1773,7 +1773,7 @@ Timeline::zoom ( float secs )
     int p = 0;
     while ( 1 << p < fpp ) p++;
 
-    hscroll->zoom( p );
+    panzoomer->zoom( p );
 
     redraw();
 }

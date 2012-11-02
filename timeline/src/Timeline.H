@@ -104,12 +104,11 @@ class Timeline : public Fl_Single_Window, public RWLock
 
     Rectangle _selection;
 
-    Fl_Scroll    *scroll;
     Fl_Pack      *tracks;
     Fl_Pack      *rulers;
-    Fl_Panzoomer *hscroll;
+    Fl_Panzoomer *panzoomer;
 
-    void adjust_hscroll ( void );
+    void adjust_panzoomer ( void );
     static void cb_scroll ( Fl_Widget *w, void *v );
     void cb_scroll ( Fl_Widget *w );
     static void menu_cb ( Fl_Widget *w, void *v );

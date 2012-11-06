@@ -865,13 +865,10 @@ Track::draw ( void )
     
     fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
 
-    Fl_Color saved_color;
+    Fl_Color saved_color = color();
 
     if ( ! Track::colored_tracks )
-    {
-        saved_color = color();
         color( FL_GRAY );
-    }
 
     if ( _selected )
     {

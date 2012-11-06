@@ -96,7 +96,7 @@ command_session_is_loaded ( void *userdata )
 static int
 command_broadcast ( const char *path, lo_message msg, void *userdata )
 {
-    int argc = lo_message_get_argc( msg );
+     lo_message_get_argc( msg );
 //    lo_arg **argv = lo_message_get_argv( msg );
 
     if ( !strcmp( path, "/non/hello" ) )

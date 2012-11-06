@@ -126,6 +126,7 @@ public:
     virtual Sequence * clone ( void )
         {
             assert( 0 );
+            return NULL;
         }
 
     virtual Sequence * clone_empty ( void )

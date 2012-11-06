@@ -41,7 +41,8 @@ protected:
     virtual int handle ( int m );
     virtual void draw_box( void );
     virtual void draw ( void );
-    virtual void draw_label ( const char *label, Fl_Align align );
+    virtual void draw_label ( void ) { Sequence_Widget::draw_label(); }
+    virtual void draw_label ( const char *label, Fl_Align align, Fl_Color color=(Fl_Color)0, int xo=0, int yo=0 );
 
 public:
 

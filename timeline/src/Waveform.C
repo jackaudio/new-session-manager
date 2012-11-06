@@ -122,8 +122,6 @@ Waveform::draw ( int X, int Y, int W, int H,
 
         fl_begin_line();
 
-        unsigned long end = start + W;
-
         j = start;
 
         for ( int x = X; x < X + W; x++, j += skip  )

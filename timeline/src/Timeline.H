@@ -102,7 +102,7 @@ class Timeline : public Fl_Single_Window, public RWLock
 
     static void draw_clip ( void * v, int X, int Y, int W, int H );
  
-    int _old_xposition;
+    nframes_t _old_xposition;
     int _old_yposition;
 
     Rectangle _selection;

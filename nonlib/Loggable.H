@@ -42,7 +42,7 @@ class Loggable;
 typedef Loggable *(create_func)(Log_Entry &, unsigned int id);
 
 #define LOG_REGISTER_CREATE( class ) \
-    Loggable::register_create( #class, & class ::create  );
+    Loggable::register_create( #class, & class ::create  )
 
 #define LOG_NAME_FUNC( class ) \
     virtual const char *class_name ( void ) const { return #class ; }
@@ -56,7 +56,7 @@ typedef Loggable *(create_func)(Log_Entry &, unsigned int id);
         r->set( e );                            \
         return (Loggable *)r;                   \
     }                                           \
-    LOG_NAME_FUNC( class );
+    LOG_NAME_FUNC( class )
 
 
 #define LOG_NOT_LOGGABLE_FUNC( class ) \

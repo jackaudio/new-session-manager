@@ -145,8 +145,6 @@ Sequence_Region::handle ( int m )
 {
     static enum trim_e trimming;
 
-    static bool copied = false;
-
     int X = Fl::event_x();
     int Y = Fl::event_y();
 
@@ -207,7 +205,6 @@ Sequence_Region::handle ( int m )
         {
             Sequence_Widget::handle( m );
 
-            copied = false;
             if ( trimming != NO )
                 trimming = NO;
 
@@ -259,7 +256,7 @@ Sequence_Region::draw ( void )
 }
 
 void
-Sequence_Region::draw_label ( const char *label, Fl_Align align )
+Sequence_Region::draw_label ( const char *label, Fl_Align align, Fl_Color color, int xo, int yo )
 {
     fl_color( FL_WHITE );
     fl_font( FL_HELVETICA_ITALIC, 10 );

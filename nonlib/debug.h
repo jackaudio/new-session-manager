@@ -101,7 +101,7 @@ warnf ( warning_t level,
 #else
 #define DMESSAGE( fmt, args... )
 #define DWARNING( fmt, args... )
-#define ASSERT( pred, fmt, args... )
+#define ASSERT( pred, fmt, args... ) (void)(pred)
 #endif
 
 /* these are always defined */

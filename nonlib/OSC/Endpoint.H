@@ -365,7 +365,7 @@ namespace OSC
         friend void Signal::rename ( const char *name );
     };
 
-};
+}
 
 /* helper macros for defining OSC handlers */
 /* #define OSC_NAME( name ) osc_ ## name */

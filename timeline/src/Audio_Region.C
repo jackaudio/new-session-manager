@@ -515,7 +515,7 @@ Audio_Region::draw ( void )
     /* overdraw a little to avoid artifacts when scrolling */
     W += 2;
 
-    Fl_Color c = selected() ? fl_invert_color( _color ) : _color;
+//    Fl_Color c = selected() ? fl_invert_color( _color ) : _color;
 
     if ( sequence()->damage() & FL_DAMAGE_USER1 && 
          recording() )
@@ -740,7 +740,7 @@ Audio_Region::split ( nframes_t where )
 int
 Audio_Region::handle ( int m )
 {
-    static int ox, oy;
+    static int ox;
 
     static bool copied = false;
     static nframes_t os;
@@ -802,7 +802,6 @@ Audio_Region::handle ( int m )
             else
             {
                 ox = x() - X;
-                oy = y() - Y;
                 /* for panning */
                 os = _r->offset;
 
@@ -854,8 +853,6 @@ Audio_Region::handle ( int m )
             {
                 /* panning */
                 int d = (ox + X) - x();
-
-                bool negative = d < 0;
 
                 if ( d < 0 )
                     _r->offset = os + timeline->x_to_ts( 0 - d );

@@ -305,7 +305,7 @@ Control_Sequence::draw ( void )
     bool active = active_r();
 
     const Fl_Color color = active ? this->color() : fl_inactive( this->color() );
-    const Fl_Color selection_color = active ? this->selection_color() : fl_inactive( this->selection_color() );
+//    const Fl_Color selection_color = active ? this->selection_color() : fl_inactive( this->selection_color() );
 
     fl_rectf( X, Y, W, H, fl_color_average( FL_WHITE, FL_BACKGROUND_COLOR, 0.3 ) );
     

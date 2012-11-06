@@ -380,7 +380,8 @@ Loggable::do_this ( const char *s, bool reverse )
 
     int found = sscanf( s, "%s %X %s ", classname, &id, command );
 
-    ASSERT( 3 == found,  "Invalid journal entry format \"%s\"", s );
+    if ( 3 != found )
+        FATAL( "Invalid journal entry format \"%s\"", s );
 
     const char *create, *destroy;
 

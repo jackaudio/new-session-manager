@@ -122,7 +122,7 @@ public:
 
     Fl_Callback * configure_outputs_callback ( void ) const { return _configure_outputs_callback; }
 
-    void log_children ( void );
+    virtual void log_children ( void ) const;
 
     static unsigned int maximum_name_length ( void );
 

@@ -26,7 +26,7 @@
 class Fl_Blink_Button : public Fl_Button
 {
     bool _on;
-    float _blink_interval;
+    int _blink_interval;
     bool _blinking;
 
     static void
@@ -38,7 +38,7 @@ class Fl_Blink_Button : public Fl_Button
     void
     update_cb ( void )
         {
-            Fl::repeat_timeout( _blink_interval, update_cb, this );
+            Fl::repeat_timeout( _blink_interval / 1000, update_cb, this );
 
             _on = ! _on;
 
@@ -47,10 +47,13 @@ class Fl_Blink_Button : public Fl_Button
     
 public:
 
-    static const float SLOW = 0.5f;
-    static const float MEDIUM = 0.3f;
-    static const float FAST = 0.1f;
-    static const float DEFAULT = 0.5f;
+    enum 
+    {
+        SLOW=500,
+        MEDIUM=300,
+        FAST=100,
+        DEFAULT=500
+    };
 
     Fl_Blink_Button ( int X, int Y, int W, int H, const char *L )
         : Fl_Button( X, Y, W, H, L )
@@ -85,11 +88,11 @@ public:
     void
     blink_interval ( float v )
         {
-            _blink_interval = v;
+            _blink_interval = v * 1000;
             if ( value() )
             {
                 Fl::remove_timeout( update_cb, this );
-                Fl::add_timeout( _blink_interval, update_cb, this );
+                Fl::add_timeout( _blink_interval / 1000, update_cb, this );
             }
         }
 
@@ -98,7 +101,7 @@ public:
             if ( v )
             {
                 if ( _blinking )
-                    Fl::add_timeout( _blink_interval, update_cb, this );
+                    Fl::add_timeout( _blink_interval / 1000, update_cb, this );
                 Fl_Button::value( v );
                 redraw();
             }

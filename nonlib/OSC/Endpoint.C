@@ -134,7 +134,7 @@ namespace OSC
     char *
     Signal::get_output_connection_peer_name_and_path ( int n )
     {
-        Signal *t;
+        Signal *t = NULL;
 
         int j = 0;
         for ( std::list<Signal*>::const_iterator i = _outgoing.begin();
@@ -150,10 +150,15 @@ namespace OSC
 
 //        Signal *s = get_peer_signal_by_id( t->_peer, t->signal_id );
 
-        char *r;
-        asprintf( &r, "%s:%s", t->_peer->name, t->path() );
+        if ( t )
+        {
+            char *r;
+            asprintf( &r, "%s:%s", t->_peer->name, t->path() );
 
-        return r;
+            return r;
+        }
+        else
+            return NULL;
     }
 
 

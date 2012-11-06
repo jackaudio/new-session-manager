@@ -221,7 +221,7 @@ Chain::set ( Log_Entry &e )
 
 
 void
-Chain::log_children ( void )
+Chain::log_children ( void ) const
 {
     log_create();
 

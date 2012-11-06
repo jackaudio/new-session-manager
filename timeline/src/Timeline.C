@@ -155,7 +155,6 @@ protected:
     void
     draw_background ( int X, int Y,int W, int H )
         {
-            nframes_t sf = 0;
             nframes_t ef = timeline->length();
             
             double ty = Y;
@@ -310,8 +309,6 @@ Timeline::cb_scroll ( Fl_Widget *w )
         nframes_t under_mouse = x_to_offset( Fl::event_x() );
 
         _fpp = panzoomer->zoom();
-
-        const int tw = tracks->w() - Track::width();
 
         panzoomer->x_value( ts_to_x( under_mouse ) );
 
@@ -532,7 +529,7 @@ Timeline::menu_cb ( Fl_Menu_ *m )
         {
             Loggable::block_start();
 
-            Cursor_Region *o = new Cursor_Region( range_start(), range_end() - range_start(), "Punch", NULL );
+            new Cursor_Region( range_start(), range_end() - range_start(), "Punch", NULL );
             reset_range();
 
             Loggable::block_end();
@@ -553,7 +550,7 @@ Timeline::menu_cb ( Fl_Menu_ *m )
             }
             else
             {
-                Cursor_Region *o = new Cursor_Region( range_start(), range_end() - range_start(), "Playback", NULL );
+                new Cursor_Region( range_start(), range_end() - range_start(), "Playback", NULL );
             }
 
             reset_range();
@@ -1373,7 +1370,7 @@ Timeline::draw_playhead ( void )
 void
 Timeline::redraw_playhead ( void )
 {
-    static nframes_t last_playhead = -1;
+//    static nframes_t last_playhead = -1;
     static int last_playhead_x = -1;
 
     /* FIXME: kind of a hackish way to invoke punch / looping stuff from the UI thread... */
@@ -1439,7 +1436,7 @@ Timeline::redraw_playhead ( void )
     if ( last_playhead_x != playhead_x )
     {
         redraw_overlay();
-        last_playhead = transport->frame;
+//        last_playhead = transport->frame;
         last_playhead_x = playhead_x;
 
         if ( follow_playhead )

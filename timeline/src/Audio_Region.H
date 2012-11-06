@@ -119,13 +119,13 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
 
-    void draw_label ( const char *label, Fl_Align align )
+    virtual void draw_label ( const char *label, Fl_Align align, Fl_Color color=(Fl_Color)0, int xo=0, int yo=0 )
         {
             Sequence_Widget::draw_label( label, align );
         }
+    virtual void draw_label ( void );
 
     int handle ( int m );
-    void draw_label ( void );
     void draw_box ( void );
     void draw ( void );
     void resize ( void );

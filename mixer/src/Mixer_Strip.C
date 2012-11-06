@@ -160,7 +160,7 @@ Mixer_Strip::set ( Log_Entry &e )
 }
 
 void
-Mixer_Strip::log_children ( void )
+Mixer_Strip::log_children ( void ) const
 {
     log_create();
 

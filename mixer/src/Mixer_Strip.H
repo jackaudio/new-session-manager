@@ -61,7 +61,7 @@ public:
 
     void chain ( Chain *c );
 
-    void log_children ( void );
+    virtual void log_children ( void ) const;
 
     virtual void color ( Fl_Color c );
     virtual Fl_Color color ( void ) const;

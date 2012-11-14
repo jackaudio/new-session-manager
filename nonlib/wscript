@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+def options(opt):
+    pass
+
+def configure(conf):
+    pass
+
+def build(bld):
+    bld.stlib(
+        source = '''
+JACK/Client.C
+JACK/Port.C
+Log_Entry.C
+Loggable.C
+NSM/Client.C
+OSC/Endpoint.C
+Thread.C
+debug.C
+dsp.C
+file.C
+string_util.C
+''',
+        includes = '.',
+        export_incdirs = [ '.', 'nonlib'],
+        uselib = 'LIBLO JACK',
+        target = 'nonlib')

@@ -1,8 +1,10 @@
+# -*- mode: org -*-
 
-Notes to packagers: Non-Mixer, Non-DAW, and Non-Session-Manager,
-although stored in the same repository, are completely independent
-programs which can be built and packaged separately by descending into
-their respective sub-directories.
+* Notes to Packagers 
+
+Non-Mixer, Non-DAW, and Non-Session-Manager, although stored in the
+same repository, are completely independent programs which can be
+built and packaged separately (see README.build)
 
 If you're having trouble adapting to Non's build system, please
 contact me directly or post to one of the Non mailing lists with your
@@ -23,3 +25,4 @@ Thanks,
 Jonathan Moore Liles <male@tuxfamily.net>
 
 P.S. Furthermore, please quit listing crazy random stuff as dependencies. 
+

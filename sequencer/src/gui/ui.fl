@@ -25,7 +25,7 @@ comment {//
 decl {\#include <FL/Fl_Dial.H>} {public local
 } 
 
-decl {\#include "FL/About_Dialog.H"} {private local
+decl {\#include <About_Dialog.H>} {private local
 } 
 
 decl {class Fl_Scalepack;} {public local
@@ -34,16 +34,16 @@ decl {class Fl_Scalepack;} {public local
 decl {class Fl_Sometimes_Input;} {public local
 } 
 
-decl {\#include "FL/Fl_Theme_Chooser.H"} {private local
+decl {\#include <FL/Fl_Theme_Chooser.H>} {private local
 } 
 
-decl {\#include "FL/Fl_Scalepack.H"} {private local
+decl {\#include <Fl_Scalepack.H>} {private local
 } 
 
-decl {\#include "FL/Fl_Sometimes_Input.H"} {private local
+decl {\#include <Fl_Sometimes_Input.H>} {private local
 } 
 
-decl {\#include "FL/Fl_Menu_Settings.H"} {private local
+decl {\#include <Fl_Menu_Settings.H>} {private local
 } 
 
 decl {\#include <FL/Fl_Shared_Image.H>} {private local

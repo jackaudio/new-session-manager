@@ -18,8 +18,7 @@
 /*******************************************************************************/
 
 #include "FL/themes.H"
-#include "FL/Fl_Theme_Chooser.C"
-
+#include <FL/Fl_Theme_Chooser.H>
 
 int
 main ( int argc, char **argv )

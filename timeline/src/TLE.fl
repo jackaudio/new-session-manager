@@ -31,7 +31,7 @@ decl {class Fl_Flowpack;} {public global
 decl {\#include <FL/Fl_Overlay_Window.H>} {private local
 } 
 
-decl {\#include "Fl_Menu_Settings.H"} {private local
+decl {\#include <Fl_Menu_Settings.H>} {private local
 } 
 
 decl {\#include "Timeline.H"} {private local
@@ -49,10 +49,10 @@ decl {\#include "Project.H"} {private local
 decl {\#include "Clock.H"} {public local
 } 
 
-decl {\#include "FL/Fl_Flowpack.H"} {private local
+decl {\#include <Fl_Flowpack.H>} {private local
 } 
 
-decl {\#include "New_Project_Dialog.H"} {private local
+decl {\#include <New_Project_Dialog.H>} {private local
 } 
 
 decl {\#include "Track.H" // for capture_format} {private local
@@ -85,7 +85,7 @@ decl {\#include "Engine/Engine.H"} {private local
 decl {\#include "Engine/Audio_File.H" // for supported formats} {private local
 } 
 
-decl {\#include "FL/About_Dialog.H"} {private local
+decl {\#include <About_Dialog.H>} {private local
 } 
 
 decl {extern char project_display_name[256];} {private global

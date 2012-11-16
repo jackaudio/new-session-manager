@@ -35,10 +35,17 @@ class Fl_Blink_Button : public Fl_Button
             ((Fl_Blink_Button*)v)->update_cb();
         }
 
+
+    float 
+    blink_interval_as_fraction_of_seceond ( void ) const
+        {
+            return (float)_blink_interval / 1000;
+        }
+
     void
     update_cb ( void )
         {
-            Fl::repeat_timeout( _blink_interval / 1000, update_cb, this );
+            Fl::repeat_timeout( blink_interval_as_fraction_of_seceond(), update_cb, this );
 
             _on = ! _on;
 
@@ -92,7 +99,7 @@ public:
             if ( value() )
             {
                 Fl::remove_timeout( update_cb, this );
-                Fl::add_timeout( _blink_interval / 1000, update_cb, this );
+                Fl::add_timeout( blink_interval_as_fraction_of_seceond(), update_cb, this );
             }
         }
 
@@ -101,7 +108,7 @@ public:
             if ( v )
             {
                 if ( _blinking )
-                    Fl::add_timeout( _blink_interval / 1000, update_cb, this );
+                    Fl::add_timeout( blink_interval_as_fraction_of_seceond(), update_cb, this );
                 Fl_Button::value( v );
                 redraw();
             }

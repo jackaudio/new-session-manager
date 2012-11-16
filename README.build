@@ -4,6 +4,18 @@
 
 This repository contains all of the non-* software.
 
+** Getting NTK
+
+If you just cloned the non repository or just executed git pull, then
+you should also run
+
+    git submodule update --init
+
+to pull down the latest NTK code required by Non. Git does *not* do
+this automatically.
+
+** Building NTK
+
 If you don't have NTK installed system-wide (which isn't very likely
 yet) you *MUST* begin the build process by typing:
 

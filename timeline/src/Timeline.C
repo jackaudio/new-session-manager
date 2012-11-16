@@ -155,7 +155,7 @@ protected:
     void
     draw_background ( int X, int Y,int W, int H )
         {
-            nframes_t ef = timeline->length();
+            nframes_t ef = timeline->x_to_ts( _xmax );
             
             double ty = Y;
             
@@ -290,7 +290,11 @@ void
 Timeline::adjust_panzoomer ( void )
 {
     panzoomer->y_value( panzoomer->y_value(), h() - rulers->h() - panzoomer->h(), 0, pack_visible_height( tracks ));
-    panzoomer->x_value( ts_to_x( xoffset ), tracks->w() - Track::width(), 0, ts_to_x( length() ) );
+    panzoomer->x_value( ts_to_x( xoffset ),                     /* pos */
+                        tracks->w() - Track::width(),           /* window size */
+                        0,                                      /* min */
+                        max( ts_to_x( length() ), tracks->w() - Track::width() )/* max */
+        );
 }
 
 void
@@ -745,7 +749,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
             o->zoom( 8 );
         
             o->box( FL_FLAT_BOX );
-            o->color( FL_BACKGROUND_COLOR );
+            o->color( FL_DARK1 );
             o->type( FL_HORIZONTAL );
             o->callback( cb_scroll, this );
         

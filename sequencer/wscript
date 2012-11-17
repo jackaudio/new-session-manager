@@ -29,9 +29,9 @@ def configure(conf):
                       atleast_version='2.0.0', args="--cflags --libs",  mandatory=True)
 
     conf.define('VERSION', PACKAGE_VERSION)
-    conf.define('SYSTEM_PATH', string.join( [ conf.env.DATADIR, APPNAME ], '/' ) )
-    conf.define('DOCUMENT_PATH', string.join( [ conf.env.DATADIR, 'doc' ], '/' ) )
-    conf.define('PIXMAP_PATH', string.join( [ conf.env.DATADIR, 'pixmaps' ], '/' ) )
+    conf.define('SYSTEM_PATH', '/'.join( [ conf.env.DATADIR, APPNAME ] ) )
+    conf.define('DOCUMENT_PATH', '/'.join( [ conf.env.DATADIR, 'doc' ] ) )
+    conf.define('PIXMAP_PATH', '/'.join( [ conf.env.DATADIR, 'pixmaps' ] ) )
 
     conf.write_config_header('config.h', remove=False)
 
@@ -72,7 +72,7 @@ src/transport.C
               uselib = [ 'JACK', 'SIGCPP', 'LIBLO', 'XPM', 'NTK', 'NTK_IMAGES'],
               install_path = '${BINDIR}')
 
-    bld.install_files(string.join( [ '${DATADIR}', APPNAME, 'instruments'], '/' ), bld.path.ant_glob('instruments/*'))
+    bld.install_files('/'.join( [ '${DATADIR}', APPNAME, 'instruments'] ), bld.path.ant_glob('instruments/*'))
 
     start_dir = bld.path.find_dir( 'icons/hicolor' )
 
@@ -81,4 +81,4 @@ src/transport.C
 
     bld.install_as('${DATADIR}/pixmaps/' + APPNAME + '/icon-256x256.png', 'icons/hicolor/256x256/apps/' + APPNAME + '.png')
 
-    bld.install_files( string.join( [ '${DATADIR}/doc', APPNAME ], '/' ), bld.path.ant_glob( 'doc/*.html doc/*.png' ) )
+    bld.install_files( '/'.join( [ '${DATADIR}/doc', APPNAME ] ), bld.path.ant_glob( 'doc/*.html doc/*.png' ) )

@@ -20,7 +20,7 @@ def options(opt):
     opt.add_option('--enable-debug', action='store_true', default=False, dest='debug',
                     help='Build for debugging')
     opt.add_option('--project', action='store', default=False, dest='project',
-                    help='Limit build to a single project (' + string.join( projects, ', ' ) + ')')
+                    help='Limit build to a single project (' + ', '.join( projects ) + ')')
 
     for i in projects:
         opt.recurse(i)

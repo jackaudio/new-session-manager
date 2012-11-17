@@ -26,7 +26,7 @@
 #include "gui/ui.H"
 #include "jack.H"
 #include "NSM.H"
-
+#include "transport.H"
 #include "pattern.H"
 #include "phrase.H"
 #include <signal.h>

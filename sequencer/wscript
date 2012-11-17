@@ -53,7 +53,6 @@ src/gui/draw.C
 src/gui/event_edit.fl
 src/gui/input.C
 src/gui/ui.fl
-src/gui/widgets.fl
 src/instrument.C
 src/jack.C
 src/main.C

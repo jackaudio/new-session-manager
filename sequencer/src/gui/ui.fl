@@ -49,9 +49,6 @@ decl {\#include <Fl_Menu_Settings.H>} {private local
 decl {\#include <FL/Fl_Shared_Image.H>} {private local
 } 
 
-decl {\#include "widgets.H"} {private local
-} 
-
 decl {\#include "event_edit.H"} {private local
 } 
 
@@ -62,6 +59,9 @@ decl {\#include "../NSM.H"} {private local
 } 
 
 decl {extern NSM_Client *nsm;} {private local
+} 
+
+decl {\#include "../transport.H"} {private local
 } 
 
 decl {extern UI *ui;} {private local
@@ -80,6 +80,122 @@ decl {Fl_Color canvas_background_color;} {public local
 } 
 
 decl {extern Fl_Color velocity_colors[];} {private local
+} 
+
+widget_class Visual_Metronome {open
+  xywh {638 936 100 100} type Double visible
+} {
+  Fl_Slider progress {
+    private xywh {139 115 1149 23} type Horizontal box FLAT_BOX color 7 selection_color 54
+    code0 {o->resize( x(), (y() + h()) - (h() / 3), w(), h() / 3 );}
+    code1 {o->slider_size( 0.25 );}
+    code2 {o->slider( FL_FLAT_BOX  );}
+  }
+  Function {draw(void)} {open protected return_type void
+  } {
+    code {if ( damage() & ~FL_DAMAGE_CHILD )
+{
+int bw = w() / _bpb;
+
+int b = _bpb;
+
+for ( int i = 0; i < b; ++i )
+{
+		if ( i == _beat )
+		fl_color( velocity_colors[ i * 127 / _bpb ] );
+	else
+		fl_color( FL_GRAY );
+		
+	int X = x() + ( i * bw );
+	int Y = y();
+	int W = bw;
+	int H = h() - 14;
+	
+	fl_rectf(X,Y,W,H);
+	fl_color( fl_darker( fl_color() ) );
+	fl_rect( X,Y,W,H);
+		
+	char pat[4];
+		
+	snprintf( pat, sizeof(pat), "%d", i + 1 );
+	fl_font( FL_HELVETICA_BOLD, 24 );
+	fl_draw( pat, X,Y,W,H, FL_ALIGN_CENTER );
+	
+}
+}
+
+progress->resize( x(), y() + h() - 14, w(), 14 );
+
+if ( damage() & FL_DAMAGE_CHILD )
+	update_child( *progress );
+else
+	draw_child( *progress );
+
+// _flip = ! _flip;} {selected
+    }
+  }
+  decl {int _bpb} {private local
+  }
+  decl {int _tpb} {private local
+  }
+  decl {int _beat} {private local
+  }
+  decl {bool _flip} {private local
+  }
+  decl {int _tick} {private local
+  }
+  Function {bpb( int b )} {open private return_type void
+  } {
+    code {if ( b != _bpb )
+{
+	_bpb = b;
+	redraw();
+}} {}
+  }
+  Function {tpb( int ticks )} {open private return_type void
+  } {
+    code {_tpb = ticks;
+
+progress->minimum( 0 );
+progress->maximum( ticks );} {}
+  }
+  Function {beat( int b )} {open private return_type void
+  } {
+    code {if ( b == _beat || b >= _bpb )
+	return;
+
+_flip = ! _flip;
+
+_beat = b;
+redraw();} {}
+  }
+  Function {tick( int tick )} {open private return_type void
+  } {
+    code {if ( tick == _tick )
+	return;
+	
+if ( _beat < 0 )
+	return;
+
+if ( _flip )
+{
+	progress->value( _tpb - tick );
+}
+else
+{
+	progress->value( tick );
+}
+
+_tick = tick;} {}
+  }
+  Function {update( void )} {open return_type void
+  } {
+    code {if ( transport.beats_per_bar ) {
+bpb( transport.beats_per_bar );
+tpb( transport.ticks_per_beat );
+beat( transport.beat - 1 );
+tick( transport.tick - 1 );}} {}
+  }
 } 
 
 Function {update_transport( void * )} {open return_type void
@@ -223,7 +339,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {798 131 865 805} type Double color 47 resizable
+      xywh {832 231 865 805} type Double color 47 resizable
       code0 {o->color( FL_BACKGROUND_COLOR );} xclass non size_range {700 509 0 0} visible
     } {
       Fl_Group {} {open
@@ -255,8 +371,7 @@ if ( maybe_save_song() )
         Fl_Pack vmetro_widget {
           label Metronome
           xywh {520 35 336 59} type HORIZONTAL box UP_BOX color 40 selection_color 48 labelsize 33 align 0 resizable
-          code0 {\#include "widgets.H"}
-          code1 {o->box( FL_FLAT_BOX );}
+          code0 {o->box( FL_FLAT_BOX );}
           class Visual_Metronome
         } {}
         Fl_Pack transport_controls_group {open
@@ -563,7 +678,7 @@ o->maximum( phrase::phrases() );}
           code0 {update_pattern_widgets();}
         } {
           Fl_Box pattern_canvas_widget {
-            label Pattern selected
+            label Pattern
             xywh {1 103 863 587} box FLAT_BOX color 37 labelsize 100 align 16 resizable
             code0 {\#include "draw.H"}
             code1 {o->set_canvas( pattern_c );}
@@ -1929,5 +2044,48 @@ for ( i = 0; i < MAX_PATTERN; i++ )
 Fl_Group::resize( X, Y, W, H );} {}
   }
   decl {unsigned long _timer;} {private local
+  }
+} 
+
+class List_Chooser {open
+} {
+  Function {List_Chooser( const char *name, const char *action )} {} {
+    Fl_Window window {open
+      xywh {525 313 310 545} type Single hide resizable non_modal size_range {310 524 0 0}
+    } {
+      Fl_Browser browser {
+        label name
+        xywh {5 26 300 480} type Multi box THIN_DOWN_BOX color 32 selection_color 0 align 1 textcolor 55 resizable
+        code0 {o->label( name );}
+      }
+      Fl_Group {} {open
+        xywh {5 505 300 39}
+      } {
+        Fl_Button {} {
+          label Cancel
+          callback {browser->clear();
+window->hide();}
+          xywh {5 513 75 27}
+        }
+        Fl_Return_Button button {
+          label action
+          callback {window->hide();}
+          xywh {115 513 190 27}
+          code0 {o->label( action );}
+        }
+      }
+    }
+  }
+  Function {show()} {open
+  } {
+    code {window->show();} {}
+  }
+  Function {shown()} {open return_type bool
+  } {
+    code {return window->shown();} {}
+  }
+  Function {add( const char *item )} {open
+  } {
+    code {browser->add( item );} {}
   }
 } 

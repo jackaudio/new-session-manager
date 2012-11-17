@@ -28,6 +28,7 @@
 #include "../common.h"
 
 #include "ui.H"
+#include "../transport.H"
 
 extern UI *ui;
 

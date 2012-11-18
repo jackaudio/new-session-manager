@@ -50,6 +50,8 @@ def configure(conf):
         conf.env.append_value('CXXFLAGS', optimization_flags )
         conf.define( 'NDEBUG', 1 )
 
+    conf.define( "_GNU_SOURCE", 1)
+
     conf.env.append_value('CFLAGS',['-Wall'])
 #    conf.env.append_value('CXXFLAGS',['-Wall','-fno-exceptions', '-fno-rtti'])
     conf.env.append_value('CXXFLAGS',['-Wall','-fno-rtti'])

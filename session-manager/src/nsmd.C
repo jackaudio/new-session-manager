@@ -778,7 +778,7 @@ OSC_HANDLER( announce )
    
     if ( major > NSM_API_VERSION_MAJOR )
     {
-        DMESSAGE( "Client is using incompatible and more recent API version %i.%i", major, minor ); 
+        MESSAGE( "Client is using incompatible and more recent API version %i.%i", major, minor ); 
 
         osc_server->send( lo_message_get_source( msg ), "/error",
                           path,

@@ -44,10 +44,11 @@ class Time_Point : public Sequence_Point
     void
     _make_label ( void )
         {
-            if ( ! _label )
-                _label = (char*)malloc( 40 );
+            char l[10];
+            
+            snprintf( l, sizeof(l), "%d/%d", _time.beats_per_bar, _time.beat_type );
 
-            snprintf( _label, 40, "%d/%d", _time.beats_per_bar, _time.beat_type );
+            label( l );
         }
 
 

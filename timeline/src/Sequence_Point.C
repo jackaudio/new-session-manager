@@ -25,23 +25,15 @@
 
 Sequence_Point::Sequence_Point ( const Sequence_Point &rhs ) : Sequence_Widget( rhs )
 {
-    if ( rhs._label )
-        _label = strdup( rhs._label );
-    else
-        _label = 0;
 }
 
 Sequence_Point::Sequence_Point ( )
 {
-    _label = NULL;
-
     color( FL_CYAN );
 }
 
 Sequence_Point::~Sequence_Point ( )
 {
-    if ( _label )
-        free( _label );
 }
 
 

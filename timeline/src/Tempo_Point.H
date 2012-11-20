@@ -32,10 +32,11 @@ class Tempo_Point : public Sequence_Point
     void
     _make_label ( void )
         {
-            if ( ! _label )
-                _label = (char*)malloc( 40 );
+            char l[10];
 
-            snprintf( _label, 40, "%.1f", _tempo );
+            snprintf( l, sizeof(l), "%.1f", _tempo );
+
+            label( l );
         }
 
 protected:
@@ -59,7 +60,7 @@ public:
 
     Tempo_Point ( nframes_t when, float bpm );
 
-    ~Tempo_Point ( );
+    virtual ~Tempo_Point ( );
 
     Tempo_Point ( const Tempo_Point &rhs ) : Sequence_Point( rhs )
         {

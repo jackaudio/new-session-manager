@@ -67,8 +67,6 @@ Annotation_Region::Annotation_Region ( Sequence *sequence, nframes_t when, const
 
 Annotation_Region::Annotation_Region ( const Annotation_Region &rhs ) : Sequence_Region( rhs )
 {
-    _label = strdup( rhs._label );
-
     log_create();
 }
 
@@ -76,7 +74,6 @@ Annotation_Region::Annotation_Region ( const Annotation_Region &rhs ) : Sequence
 Annotation_Region::~Annotation_Region ( )
 {
     log_destroy();
-    if ( _label ) free( _label );
 }
 
 void

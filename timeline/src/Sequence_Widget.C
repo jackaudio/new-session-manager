@@ -59,6 +59,8 @@ Sequence_Widget::Sequence_Widget ( const Sequence_Widget &rhs ) : Loggable( rhs 
 
     if ( rhs._label )
         _label = strdup( rhs._label );
+    else
+        _label = 0;
 
     _sequence = rhs._sequence;
 

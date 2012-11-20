@@ -31,24 +31,14 @@ protected:
     void get ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
-
     virtual void draw_box ( void );
     virtual void draw ( void );
 
     Sequence_Point ( const Sequence_Point &rhs );
     Sequence_Point ( );
-    ~Sequence_Point ( );
+    virtual ~Sequence_Point ( );
 
 public:
-
-    const char *label ( void ) const { return _label; }
-    void label ( const char *s )
-        {
-            if ( _label )
-                free( _label );
-            _label = strdup( s );
-            redraw();
-        }
 
     Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
     virtual int abs_w ( void ) const { return 8; }

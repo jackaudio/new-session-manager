@@ -5,4 +5,4 @@ Exec=@BIN_PATH@/non-mixer
 Terminal=false
 Type=Application
 Icon=non-mixer
-Categories=Application;AudioVideo;Audio;
+Categories=AudioVideo;Audio;

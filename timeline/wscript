@@ -94,6 +94,13 @@ src/main.C
               use = [ 'fl_widgets', 'nonlib'],
               install_path = '${BINDIR}')
 
+    bld( features = 'subst',
+         source = 'non-daw.desktop.in',
+         target = 'non-daw.desktop',
+         encoding = 'utf8',
+         install_path = "${DATADIR}" + '/applications',
+         BIN_PATH = bld.env.BINDIR )
+
     start_dir = bld.path.find_dir( 'icons/hicolor' )
 
     bld.install_files('${DATADIR}/icons/hicolor', start_dir.ant_glob('**/*.png'),

@@ -92,6 +92,14 @@ src/send_osc.C
               use = [ 'nonlib'],
               install_path = None )
 
+    bld( features = 'subst',
+         source = 'non-session-manager.desktop.in',
+         target = 'non-session-manager.desktop',
+         encoding = 'utf8',
+         install_path = "${DATADIR}" + '/applications',
+         BIN_PATH = bld.env.BINDIR,
+         
+ );
 
     start_dir = bld.path.find_dir( 'icons/hicolor' )
 

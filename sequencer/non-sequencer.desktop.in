@@ -5,4 +5,4 @@ Exec=@BIN_PATH@/non-sequencer
 Terminal=false
 Type=Application
 Icon=non-sequencer
-Categories=Application;AudioVideo;Audio;Midi;
+Categories=AudioVideo;Audio;Midi;

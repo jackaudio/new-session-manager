@@ -5,4 +5,4 @@ Exec=@BIN_PATH@/non-daw
 Terminal=false
 Type=Application
 Icon=non-daw
-Categories=Application;AudioVideo;Audio;
+Categories=AudioVideo;Audio;

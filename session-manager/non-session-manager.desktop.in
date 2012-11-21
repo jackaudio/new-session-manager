@@ -5,4 +5,4 @@ Exec=@BIN_PATH@/non-session-manager
 Terminal=false
 Type=Application
 Icon=non-session-manager
-Categories=Application;AudioVideo;Audio;
+Categories=AudioVideo;Audio;

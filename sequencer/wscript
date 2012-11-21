@@ -71,6 +71,13 @@ src/transport.C
               uselib = [ 'JACK', 'SIGCPP', 'LIBLO', 'XPM', 'NTK', 'NTK_IMAGES'],
               install_path = '${BINDIR}')
 
+    bld( features = 'subst',
+         source = 'non-sequencer.desktop.in',
+         target = 'non-sequencer.desktop',
+         encoding = 'utf8',
+         install_path = "${DATADIR}" + '/applications',
+         BIN_PATH = bld.env.BINDIR )
+
     bld.install_files('/'.join( [ '${DATADIR}', APPNAME, 'instruments'] ), bld.path.ant_glob('instruments/*'))
 
     start_dir = bld.path.find_dir( 'icons/hicolor' )

@@ -32,6 +32,7 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Color_Chooser.H>
 #include <FL/Fl.H>
+#include "FL/Fl_Scalepack.H"
 
 #include "Engine/Engine.H" // for lock()
 
@@ -42,6 +43,8 @@
 #include "debug.h"
 
 
+
+static Fl_Menu_Button _menu( 0, 0, 0, 0, "Track" );
 
 int Track::_soloing = 0;
 
@@ -145,51 +148,40 @@ Track::init ( void )
         }
 
         {
-            Fl_Group *o = controls = new Fl_Group( 2, 28, 149, 24 );
+            Fl_Scalepack *o = controls = new Fl_Scalepack( 6, 28, 135, 40 );
+            o->spacing( 5 );
+            o->box( FL_NO_BOX );
+            o->type( FL_HORIZONTAL );
 
             {
                 Fl_Button *o = record_button =
-                    new Fl_Button( 6, 28, 26, 24, "@circle" );
+                    new Fl_Button( 6, 28, 26, 24, "rec." );
                 o->type( 1 );
-                o->box( FL_ASYM_BOX );
-                o->down_box( FL_ASYM_BOX );
+                o->box( FL_UP_BOX );
                 o->selection_color( FL_RED );
-                o->color( fl_color_average( FL_GRAY, o->selection_color(), 0.80 ) );
-                o->labelsize( 9 );
+                o->color( FL_BACKGROUND_COLOR );
+                o->labelsize( 11 );
                 o->callback( cb_button, this );
             }
             {
                 Fl_Button *o = mute_button =
-                    new Fl_Button( 35, 28, 26, 24, "m" );
+                    new Fl_Button( 35, 28, 26, 24, "mute" );
                 o->selection_color( fl_color_average( FL_YELLOW, FL_GREEN, 0.50 ) );
-                o->color( fl_color_average( FL_GRAY, o->selection_color(), 0.80 ) );
+                o->color( FL_BACKGROUND_COLOR );
                 o->type( 1 );
-                o->box( FL_ASYM_BOX );
-                o->down_box( FL_ASYM_BOX );
-                o->labelsize( 15 );
+                o->box( FL_UP_BOX );
+                o->labelsize( 11 );
                 o->callback( cb_button, this );
             }
             {
                 Fl_Button *o = solo_button =
-                    new Fl_Button( 66, 28, 26, 24, "s" );
+                    new Fl_Button( 66, 28, 26, 24, "solo" );
                 o->selection_color( fl_color_average( FL_YELLOW, FL_RED, 0.50 ) );
-                o->color( fl_color_average( FL_GRAY, o->selection_color(), 0.80 ) );
+                o->color( FL_BACKGROUND_COLOR );
                 o->type( 1 );
-                o->box( FL_ASYM_BOX );
-                o->down_box( FL_ASYM_BOX );
-                o->labelsize( 15 );
-                o->callback( cb_button, this );
-            }
-            {
-                Fl_Menu_Button *o = take_menu =
-                    new Fl_Menu_Button( 97, 28, 47, 24, "T" );
                 o->box( FL_UP_BOX );
-                o->color( FL_LIGHT1 );
-                o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
+                o->labelsize( 11 );
                 o->callback( cb_button, this );
-
-                o->add( "Show all takes", 0, 0, 0, FL_MENU_TOGGLE );
-                o->add( "New", 0, 0, 0, FL_MENU_DIVIDER );
             }
             o->end();
         }
@@ -404,48 +396,7 @@ Track::cb_button ( Fl_Widget *w )
         else
             --_soloing;
     }
-    else
-        if ( w == take_menu )
-        {
-            int v = take_menu->value();
 
-            switch ( v )
-            {
-                case 0:                                         /* show all takes */
-                    show_all_takes( take_menu->menu()[ v ].value() );
-                    break;
-                case 1:                                         /* new */
-                    sequence( (Audio_Sequence*)sequence()->clone_empty() );
-                    break;
-                case 2:                                         /* remove */
-                    if ( takes->children() )
-                    {
-                        Loggable::block_start();
-
-                        Audio_Sequence *s = sequence();
-
-                        sequence( (Audio_Sequence*)takes->child( 0 ) );
-
-                        delete s;
-
-                        Loggable::block_end();
-                    }
-                    break;
-                case 3:
-                    if ( takes->children() )
-                    {
-                        Loggable::block_start();
-
-                        takes->clear();
-
-                        Loggable::block_end();
-                    }
-                    break;
-                default:
-                    sequence( (Audio_Sequence*)take_menu->menu()[ v ].user_data() );
-            }
-
-        }
 }
 
 static int pack_visible( Fl_Pack *p )
@@ -515,27 +466,6 @@ Track::size ( int v )
     adjust_size();
 }
 
-void
-Track::update_take_menu ( void )
-{
-    take_menu->clear();
-
-    take_menu->add( "Show all takes", 0, 0, 0, FL_MENU_TOGGLE | ( _show_all_takes ? FL_MENU_VALUE : 0 ) );
-    take_menu->add( "New", 0, 0, 0 );
-
-    if ( takes->children() )
-    {
-        take_menu->add( "Remove", 0, 0, 0 );
-        take_menu->add( "Remove others", 0, 0, 0, FL_MENU_DIVIDER );
-
-        for ( int i = 0; i < takes->children(); ++i )
-        {
-            Sequence *s = (Sequence *)takes->child( i );
-
-            take_menu->add( s->name(), 0, 0, s );
-        }
-    }
-}
 
 void
 Track::add ( Audio_Sequence * t )
@@ -545,8 +475,6 @@ Track::add ( Audio_Sequence * t )
     t->color( fl_color_average( FL_BLACK, FL_GRAY, 0.25f ) );
 
     t->labeltype( FL_ENGRAVED_LABEL );
-
-    update_take_menu();
 }
 
 void
@@ -575,8 +503,6 @@ Track::remove ( Audio_Sequence *t )
     timeline->unlock();
 
     adjust_size();
-
-    update_take_menu();
 }
 
 void
@@ -612,6 +538,12 @@ Track::remove ( Control_Sequence *t )
 void
 Track::sequence ( Audio_Sequence * t )
 {
+    if ( sequence() == t )
+    {
+        DMESSAGE( "Attempt to set sequence twice" );
+        return;
+    }
+
     t->track( this );
 
     if ( sequence() )
@@ -622,8 +554,6 @@ Track::sequence ( Audio_Sequence * t )
 
     t->color( FL_GRAY );
     t->labeltype( FL_NO_LABEL );
-
-    update_take_menu();
 
     adjust_size();
 }
@@ -698,6 +628,8 @@ Track::menu_cb ( const Fl_Menu_ *m )
     char picked[256];
 
     m->item_pathname( picked, sizeof( picked ) );
+
+    DMESSAGE( "Picked: %s", picked );
 
     Logger log( this );
 
@@ -804,6 +736,46 @@ Track::menu_cb ( const Fl_Menu_ *m )
     {
         timeline->move_track_down( this );
     }
+    else if ( !strcmp( picked, "Takes/Show all takes" ) )
+    {
+        show_all_takes( ! m->mvalue()->value() );
+    }
+    else if ( !strcmp( picked, "Takes/New" ) )
+    {
+        sequence( (Audio_Sequence*)sequence()->clone_empty() );
+    }
+    else if ( !strcmp( picked, "Takes/Remove" ) )
+    {
+            if ( takes->children() )
+            {
+                Loggable::block_start();
+
+                Audio_Sequence *s = sequence();
+
+                sequence( (Audio_Sequence*)takes->child( 0 ) );
+
+                delete s;
+
+                Loggable::block_end();
+            }
+    }
+    else if ( !strcmp( picked, "Takes/Remove others" ))
+    {
+        if ( takes->children() )
+            {
+                Loggable::block_start();
+
+                takes->clear();
+
+                Loggable::block_end();
+            }
+    }
+    else if ( !strncmp( picked, "Takes/", sizeof( "Takes/" ) - 1 ) )
+    {
+        Audio_Sequence* s = (Audio_Sequence*)m->mvalue()->user_data();
+
+        sequence( s );
+    }
 }
 
 #include "FL/menu_popup.H"
@@ -812,45 +784,53 @@ Track::menu_cb ( const Fl_Menu_ *m )
 Fl_Menu_Button &
 Track::menu ( void ) const
 {
-    static Fl_Menu_Button m( 0, 0, 0, 0, "Track" );
 
     int c = output.size();
     int s = size();
 
-    Fl_Menu_Item menu[] =
+    _menu.clear();
+
+    _menu.add( "Takes/Show all takes", 0, 0, 0, FL_MENU_TOGGLE | ( _show_all_takes ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Takes/New", 0, 0, 0 );
+
+    if ( takes->children() )
+    {
+        _menu.add( "Takes/Remove", 0, 0, 0 );
+        _menu.add( "Takes/Remove others", 0, 0, 0, FL_MENU_DIVIDER );
+        
+        for ( int i = 0; i < takes->children(); ++i )
         {
-            { "Type",            0, 0, 0, FL_SUBMENU    },
-            { "Mono",            0, 0, 0, FL_MENU_RADIO | ( c == 1 ? FL_MENU_VALUE : 0 ) },
-            { "Stereo",          0, 0, 0, FL_MENU_RADIO | ( c == 2 ? FL_MENU_VALUE : 0 ) },
-            { "Quad",            0, 0, 0, FL_MENU_RADIO | ( c == 4 ? FL_MENU_VALUE : 0 ) },
-            { "...",             0, 0, 0, FL_MENU_RADIO | ( c == 3 || c > 4 ? FL_MENU_VALUE : 0 ) },
-            { 0                  },
-            { "Add Control",     0, 0, 0 },
-            { "Add Annotation",  0, 0, 0 },
-            { "Color",           0, 0, 0 },
-            { "Rename",          FL_CTRL + 'n', 0, 0 },
-            { "Size",            0, 0, 0, FL_SUBMENU    },
-            { "Small",           FL_ALT + '1', 0, 0, FL_MENU_RADIO | ( s == 0 ? FL_MENU_VALUE : 0 ) },
-            { "Medium",          FL_ALT + '2', 0, 0, FL_MENU_RADIO | ( s == 1 ? FL_MENU_VALUE : 0 ) },
-            { "Large",           FL_ALT + '3', 0, 0, FL_MENU_RADIO | ( s == 2 ? FL_MENU_VALUE : 0 ) },
-            { "Huge",           FL_ALT + '4', 0, 0, FL_MENU_RADIO | ( s == 3 ? FL_MENU_VALUE : 0 ) },
-            { 0 },
-            { "Flags",            0, 0, 0, FL_SUBMENU    },
-            { "Record",         FL_CTRL + 'r', 0, 0, FL_MENU_TOGGLE | ( armed() ? FL_MENU_VALUE : 0 ) },
-            { "Mute",            FL_CTRL + 'm', 0, 0, FL_MENU_TOGGLE | ( mute() ? FL_MENU_VALUE : 0 ) },
-            { "Solo",           FL_CTRL + 's', 0, 0, FL_MENU_TOGGLE | ( solo() ? FL_MENU_VALUE : 0 ) },
-            { 0 },
-            { "Move Up",        FL_SHIFT + '1', 0, 0 },
-            { "Move Down",        FL_SHIFT + '2', 0, 0 },
-            { "Remove",          0, 0, 0 }, // transport->rolling ? FL_MENU_INACTIVE : 0 },
-            { 0 },
-        };
+            Sequence *s = (Sequence *)takes->child( i );
+            
+            char n[256];
+            snprintf( n, sizeof(n), "Takes/%s", s->name() );
 
-    menu_set_callback( menu, &Track::menu_cb, (void*)this );
+            _menu.add( n, 0, 0, s);
+        }
+    }
 
-    m.copy( menu, (void*)this );
+    _menu.add( "Type/Mono",  0, 0, 0, FL_MENU_RADIO | ( c == 1 ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Type/Stereo", 0, 0, 0, FL_MENU_RADIO | ( c == 2 ? FL_MENU_VALUE : 0 ));
+    _menu.add( "Type/Quad",            0, 0, 0, FL_MENU_RADIO | ( c == 4 ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Type/...",             0, 0, 0, FL_MENU_RADIO | ( c == 3 || c > 4 ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Add Control",     0, 0, 0 );
+    _menu.add( "Add Annotation",  0, 0, 0 );
+    _menu.add( "Color",           0, 0, 0 );
+    _menu.add( "Rename",          FL_CTRL + 'n', 0, 0 );
+    _menu.add( "Size/Small",           FL_ALT + '1', 0, 0, FL_MENU_RADIO | ( s == 0 ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Size/Medium",          FL_ALT + '2', 0, 0, FL_MENU_RADIO | ( s == 1 ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Size/Large",           FL_ALT + '3', 0, 0, FL_MENU_RADIO | ( s == 2 ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Size/Huge",           FL_ALT + '4', 0, 0, FL_MENU_RADIO | ( s == 3 ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Flags/Record",         FL_CTRL + 'r', 0, 0, FL_MENU_TOGGLE | ( armed() ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Flags/Mute",            FL_CTRL + 'm', 0, 0, FL_MENU_TOGGLE | ( mute() ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Flags/Solo",           FL_CTRL + 's', 0, 0, FL_MENU_TOGGLE | ( solo() ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Move Up",        FL_SHIFT + '1', 0, 0 );
+    _menu.add( "Move Down",        FL_SHIFT + '2', 0, 0 );
+    _menu.add( "Remove",          0, 0, 0 ); // transport->rolling ? FL_MENU_INACTIVE : 0 );
+  
+    _menu.callback( &Track::menu_cb, (void*)this );
 
-    return m;
+    return _menu;
 }
 
 #include "FL/event_name.H"

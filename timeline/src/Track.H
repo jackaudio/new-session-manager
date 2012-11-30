@@ -47,6 +47,7 @@ class Record_DS;
 // class JACK::Port;
 class Audio_Region;
 class Audio_File;
+class Fl_Scalepack;
 
 //class Audio_Sequence;
 
@@ -113,7 +114,6 @@ private:
 
     void update_port_names ( void );
     const char *name_for_port( JACK::Port::type_e type, int n );
-    void update_take_menu ( void );
 
     Track ( );
     void init ( void );
@@ -125,6 +125,8 @@ protected:
     void get_unjournaled ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
+    Fl_Scalepack       *controls;
+
 public:
 
     virtual void log_children ( void ) const;
@@ -133,8 +135,6 @@ public:
     Fl_Button      *record_button;
     Fl_Button      *mute_button;
     Fl_Button      *solo_button;
-    Fl_Menu_Button *take_menu;
-    Fl_Group       *controls;
 
     Fl_Pack        *pack;
     Fl_Pack        *annotation;

@@ -72,10 +72,7 @@ Fl_Scalepack::draw ( void )
 
     if ( damage() & FL_DAMAGE_ALL )
     {
-        if ( box() == FL_NO_BOX )
-            fl_rectf( x(), y(), w(), h(), FL_BACKGROUND_COLOR );
-        else
-            draw_box();
+        draw_box();
 
         draw_label();
     }

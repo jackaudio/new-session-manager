@@ -48,6 +48,8 @@ class Record_DS;
 class Audio_Region;
 class Audio_File;
 class Fl_Scalepack;
+class Fl_Sometimes_Pack;
+class Fl_Blink_Button;
 
 //class Audio_Sequence;
 
@@ -99,8 +101,6 @@ private:
 
     bool _selected;
 
-    bool _show_all_takes;
-
     int _size;
 
     int _row;
@@ -118,6 +118,7 @@ private:
     Track ( );
     void init ( void );
 
+    void internal_draw ( void );
 
 protected:
 
@@ -126,6 +127,9 @@ protected:
     void set ( Log_Entry &e );
 
     Fl_Scalepack       *controls;
+    Fl_Sometimes_Pack  *control;
+    Fl_Blink_Button    *connected_indicator;
+
 
 public:
 
@@ -135,10 +139,11 @@ public:
     Fl_Button      *record_button;
     Fl_Button      *mute_button;
     Fl_Button      *solo_button;
+    Fl_Button      *show_all_takes_button;
+    Fl_Button      *overlay_controls_button;
 
     Fl_Pack        *pack;
     Fl_Pack        *annotation;
-    Fl_Pack        *control;
     Fl_Pack        *takes;
 
 
@@ -163,22 +168,37 @@ public:
 
     int size ( void ) const { return _size; }
 
-    int ncontrols ( void ) { return control->children(); }
+    int ncontrols ( void ) { return ((Fl_Group*)control)->children(); }
 
     void adjust_size ( void );
     void size ( int v );
 
     int height ( void ) const
         {
-            static int table[] = { 30, 80, 150, 300 };
+            static int table[] = { 27, 54, 80, 150, 300 };
 
             return table[ _size ];
         }
 
     void show_all_takes ( bool b )
         {
-            _show_all_takes = b;
+            show_all_takes_button->value( b );
             adjust_size();
+        }
+
+    bool show_all_takes ( void ) const
+        {
+            return show_all_takes_button->value();
+        }
+
+    void overlay_controls ( bool b )
+        {
+            overlay_controls_button->value( b );
+            adjust_size();
+        }
+    bool overlay_controls ( void ) const
+        {
+            return overlay_controls_button->value();
         }
 
     void name ( const char *name )
@@ -208,13 +228,11 @@ public:
     int row ( void ) const;
     void row ( int );
 
-    static void cb_input_field ( Fl_Widget *w, void *v );
-    void cb_input_field ( void );
     static void cb_button ( Fl_Widget *w, void *v );
     void cb_button ( Fl_Widget *w );
 
 
-    static int width ( void ) { return 150; }
+    static int width ( void ) { return 200; }
 
     void sequence ( Audio_Sequence * t );
     Audio_Sequence * sequence ( void ) const { return _sequence; }
@@ -227,6 +245,9 @@ public:
 
     void draw ( void );
     int handle ( int m );
+
+    void process_osc ( void );
+    void connect_osc ( void );
 
     /* Engine */
     const Audio_Region *capture_region ( void ) const;

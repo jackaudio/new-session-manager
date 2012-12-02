@@ -22,6 +22,7 @@
 /* Just like an Fl_Input, except that when not being edited it
  * displays just like a label. */
 
+#include <FL/fl_draw.H>
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Input.H>

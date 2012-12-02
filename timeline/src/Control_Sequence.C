@@ -21,6 +21,7 @@
 #include "debug.h"
 
 #include <FL/fl_ask.H>
+#include <FL/Fl_Color_Chooser.H>
 
 #include "Control_Sequence.H"
 #include "Track.H"
@@ -121,6 +122,7 @@ Control_Sequence::get ( Log_Entry &e ) const
 {
     e.add( ":track", _track );
     e.add( ":name", name() );
+    e.add( ":color", color() );
 }
 
 void
@@ -186,6 +188,10 @@ Control_Sequence::set ( Log_Entry &e )
         else if ( ! strcmp( ":osc-output", s ) )
         {
             _persistent_osc_connections.push_back( strdup( v ) );
+        }
+        else if ( ! strcmp( ":color", s ) )
+        {
+            color( (Fl_Color)atol( v ) );
         }
     }
 }
@@ -283,16 +289,43 @@ Control_Sequence::draw_curve ( bool filled )
 }
 
 void
+Control_Sequence::draw_box ( void )
+{
+    const int bx = x();
+    const int by = y();
+    const int bw = w();
+    const int bh = h();
+
+    int X, Y, W, H;
+
+    fl_clip_box( bx, by, bw, bh, X, Y, W, H );
+
+//    fl_rectf( X, Y, W, H, fl_color_average( FL_BLACK, FL_BACKGROUND_COLOR, 0.3 ) );
+    fl_rectf( X,Y,W,H, fl_color_average( FL_BLACK, FL_WHITE, 0.90 ) );
+    
+    if ( draw_with_grid )
+    {
+        fl_color( FL_GRAY );
+
+        const int inc = bh / 10;
+        if ( inc )
+            for ( int gy = 0; gy < bh; gy += inc )
+                fl_line( X, by + gy, X + W, by + gy );
+
+    }
+   
+    timeline->draw_measure_lines( X, Y, W, H );
+
+    fl_color( FL_BLACK );
+    fl_line( x(), y(), x() + w(), y() );
+    fl_line( x(), y() + h() - 1, w(), y() + h() - 1 );
+}
+
+void
 Control_Sequence::draw ( void )
 {
-//    draw_box();
-
     fl_push_clip( x(), y(), w(), h() );
-
     
-    /* draw the box with the ends cut off. */
-//    draw_box( box(), x() - Fl::box_dx( box() ), y(), w() + Fl::box_dw( box() ) + 1, h(), color() );
-
     const int bx = x();
     const int by = y() + Fl::box_dy( box() );
     const int bw = w();
@@ -307,24 +340,14 @@ Control_Sequence::draw ( void )
     const Fl_Color color = active ? this->color() : fl_inactive( this->color() );
 //    const Fl_Color selection_color = active ? this->selection_color() : fl_inactive( this->selection_color() );
 
-    fl_rectf( X, Y, W, H, fl_color_average( FL_WHITE, FL_BACKGROUND_COLOR, 0.3 ) );
-    
-    if ( draw_with_grid )
-    {
-        fl_color( FL_GRAY );
-
-        const int inc = bh / 10;
-        if ( inc )
-            for ( int gy = 0; gy < bh; gy += inc )
-                fl_line( X, by + gy, X + W, by + gy );
-
-    }
+    if ( box() != FL_NO_BOX )
+        draw_box();
 
     if ( interpolation() != None )
     {
         if ( draw_with_polygon )
         {
-            fl_color( fl_color_add_alpha( color, 100 ) );
+            fl_color( fl_color_add_alpha( color, 60 ) );
 
             fl_begin_complex_polygon();
             draw_curve( true );
@@ -341,8 +364,6 @@ Control_Sequence::draw ( void )
 
         fl_line_style( FL_SOLID, 0 );
     }
-
-    timeline->draw_measure_lines( X, Y, W, H );
 
     if ( interpolation() == None || _highlighted || Fl::focus() == this )
         for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
@@ -432,6 +453,19 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
     else if ( !strcmp( picked, "/Remove" ) )
     {
         Fl::delete_widget( this );
+    }
+    else if ( ! strcmp( picked, "/Color" ) )
+    {
+        unsigned char r, g, b;
+
+        Fl::get_color( color(), r, g, b );
+
+        if ( fl_color_chooser( "Track Color", r, g, b ) )
+        {
+            color( fl_rgb_color( r, g, b ) );
+        }
+
+        redraw();
     }
 }
 
@@ -581,6 +615,7 @@ Control_Sequence::handle ( int m )
                 menu.add( "Mode/Control Signal (OSC)", 0, 0, 0 , FL_MENU_RADIO | ( mode() == OSC ? FL_MENU_VALUE : 0 ) );
 
                 menu.add( "Rename", 0, 0, 0 );
+                menu.add( "Color", 0, 0, 0 );
                 menu.add( "Remove", 0, 0, 0 );
 
                 menu.callback( &Control_Sequence::menu_cb, (void*)this);

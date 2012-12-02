@@ -1761,9 +1761,12 @@ Timeline::length ( void ) const
     nframes_t l = 0;
 
     for ( int i = tracks->children(); i--; )
-        l = max( l, ((Track*)tracks->child( i ))->sequence()->length() );
-
-//    adjust_panzoomer();
+    {
+        Sequence *t = ((Track*)tracks->child( i ))->sequence();
+        
+        if ( t )
+            l = max( l, ((Track*)tracks->child( i ))->sequence()->length() );
+    }
 
     return l;
 }
@@ -2125,12 +2128,8 @@ Timeline::connect_osc ( void )
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
-        
-        for ( int j = t->control->children(); j--; )
-        {
-            Control_Sequence *c = (Control_Sequence*)t->control->child( j );
-            c->connect_osc();
-        }
+
+        t->connect_osc();
     }
 }
 
@@ -2166,14 +2165,7 @@ Timeline::process_osc ( void )
     {
         Track *t = (Track*)tracks->child( i );
         
-        if ( t->control )
-        {
-            for ( int j = t->control->children(); j--; )
-            {
-                Control_Sequence *c = (Control_Sequence*)t->control->child( j );
-                c->process_osc();
-            }
-        }
+        t->process_osc();
     }
     
     unlock();

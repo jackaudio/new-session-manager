@@ -1,0 +1,120 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0300 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include "FL/Fl_Sometimes_Input.H"} {public global
+} 
+
+widget_class Track_Header {open
+  xywh {384 728 200 210} type Double box THIN_UP_BOX resizable visible
+} {
+  Fl_Group {} {open
+    xywh {5 3 192 48}
+  } {
+    Fl_Input name_input {
+      label {input:}
+      xywh {5 3 192 22} labeltype NO_LABEL align 20 when 8
+      class Fl_Sometimes_Input
+    }
+    Fl_Button track_inputs_indicator {
+      label in
+      tooltip {lit if inputs are connected} xywh {5 27 24 16} box BORDER_BOX color 48 selection_color 90 labelfont 5 labelsize 10 labelcolor 53 hide
+    }
+    Fl_Button track_outputs_indicator {
+      label out
+      tooltip {lit if outputs are connected} xywh {31 27 24 16} box BORDER_BOX color 48 selection_color 90 labelfont 5 labelsize 10 labelcolor 53 hide
+    }
+    Fl_Button overlay_controls_button {
+      label {c-} selected
+      tooltip {Expand controls} xywh {5 26 24 24} type Toggle selection_color 3 labelfont 5 labelsize 12
+    }
+    Fl_Button show_all_takes_button {
+      label {t+} selected
+      tooltip {Show all takes} xywh {32 26 24 24} type Toggle selection_color 3 labelfont 5 labelsize 12
+    }
+    Fl_Button rec_button {
+      label r
+      tooltip {arm for recording} xywh {118 26 24 24} type Toggle selection_color 88 labelfont 5 labelsize 12
+    }
+    Fl_Button mute_button {
+      label m
+      tooltip mute xywh {145 26 24 24} type Toggle selection_color 63 labelfont 5 labelsize 12
+    }
+    Fl_Button solo_button {
+      label s
+      tooltip solo xywh {172 26 24 24} type Toggle selection_color 91 labelfont 5 labelsize 12
+    }
+  }
+  Fl_Group controls_header_group {open
+    xywh {5 53 195 64} labelsize 11 align 25
+  } {
+    Fl_Box {} {
+      label Controls
+      xywh {5 53 195 12} box FLAT_BOX color 47 labelsize 9 align 24
+      code0 {o->color( fl_color_add_alpha( o->color(), 127 ) );}
+    }
+    Fl_Box {} {
+      label spacer
+      xywh {5 63 195 53} labeltype NO_LABEL resizable
+    }
+  }
+  Fl_Group takes_header_group {open
+    xywh {5 115 195 55} labelsize 11 align 25
+  } {
+    Fl_Box {} {
+      label Takes
+      xywh {5 115 195 12} box FLAT_BOX color 47 labelsize 9 align 24
+      code0 {o->color( fl_color_add_alpha( o->color(), 127 ) );}
+    }
+    Fl_Box {} {
+      label spacer
+      xywh {5 126 195 40} labeltype NO_LABEL resizable
+    }
+  }
+  Fl_Box {} {
+    label spacer
+    xywh {0 165 200 45} labeltype NO_LABEL resizable
+  }
+} 
+
+widget_class Control_Sequence_Header {open
+  xywh {390 981 200 55} type Double visible
+} {
+  Fl_Input take_name_input {
+    label {input:}
+    xywh {5 3 192 22} labeltype NO_LABEL align 20 when 8
+    class Fl_Sometimes_Input
+  }
+  Fl_Button outputs_indicator {
+    label out
+    tooltip {lit if outputs are connected} xywh {33 26 24 16} box BORDER_BOX color 48 selection_color 90 labelfont 5 labelsize 10
+  }
+  Fl_Output {} {
+    xywh {60 26 92 24} color 32 labeltype NO_LABEL align 20 textsize 9
+  }
+  Fl_Menu_Button {} {open
+    xywh {147 26 24 24} color 52
+  } {}
+  Fl_Button delete_control_button {
+    label X
+    tooltip {Expand controls} xywh {172 26 24 24} color 52 labelfont 5 labelsize 12
+  }
+} 
+
+widget_class Take_Header {open
+  xywh {868 986 200 50} type Double visible
+} {
+  Fl_Input take_name_input {
+    label {input:}
+    xywh {5 3 193 22} labeltype NO_LABEL align 20 when 8
+    class Fl_Sometimes_Input
+  }
+  Fl_Button delete_take_button {
+    label X
+    tooltip {Expand controls} xywh {172 26 24 24} color 52 labelfont 5 labelsize 12
+  }
+  Fl_Button set_active_take_button {
+    label {@2}
+    tooltip {select this take as active sequence} xywh {147 26 24 24} color 52 labelfont 5 labelsize 12
+  }
+} 

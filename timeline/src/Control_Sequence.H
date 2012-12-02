@@ -87,6 +87,7 @@ protected:
         }
 
 
+    void draw_box ( void );
     void draw ( void );
     int handle ( int m );
 

@@ -91,6 +91,10 @@ public:
             if ( _name ) free( _name );
             _name = s ? strdup( s ) : NULL;
             label( _name );
+            
+            /* for outside label */
+            if ( (Fl_Widget*)track() )
+                ((Fl_Widget*)track())->redraw();
         }
 
     void sort ( void );

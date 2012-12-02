@@ -62,7 +62,7 @@ public:
         DEFAULT=500
     };
 
-    Fl_Blink_Button ( int X, int Y, int W, int H, const char *L )
+    Fl_Blink_Button ( int X, int Y, int W, int H, const char *L=0 )
         : Fl_Button( X, Y, W, H, L )
         {
             _blinking = true;

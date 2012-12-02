@@ -78,6 +78,7 @@ src/Sequence_Point.C
 src/Sequence_Region.C
 src/Sequence_Widget.C
 src/TLE.fl
+src/Track_Header.fl
 src/Tempo_Point.C
 src/Tempo_Sequence.C
 src/Time_Point.C

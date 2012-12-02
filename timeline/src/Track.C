@@ -940,6 +940,8 @@ Track::internal_draw ( void )
 
     }
 
+    child(0)->size( Track::width(), h() );
+
     draw_child( *child(0));
 
     if ( takes->visible() )

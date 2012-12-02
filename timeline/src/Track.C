@@ -914,6 +914,8 @@ Track::internal_draw ( void )
 {
     draw_box();
 
+    pack->resize( x() + Track::width(), y(), w() - Track::width(), h() );
+
     /* we have to do this first because the pack(s) size isn't known until draw() */
     draw_child( *pack );
 

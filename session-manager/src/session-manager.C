@@ -819,7 +819,7 @@ public:
                     o->sortorder( FL_TREE_SORT_ASCENDING );
                     o->showroot( 0 );
                     o->selection_color( fl_darker( FL_GREEN ) );
-                    o->box( FL_ROUNDED_BOX );
+                    o->box( FL_DOWN_BOX );
                     o->label( "Sessions" );
                 }
                 {

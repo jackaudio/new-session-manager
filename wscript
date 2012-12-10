@@ -42,6 +42,7 @@ def configure(conf):
 
     debug_flags = [ '-g' ]
 
+
     if Options.options.debug:
         conf.env.append_value('CFLAGS', debug_flags )
         conf.env.append_value('CXXFLAGS', debug_flags )
@@ -56,6 +57,16 @@ def configure(conf):
 #    conf.env.append_value('CXXFLAGS',['-Wall','-fno-exceptions', '-fno-rtti'])
     conf.env.append_value('CXXFLAGS',['-Wall','-fno-rtti'])
 
+    global_flags = [ '-pthread',
+                     '-D_LARGEFILE64_SOURCE',
+                     '-D_FILE_OFFSET_BITS=64',
+                     '-D_GNU_SOURCE' ]
+
+    
+    conf.env.append_value('CFLAGS', global_flags )
+    conf.env.append_value('CXXFLAGS', global_flags )
+
+    conf.env['LIB_PTHREAD'] = ['pthread']
 
     # NTK_EXTRA_FLAGS=''
     # if not Options.options.use_system_ntk:

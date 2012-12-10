@@ -25,10 +25,10 @@ def configure(conf):
     conf.load('compiler_cxx')
     conf.load('gnu_dirs')
 
-    conf.env.append_value('CFLAGS', '-D_LARGEFILE64_SOURCE')
-    conf.env.append_value('CFLAGS', '-D_FILE_OFFSET_BITS=64')
-    conf.env.append_value('CXXFLAGS', '-D_LARGEFILE64_SOURCE')
-    conf.env.append_value('CXXFLAGS', '-D_FILE_OFFSET_BITS=64')
+    # conf.env.append_value('CFLAGS', '-D_LARGEFILE64_SOURCE')
+    # conf.env.append_value('CFLAGS', '-D_FILE_OFFSET_BITS=64')
+    # conf.env.append_value('CXXFLAGS', '-D_LARGEFILE64_SOURCE')
+    # conf.env.append_value('CXXFLAGS', '-D_FILE_OFFSET_BITS=64')
 
     conf.check_cfg(package='sndfile', uselib_store='SNDFILE',args="--cflags --libs",
                       atleast_version='1.0.17', mandatory=True)
@@ -91,7 +91,7 @@ src/main.C
 ''',
               target       = 'non-daw',
               includes     = ['.', 'src', '../FL', '../nonlib'],
-              uselib = [ 'JACK', 'LIBLO', 'SNDFILE', 'XPM', 'NTK', 'NTK_IMAGES'],
+              uselib = [ 'JACK', 'LIBLO', 'SNDFILE', 'XPM', 'NTK', 'NTK_IMAGES', 'PTHREAD'],
               use = [ 'fl_widgets', 'nonlib'],
               install_path = '${BINDIR}')
 

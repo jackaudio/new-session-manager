@@ -22,5 +22,5 @@ test_press.C
 ''',
         includes = '.',
         export_incdirs = [ '.' 'FL' ],
-        uselib = 'NTK',
+        uselib = 'PTHREAD NTK',
         target = 'fl_widgets')

@@ -23,5 +23,5 @@ string_util.C
 ''',
         includes = '.',
         export_incdirs = [ '.', 'nonlib'],
-        uselib = 'LIBLO JACK',
+        uselib = 'LIBLO JACK PTHREAD',
         target = 'nonlib')

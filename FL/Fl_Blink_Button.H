@@ -17,6 +17,8 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
+#pragma once
+
 #include <FL/Fl_Button.H>
 #include <FL/Fl.H>
 
@@ -28,6 +30,7 @@ class Fl_Blink_Button : public Fl_Button
     bool _on;
     int _blink_interval;
     bool _blinking;
+    bool _ignore_input;
 
     static void
     update_cb ( void *v )
@@ -67,7 +70,7 @@ public:
         {
             _blinking = true;
             _on = false;
-
+            _ignore_input = false;
             _blink_interval = DEFAULT;
 
             type( FL_TOGGLE_BUTTON );
@@ -80,6 +83,16 @@ public:
                 Fl::remove_timeout( update_cb, this );
         }
     
+    void ignore_input ( bool b )
+        {
+            _ignore_input = b;
+        }
+
+    bool ignore_input ( void ) const
+        {
+            return _ignore_input;
+        }
+
     void blink ( bool b )
         {
             _blinking = b;
@@ -105,20 +118,22 @@ public:
 
     virtual void value ( float v )
         {
-            if ( v )
+            if ( v != value() )
             {
-                if ( _blinking )
-                    Fl::add_timeout( blink_interval_as_fraction_of_seceond(), update_cb, this );
-                Fl_Button::value( v );
-                redraw();
+                if ( v )
+                {
+                    if ( _blinking )
+                        Fl::add_timeout( blink_interval_as_fraction_of_seceond(), update_cb, this );
+                    Fl_Button::value( v );
+                    redraw();
+                }
+                else
+                {
+                    Fl_Button::value( v );
+                    Fl::remove_timeout( update_cb, this );
+                    redraw();
+                }
             }
-            else
-            {
-                Fl_Button::value( v );
-                Fl::remove_timeout( update_cb, this );
-                redraw();
-            }
-
         }
 
     virtual float value ( void ) { return Fl_Button::value(); }
@@ -126,7 +141,16 @@ public:
     virtual void
     draw ( void )
         {
-            draw_box( value() ? box() : down_box(), x(), y(), w(), h(), ( value() != 0 && _on ) ? selection_color() : color() );
+            draw_box( value() ? box() : down_box(), x(), y(), w(), h(),
+                      ( value() != 0 && _on ) ? selection_color() : color() );
             draw_label();
+        }
+
+    virtual int handle ( int m )
+        {
+            if ( _ignore_input )
+                return 0;
+            else
+                return Fl_Button::handle( m );
         }
 };

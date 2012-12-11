@@ -383,7 +383,7 @@ Track::log_children ( void ) const
     for ( int i = 0; i < annotation->children(); i++ )
         ((Sequence*)annotation->child( i ))->log_children();
 
-    for ( int i = 0; i < takes->children(); i++ )
+    for ( int i = takes->children(); i--; )
         ((Sequence*)takes->child( i ))->log_children();
 
     sequence()->log_children();

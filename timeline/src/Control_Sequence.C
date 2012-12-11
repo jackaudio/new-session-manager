@@ -28,6 +28,8 @@
 
 #include "Engine/Engine.H" // for lock()
 
+#include "Track_Header.H"
+
 #include <list>
 using std::list;
 
@@ -37,20 +39,34 @@ using std::list;
 
 #include "string_util.h"
 
+#include "FL/event_name.H"
+#include "FL/test_press.H"
+
 
+
+#define DAMAGE_SEQUENCE FL_DAMAGE_USER1
+#define DAMAGE_HEADER FL_DAMAGE_USER2
 
 bool Control_Sequence::draw_with_grid = true;
 bool Control_Sequence::draw_with_polygon = true;
+Fl_Widget * Control_Sequence::_highlighted = 0;
+
+Control_Sequence::Control_Sequence (  ) : Sequence( 0 )
+{
+    init();
+}
 
 
 
-Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
+Control_Sequence::Control_Sequence ( Track *track, const char *name ) : Sequence( 0 )
 {
     init();
 
     _track = track;
 
     mode( OSC );
+
+    this->name( name );
 
     if ( track )
         track->add( this );
@@ -61,8 +77,6 @@ Control_Sequence::Control_Sequence ( Track *track ) : Sequence( 0 )
 
 Control_Sequence::~Control_Sequence ( )
 {
-//    Fl::remove_timeout( &Control_Sequence::process_osc, this );
-
     Loggable::block_start();
 
     clear();
@@ -84,11 +98,13 @@ Control_Sequence::~Control_Sequence ( )
         _output = NULL;
     }
 
-    if ( _osc_output )
+    if ( _osc_output() )
     {
-        delete _osc_output;
+        OSC::Signal *t = _osc_output();
         
-        _osc_output = NULL;
+        _osc_output( NULL );
+        
+        delete t;
     }
 
     for ( list<char*>::iterator i = _persistent_osc_connections.begin();
@@ -103,13 +119,103 @@ Control_Sequence::~Control_Sequence ( )
     Loggable::block_end();
 }
 
+const char *
+Control_Sequence::name ( void ) const
+{
+    return Sequence::name();
+}
+
+void
+Control_Sequence::name ( const char *s )
+{
+    char *n = track()->get_unique_control_name( s );
+
+    Sequence::name( n );
+    header()->name_input->value( n );
+
+    if ( mode() == CV )
+        update_port_name();
+
+    redraw();
+}
+
+void
+Control_Sequence::update_port_name ( void )
+{
+    engine->lock();
+
+    bool needs_activation = false;
+    if ( ! _output )
+    {
+        _output = new JACK::Port( engine, JACK::Port::Output, track()->name(), track()->ncontrols(), "cv" );
+        needs_activation = true;
+    }
+    
+    if ( name() )
+    {
+        char n[1024];
+        snprintf( n, sizeof(n), "%s/%s-cv", track()->name(), name() );
+        
+        _output->name( n );
+    }
+
+    if ( needs_activation )
+    {
+        if ( ! _output->activate() )
+        {
+            fl_alert( "Could not create JACK port for control output on track \"%s\"", track()->name() );
+            delete _output;
+            _output = NULL;
+        }
+    }
+
+    engine->unlock();
+}
+
+void
+Control_Sequence::cb_button ( Fl_Widget *w, void *v )
+{
+    ((Control_Sequence*)v)->cb_button( w );
+}
+
+void
+Control_Sequence::cb_button ( Fl_Widget *w )
+{
+    Logger log(this);
+
+    if ( w == header()->name_input )
+    {
+        name( header()->name_input->value() );
+    }
+    else if ( w == header()->delete_button )
+    {
+        Fl::delete_widget( this );
+    }
+    /* else if ( w == header()->promote_button ) */
+    /* { */
+    /*     track()->sequence( this ); */
+    /* } */
+}
+
 void
 Control_Sequence::init ( void )
 {
+    labeltype( FL_NO_LABEL );
+    {
+        Control_Sequence_Header *o = new Control_Sequence_Header( x(), y(), Track::width(), 52 );
+
+        o->name_input->callback( cb_button, this );
+        o->delete_button->callback( cb_button, this );
+        /* o->promote_button->callback( cb_button, this ); */
+        Fl_Group::add( o );
+    }
+    resizable(0);
+
+    box( FL_NO_BOX );
+
     _track = NULL;
-    _highlighted = false;
     _output = NULL;
-    _osc_output = NULL;
+    __osc_output = NULL;
     _mode = (Mode)-1;
 
     interpolation( Linear );
@@ -130,15 +236,15 @@ Control_Sequence::get_unjournaled ( Log_Entry &e ) const
 {
     e.add( ":interpolation", _interpolation );
 
-    if ( _osc_output && _osc_output->connected() )
+    if ( _osc_output() && _osc_output()->connected() )
     {
-        DMESSAGE( "OSC Output connections: %i", _osc_output->noutput_connections() );
+        DMESSAGE( "OSC Output connections: %i", _osc_output()->noutput_connections() );
 
-        for ( int i = 0; i < _osc_output->noutput_connections(); ++i )
+        for ( int i = 0; i < _osc_output()->noutput_connections(); ++i )
         {
             char *s;
 
-            s = _osc_output->get_output_connection_peer_name_and_path(i);
+            s = _osc_output()->get_output_connection_peer_name_and_path(i);
 
             e.add( ":osc-output", s );
         
@@ -165,13 +271,6 @@ Control_Sequence::set ( Log_Entry &e )
             Track *t = (Track*)Loggable::find( i );
 
             assert( t );
-
-            _output = new JACK::Port( engine, JACK::Port::Output, t->name(), t->ncontrols(), "cv" );
-
-            if ( ! _output->activate() )
-            {
-                FATAL( "could not create JACK port" );
-            }
 
             t->add( this );
         }
@@ -205,34 +304,34 @@ Control_Sequence::mode ( Mode m )
         {
             _output->shutdown();
             
-            delete _output;
-            
+            JACK::Port *t = _output;
+
             _output = NULL;
+
+            delete t;
         }
     }
     else if ( OSC != m && mode() == OSC )
     {
-        if ( _osc_output )
+        if ( _osc_output() )
         {
-            delete _osc_output;
-            
-            _osc_output = NULL;
+            OSC::Signal *t = _osc_output();
+
+            _osc_output( NULL );
+
+            delete t;
         }
     }
 
     if ( CV == m && mode() != CV )
     {
-        _output = new JACK::Port( engine, JACK::Port::Output, track()->name(), track()->ncontrols(), "cv" );
-        
-        if ( ! _output->activate() )
-        {
-            fl_alert( "Could not create JACK port for control output on %s", track()->name() );
-            delete _output;
-            _output = NULL;
-        }
+        update_port_name();
+
+        header()->outputs_indicator->label( "cv" );
     }
     else if ( OSC == m && mode() != OSC )
     {
+        /* FIXME: use name here... */
         char *path;
         asprintf( &path, "/track/%s/control/%i", track()->name(), track()->ncontrols() );
 
@@ -242,11 +341,17 @@ Control_Sequence::mode ( Mode m )
 
         path = s;
         
-        _osc_output = timeline->osc->add_signal( path, OSC::Signal::Output, 0, 1, 0, NULL, NULL );
+        OSC::Signal *t = timeline->osc->add_signal( path, OSC::Signal::Output, 0, 1, 0, NULL, NULL );
         
         free( path );
 
+        _osc_output( t );
+
+        DMESSAGE( "osc_output: %p", _osc_output() );
+
         connect_osc();
+
+        header()->outputs_indicator->label( "osc" );
     }
 
     _mode = m;
@@ -255,27 +360,37 @@ Control_Sequence::mode ( Mode m )
 void
 Control_Sequence::draw_curve ( bool filled )
 {
-    const int bx = x();
+    const int bx = drawable_x();
     const int by = y() + Fl::box_dy( box() );
-    const int bw = w();
+    const int bw = drawable_w();
     const int bh = h() - Fl::box_dh( box() );
 
-    list <Sequence_Widget *>::const_iterator e = _widgets.end();
+    /* make a copy of the list for drawing and sort it... */
+    list <Sequence_Widget *> wl;
+
+    std::copy( _widgets.begin(), _widgets.end(), std::back_inserter( wl ) );
+
+//= new list <const Sequence_Widget *>(_widgets);
+    
+    wl.sort( Sequence_Widget::sort_func );
+
+    list <Sequence_Widget *>::const_iterator e = wl.end();
     e--;
 
-    if ( _widgets.size() )
-        for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin(); ; r++ )
+    if ( wl.size() )
+        for ( list <Sequence_Widget *>::const_iterator r = wl.begin(); ; r++ )
         {
             const int ry = (*r)->y();
+            const int rx = (*r)->line_x();
 
-            if ( r == _widgets.begin() )
+            if ( r == wl.begin() )
             {
                 if ( filled )
                     fl_vertex( bx, bh + by );
                 fl_vertex( bx, ry );
             }
 
-            fl_vertex( (*r)->line_x(), ry );
+            fl_vertex( rx, ry );
 
             if ( r == e )
             {
@@ -291,9 +406,9 @@ Control_Sequence::draw_curve ( bool filled )
 void
 Control_Sequence::draw_box ( void )
 {
-    const int bx = x();
+    const int bx = drawable_x();
     const int by = y();
-    const int bw = w();
+    const int bw = drawable_w();
     const int bh = h();
 
     int X, Y, W, H;
@@ -301,7 +416,9 @@ Control_Sequence::draw_box ( void )
     fl_clip_box( bx, by, bw, bh, X, Y, W, H );
 
 //    fl_rectf( X, Y, W, H, fl_color_average( FL_BLACK, FL_BACKGROUND_COLOR, 0.3 ) );
-    fl_rectf( X,Y,W,H, fl_color_average( FL_BLACK, FL_WHITE, 0.90 ) );
+//    fl_rectf( X,Y,W,H, fl_color_average( FL_BLACK, FL_WHITE, 0.90 ) );
+    fl_rectf( X,Y,W,H, FL_DARK1 );
+    
     
     if ( draw_with_grid )
     {
@@ -315,16 +432,12 @@ Control_Sequence::draw_box ( void )
     }
    
     timeline->draw_measure_lines( X, Y, W, H );
-
-    fl_color( FL_BLACK );
-    fl_line( x(), y(), x() + w(), y() );
-    fl_line( x(), y() + h() - 1, w(), y() + h() - 1 );
 }
 
 void
 Control_Sequence::draw ( void )
 {
-    fl_push_clip( x(), y(), w(), h() );
+    fl_push_clip( drawable_x(), y(), drawable_w(), h() );
     
     const int bx = x();
     const int by = y() + Fl::box_dy( box() );
@@ -356,7 +469,7 @@ Control_Sequence::draw ( void )
         }
 
         fl_color( fl_color_average( FL_WHITE, color, 0.5 ) );
-        fl_line_style( FL_SOLID, 3 );
+        fl_line_style( FL_SOLID, 2 );
         
         fl_begin_line();
         draw_curve( false );
@@ -365,15 +478,24 @@ Control_Sequence::draw ( void )
         fl_line_style( FL_SOLID, 0 );
     }
 
-    if ( interpolation() == None || _highlighted || Fl::focus() == this )
+    if ( interpolation() == None || _highlighted == this || Fl::focus() == this )
         for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
-            (*r)->draw_box();
+            if ( (*r)->x() + (*r)->w() >= bx && 
+                 (*r)->x() <= bw + bw )
+                (*r)->draw_box();
     else
         for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )
             if ( (*r)->selected() )
-                (*r)->draw_box();
+                if ( (*r)->x() + (*r)->w() >= bx && 
+                     (*r)->x() <= bw + bw )
+                    (*r)->draw_box();
 
     fl_pop_clip();
+    
+    if ( damage() & ~DAMAGE_SEQUENCE )
+    {
+        Fl_Group::draw_children();
+    }
 }
 
 #include "FL/menu_popup.H"
@@ -388,6 +510,8 @@ void
 Control_Sequence::menu_cb ( const Fl_Menu_ *m )
 {
     char picked[1024];
+
+    DMESSAGE( "Control_Sequence: menu_cb" );
 
     if ( ! m->mvalue() ) // || m->mvalue()->flags & FL_SUBMENU_POINTER || m->mvalue()->flags & FL_SUBMENU )
         return;
@@ -406,7 +530,7 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
         char *peer_and_path;
         asprintf( &peer_and_path, "%s:%s", peer_name, path );
 
-        if ( ! _osc_output->is_connected_to( ((OSC::Signal*)m->mvalue()->user_data()) ) )
+        if ( ! _osc_output()->is_connected_to( ((OSC::Signal*)m->mvalue()->user_data()) ) )
         {
             _persistent_osc_connections.push_back( peer_and_path );
             
@@ -414,7 +538,7 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
         }
         else
         {
-            timeline->osc->disconnect_signal( _osc_output, peer_name, path );
+            timeline->osc->disconnect_signal( _osc_output(), peer_name, path );
             
             for ( std::list<char*>::iterator i = _persistent_osc_connections.begin();
                   i != _persistent_osc_connections.end();
@@ -443,12 +567,7 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
 
     else if ( ! strcmp( picked, "/Rename" ) )
     {
-        const char *s = fl_input( "Input new name for control sequence:", name() );
-        
-        if ( s )
-            name( s );
-        
-        redraw();
+        ((Fl_Sometimes_Input*)header()->name_input)->take_focus();
     }
     else if ( !strcmp( picked, "/Remove" ) )
     {
@@ -478,14 +597,13 @@ Control_Sequence::connect_osc ( void )
               i != _persistent_osc_connections.end();
               ++i )
         {
-            if ( ! timeline->osc->connect_signal( _osc_output, *i ) )
+            if ( ! timeline->osc->connect_signal( _osc_output(), *i ) )
             {
 //                MESSAGE( "Failed to connect output %s to ", _osc_output->path(), *i );
             }
             else
             {
-                MESSAGE( "Connected output %s to %s", _osc_output->path(), *i );
-
+                MESSAGE( "Connected output %s to %s", _osc_output()->path(), *i );
 //                tooltip( _osc_connected_path );
             }
         }
@@ -493,20 +611,19 @@ Control_Sequence::connect_osc ( void )
 }
 
 void
-Control_Sequence::process_osc ( void *v )
-{
-    ((Control_Sequence*)v)->process_osc();
-}
-
-void
 Control_Sequence::process_osc ( void )
 {
-    if ( _osc_output && _osc_output->connected() )
+    if ( mode() != OSC )
+        return;
+   
+    header()->outputs_indicator->value( _osc_output() && _osc_output()->connected() );
+
+    if ( _osc_output() && _osc_output()->connected() )
     {
         sample_t buf[1];
         
         play( buf, (nframes_t)transport->frame, (nframes_t) 1 );
-        _osc_output->value( (float)buf[0] );
+        _osc_output()->value( (float)buf[0] );
     }
 }
 
@@ -544,7 +661,7 @@ Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig )
 
     peer_menu->add( s, 0, NULL, (void*)( sig ),
                     FL_MENU_TOGGLE |
-                    ( _osc_output->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) );
+                    ( _osc_output()->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) );
 
     free( path );
 
@@ -568,17 +685,37 @@ Control_Sequence::handle ( int m )
     switch ( m )
     {
         case FL_ENTER:
-            _highlighted = true;
-            fl_cursor( cursor() );
-            redraw();
-            return 1;
+            break;
         case FL_LEAVE:
-            _highlighted = false;
-            redraw();
-            return 1;
+            _highlighted = 0;
+            damage( DAMAGE_SEQUENCE );
+            fl_cursor( FL_CURSOR_DEFAULT );
+            break;
+        case FL_MOVE:
+            if ( Fl::event_x() > drawable_x() )
+            {
+                if ( _highlighted != this )
+                {
+                    _highlighted = this;
+                    damage( DAMAGE_SEQUENCE );
+                    fl_cursor( FL_CURSOR_CROSS );
+                }
+            }
+            else
+            {
+                if ( _highlighted == this )
+                {
+                    _highlighted = 0;
+                    damage( DAMAGE_SEQUENCE );
+                    fl_cursor( FL_CURSOR_DEFAULT );
+                }
+            }
         default:
             break;
     }
+
+    Logger log(this);
+
 
     int r = Sequence::handle( m );
 
@@ -589,43 +726,52 @@ Control_Sequence::handle ( int m )
     {
         case FL_PUSH:
         {
-            Logger log( this );
-
-            if ( Fl::event_button1() )
+            if ( test_press( FL_BUTTON1 ) &&
+                 Fl::event_x() >= Track::width() )
             {
-                Control_Point *r = new Control_Point( this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ), (float)(Fl::event_y() - y()) / h() );
+                timeline->wrlock();
+
+                Control_Point *r = new Control_Point( this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - drawable_x() ), (float)(Fl::event_y() - y()) / h() );
 
                 add( r );
+
+                timeline->unlock();
+
+                return 1;
             }
-            else if ( Fl::event_button3() && ! ( Fl::event_state() & ( FL_ALT | FL_SHIFT | FL_CTRL ) ) )
+            else if ( test_press( FL_BUTTON3 ) &&
+                      Fl::event_x() < Track::width() )
             {
+                Fl_Menu_Button *menu = new Fl_Menu_Button( 0, 0, 0, 0, "Control Sequence" );
 
-                Fl_Menu_Button menu( 0, 0, 0, 0, "Control Sequence" );
-
-                menu.clear();
+                menu->clear();
 
                 if ( mode() == OSC )
                 {
-                    add_osc_peers_to_menu( &menu, "Connect To" );
+                    add_osc_peers_to_menu( menu, "Connect To" );
                 }
                 
-                menu.add( "Interpolation/None", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == None ? FL_MENU_VALUE : 0 ) );
-                menu.add( "Interpolation/Linear", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == Linear ? FL_MENU_VALUE : 0 ) );
-                menu.add( "Mode/Control Voltage (JACK)", 0, 0, 0 ,FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) );
-                menu.add( "Mode/Control Signal (OSC)", 0, 0, 0 , FL_MENU_RADIO | ( mode() == OSC ? FL_MENU_VALUE : 0 ) );
+                menu->add( "Interpolation/None", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == None ? FL_MENU_VALUE : 0 ) );
+                menu->add( "Interpolation/Linear", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == Linear ? FL_MENU_VALUE : 0 ) );
+                menu->add( "Mode/Control Voltage (JACK)", 0, 0, 0 ,FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) );
+                menu->add( "Mode/Control Signal (OSC)", 0, 0, 0 , FL_MENU_RADIO | ( mode() == OSC ? FL_MENU_VALUE : 0 ) );
 
-                menu.add( "Rename", 0, 0, 0 );
-                menu.add( "Color", 0, 0, 0 );
-                menu.add( "Remove", 0, 0, 0 );
+                menu->add( "Rename", 0, 0, 0 );
+                menu->add( "Color", 0, 0, 0 );
+                menu->add( "Remove", 0, 0, 0 );
 
-                menu.callback( &Control_Sequence::menu_cb, (void*)this);
+                menu->callback( &Control_Sequence::menu_cb, (void*)this);
 
-                menu_popup( &menu, x(), y() );
+                menu_popup( menu );
+
+                delete menu;
+
+//                redraw();
 
                 return 1;
             }
 
-            return 1;
+            return 0;
         }
         default:
             return 0;

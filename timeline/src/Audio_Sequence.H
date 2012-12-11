@@ -24,6 +24,7 @@
 #include "Audio_Region.H"
 
 #include <FL/Fl_Input.H>
+class Audio_Sequence_Header;
 
 class Audio_Sequence : public Sequence
 {
@@ -36,17 +37,24 @@ protected:
 
     Audio_Sequence ( ) : Sequence( 0 )
         {
+            init();
         }
-
 
     void handle_widget_change ( nframes_t start, nframes_t length );
 
     void draw ( void );
     int handle ( int m );
 
+    static void cb_button ( Fl_Widget *w, void *v );
+    void cb_button ( Fl_Widget *w );
+
+    void init ( void );
+
 public:
 
     LOG_CREATE_FUNC( Audio_Sequence );
+
+    Audio_Sequence_Header * header ( void ) { return (Audio_Sequence_Header*)child(0); }
 
     Audio_Sequence ( Track *track, const char *name = 0 );
     ~Audio_Sequence ( );
@@ -66,6 +74,9 @@ public:
 
             return t;
         }
+
+    virtual void name ( const char *s );
+    virtual const char *name ( void ) const;
 
     const Audio_Region *capture_region ( void ) const;
 

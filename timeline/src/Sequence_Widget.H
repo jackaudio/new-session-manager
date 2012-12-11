@@ -140,8 +140,10 @@ protected:
     char *_label;
 
     Sequence *_sequence;                                              /* track this region belongs to */
+   
+    Range _range;                                      /* always used by RT/osc threads */
+    Range _dragging_range;                                          /* used when dragging */
 
-    Range _range;                                               /* range for playback */
     Range *_r;                                                  /* range for editing / display (points to the same thing as above, except for when dragging etc) */
 
     Fl_Color _color;                                            /* color of waveform */
@@ -199,8 +201,9 @@ public:
     
     int get_x( nframes_t frame ) const
         {
-            return  frame < timeline->xoffset ? _sequence->x() : min( _sequence->x() + _sequence->w(), _sequence->x() + timeline->ts_to_x( frame - timeline->xoffset ) );
-
+            return  frame < timeline->xoffset ?
+                _sequence->drawable_x() : 
+                min( _sequence->drawable_x() + _sequence->drawable_w(), _sequence->drawable_x() + timeline->ts_to_x( frame - timeline->xoffset ) );
         }
 
     virtual int x ( void ) const
@@ -211,7 +214,9 @@ public:
     /* use this as x() when you need to draw lines between widgets */
     int line_x ( void ) const
         {
-            return _r->start < timeline->xoffset ? max( -32767, _sequence->x() -  timeline->ts_to_x( timeline->xoffset - _r->start )) : min( 32767, _sequence->x() + timeline->ts_to_x( _r->start - timeline->xoffset ) );
+            return _r->start < timeline->xoffset ? 
+                max( -32767, _sequence->drawable_x() - timeline->ts_to_x( timeline->xoffset - _r->start )) :
+                min( 32767, _sequence->drawable_x() + timeline->ts_to_x( _r->start - timeline->xoffset ) );
         }
 
     virtual int w ( void ) const
@@ -224,7 +229,7 @@ public:
             else
                 rw = abs_w();
 
-            return min( rw, _sequence->w() );
+            return min( rw, _sequence->drawable_w() );
         }
 
     int abs_x ( void ) const { return timeline->ts_to_x( _r->start ); }
@@ -271,7 +276,7 @@ public:
     /** convert a screen x coord into an start into the region */
     nframes_t x_to_offset ( int X )
         {
-            return timeline->x_to_ts( scroll_x() + ( X - _sequence->x() ) ) - _r->start;
+            return timeline->x_to_ts( scroll_x() + ( X - _sequence->drawable_x() ) ) - _r->start;
         }
 
     int active_r ( void ) const { return _sequence->active_r(); }
@@ -299,11 +304,11 @@ public:
 
             if ( ! (align() & FL_ALIGN_INSIDE) )
             {
-                // FIXME: to better..
-                _sequence->redraw();
+                // FIXME: do better..
+                _sequence->damage( FL_DAMAGE_USER1 );
             }
             else
-                _sequence->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
+                _sequence->damage( FL_DAMAGE_USER1, x(), y(), w(), h() );
         }
 
     virtual void draw_box ( void );

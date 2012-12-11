@@ -18,6 +18,25 @@
 /*******************************************************************************/
 
 #include "Time_Sequence.H"
+#include "Track.H"
+#include <FL/Fl_Box.H>
+
+Time_Sequence::Time_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
+{
+    box( FL_FLAT_BOX );
+
+    { Fl_Box *o = new Fl_Box( X, Y, Track::width(), H );
+        o->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE );
+        o->labelsize( 12 );
+        o->labeltype( FL_NORMAL_LABEL );
+        o->label( "Time" );
+        Fl_Group::add( o );
+    }
+
+    resizable(0);
+}
+
+
 
 void
 Time_Sequence::handle_widget_change ( nframes_t start, nframes_t length )

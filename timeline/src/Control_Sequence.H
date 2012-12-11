@@ -28,6 +28,8 @@
 // class JACK::Port;
 #include "OSC/Endpoint.H"
 
+class Control_Sequence_Header;
+
 class Control_Sequence : public Sequence
 {
     /* not permitted */
@@ -44,22 +46,35 @@ public:
         MIDI
     };
 
-
 private:
 
+    static void cb_button ( Fl_Widget *w, void *v );
+    void cb_button ( Fl_Widget *w );
+    
     JACK::Port *_output;
 
     /* these are used to cache the saved osc connection until the
      * session is loaded, at which time we will reconnect */
     std::list<char*> _persistent_osc_connections;
     /* osc output port */
-    OSC::Signal *_osc_output;
+    volatile void *__osc_output;
+    
+    OSC::Signal *_osc_output ( void ) const
+        {
+            return (OSC::Signal *)__osc_output;
+        }
+
+    void _osc_output ( OSC::Signal * s)
+        {
+            __osc_output = s;
+        }
+
 
     static void peer_callback( const char *name, const OSC::Signal *sig, void *v );
     void peer_callback( const char *name, const OSC::Signal *sig );
     void add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix );
 
-    bool _highlighted;
+    static Fl_Widget *_highlighted;
 
     Curve_Type _interpolation;
 
@@ -75,28 +90,27 @@ private:
     float _rate; 
 
 protected:
-
+    
+    Control_Sequence ( );
 
     virtual void get ( Log_Entry &e ) const;
     virtual void get_unjournaled ( Log_Entry &e ) const;
     void set ( Log_Entry &e );
 
-    Control_Sequence (  ) : Sequence( 0 )
-        {
-            init();
-        }
-
-
     void draw_box ( void );
     void draw ( void );
     int handle ( int m );
 
+    void update_port_name ( void );
+
 public:
 
+    Control_Sequence_Header * header ( void ) { return (Control_Sequence_Header*)child(0); }
 
-    static void process_osc ( void *v );
+    virtual void name ( const char *s );
+    virtual const char *name ( void ) const;
+
     void process_osc ( void );
-
     void connect_osc ( void );
 
     static bool draw_with_polygon;
@@ -104,14 +118,18 @@ public:
 
     LOG_CREATE_FUNC( Control_Sequence );
 
-    Control_Sequence ( Track * );
+    Control_Sequence ( Track *, const char *name = 0 );
     ~Control_Sequence ( );
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_CROSS; }
 
     Curve_Type interpolation ( void ) const { return _interpolation; }
-    void interpolation ( Curve_Type v ) { _interpolation = v; }
-
+    void interpolation ( Curve_Type v ) 
+        { 
+            _interpolation = v; 
+            damage( FL_DAMAGE_USER1 );
+        }
+    
     Mode mode ( void ) const { return _mode; }
     void mode ( Mode v );
 

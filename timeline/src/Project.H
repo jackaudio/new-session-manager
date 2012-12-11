@@ -36,6 +36,7 @@ class Project
     static const char *_errstr[];
 
     static void make_engine ( void );
+
 public:
 
     enum
@@ -60,6 +61,6 @@ public:
     static int open ( const char *name );
     static bool open ( void ) { return _is_open; }
     static bool create ( const char *name, const char *template_name );
-
+    static void undo ( void );
     static const char *created_on ( void ) { return _created_on; }
 };

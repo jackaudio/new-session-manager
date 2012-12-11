@@ -39,10 +39,7 @@ public:
 
     Fl_Cursor cursor ( void ) const { return FL_CURSOR_DEFAULT; }
 
-    Time_Sequence ( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
-        {
-//            box( FL_UP_BOX );
-        }
+    Time_Sequence ( int X, int Y, int W, int H );
 
     time_sig
     time ( nframes_t when )

@@ -72,14 +72,11 @@ void
 Control_Point::draw_box ( void )
 {
     if ( selected() )
-    {
         fl_color( selection_color() );
-        fl_pie( x(), y(), w(), h(), 0, 360 );
-    }
+    else
+        fl_color( box_color() );
 
-    fl_color( box_color() );
-
-    fl_arc( x(), y(), w(), h(), 0, 360 );
+    fl_pie( x() - w() / 2, y() - h() / 2, w(), h(), 0, 360 );
 
     if ( this == Sequence_Widget::belowmouse() ||
          this == Sequence_Widget::pushed() )
@@ -111,25 +108,17 @@ Control_Point::handle ( int m )
 
     switch ( m )
     {
-
         case FL_RELEASE:
-            sequence()->sort();
-            redraw();
-            break;
-        case FL_ENTER:
-        case FL_LEAVE:
             redraw();
             break;
         case FL_DRAG:
         {
-            sequence()->sort();
-
             if ( nselected() > 1 )
                 // only allow horizontal movement when part of a selection...
                 break;
 
             int Y = Fl::event_y() - parent()->y();
-
+            
             if ( Y >= 0 && Y < parent()->h() )
             {
                 _y = (float)Y / parent()->h();

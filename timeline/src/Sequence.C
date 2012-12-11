@@ -39,7 +39,7 @@ queue <Sequence_Widget *> Sequence::_delete_queue;
 
 
 
-Sequence::Sequence ( Track *track, const char *name ) : Fl_Widget( 0, 0, 0, 0 ), Loggable( true  )
+Sequence::Sequence ( Track *track, const char *name ) : Fl_Group( 0, 0, 0, 0 ), Loggable( true  )
 {
     init();
 
@@ -51,7 +51,7 @@ Sequence::Sequence ( Track *track, const char *name ) : Fl_Widget( 0, 0, 0, 0 ),
 //    log_create();
 }
 
-Sequence::Sequence ( int X, int Y, int W, int H ) : Fl_Widget( X, Y, W, H ), Loggable( false )
+Sequence::Sequence ( int X, int Y, int W, int H ) : Fl_Group( X, Y, W, H ), Loggable( false )
 {
     init();
 }
@@ -67,8 +67,10 @@ Sequence::init ( void )
     color(  FL_BACKGROUND_COLOR );
     align( FL_ALIGN_LEFT );
 
+    end();
 //    clear_visible_focus();
 }
+
 
 Sequence::~Sequence (  )
 {
@@ -85,6 +87,18 @@ Sequence::~Sequence (  )
 }
 
 
+
+int
+Sequence::drawable_w ( void ) const
+{
+    return w() - Track::width();
+}
+
+int
+Sequence::drawable_x ( void ) const
+{
+    return x() + Track::width();
+}
 
 void
 Sequence::log_children ( void ) const
@@ -120,11 +134,7 @@ Sequence::x_to_offset ( int X )
 void
 Sequence::sort ( void )
 {
-    timeline->wrlock();
-
     _widgets.sort( Sequence_Widget::sort_func );
-
-    timeline->unlock();
 }
 
 /** return a pointer to the widget that /r/ overlaps, or NULL if none. */
@@ -145,6 +155,7 @@ void
 Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
     sort();
+    timeline->damage_sequence();
 //    timeline->update_length( start + length );
 }
 
@@ -164,7 +175,7 @@ Sequence::widget_at ( nframes_t ts, int Y )
 Sequence_Widget *
 Sequence::event_widget ( void )
 {
-    nframes_t ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() );
+    nframes_t ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - drawable_x() );
     return widget_at( ets, Fl::event_y() );
 }
 
@@ -180,12 +191,9 @@ Sequence::add ( Sequence_Widget *r )
 //        r->track()->redraw();
     }
 
-    timeline->wrlock();
-
     r->sequence( this );
-    _widgets.push_back( r );
 
-    timeline->unlock();
+    _widgets.push_back( r );
 
     handle_widget_change( r->start(), r->length() );
 }
@@ -193,11 +201,7 @@ Sequence::add ( Sequence_Widget *r )
 void
 Sequence::remove ( Sequence_Widget *r )
 {
-    timeline->wrlock();
-
     _widgets.remove( r );
-
-    timeline->unlock();
 
     handle_widget_change( r->start(), r->length() );
 }
@@ -259,13 +263,23 @@ void
 Sequence::draw_box ( void )
 {
     /* draw the box with the ends cut off. */
-    Fl_Widget::draw_box( box(), x() - Fl::box_dx( box() ) - 1, y(), w() + Fl::box_dw( box() ) + 2, h(), color() );
+    Fl_Group::draw_box( box(), x() - Fl::box_dx( box() )  - 1, y(), w() + Fl::box_dw( box() ) + 2, h(), color() );
 }
                                                             
 void
 Sequence::draw ( void )
 {
-    fl_push_clip( x(), y(), w(), h() );
+    if ( damage() & ~FL_DAMAGE_USER1 )
+    {
+        Fl_Boxtype b = box();
+        box( FL_NO_BOX );
+        
+        Fl_Group::draw();
+        
+        box( b );
+    }
+
+    fl_push_clip( drawable_x(), y(), drawable_w(), h() );
 
     draw_box();
 
@@ -353,17 +367,17 @@ Sequence::handle ( int m )
             /* garbage from overlay window */
             return 0;
         case FL_FOCUS:
-            Fl_Widget::handle( m );
+            Fl_Group::handle( m );
             redraw();
             return 1;
         case FL_UNFOCUS:
-            Fl_Widget::handle( m );
+            Fl_Group::handle( m );
             redraw();
             return 1;
         case FL_LEAVE:
 //            DMESSAGE( "leave" );
             fl_cursor( FL_CURSOR_DEFAULT );
-            Fl_Widget::handle( m );
+            Fl_Group::handle( m );
             return 1;
         case FL_DND_DRAG:
             return 1;
@@ -374,19 +388,25 @@ Sequence::handle ( int m )
                 if ( Sequence_Widget::pushed()->sequence()->class_name() == class_name() )
                 {
                     /* accept objects dragged from other sequences of this type */
+
+                    timeline->wrlock();
+
                     add( Sequence_Widget::pushed() );
-                    redraw();
+
+                    timeline->unlock();
+
+                    damage( FL_DAMAGE_USER1 );
 
                     fl_cursor( FL_CURSOR_MOVE );
                 }
                 else
-                    fl_cursor( (Fl_Cursor)1 );
+                    fl_cursor( FL_CURSOR_DEFAULT );
             }
             else
                 if ( ! event_widget() )
                     fl_cursor( cursor() );
 
-            Fl_Widget::handle( m );
+            Fl_Group::handle( m );
 
             return 1;
         case FL_DND_ENTER:
@@ -443,6 +463,8 @@ Sequence::handle ( int m )
 
                 Loggable::block_start();
 
+                timeline->wrlock();
+
                 while ( _delete_queue.size() )
                 {
 
@@ -460,6 +482,8 @@ Sequence::handle ( int m )
                     delete t;
                 }
 
+                timeline->unlock();
+
                 Loggable::block_end();
 
                 if ( m == FL_PUSH )
@@ -475,7 +499,7 @@ Sequence::handle ( int m )
                     Sequence_Widget::select_none();
                 }
 
-                return Fl_Widget::handle( m );
+                return Fl_Group::handle( m );
             }
         }
     }

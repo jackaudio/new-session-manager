@@ -60,7 +60,7 @@ protected:
 
     Annotation_Sequence ( ) : Sequence ( 0 )
         {
-            color( fl_darker( FL_GREEN ) );
+            color( FL_DARK1 );
         }
 
 public:
@@ -72,16 +72,12 @@ public:
 
     Annotation_Sequence ( Track *track ) : Sequence( track )
         {
-            color( fl_darker(  FL_GREEN ) );
+            color( FL_DARK1 );
 
             log_create();
         }
 
-/*     Annotation_Sequence ( int X, int Y, int W, int H ) : Sequence ( 0 ) */
-/*         { */
-/*         } */
-
-    ~Annotation_Sequence ( )
+    virtual ~Annotation_Sequence ( )
         {
             Loggable::block_start();
 
@@ -108,12 +104,12 @@ public:
 
                     if ( Fl::event_button1() )
                     {
-                        add( new Annotation_Point( this, x_to_offset( Fl::event_x() ), "mark" ) );
+                        add( new Annotation_Point( this, x_to_offset( Fl::event_x() - drawable_x() ), "mark" ) );
                         redraw();
                     }
                     if ( Fl::event_button3() && Fl::event_shift() )
                     {
-                        Annotation_Region *r = new Annotation_Region( this, x_to_offset( Fl::event_x() ), "mark" );
+                        Annotation_Region *r = new Annotation_Region( this, x_to_offset( Fl::event_x() - drawable_x() ), "mark" );
 
                         add( r );
 

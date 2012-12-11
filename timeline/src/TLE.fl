@@ -249,7 +249,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label {Non DAW : Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	timeline->command_quit();} open
-      xywh {559 209 1025 770} type Double resizable
+      xywh {262 208 1025 770} type Double resizable
       class TLE_Window xclass Non_DAW size_range {900 300 0 0} visible
     } {
       Fl_Group {} {
@@ -396,7 +396,7 @@ Project::compact();}
           } {
             MenuItem {} {
               label Undo
-              callback {Loggable::undo();}
+              callback {Project::undo();}
               xywh {5 5 40 25} shortcut 0x4007a divider
             }
             MenuItem {} {
@@ -719,34 +719,38 @@ ab.run();}
         } {
           Fl_Button solo_blinker {
             label SOLO selected
-            xywh {800 33 50 15} box BORDER_BOX down_box BORDER_BOX color 74 selection_color 92 labelfont 1 labelsize 11 labelcolor 32 deactivate
+            xywh {800 33 50 15} box BORDER_BOX down_box BORDER_BOX color 74 selection_color 92 labelfont 1 labelsize 11 labelcolor 32
             code0 {\#include "FL/Fl_Blink_Button.H"}
             code1 {o->box( FL_ASYM_BOX );}
             code2 {o->down_box( FL_ASYM_BOX );}
+            code3 {o->ignore_input( true );}
             class Fl_Blink_Button
           }
           Fl_Button rec_blinker {
             label REC selected
-            xywh {800 53 50 15} box BORDER_BOX down_box BORDER_BOX color 72 selection_color 88 labelfont 1 labelsize 11 labelcolor 32 deactivate
+            xywh {800 53 50 15} box BORDER_BOX down_box BORDER_BOX color 72 selection_color 88 labelfont 1 labelsize 11 labelcolor 32
             code0 {\#include "FL/Fl_Blink_Button.H"}
             code1 {o->box( FL_ASYM_BOX );}
             code2 {o->down_box( FL_ASYM_BOX );}
+            code3 {o->ignore_input( true );}
             class Fl_Blink_Button
           }
           Fl_Button selected_blinker {
             label SEL selected
-            xywh {745 53 50 15} box BORDER_BOX down_box BORDER_BOX color 13 selection_color 5 labelfont 1 labelsize 11 labelcolor 32 deactivate
+            xywh {745 53 50 15} box BORDER_BOX down_box BORDER_BOX color 13 selection_color 5 labelfont 1 labelsize 11 labelcolor 32
             code0 {\#include "FL/Fl_Blink_Button.H"}
             code1 {o->box( FL_ASYM_BOX );}
             code2 {o->down_box( FL_ASYM_BOX );}
+            code3 {o->ignore_input( true );}
             class Fl_Blink_Button
           }
           Fl_Button seek_blinker {
             label SEEK selected
-            xywh {745 33 50 15} box BORDER_BOX down_box BORDER_BOX color 10 selection_color 2 labelfont 1 labelsize 11 labelcolor 32 deactivate
+            xywh {745 33 50 15} box BORDER_BOX down_box BORDER_BOX color 10 selection_color 2 labelfont 1 labelsize 11 labelcolor 32
             code0 {\#include "FL/Fl_Blink_Button.H"}
             code1 {o->box( FL_ASYM_BOX );}
             code2 {o->down_box( FL_ASYM_BOX );}
+            code3 {o->ignore_input( true );}
             class Fl_Blink_Button
           }
         }
@@ -995,7 +999,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {1240 261 520 775} type Double modal visible
+      private xywh {1242 261 520 775} type Double modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}

@@ -65,6 +65,7 @@ Sequence_Widget::Sequence_Widget ( const Sequence_Widget &rhs ) : Loggable( rhs 
     _sequence = rhs._sequence;
 
     _range = rhs._range;
+    _dragging_range = rhs._dragging_range;
     _r = &_range;
 
     _color = rhs._color;
@@ -79,6 +80,7 @@ Sequence_Widget::operator= ( const Sequence_Widget &rhs )
 
     _r         = &_range;
     _range     = rhs._range;
+    _dragging_range = rhs._dragging_range;
     _sequence     = rhs._sequence;
     _box_color = rhs._box_color;
     _color     = rhs._color;
@@ -157,7 +159,7 @@ Sequence_Widget::set ( Log_Entry &e )
     if ( _sequence )
     {
         _sequence->handle_widget_change( _r->start, _r->length );
-        _sequence->redraw();
+        _sequence->damage( FL_DAMAGE_USER1 );
     }
 }
 
@@ -168,7 +170,12 @@ Sequence_Widget::begin_drag ( const Drag &d )
 
     timeline->rdlock();
 
-    _r = new Range( _range );
+    /* copy current values */
+    
+    _dragging_range = _range;
+
+    /* tell display to use temporary */
+    _r = &_dragging_range;
 
     timeline->unlock();
 }
@@ -176,20 +183,21 @@ Sequence_Widget::begin_drag ( const Drag &d )
 void
 Sequence_Widget::end_drag ( void )
 {
+    /* swap in the new value */
+    /* go back to playback and display using same values */
+    
     timeline->wrlock();
 
-    /* swap in the new value */
-    _range = *_r;
-
-    timeline->unlock();
-
-    delete _r;
+    _range = _dragging_range;
     _r = &_range;
 
     delete _drag;
     _drag = NULL;
 
+    /* this will result in a sort */
     sequence()->handle_widget_change( _r->start, _r->length );
+
+    timeline->unlock();
 }
 
 /** set position of widget on the timeline. */
@@ -392,7 +400,10 @@ Sequence_Widget::handle ( int m )
             /* deletion */
             if ( test_press( FL_BUTTON3 + FL_CTRL ) )
             {
+                timeline->wrlock();
                 remove();
+                timeline->unlock();
+
                 return 1;
             }
             else if ( test_press( FL_BUTTON1 ) || test_press( FL_BUTTON1 + FL_CTRL ) )
@@ -476,18 +487,17 @@ Sequence_Widget::handle ( int m )
 
 //                    timeline->update_length( start() + length() );
 
-                    /* FIXME: why isn't this enough? */
-                    sequence()->redraw();
+                    sequence()->damage( FL_DAMAGE_USER1 );
                 }
 
                 if ( ! selected() || _selection.size() == 1 )
                 {
                     /* track jumping */
-                    if ( Y > y() + h() || Y < y() )
+                    if ( Y > _sequence->y() + _sequence->h() || Y < _sequence->y() )
                     {
                         Track *t = timeline->track_under( Y );
 
-                        fl_cursor( (Fl_Cursor)1 );
+                        fl_cursor( FL_CURSOR_HAND );
 
                         if ( t )
                             t->handle( FL_ENTER );

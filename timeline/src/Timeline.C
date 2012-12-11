@@ -321,7 +321,7 @@ Timeline::cb_scroll ( Fl_Widget *w )
 
     if ( _old_yposition != panzoomer->y_value() )
     {
-        tracks->position( tracks->x(), (rulers->y() + rulers->h()) - panzoomer->y_value() );  
+        tracks->position( tracks->x(), track_window->y() - (int)panzoomer->y_value() );  
         damage( FL_DAMAGE_SCROLL );
     }
 
@@ -615,6 +615,8 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
 
 /*     menu->add( "Add Track", 0, 0, 0  ); */
 
+    int ruler_height = 0;
+
     menu->add( "Add audio track", 'a', 0, 0 );
     menu->add( "Tempo from edit (beat)", 't', 0, 0 );
     menu->add( "Tempo from edit (bar)", FL_CTRL + 't', 0, 0 );
@@ -637,17 +639,15 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
 
 
     {
-        Fl_Pack *o = new Fl_Pack( X + Track::width(), Y, (W - Track::width()), 1, "rulers" );
+        Fl_Pack *o = new Fl_Pack( X, Y, W, 1, "rulers" );
         o->type( Fl_Pack::VERTICAL );
 
         {
             Tempo_Sequence *o = new Tempo_Sequence( 0, 0, 800, 18 );
 
-            o->color( FL_GRAY );
+            o->color( FL_DARK1 );
 
-            o->labelsize( 12 );
-            o->label( "Tempo" );
-            o->align( FL_ALIGN_LEFT );
+            /* o->label( "Tempo" ); */
 
             tempo_track = o;
         }
@@ -655,11 +655,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
         {
             Time_Sequence *o = new Time_Sequence( 0, 24, 800, 18 );
 
-            o->color( fl_lighter( FL_GRAY ) );
+            o->color( FL_DARK2 );
 
-            o->labelsize( 12 );
-            o->label( "Time" );
-            o->align( FL_ALIGN_LEFT );
+            /* o->name( "Time" ); */
 
             time_track = o;
         }
@@ -667,11 +665,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
         {
             Cursor_Sequence *o = new Cursor_Sequence( 0, 24, 800, 18 );
 
-            o->color( FL_GRAY );
+            o->color( FL_DARK1 );
 
-            o->labelsize( 12 );
             o->label( "Edit" );
-            o->align( FL_ALIGN_LEFT );
             o->cursor_color( FL_YELLOW );
 
             edit_cursor_track = o;
@@ -680,11 +676,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
         {
             Cursor_Sequence *o = new Cursor_Sequence( 0, 24, 800, 18 );
 
-            o->color( fl_lighter( FL_GRAY ) );
+            o->color( FL_DARK2 );
 
-            o->labelsize( 12 );
             o->label( "Punch" );
-            o->align( FL_ALIGN_LEFT );
             o->cursor_color( FL_RED );
 
             punch_cursor_track = o;
@@ -693,11 +687,9 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
         {
             Cursor_Sequence *o = new Cursor_Sequence( 0, 24, 800, 18 );
 
-            o->color( FL_GRAY );
+            o->color( FL_DARK1 );
 
-            o->labelsize( 12 );
             o->label( "Playback" );
-            o->align( FL_ALIGN_LEFT );
             o->cursor_color( FL_GREEN );
 
             play_cursor_track = o;
@@ -715,16 +707,22 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
 /*         } */
 
         rulers = o;
-        o->size( o->w(), o->child( 0 )->h() * o->children() );
         o->end();
+
+        ruler_height = o->child( 0 )->h() * o->children();
+
+        DMESSAGE( "Ruler height: %i", ruler_height );
+
+        o->size( o->w(), ruler_height );
     }
 
     { 
-        Fl_Tile *o = new Fl_Tile( X, rulers->y() + rulers->h(), W, H - rulers->h() );
+        Fl_Tile *o = new Fl_Tile( X, rulers->y() + ruler_height, W, H - rulers->h() );
         o->box(FL_FLAT_BOX);
         o->when( FL_WHEN_RELEASE );
         { 
             Fl_Group *o = new Fl_Group( X, rulers->y() + rulers->h(), W, ( H - rulers->h() ) - 50 );
+            o->box(FL_FLAT_BOX);
             {
                 _fpp = 8;
                 Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W, 1 );
@@ -733,7 +731,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
                 
                 tracks = o;
                 o->end();
-                resizable( o );
+                /* Fl_Group::current()->resizable( o ); */
             }
             
             o->end();
@@ -753,14 +751,13 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
             o->type( FL_HORIZONTAL );
             o->callback( cb_scroll, this );
         
-            //resizable(o);
             panzoomer = o;
         }
         
         Fl_Box *spacebox = new Fl_Box( 0,0,1,1 );
 
         o->end();
-        o->resizable( spacebox);
+        o->resizable( spacebox );
 
         spacebox->resize( X, rulers->y() + ( ( H - rulers->h() ) - 50 ),
             W, 125 );
@@ -768,19 +765,14 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
         o->position( panzoomer->x(), panzoomer->y(),
                      panzoomer->x(), track_window->y() + track_window->h() );
 
-        resizable(o);
         tile = o;
+        resizable(o);
     }
 
     /* rulers go above tracks... */
     add( rulers );
 
-    /* make sure scrollbars are on top */
-    /* add( panzoomer ); */
-
-//    vscroll->range( 0, tracks->h() );
-
-    redraw();
+    /* redraw(); */
 
     end();
 
@@ -1112,7 +1104,7 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H )
 }
 
 void
-Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
+Timeline::draw_clip_rulers ( void * v, int X, int Y, int W, int H )
 {
     Timeline *tl = (Timeline *)v;
 
@@ -1120,9 +1112,25 @@ Timeline::draw_clip ( void * v, int X, int Y, int W, int H )
 
     tl->draw_box();
 
+    tl->draw_child( *tl->rulers );
+
+    fl_pop_clip();
+}
+
+void
+Timeline::draw_clip_tracks ( void * v, int X, int Y, int W, int H )
+{
+    Timeline *tl = (Timeline *)v;
+
+    fl_push_clip( X, Y, W, H );
+
+    tl->draw_box();
+
+    fl_damage_t pzd = tl->panzoomer->damage();
+
     tl->draw_child( *tl->tile );
 
-    tl->draw_child( *tl->rulers );
+    tl->panzoomer->damage( pzd );
 
     tl->draw_cursors();
 
@@ -1137,25 +1145,25 @@ Timeline::resize ( int X, int Y, int W, int H )
 
     tile->resizable()->resize( X,
                                tile->y() + tile->h() - 150,
-                      W, 125 );
-
+                               W, 125 );
+    
     /* why is THIS necessary? */
-    panzoomer->resize( X, 
+    panzoomer->resize( X,
                        tile->y() + tile->h() - 50,
                        W,
                        50 );
 
-    track_window->resize( X, 
+    track_window->resize( X,
                           tile->y(),
                           W,
                           tile->h() - 50);
 
-    rulers->resize( X + Track::width(),
-                    rulers->y(),
-                    W - Track::width(),
-                    rulers->h() );
+    /* /\* rulers->resize( X, *\/ */
+    /* /\*                 rulers->y(), *\/ */
+    /* /\*                 W, *\/ */
+    /* /\*                 rulers->h() ); *\/ */
 
-    tile->redraw();
+    /* tile->redraw(); */
 }
 
 
@@ -1245,7 +1253,7 @@ Timeline::draw ( void )
     adjust_panzoomer();
 
     int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
-    int dy = _old_yposition - panzoomer->y_value();
+    int dy = _old_yposition - (int)panzoomer->y_value();
 
     int c = damage();
 
@@ -1253,30 +1261,37 @@ Timeline::draw ( void )
 
     if ( c & FL_DAMAGE_SCROLL )
     {
-        /* if ( dx && dy ) */
-        /* { */
-        /*     /\* FIXME: scrolling both at once is... problematic *\/ */
-    
-        /*     c |= FL_DAMAGE_ALL; */
-        /* } */
-        /* else */
         {
          /*         draw_child( *rulers ); */
 
             Y = track_window->y();
             H = track_window->h();
             
-            if ( dy )
-                fl_scroll( X, Y, Track::width(), H, 0, dy, draw_clip, this );
             
             if ( dx )
-                fl_scroll( rulers->x(), rulers->y(), rulers->w(), rulers->h(), dx, 0, draw_clip, this );
-            
-            fl_scroll( X + Track::width(), Y, W - Track::width(), H, dx, dy, draw_clip, this );
+                /* when scrolling horizontally, scroll rulers */
+                fl_scroll( rulers->x() + Track::width(), 
+                           rulers->y(),
+                           rulers->w(),
+                           rulers->h(), dx, 0, draw_clip_rulers, this );
+ 
+            if ( dy )
+                /* when scrolling vertically, also scroll track headers */
+                fl_scroll(
+                    X,
+                    Y, 
+                    Track::width(), 
+                    H, 0, dy, draw_clip_tracks, this );
+           
+            /* scroll sequences */
+            fl_scroll( X + Track::width(),
+                       Y,
+                       W - Track::width(),
+                       H, dx, dy, draw_clip_tracks, this );
         }
     }
 
-    panzoomer->redraw();
+//    panzoomer->redraw();
     
     if ( c & FL_DAMAGE_ALL )
     {
@@ -1311,6 +1326,10 @@ Timeline::draw ( void )
                       tile->w(),
                       tile->h() );
 
+        /* redraw the panzoomer preview whenever tracks change */
+        /* if ( tracks->damage() ) */
+        /*     panzoomer->redraw(); */
+
         update_child(*tile);
         
         draw_cursors();        
@@ -1327,6 +1346,12 @@ done:
 
     _old_xposition = xoffset;
     _old_yposition = panzoomer->y_value();
+}
+
+void
+Timeline::damage_sequence ( void )
+{
+    panzoomer->redraw();
 }
 
 /** draw a single cursor line at /frame/ with color /color/ using symbol routine /symbol/ for the cap */
@@ -1726,7 +1751,7 @@ Timeline::track_by_name ( const char *name )
     {
         Track *t = (Track*)tracks->child( i );
 
-        if ( ! strcmp( name, t->name() ) )
+        if ( name && t->name() && ! strcmp( name, t->name() ) )
             return t;
     }
 
@@ -1831,8 +1856,6 @@ Timeline::add_track ( Track *track )
 {
     DMESSAGE( "added new track to the timeline" );
 
-    wrlock();
-
     engine->lock();
 
     tracks->add( track );
@@ -1840,8 +1863,6 @@ Timeline::add_track ( Track *track )
 //    update_track_order();
 
     engine->unlock();
-
-    unlock();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
@@ -1854,8 +1875,6 @@ Timeline::insert_track ( Track *track, int n )
     if ( n > tracks->children() || n < 0 )
         return;
 
-    wrlock();
-
     engine->lock();
 
     tracks->insert( *track, n );
@@ -1865,8 +1884,6 @@ Timeline::insert_track ( Track *track, int n )
     tracks->redraw();
 
     engine->unlock();
-
-    unlock();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
 //    redraw();    
@@ -1882,8 +1899,6 @@ compare_tracks ( Track *a, Track *b )
 void
 Timeline::apply_track_order ( void )
 {
-    wrlock();
-
     engine->lock();
 
     std::list<Track*> tl;
@@ -1904,8 +1919,6 @@ Timeline::apply_track_order ( void )
     update_track_order();
 
     engine->unlock();
-    
-    unlock();
 }
 
 void
@@ -1939,8 +1952,6 @@ Timeline::remove_track ( Track *track )
 {
     DMESSAGE( "removed track from the timeline" );
 
-    wrlock();
-
     engine->lock();
 
     /* FIXME: what to do about track contents? */
@@ -1949,9 +1960,6 @@ Timeline::remove_track ( Track *track )
     update_track_order();
 
     engine->unlock();
-
-    unlock();
-
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
@@ -2124,6 +2132,8 @@ Timeline::handle_peer_scan_complete ( void *o )
 void
 Timeline::connect_osc ( void )
 {
+    wrlock();
+
     /* try to (re)connect OSC signals */
     for ( int i = tracks->children(); i-- ; )
     {
@@ -2131,6 +2141,8 @@ Timeline::connect_osc ( void )
 
         t->connect_osc();
     }
+
+    unlock();
 }
 
 void
@@ -2158,6 +2170,7 @@ Timeline::process_osc ( void )
 {
     THREAD_ASSERT( OSC );
 
+    /* FIXME: is holding this lock a problem for recording? */
     rdlock();
 
     /* reconnect OSC signals */
@@ -2167,7 +2180,7 @@ Timeline::process_osc ( void )
         
         t->process_osc();
     }
-    
+
     unlock();
 }
 

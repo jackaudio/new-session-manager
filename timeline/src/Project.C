@@ -128,6 +128,14 @@ Project::write_info ( void )
     return true;
 }
 
+void
+Project::undo ( void )
+{
+    timeline->wrlock();
+    Loggable::undo();
+    timeline->unlock();
+}
+
 bool
 Project::read_info ( int *version, nframes_t *sample_rate, char **creation_date, char **created_by )
 {
@@ -194,8 +202,11 @@ Project::close ( void )
 
     if ( ! save() )
         return false;
-
+    
+    timeline->wrlock();
     Loggable::close();
+    timeline->unlock();
+
 //    write_info();
 
     _is_open = false;
@@ -300,11 +311,13 @@ Project::open ( const char *name )
     if ( ! engine )
         make_engine();
  
+    timeline->wrlock();
     {
         Block_Timer timer( "Replayed journal" );
         if ( ! Loggable::open( "history" ) )
             return E_INVALID;
     }
+    timeline->unlock();
 
     /* /\* really a good idea? *\/ */
     /* timeline->sample_rate( rate ); */

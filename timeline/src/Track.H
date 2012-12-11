@@ -85,8 +85,8 @@ public:
             }
     };
 
-    Fl_Color color ( void ) const { return child(0)->color(); }
-    void color ( Fl_Color c ) { child(0)->color( c ); }
+    virtual Fl_Color color ( void ) const { return child(0)->color(); }
+    virtual void color ( Fl_Color c ) { child(0)->color( c ); }
 
     bool operator< ( const Track &rhs ) const
         {
@@ -118,8 +118,6 @@ private:
     Track ( );
     void init ( void );
 
-    void internal_draw ( void );
-
 protected:
 
     void get ( Log_Entry &e ) const;
@@ -130,6 +128,8 @@ protected:
     Fl_Sometimes_Pack  *control;
     Fl_Blink_Button    *connected_indicator;
 
+    Fl_Group           *controls_heading;
+    Fl_Group           *takes_heading;
 
 public:
 
@@ -156,6 +156,9 @@ public:
     /* for loggable */
     LOG_CREATE_FUNC( Track );
 
+    Control_Sequence * control_by_name ( const char *name );
+    char * get_unique_control_name ( const char *name );
+
     void add ( Annotation_Sequence *t );
     void remove ( Annotation_Sequence *t );
 
@@ -175,7 +178,7 @@ public:
 
     int height ( void ) const
         {
-            static int table[] = { 27, 54, 80, 150, 300 };
+            static int table[] = { 25, 54, 80, 150, 300 };
 
             return table[ _size ];
         }
@@ -201,20 +204,9 @@ public:
             return overlay_controls_button->value();
         }
 
-    void name ( const char *name )
-        {
-            if ( _name )
-                free( _name );
+    void name ( const char *name );
+    const char * name ( void ) const;
 
-            _name = strdup( name );
-
-            if ( name_field )
-                name_field->value( _name );
-
-            update_port_names();
-        }
-
-    const char * name ( void ) const { return _name; }
     bool mute ( void ) const { return mute_button->value(); }
     void mute ( bool b ) { mute_button->value( b ); }
     bool solo ( void ) const { return solo_button->value(); }

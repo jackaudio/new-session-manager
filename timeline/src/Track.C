@@ -29,6 +29,7 @@
 #include "Transport.H"
 
 #include "../FL/Fl_Sometimes_Input.H"
+#include "../FL/Fl_Sometimes_Pack.H"
 #include <FL/fl_ask.H>
 #include <FL/Fl_Color_Chooser.H>
 #include <FL/Fl.H>
@@ -53,70 +54,6 @@ random_color ( void )
 }
 
 static Fl_Menu_Button _menu( 0, 0, 0, 0, "Track" );
-
-class Fl_Sometimes_Pack : public Fl_Pack
-{
-    bool _pack;
-
-public:
-
-    Fl_Sometimes_Pack ( int X, int Y, int W, int H, const char *L=0 ) : Fl_Pack(X,Y,W,H,L)
-        {
-            _pack = true;
-        }
-
-    virtual ~Fl_Sometimes_Pack ( ) 
-        {
-        }
-
-    void pack ( bool b )
-        {
-            if ( b != _pack )
-                redraw();
-
-            _pack = b;
-        }
-
-    bool pack ( void ) const
-        {
-            return _pack;
-        }
-
-    virtual void draw ( void )
-        {
-            /* draw_box(); */
-
-            if ( _pack )
-            {
-                for ( int i = 0; i < children(); i++ )
-                {
-                    Fl_Widget *o = child( i );
-                    
-                    o->box( FL_FLAT_BOX );
-                }
-                
-                Fl_Pack::draw();
-            }
-            else
-            {
-                if ( children() )
-                {
-                    for ( int i = 0; i < children(); i++ )
-                    {
-                        Fl_Widget *o = child( i );
-
-                        if ( i != 0 )
-                            o->box( FL_NO_BOX );
-
-                        o->resize( x(),y(),w(), o->h() );
-                    }
-                    resize( x(), y(), w(), child(0)->h() );
-                }
-
-                Fl_Group::draw();
-            }
-        }
-};
 
 
 
@@ -206,7 +143,7 @@ Track::init ( void )
     o->box( FL_FLAT_BOX );
 
     {
-        Track_Header *o = new Track_Header( x(), y(), 200, 80 );
+        Track_Header *o = new Track_Header( x(), y(), w(), h() );
 
         name_field = o->name_input;
         record_button = o->rec_button;
@@ -224,18 +161,12 @@ Track::init ( void )
         overlay_controls_button->callback( cb_button, this );
 
         resizable( o );
-        o->color( (Fl_Color)53 );
+//        o->color( (Fl_Color)53 );
     }
-
-    /* { */
-    /*     Fl_Box *o = new Fl_Box( 0, 72, 149, 38 ); */
-    /*     o->box( FL_NO_BOX ); */
-    /*     Fl_Group::current()->resizable( o ); */
-    /* } */
-
+    
     {
         /* this pack holds the active sequence, annotation sequence, control sequences and takes */
-        Fl_Pack *o = pack = new Fl_Pack( x() + width(), y(), w() - width(), h() );
+        Fl_Pack *o = pack = new Fl_Pack( x(), y(), w(), h() );
         o->type( Fl_Pack::VERTICAL );
         o->labeltype( FL_NO_LABEL );
         /* o->resize( x() + width(), y(), w() - width(), h() ); */
@@ -243,25 +174,66 @@ Track::init ( void )
         /* resizable( o ); */
 
         {
-            Fl_Pack *o = annotation = new Fl_Pack( width(), 0, pack->w(), 1 );
+            Fl_Pack *o = annotation = new Fl_Pack( 0, 0, pack->w(), 1 );
             o->type( Fl_Pack::VERTICAL );
             o->end();
         }
 
         {
-            Fl_Sometimes_Pack *o = control = new Fl_Sometimes_Pack( width(), 0, pack->w(), 1 );
-            o->box( FL_NO_BOX );
-            o->color( FL_BACKGROUND_COLOR );
-            o->type( Fl_Pack::VERTICAL );
-            o->pack( true );
-            o->end();
+            {
+                Fl_Group *o = controls_heading = new Fl_Group( 0, 0, pack->w(), 10 );
+                o->box( FL_FLAT_BOX );
+                o->color( fl_color_add_alpha( fl_rgb_color( 1,1,1 ), 127 ) );
+                
+                {
+                    Fl_Box *o = new Fl_Box( 0,0, Track::width(), 10 );
+                    o->label( "Controls" );
+                    o->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE );
+                    o->labelsize( 10 );
+                }
+
+                o->hide();
+                o->end();
+                o->resizable( 0 );
+            }
+
+            {
+                Fl_Sometimes_Pack *o = control = new Fl_Sometimes_Pack( 0, 0, pack->w(), 1 );
+                o->spacing( 1 );
+                o->box( FL_NO_BOX );
+                o->color( FL_BACKGROUND_COLOR );
+                o->type( Fl_Pack::VERTICAL );
+                o->pack( true );
+                o->hide();
+                o->align( FL_ALIGN_TOP | FL_ALIGN_LEFT );
+                o->end();
+            }
         }
 
         {
-            Fl_Pack *o = takes = new Fl_Pack( width(), 0, pack->w(), 1 );
+            {
+                Fl_Group *o = takes_heading = new Fl_Group( 0, 0, pack->w(), 10 );
+                o->box( FL_FLAT_BOX );
+                o->color( fl_color_add_alpha( fl_rgb_color( 1,1,1 ), 127 ) );
+                
+                {
+                    Fl_Box *o = new Fl_Box( 0,0, Track::width(), 10 );
+                    o->label( "Takes" );
+                    o->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE );
+                    o->labelsize( 10 );
+                }
+                o->hide();
+                o->end();
+                o->resizable( 0 );
+            }
+
+        {
+            Fl_Pack *o = takes = new Fl_Pack( 0, 0, pack->w(), 1 );
             o->type( Fl_Pack::VERTICAL );
             o->end();
             o->hide();
+            o->align( FL_ALIGN_TOP | FL_ALIGN_LEFT );
+        }
         }
 
         o->end();
@@ -464,60 +436,129 @@ Track::adjust_size ( void )
     for ( int i = control->children(); i--; )
         control->child( i )->size( w(), height()  );
 
-    control->pack( ! overlay_controls() );
-
-    int TH = height();
-
-    if ( show_all_takes() )
+    if ( overlay_controls() )
     {
-        takes->show();
-        TH += height() * takes->children();
-    }
-    else
-        takes->hide();
+        for ( int i = 0; i < control->children(); i++ )
+        {
+            Control_Sequence *o = (Control_Sequence*)control->child(i);
 
-    if ( control->children() )
-    {
-        control->show();
-        
-        if ( overlay_controls() )
-            TH += height() *  (control->children() ? 1 : 0);
-        else
-            TH += height() * pack_visible( control );
-    }
+            if ( i != 0 )
+                o->box( FL_NO_BOX );
+
+            o->header()->hide();
+        }
+
+        control->pack( false );
+    }        
     else
-        control->hide();
-    
+    {
+        for ( int i = 0; i < control->children(); i++ )
+        {
+            Control_Sequence *o = (Control_Sequence*)control->child(i);
+            
+            o->box( FL_FLAT_BOX );
+
+            o->header()->show();
+        }
+
+        control->pack( true );
+    }
+
+
+    int TY = 0;
+
     if ( annotation->children() )
     {
         annotation->show();
-        TH += 24 * pack_visible( annotation );
+        TY += 24 * pack_visible( annotation );
     }
     else
         annotation->hide();
+
+    /* height of the sequence */
+    TY += height();
+
+    if ( control->children() )
+    {
+        int TH;
+
+        /* calculate height of control pack */
+        if ( overlay_controls() )
+            TH = height() *  (control->children() ? 1 : 0);
+        else
+            TH = height() * pack_visible( control );
+
+        TY += TH;
+
+        control->show();
+        controls_heading->show();
+    }
+    else
+    {
+        control->hide();
+        controls_heading->hide();
+    }
+
+    if ( show_all_takes() )
+    {
+        /* calculate height of takes pack */
+        const int TH = height() * takes->children();
+        
+        TY += TH;
+
+        takes->show();
+        takes_heading->show();
+    }
+    else
+    {
+        takes_heading->hide();
+        takes->hide();
+    }
+
+    if ( takes_heading->visible() )
+        TY += takes_heading->h();
+    if ( controls_heading->visible() )
+        TY += controls_heading->h();
+
+    int TH;
 
     if ( ! size() )
     {
         takes->hide();
         control->hide();
-        Fl_Group::size( w(), height() );
+        TH = height();
     }
     else
-        Fl_Group::size( w(), TH );
+        TH = TY;
 
+    Fl_Group::size( w(), TH );
+    
     if ( sequence() )
         sequence()->size( w(), height() );
-
-    /* if ( controls->y() + controls->h() > y() + h() ) */
-    /*     controls->hide(); */
-    /* else */
-    /*     controls->show(); */
-
-    
 
     /* FIXME: why is this necessary? */
     if ( parent() )
         parent()->parent()->redraw();
+}
+
+void
+Track::name ( const char *name )
+{
+    if ( _name )
+        free( _name );
+    
+    _name = timeline->get_unique_track_name(name);
+
+    if ( name_field )
+        name_field->value( _name );
+    
+    update_port_names();
+}
+
+const char * 
+Track::name ( void ) const
+{
+    return _name; 
 }
 
 void
@@ -535,7 +576,12 @@ Track::size ( int v )
 void
 Track::add ( Audio_Sequence * t )
 {
+    t->track( this );
+
     takes->insert( *t, 0 );
+
+    /* show the take header */
+    t->child(0)->show();
 
     t->color( fl_color_average( FL_BLACK, FL_GRAY, 0.25f ) );
 
@@ -547,8 +593,6 @@ Track::remove ( Audio_Sequence *t )
 {
     if ( ! takes )
         return;
-
-    timeline->wrlock();
 
     if ( sequence() == t )
     {
@@ -564,8 +608,6 @@ Track::remove ( Audio_Sequence *t )
         takes->remove( t );
 
 /*     delete t; */
-
-    timeline->unlock();
 
     adjust_size();
 }
@@ -587,15 +629,11 @@ Track::remove ( Control_Sequence *t )
     if ( ! control )
         return;
 
-    timeline->wrlock();
-
     engine->lock();
 
     control->remove( t );
 
     engine->unlock();
-
-    timeline->unlock();
 
     adjust_size();
 }
@@ -617,6 +655,9 @@ Track::sequence ( Audio_Sequence * t )
     _sequence = t;
     /* insert following the annotation pack */
     pack->insert( *t, 1 );
+
+    /* hide the take header */
+    t->child(0)->hide();
 
     t->color( FL_GRAY );
     t->labeltype( FL_NO_LABEL );
@@ -735,7 +776,10 @@ Track::menu_cb ( const Fl_Menu_ *m )
     }
     else if ( ! strcmp( picked, "/Add Control" ) )
     {
-        new Control_Sequence( this );
+        /* add audio track */
+        char *name = get_unique_control_name( "Control" );
+
+        new Control_Sequence( this, name );
     }
     else if ( ! strcmp( picked, "/Overlay controls" ) )
     {
@@ -850,6 +894,36 @@ Track::menu_cb ( const Fl_Menu_ *m )
     }
 }
 
+/** retrun a pointer to the control sequence named /name/, or NULL if no control sequence is named /name/ */
+Control_Sequence *
+Track::control_by_name ( const char *name )
+{
+    for ( int i = control->children(); i-- ; )
+    {
+        Control_Sequence *t = (Control_Sequence*)control->child( i );
+
+        if ( t->name() && name && ! strcmp( name, t->name() ) )
+            return t;
+    }
+    
+    return NULL;
+}
+
+/** return a malloc'd string representing a unique name for a new control sequence */
+char *
+Track::get_unique_control_name ( const char *name )
+{
+    char pat[256];
+
+    strcpy( pat, name );
+
+    for ( int i = 1; control_by_name( pat ); ++i )
+        snprintf( pat, sizeof( pat ), "%s.%d", name, i );
+
+    return strdup( pat );
+}
+
+
 #include "FL/menu_popup.H"
 
 /** build the context menu */
@@ -910,60 +984,10 @@ Track::menu ( void ) const
 #include "FL/test_press.H"
 
 void
-Track::internal_draw ( void )
-{
-    draw_box();
-
-    pack->resize( x() + Track::width(), y(), w() - Track::width(), h() );
-
-    /* we have to do this first because the pack(s) size isn't known until draw() */
-    draw_child( *pack );
-
-
-    {
-        Track_Header *o = (Track_Header *)child( 0 );
-        
-        o->controls_header_group->resize( x(), control->y(), o->controls_header_group->w(), control->h() );
-        o->takes_header_group->resize( x(), takes->y(), o->takes_header_group->w(), takes->h() );
-
-        if ( takes->visible() )
-            o->takes_header_group->show();
-        else
-            o->takes_header_group->hide();
-
-        if ( control->visible() )
-            o->controls_header_group->show();
-        else
-            o->controls_header_group->hide();
-
-        /* override stupid group resize effect. */
-        o->takes_header_group->child(0)->size( 195, 12 );
-        o->controls_header_group->child(0)->size( 195, 12 );
-
-    }
-
-    child(0)->size( Track::width(), h() );
-
-    draw_child( *child(0));
-
-    if ( takes->visible() )
-        for ( int i = 0; i < takes->children(); i++ )
-            draw_outside_label( *takes->child( i ) );
-    
-    if ( control->visible() )
-        for ( int i = 0; i < control->children(); i++ )
-            draw_outside_label( *control->child( i ) );
-}
-
-void
 Track::draw ( void )
 {
-    int X, Y, W, H;
-    
     fl_push_clip( x(), y(), w(), h() );
     
-    fl_clip_box( x(), y(), w(), h(), X, Y, W, H );
-
     Fl_Color saved_color = color();
 
     if ( ! Track::colored_tracks )
@@ -975,12 +999,12 @@ Track::draw ( void )
 
         color( FL_RED );
 
-        internal_draw();
+        Fl_Group::draw();
 
         color( c );
     }
     else
-        internal_draw();
+        Fl_Group::draw();
 
     if ( ! Track::colored_tracks )
         color( saved_color );

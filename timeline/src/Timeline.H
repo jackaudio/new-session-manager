@@ -100,7 +100,8 @@ class Timeline : public Fl_Single_Window, public RWLock
 
     class Timeline_Panzoomer;
 
-    static void draw_clip ( void * v, int X, int Y, int W, int H );
+    static void draw_clip_rulers ( void * v, int X, int Y, int W, int H );
+    static void draw_clip_tracks ( void * v, int X, int Y, int W, int H );
  
     nframes_t _old_xposition;
     int _old_yposition;
@@ -110,8 +111,8 @@ class Timeline : public Fl_Single_Window, public RWLock
     Fl_Group     *track_window;
     Fl_Pack      *tracks;
     Fl_Pack      *rulers;
-    Fl_Panzoomer *panzoomer;
     Fl_Tile      *tile;
+    Fl_Panzoomer *panzoomer;
 
     void adjust_panzoomer ( void );
     static void cb_scroll ( Fl_Widget *w, void *v );
@@ -138,6 +139,9 @@ class Timeline : public Fl_Single_Window, public RWLock
     void insert_track ( Track *track, int n );
 
 public:
+
+    /* called when widgets are moved etc */
+    void damage_sequence ( void );
 
     OSC::Endpoint *osc;
     OSC_Thread *osc_thread;
@@ -305,6 +309,9 @@ public:
     void add_cursor ( Cursor_Region *o );
     void add_cursor ( Cursor_Point *o );
 
+    char * get_unique_track_name ( const char *name );
+    Track * track_by_name ( const char *name );
+
 private:
     
     void add_take_for_armed_tracks();
@@ -315,8 +322,6 @@ private:
 
     friend class Engine; // FIXME: only Engine::process() needs to be friended.x
 
-    Track * track_by_name ( const char *name );
-    char * get_unique_track_name ( const char *name );
 
     /* Engine */
     void resize_buffers ( nframes_t nframes );

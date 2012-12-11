@@ -35,7 +35,7 @@ using namespace std;
 
 #include "Engine/Audio_File.H" // for ::from_file()
 #include "Transport.H" // for locate()
-
+#include "Track_Header.H"
 #include <errno.h>
 
 #include <unistd.h> // for symlink()
@@ -44,9 +44,66 @@ using namespace std;
 
 
 
+const char *
+Audio_Sequence::name ( void ) const
+{
+    return Sequence::name();
+}
+
+void
+Audio_Sequence::name ( const char *s )
+{
+    Sequence::name( s );
+    header()->name_input->value( s );
+}
+
+void
+Audio_Sequence::cb_button ( Fl_Widget *w, void *v )
+{
+    ((Audio_Sequence*)v)->cb_button( w );
+}
+
+void
+Audio_Sequence::cb_button ( Fl_Widget *w )
+{
+    Logger log(this);
+
+    if ( w == header()->name_input )
+    {
+        Sequence::name( header()->name_input->value() );
+    }
+    else if ( w == header()->delete_button )
+    {
+        track()->remove( this );
+    }
+    else if ( w == header()->promote_button )
+    {
+        track()->sequence( this );
+    }
+}
+
+void
+Audio_Sequence::init ( void )
+{
+    labeltype( FL_NO_LABEL );
+    {
+        Audio_Sequence_Header *o = new Audio_Sequence_Header( x(), y(), Track::width(), 52 );
+
+        o->name_input->callback( cb_button, this );
+        o->delete_button->callback( cb_button, this );
+        o->promote_button->callback( cb_button, this );
+
+        Fl_Group::add( o );
+    }
+    
+    resizable(0);
+}
+
 Audio_Sequence::Audio_Sequence ( Track *track, const char *name ) : Sequence( track )
 {
     _track = track;
+
+    init();
 
     if ( name )
         Audio_Sequence::name( name );
@@ -71,10 +128,6 @@ Audio_Sequence::Audio_Sequence ( Track *track, const char *name ) : Sequence( tr
         track->add( this );
 
     log_create();
-
-    /* FIXME: temporary  */
-    labeltype( FL_NO_LABEL );
-
 }
 
 
@@ -155,7 +208,7 @@ Audio_Sequence::draw ( void )
 
     int xfades = 0;
 
-    fl_push_clip( x(), y(), w(), h() );
+    fl_push_clip( drawable_x(), y(), drawable_w(), h() );
 
     /* draw crossfades */
     for ( list <Sequence_Widget *>::const_iterator r = _widgets.begin();  r != _widgets.end(); r++ )

@@ -40,7 +40,7 @@ class Sequence_Widget;
 
 /* This is the base class for all track types. */
 
-class Sequence : public Fl_Widget, public Loggable
+class Sequence : public Fl_Group, public Loggable
 {
 
     /* not permitted  */
@@ -99,6 +99,9 @@ public:
 
     void sort ( void );
     void clear ( void );
+
+    int drawable_x ( void ) const;
+    int drawable_w ( void ) const;
 
     const Sequence_Widget *next ( nframes_t from ) const;
     const Sequence_Widget *prev ( nframes_t from ) const;

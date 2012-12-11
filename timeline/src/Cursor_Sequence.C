@@ -20,6 +20,40 @@
 #include "Cursor_Sequence.H"
 #include "Cursor_Point.H"
 #include "Timeline.H"
+#include "Track.H"
+
+Cursor_Sequence::Cursor_Sequence( int X, int Y, int W, int H ) : Sequence ( X, Y, W, H )
+{
+    _cursor_color = FL_CYAN;
+
+    labeltype(FL_NO_LABEL);
+
+    box( FL_FLAT_BOX );
+
+    { Fl_Box *o = new Fl_Box( X, Y, Track::width(), H );
+        o->align( FL_ALIGN_RIGHT | FL_ALIGN_INSIDE );
+        o->labelsize( 12 );
+        o->labeltype( FL_NORMAL_LABEL );
+        Fl_Group::add( o );
+    }
+
+    resizable(0);
+}
+
+
+
+void
+Cursor_Sequence::label ( const char *s )
+{
+    Sequence::label(s);
+    child(0)->label(s);
+}
+
+const char *
+Cursor_Sequence::label ( void ) const
+{
+    return Sequence::label();
+}
 
 void
 Cursor_Sequence::handle_widget_change ( nframes_t start, nframes_t length )

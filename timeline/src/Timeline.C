@@ -1667,80 +1667,83 @@ Timeline::handle ( int m )
             {
                 case FL_PUSH:
                 {
-                    if ( test_press( FL_BUTTON1 ) || test_press( FL_BUTTON1 + FL_CTRL ) )
+                    if (
+                        Fl::event_x() >= Track::width() &&
+                        ( test_press( FL_BUTTON1 ) || test_press( FL_BUTTON1 + FL_CTRL ) ))
                     {
                         assert( ! drag );
-
+                        
                         drag = new Drag( X, Y );
                         _selection.x = X;
                         _selection.y = Y;
-
+                        
                         if ( ! Fl::event_ctrl() )
                             select_none();
-
+                        
                         return 1;
                     }
                     else if ( test_press( FL_BUTTON3 ) )
                     {
                         menu_popup( menu );
-
+                        
                         return 1;
                     }
-
-                    return 0;
                 }
-                case FL_DRAG:
+                
+                return 0;
+            
+            case FL_DRAG:
+            {
+                int ox = X - drag->x;
+                int oy = Y - drag->y;
+
+                if ( ox < 0 )
+                    _selection.x = X;
+                if ( oy < 0 )
+                    _selection.y = Y;
+
+                _selection.w = abs( ox );
+                _selection.h = abs( oy );
+
+                if ( range )
                 {
-                    int ox = X - drag->x;
-                    int oy = Y - drag->y;
-
-                    if ( ox < 0 )
-                        _selection.x = X;
-                    if ( oy < 0 )
-                        _selection.y = Y;
-
-                    _selection.w = abs( ox );
-                    _selection.h = abs( oy );
-
-                    if ( range )
-                    {
-                        range_start( x_to_offset( _selection.x ) );
-                        range_end( x_to_offset( _selection.x + _selection.w ) );
-                        redraw();
-                    }
-
-                    redraw_overlay();
-                    return 1;
-
-                    break;
+                    range_start( x_to_offset( _selection.x ) );
+                    range_end( x_to_offset( _selection.x + _selection.w ) );
+                    redraw();
                 }
-                case FL_RELEASE:
-                {
-                    delete drag;
-                    drag = NULL;
 
-                    if ( range )
-                    {
-                        range_start( x_to_offset( _selection.x ) );
-                        range_end( x_to_offset( _selection.x + _selection.w ) );
-                        redraw();
-                    }
-                    else
-                        select( _selection );
+                redraw_overlay();
+                return 1;
 
-                    _selection.x = _selection.y =_selection.w = _selection.h = 0;
-
-                    redraw_overlay();
-                    return 1;
-                }
-                default:
-                    return 0;
-                    break;
+                break;
             }
+            case FL_RELEASE:
+            {
+                delete drag;
+                drag = NULL;
 
-            return 0;
+                if ( range )
+                {
+                    range_start( x_to_offset( _selection.x ) );
+                    range_end( x_to_offset( _selection.x + _selection.w ) );
+                    redraw();
+                }
+                else
+                    select( _selection );
+
+                _selection.x = _selection.y =_selection.w = _selection.h = 0;
+
+                redraw_overlay();
+                return 1;
+            }
+            default:
+                return 0;
+                break;
         }
+
+        return 0;
     }
+}
 }
 
 /** retrun a pointer to the track named /name/, or NULL if no track is named /name/ */

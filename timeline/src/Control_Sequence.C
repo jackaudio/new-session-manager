@@ -726,8 +726,10 @@ Control_Sequence::handle ( int m )
     {
         case FL_PUSH:
         {
-            if ( test_press( FL_BUTTON1 ) &&
-                 Fl::event_x() >= Track::width() )
+            if ( Fl::event_x() < drawable_x() )
+                return 0;
+
+            if ( test_press( FL_BUTTON1 ) )
             {
                 timeline->wrlock();
 

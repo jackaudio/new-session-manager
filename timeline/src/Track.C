@@ -706,6 +706,8 @@ Track::select ( int X, int Y, int W, int H,
 
     Sequence *t = sequence();
 
+    X -= Track::width();
+
     if ( ! ( t->y() > Y + H || t->y() + t->h() < Y ) )
         t->select_range( X, W );
     else

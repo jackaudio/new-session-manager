@@ -100,6 +100,9 @@ public:
             {
                 case FL_PUSH:
                 {
+                    if ( Fl::event_x() < drawable_x() )
+                        return 0;
+
                     Logger log( this );
 
                     if ( Fl::event_button1() )

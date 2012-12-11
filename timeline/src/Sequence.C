@@ -383,52 +383,62 @@ Sequence::handle ( int m )
             return 1;
         case FL_ENTER:
 //            DMESSAGE( "enter" );
-            if ( Sequence_Widget::pushed() )
+            if ( Fl::event_x() >= drawable_x() )
             {
-                if ( Sequence_Widget::pushed()->sequence()->class_name() == class_name() )
+                if ( Sequence_Widget::pushed() )
                 {
-                    /* accept objects dragged from other sequences of this type */
-
-                    timeline->wrlock();
-
-                    add( Sequence_Widget::pushed() );
-
-                    timeline->unlock();
-
-                    damage( FL_DAMAGE_USER1 );
-
-                    fl_cursor( FL_CURSOR_MOVE );
+                    if ( Sequence_Widget::pushed()->sequence()->class_name() == class_name() )
+                    {
+                        /* accept objects dragged from other sequences of this type */
+                        
+                        timeline->wrlock();
+                        
+                        add( Sequence_Widget::pushed() );
+                        
+                        timeline->unlock();
+                        
+                        damage( FL_DAMAGE_USER1 );
+                        
+                        fl_cursor( FL_CURSOR_MOVE );
+                    }
+                    else
+                        fl_cursor( FL_CURSOR_DEFAULT );
                 }
                 else
-                    fl_cursor( FL_CURSOR_DEFAULT );
+                    if ( ! event_widget() )
+                        fl_cursor( cursor() );
+            
+                Fl_Group::handle( m );
+                
+                return 1;
             }
             else
-                if ( ! event_widget() )
-                    fl_cursor( cursor() );
-
-            Fl_Group::handle( m );
-
-            return 1;
+            {
+                return Fl_Group::handle(m);
+            }
         case FL_DND_ENTER:
         case FL_DND_LEAVE:
         case FL_DND_RELEASE:
             return 1;
         case FL_MOVE:
         {
-            Sequence_Widget *r = event_widget();
-
-            if ( r != Sequence_Widget::belowmouse() )
+            if ( Fl::event_x() >= drawable_x() )
             {
-                if ( Sequence_Widget::belowmouse() )
-                    Sequence_Widget::belowmouse()->handle( FL_LEAVE );
-
-                Sequence_Widget::belowmouse( r );
-
-                if ( r )
-                    r->handle( FL_ENTER );
+                Sequence_Widget *r = event_widget();
+                
+                if ( r != Sequence_Widget::belowmouse() )
+                {
+                    if ( Sequence_Widget::belowmouse() )
+                        Sequence_Widget::belowmouse()->handle( FL_LEAVE );
+                    
+                    Sequence_Widget::belowmouse( r );
+                    
+                    if ( r )
+                        r->handle( FL_ENTER );
+                }
+                
+                return 1;
             }
-
-            return 1;
         }
         default:
         {

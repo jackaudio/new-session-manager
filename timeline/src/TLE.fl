@@ -939,14 +939,20 @@ else if ( 0 == p )
 	progress_group->hide();
 }
 
+static int oldp;
 static char pat[10];
 
-nsm_send_progress( nsm, p / 100.0f );
-update_progress( progress, pat, p );
+if ( p != oldp )
+{
+        oldp = p;
+        nsm_send_progress( nsm, p / 100.0f );
+        update_progress( progress, pat, p );
 
-progress->redraw();
+        progress->redraw();
 
-Fl::check();} {}
+        Fl::check();
+}
+} {}
   }
   Function {show_help_dialog( const char *file )} {open private return_type {static void}
   } {

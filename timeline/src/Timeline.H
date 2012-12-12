@@ -121,6 +121,8 @@ class Timeline : public Fl_Single_Window, public RWLock
     void menu_cb ( Fl_Menu_ *m );
     void fix_range ( void );
 
+    static void draw_measure_cb ( nframes_t frame, const BBT &bbt, void * );
+
     int _fpp;                                                 /* frames per pixel, power of two */
 
 //    nframes_t p1, p2;                                           /* cursors */

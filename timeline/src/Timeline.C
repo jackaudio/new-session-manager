@@ -929,13 +929,21 @@ Timeline::x_to_offset ( int x ) const
 }
 
 /** draws a single measure line */
-static void
-draw_measure_cb ( nframes_t frame, const BBT &bbt, void * )
+void
+Timeline::draw_measure_cb ( nframes_t frame, const BBT &bbt, void *v )
 {
+    Timeline *o = (Timeline*)v;
+
     Fl_Color c = FL_LIGHT3;
 
+    if ( o->panzoomer->zoom() >= 15 )
+        return;
+
     if ( bbt.beat )
-        c = FL_DARK1;
+        if ( o->panzoomer->zoom() > 12 )
+            return;
+        else
+            c = FL_DARK1;
 
     fl_color( fl_color_add_alpha( c, 64 ) );
     
@@ -1098,7 +1106,7 @@ Timeline::draw_measure_lines ( int X, int Y, int W, int H )
 
     fl_push_clip( X, Y, W, H );
 
-    render_tempomap( start, length, draw_measure_cb, NULL );
+    render_tempomap( start, length, draw_measure_cb, this );
 
     fl_pop_clip();
 }

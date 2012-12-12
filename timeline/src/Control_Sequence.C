@@ -726,11 +726,11 @@ Control_Sequence::handle ( int m )
     {
         case FL_PUSH:
         {
-            if ( Fl::event_x() < drawable_x() )
-                return 0;
 
-            if ( test_press( FL_BUTTON1 ) )
+            if ( Fl::event_x() >= drawable_x() &&
+                test_press( FL_BUTTON1 ) )
             {
+                /* insert new control point */
                 timeline->wrlock();
 
                 Control_Point *r = new Control_Point( this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - drawable_x() ), (float)(Fl::event_y() - y()) / h() );
@@ -741,8 +741,8 @@ Control_Sequence::handle ( int m )
 
                 return 1;
             }
-            else if ( test_press( FL_BUTTON3 ) &&
-                      Fl::event_x() < Track::width() )
+            else if ( Fl::event_x() < drawable_x() &&
+                      test_press( FL_BUTTON3 ) )
             {
                 Fl_Menu_Button *menu = new Fl_Menu_Button( 0, 0, 0, 0, "Control Sequence" );
 

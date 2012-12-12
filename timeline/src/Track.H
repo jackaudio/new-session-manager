@@ -141,6 +141,7 @@ public:
     Fl_Button      *solo_button;
     Fl_Button      *show_all_takes_button;
     Fl_Button      *overlay_controls_button;
+    Fl_Button      *menu_button;
 
     Fl_Pack        *pack;
     Fl_Pack        *annotation;

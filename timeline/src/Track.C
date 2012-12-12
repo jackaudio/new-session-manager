@@ -46,6 +46,11 @@
 #include "const.h"
 #include "debug.h"
 
+#include <FL/Fl_Menu_Button.H>
+#include "FL/menu_popup.H"
+
+
+
 
 static Fl_Color
 random_color ( void )
@@ -149,6 +154,7 @@ Track::init ( void )
         record_button = o->rec_button;
         mute_button = o->mute_button;
         solo_button = o->solo_button;
+        menu_button = o->menu_button;
         show_all_takes_button = o->show_all_takes_button;
         overlay_controls_button = o->overlay_controls_button;
         
@@ -159,6 +165,7 @@ Track::init ( void )
 
         show_all_takes_button->callback( cb_button, this );
         overlay_controls_button->callback( cb_button, this );
+        menu_button->callback( cb_button, this );
 
         resizable( o );
 //        o->color( (Fl_Color)53 );
@@ -410,6 +417,10 @@ Track::cb_button ( Fl_Widget *w )
     else if ( w == overlay_controls_button )
     {
         overlay_controls( overlay_controls_button->value() );
+    }
+    else if ( w == menu_button )
+    {
+        menu_popup( &menu(), menu_button->x(), menu_button->y() );
     }
 }
 
@@ -725,8 +736,6 @@ Track::select ( int X, int Y, int W, int H,
 }
 
 
-#include <FL/Fl_Menu_Button.H>
-
 void
 Track::menu_cb ( Fl_Widget *w, void *v )
 {
@@ -925,8 +934,6 @@ Track::get_unique_control_name ( const char *name )
     return strdup( pat );
 }
 
-
-#include "FL/menu_popup.H"
 
 /** build the context menu */
 Fl_Menu_Button &

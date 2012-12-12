@@ -29,6 +29,7 @@
 #include "OSC/Endpoint.H"
 
 class Control_Sequence_Header;
+class Fl_Menu_Button;
 
 class Control_Sequence : public Sequence
 {
@@ -102,6 +103,9 @@ protected:
     int handle ( int m );
 
     void update_port_name ( void );
+
+
+    Fl_Menu_Button & menu ( void );
 
 public:
 

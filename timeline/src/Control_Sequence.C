@@ -41,6 +41,8 @@ using std::list;
 
 #include "FL/event_name.H"
 #include "FL/test_press.H"
+#include <FL/Fl_Menu_Button.H>
+#include "FL/menu_popup.H"
 
 
 
@@ -191,6 +193,10 @@ Control_Sequence::cb_button ( Fl_Widget *w )
     {
         Fl::delete_widget( this );
     }
+    else if ( w == header()->menu_button )
+    {
+        menu_popup( &menu(), header()->menu_button->x(), header()->menu_button->y() );
+    }
     /* else if ( w == header()->promote_button ) */
     /* { */
     /*     track()->sequence( this ); */
@@ -206,6 +212,7 @@ Control_Sequence::init ( void )
 
         o->name_input->callback( cb_button, this );
         o->delete_button->callback( cb_button, this );
+        o->menu_button->callback( cb_button, this );
         /* o->promote_button->callback( cb_button, this ); */
         Fl_Group::add( o );
     }
@@ -498,7 +505,6 @@ Control_Sequence::draw ( void )
     }
 }
 
-#include "FL/menu_popup.H"
 
 void
 Control_Sequence::menu_cb ( Fl_Widget *w, void *v )
@@ -673,10 +679,36 @@ Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig )
 void
 Control_Sequence::add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix )
 {
-    peer_menu = m;
+        peer_menu = m;
     peer_prefix = prefix;
 
     timeline->osc->list_peer_signals( &Control_Sequence::peer_callback, this );
+}
+
+Fl_Menu_Button &
+Control_Sequence::menu ( void ) 
+{
+    static Fl_Menu_Button _menu( 0, 0, 0, 0, "Control Sequence" );
+
+    _menu.clear();
+    
+    if ( mode() == OSC )
+    {
+        add_osc_peers_to_menu( &_menu, "Connect To" );
+    }
+    
+    _menu.add( "Interpolation/None", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == None ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Interpolation/Linear", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == Linear ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Mode/Control Voltage (JACK)", 0, 0, 0 ,FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Mode/Control Signal (OSC)", 0, 0, 0 , FL_MENU_RADIO | ( mode() == OSC ? FL_MENU_VALUE : 0 ) );
+    
+    _menu.add( "Rename", 0, 0, 0 );
+    _menu.add( "Color", 0, 0, 0 );
+    _menu.add( "Remove", 0, 0, 0 );
+    
+    _menu.callback( &Control_Sequence::menu_cb, (void*)this);
+
+    return _menu;
 }
 
 int
@@ -744,31 +776,7 @@ Control_Sequence::handle ( int m )
             else if ( Fl::event_x() < drawable_x() &&
                       test_press( FL_BUTTON3 ) )
             {
-                Fl_Menu_Button *menu = new Fl_Menu_Button( 0, 0, 0, 0, "Control Sequence" );
-
-                menu->clear();
-
-                if ( mode() == OSC )
-                {
-                    add_osc_peers_to_menu( menu, "Connect To" );
-                }
-                
-                menu->add( "Interpolation/None", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == None ? FL_MENU_VALUE : 0 ) );
-                menu->add( "Interpolation/Linear", 0, 0, 0, FL_MENU_RADIO | ( interpolation() == Linear ? FL_MENU_VALUE : 0 ) );
-                menu->add( "Mode/Control Voltage (JACK)", 0, 0, 0 ,FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) );
-                menu->add( "Mode/Control Signal (OSC)", 0, 0, 0 , FL_MENU_RADIO | ( mode() == OSC ? FL_MENU_VALUE : 0 ) );
-
-                menu->add( "Rename", 0, 0, 0 );
-                menu->add( "Color", 0, 0, 0 );
-                menu->add( "Remove", 0, 0, 0 );
-
-                menu->callback( &Control_Sequence::menu_cb, (void*)this);
-
-                menu_popup( menu );
-
-                delete menu;
-
-//                redraw();
+                menu_popup( &menu() );
 
                 return 1;
             }

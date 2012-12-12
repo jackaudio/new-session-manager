@@ -9,14 +9,14 @@ decl {\#include "FL/Fl_Blink_Button.H"} {public global
 } 
 
 widget_class Track_Header {open
-  xywh {635 603 525 60} type Double box NO_BOX resizable visible
+  xywh {897 224 525 60} type Double box NO_BOX resizable visible
 } {
   Fl_Group box_group {open
     private xywh {0 0 200 60} box THIN_UP_BOX color 63
     code0 {o->resizable(0);}
   } {
     Fl_Group {} {open
-      xywh {0 0 200 50}
+      xywh {0 0 200 51}
       code0 {o->resizable(0);}
     } {
       Fl_Input name_input {
@@ -32,13 +32,17 @@ widget_class Track_Header {open
         label out
         tooltip {lit if outputs are connected} xywh {31 27 24 16} box BORDER_BOX color 48 selection_color 90 labelfont 5 labelsize 10 labelcolor 53 hide
       }
+      Fl_Button menu_button {
+        label menu
+        tooltip {Expand controls} xywh {4 26 31 24} selection_color 3 labelfont 4 labelsize 10
+      }
       Fl_Button overlay_controls_button {
         label {c-}
-        tooltip {Expand controls} xywh {5 26 24 24} type Toggle selection_color 3 labelfont 5 labelsize 12
+        tooltip {Expand controls} xywh {39 26 24 24} type Toggle selection_color 3 labelfont 5 labelsize 12
       }
       Fl_Button show_all_takes_button {
         label {t+}
-        tooltip {Show all takes} xywh {32 26 24 24} type Toggle selection_color 3 labelfont 5 labelsize 12
+        tooltip {Show all takes} xywh {66 26 24 24} type Toggle selection_color 3 labelfont 5 labelsize 12
       }
       Fl_Button rec_button {
         label r
@@ -68,16 +72,20 @@ Fl_Group::draw();} {}
 } 
 
 widget_class Control_Sequence_Header {open
-  xywh {309 702 200 55} type Double box NO_BOX visible
+  xywh {315 771 200 55} type Double box NO_BOX visible
 } {
   Fl_Input name_input {
-    label {input:} selected
+    label {input:}
     xywh {5 3 192 22} labeltype NO_LABEL align 20 when 8 textsize 12
     class Fl_Sometimes_Input
   }
+  Fl_Button menu_button {
+    label menu selected
+    tooltip {Expand controls} xywh {5 26 31 24} selection_color 3 labelfont 4 labelsize 10
+  }
   Fl_Button outputs_indicator {
     label out
-    tooltip {lit if outputs are connected} xywh {33 26 24 16} box BORDER_BOX down_box BORDER_BOX color 48 selection_color 90 labelfont 5 labelsize 10
+    tooltip {lit if outputs are connected} xywh {40 26 24 16} box BORDER_BOX down_box BORDER_BOX color 48 selection_color 90 labelfont 5 labelsize 10
     code0 {o->ignore_input( true );}
     code1 {o->blink( false );}
     class Fl_Blink_Button
@@ -95,14 +103,14 @@ widget_class Control_Sequence_Header {open
 } 
 
 widget_class Audio_Sequence_Header {open
-  xywh {326 544 200 50} type Double box NO_BOX resizable visible
+  xywh {332 613 200 50} type Double box NO_BOX resizable visible
 } {
   Fl_Group {} {open
     xywh {0 0 200 55}
     code0 {o->resizable(0);}
   } {
     Fl_Input name_input {
-      label {input:} selected
+      label {input:}
       xywh {0 3 193 22} labeltype NO_LABEL align 20 when 8 textsize 12
       class Fl_Sometimes_Input
     }

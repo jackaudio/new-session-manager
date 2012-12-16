@@ -505,7 +505,7 @@ Audio_Region::draw ( void )
         return;
 
     
-    if ( start() > timeline->xoffset + timeline->x_to_ts( sequence()->w() ) ||
+    if ( start() > timeline->xoffset + timeline->x_to_ts( sequence()->drawable_w() ) ||
          start() + length() < timeline->xoffset )
         /* not in viewport */
         return;
@@ -525,7 +525,7 @@ Audio_Region::draw ( void )
 
     /* calculate waveform offset due to scrolling */
     /* offset is the number of frames into the waveform the value of X translates to */
-    nframes_t x_frame = timeline->xoffset + timeline->x_to_ts( X - _sequence->x() );
+    nframes_t x_frame = timeline->xoffset + timeline->x_to_ts( X - _sequence->drawable_x() );
     nframes_t offset = 0;
 
     if ( x_frame < start() )

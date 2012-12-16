@@ -65,7 +65,7 @@ src/main.C
               target       = 'non-mixer',
               includes     = ['.', 'src', '../FL', '../nonlib'],
               use = ['nonlib', 'fl_widgets'],
-              uselib = [ 'JACK', 'LIBLO', 'LRDF', 'XPM', 'NTK', 'NTK_IMAGES', 'PTHREAD' ],
+              uselib = [ 'JACK', 'LIBLO', 'LRDF', 'XPM', 'NTK', 'NTK_IMAGES', 'PTHREAD', 'DL', 'M' ],
               install_path = '${BINDIR}')
 
     bld( features = 'subst',

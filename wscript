@@ -67,6 +67,8 @@ def configure(conf):
     conf.env.append_value('CXXFLAGS', global_flags )
 
     conf.env['LIB_PTHREAD'] = ['pthread']
+    conf.env['LIB_DL'] = ['dl']
+    conf.env['LIB_M'] = ['m']
 
     # NTK_EXTRA_FLAGS=''
     # if not Options.options.use_system_ntk:
@@ -91,6 +93,7 @@ def configure(conf):
 
     conf.check_cfg(package='liblo', uselib_store='LIBLO',args="--cflags --libs",
                       atleast_version='0.26', mandatory=True)
+
 
 ###
 

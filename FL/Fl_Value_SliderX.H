@@ -53,6 +53,5 @@ public:
 
     virtual ~Fl_Value_SliderX() { }
 
-    virtual int handle ( int m );
     virtual void draw ( void );
 };

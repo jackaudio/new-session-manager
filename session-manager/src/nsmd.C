@@ -2101,8 +2101,15 @@ int main(int argc, char *argv[])
                 detach = true;
                 break;
             case 's':
+            {
                 session_root = optarg;
+
+                /* get rid of trailing slash */
+                char *s = rindex(session_root,'/');
+                if ( s == &session_root[strlen(session_root) - 1] )
+                    *s = '\0';
                 break;
+            }
             case 'p':
                 DMESSAGE( "Using OSC port %s", optarg );
                 osc_port = optarg;

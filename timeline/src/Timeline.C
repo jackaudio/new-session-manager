@@ -1253,6 +1253,8 @@ Timeline::draw ( void )
     int bdx = 0;
     int bdw = 0;
 
+    rdlock();
+
     X = tracks->x() + bdx + 1;
     Y = tracks->y();
     W = tracks->w() - bdw - 1;
@@ -1354,6 +1356,8 @@ done:
 
     _old_xposition = xoffset;
     _old_yposition = panzoomer->y_value();
+
+    unlock();
 }
 
 void

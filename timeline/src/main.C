@@ -280,8 +280,9 @@ main ( int argc, char **argv )
         if ( optind < argc )
         {
             MESSAGE( "Loading \"%s\"", argv[optind] );
-            
+            Fl::lock();
             tle->open( argv[optind] );
+            Fl::unlock();
         }
     }
 

@@ -82,25 +82,22 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
 
 //    printf( "IO: attempting to read block @ %lu\n", _frame );
 
-    if ( ! sequence() )
-    {
-        /* FIXME: what to do here? */
-//        _frame += _nframes;
-        return;
-    }
-
     timeline->rdlock();
 
-    /* FIXME: how does this work if _delay is not a multiple of bufsize? */
-
-    if ( _frame >= _delay )
+    if ( sequence() )
     {
-        if ( ! sequence()->play( buf, _frame - _delay, nframes, channels() ) )
-            WARNING( "Programming error?" );
+        /* FIXME: how does this work if _delay is not a multiple of bufsize? */
+        
+        if ( _frame >= _delay )
+        {
+            if ( ! sequence()->play( buf, _frame - _delay, nframes, channels() ) )
+                WARNING( "Programming error?" );
+        }
+        
+        _frame += nframes;
+        
     }
-
-    _frame += nframes;
-
+    
     timeline->unlock();
 }
 

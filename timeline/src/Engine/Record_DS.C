@@ -58,13 +58,9 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
     if ( ! ( timeline && sequence() ) )
         return;
 
-//    timeline->wrlock();
-
     track()->write( _capture, buf, nframes );
 
     _frames_written += nframes;
-
-//    timeline->unlock();
 }
 
 #define AVOID_UNNECESSARY_COPYING 1

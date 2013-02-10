@@ -63,8 +63,8 @@ public:
     void toggle_record ( void );
     int handle ( int m );
 
-    bool rolling;
-    bool recording;
+    volatile bool rolling;
+    volatile bool recording;
 
     void poll ( void );
     void locate ( nframes_t frame );

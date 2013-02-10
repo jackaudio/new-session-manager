@@ -943,6 +943,10 @@ else if ( 0 == p )
 	progress_group->hide();
 }
 
+// never allow drawing timeline while loading, as this would cause lock recursion.
+if ( timeline->visible() )
+   return;
+
 static int oldp;
 static char pat[10];
 

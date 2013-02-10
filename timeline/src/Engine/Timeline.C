@@ -150,6 +150,10 @@ Timeline::stop ( void )
 nframes_t
 Timeline::process ( nframes_t nframes )
 {
+    /* there is no need to acquire a readlock here because track *
+       addition/removal locks process() and track process() calls deal with
+       ringbuffers instead of reading the sequence data directly.  */
+
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );

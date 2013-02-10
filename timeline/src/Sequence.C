@@ -154,8 +154,12 @@ Sequence::overlaps ( Sequence_Widget *r )
 void
 Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
+    /* this might be invoked from Capture or GUI thread */
+    Fl::lock();
     sort();
     timeline->damage_sequence();
+    Fl::unlock();
+
 //    timeline->update_length( start + length );
 }
 
@@ -186,8 +190,11 @@ Sequence::add ( Sequence_Widget *r )
 
     if ( r->sequence() )
     {
+        /* This method can be called from the Capture thread as well as the GUI thread, so we must lock FLTK before redraw */
+        Fl::lock();
         r->redraw();
         r->sequence()->remove( r );
+        Fl::unlock();
 //        r->track()->redraw();
     }
 
@@ -204,6 +211,7 @@ Sequence::remove ( Sequence_Widget *r )
     _widgets.remove( r );
 
     handle_widget_change( r->start(), r->length() );
+    
 }
 
 static nframes_t

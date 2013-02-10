@@ -146,10 +146,18 @@ Disk_Stream::shutdown ( void )
         _terminate = true;
         
         /* try to wake the thread so it'll see that it's time to die */
+        int total_ms = 0;
         while ( _terminate )
         {
-            usleep( 100 );
+            usleep( 1000 * 10 );
+            total_ms += 10;
             block_processed();
+            
+            if ( total_ms > 100 )
+            {
+                WARNING("Disk_Stream thread has taken longer than %ims to respond to terminate signal.", total_ms );
+                break;
+            }
         }
         
         _thread.join();

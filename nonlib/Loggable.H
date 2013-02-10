@@ -70,6 +70,7 @@ class Loggable
         Log_Entry * unjournaled_state;
     };
 
+    static bool _readonly;
     static FILE *_fp;
     static unsigned int _log_id;
     static int _level;
@@ -141,6 +142,8 @@ private:
     static void clear_dirty ( void ) {  signal_dirty( _dirty = 0 ); }
 
 public:
+    
+    static bool readonly ( void ) { return _readonly; }
 
     static bool replay ( const char *name );
 

@@ -44,6 +44,7 @@ using std::max;
 
 
 
+bool Loggable::_readonly = false;
 FILE *Loggable::_fp;
 unsigned int Loggable::_log_id = 0;
 int Loggable::_level = 0;
@@ -116,8 +117,19 @@ Loggable::open ( const char *filename )
     if ( ! ( fp = fopen( filename, "a+" ) ) )
     {
         WARNING( "Could not open log file for writing!" );
-        return false;
+        
+        if ( ! ( fp = fopen( filename, "r" ) ) )
+        {
+            WARNING( "Could not open log file for reading!" );
+            return false;
+        }
+        else
+        {
+            _readonly = true;
+        }
     }
+    
+    _readonly = false;
 
     load_unjournaled_state();
 

@@ -99,6 +99,9 @@ public:
 
             _max_width = 0;
 
+            int LW = 0;
+            int LH = 0;
+
             for ( int i = 0; i < children(); ++i )
             {
                 Fl_Widget *o = child( i );
@@ -108,12 +111,28 @@ public:
 
                 H = o->h() > H ? o->h() : H;
 
-                if ( _flow && X + o->w() >= W )
+                if ( _flow )
                 {
+                    if ( Y + o->h() < H )
+                    {
+                        /* if it'll fit in this column, put it below the previous widget */
+                        X -= LW + _hspacing;
+                    }
+                    else if ( X + o->w() >= W )
+                    {
+                        /* maybe wrap to the next row */
+                        H += o->h();
 
-                    Y += H + _vspacing;
-                    H = o->h();
-                    X = 0;
+                        X = 0;
+                    }
+                    else
+                    {
+                        /* otherwise, put it in the next column */
+                        Y = 0;
+                    }                   
+
+                    LW = o->w();
+                    LH = o->h();
                 }
 
                 /* avoid bothering the control with lots of resize() calls */
@@ -121,7 +140,8 @@ public:
                          o->y() == y() + Y ) )
                     o->position( x() + X, y() + Y );
 
-                X += o->w() + _hspacing;
+                Y += LH + _vspacing;
+                X += LW + _hspacing;
 
                 if ( X > _max_width )
                     _max_width = X;

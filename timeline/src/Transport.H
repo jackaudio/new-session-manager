@@ -27,8 +27,9 @@
 #include <FL/Fl_Button.H>
 
 #include <stdio.h>
+#include <FL/Fl_Flowpack.H>
 
-class Transport : public jack_position_t, public Fl_Pack
+class Transport : public jack_position_t, public Fl_Flowpack
 {
 
 private:
@@ -47,6 +48,8 @@ private:
     Fl_Button *_play_button;
     Fl_Button *_record_button;
     Fl_Button *_punch_button;
+    Fl_Button *_loop_button;
+    Fl_Button *_new_take_button;
 
     void update_record_state ( void );
 
@@ -56,6 +59,11 @@ public:
 
     bool rec_enabled ( void ) const;
     bool punch_enabled ( void ) const;
+    bool loop_enabled ( void ) const;
+    void loop_enabled ( bool b );
+
+    void automatically_create_takes ( bool b );
+    bool automatically_create_takes ( void ) const;
 
     void stop_disables_record ( bool b ) { _stop_disables_record = b; }
     bool stop_disables_record ( void ) const { return _stop_disables_record; }

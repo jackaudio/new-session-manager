@@ -87,8 +87,6 @@ bool Timeline::snapping_on_hold = false;
 bool Timeline::snap_magnetic = true;
 bool Timeline::follow_playhead = true;
 bool Timeline::center_playhead = true;
-bool Timeline::loop_playback = false;
-bool Timeline::automatically_create_takes = false;
 
 const float UPDATE_FREQ = 1.0 / 18.0f;
 
@@ -1447,7 +1445,7 @@ Timeline::redraw_playhead ( void )
     {
         if ( play_cursor_track->active_cursor() )
         {
-            if ( Timeline::loop_playback )
+            if ( transport->loop_enabled() )
             {
                 if ( transport->frame > playback_end() )
                 {

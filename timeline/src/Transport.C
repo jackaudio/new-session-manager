@@ -27,7 +27,7 @@
 
 
 Transport::Transport ( int X, int Y, int W, int H, const char *L )
-    : Fl_Pack( X, Y, W, H, L )
+    : Fl_Flowpack( X, Y, W, H, L )
 {
     recording = false;
     rolling = false;
@@ -45,49 +45,71 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
     frame_rate = 48000;
     frame = 0;
 
-    const int bw = W / 5;
-
-    type( HORIZONTAL );
+    { _home_button = new Fl_Button(5, 5, 40, 44, "@|<");
+    } // Fl_Button* _home_button
+    { _end_button = new Fl_Button(45, 5, 40, 44, "@>|");
+    } // Fl_Button* _end_button
+    { _play_button = new Fl_Button(85, 5, 40, 44, "@>");
+    } // Fl_Button* _play_button
+    { _record_button = new Fl_Button(130, 5, 40, 44, "@circle");
+    } // Fl_Button* _record_button
+    { _punch_button = new Fl_Button(175, 5, 38, 21, "Punch");
+        _punch_button->type(1);
+        _punch_button->labelsize(10);
+    } // Fl_Button* _punch_button
+    { _loop_button = new Fl_Button(175, 20, 38, 21, "Loop");
+        _loop_button->type(1);
+        _loop_button->labelsize(10);
+    } // Fl_Button* _loop_button
+    { _new_take_button = new Fl_Button(225, 5, 60, 21, "New Take");
+        _new_take_button->type(1);
+        _new_take_button->labelsize(10);
+    } // Fl_Button* _new_take_button
+    end();
 
     Fl_Button *o;
 
-    _home_button = o = new Fl_Button( 0, 0, bw, 0, "@|<" );
-    o->labeltype( FL_EMBOSSED_LABEL );
+    o = _home_button;
     o->callback( cb_button, this );
     o->shortcut( FL_Home );
-    o->box( FL_UP_BOX );
 
-    _end_button = o = new Fl_Button( 0, 0, bw, 0, "@>|" );
-    o->labeltype( FL_EMBOSSED_LABEL );
+    o = _end_button;
     o->callback( cb_button, this );
     o->shortcut( FL_End );
 
-    _play_button = o = new Fl_Button( 0, 0, bw, 0, "@>" );
-    o->labeltype( FL_EMBOSSED_LABEL );
+    o = _play_button;
     o->callback( cb_button, this );
     o->shortcut( ' ' );
-    o->box( FL_UP_BOX );
 
-    _record_button = o = new Fl_Button( 0, 0, bw, 0, "@circle" );
+    o = _record_button;
     o->type( FL_TOGGLE_BUTTON );
-    o->labeltype( FL_EMBOSSED_LABEL );
-    o->labelcolor( fl_color_average( FL_RED, FL_WHITE, 0.25f ) );
     o->shortcut( 'R' );
     o->callback( cb_button, this );
     o->when( FL_WHEN_CHANGED );
-    o->box( FL_UP_BOX );
 
-    _punch_button = o = new Fl_Button( 0, 0, bw, 0, "Punch" );
+    o = _punch_button;
     o->type( FL_TOGGLE_BUTTON );
-    o->labelsize( 9 );
-    o->labeltype( FL_NORMAL_LABEL );
     o->shortcut( 'P' );
     o->callback( cb_button, this );
     o->when( FL_WHEN_CHANGED );
-    o->color2( FL_RED );
-    o->box( FL_UP_BOX );
+    o->color2( fl_color_average( FL_GRAY, FL_RED, 0.50 ));
+    o->tooltip( "Toggle punch in/out recording mode" );
+    
+    o = _loop_button;
+    o->type( FL_TOGGLE_BUTTON );
+    o->shortcut( 'L' );
+    o->callback( cb_button, this );
+    o->when( FL_WHEN_CHANGED );
+    o->color2( fl_color_average( FL_GRAY, FL_GREEN, 0.50 ));
+    o->tooltip( "Toggle looped playback" );
 
-    end();
+    o = _new_take_button;
+    o->type( FL_TOGGLE_BUTTON );
+    o->shortcut( 'T' );
+    o->callback( cb_button, this );
+    o->when( FL_WHEN_CHANGED );
+    o->color2( fl_color_average( FL_GRAY, FL_YELLOW, 0.50 ) );
+    o->tooltip( "Toggle automatic creation of new takes for armed tracks" );
 }
 
 
@@ -165,6 +187,32 @@ Transport::punch_enabled ( void ) const
     return _punch_button->value();
 }
 
+bool
+Transport::loop_enabled ( void ) const
+{
+    return _loop_button->value();
+}
+
+void
+Transport::loop_enabled ( bool b )
+{
+    _loop_button->value( b );
+}
+
+bool
+Transport::automatically_create_takes ( void ) const
+{
+    return _new_take_button->value();
+}
+
+void
+Transport::automatically_create_takes ( bool b )
+{
+    _new_take_button->value( b );
+}
+
+
+
 int
 Transport::handle ( int m )
 {
@@ -173,7 +221,7 @@ Transport::handle ( int m )
     if ( m == FL_FOCUS  )
         return 0;
     else
-        return Fl_Pack::handle( m );
+        return Fl_Flowpack::handle( m );
 }
 
 /***********/

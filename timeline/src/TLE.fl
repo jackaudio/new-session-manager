@@ -249,11 +249,11 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label {Non DAW : Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	timeline->command_quit();} open
-      xywh {262 208 1025 770} type Double resizable
+      xywh {516 306 1025 770} type Double resizable
       class TLE_Window xclass Non_DAW size_range {900 300 0 0} visible
     } {
-      Fl_Group {} {
-        xywh {0 0 1025 73} box FLAT_BOX
+      Fl_Group {} {open
+        xywh {0 -53 1025 126} box FLAT_BOX
       } {
         Fl_Menu_Bar menubar {open
           private xywh {0 0 1025 25}
@@ -601,12 +601,12 @@ timeline->redraw();}
                 }
                 MenuItem {} {
                   label {Loop Playback}
-                  callback {timeline->loop_playback = ( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE );}
+                  callback {transport->loop_enabled( ( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE )) ;}
                   xywh {10 10 40 25} type Toggle
                 }
                 MenuItem {} {
                   label {Automatically Create Takes}
-                  callback {timeline->automatically_create_takes = ( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE );}
+                  callback {transport->automatically_create_takes( ( ((Fl_Menu_*)o)->mvalue()->flags & FL_MENU_VALUE ));}
                   xywh {10 10 40 25} type Toggle
                 }
               }
@@ -641,31 +641,30 @@ ab.run();}
           }
         }
         Fl_Pack {} {open
-          xywh {3 28 477 44} type HORIZONTAL
+          xywh {1 27 584 46} type HORIZONTAL
           code0 {o->spacing( 10 );}
         } {
           Fl_Box {} {
             label {<Transport>}
-            xywh {5 30 185 37} color 30
+            xywh {5 28 290 44} color 30
             code0 {transport = o;}
             code1 {o->labeltype( FL_NO_LABEL );}
-            code2 {o->spacing( 1 );}
             class Transport
           }
           Fl_Pack clocks_pack {open
-            private xywh {195 28 285 44} type HORIZONTAL
+            private xywh {295 30 290 41} type HORIZONTAL
             code0 {o->spacing( 2 );}
           } {
             Fl_Box {} {
-              label PLAYHEAD
-              private xywh {196 28 137 40} box BORDER_BOX color 40
+              label PLAYHEAD selected
+              private xywh {301 30 137 41} box FLAT_BOX color 47
               code0 {o->type( Clock::HMS );}
               code1 {o->run( &transport->frame );}
               class Clock
             }
             Fl_Box {} {
-              label PLAYHEAD
-              xywh {335 32 137 37} box BORDER_BOX color 40
+              label PLAYHEAD selected
+              xywh {440 30 137 41} box FLAT_BOX color 47
               code0 {o->type( Clock::BBT );}
               code1 {o->run( &transport->frame );}
               class Clock
@@ -674,7 +673,7 @@ ab.run();}
         }
         Fl_Box {} {
           label {<empty>}
-          xywh {475 32 265 40} resizable
+          xywh {585 32 155 40} resizable
           code0 {o->labeltype( FL_NO_LABEL );}
         }
         Fl_Group {} {open
@@ -718,7 +717,7 @@ ab.run();}
           xywh {740 31 115 40}
         } {
           Fl_Button solo_blinker {
-            label SOLO selected
+            label SOLO
             xywh {800 33 50 15} box BORDER_BOX down_box BORDER_BOX color 74 selection_color 92 labelfont 1 labelsize 11 labelcolor 32
             code0 {\#include "FL/Fl_Blink_Button.H"}
             code1 {o->box( FL_ASYM_BOX );}
@@ -727,7 +726,7 @@ ab.run();}
             class Fl_Blink_Button
           }
           Fl_Button rec_blinker {
-            label REC selected
+            label REC
             xywh {800 53 50 15} box BORDER_BOX down_box BORDER_BOX color 72 selection_color 88 labelfont 1 labelsize 11 labelcolor 32
             code0 {\#include "FL/Fl_Blink_Button.H"}
             code1 {o->box( FL_ASYM_BOX );}
@@ -736,7 +735,7 @@ ab.run();}
             class Fl_Blink_Button
           }
           Fl_Button selected_blinker {
-            label SEL selected
+            label SEL
             xywh {745 53 50 15} box BORDER_BOX down_box BORDER_BOX color 13 selection_color 5 labelfont 1 labelsize 11 labelcolor 32
             code0 {\#include "FL/Fl_Blink_Button.H"}
             code1 {o->box( FL_ASYM_BOX );}
@@ -745,7 +744,7 @@ ab.run();}
             class Fl_Blink_Button
           }
           Fl_Button seek_blinker {
-            label SEEK selected
+            label SEEK
             xywh {745 33 50 15} box BORDER_BOX down_box BORDER_BOX color 10 selection_color 2 labelfont 1 labelsize 11 labelcolor 32
             code0 {\#include "FL/Fl_Blink_Button.H"}
             code1 {o->box( FL_ASYM_BOX );}
@@ -959,8 +958,7 @@ if ( p != oldp )
         progress->redraw();
 
         Fl::check();
-}
-} {}
+}} {}
   }
   Function {show_help_dialog( const char *file )} {open private return_type {static void}
   } {
@@ -1003,7 +1001,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {1242 261 520 775} type Double modal visible
+      private xywh {1398 301 520 775} type Double modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}

@@ -36,7 +36,7 @@ Timeline::record ( void )
 {
     /* FIXME: right place for this? */
 
-    if ( Timeline::automatically_create_takes &&
+    if ( transport->automatically_create_takes() &&
          ! _created_new_takes )
     {
         add_take_for_armed_tracks();

@@ -167,11 +167,6 @@ public:
     static bool snap_magnetic;
     static bool follow_playhead;
     static bool center_playhead;
-    static bool loop_playback;
-    static bool automatically_create_takes;
-
-
-
 
     Tempo_Sequence *tempo_track;
     Time_Sequence  *time_track;

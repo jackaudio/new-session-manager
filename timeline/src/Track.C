@@ -246,7 +246,6 @@ Track::init ( void )
         o->end();
     }
     end();
-
 }
 
 

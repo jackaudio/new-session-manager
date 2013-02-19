@@ -155,12 +155,14 @@ Disk_Stream::shutdown ( void )
             
             if ( total_ms > 100 )
             {
-                WARNING("Disk_Stream thread has taken longer than %ims to respond to terminate signal.", total_ms );
+                WARNING("Disk_Stream thread has taken longer than %ims to respond to terminate signal. Canceling", total_ms );
+                _thread.cancel();
                 break;
             }
         }
         
-        _thread.join();
+        if ( ! _terminate )
+            _thread.join();
 
         sem_destroy( &_blocks );
 

@@ -111,6 +111,13 @@ Thread::detach ( void )
 }
 
 void
+Thread::cancel ( void )
+{
+    pthread_cancel( _thread );
+    _thread = 0;
+}
+
+void
 Thread::join ( void )
 {
     pthread_join( _thread, NULL );

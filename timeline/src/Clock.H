@@ -161,9 +161,10 @@ public:
                     printf( "error: invalid clock type\n" );
             }
 
-            fl_font( FL_COURIER, 24 );
 
-            Fl_Color c = FL_GREEN;
+            fl_font( FL_COURIER_BOLD, 24 );
+
+            Fl_Color c = fl_color_average( FL_WHITE, FL_GRAY, 0.60 );
 
             fl_color( c );
 
@@ -185,7 +186,7 @@ public:
 
             const char *types[] = { "HMS", "BBT", "Timecode", "Sample" };
 
-            fl_color( FL_CYAN );
+            fl_color( fl_color_average( FL_WHITE, FL_GRAY, 0.50 ) );
 
             switch ( type() )
             {

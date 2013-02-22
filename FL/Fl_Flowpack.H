@@ -27,6 +27,7 @@ class Fl_Flowpack : public Fl_Group
     int _vspacing;
     int _max_width;
     bool _flow;
+    bool _flowdown;
 
 public:
 
@@ -36,6 +37,7 @@ public:
             resizable( 0 );
             _max_width = _hspacing = _vspacing = 0;
             _flow = true;
+            _flowdown = false;
         }
 
     virtual ~Fl_Flowpack ( )
@@ -52,6 +54,9 @@ public:
 
     bool flow ( void ) const { return _flow; }
     void flow ( bool v ) { _flow = v; }
+
+    bool flowdown ( void ) const { return _flowdown; }
+    void flowdown ( bool v ) { _flowdown = v; }
 
     void
     add ( Fl_Widget *w )
@@ -101,6 +106,8 @@ public:
 
             int LW = 0;
             int LH = 0;
+            int LX = 0;
+            int LY = 0;
 
             for ( int i = 0; i < children(); ++i )
             {
@@ -113,35 +120,54 @@ public:
 
                 if ( _flow )
                 {
-                    if ( Y + o->h() < H )
+                    if ( _flowdown && Y + o->h() < H )
                     {
                         /* if it'll fit in this column, put it below the previous widget */
-                        X -= LW + _hspacing;
+                        X = LX;
                     }
                     else if ( X + o->w() >= W )
                     {
                         /* maybe wrap to the next row */
                         H += o->h();
-
+                        
                         X = 0;
                     }
                     else
                     {
                         /* otherwise, put it in the next column */
-                        Y = 0;
+                        Y = LY;
                     }                   
 
-                    LW = o->w();
-                    LH = o->h();
                 }
 
-                /* avoid bothering the control with lots of resize() calls */
-                if ( ! ( o->x() == x() + X &&
-                         o->y() == y() + Y ) )
-                    o->position( x() + X, y() + Y );
+                LW = o->w();
+                LH = o->h();
 
-                Y += LH + _vspacing;
-                X += LW + _hspacing;
+                /* avoid bothering the control with lots of resize() calls */
+
+                LX = X;
+                LY = Y;
+
+                if ( ! ( o->x() == x() + LX &&
+                         o->y() == y() + LY ) )
+                    o->position( x() + LX, y() + LY );
+
+                if ( _flow )
+                {
+                    Y += LH + _vspacing;
+                    X += LW + _hspacing;
+                }
+                else
+                {
+                    if ( type() == Fl_Pack::HORIZONTAL )
+                    {
+                        X += LW + _hspacing;
+                    }
+                    else
+                    {
+                        Y += LH + _vspacing;
+                    }
+                }
 
                 if ( X > _max_width )
                     _max_width = X;

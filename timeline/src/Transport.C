@@ -110,6 +110,8 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
     o->when( FL_WHEN_CHANGED );
     o->color2( fl_color_average( FL_GRAY, FL_YELLOW, 0.50 ) );
     o->tooltip( "Toggle automatic creation of new takes for armed tracks" );
+
+    flowdown( true );
 }
 
 

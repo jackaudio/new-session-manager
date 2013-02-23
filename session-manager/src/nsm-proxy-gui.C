@@ -26,8 +26,6 @@
 #define APP_TITLE "NSM Proxy"
 
 #include "NSM_Proxy_UI.H"
-#include "FL/Fl_Theme.H"
-#include "FL/themes.H"
 #include <lo/lo.h>
 #include <signal.h>
 #include <stdio.h>
@@ -179,10 +177,6 @@ main ( int argc, char **argv )
     
     w->show();
 
-    fl_register_themes();
-
-    Fl_Theme::set();
-    
     Fl::lock();
 
     Fl::run();

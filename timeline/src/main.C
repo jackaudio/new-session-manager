@@ -43,9 +43,6 @@
 #include "TLE.H"
 #include "Timeline.H"
 
-#include "FL/themes.H"
-#include "FL/Fl_Theme.H"
-
 #include "Project.H"
 #include "Transport.H"
 #include "Engine/Engine.H"
@@ -253,10 +250,6 @@ main ( int argc, char **argv )
 #endif        
     tle->main_window->show( 0, NULL );
    
-    fl_register_themes();
-
-    Fl_Theme::set();
-        
     char *nsm_url = getenv( "NSM_URL" );
 
     if ( nsm_url )

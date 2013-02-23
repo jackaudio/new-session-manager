@@ -38,9 +38,6 @@
 #include "../icons/icon-16x16.xpm"
 #endif
 
-#include "FL/Fl_Theme.H"
-#include "FL/themes.H"
-
 // extern const char *BUILD_ID;
 // extern const char *VERSION;
 
@@ -279,10 +276,6 @@ main ( int argc, char **argv )
     ui->main_window->icon((char *)p);
 #endif
     ui->main_window->show( 0, 0 );
-
-    fl_register_themes();
-
-    Fl_Theme::set();
 
     instance_name = strdup( APP_NAME );
 

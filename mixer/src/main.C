@@ -32,8 +32,6 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Shared_Image.H>
 #include <FL/Fl_Pack.H>
-#include "FL/themes.H"
-#include "FL/Fl_Theme.H"
 #include "Thread.H"
 #include "debug.h"
 
@@ -264,13 +262,6 @@ main ( int argc, char **argv )
 #endif
             o->show( 0, 0 );
         }
-    }
-
-    if ( ! no_ui )
-    {
-        fl_register_themes();
-
-        Fl_Theme::set();
     }
 
     Plugin_Module::spawn_discover_thread();

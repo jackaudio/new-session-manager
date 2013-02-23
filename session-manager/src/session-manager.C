@@ -48,8 +48,6 @@
 
 #define APP_NAME "Non Session Manager"
 
-#include "FL/themes.H"
-
 #ifdef HAVE_XPM
 #include "FL/Fl.H"
 #include "FL/x.H"
@@ -1150,10 +1148,6 @@ main (int argc, char **argv )
         o->show( 0, NULL );
     }
     
-    fl_register_themes();
-    
-    Fl_Theme::set();
-
     static struct option long_options[] = 
         {
             { "nsm-url", required_argument, 0, 'n' },

@@ -477,6 +477,8 @@ Audio_Region::draw_box( void )
 void
 Audio_Region::peaks_ready_callback ( void *v )
 {
+    /* this is called from the peak builder thread */
+
     DMESSAGE("Damaging region from peaks ready callback");
     Fl::lock();
     ((Audio_Region*)v)->redraw();

@@ -85,11 +85,7 @@ Control_Sequence::~Control_Sequence ( )
 
     log_destroy();
 
-    engine->lock();
-
     track()->remove( this );
-
-    engine->unlock();
 
     if ( _output )
     { 
@@ -144,8 +140,6 @@ Control_Sequence::name ( const char *s )
 void
 Control_Sequence::update_port_name ( void )
 {
-    engine->lock();
-
     bool needs_activation = false;
     if ( ! _output )
     {
@@ -170,8 +164,6 @@ Control_Sequence::update_port_name ( void )
             _output = NULL;
         }
     }
-
-    engine->unlock();
 }
 
 void
@@ -621,7 +613,7 @@ Control_Sequence::process_osc ( void )
 {
     if ( mode() != OSC )
         return;
-   
+
     header()->outputs_indicator->value( _osc_output() && _osc_output()->connected() );
 
     if ( _osc_output() && _osc_output()->connected() )
@@ -769,7 +761,7 @@ Control_Sequence::handle ( int m )
 
                 add( r );
 
-                timeline->unlock();
+               timeline->unlock();
 
                 return 1;
             }

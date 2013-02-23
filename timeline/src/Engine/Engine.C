@@ -168,7 +168,11 @@ Engine::process ( nframes_t nframes )
     }
     else
     {
-        if ( ! trylock() )
+        if ( !timeline)
+        /* handle chicken/egg problem */
+            return 0;
+
+        if ( timeline->tryrdlock() )
         {
             /* the data structures we need to access here (tracks and
              * their ports, but not track contents) may be in an
@@ -178,14 +182,12 @@ Engine::process ( nframes_t nframes )
             return 0;
         }
 
-        /* handle chicken/egg problem */
-        if ( timeline )
-            /* this will initiate the process() call graph for the various
-             * number and types of tracks, which will in turn send data out
-             * the appropriate ports.  */
-            timeline->process( nframes );
+        /* this will initiate the process() call graph for the various
+         * number and types of tracks, which will in turn send data out
+         * the appropriate ports.  */
+        timeline->process( nframes );
 
-        unlock();
+        timeline->unlock();
     }
 
     return 0;

@@ -41,7 +41,6 @@
 #include "Annotation_Sequence.H"
 #include "Track.H"
 #include "Transport.H"
-#include "Engine/Engine.H" // for lock()
 
 #include "FL/menu_popup.H"
 
@@ -362,6 +361,10 @@ Timeline::range ( nframes_t start, nframes_t length )
 void
 Timeline::add_take_for_armed_tracks ( void )
 {
+    THREAD_ASSERT( UI );
+
+    wrlock();
+
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
@@ -369,6 +372,8 @@ Timeline::add_take_for_armed_tracks ( void )
         if ( t->armed() && t->sequence()->_widgets.size() )
             t->sequence( new Audio_Sequence( t ) );
     }
+
+    unlock();
 }
 
 void
@@ -938,10 +943,12 @@ Timeline::draw_measure_cb ( nframes_t frame, const BBT &bbt, void *v )
         return;
 
     if ( bbt.beat )
+    {
         if ( o->panzoomer->zoom() > 12 )
             return;
         else
             c = FL_DARK1;
+    }
 
     fl_color( fl_color_add_alpha( c, 64 ) );
     
@@ -1246,6 +1253,8 @@ Timeline::draw_cursors ( void ) const
 void
 Timeline::draw ( void )
 {
+    THREAD_ASSERT( UI );
+
     int X, Y, W, H;
 
     int bdx = 0;
@@ -1869,13 +1878,9 @@ Timeline::add_track ( Track *track )
 {
     DMESSAGE( "added new track to the timeline" );
 
-    engine->lock();
-
     tracks->add( track );
 
 //    update_track_order();
-
-    engine->unlock();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
@@ -1888,15 +1893,11 @@ Timeline::insert_track ( Track *track, int n )
     if ( n > tracks->children() || n < 0 )
         return;
 
-    engine->lock();
-
     tracks->insert( *track, n );
 
     update_track_order();
 
     tracks->redraw();
-
-    engine->unlock();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
 //    redraw();    
@@ -1912,7 +1913,7 @@ compare_tracks ( Track *a, Track *b )
 void
 Timeline::apply_track_order ( void )
 {
-    engine->lock();
+    /* wrlock(); */
 
     std::list<Track*> tl;
     
@@ -1931,7 +1932,7 @@ Timeline::apply_track_order ( void )
 
     update_track_order();
 
-    engine->unlock();
+    /* unlock(); */
 }
 
 void
@@ -1947,17 +1948,6 @@ Timeline::find_track ( const Track *track ) const
     return tracks->find( *track );
 }
 
-void
-Timeline::move_track_up ( Track *track )
-{
-    insert_track( track, find_track( track ) - 1 );
-}
-
-void
-Timeline::move_track_down ( Track *track )
-{
-    insert_track( track, find_track( track ) + 2 );
-}
 
 /** remove /track/ from the timeline */
 void
@@ -1965,14 +1955,10 @@ Timeline::remove_track ( Track *track )
 {
     DMESSAGE( "removed track from the timeline" );
 
-    engine->lock();
-
     /* FIXME: what to do about track contents? */
     tracks->remove( track );
 
     update_track_order();
-
-    engine->unlock();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
@@ -1981,6 +1967,30 @@ Timeline::remove_track ( Track *track )
 /************/
 /* Commands */
 /************/
+
+void
+Timeline::command_move_track_up ( Track *track )
+{
+    wrlock();
+    insert_track( track, find_track( track ) - 1 );
+    unlock();
+}
+
+void
+Timeline::command_move_track_down ( Track *track )
+{
+    wrlock();
+    insert_track( track, find_track( track ) + 2 );
+    unlock();
+}
+
+void
+Timeline::command_remove_track ( Track *track )
+{
+    wrlock();
+    remove_track(track);
+    unlock();
+}
 
 void
 Timeline::command_quit ( )
@@ -1998,8 +2008,10 @@ Timeline::command_load ( const char *name, const char *display_name )
     if ( ! name )
         return false;
   
+    wrlock();
     int r = Project::open( name );
-  
+    unlock();
+
     if ( r < 0 )
     {
   	const char *s = Project::errstr( r );
@@ -2145,7 +2157,7 @@ Timeline::handle_peer_scan_complete ( void *o )
 void
 Timeline::connect_osc ( void )
 {
-    wrlock();
+//    rdlock();
 
     /* try to (re)connect OSC signals */
     for ( int i = tracks->children(); i-- ; )
@@ -2155,7 +2167,7 @@ Timeline::connect_osc ( void )
         t->connect_osc();
     }
 
-    unlock();
+//    unlock();
 }
 
 void
@@ -2183,7 +2195,6 @@ Timeline::process_osc ( void )
 {
     THREAD_ASSERT( OSC );
 
-    /* FIXME: is holding this lock a problem for recording? */
     rdlock();
 
     /* reconnect OSC signals */

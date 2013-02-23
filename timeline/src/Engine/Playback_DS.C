@@ -33,6 +33,7 @@
 #include "const.h"
 #include "debug.h"
 #include "Thread.H"
+#include <unistd.h>
 
 bool
 Playback_DS::seek_pending ( void )
@@ -76,29 +77,36 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
 
     memset( buf, 0, nframes * sizeof( sample_t ) * channels() );
 
-    /* stupid chicken/egg */
-    if ( ! timeline )
-        return;
-
 //    printf( "IO: attempting to read block @ %lu\n", _frame );
 
-    timeline->rdlock();
+    if ( !timeline )
+        return;
 
-    if ( sequence() )
+    while ( ! _terminate )
     {
-        /* FIXME: how does this work if _delay is not a multiple of bufsize? */
-        
-        if ( _frame >= _delay )
+        if ( ! timeline->tryrdlock() )
         {
-            if ( ! sequence()->play( buf, _frame - _delay, nframes, channels() ) )
-                WARNING( "Programming error?" );
+            if ( sequence() )
+            {
+                
+                /* FIXME: how does this work if _delay is not a multiple of bufsize? */
+                
+                if ( _frame >= _delay )
+                {
+                    if ( ! sequence()->play( buf, _frame - _delay, nframes, channels() ) )
+                        WARNING( "Programming error?" );
+                }
+                
+                _frame += nframes;
+            }
+            
+            timeline->unlock();
+            
+            return;
         }
-        
-        _frame += nframes;
-        
+
+        usleep( 1000 * 10 );
     }
-    
-    timeline->unlock();
 }
 
 #define AVOID_UNNECESSARY_COPYING 1
@@ -145,6 +153,10 @@ Playback_DS::disk_thread ( void )
         blocks_ready = 0;
 
         read_block( buf, nframes );
+
+        /* might have received terminate signal while waiting for block */
+        if ( _terminate )
+            goto done;
 
 //        unlock(); // for seeking
 
@@ -201,6 +213,8 @@ Playback_DS::disk_thread ( void )
 
     }
 
+done:
+
     DMESSAGE( "playback thread terminating" );
 
     delete[] buf;
@@ -209,6 +223,8 @@ Playback_DS::disk_thread ( void )
 #endif
 
     _terminate = false;
+
+    _thread.exit();
 }
 
 /** take a single block from the ringbuffers and send it out the

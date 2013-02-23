@@ -36,8 +36,6 @@
 #include "FL/Fl_Scalepack.H"
 #include "FL/Fl_Blink_Button.H"
 
-#include "Engine/Engine.H" // for lock()
-
 #include "Control_Sequence.H"
 #include "Annotation_Sequence.H"
 
@@ -639,11 +637,7 @@ Track::remove ( Control_Sequence *t )
     if ( ! control )
         return;
 
-    engine->lock();
-
     control->remove( t );
-
-    engine->unlock();
 
     adjust_size();
 }
@@ -681,8 +675,6 @@ Track::add ( Control_Sequence *t )
 {
     DMESSAGE( "adding control sequence" );
 
-    engine->lock();
-
     t->track( this );
 
     t->color( random_color() );
@@ -690,8 +682,6 @@ Track::add ( Control_Sequence *t )
 //    control->insert( *t, 0 );
     control->add( t );
     
-    engine->unlock();
-
     adjust_size();
 }
 
@@ -742,6 +732,16 @@ Track::menu_cb ( Fl_Widget *w, void *v )
 }
 
 void
+Track::command_configure_channels ( int n )
+{
+    /* due to locking this should only be invoked by direct user action */
+    timeline->wrlock();
+    configure_inputs( n );
+    configure_outputs( n );
+    timeline->unlock();
+}
+
+void
 Track::menu_cb ( const Fl_Menu_ *m )
 {
     char picked[256];
@@ -754,18 +754,15 @@ Track::menu_cb ( const Fl_Menu_ *m )
 
     if ( ! strcmp( picked, "Type/Mono" ) )
     {
-        configure_inputs( 1 );
-        configure_outputs( 1 );
+        command_configure_channels( 1 );
     }
     else if ( ! strcmp( picked, "Type/Stereo" ) )
     {
-        configure_inputs( 2 );
-        configure_outputs( 2 );
+        command_configure_channels( 2 );
     }
     else if ( ! strcmp( picked, "Type/Quad" ) )
     {
-        configure_inputs( 4 );
-        configure_outputs( 4 );
+        command_configure_channels( 4 );
     }
     else if ( ! strcmp( picked, "Type/..." ) )
     {
@@ -779,8 +776,7 @@ Track::menu_cb ( const Fl_Menu_ *m )
                 fl_alert( "Invalid number of channels." );
             else
             {
-                configure_inputs( c );
-                configure_outputs( c );
+                command_configure_channels(c);
             }
         }
     }
@@ -789,7 +785,9 @@ Track::menu_cb ( const Fl_Menu_ *m )
         /* add audio track */
         char *name = get_unique_control_name( "Control" );
 
+        timeline->wrlock();
         new Control_Sequence( this, name );
+        timeline->unlock();
     }
     else if ( ! strcmp( picked, "/Overlay controls" ) )
     {
@@ -846,8 +844,8 @@ Track::menu_cb ( const Fl_Menu_ *m )
 
         if ( r == 2 )
         {
-            timeline->remove_track( this );
-            Fl::delete_widget( this );
+            timeline->command_remove_track( this );
+             Fl::delete_widget( this );
         }
     }
     else if ( ! strcmp( picked, "/Rename" ) )
@@ -856,11 +854,11 @@ Track::menu_cb ( const Fl_Menu_ *m )
     }
     else if ( ! strcmp( picked, "/Move Up" ) )
     {
-        timeline->move_track_up( this );
+        timeline->command_move_track_up( this );
     }
     else if ( ! strcmp( picked, "/Move Down" ) )
     {
-        timeline->move_track_down( this );
+        timeline->command_move_track_down( this );
     }
     else if ( !strcmp( picked, "Takes/Show all takes" ) )
     {
@@ -868,7 +866,9 @@ Track::menu_cb ( const Fl_Menu_ *m )
     }
     else if ( !strcmp( picked, "Takes/New" ) )
     {
+        timeline->wrlock();
         sequence( (Audio_Sequence*)sequence()->clone_empty() );
+        timeline->unlock();
     }
     else if ( !strcmp( picked, "Takes/Remove" ) )
     {
@@ -876,11 +876,15 @@ Track::menu_cb ( const Fl_Menu_ *m )
             {
                 Loggable::block_start();
 
+                timeline->wrlock();
+
                 Audio_Sequence *s = sequence();
 
                 sequence( (Audio_Sequence*)takes->child( 0 ) );
 
                 delete s;
+
+                timeline->unlock();
 
                 Loggable::block_end();
             }
@@ -900,7 +904,9 @@ Track::menu_cb ( const Fl_Menu_ *m )
     {
         Audio_Sequence* s = (Audio_Sequence*)m->mvalue()->user_data();
 
+        timeline->wrlock();
         sequence( s );
+        timeline->unlock();
     }
 }
 

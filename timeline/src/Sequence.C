@@ -76,14 +76,14 @@ Sequence::~Sequence (  )
 {
     DMESSAGE( "destroying sequence" );
 
-    if ( _name )
-        free( _name );
-
     if ( _widgets.size() )
         FATAL( "programming error: leaf destructor must call Sequence::clear()!" );
 
     if ( parent() )
         parent()->remove( this );
+
+    if ( _name )
+        free( _name );
 }
 
 
@@ -155,10 +155,10 @@ void
 Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
     /* this might be invoked from Capture or GUI thread */
-    Fl::lock();
+//    Fl::lock();
     sort();
     timeline->damage_sequence();
-    Fl::unlock();
+//    Fl::unlock();
 
 //    timeline->update_length( start + length );
 }
@@ -211,7 +211,6 @@ Sequence::remove ( Sequence_Widget *r )
     _widgets.remove( r );
 
     handle_widget_change( r->start(), r->length() );
-    
 }
 
 static nframes_t
@@ -400,9 +399,7 @@ Sequence::handle ( int m )
                         /* accept objects dragged from other sequences of this type */
                         
                         timeline->wrlock();
-                        
                         add( Sequence_Widget::pushed() );
-                        
                         timeline->unlock();
                         
                         damage( FL_DAMAGE_USER1 );
@@ -487,7 +484,6 @@ Sequence::handle ( int m )
                 Loggable::block_start();
 
                 timeline->wrlock();
-
                 while ( _delete_queue.size() )
                 {
 
@@ -504,7 +500,6 @@ Sequence::handle ( int m )
 
                     delete t;
                 }
-
                 timeline->unlock();
 
                 Loggable::block_end();

@@ -111,6 +111,7 @@ private:
 
     bool configure_outputs ( int n );
     bool configure_inputs ( int n );
+    void command_configure_channels ( int n );
 
     void update_port_names ( void );
     const char *name_for_port( JACK::Port::type_e type, int n );

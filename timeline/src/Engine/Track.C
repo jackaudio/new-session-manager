@@ -72,7 +72,7 @@ Track::configure_outputs ( int n )
     if ( n == on )
         return true;
 
-//    engine->lock();
+    DMESSAGE( "Reconfiguring outputs for track %s", name() );
 
     if ( playback_ds )
     {
@@ -111,7 +111,6 @@ Track::configure_outputs ( int n )
     if ( output.size() )
         playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), output.size() );
 
-//    engine->unlock();
     /* FIXME: bogus */
     return true;
 }
@@ -123,6 +122,8 @@ Track::configure_inputs ( int n )
 
     if ( n == on )
         return true;
+
+    DMESSAGE( "Reconfiguring inputs for track %s", name() );
 
 //    engine->lock();
 

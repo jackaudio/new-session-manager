@@ -57,6 +57,8 @@ class Cursor_Point;
 class Fl_Panzoomer;
 class Fl_Tile;
 
+#include "RWLock.H"
+
 namespace OSC { class Endpoint; }
 
 #define USE_WIDGET_FOR_TIMELINE
@@ -83,7 +85,6 @@ struct Rectangle
     Rectangle ( int X, int Y, int W, int H ) : x( X ), y( Y ), w( W ), h( H ) {}
 };
 
-#include "RWLock.H"
 
 #ifdef USE_WIDGET_FOR_TIMELINE
 class Timeline : public Fl_Group, public RWLock
@@ -252,9 +253,10 @@ public:
 
     void add_track ( Track *track );
     void remove_track ( Track *track );
+    void command_remove_track ( Track *track );
 
-    void move_track_up ( Track *track );
-    void move_track_down ( Track *track );
+    void command_move_track_up ( Track *track );
+    void command_move_track_down ( Track *track );
 
     int find_track ( const Track * track ) const;
 

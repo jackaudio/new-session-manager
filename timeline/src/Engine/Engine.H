@@ -27,7 +27,7 @@ class Port;
 
 #include "Thread.H"
 
-class Engine : public JACK::Client, public Mutex
+class Engine : public JACK::Client
 {
     Thread _thread;                                            /* only used for thread checking */
 

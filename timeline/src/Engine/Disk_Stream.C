@@ -1,4 +1,4 @@
-
+ 
 /*******************************************************************************/
 /* Copyright (C) 2008 Jonathan Moore Liles                                     */
 /*                                                                             */
@@ -73,7 +73,8 @@ Disk_Stream::Disk_Stream ( Track *track, float frame_rate, nframes_t nframes, in
 Disk_Stream::~Disk_Stream ( )
 {
     /* it isn't safe to do all this with the RT thread running */
-    engine->lock();
+
+    timeline->wrlock();
 
     shutdown();
 
@@ -84,7 +85,7 @@ Disk_Stream::~Disk_Stream ( )
     for ( int i = channels(); i--; )
         jack_ringbuffer_free( _rb[ i ] );
 
-    engine->unlock();
+    timeline->unlock();
 }
 
 
@@ -146,23 +147,13 @@ Disk_Stream::shutdown ( void )
         _terminate = true;
         
         /* try to wake the thread so it'll see that it's time to die */
-        int total_ms = 0;
         while ( _terminate )
         {
-            usleep( 1000 * 10 );
-            total_ms += 10;
+            usleep( 100 );
             block_processed();
-            
-            if ( total_ms > 100 )
-            {
-                WARNING("Disk_Stream thread has taken longer than %ims to respond to terminate signal. Canceling", total_ms );
-                _thread.cancel();
-                break;
-            }
         }
         
-        if ( ! _terminate )
-            _thread.join();
+        _thread.join();
 
         sem_destroy( &_blocks );
 

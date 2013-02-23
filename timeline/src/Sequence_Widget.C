@@ -168,7 +168,7 @@ Sequence_Widget::begin_drag ( const Drag &d )
 {
     _drag = new Drag( d );
 
-    timeline->rdlock();
+    timeline->wrlock();
 
     /* copy current values */
     
@@ -400,9 +400,7 @@ Sequence_Widget::handle ( int m )
             /* deletion */
             if ( test_press( FL_BUTTON3 + FL_CTRL ) )
             {
-                timeline->wrlock();
                 remove();
-                timeline->unlock();
 
                 return 1;
             }
@@ -444,7 +442,9 @@ Sequence_Widget::handle ( int m )
             if ( test_press( FL_BUTTON1 + FL_CTRL ) && ! _drag->state )
             {
                 /* duplication */
+                timeline->wrlock();
                 sequence()->add( this->clone() );
+                timeline->unlock();
 
                 _drag->state = 1;
                 return 1;

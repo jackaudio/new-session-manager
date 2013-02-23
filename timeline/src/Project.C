@@ -204,7 +204,9 @@ Project::close ( void )
         return false;
     
     timeline->wrlock();
+
     Loggable::close();
+
     timeline->unlock();
 
 //    write_info();
@@ -311,13 +313,11 @@ Project::open ( const char *name )
     if ( ! engine )
         make_engine();
  
-    timeline->wrlock();
     {
         Block_Timer timer( "Replayed journal" );
         if ( ! Loggable::open( "history" ) )
             return E_INVALID;
     }
-    timeline->unlock();
 
     /* /\* really a good idea? *\/ */
     /* timeline->sample_rate( rate ); */

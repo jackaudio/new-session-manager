@@ -79,11 +79,10 @@ Cursor_Region::Cursor_Region ( nframes_t when, nframes_t length, const char *typ
     this->label( label );
     this->type( type );
 
-    timeline->add_cursor( this );
-
     start( when );
-
     this->length( length );
+
+    timeline->add_cursor( this );
 
     log_create();
 }

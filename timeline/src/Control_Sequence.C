@@ -740,7 +740,6 @@ Control_Sequence::handle ( int m )
 
     Logger log(this);
 
-
     int r = Sequence::handle( m );
 
     if ( r )
@@ -773,7 +772,7 @@ Control_Sequence::handle ( int m )
                 return 1;
             }
 
-            return 0;
+            return Fl_Group::handle( m );
         }
         default:
             return 0;

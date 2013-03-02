@@ -36,7 +36,7 @@ Typing:
 
     ./waf configure
     ./waf
-    ./waf su -c './waf install'
+     su -c './waf install'
     
 from the base of the checkout of the Non git repository will build and
 install all of the non-* programs together.
@@ -47,5 +47,5 @@ Typing:
 
     ./waf configure --project=[timline|sequencer|mixer|session-manager]
     ./waf
-    ./waf su -c './waf install'
+    su -c './waf install'
 

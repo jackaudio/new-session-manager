@@ -85,6 +85,7 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
     o->type( FL_TOGGLE_BUTTON );
     o->shortcut( 'R' );
     o->callback( cb_button, this );
+    o->color2( FL_RED );
     o->when( FL_WHEN_CHANGED );
 
     o = _punch_button;
@@ -129,9 +130,9 @@ Transport::update_record_state ( void )
 
     /* handle display */
     if ( w->value() )
-        w->labelcolor( FL_RED );
+        w->labelcolor( FL_BACKGROUND_COLOR );
     else
-        w->labelcolor( fl_color_average( FL_RED, FL_WHITE, 0.25f ) );
+        w->labelcolor( FL_FOREGROUND_COLOR );
 
     w->redraw();
 

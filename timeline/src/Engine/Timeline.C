@@ -34,11 +34,16 @@
 bool
 Timeline::record ( void )
 {
+    THREAD_ASSERT( UI );
+
+    DMESSAGE( "Initiating recording." );
+
     /* FIXME: right place for this? */
 
     if ( transport->automatically_create_takes() &&
          ! _created_new_takes )
     {
+        DMESSAGE( "Creating new takes." );
         add_take_for_armed_tracks();
         _created_new_takes = true;
     }
@@ -53,12 +58,16 @@ Timeline::record ( void )
 
     if ( transport->punch_enabled() )
     {
+        DMESSAGE( "Finding next punch region following frame %lu...", (unsigned long)frame);
+
         const Sequence_Widget *w = punch_cursor_track->next( frame );
         
         if ( w && w->start() >= frame )
         {
             frame = w->start();
             _punch_out_frame = w->start() + w->length();
+
+            DMESSAGE( "Punch enabled... Will punch in at frame %lu.", (unsigned long)frame );
         }
     }
 
@@ -94,6 +103,8 @@ Timeline::punch_in ( nframes_t frame )
 void
 Timeline::punch_out ( nframes_t frame )
 {
+    THREAD_ASSERT( UI );
+
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
@@ -102,9 +113,11 @@ Timeline::punch_out ( nframes_t frame )
             t->record_ds->stop( frame );
     }
 
-    /* wait until finalization is complete before continuing */
+    DMESSAGE( "Waiting for record threads to shutdown." );
 
-    DMESSAGE( "Waiting for record threads to shutdown" );
+    /* none of the record threads need to call Fl::lock, because we're
+     * holding up the UI thread waiting for them to join.*/
+
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
@@ -112,6 +125,8 @@ Timeline::punch_out ( nframes_t frame )
         if ( t->armed() && t->record_ds )
             t->record_ds->shutdown();
     }
+    
+    DMESSAGE( "All record threads stopped." );
 
     _punched_in = false;
     _punch_in_frame = 0;
@@ -122,6 +137,8 @@ Timeline::punch_out ( nframes_t frame )
 void
 Timeline::stop ( void )
 {
+    THREAD_ASSERT( UI );
+
     nframes_t frame = transport->frame;
 
     if ( transport->punch_enabled() )

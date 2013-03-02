@@ -1253,14 +1253,14 @@ Timeline::draw_cursors ( void ) const
 void
 Timeline::draw ( void )
 {
+    /* Any code that might affect the structures used for drawing from
+     * another thread must use Fl::lock()/unlock()! */ 
     THREAD_ASSERT( UI );
 
     int X, Y, W, H;
 
     int bdx = 0;
     int bdw = 0;
-
-    rdlock();
 
     X = tracks->x() + bdx + 1;
     Y = tracks->y();
@@ -1363,8 +1363,6 @@ done:
 
     _old_xposition = xoffset;
     _old_yposition = panzoomer->y_value();
-
-    unlock();
 }
 
 void
@@ -1438,6 +1436,7 @@ Timeline::redraw_playhead ( void )
             /* we've passed one or more punch regions... punch in for the next, if available. */
             const Sequence_Widget *w = punch_cursor_track->next( transport->frame );
             
+            DMESSAGE( "Delayed punch in" );
             if ( w && 
                  w->start() > transport->frame )
             {
@@ -1993,13 +1992,25 @@ Timeline::command_remove_track ( Track *track )
 }
 
 void
-Timeline::command_quit ( )
+Timeline::command_quit ( void )
 {
+    timeline->wrlock();
+
     Project::close();
+
+    timeline->unlock();
   
     command_save();
   
     while ( Fl::first_window() ) Fl::first_window()->hide();
+}
+
+void
+Timeline::command_undo ( void )
+{
+    wrlock();
+    Project::undo();
+    unlock();
 }
 
 bool

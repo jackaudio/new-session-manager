@@ -618,13 +618,12 @@ Audio_Region::draw ( void )
                     oend = end;
                 }
             }
-            else
+            
+            if ( _clip->peaks()->needs_more_peaks() && ! transport->rolling )
             {
-                if ( ! transport->rolling )
-                {
-                    /* create a thread to make the peaks */
+                    /* maybe create a thread to make the peaks */
+                    /* this function will just return if there's nothing to do. */
                     _clip->peaks()->make_peaks_asynchronously( Audio_Region::peaks_ready_callback, this );
-                }
             }
         }
         else

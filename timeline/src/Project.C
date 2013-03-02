@@ -131,9 +131,7 @@ Project::write_info ( void )
 void
 Project::undo ( void )
 {
-    timeline->wrlock();
     Loggable::undo();
-    timeline->unlock();
 }
 
 bool
@@ -203,11 +201,7 @@ Project::close ( void )
     if ( ! save() )
         return false;
     
-    timeline->wrlock();
-
     Loggable::close();
-
-    timeline->unlock();
 
 //    write_info();
 

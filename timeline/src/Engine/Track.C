@@ -272,14 +272,18 @@ Track::record ( Capture *c, nframes_t frame )
 
     /* open it again for reading in the GUI thread */
     //   Audio_File *af = Audio_File::from_file( c->audio_file->name() );
+    /* must acquire the FLTK lock because adding a widget might interfere with drawing */
+    Fl::lock();
 
     /* must acquire a write lock because the Audio_Region constructor
-     * will add the region to the specified sequence */
+     * will add the region to the specified sequence, which might affect playback */
     timeline->wrlock();
 
     c->region = new Audio_Region( c->audio_file, sequence(), frame );
 
     timeline->unlock();
+
+    Fl::unlock();
 
     c->region->prepare();
 }
@@ -305,13 +309,10 @@ Track::finalize ( Capture *c, nframes_t frame )
     /* adjust region start for latency */
     /* FIXME: is just looking at the first channel good enough? */
 
-    timeline->wrlock();
-
     DMESSAGE( "finalizing audio file" );
-    /* must finalize audio before peaks file, otherwise another thread
-     * might think the peaks are out of date and attempt to regenerate
-     * them */
     c->audio_file->finalize();
+
+    timeline->wrlock();
 
     c->region->finalize( frame );
 
@@ -333,6 +334,4 @@ Track::finalize ( Capture *c, nframes_t frame )
     c->region->offset( capture_offset );
 
     timeline->unlock();
-
-//    delete c->audio_file;
 }

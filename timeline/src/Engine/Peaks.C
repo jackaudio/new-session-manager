@@ -104,9 +104,7 @@ class Peakfile
     FILE *_fp;
     nframes_t _chunksize;
     int _channels;   /* number of channels this peakfile represents */
-//    nframes_t _length; /* length, in frames, of the clip this peakfile represents */
     off_t _offset;
-//    int _blocks;
 
     struct block_descriptor
     {
@@ -127,20 +125,28 @@ class Peakfile
 
 public:
 
+    int nblocks ( void ) const 
+    {
+        return blocks.size();
+    }
+
     Peakfile ( )
         {
-//            _blocks = 0;
             _fp = NULL;
             _offset = 0;
             _chunksize = 0;
             _channels = 0;
-//            _length = 0;
         }
 
     ~Peakfile ( )
         {
             if ( _fp )
                 close();
+        }
+
+    void rescan ( void )
+        {
+            blocks.clear();
         }
 
     /* int blocks ( void ) const { return blocks.size(); } */
@@ -184,9 +190,6 @@ public:
             if ( ! blocks.size() )
                 FATAL( "Peak file contains no blocks!" );
 
-
-//            DMESSAGE( "peakfile has %d blocks.", blocks.size() );
-
             blocks.sort();
 
             /* fall back on the smallest chunksize */
@@ -204,7 +207,6 @@ public:
                 }
 
 //           DMESSAGE( "using peakfile block for chunksize %lu", _chunksize );
-//            _blocks = blocks.size();
             _offset = ftello( _fp );
         }
 
@@ -239,6 +241,7 @@ public:
     bool
     open ( const char *name, int channels, nframes_t chunksize )
         {
+            assert( ! _fp );
 //            _chunksize = 0;
             _channels = channels;
 
@@ -263,6 +266,8 @@ public:
     bool
     open ( FILE *fp, int channels, nframes_t chunksize )
         {
+            assert( ! _fp );
+
             _fp = fp;
             _chunksize = 0;
             _channels = channels;
@@ -364,7 +369,9 @@ public:
 
 Peaks::Peaks ( Audio_File *c )
 {
-    _pending = false;
+    _rescan_needed = false;
+    _first_block_pending = false;
+    _mipmaps_pending = false;
     _clip = c;
     _peak_writer = NULL;
     _peakfile = new Peakfile();
@@ -412,39 +419,50 @@ Peaks::ready ( nframes_t s, nframes_t npeaks, nframes_t chunksize ) const
 bool
 Peaks::peakfile_ready ( void ) const
 {
-    return current() && ! _pending;
+    if ( _rescan_needed )
+    {
+        DMESSAGE( "Rescanning peakfile" );
+        _peakfile->rescan();
+        if ( _peakfile->open( _clip->filename(), _clip->channels(), 256 ) )
+            _peakfile->close();
+
+        _rescan_needed = false;
+    }
+
+    return current() && ! _first_block_pending;
 }
 
+/** start building peaks and/or peak mipmap in another thread. It is
+ * safe to call this again before the thread finishes. /callback/ will
+ * be called with /userdata/ FROM THE PEAK BUILDING THREAD when the
+ * peaks are finished.  */
 void
 Peaks::make_peaks_asynchronously ( void(*callback)(void*), void *userdata ) const
 {
     /* already working on it... */
-    if( _pending )
+    if( _first_block_pending || _mipmaps_pending )
         return;
-
-//    make_peaks();
-
-    _pending = true;
-
+    
+    /* maybe still building mipmaps... */
+    _first_block_pending = _peakfile->nblocks() < 1;
+    _mipmaps_pending = _peakfile->nblocks() <= 1;
+    
     peak_thread_data *pd = new peak_thread_data();
-
+    
     pd->callback = callback;
     pd->userdata = userdata;
     pd->peaks = const_cast<Peaks*>(this);
-
+    
     _make_peaks_thread.clone( &Peaks::make_peaks, pd );
     _make_peaks_thread.detach();
+    
+    DMESSAGE( "Starting new peak building thread" );
 }
 
 nframes_t
 Peaks::read_peakfile_peaks ( Peak *peaks, nframes_t s, nframes_t npeaks, nframes_t chunksize ) const
 {
-    /* if ( _pending ) */
-    /*     return 0; */
-
-//    Peakfile _peakfile;
-
-    if ( ! _peakfile->open( _clip->filename(),  _clip->channels(), chunksize ) )
+    if ( ! _peakfile->open( _clip->filename(), _clip->channels(), chunksize ) )
     {
         DMESSAGE( "Failed to open peakfile!" );
         return 0;
@@ -545,7 +563,7 @@ Peaks::current ( void ) const
 {
     char *pn = peakname( _clip->filename() );
 
-    bool b = ! newer( _clip->filename(), pn );
+    bool b = newer( pn, _clip->filename() );
 
     free( pn );
 
@@ -557,11 +575,14 @@ void *
 Peaks::make_peaks ( void *v )
 {
     peak_thread_data *pd = (peak_thread_data*)v;
-    
-    pd->peaks->make_peaks();
 
-    if ( pd->callback )
-        pd->callback( pd->userdata );
+    if ( pd->peaks->make_peaks() )
+    {
+        if ( pd->callback )
+            pd->callback( pd->userdata );
+
+        pd->peaks->_rescan_needed = true;
+    }
     
     delete pd;
 
@@ -569,35 +590,25 @@ Peaks::make_peaks ( void *v )
 }
 
 bool
+Peaks::needs_more_peaks ( void ) const
+{
+    return _peakfile->nblocks() <= 1 && ! ( _first_block_pending || _mipmaps_pending );
+}
+
+bool
 Peaks::make_peaks ( void ) const
 {
     Peaks::Builder pb( this );
 
+    /* make the first block */
     int b = pb.make_peaks();
-
-    _pending = false;
-
-    return b;
-}
-
-/* thread entry point */
-void *
-Peaks::make_peaks_mipmap ( void *v )
-{
-    ((Peaks*)v)->make_peaks_mipmap();
-
-    return NULL;
-}
-
-bool
-Peaks::make_peaks_mipmap ( void ) const
-{
-    Peaks::Builder pb( this );
-
-    bool b = pb.make_peaks_mipmap();
-
-    _pending = false;
     
+    _first_block_pending = false;
+
+    b = pb.make_peaks_mipmap();
+
+    _mipmaps_pending = false;
+
     return b;
 }
 
@@ -638,8 +649,6 @@ Peaks::finish_writing ( void )
 
     delete _peak_writer;
     _peak_writer = NULL;
-
-    make_peaks_mipmap();
 }
 
 void
@@ -792,15 +801,12 @@ Peaks::Builder::write_block_header ( nframes_t chunksize )
     fflush( fp );
 }
 
-
-
-
 /** generate additional cache levels for a peakfile with only 1 block (ie. that of a new capture) */
 bool
 Peaks::Builder::make_peaks_mipmap ( void )
 {
     if ( ! Peaks::mipmapped_peakfiles )
-        return true;
+        return false;
 
     Audio_File *_clip = _peaks->_clip;
 
@@ -895,10 +901,7 @@ Peaks::Builder::make_peaks_mipmap ( void )
         }
         while ( len > 0 && s < _clip->length() );
 
-        DMESSAGE( "Last sample was %lu", s );
-
-        /* fflush( fp ); */
-        /* fsync( fileno( fp ) ); */
+        DMESSAGE( "Last sample was %lu", (unsigned long)s );
 
         pf.leave_open();
     }
@@ -918,43 +921,46 @@ Peaks::Builder::make_peaks ( void )
 
     const char *filename = _clip->filename();
 
-    DMESSAGE( "building peaks for \"%s\"", filename );
-
-    char *pn = peakname( filename );
-
-    if ( ! ( fp  = fopen( pn, "w+" ) ) )
+    if ( _peaks->_peakfile && _peaks->_peakfile->nblocks() > 1 )
     {
-        free( pn );
+        /* this peakfile already has enough blocks */
         return false;
     }
+    else
+    {
+        DMESSAGE( "building peaks for \"%s\"", filename );
+        
+        char *pn = peakname( filename );
+        
+        if ( ! ( fp  = fopen( pn, "w+" ) ) )
+        {
+            free( pn );
+            return false;
+        }
+        
+        free( pn );
+        
+        _clip->seek( 0 );
+        
+        Peak buf[ _clip->channels() ];
+        
+        DMESSAGE( "building level 1 peak cache" );
+        
+        write_block_header( Peaks::cache_minimum );
+        
+        /* build first level from source */
+        off_t len;
+        do {
+            len = _peaks->read_source_peaks( buf, 1, Peaks::cache_minimum );
+            
+            fwrite( buf, sizeof( buf ), len, fp );
+        }
+        while ( len );
+        
+        fclose( fp );
 
-    free( pn );
-
-    _clip->seek( 0 );
-
-    Peak buf[ _clip->channels() ];
-
-    DMESSAGE( "building level 1 peak cache" );
-
-    write_block_header( Peaks::cache_minimum );
-
-    /* build first level from source */
-    off_t len;
-    do {
-        len = _peaks->read_source_peaks( buf, 1, Peaks::cache_minimum );
-
-        fwrite( buf, sizeof( buf ), len, fp );
+        DMESSAGE( "done building peaks" );
     }
-    while ( len );
-
-    /* reopen for reading */
-    /* fflush( fp ); */
-    /* fsync( fileno( fp ) ); */
-    fclose( fp );
-
-    make_peaks_mipmap();
-
-    DMESSAGE( "done building peaks" );
 
     return true;
 }

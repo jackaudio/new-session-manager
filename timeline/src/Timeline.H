@@ -257,6 +257,7 @@ public:
 
     void command_move_track_up ( Track *track );
     void command_move_track_down ( Track *track );
+    void command_undo ( void );
 
     int find_track ( const Track * track ) const;
 

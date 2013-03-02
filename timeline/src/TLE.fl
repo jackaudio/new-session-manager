@@ -396,7 +396,7 @@ Project::compact();}
           } {
             MenuItem {} {
               label Undo
-              callback {Project::undo();}
+              callback {timeline->command_undo();}
               xywh {5 5 40 25} shortcut 0x4007a divider
             }
             MenuItem {} {

@@ -74,7 +74,7 @@ Disk_Stream::~Disk_Stream ( )
 {
     /* it isn't safe to do all this with the RT thread running */
 
-    timeline->wrlock();
+//    timeline->wrlock();
 
     shutdown();
 
@@ -85,7 +85,7 @@ Disk_Stream::~Disk_Stream ( )
     for ( int i = channels(); i--; )
         jack_ringbuffer_free( _rb[ i ] );
 
-    timeline->unlock();
+//    timeline->unlock();
 }
 
 
@@ -144,13 +144,15 @@ Disk_Stream::shutdown ( void )
 {
     if ( _thread.running() )
     {
+        DMESSAGE( "Sending terminate signal to diskthread." );
+
         _terminate = true;
         
         /* try to wake the thread so it'll see that it's time to die */
         while ( _terminate )
         {
-            usleep( 100 );
             block_processed();
+            usleep( 1000 );
         }
         
         _thread.join();

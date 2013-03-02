@@ -188,14 +188,11 @@ Sequence::add ( Sequence_Widget *r )
 {
 //    Logger _log( this );
 
-    if ( r->sequence() )
+    if ( r->sequence() && r->sequence() != this )
     {
         /* This method can be called from the Capture thread as well as the GUI thread, so we must lock FLTK before redraw */
-        Fl::lock();
         r->redraw();
         r->sequence()->remove( r );
-        Fl::unlock();
-//        r->track()->redraw();
     }
 
     r->sequence( this );
@@ -481,28 +478,30 @@ Sequence::handle ( int m )
                         Sequence_Widget::pushed( NULL );
                 }
 
-                Loggable::block_start();
-
-                timeline->wrlock();
-                while ( _delete_queue.size() )
+                if ( _delete_queue.size() )
                 {
-
-                    Sequence_Widget *t = _delete_queue.front();
-                    _delete_queue.pop();
-
-                    if ( Sequence_Widget::pushed() == t )
-                        Sequence_Widget::pushed( NULL );
-                    if ( Sequence_Widget::belowmouse() == t )
+                    Loggable::block_start();
+                    
+                    while ( _delete_queue.size() )
                     {
-                        Sequence_Widget::belowmouse()->handle( FL_LEAVE );
-                        Sequence_Widget::belowmouse( NULL );
-                    }
+                        Sequence_Widget *t = _delete_queue.front();
+                        _delete_queue.pop();
+                        
+                        if ( Sequence_Widget::pushed() == t )
+                            Sequence_Widget::pushed( NULL );
+                        if ( Sequence_Widget::belowmouse() == t )
+                        {
+                            Sequence_Widget::belowmouse()->handle( FL_LEAVE );
+                            Sequence_Widget::belowmouse( NULL );
+                        }
 
-                    delete t;
+                        timeline->wrlock();
+                        delete t;
+                        timeline->unlock();
                 }
-                timeline->unlock();
 
                 Loggable::block_end();
+                }
 
                 if ( m == FL_PUSH )
                     return 1;
@@ -550,6 +549,7 @@ const Sequence_Widget *
         Sequence::next ( nframes_t from ) const
     {
         for ( list <Sequence_Widget*>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
+//            if ( (*i)->start() >= from )
             if ( (*i)->start() > from )
                 return *i;
 

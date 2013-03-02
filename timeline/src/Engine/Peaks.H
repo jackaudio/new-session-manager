@@ -35,7 +35,9 @@ class Peakfile;
 
 class Peaks
 {
-    mutable volatile bool _pending;
+    /* true if first block is still being built */
+    mutable volatile bool _first_block_pending;
+    mutable volatile bool _mipmaps_pending;
 
     mutable Thread _make_peaks_thread;
     mutable Thread _make_peaks_mipmap_thread;
@@ -110,6 +112,8 @@ class Peaks
 
     mutable float _fpp;
 
+    volatile mutable bool _rescan_needed;
+
     nframes_t read_peaks ( nframes_t s, nframes_t npeaks, nframes_t chunksize ) const;
     nframes_t read_source_peaks ( Peak *peaks, nframes_t s, nframes_t npeaks, nframes_t chunksize ) const;
     nframes_t read_source_peaks ( Peak *peaks, nframes_t npeaks, nframes_t chunksize ) const;
@@ -145,11 +149,11 @@ public:
     bool ready ( nframes_t s, nframes_t npeaks, nframes_t chunksize ) const;
 
     bool make_peaks ( void ) const;
-    bool make_peaks_mipmap ( void ) const;    
     void make_peaks_asynchronously ( void(*callback)(void*), void *userdata ) const;
 
     void prepare_for_writing ( void );
     void finish_writing ( void );
     void write ( sample_t *buf, nframes_t nframes );
 
+    bool needs_more_peaks ( void ) const;
 };

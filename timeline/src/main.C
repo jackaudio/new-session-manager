@@ -71,9 +71,9 @@ char *instance_name = NULL;
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-daw/"
 
-const char APP_NAME[]   = "Non-DAW";
-const char APP_TITLE[]  = "The Non-DAW";
-const char COPYRIGHT[]  = "Copyright (C) 2008-2012 Jonathan Moore Liles";
+const char APP_NAME[]   = "Non-Timeline";
+const char APP_TITLE[]  = "The Non-Timeline";
+const char COPYRIGHT[]  = "Copyright (C) 2008-2013 Jonathan Moore Liles";
 
 const double NSM_CHECK_INTERVAL = 0.25f;
 

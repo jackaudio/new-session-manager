@@ -246,7 +246,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
   Function {make_window()} {open
   } {
     Fl_Window main_window {
-      label {Non DAW : Timeline}
+      label {Non Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	timeline->command_quit();} open
       xywh {516 306 1025 770} type Double resizable
@@ -623,16 +623,16 @@ timeline->redraw();}
             }
             MenuItem {} {
               label {&About}
-              callback {About_Dialog ab( PIXMAP_PATH "/non-daw/icon-256x256.png" );
+              callback {About_Dialog ab( PIXMAP_PATH "/non-timeline/icon-256x256.png" );
 
             ab.logo_box->label( VERSION );
 
-        ab.title->label( "The Non DAW (Digital Audio Workstation)" );
+        ab.title->label( "Non Timeline" );
 
         ab.copyright->label( "Copyright (C) 2008-2010 Jonathan Moore Liles" );
-        ab.credits->label( "Non-DAW was written from scratch by\\nJonathan Moore Liles for his own use\\n(see the manual).\\n\\nNobody planned. Nobody helped.\\nYou can help now by donating time, money,\\nand/or replacing the rest of Linux Audio\\nwith fast, light, reliable alternatives.\\n" );
+        ab.credits->label( "Non Timeline was written from scratch by\\nJonathan Moore Liles for his own use\\n(see the manual).\\n\\nNobody planned. Nobody helped.\\nYou can help now by donating time, money,\\nand/or replacing the rest of Linux Audio\\nwith fast, light, reliable alternatives.\\n" );
 
-        ab.website_url->label( "http://non-daw.tuxfamily.org" );
+        ab.website_url->label( "http://non.tuxfamily.org" );
 
 
 ab.run();}
@@ -964,7 +964,7 @@ if ( p != oldp )
   } {
     code {char pat[256];
 
-snprintf( pat, 256, "file://%s/non-daw/%s.html", DOCUMENT_PATH, file );
+snprintf( pat, 256, "file://%s/non-timeline/%s.html", DOCUMENT_PATH, file );
 
 open_url( pat );} {}
   }
@@ -1036,7 +1036,7 @@ if ( logo_box->image() )
       Fl_Box logo_box {
         label {<LOGO>}
         private xywh {20 173 485 268} color 53 labelfont 1 labelsize 18 align 16
-        code0 {o->image( Fl_Shared_Image::get( PIXMAP_PATH "non-daw/icon-256x256.png" ) );}
+        code0 {o->image( Fl_Shared_Image::get( PIXMAP_PATH "non-timeline/icon-256x256.png" ) );}
         code1 {o->label( NULL );}
       }
       Fl_Text_Editor notes_field {

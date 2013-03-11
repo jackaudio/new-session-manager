@@ -8,7 +8,7 @@ import os;
 PACKAGE_VERSION = '1.2.0'
 
 # Variables for 'waf dist'
-APPNAME = 'non-daw'
+APPNAME = 'non-timeline'
 VERSION = PACKAGE_VERSION
 
 # Mandatory variables
@@ -89,7 +89,7 @@ src/Transport.C
 src/Waveform.C
 src/main.C
 ''',
-              target       = 'non-daw',
+              target       = 'non-timeline',
               includes     = ['.', 'src', '../FL', '../nonlib'],
               uselib = [ 'JACK', 'LIBLO', 'SNDFILE', 'XPM', 'NTK', 'NTK_IMAGES', 'PTHREAD'],
               use = [ 'fl_widgets', 'nonlib'],
@@ -101,6 +101,8 @@ src/main.C
          encoding = 'utf8',
          install_path = "${DATADIR}" + '/applications',
          BIN_PATH = bld.env.BINDIR )
+
+    bld.symlink_as( '${BINDIR}/' + 'non-daw', APPNAME )
 
     start_dir = bld.path.find_dir( 'icons/hicolor' )
 

@@ -1,18 +1,17 @@
 
-! title		Non DAW User Manual
+! title		Non Timeline User Manual
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
 
 -- Table Of Contents
 
 : User Manual
 
-:: The Timeline Editor
+:: The Timeline
 
 / Timeline Editor
 < tle.png
 
-  The Timeline Editor is what you first see when you start the Non-DAW. Here
-  you will add tracks, make captures, and arrange regions.
+  The Timeline is where you will add tracks, make captures, and arrange regions.
 
   Before you can add anything to the timeline, you must create a new project
   (menu item `Project\/New`)
@@ -101,19 +100,19 @@
 / Project Info Dialog
 < project-info.png
 
-  A Non-DAW project is a directory where Non-DAW keeps the journal, project
+  A Non Timeline project is a directory where Non Timeline keeps the journal, project
   specific settings, notes, some meta-data, and, last but not least, your audio
   sources. A project is completely self-contained. You can rename a project as
   simply as:
 
 > $ mv Project-A Project-B
 
-  Non-DAW projects can refer to audio sources outside of the project
+  Non Timeline projects can refer to audio sources outside of the project
   directory--clips dropped onto the timeline from a file-manager, for instance.
   These are not copied into the project by default. This allows the efficient
   use of audio loop libraries, but introduces external dependencies. Beware
   that if you ever move, remove, or change one of these external sources, it
-  will affect the Non-DAW projects referencing them.
+  will affect the Non Timeline projects referencing them.
 
 / Note:
 { To import all the external sources for a project, making it suitable for
@@ -153,7 +152,7 @@
 < tempomap.png
 
   The tempo map serves a dual purpose. Firstly, it provides enough information
-  about the musical structure of your project for Non-DAW to perform
+  about the musical structure of your project for Non Timeline to perform
   intelligent snapping and draw helpful measure lines. Secondly, the tempo map
   is communicated to other JACK clients at playback time via the JACK Timebase
   API, so that MIDI accompaniment can follow along to the tempo changes in your
@@ -202,7 +201,7 @@
 
   Regions are the most common object on the timeline. Each region represents
   some portion of an audio source placed at some position in time. Since
-  Non-DAW is non-destructive, regions only *represent* the source--altering a
+  Non Timeline is non-destructive, regions only *represent* the source--altering a
   region does not affect the audio source in any way. Deleting a region does
   not delete the source--as other regions may still refer to it.
 
@@ -275,7 +274,7 @@
 < looping.png
 
   Instead of requiring you to duplicate a small region 100 times to achieve a
-  looping effect, Non DAW supports looping directly. First, adjust the region
+  looping effect, Non Timeline supports looping directly. First, adjust the region
   duration to cover the amount of time you would like it to loop for. Then,
   position the mouse pointer over the first place the loop should repeat (i.e.
   the first bar line after the start of the region) and hit `L`. This will set

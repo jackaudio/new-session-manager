@@ -290,7 +290,9 @@ Project::open ( const char *name )
     if ( ! read_info( &version, &rate, &creation_date, &created_by ) )
         return E_INVALID;
 
-    if ( strncmp( created_by, APP_TITLE, strlen( APP_TITLE ) ) && 
+    if ( strncmp( created_by, "The Non-DAW", strlen( "The Non-DAW" ) ) && 
+         strncmp( created_by, "Non-DAW", strlen( "Non-DAW" ) ) &&
+         strncmp( created_by, APP_TITLE, strlen( APP_TITLE ) ) && 
          strncmp( created_by, APP_NAME, strlen( APP_NAME ) ) )
         return E_INVALID;
 

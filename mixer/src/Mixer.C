@@ -321,11 +321,11 @@ void Mixer::cb_menu(Fl_Widget* o) {
 
         ab.logo_box->label( VERSION );
 
-        ab.title->label( "The Non Mixer" );
+        ab.title->label( "Non Mixer" );
 
-        ab.copyright->label( "Copyright (C) 2008-2010 Jonathan Moore Liles" );
+        ab.copyright->label( "Copyright (C) 2008-2013 Jonathan Moore Liles" );
         ab.credits->label(
-            "Non-Mixer was written from scratch by\n"
+            "Non Mixer was written from scratch by\n"
             "Jonathan Moore Liles for his own use\n"
             "(see the manual).\n"
             "\n"
@@ -334,7 +334,7 @@ void Mixer::cb_menu(Fl_Widget* o) {
             "and/or replacing the rest of Linux Audio\n"
             "with fast, light, reliable alternatives.\n" );
 
-        ab.website_url->label( "http://non-mixer.tuxfamily.org" );
+        ab.website_url->label( "http://non.tuxfamily.org" );
 
         ab.run();
     }

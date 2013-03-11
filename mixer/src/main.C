@@ -69,7 +69,7 @@
 
 const double NSM_CHECK_INTERVAL = 0.25f;
 
-const char COPYRIGHT[]  = "Copyright (c) 2008-2012 Jonathan Moore Liles";
+const char COPYRIGHT[]  = "Copyright (c) 2008-2013 Jonathan Moore Liles";
 
 char *user_config_dir;
 Mixer *mixer;
@@ -240,7 +240,7 @@ main ( int argc, char **argv )
     Fl_Double_Window *main_window;
 
     {
-        Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, "Non-DAW : Mixer" );
+        Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, "Non Mixer" );
         {
             main_window->xclass( APP_NAME );
 

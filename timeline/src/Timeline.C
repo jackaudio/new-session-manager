@@ -864,12 +864,12 @@ Timeline::nearest_line ( nframes_t *frame, bool snap ) const
 
     nframes_t when = *frame;
 
-    nearest_line_arg n = { when, -1, snap && Timeline::Bars == Timeline::snap_to };
+    nearest_line_arg n = { when, JACK_MAX_FRAMES, snap && Timeline::Bars == Timeline::snap_to };
 
     render_tempomap( when > x_to_ts( w() >> 1 ) ? when - x_to_ts( w() >> 1 ) : 0,
                      when + x_to_ts( w() >> 1 ), snap ? nearest_line_snap_cb : nearest_line_cb, &n );
 
-    if ( n.closest == (nframes_t)-1 )
+    if ( n.closest == JACK_MAX_FRAMES )
         return false;
     else
     {
@@ -886,7 +886,7 @@ Timeline::next_line ( nframes_t *frame, bool bar ) const
 {
     nframes_t when = *frame + 1;
 
-    nearest_line_arg n = { when, -1, bar };
+    nearest_line_arg n = { when, JACK_MAX_FRAMES, bar };
 
     render_tempomap( when, x_to_ts( w() ), prev_next_line_cb, &n );
 
@@ -907,11 +907,11 @@ Timeline::prev_line ( nframes_t *frame, bool bar ) const
 {
     nframes_t when = *frame - 1;
 
-    nearest_line_arg n = { when, -1, bar };
+    nearest_line_arg n = { when, 0, bar };
 
     render_tempomap( xoffset, when - xoffset, prev_next_line_cb, &n );
 
-    if ( n.closest == (nframes_t)-1 )
+    if ( n.closest == JACK_MAX_FRAMES )
         return false;
     else
     {

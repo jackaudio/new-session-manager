@@ -71,14 +71,14 @@ char *instance_name = NULL;
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-daw/"
 
-const char APP_NAME[]   = "Non-Timeline";
-const char APP_TITLE[]  = "The Non-Timeline";
+const char *APP_NAME = "Non-Timeline";
+const char *APP_TITLE = "The Non-Timeline";
+
 const char COPYRIGHT[]  = "Copyright (C) 2008-2013 Jonathan Moore Liles";
 
 const double NSM_CHECK_INTERVAL = 0.25f;
 
 #define PACKAGE "non"
-
 
 #include "const.h"
 #include "debug.h"
@@ -144,6 +144,12 @@ check_sigterm ( void * )
 int
 main ( int argc, char **argv )
 {
+    if ( !strcmp( argv[0], "non-daw" ) )
+    {
+        /* use old app name and title */
+        APP_NAME = "Non-DAW";
+        APP_TITLE = "The Non-DAW";
+    }
 
     printf( "%s %s -- %s\n", APP_TITLE, VERSION, COPYRIGHT );
 

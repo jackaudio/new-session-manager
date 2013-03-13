@@ -17,6 +17,6 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#define APP_NAME "Non-DAW"
-#define APP_TITLE "The Non-DAW"
-#define __MODULE__ "non-daw"
+extern const char *APP_NAME;
+extern const char *APP_TITLE;
+#define __MODULE__ "non-timeline"

@@ -117,8 +117,8 @@ Project::write_info ( void )
     else
         strcpy( s, _created_on );
 
-    fprintf( fp, "created by\n\t%s\ncreated on\n\t%s\nversion\n\t%d\nsample rate\n\t%lu\n",
-             APP_NAME " " VERSION,
+    fprintf( fp, "created by\n\t%s %s\ncreated on\n\t%s\nversion\n\t%d\nsample rate\n\t%lu\n",
+             APP_NAME, VERSION,
              s,
              PROJECT_VERSION,
              (unsigned long)timeline->sample_rate() );

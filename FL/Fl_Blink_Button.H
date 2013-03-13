@@ -118,25 +118,31 @@ public:
 
     virtual void value ( float v )
         {
-            if ( v != value() )
+            bool b = v;
+            
+            if ( b != value() )
             {
-                if ( v )
+                if ( b )
                 {
                     if ( _blinking )
+                    {
+                        /* just to be safe.. */
+                        Fl::remove_timeout( update_cb, this );
                         Fl::add_timeout( blink_interval_as_fraction_of_seceond(), update_cb, this );
-                    Fl_Button::value( v );
+                    }
+                    Fl_Button::value( b );
                     redraw();
                 }
                 else
                 {
-                    Fl_Button::value( v );
+                    Fl_Button::value( b );
                     Fl::remove_timeout( update_cb, this );
                     redraw();
                 }
             }
         }
 
-    virtual float value ( void ) { return Fl_Button::value(); }
+    virtual float value ( void ) { return (bool)Fl_Button::value(); }
 
     virtual void
     draw ( void )

@@ -216,20 +216,21 @@ Sequence_Widget::start ( nframes_t where )
         if ( this != Sequence_Widget::_current )
             return;
 
-        long d = where - _r->start;
+        /* difference between where we are current and desired position */
 
-        if ( d < 0 )
+        if ( where < _r->start )
         {
-            /* first, make sure we stop at 0 */
-            nframes_t m = (nframes_t)-1;
+            nframes_t d = _r->start - where;
 
-            for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); ++i )
+            /* first, make sure we stop at 0 */
+            nframes_t m = JACK_MAX_FRAMES;
+
+            /* find the earliest region start point */
+            for ( list <Sequence_Widget *>::const_iterator i = _selection.begin(); i != _selection.end(); ++i )
                 m = min( m, (*i)->_r->start );
 
-            d = 0 - d;
-
-            if ( m <= (nframes_t)d )
-                d = m;
+            if ( d > m )
+                d = 0;
 
             for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); ++i )
             {
@@ -239,6 +240,8 @@ Sequence_Widget::start ( nframes_t where )
         }
         else
         {
+            nframes_t d = where - _r->start;
+
             /* TODO: do like the above and disallow wrapping */
             for ( list <Sequence_Widget *>::iterator i = _selection.begin(); i != _selection.end(); ++i )
             {

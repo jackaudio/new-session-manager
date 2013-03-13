@@ -96,8 +96,8 @@ src/main.C
               install_path = '${BINDIR}')
 
     bld( features = 'subst',
-         source = 'non-daw.desktop.in',
-         target = 'non-daw.desktop',
+         source = 'non-timeline.desktop.in',
+         target = 'non-timeline.desktop',
          encoding = 'utf8',
          install_path = "${DATADIR}" + '/applications',
          BIN_PATH = bld.env.BINDIR )

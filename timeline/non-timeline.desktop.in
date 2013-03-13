@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=Non DAW
+Name=Non Timeline
 Comment=Modular Digital Audio Workstation - Timeline Editor
-Exec=@BIN_PATH@/non-daw
+Exec=@BIN_PATH@/non-timeline
 Terminal=false
 Type=Application
-Icon=non-daw
+Icon=non-timeline
 Categories=AudioVideo;Audio;

@@ -439,6 +439,9 @@ Peaks::peakfile_ready ( void ) const
 void
 Peaks::make_peaks_asynchronously ( void(*callback)(void*), void *userdata ) const
 {
+    if ( _clip->dummy() )
+        return;
+
     /* already working on it... */
     if( _first_block_pending || _mipmaps_pending )
         return;

@@ -65,7 +65,11 @@ Time_Sequence::handle ( int m )
 
                 if ( Time_Point::edit( &t ) )
                 {
-                    add( new Time_Point( timeline->x_to_offset( Fl::event_x() ), t.beats_per_bar, t.beat_type ) );
+                    timeline->wrlock();
+
+                    new Time_Point( timeline->x_to_offset( Fl::event_x() ), t.beats_per_bar, t.beat_type );
+
+                    timeline->unlock();
 
                     timeline->redraw();
                 }

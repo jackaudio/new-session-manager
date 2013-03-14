@@ -188,7 +188,13 @@ Sequence::add ( Sequence_Widget *r )
 {
 //    Logger _log( this );
 
-    if ( r->sequence() && r->sequence() != this )
+    if ( r->sequence() == this )
+    {
+        WARNING( "Programming error: attempt to add sequence widget to the same sequence twice" );
+        return;
+    }
+
+    if ( r->sequence() )
     {
         /* This method can be called from the Capture thread as well as the GUI thread, so we must lock FLTK before redraw */
         r->redraw();

@@ -328,8 +328,10 @@ Audio_Sequence::handle ( int m )
 
             free( file );
 
-//            Audio_Region *r =
+            Audio_Region *r =
             new Audio_Region( c, this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - x() ) );
+            
+            r->log_create();
 
             redraw();
             

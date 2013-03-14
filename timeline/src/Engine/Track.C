@@ -273,7 +273,7 @@ Track::record ( Capture *c, nframes_t frame )
     /* open it again for reading in the GUI thread */
     //   Audio_File *af = Audio_File::from_file( c->audio_file->name() );
     /* must acquire the FLTK lock because adding a widget might interfere with drawing */
-    Fl::lock();
+//    Fl::lock();
 
     /* must acquire a write lock because the Audio_Region constructor
      * will add the region to the specified sequence, which might affect playback */
@@ -283,7 +283,7 @@ Track::record ( Capture *c, nframes_t frame )
 
     timeline->unlock();
 
-    Fl::unlock();
+//    Fl::unlock();
 
     c->region->prepare();
 }

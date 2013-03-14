@@ -109,12 +109,6 @@ Cursor_Point::set ( Log_Entry &e )
 
 
 
-void
-Cursor_Point::log_children ( void ) const
-{
-    log_create();
-}
-
 
 int
 Cursor_Point::handle ( int m )

@@ -83,12 +83,6 @@ Tempo_Point::set ( Log_Entry &e )
     _make_label();
 }
 
-void
-Tempo_Point::log_children ( void ) const
-{
-    log_create();
-}
-
 int
 Tempo_Point::handle ( int m )
 {

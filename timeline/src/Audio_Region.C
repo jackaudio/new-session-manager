@@ -167,17 +167,14 @@ Audio_Region::Audio_Region ( Audio_File *c )
     log_create();
 }
 
-/* used when DND importing */
+/* used when DND importing and when recording. must not invoke log_create() */
 Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
 {
     init();
     _clip = c;
-    _sequence = t;
     _r->offset = 0;
     _r->start = o;
     _r->length = _clip->length();
-
-    sequence()->add( this );
 
     int sum = 0;
     const char *s = rindex( _clip->name(), '/' );
@@ -192,7 +189,7 @@ Audio_Region::Audio_Region ( Audio_File *c, Sequence *t, nframes_t o )
 
     _box_color = (Fl_Color)sum;
 
-    log_create();
+    t->add( this );
 }
 
 Audio_Region::~Audio_Region ( )

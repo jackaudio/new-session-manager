@@ -93,12 +93,6 @@ Time_Point::set ( Log_Entry &e )
     _make_label();
 }
 
-void
-Time_Point::log_children ( void ) const
-{
-    log_create();
-}
-
 int
 Time_Point::handle ( int m )
 {

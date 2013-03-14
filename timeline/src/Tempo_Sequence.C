@@ -62,7 +62,11 @@ Tempo_Sequence::handle ( int m )
 
                 if ( Tempo_Point::edit( &t ) )
                 {
-                    add( new Tempo_Point( timeline->x_to_offset( Fl::event_x() ), t ) );
+                    timeline->wrlock();
+                    
+                    new Tempo_Point( timeline->x_to_offset( Fl::event_x() ), t );
+
+                    timeline->unlock();
 
                     timeline->redraw();
                 }

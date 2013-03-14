@@ -226,7 +226,7 @@ Audio_Region::prepare ( void )
 
     DMESSAGE( "Preparing capture region" );
 
-    log_start();
+//    log_start();
 }
 
 /** write /nframes/ from /buf/ to source. /buf/ is interleaved and
@@ -267,7 +267,8 @@ Audio_Region::finalize ( nframes_t frame )
     _clip->close();
     _clip->open();
 
-    log_end();
+    log_create();
+//    log_end();
 
     return true;
 }

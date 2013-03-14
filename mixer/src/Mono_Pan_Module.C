@@ -81,8 +81,15 @@ Mono_Pan_Module::process ( nframes_t nframes )
          audio_output[0].connected() &&
          audio_output[1].connected() )
     {
-        buffer_copy_and_apply_gain( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes, rg );
-
-        buffer_apply_gain( (sample_t*)audio_output[0].buffer(), nframes, lg );
+        if ( bypass() )
+        {
+            buffer_copy( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes );
+        }
+        else
+        {
+            buffer_copy_and_apply_gain( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes, rg );
+            
+            buffer_apply_gain( (sample_t*)audio_output[0].buffer(), nframes, lg );
+        }
     }
 }

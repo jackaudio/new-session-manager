@@ -81,7 +81,6 @@ private:
     void activate ( void );
     void deactivate ( void );
     void process ( unsigned long nframes );
-    bool active ( void ) const { return _active; }
 
     bool plugin_instances ( unsigned int );
 
@@ -109,7 +108,10 @@ public:
     int can_support_inputs ( int );
     bool configure_inputs ( int );
 
-    void process ( nframes_t );
+    virtual bool bypass ( void ) const { return !_active; }
+    virtual void bypass ( bool v );
+
+    virtual void process ( nframes_t );
 
     void handle_port_connection_change ( void );
 

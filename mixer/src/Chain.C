@@ -686,7 +686,9 @@ Chain::build_process_queue ( void )
     /* connect all the ports to the buffers */
     for ( int i = 0; i < modules(); ++i )
     {
+
         Module *m = module( i );
+        
         for ( unsigned int j = 0; j < m->audio_input.size(); ++j )
         {
             m->audio_input[j].connect_to( &scratch_port[j] );
@@ -796,8 +798,7 @@ Chain::process ( nframes_t nframes )
     {
         Module *m = *i;
 
-        if ( ! m->bypass() )
-            m->process( nframes );
+        m->process( nframes );
     }
 }
 

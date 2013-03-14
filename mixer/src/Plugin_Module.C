@@ -40,7 +40,10 @@
 #define HAVE_LIBLRDF 1
 #include "LADSPAInfo.h"
 
+#include "Chain.H"
 #include "Engine/Engine.H"
+
+#include <dsp.h>
 
 
 
@@ -386,6 +389,18 @@ Plugin_Module::plugin_instances ( unsigned int n )
     return true;
 }
 
+void
+Plugin_Module::bypass ( bool v )
+{
+    if ( v != bypass() )
+    {
+        if ( v )
+            deactivate();
+        else
+            activate();
+    }
+}
+
 bool
 Plugin_Module::load ( unsigned long id )
 {
@@ -654,21 +669,29 @@ Plugin_Module::activate ( void )
     if ( _active )
         FATAL( "Attempt to activate already active plugin" );
 
+    chain()->engine()->lock();
+
     if ( _idata->descriptor->activate )
         for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
             _idata->descriptor->activate( _idata->handle[i] );
 
     _active = true;
+
+    chain()->engine()->unlock();
 }
 
 void
 Plugin_Module::deactivate( void )
 {
-    if ( _idata->descriptor->deactivate )
-        for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
-            _idata->descriptor->activate( _idata->handle[i] );
+    chain()->engine()->lock();
 
     _active = false;
+   
+    if ( _idata->descriptor->deactivate )
+        for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
+            _idata->descriptor->deactivate( _idata->handle[i] );
+
+    chain()->engine()->unlock();
 }
 
 void
@@ -703,8 +726,19 @@ Plugin_Module::process ( nframes_t nframes )
     handle_port_connection_change();
 
     if ( _active )
+    {
         for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
             _idata->descriptor->run( _idata->handle[i], nframes );
+    }
+    else
+    {
+        /* If this is a mono to stereo plugin, then duplicate the input channel... */
+        /* There's not much we can do to automatically support other configurations. */
+        if ( ninputs() == 1 && noutputs() == 2 )
+        {
+            buffer_copy( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes );
+        }
+    }
 }
 
 

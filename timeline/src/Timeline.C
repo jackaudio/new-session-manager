@@ -275,6 +275,8 @@ Timeline::snapshot ( void )
     punch_cursor_track->log_children();
     play_cursor_track->log_children();
 
+    update_track_order();
+
     for ( int i = 0; i < tracks->children(); ++i )
     {
         ((Track*)tracks->child( i ))->log_children();
@@ -1879,8 +1881,6 @@ Timeline::add_track ( Track *track )
 
     tracks->add( track );
 
-//    update_track_order();
-
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
 
@@ -1893,8 +1893,6 @@ Timeline::insert_track ( Track *track, int n )
         return;
 
     tracks->insert( *track, n );
-
-    update_track_order();
 
     tracks->redraw();
 
@@ -1956,8 +1954,6 @@ Timeline::remove_track ( Track *track )
 
     /* FIXME: what to do about track contents? */
     tracks->remove( track );
-
-    update_track_order();
 
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();

@@ -669,10 +669,13 @@ Plugin_Module::set_output_buffer ( int n, void *buf )
 void
 Plugin_Module::activate ( void )
 {
+    DMESSAGE( "Activating plugin \"%s\"", label() );
+
     if ( _active )
         FATAL( "Attempt to activate already active plugin" );
 
-    chain()->engine()->lock();
+    if ( chain() )
+        chain()->engine()->lock();
 
     if ( _idata->descriptor->activate )
         for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
@@ -680,13 +683,17 @@ Plugin_Module::activate ( void )
 
     _active = true;
 
-    chain()->engine()->unlock();
+    if ( chain() )
+        chain()->engine()->unlock();
 }
 
 void
 Plugin_Module::deactivate( void )
 {
-    chain()->engine()->lock();
+    DMESSAGE( "Deactivating plugin \"%s\"", label() );
+
+    if ( chain() )
+        chain()->engine()->lock();
 
     _active = false;
    
@@ -694,7 +701,8 @@ Plugin_Module::deactivate( void )
         for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
             _idata->descriptor->deactivate( _idata->handle[i] );
 
-    chain()->engine()->unlock();
+    if ( chain() )
+        chain()->engine()->unlock();
 }
 
 void

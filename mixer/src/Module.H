@@ -351,8 +351,8 @@ public:
             return control_output.size();
         }
 
-    bool bypass ( void ) const { return _bypass; }
-    void bypass ( bool v ) { _bypass = v; redraw(); }
+    virtual bool bypass ( void ) const { return _bypass; }
+    virtual void bypass ( bool v ) { _bypass = v; redraw(); }
 
     int control_input_port_index ( Port *p )
         {

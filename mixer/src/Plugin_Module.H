@@ -66,7 +66,7 @@ private:
 
     ImplementationData *_idata;
 
-    bool _active;
+    volatile bool _active;
     int _plugin_ins;
     int _plugin_outs;
     bool _crosswire;

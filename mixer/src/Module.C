@@ -128,6 +128,7 @@ Module::init ( void )
     labeltype( FL_NO_LABEL );
     set_visible_focus();
     selection_color( FL_RED );
+    color( fl_color_average( FL_GREEN, FL_GRAY, 0.4 ) );
 }
 
 
@@ -531,14 +532,14 @@ Module::draw_box ( void )
 
     fl_push_clip( tx, ty, tw, th );
 
-    Fl_Color c = is_default() ? FL_BLACK : color();
+    Fl_Color c = color();
 
-    c = active() && ! bypass() ? c : fl_inactive( c );
+    c = active() && ! bypass() ? c : FL_GRAY;
 
     int spacing = w() / instances();
     for ( int i = instances(); i--; )
     {
-        fl_draw_box( box(), tx + (spacing * i), ty, tw / instances(), th, Fl::belowmouse() == this ? fl_lighter( c ) : c );
+        fl_draw_box( box(), tx + (spacing * i), ty, tw / instances(), th, c );
     }
 
     if ( this == Fl::focus() )

@@ -63,6 +63,8 @@ JACK_Module::JACK_Module ( )
     }
 
     end();
+    
+    color( FL_BLACK );
 
     log_create();
 }

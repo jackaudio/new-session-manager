@@ -174,7 +174,10 @@ Plugin_Module::init ( void )
     _crosswire = false;
 
     align( (Fl_Align)FL_ALIGN_CENTER | FL_ALIGN_INSIDE );
-    color( (Fl_Color)fl_color_average( FL_BLUE, FL_GREEN, 0.5f ) );
+     color( (Fl_Color)fl_color_average( FL_BLUE, FL_GREEN, 0.5f ) );
+//    color( FL_FOREGROUND_COLOR );
+    /* color( fl_color_average( FL_CYAN, FL_WHITE, 0.40 ) ); */
+
     int tw, th, tx, ty;
 
     bbox( tx, ty, tw, th );

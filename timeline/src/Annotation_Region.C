@@ -88,8 +88,8 @@ Annotation_Region::draw ( void )
     draw_label( _label, (Fl_Align)(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_CLIP ) );
 }
 
-#include <Fl_Text_Edit_Window.H>
-#include <test_press.H>
+#include <FL/Fl_Text_Edit_Window.H>
+#include <FL/test_press.H>
 
 int
 Annotation_Region::handle ( int m )

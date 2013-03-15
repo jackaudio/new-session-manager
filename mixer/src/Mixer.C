@@ -28,15 +28,15 @@
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl.H>
-#include <New_Project_Dialog.H>
+#include <FL/New_Project_Dialog.H>
 #include "Engine/Engine.H"
-#include <Fl_Flowpack.H>
+#include <FL/Fl_Flowpack.H>
 #include "Project.H"
-#include <Fl_Menu_Settings.H>
-#include <About_Dialog.H>
+#include <FL/Fl_Menu_Settings.H>
+#include <FL/About_Dialog.H>
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Theme_Chooser.H>
-#include <Fl_Value_SliderX.H>
+#include <FL/Fl_Value_SliderX.H>
 
 #include "file.h"
 

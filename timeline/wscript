@@ -90,7 +90,7 @@ src/Waveform.C
 src/main.C
 ''',
               target       = 'non-timeline',
-              includes     = ['.', 'src', '../FL', '../nonlib'],
+              includes     = ['.', 'src', '..', '../nonlib'],
               uselib = [ 'JACK', 'LIBLO', 'SNDFILE', 'XPM', 'NTK', 'NTK_IMAGES', 'PTHREAD'],
               use = [ 'fl_widgets', 'nonlib'],
               install_path = '${BINDIR}')

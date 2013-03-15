@@ -42,7 +42,7 @@ def build(bld):
 src/session-manager.C
 ''',
               target       = 'non-session-manager',
-              includes     = ['.', 'src', '../nonlib', '../FL' ],
+              includes     = ['.', 'src', '../nonlib', '..' ],
               uselib = [  'LIBLO', 'XPM', 'NTK', 'NTK_IMAGES' ],
               use = [ 'fl_widgets', 'nonlib'],
               install_path = '${BINDIR}')
@@ -60,7 +60,7 @@ src/nsmd.C
 src/nsm-proxy.C
 ''',
               target       = 'nsm-proxy',
-              includes     = ['.', 'src', '../nonlib', '../FL' ],
+              includes     = ['.', 'src', '../nonlib', '..' ],
               uselib = [ 'LIBLO' ],
               use = [ 'nonlib'],
               install_path = '${BINDIR}')

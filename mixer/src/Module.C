@@ -700,7 +700,14 @@ Module::menu_cb ( const Fl_Menu_ *m )
     if ( ! strcmp( picked, "Edit Parameters" ) )
         command_open_parameter_editor();
     else if ( ! strcmp( picked, "Bypass" ) )
-        bypass( ! ( m->mvalue()->flags & FL_MENU_VALUE ) );
+        if ( ! bypassable() )
+        {
+            fl_alert( "Due to its channel configuration, this module cannot be bypassed." );
+        }
+        else
+        {
+            bypass( ! ( m->mvalue()->flags & FL_MENU_VALUE ) );
+        }
     else if ( ! strcmp( picked, "Cut" ) )
     {
         copy();
@@ -818,8 +825,15 @@ Module::handle ( int m )
             }
             else if ( test_press( FL_BUTTON2 ) )
             {
-                bypass( !bypass() );
-                redraw();
+                if ( !bypassable() )
+                {
+                    fl_alert( "Due to its channel configuration, this module cannot be bypassed." );
+                }
+                else
+                {
+                    bypass( !bypass() );
+                    redraw();
+                }
                 return 1;
             }
 

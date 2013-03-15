@@ -354,6 +354,12 @@ public:
     virtual bool bypass ( void ) const { return _bypass; }
     virtual void bypass ( bool v ) { _bypass = v; redraw(); }
 
+    virtual bool bypassable ( void ) const
+        {
+            return ninputs() == noutputs() ||
+                ( ninputs() == 1 && noutputs() == 2 );            
+        }
+
     int control_input_port_index ( Port *p )
         {
             for ( nframes_t i = control_input.size(); i--; )

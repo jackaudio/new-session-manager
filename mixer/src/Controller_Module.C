@@ -362,8 +362,8 @@ Controller_Module::connect_to ( Port *p )
         w = o;
 
         o->type(4);
-        o->color(FL_BACKGROUND_COLOR);
-        o->selection_color((Fl_Color)1);
+        o->color(FL_DARK1);
+        o->selection_color(FL_RED);
         o->minimum(1.5);
         o->maximum(0);
         o->value(1);

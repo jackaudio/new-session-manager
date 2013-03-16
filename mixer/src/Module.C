@@ -128,7 +128,7 @@ Module::init ( void )
     labeltype( FL_NO_LABEL );
     set_visible_focus();
     selection_color( FL_RED );
-    color( fl_color_average( FL_GREEN, FL_GRAY, 0.4 ) );
+    color( fl_color_average( FL_WHITE, FL_CYAN, 0.40 ) );
 }
 
 
@@ -575,20 +575,16 @@ Module::draw_label ( void )
 
     const char *lp = label();
 
-    int l = strlen( label() );
+    fl_color( fl_contrast( FL_FOREGROUND_COLOR, bypass() ? FL_BLACK : color() ) );
 
-    Fl_Color c = FL_FOREGROUND_COLOR;
+    fl_font( FL_HELVETICA, 12 );
 
-    if ( bypass() || ! active() )
-        c = FL_BLACK;
-
-    fl_color( fl_contrast( c, is_default() ? FL_BLACK : color() ) );
+    int LW = fl_width( lp );
 
     char *s = NULL;
-
-    if ( l > 10 )
+    if ( LW > tw )
     {
-        s = new char[l];
+        s = new char[strlen(lp)];
         char *sp = s;
 
         for ( ; *lp; ++lp )
@@ -602,11 +598,6 @@ Module::draw_label ( void )
         *sp = '\0';
 
     }
-
-    if ( l > 20 )
-        fl_font( FL_HELVETICA, 10 );
-    else
-        fl_font( FL_HELVETICA, 14 );
 
     fl_draw( s ? s : lp, tx, ty, tw, th, (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE | FL_ALIGN_CLIP ) );
 

@@ -508,7 +508,6 @@ Chain::add ( Controller_Module *m )
 bool
 Chain::insert ( Module *m, Module *n )
 {
-
     engine()->lock();
 
     if ( !m )
@@ -614,7 +613,7 @@ Chain::draw_connections ( Module *m )
 
     fl_push_clip( X, Y, W, H );
 
-    Fl_Color c =fl_color_average( FL_WHITE, FL_YELLOW, 0.50 );
+    Fl_Color c = FL_FOREGROUND_COLOR;
     fl_color( c );
 
     if ( m->ninputs() )

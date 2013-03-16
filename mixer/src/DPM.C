@@ -49,7 +49,7 @@ DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
 
 //    resize( X, Y, W, H );
 
-    dim( 0.70f );
+    dim( 0.85f );
 
     /* initialize gradients */
     if ( DPM::_gradient[ 0 ] == 0 )

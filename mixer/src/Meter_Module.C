@@ -39,7 +39,7 @@ const float METER_UPDATE_FREQ = 0.2f;
 Meter_Module::Meter_Module ( )
     : Module ( 50, 100, name() )
 {
-    box( FL_THIN_UP_FRAME );
+    box( FL_NO_BOX );
     dpm_pack = new Fl_Scalepack( x(), y(), w(), h() );
     dpm_pack->type( FL_HORIZONTAL );
 

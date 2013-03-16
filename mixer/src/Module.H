@@ -46,7 +46,6 @@ class Module : public Fl_Group, public Loggable {
     nframes_t _nframes;
     Chain *_chain;
     bool _is_default;
-    bool _bypass;
 
     Module_Parameter_Editor *_editor;
 
@@ -64,6 +63,10 @@ class Module : public Fl_Group, public Loggable {
 
     void copy ( void ) const;
     void paste_before ( void );
+
+protected:
+
+    volatile bool _bypass;
 
 public:
 

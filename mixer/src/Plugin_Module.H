@@ -66,7 +66,6 @@ private:
 
     ImplementationData *_idata;
 
-    volatile bool _active;
     int _plugin_ins;
     int _plugin_outs;
     bool _crosswire;
@@ -108,7 +107,7 @@ public:
     int can_support_inputs ( int );
     bool configure_inputs ( int );
 
-    virtual bool bypass ( void ) const { return !_active; }
+    virtual bool bypass ( void ) const { return _bypass; }
     virtual void bypass ( bool v );
 
     virtual void process ( nframes_t );

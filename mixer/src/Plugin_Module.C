@@ -170,7 +170,8 @@ Plugin_Module::init ( void )
 {
     _idata = new Plugin_Module::ImplementationData();
     _idata->handle.clear();
-    _active = false;
+    /* module will be bypassed until plugin is loaded */
+    _bypass = true;
     _crosswire = false;
 
     align( (Fl_Align)FL_ALIGN_CENTER | FL_ALIGN_INSIDE );
@@ -256,7 +257,9 @@ Plugin_Module::configure_inputs( int n )
         }
     }
 
-    if ( _active )
+    bool b = bypass();
+
+    if ( !b )
         deactivate();
 
     if ( plugin_instances( inst ) )
@@ -264,7 +267,7 @@ Plugin_Module::configure_inputs( int n )
     else
         return false;
 
-    if ( ! _active )
+    if ( !b )
         activate();
 
     return true;
@@ -623,7 +626,14 @@ Plugin_Module::load ( unsigned long id )
         return false;
     }
 
-    return plugin_instances( 1 );
+    int instances = plugin_instances( 1 );
+    
+    if ( instances )
+    {
+        bypass( false );
+    }
+
+    return instances;
 }
 
 void
@@ -671,7 +681,7 @@ Plugin_Module::activate ( void )
 {
     DMESSAGE( "Activating plugin \"%s\"", label() );
 
-    if ( _active )
+    if ( !bypass() )
         FATAL( "Attempt to activate already active plugin" );
 
     if ( chain() )
@@ -681,7 +691,7 @@ Plugin_Module::activate ( void )
         for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
             _idata->descriptor->activate( _idata->handle[i] );
 
-    _active = true;
+    _bypass = false;
 
     if ( chain() )
         chain()->engine()->unlock();
@@ -695,7 +705,7 @@ Plugin_Module::deactivate( void )
     if ( chain() )
         chain()->engine()->lock();
 
-    _active = false;
+    _bypass = true;
    
     if ( _idata->descriptor->deactivate )
         for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
@@ -736,7 +746,7 @@ Plugin_Module::process ( nframes_t nframes )
 {
     handle_port_connection_change();
 
-    if ( _active )
+    if ( !bypass() )
     {
         for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
             _idata->descriptor->run( _idata->handle[i], nframes );

@@ -562,12 +562,6 @@ Chain::insert ( Module *m, Module *n )
         n->chain( this );
     }
 
-    DMESSAGE( "Module \"%s\" has %i:%i audio and %i:%i control ports",
-              n->name(),
-              n->ninputs(),
-              n->noutputs(),
-              n->ncontrol_inputs(),
-              n->ncontrol_outputs() );
 
     strip()->handle_module_added( n );
 
@@ -575,13 +569,20 @@ Chain::insert ( Module *m, Module *n )
 
     engine()->unlock();
 
+    DMESSAGE( "Module \"%s\" has %i:%i audio and %i:%i control ports",
+              n->name(),
+              n->ninputs(),
+              n->noutputs(),
+              n->ncontrol_inputs(),
+              n->ncontrol_outputs() );
+
     return true;
 
 err:
 
-    DMESSAGE( "Insert failed" );
-
     engine()->unlock();
+
+    DMESSAGE( "Insert failed" );
 
     return false;
 }

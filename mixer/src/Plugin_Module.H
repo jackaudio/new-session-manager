@@ -85,6 +85,7 @@ private:
 
     void connect_ports ( void );
 
+    bool loaded ( void ) const;
 
 public:
 

@@ -84,6 +84,10 @@ Plugin_Module::get ( Log_Entry &e ) const
 //    snprintf( s, sizeof( s ), "ladspa:%lu", _idata->descriptor->UniqueID );
     e.add( ":plugin_id", _idata->descriptor->UniqueID );
 
+    /* these help us display the module on systems which are missing this plugin */
+    e.add( ":plugin_ins", _plugin_ins );
+    e.add( ":plugin_outs", _plugin_outs );
+
     Module::get( e );
 }
 
@@ -99,6 +103,14 @@ Plugin_Module::set ( Log_Entry &e )
         if ( ! strcmp( s, ":plugin_id" ) )
         {
             load( (unsigned long) atoll ( v ) );
+        }
+        else if ( ! strcmp( s, ":plugin_ins" ) )
+        {
+            _plugin_ins = atoi( v );
+        }
+        else if ( ! strcmp( s, ":plugin_outs" ) )
+        {
+            _plugin_outs = atoi( v );
         }
     }
 
@@ -175,9 +187,7 @@ Plugin_Module::init ( void )
     _crosswire = false;
 
     align( (Fl_Align)FL_ALIGN_CENTER | FL_ALIGN_INSIDE );
-     color( (Fl_Color)fl_color_average( FL_BLUE, FL_GREEN, 0.5f ) );
-//    color( FL_FOREGROUND_COLOR );
-    /* color( fl_color_average( FL_CYAN, FL_WHITE, 0.40 ) ); */
+//     color( (Fl_Color)fl_color_average( FL_MAGENTA, FL_WHITE, 0.5f ) );
 
     int tw, th, tx, ty;
 
@@ -257,18 +267,21 @@ Plugin_Module::configure_inputs( int n )
         }
     }
 
-    bool b = bypass();
+    if ( loaded() )
+    {
+        bool b = bypass();
 
-    if ( !b )
-        deactivate();
+        if ( !b )
+            deactivate();
 
-    if ( plugin_instances( inst ) )
-        instances( inst );
-    else
-        return false;
+        if ( plugin_instances( inst ) )
+            instances( inst );
+        else
+            return false;
 
-    if ( !b )
-        activate();
+        if ( !b )
+            activate();
+    }
 
     return true;
 }
@@ -420,9 +433,17 @@ Plugin_Module::load ( unsigned long id )
 
     _idata->descriptor = ladspainfo->GetDescriptorByID( id );
 
-    label( _idata->descriptor->Name );
-
     _plugin_ins = _plugin_outs = 0;
+
+    if ( ! _idata->descriptor )
+    {
+        /* unknown plugin ID */
+        WARNING( "Unknown plugin ID: %lu", id );
+        label( "----" );
+        return false;
+    }
+
+    label( _idata->descriptor->Name );
 
     if ( _idata->descriptor )
     {
@@ -656,6 +677,12 @@ Plugin_Module::set_input_buffer ( int n, void *buf )
                 _idata->descriptor->connect_port( h, i, (LADSPA_Data*)buf );
 }
 
+bool
+Plugin_Module::loaded ( void ) const
+{
+    return _idata->descriptor;
+}
+
 void
 Plugin_Module::set_output_buffer ( int n, void *buf )
 {
@@ -679,6 +706,9 @@ Plugin_Module::set_output_buffer ( int n, void *buf )
 void
 Plugin_Module::activate ( void )
 {
+    if ( !loaded() )
+        return;
+
     DMESSAGE( "Activating plugin \"%s\"", label() );
 
     if ( !bypass() )
@@ -700,6 +730,9 @@ Plugin_Module::activate ( void )
 void
 Plugin_Module::deactivate( void )
 {
+    if ( !loaded() )
+        return;
+
     DMESSAGE( "Deactivating plugin \"%s\"", label() );
 
     if ( chain() )
@@ -720,19 +753,22 @@ Plugin_Module::handle_port_connection_change ( void )
 {
 //    DMESSAGE( "Connecting audio ports" );
 
-    if ( _crosswire )
+    if ( loaded() )
     {
-        for ( int i = 0; i < plugin_ins(); ++i )
-            set_input_buffer( i, audio_input[0].buffer() );
-    }
-    else
-    {
-        for ( unsigned int i = 0; i < audio_input.size(); ++i )
-            set_input_buffer( i, audio_input[i].buffer() );
-    }
+        if ( _crosswire )
+        {
+            for ( int i = 0; i < plugin_ins(); ++i )
+                set_input_buffer( i, audio_input[0].buffer() );
+        }
+        else
+        {
+            for ( unsigned int i = 0; i < audio_input.size(); ++i )
+                set_input_buffer( i, audio_input[i].buffer() );
+        }
 
-    for ( unsigned int i = 0; i < audio_output.size(); ++i )
-        set_output_buffer( i, audio_output[i].buffer() );
+        for ( unsigned int i = 0; i < audio_output.size(); ++i )
+            set_output_buffer( i, audio_output[i].buffer() );
+    }
 }
 
 

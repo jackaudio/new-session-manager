@@ -127,7 +127,7 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
             o->type( Fl_Scroll::VERTICAL );
             { Fl_Pack *o = modules_pack = new Fl_Pack( X, Y, W, H );
                 o->type( Fl_Pack::VERTICAL );
-                o->spacing( 10 );
+                o->spacing( 6 );
                 o->end();
                 Fl_Group::current()->resizable( o );
             }
@@ -623,7 +623,7 @@ Chain::draw_connections ( Module *m )
         offset = spacing / 2;
 
         for ( int i = m->ninputs(); i--; )
-            fl_rectf( m->x() + offset + ( spacing * i ), m->y() - 5, 2, 5 );
+            fl_rectf( m->x() + offset + ( spacing * i ), m->y() - 3, 2, 3 );
     }
 
     fl_color( fl_darker( c ) );
@@ -633,7 +633,7 @@ Chain::draw_connections ( Module *m )
         spacing = w() / m->noutputs();
         offset = spacing / 2;
         for ( int i = m->noutputs(); i--; )
-            fl_rectf( m->x() + offset + ( spacing * i ), m->y() + m->h(), 2, 5 );
+            fl_rectf( m->x() + offset + ( spacing * i ), m->y() + m->h(), 2, 3 );
     }
 
     fl_pop_clip();

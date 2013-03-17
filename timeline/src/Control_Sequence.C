@@ -756,11 +756,9 @@ Control_Sequence::handle ( int m )
                 /* insert new control point */
                 timeline->wrlock();
 
-                Control_Point *r = new Control_Point( this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - drawable_x() ), (float)(Fl::event_y() - y()) / h() );
-
-                add( r );
-
-               timeline->unlock();
+                new Control_Point( this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - drawable_x() ), (float)(Fl::event_y() - y()) / h() );
+                
+                timeline->unlock();
 
                 return 1;
             }

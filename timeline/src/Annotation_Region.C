@@ -53,7 +53,7 @@ Annotation_Region::set ( Log_Entry &e )
 
 Annotation_Region::Annotation_Region ( Sequence *sequence, nframes_t when, const char *label )
 {
-    _sequence = sequence;
+    _sequence = NULL;
 
     _r->start = when;
 
@@ -61,6 +61,8 @@ Annotation_Region::Annotation_Region ( Sequence *sequence, nframes_t when, const
     _r->length = 400;
 
     _label = strdup( label );
+
+    sequence->add( this );
 
     log_create();
 }

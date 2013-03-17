@@ -89,8 +89,8 @@ Cursor_Region::Cursor_Region ( nframes_t when, nframes_t length, const char *typ
 
 Cursor_Region::Cursor_Region ( const Cursor_Region &rhs ) : Sequence_Region( rhs )
 {
-    _label = strdup( rhs._label );
-    _type = strdup( rhs._type );
+    _label = rhs._label ? strdup( rhs._label ) : NULL;
+    _type = rhs._type ? strdup( rhs._type ) : NULL;
 
     log_create();
 }

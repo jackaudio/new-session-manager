@@ -107,14 +107,12 @@ public:
 
                     if ( Fl::event_button1() )
                     {
-                        add( new Annotation_Point( this, x_to_offset( Fl::event_x() - drawable_x() ), "mark" ) );
+                        new Annotation_Point( this, x_to_offset( Fl::event_x() - drawable_x() ), "mark" );
                         redraw();
                     }
                     if ( Fl::event_button3() && Fl::event_shift() )
                     {
                         Annotation_Region *r = new Annotation_Region( this, x_to_offset( Fl::event_x() - drawable_x() ), "mark" );
-
-                        add( r );
 
                         Sequence_Widget::pushed( r );
 

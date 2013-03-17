@@ -25,10 +25,12 @@
 
 Control_Point::Control_Point ( Sequence *t, nframes_t when, float y )
 {
-    _sequence = t;
+    _sequence = NULL;
     _y = y;
     _r->start = when;
     _box_color = FL_WHITE;
+
+    t->add( this );
 
     log_create();
 }

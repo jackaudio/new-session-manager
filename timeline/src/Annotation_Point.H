@@ -69,11 +69,13 @@ public:
 
     Annotation_Point ( Sequence *sequence, nframes_t when, const char *label )
         {
-            _sequence = sequence;
+            _sequence = NULL;
 
             _r->start = when;
 
             _label = strdup( label );
+
+            sequence->add( this );
 
             log_create();
         }

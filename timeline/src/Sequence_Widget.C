@@ -62,7 +62,6 @@ Sequence_Widget::Sequence_Widget ( const Sequence_Widget &rhs ) : Loggable( rhs 
     else
         _label = 0;
 
-    _sequence = rhs._sequence;
 
     _range = rhs._range;
     _dragging_range = rhs._dragging_range;
@@ -70,6 +69,11 @@ Sequence_Widget::Sequence_Widget ( const Sequence_Widget &rhs ) : Loggable( rhs 
 
     _color = rhs._color;
     _box_color = rhs._box_color;
+    
+    _sequence = NULL;
+
+    if ( rhs._sequence )
+        rhs._sequence->add( this );
 };
 
 const Sequence_Widget &

@@ -40,6 +40,7 @@
 #include <FL/Fl_Tile.H>
 
 #include "FL/Fl_Packscroller.H"
+#include "FL/Fl_Scalepack.H"
 
 #include <unistd.h>
 #include <errno.h>
@@ -212,8 +213,8 @@ public:
                 
             if ( ! strcmp( command, "ready" ) )
             {
-                color( fl_darker( FL_GREEN ) );
-//                _progress->value( 0.0f );
+                color( FL_LIGHT1 );
+                _progress->value( 0.0f );
             }
             else if ( ! strcmp( command, "quit" ) ||
                       ! strcmp( command, "kill" ) ||
@@ -303,11 +304,11 @@ public:
             
             align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
             color( fl_darker( FL_RED ) );
-            box( FL_UP_BOX );
+            box( FL_BORDER_BOX );
             
             int yy = Y + H * 0.25;
             int hh = H * 0.50;
-            int xx = X + W - ( 200 + Fl::box_dw( box() ) );
+            int xx = X + W - ( 75 + Fl::box_dw( box() ) );
             int ss = 2;
 
             /* dummy group */
@@ -316,10 +317,11 @@ public:
                 resizable( o );
             }
                 
-            { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 200, H * 0.50, NULL );
+            { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 75, H * 0.50, NULL );
                 o->box( FL_FLAT_BOX );
                 o->color( FL_BLACK );
                 o->label( strdup( "launch" ) );
+                o->labelsize( 12 );
                 o->minimum( 0.0f );
                 o->maximum( 1.0f );
             }
@@ -583,7 +585,7 @@ public:
                     if ( ! browser->value() )
                         return;
 
-                    const char *n = fl_input( "Add Client" );
+                    const char *n = fl_input( "Enter executable name" );
                     
                     if ( !n )
                         return;
@@ -606,7 +608,7 @@ public:
                 }
                 else
                 {
-                    const char *n = fl_input( "Add Client" );
+                    const char *n = fl_input( "Enter executable name" );
                     
                     if ( !n )
                         return;
@@ -811,9 +813,9 @@ public:
                 { 
                     Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - 50 );
                     o->callback( cb_handle, (void *)this );
-                    o->color( fl_darker( FL_GRAY ) );
+                    o->color( FL_DARK1 );
                     o->item_labelbgcolor( o->color() );
-                    o->item_labelfgcolor( FL_YELLOW );
+                    o->item_labelfgcolor( FL_FOREGROUND_COLOR );
                     o->sortorder( FL_TREE_SORT_ASCENDING );
                     o->showroot( 0 );
                     o->selection_color( fl_darker( FL_GREEN ) );

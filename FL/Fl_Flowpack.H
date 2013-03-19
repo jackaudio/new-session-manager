@@ -20,6 +20,7 @@
 #pragma once
 
 #include <FL/Fl_Group.H>
+#include <FL/Fl_Pack.H>
 
 class Fl_Flowpack : public Fl_Group
 {

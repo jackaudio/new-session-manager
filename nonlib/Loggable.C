@@ -44,6 +44,11 @@ using std::max;
 
 
 
+#ifndef NDEBUG
+bool Loggable::_snapshotting = false;
+int Loggable::_snapshot_count = 0;
+#endif
+
 bool Loggable::_readonly = false;
 FILE *Loggable::_fp;
 unsigned int Loggable::_log_id = 0;
@@ -533,11 +538,21 @@ Loggable::snapshot ( FILE *fp )
         return false;
     }
 
+#ifndef NDEBUG
+    _snapshotting = true;
+
+    _snapshot_count++;
+#endif
+
     block_start();
 
     Loggable::_snapshot_callback( _snapshot_callback_arg );
 
     block_end();
+
+#ifndef NDEBUG
+    _snapshotting = false;
+#endif
 
     _fp = ofp;
 
@@ -775,6 +790,25 @@ Loggable::log_create ( void ) const
     if ( ! _fp )
         /* replaying, don't bother */
         return;
+
+#ifndef NDEBUG
+    if ( _snapshotting && _snapshot_count != _num_snapshot )
+    {
+        _num_snapshot_creates = 1;
+        _num_snapshot = _snapshot_count;
+    }
+    else if ( _snapshotting && _snapshot_count == _num_snapshot )
+    {
+        _num_snapshot_creates++;
+
+        ASSERT( _num_snapshot_creates < 2, "Attempt to log creation of same object twice in one snapshot! %s", class_name() );
+    }
+    else
+    {
+        _num_log_creates++;
+        ASSERT( _num_log_creates < 2, "Attempt to log creation of same object twice in the journal! %s", class_name() );
+    }
+#endif
 
     log( "%s 0x%X create ", class_name(), _id );
 

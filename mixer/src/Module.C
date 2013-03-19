@@ -53,8 +53,6 @@ char *Module::_copied_module_settings = 0;
 Module::Module ( int W, int H, const char *L ) : Fl_Group( 0, 0, W, H, L )
 {
     init();
-
-    log_create();
 }
 
 Module::Module ( bool is_default, int W, int H, const char *L ) : Fl_Group( 0, 0, W, H, L ), Loggable( !is_default )
@@ -62,15 +60,11 @@ Module::Module ( bool is_default, int W, int H, const char *L ) : Fl_Group( 0, 0
     this->is_default( is_default );
 
     init();
-
-    log_create();
 }
 
 Module::Module ( ) : Fl_Group( 0, 0, 50, 50, "Unnamed" )
 {
     init();
-
-    log_create();
 }
 
 Module::~Module ( )

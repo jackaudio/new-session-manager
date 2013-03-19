@@ -96,6 +96,15 @@ private:
 
     static unsigned int _relative_id;
 
+#ifndef NDEBUG
+    static bool _snapshotting;
+    static int _snapshot_count;
+
+    mutable int _num_log_creates;
+    mutable int _num_snapshot;
+    mutable int _num_snapshot_creates;
+#endif
+
     unsigned int _id;
 
     Log_Entry *_old_state;
@@ -115,6 +124,12 @@ private:
     void init ( bool loggable=true )
         {
             // _new_state
+#ifndef NDEBUG
+            _num_log_creates = 0;
+            _num_snapshot = 0;
+            _num_snapshot_creates = 0;
+#endif
+            
             _old_state = NULL;
             _nest = 0;
 

@@ -75,12 +75,20 @@ public:
             {
                 case FL_KEYDOWN:
                 {
-                    if ( r && Fl::event_key() == FL_Enter )
+                    if (  ( Fl::event_key() == FL_Enter ||
+                            Fl::event_key() == FL_Tab ) ) 
+                    {
                         Fl::focus( NULL );
+                        return 1;
+                    }
+                    else
+                        return r;
                 }
                 case FL_FOCUS:
-                case FL_UNFOCUS:
                     redraw();
+                    return 1;
+                case FL_UNFOCUS:
+                    do_callback();
                     return 1;
                 case FL_PUSH:
                     take_focus();

@@ -73,9 +73,14 @@ public:
         }
 
     void
-    resize ( int X, int Y, int W, int )
+    resize ( int X, int Y, int W, int H )
         {
-            Fl_Group::resize( X, Y, W, layout( W ) );
+            int NW = W;
+            int NH = H;
+
+            layout( NW, NH );
+
+            Fl_Group::resize( X, Y, NW, NH );
         }
 
     void
@@ -87,20 +92,24 @@ public:
 
     void dolayout ( void )
         {
-            int new_h = layout( w() );
+            int H = h();
+            int W = w();
 
-            if ( new_h != h() )
-                size( w(), new_h );
+            layout( W, H );
+
+            if ( H != h() || W != w() )
+                size( W, H );
         }
 
-    int
-    layout ( int W )
+    void
+    layout ( int &W, int &H )
         {
             resizable( 0 );
 
             int X = 0;
             int Y = 0;
-            int H = 0;
+            H = 0;
+            /* int H = 0; */
 
             _max_width = 0;
 
@@ -173,6 +182,7 @@ public:
                     _max_width = X;
             }
 
-            return Y + H;
+            if ( ! _flow )
+                W = X;
         }
 };

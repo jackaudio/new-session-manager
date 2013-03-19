@@ -144,7 +144,7 @@ public:
                     else
                     {
                         /* otherwise, put it in the next column */
-                        Y = LY;
+                        Y = 0;
                     }                   
 
                 }

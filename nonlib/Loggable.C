@@ -568,12 +568,20 @@ Loggable::snapshot ( const char *name )
 {
     FILE *fp;
 
-    if ( ! ( fp = fopen( name, "w" ) ))
+    char *tmpname;
+
+    asprintf( &tmpname, ".#%s", name );
+
+    if ( ! ( fp = fopen( tmpname, "w" ) ))
         return false;
 
     bool r = snapshot( fp );
 
     fclose( fp );
+
+    rename( tmpname, name );
+
+    free(tmpname);
 
     return r;
 }

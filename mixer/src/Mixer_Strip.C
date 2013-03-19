@@ -451,6 +451,7 @@ Mixer_Strip::init ( )
                         o->size( 33, 100 );
                     }
                     { Meter_Indicator_Module *o = meter_indicator = new Meter_Indicator_Module( true );
+                        o->disable_context_menu( true );
                         o->pad( false );
                         o->size( 38, 100 );
                         Fl_Group::current()->resizable(o);

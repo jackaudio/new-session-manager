@@ -37,7 +37,11 @@ class Meter_Indicator_Module : public Module
 
     volatile float *control_value;
 
+    bool _disable_context_menu;
+
 public:
+
+    void disable_context_menu ( bool b ) { _disable_context_menu = b; }
 
     void handle_control_changed ( Port *p );
 

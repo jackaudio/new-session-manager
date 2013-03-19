@@ -50,6 +50,7 @@ Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
     box( FL_FLAT_BOX );
     color( FL_BACKGROUND_COLOR );
 
+    _disable_context_menu = false;
     _pad = true;
     control_value = 0;
 
@@ -209,6 +210,9 @@ Meter_Indicator_Module::handle ( int m )
     {
         case FL_PUSH:
         {
+            if ( Fl::event_button3() && _disable_context_menu )
+                return 0;
+
             if ( Fl::event_button1() )
             {
                 /* don't let Module::handle eat our click */

@@ -230,6 +230,7 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
             tab_group->resizable( signal_tab );
         }
 
+        set_spatializer_visibility();
     }
     else if ( o == left_button )
         command_move_left();
@@ -296,6 +297,19 @@ Mixer_Strip::configure_outputs ( void )
     DMESSAGE( "Got signal to configure outputs" );
 }
 
+void
+Mixer_Strip::set_spatializer_visibility ( void )
+{
+    if ( fader_tab->visible() && spatialization_controller->is_controlling() )
+    {
+         spatialization_controller->show();
+    }
+    else
+    {
+         spatialization_controller->hide();
+    }
+}
+
 /* called by the chain to let us know that a module has been added */
 void
 Mixer_Strip::handle_module_added ( Module *m )
@@ -324,8 +338,8 @@ Mixer_Strip::handle_module_added ( Module *m )
     {
         if ( spatialization_controller->connect_spatializer_to( m ) )
         {
-            spatialization_controller->show();
             DMESSAGE( "Connected spatializer to module \"%s\"", m->name() );
+            set_spatializer_visibility();
         }
     }
 }

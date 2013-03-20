@@ -128,6 +128,8 @@ private:
     void snapshot ( void );
     bool export_strip ( const char *filename );
 
+    void set_spatializer_visibility ( void );
+
 protected:
 
     void get ( Log_Entry &e ) const;

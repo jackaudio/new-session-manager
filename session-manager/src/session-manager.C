@@ -883,6 +883,11 @@ public:
                         fl_alert( "Server is not responding..." );
                     }
                 }
+                else
+                {
+                    if ( !active() )
+                        activate();
+                }
             }
         }
         

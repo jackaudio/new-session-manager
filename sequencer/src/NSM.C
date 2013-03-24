@@ -54,16 +54,8 @@ int command_save ( char **out_msg );
 int
 NSM_Client::command_save ( char **out_msg )
 {
-    if ( transport.rolling )
-    {
-        *out_msg = strdup( "Cannot save while transport is running." );
-        return ERR_NOT_NOW;
-    }
-    else
-    {
-        save_song( nsm->project_filename );
-        return ERR_OK;
-    }
+    save_song( nsm->project_filename );
+    return ERR_OK;
 }
 
 int 

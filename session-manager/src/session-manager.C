@@ -184,7 +184,7 @@ public:
                 _kill_button->hide();
                 _gui->deactivate();
                 _dirty->deactivate();
-                color( fl_darker( FL_RED ) );
+                color( fl_color_average( FL_BLACK, FL_RED, 0.50 ) );
                 redraw();
             }
             else
@@ -213,14 +213,14 @@ public:
                 
             if ( ! strcmp( command, "ready" ) )
             {
-                color( FL_LIGHT1 );
+                color( fl_color_average( FL_BLACK, FL_GREEN, 0.50 ) );
                 _progress->value( 0.0f );
             }
             else if ( ! strcmp( command, "quit" ) ||
                       ! strcmp( command, "kill" ) ||
                       ! strcmp( command, "error" ) )
             {
-                color( fl_darker( FL_RED ) );
+                color( fl_color_average( FL_BLACK, FL_RED, 0.50 ) );
             }
             else if ( ! strcmp( command, "stopped" ) )
             {
@@ -228,7 +228,7 @@ public:
             }
             else
             {
-                color( fl_darker( FL_YELLOW ) );
+                color( fl_color_average( FL_BLACK, FL_YELLOW, 0.50 ) );
             }
 
             redraw();
@@ -446,6 +446,7 @@ public:
     Fl_Button *new_button;
     Fl_Button *add_button;
     Fl_Button *duplicate_button;
+    Fl_Box *session_name_box;
 
     Fl_Tree *session_browser;
     
@@ -653,16 +654,13 @@ public:
 
     const char *session_name ( void ) const
         {
-            return clients_pack->parent()->label();
+            return session_name_box->label();
         }
 
     void
     session_name ( const char *name )
         {
-            if ( clients_pack->label() )
-                free( (char*)clients_pack->label() );
-                      
-            clients_pack->parent()->label( strdup( name ) );
+            session_name_box->copy_label( name );
             
             if ( strlen( name ) )
             {
@@ -800,15 +798,10 @@ public:
                     o->box( FL_UP_BOX );
                     o->callback( cb_handle, (void*)this );
                 }
-                { Fl_Button *o = add_button = new Fl_Button( 0, 0, 100, 100, "&Add Client" );
-                    o->shortcut( FL_CTRL | 'a' );
-                    o->box( FL_UP_BOX );
-                    o->callback( cb_handle, (void*)this );
-                }
-
+               
                 o->end();
-                add(o);
             }
+
             { Fl_Tile *o = new Fl_Tile( X, Y + 50, W, H - 50 );
                 { 
                     Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - 50 );
@@ -821,26 +814,44 @@ public:
                     o->selection_color( fl_darker( FL_GREEN ) );
                     o->box( FL_DOWN_BOX );
                     o->label( "Sessions" );
-                }
-                {
-                    Fl_Packscroller *o = new Fl_Packscroller(  X + ( W / 3 ), Y + 50, ( W / 3 ) * 2, H - 50 );
-                    o->align( FL_ALIGN_TOP );
-                    o->labeltype( FL_SHADOW_LABEL );
-                    {
-                        Fl_Pack *o = clients_pack = new Fl_Pack( X + ( W / 3 ), Y + 50, ( W / 3 ) * 2, H - 50 );
-                        o->align( FL_ALIGN_TOP );
-                        o->spacing( 2 );
-                        o->type( Fl_Pack::VERTICAL );
-                        o->end();
-                    }
-                    Fl_Group::current()->resizable( o );
                     o->end();
-                }
-                resizable( o );
-                o->end();
-            }
+                } // Fl_Tree
+                
+                Fl_Scalepack *scalepack;
+                { Fl_Scalepack *o = scalepack = new Fl_Scalepack( X + ( W / 3 ), Y + 50, ( W / 3 ) * 2, H - 50 );
+                    o->type( FL_VERTICAL );
+                    o->spacing( 2 );
+                             
+                    {  session_name_box = new Fl_Box( 0, 0, 100, 25, "" );
+                            
+                    }
 
-//            Fl_Group::current()->resizable( this );
+                    { Fl_Button *o = add_button = new Fl_Button( 0, 0, 100, 25, "&Add Client to Session" );
+                        o->shortcut( FL_CTRL | 'a' );
+                        o->box( FL_UP_BOX );
+                        o->callback( cb_handle, (void*)this );
+                    }
+                                   
+                    {
+                        Fl_Packscroller *o = new Fl_Packscroller( 0, 0, 100, H - 100 );
+                        o->align( FL_ALIGN_TOP );
+                        o->labeltype( FL_SHADOW_LABEL );
+                        {
+                            Fl_Pack *o = clients_pack = new Fl_Pack( 0, 0, 100, 100 );
+                            o->align( FL_ALIGN_TOP );
+                            o->spacing( 2 );
+                            o->type( Fl_Pack::VERTICAL );
+                            o->end();
+                        }
+                        o->end();
+                      Fl_Group::current()->resizable( o );
+                    } // Fl_Packscroller
+                    o->end();
+                    Fl_Group::current()->resizable( o );
+                } // Fl_Scalepack
+                o->end();
+                resizable( o );
+            } // Fl_tile
 
             end();
 

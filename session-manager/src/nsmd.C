@@ -2052,6 +2052,13 @@ OSC_HANDLER( ping )
     return 0;
 }
 
+OSC_HANDLER( null )
+{
+    WARNING( "Unrecognized message with type signature \"%s\" at path \"%s\"", types, path );
+
+    return 0;
+}
+
 
 
 
@@ -2191,6 +2198,7 @@ int main(int argc, char *argv[])
     osc_server->add_method( "/nsm/server/close", "", OSC_NAME( close ), NULL, "" );
     osc_server->add_method( "/nsm/server/quit", "", OSC_NAME( quit ), NULL, "" );
 
+    osc_server->add_method( NULL, NULL, OSC_NAME( null ),NULL, "" );
 
     if ( detach )
     {

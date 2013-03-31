@@ -427,6 +427,17 @@ public:
         }
 };
 
+static 
+void
+fl_awake_alert( void *v )
+{
+    if ( v )
+    {
+        fl_alert( (char*)v);
+        free( v );
+    }
+}
+
 void
 browser_callback ( Fl_Widget *w, void * )
 {
@@ -1016,7 +1027,12 @@ private:
                 int err = argv[1]->i;
 
                 if ( err != 0 )
-                    fl_alert( "Command %s failed with:\n\n%s", &argv[0]->s, &argv[2]->s );
+                {
+                    char *s;
+                    asprintf( &s, "Command %s failed with:\n\n%s", &argv[0]->s, &argv[2]->s );
+
+                    Fl::awake(fl_awake_alert, s);
+                }
             }
             else if (!strcmp( path, "/reply" ) && argc && 's' == *types )
             {

@@ -886,19 +886,21 @@ Timeline::nearest_line ( nframes_t *frame, bool snap ) const
 bool
 Timeline::next_line ( nframes_t *frame, bool bar ) const
 {
-    nframes_t when = *frame + 1;
+    const nframes_t when = *frame + 1;
 
     nearest_line_arg n = { when, JACK_MAX_FRAMES, bar };
 
-    render_tempomap( when, x_to_ts( w() ), prev_next_line_cb, &n );
+    const nframes_t window = sample_rate() * 60;
+    nframes_t length = window;
 
-    if ( n.closest == (nframes_t)-1 )
-        return false;
-    else
-    {
-        *frame = n.closest;
-        return true;
-    }
+    if ( when > JACK_MAX_FRAMES - length )
+        length = JACK_MAX_FRAMES - when;
+
+    render_tempomap( when, length, prev_next_line_cb, &n );
+
+    *frame = n.closest;
+
+    return true;
 }
 
 /** Set the value pointed to by /frame/ to the frame number of the of
@@ -907,19 +909,24 @@ Timeline::next_line ( nframes_t *frame, bool bar ) const
 bool
 Timeline::prev_line ( nframes_t *frame, bool bar ) const
 {
-    nframes_t when = *frame - 1;
+    if ( ! *frame )
+        return false;
+
+    const nframes_t when = *frame - 1;
 
     nearest_line_arg n = { when, 0, bar };
 
-    render_tempomap( xoffset, when - xoffset, prev_next_line_cb, &n );
+    const nframes_t window = sample_rate() * 60;
+    nframes_t start = 0;
 
-    if ( n.closest == JACK_MAX_FRAMES )
-        return false;
-    else
-    {
-        *frame = n.closest;
-        return true;
-    }
+    if ( when > window )
+        start = when - window;
+
+    render_tempomap( start, when, prev_next_line_cb, &n );
+
+    *frame = n.closest;
+
+    return true;
 }
 
 

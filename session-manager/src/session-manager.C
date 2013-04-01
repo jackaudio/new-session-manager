@@ -457,6 +457,7 @@ public:
     Fl_Button *new_button;
     Fl_Button *add_button;
     Fl_Button *duplicate_button;
+    Fl_Button *refresh_button;
     Fl_Box *session_name_box;
 
     Fl_Tree *session_browser;
@@ -523,6 +524,15 @@ public:
                 foreach_daemon ( d )
                 {
                     osc->send( (*d)->addr, "/nsm/server/duplicate", name );
+                }
+            }
+            else if ( w == refresh_button )
+            {
+                session_browser->clear();
+                MESSAGE( "Refreshing session list." );
+                foreach_daemon ( d )
+                {
+                    osc->send( (*d)->addr, "/nsm/server/list" );
                 }
             }
             else if ( w == session_browser )
@@ -780,6 +790,10 @@ public:
             { Fl_Pack *o = buttons_pack = new Fl_Pack( X, Y, W, 30 );
                 o->type( Fl_Pack::HORIZONTAL );
                 o->box( FL_NO_BOX );
+                { Fl_Button *o = refresh_button = new Fl_Button( 0, 0, 80, 50, "Refresh" );
+                    o->box( FL_UP_BOX );
+                    o->callback( cb_handle, (void*)this );
+                }
                 { Fl_Button *o = open_button = new Fl_Button( 0, 0, 80, 50, "&Open" );
                     o->shortcut( FL_CTRL | 'o' );
                     o->box( FL_UP_BOX );

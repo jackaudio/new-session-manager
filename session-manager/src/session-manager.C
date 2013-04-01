@@ -790,7 +790,8 @@ public:
             { Fl_Pack *o = buttons_pack = new Fl_Pack( X, Y, W, 30 );
                 o->type( Fl_Pack::HORIZONTAL );
                 o->box( FL_NO_BOX );
-                { Fl_Button *o = refresh_button = new Fl_Button( 0, 0, 80, 50, "Refresh" );
+                { Fl_Button *o = refresh_button = new Fl_Button( 0, 0, 80, 50, "&Refresh" );
+                o->shortcut( FL_CTRL | 'r' );
                     o->box( FL_UP_BOX );
                     o->callback( cb_handle, (void*)this );
                 }

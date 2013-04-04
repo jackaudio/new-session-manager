@@ -302,8 +302,7 @@ handle_client_process_death ( int pid )
         
     if ( c )
     {
-        MESSAGE( "Client %s died.", c->name );
-
+   
         bool dead_because_we_said = false;
 
         if ( c->pending_command() == COMMAND_KILL ||
@@ -312,6 +311,7 @@ handle_client_process_death ( int pid )
             dead_because_we_said = true;
         }
 
+
         c->pending_command( COMMAND_NONE );
             
         c->active = false;
@@ -319,6 +319,7 @@ handle_client_process_death ( int pid )
 
         if ( dead_because_we_said )
         {
+            MESSAGE( "Client %s terminated because we told it to.", c->name );
             if ( gui_is_active )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
 
@@ -328,6 +329,8 @@ handle_client_process_death ( int pid )
         }
         else
         {
+            MESSAGE( "Client %s died unexpectedly.", c->name );
+
             if ( gui_is_active )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
         }

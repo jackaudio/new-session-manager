@@ -38,6 +38,8 @@
 #include <FL/Fl_Tree.H>
 #include <FL/Fl_Hold_Browser.H>
 #include <FL/Fl_Tile.H>
+#include <FL/Fl_Shared_Image.H>
+#include <FL/Fl_Box.H>
 
 #include "FL/Fl_Packscroller.H"
 #include "FL/Fl_Scalepack.H"
@@ -80,13 +82,45 @@ static std::list<Daemon*> daemon_list;                                  /* list 
 
 #define foreach_daemon( _it ) for ( std::list<Daemon*>::iterator _it = daemon_list.begin(); _it != daemon_list.end(); ++ _it )
 
+static
+Fl_Image *
+get_program_icon ( const char *name )
+{
+    const char *tries[] =
+    {
+        "/usr/local/share/icons/hicolor/32x32/apps/%s.png",
+        "/usr/local/share/pixmaps/%s.png",
+        "/usr/local/share/pixmaps/%s.xpm",
+        "/usr/share/icons/hicolor/32x32/apps/%s.png",
+        "/usr/share/pixmaps/%s.png",
+        "/usr/share/pixmaps/%s.xpm",
+    };
+    
+    for ( unsigned int i = 0; i < 6; i++ )
+    {
+        char *icon_p;
+        
+        asprintf( &icon_p, tries[i], name );
+        
+        Fl_Image *img = Fl_Shared_Image::get( icon_p );
+    
+        free( icon_p );
+
+        if ( img )
+            return img;
+    }
+
+    return NULL;
+}
+
 class NSM_Client : public Fl_Group
 {
     char *_client_id;
     char *_client_label;
     char *_client_name;
-
-//    Fl_Box *client_name;
+    
+    Fl_Box *client_name;
+    Fl_Box *icon_box;
     Fl_Progress *_progress;
     Fl_Light_Button *_dirty;
     Fl_Light_Button *_gui;
@@ -104,10 +138,19 @@ class NSM_Client : public Fl_Group
             else
                 l = strdup( _client_name );
 
-            if ( label() )
-                free((char*)label());
+            if ( ! icon_box->image() )
+            {
+                Fl_Image *img = get_program_icon( _client_name );
+                
+                if ( img )
+                {
+                    icon_box->image( img );
+                }
+            }
 
-            label( l );
+            client_name->copy_label( l );
+            
+            // _client_label = l;
 
             redraw();
         }
@@ -311,12 +354,26 @@ public:
             int xx = X + W - ( 75 + Fl::box_dw( box() ) );
             int ss = 2;
 
-            /* dummy group */
-            { Fl_Group *o = new Fl_Group( X, Y, 50, 50 );
-                o->end();
-                resizable( o );
-            }
+            /* /\* dummy group *\/ */
+            /* { Fl_Group *o = new Fl_Group( X, Y, 50, 50 ); */
+            /*     o->end(); */
+            /*     resizable( o ); */
+            /* } */
+    
+            { Fl_Pack *o = new Fl_Pack( X + 15, Y, 200 - 5, H );
+                o->type( FL_HORIZONTAL );
+                o->spacing( 10 );
+                {  icon_box = new Fl_Box( 0, 0, 32, 32 );
+                }
                 
+                { Fl_Box *o = client_name = new Fl_Box( 0, 0, 300, 48 );
+                    /* o->color( FL_BLUE ); */
+                    o->align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT );
+                    o->labeltype( FL_NORMAL_LABEL );
+                }
+                o->end();
+            }
+           
             { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 75, H * 0.50, NULL );
                 o->box( FL_FLAT_BOX );
                 o->color( FL_BLACK );
@@ -1170,6 +1227,8 @@ main (int argc, char **argv )
     XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),
                             (char**)icon_16x16, &p, &mask, NULL);
 #endif
+
+    fl_register_images();
 
     Fl::lock();
     

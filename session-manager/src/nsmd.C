@@ -807,7 +807,7 @@ OSC_HANDLER( announce )
                       "Howdy, what took you so long?" :
                       "Well hello, stranger. Welcome to the party.",
                       APP_TITLE,
-                      ":server-control:broadcast:" );
+                      ":server-control:broadcast:optional-gui:" );
 
     if ( gui_is_active )
     {

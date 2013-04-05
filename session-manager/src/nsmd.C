@@ -480,10 +480,10 @@ replies_still_pending ( )
     for ( std::list<Client*>::const_iterator i = client.begin();
           i != client.end();
           ++i )
-        /* if ( (*i)->active && (*i)->reply_pending() ) */
-        /*     return true; */
-        if ( (*i)->reply_pending() )
+        if ( (*i)->active && (*i)->reply_pending() )
             return true;
+        /* if ( (*i)->reply_pending() ) */
+        /*     return true; */
 
     return false;
 }

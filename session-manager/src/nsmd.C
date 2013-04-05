@@ -302,39 +302,37 @@ handle_client_process_death ( int pid )
         
     if ( c )
     {
-   
-        bool dead_because_we_said = false;
-
-        if ( c->pending_command() == COMMAND_KILL ||
-             c->pending_command() == COMMAND_QUIT )
-        {
-            dead_because_we_said = true;
-        }
-
-
-        c->pending_command( COMMAND_NONE );
-            
-        c->active = false;
-        c->pid = 0;
+        bool dead_because_we_said = ( c->pending_command() == COMMAND_KILL ||
+                                      c->pending_command() == COMMAND_QUIT );
 
         if ( dead_because_we_said )
         {
             MESSAGE( "Client %s terminated because we told it to.", c->name );
-            if ( gui_is_active )
-                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
-
-            client.remove( c );
-
-            delete c;
         }
         else
         {
             MESSAGE( "Client %s died unexpectedly.", c->name );
+        }
 
+        if ( c->pending_command() == COMMAND_QUIT )
+        {
+            if ( gui_is_active )
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
+
+            client.remove(c);
+            delete c;
+        }
+        else
+        {
             if ( gui_is_active )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
         }
-    }
+      
+        c->pending_command( COMMAND_NONE );
+            
+        c->active = false;
+        c->pid = 0;
+     }
 }
 
 
@@ -995,6 +993,21 @@ command_all_clients_to_save ( )
     }
 }
 
+void
+command_client_to_stop ( Client *c )
+{
+    MESSAGE( "Stopping client %s", c->name );
+
+    if ( c->pid > 0 )
+    {
+        c->pending_command( COMMAND_KILL );
+
+        kill( c->pid, SIGTERM );
+
+        if ( gui_is_active )
+            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
+    }
+}
 
 void
 command_client_to_quit ( Client *c )
@@ -1015,10 +1028,10 @@ command_client_to_quit ( Client *c )
         if ( c->pid > 0 )
         {
             if ( gui_is_active )
-                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "kill" );
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "quit" );
             
             /* should be kill? */
-            c->pending_command( COMMAND_KILL );
+            c->pending_command( COMMAND_QUIT );
     
             // this is a dumb client... try and kill it
             kill( c->pid, SIGTERM );
@@ -1897,13 +1910,10 @@ OSC_HANDLER( stop )
 
     if ( c )
     {
-        if ( c->pid != 0 )
-        {
-            kill( c->pid, SIGTERM );
-
-            if ( gui_is_active )
-                osc_server->send( gui_addr, "/reply", "Client stopped." );
-        }
+        command_client_to_stop( c );
+        
+        if ( gui_is_active )
+            osc_server->send( gui_addr, "/reply", "Client stopped." );
     }
     else
     {

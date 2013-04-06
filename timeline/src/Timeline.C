@@ -940,6 +940,12 @@ Timeline::x_to_offset ( int x ) const
     return x_to_ts( max( 0, x - Track::width() ) ) + xoffset;
 }
 
+int
+Timeline::offset_to_x ( nframes_t frame ) const
+{
+    return ts_to_x( frame - xoffset ) + Track::width();
+}
+
 /** draws a single measure line */
 void
 Timeline::draw_measure_cb ( nframes_t frame, const BBT &bbt, void *v )

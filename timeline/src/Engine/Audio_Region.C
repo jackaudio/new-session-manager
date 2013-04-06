@@ -229,6 +229,27 @@ Audio_Region::prepare ( void )
 //    log_start();
 }
 
+
+class SequenceRedrawRequest {
+public:
+    nframes_t start;
+    nframes_t length;
+    Sequence *sequence;
+};
+
+static 
+void
+sequence_redraw_request_handle ( void *v )
+{
+    THREAD_ASSERT(UI);
+
+    SequenceRedrawRequest *o = (SequenceRedrawRequest*)v;
+    
+    o->sequence->damage( FL_DAMAGE_USER1, timeline->offset_to_x( o->start ), o->sequence->y(), timeline->ts_to_x( o->length ), o->sequence->h() );
+
+    delete o;
+};
+
 /** write /nframes/ from /buf/ to source. /buf/ is interleaved and
     must match the channel layout of the write source!  */
 nframes_t
@@ -242,9 +263,12 @@ Audio_Region::write ( nframes_t nframes )
 
         if ( W )
         {
-            Fl::lock();
-            sequence()->damage(FL_DAMAGE_USER1, x(), y(), w(), h());
-            Fl::unlock();
+            SequenceRedrawRequest *o = new SequenceRedrawRequest();
+            o->sequence = sequence();
+            o->start = _range.start + ( _range.length - timeline->x_to_ts( 20 ) );
+            o->length = timeline->x_to_ts( 20 );
+
+            Fl::awake(sequence_redraw_request_handle, o);
         }
     }
 

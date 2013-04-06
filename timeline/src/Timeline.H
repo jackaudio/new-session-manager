@@ -85,7 +85,6 @@ struct Rectangle
     Rectangle ( int X, int Y, int W, int H ) : x( X ), y( Y ), w( W ), h( H ) {}
 };
 
-
 #ifdef USE_WIDGET_FOR_TIMELINE
 class Timeline : public Fl_Group, public RWLock
 #else
@@ -214,6 +213,7 @@ public:
     int ts_to_x( nframes_t ts ) const { return  ts >> _fpp; }
     nframes_t x_to_ts ( int x ) const { return x << _fpp; }
     nframes_t x_to_offset ( int x ) const;
+    int offset_to_x ( nframes_t frame ) const;
 
     float beats_per_minute ( nframes_t when ) const;
     int beats_per_bar ( nframes_t when ) const;

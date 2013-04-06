@@ -355,12 +355,12 @@ public:
             int ss = 2;
 
             /* /\* dummy group *\/ */
-            /* { Fl_Group *o = new Fl_Group( X, Y, 50, 50 ); */
+            /* { Fl_Group *o = new Fl_Group( X, Y, W, H ); */
             /*     o->end(); */
             /*     resizable( o ); */
             /* } */
     
-            { Fl_Pack *o = new Fl_Pack( X + 15, Y, 200 - 5, H );
+            { Fl_Pack *o = new Fl_Pack( X + 15, Y, 300 - 5, H );
                 o->type( FL_HORIZONTAL );
                 o->spacing( 10 );
                 {  icon_box = new Fl_Box( 0, 0, 32, 32 );
@@ -374,6 +374,10 @@ public:
                 o->end();
             }
            
+            { Fl_Box *o = new Fl_Box( X + 300, Y, 100, h() );
+                Fl_Group::current()->resizable(o);
+                }
+            
             { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 75, H * 0.50, NULL );
                 o->box( FL_FLAT_BOX );
                 o->color( FL_BLACK );
@@ -885,23 +889,33 @@ public:
                 o->end();
             }
 
-            { Fl_Tile *o = new Fl_Tile( X, Y + 50, W, H - 50 );
-                { 
-                    Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - 50 );
-                    o->callback( cb_handle, (void *)this );
-                    o->color( FL_DARK1 );
-                    o->item_labelbgcolor( o->color() );
-                    o->item_labelfgcolor( FL_FOREGROUND_COLOR );
-                    o->sortorder( FL_TREE_SORT_ASCENDING );
-                    o->showroot( 0 );
-                    o->selection_color( fl_darker( FL_GREEN ) );
-                    o->box( FL_DOWN_BOX );
-                    o->label( "Sessions" );
+            { Fl_Tile *o = new Fl_Tile( X, Y + 30, W, H - 30 );
+                { Fl_Scalepack *o = new Fl_Scalepack( X, Y + 30, 300, H - 30 );
+                    o->type( FL_VERTICAL );
+                    o->spacing( 2 );
+                    
+                    { Fl_Box *o = new Fl_Box( 0,0,100, 24, "Sessions" );
+                    }
+
+                    { 
+                        Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - 50 );
+                        o->callback( cb_handle, (void *)this );
+                        o->color( FL_DARK1 );
+                        o->item_labelbgcolor( o->color() );
+                        o->item_labelfgcolor( FL_FOREGROUND_COLOR );
+                        o->sortorder( FL_TREE_SORT_ASCENDING );
+                        o->showroot( 0 );
+                        o->selection_color( fl_darker( FL_GREEN ) );
+                        o->box( FL_FLAT_BOX );
+                        /* o->label( "Sessions" ); */
+                        o->end();
+                        Fl_Group::current()->resizable( o );
+                    } // Fl_Tree
                     o->end();
-                } // Fl_Tree
+                }
                 
                 Fl_Scalepack *scalepack;
-                { Fl_Scalepack *o = scalepack = new Fl_Scalepack( X + ( W / 3 ), Y + 50, ( W / 3 ) * 2, H - 50 );
+                { Fl_Scalepack *o = scalepack = new Fl_Scalepack( X + 300, Y + 30, W - 300, H - 30 );
                     o->type( FL_VERTICAL );
                     o->spacing( 2 );
                              
@@ -912,6 +926,7 @@ public:
                     { Fl_Button *o = add_button = new Fl_Button( 0, 0, 100, 25, "&Add Client to Session" );
                         o->shortcut( FL_CTRL | 'a' );
                         o->box( FL_UP_BOX );
+                        o->align( FL_ALIGN_CLIP );
                         o->callback( cb_handle, (void*)this );
                     }
                                    
@@ -930,8 +945,13 @@ public:
                       Fl_Group::current()->resizable( o );
                     } // Fl_Packscroller
                     o->end();
-                    Fl_Group::current()->resizable( o );
+                    /* Fl_Group::current()->resizable( o ); */
                 } // Fl_Scalepack
+
+                { Fl_Box *o = new Fl_Box( X + 300, Y + 30, 100, H - 30 );
+                    Fl_Group::current()->resizable(o);
+                }
+
                 o->end();
                 resizable( o );
             } // Fl_tile
@@ -1235,7 +1255,7 @@ main (int argc, char **argv )
     Fl_Double_Window *main_window;
 
     {
-        Fl_Double_Window *o = main_window = new Fl_Double_Window( 600, 800, APP_NAME );
+        Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, APP_NAME );
         {
             main_window->xclass( APP_NAME );
 

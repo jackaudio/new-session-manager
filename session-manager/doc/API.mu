@@ -1,7 +1,6 @@
 
 ! title		Non Session Management API
 ! author	Jonathan Moore Liles #(email,male@tuxfamily.org)
-! date		August 1, 2010
 ! revision	Version 1.2
 ! extra		#(image,logo,icon.png)
 
@@ -173,9 +172,18 @@
   breifly while awaiting the `announce` reply and
   subsequent `open` message.
 
+
   `capabilities` *MUST* be a string containing a colon separated list
   of the special capabilities the client
   possesses. e.g. `:dirty:switch:progress:`
+
+  `executable\_name` *MUST* be the executable name that the program
+  was launched with. For C programs, this is simply the value of
+  `argv[0]`. Note that hardcoding the name of the program here is not
+  the same as using, as the user may have launched the program from a
+  script with a different name using exec, or have created a symlink
+  to the program. Getting the correct value in scripting languages
+  like Python can be more challenging.
 
 // Available Client Capabilities
 [[ Name, Description
@@ -261,11 +269,11 @@
 
 > /nsm/client/open s:path_to_instance_specific_project s:display_name s:client_id
 
-  `path\_to\_instance_specific\_project` is a path name assigned to
+  `path\_to\_instance\_specific\_project` is a path name assigned to
   the client for storing its project data.
 
   The client may append to the path, creating a sub-directory,
-  e.g. '/song.foo' or simply append the client's native file extension
+  e.g. '\/song.foo' or simply append the client's native file extension
   (e.g. '.non' or '.XML'). The same transformation *MUST* be applied
   to the name when opening an existing project, as NSM will only
   provide the instance specific part of the path.
@@ -389,7 +397,11 @@
   Accepting this message is optional. The intent is to signal to
   clients which may have some interdependence (say, peer to peer OSC
   connections) that the session is fully loaded and all their peers
-  are available.
+  are available. Most clients will not need to act on this
+  message. This message has no meaning when a session is being built
+  or run--only when it is initially loaded. Clients who intend to act
+  on this message *MUST* not do so by delaying initialization waiting
+  for it.
 
 > /nsm/client/session_is_loaded
 
@@ -427,6 +439,9 @@
   optional GUI has changed. It also *MUST* send this message after
   it's announce message to indicate the initial visibility state of
   the optional GUI.
+
+  It is the responsibility of the client to remember the visibility
+  state of its GUI across session loads.
 
 > /nsm/client/gui_is_hidden
 
@@ -529,7 +544,7 @@
 [[ ERR_NO_SESSION, No session is open
 [[ ERR_UNSAVED_CHANGES, Unsaved changes would be lost
 
-= /nsm/server/add s:path_to_executable
+= /nsm/server/add s:executable_name
 
   Adds a client to the current session.
 
@@ -537,7 +552,7 @@
 
   Saves the current session.
 
-= /nsm/server/load s:project_name
+= /nsm/server/open s:project_name
 
   Saves the current session and loads a new session.
 

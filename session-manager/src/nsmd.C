@@ -1337,7 +1337,7 @@ OSC_HANDLER( duplicate )
 
     MESSAGE( "Attempting to open %s", spath );
 
-    if ( load_session_file( spath ) )
+    if ( !load_session_file( spath ) )
     {
         MESSAGE( "Loaded" );
         osc_server->send( lo_message_get_source( msg ), "/reply", path,
@@ -1349,6 +1349,8 @@ OSC_HANDLER( duplicate )
         osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_NO_SUCH_FILE,
                           "No such file." );
+        free(spath);
+        return -1;
     }
 
     free( spath );

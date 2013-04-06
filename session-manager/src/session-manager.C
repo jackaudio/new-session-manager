@@ -566,13 +566,11 @@ public:
                 
                 if ( ! name )
                     return;
+                
+                Fl_Tree_Item *item = session_browser->find_item( name );
 
-                MESSAGE( "Sending open for: %s", name );
-
-                foreach_daemon ( d )
-                {
-                    osc->send( (*d)->addr, "/nsm/server/open", name );
-                }
+                if ( item )
+                    session_browser->select_only( item, 1 );
             }
             else if ( w == duplicate_button )
             {
@@ -603,7 +601,7 @@ public:
 
                 Fl_Tree_Item *item = session_browser->callback_item();
 
-                session_browser->deselect( item, 0 );
+                //   session_browser->deselect( item, 0 );
 
                 if ( item->children() )
                     return;
@@ -852,7 +850,7 @@ public:
                 o->type( Fl_Pack::HORIZONTAL );
                 o->box( FL_NO_BOX );
                 { Fl_Button *o = refresh_button = new Fl_Button( 0, 0, 80, 50, "&Refresh" );
-                o->shortcut( FL_CTRL | 'r' );
+                    o->shortcut( FL_CTRL | 'r' );
                     o->box( FL_UP_BOX );
                     o->callback( cb_handle, (void*)this );
                 }
@@ -942,7 +940,7 @@ public:
                             o->end();
                         }
                         o->end();
-                      Fl_Group::current()->resizable( o );
+                        Fl_Group::current()->resizable( o );
                     } // Fl_Packscroller
                     o->end();
                     /* Fl_Group::current()->resizable( o ); */
@@ -1014,7 +1012,7 @@ public:
             osc->add_method( "/nsm/gui/server_announce", "s", osc_handler, osc, "msg" );
             osc->add_method( "/nsm/gui/gui_announce", "s", osc_handler, osc, "msg" );
             osc->add_method( "/nsm/gui/session/session", "s", osc_handler, osc, "path,display_name" );
-            osc->add_method( "/nsm/gui/session/name", "s", osc_handler, osc, "path,display_name" );
+            osc->add_method( "/nsm/gui/session/name", "ss", osc_handler, osc, "path,display_name" );
             osc->add_method( "/nsm/gui/client/new", "ss", osc_handler, osc, "path,display_name" );
             osc->add_method( "/nsm/gui/client/status", "ss", osc_handler, osc, "path,display_name" );
             osc->add_method( "/nsm/gui/client/switch", "ss", osc_handler, osc, "path,display_name" );
@@ -1109,9 +1107,23 @@ private:
                 osc->send( d->addr, "/nsm/server/list" );
             }
             else if ( !strcmp( path, "/nsm/gui/session/name" ) &&
-                      !strcmp( types, "s" ))
+                      !strcmp( types, "ss" ))
             {
                 controller->session_name( &argv[0]->s );
+                
+                if ( !strcmp( &argv[0]->s, "" ) )
+                {
+                    controller->session_browser->deselect_all();
+                }
+                else
+                {
+                    Fl_Tree_Item *o = controller->session_browser->find_item( &argv[1]->s );
+                    if ( o )
+                    {
+                        controller->session_browser->select_only( o, 0 );
+                        controller->session_browser->show_item( o, 0 );
+                    }
+                }
             }
             else if (!strcmp( path, "/error" ) &&
                      !strcmp( types, "sis" ) )

@@ -1080,7 +1080,7 @@ close_session ( )
 
     if ( gui_is_active )
     {
-        osc_server->send( gui_addr, "/nsm/gui/session/name", "" );
+        osc_server->send( gui_addr, "/nsm/gui/session/name", "", "" );
     }
 }
 
@@ -1239,7 +1239,7 @@ load_session_file ( const char * path )
 
     if ( gui_is_active )
     {
-        osc_server->send( gui_addr, "/nsm/gui/session/name", session_name );
+        osc_server->send( gui_addr, "/nsm/gui/session/name", session_name, session_path + strlen( session_root ));
     }
     
     return ERR_OK;
@@ -1421,7 +1421,8 @@ OSC_HANDLER( new )
     if ( gui_is_active )
     {
         osc_server->send( gui_addr,  "/nsm/gui/session/session", &argv[0]->s  );
-        osc_server->send( gui_addr, "/nsm/gui/session/name", &argv[0]->s  );
+
+        osc_server->send( gui_addr, "/nsm/gui/session/name", &argv[0]->s, &argv[0]->s );
     }
 
     save_session_file();
@@ -2045,7 +2046,7 @@ announce_gui( const char *url, bool is_reply )
 
     }
 
-    osc_server->send( gui_addr, "/nsm/gui/session/name", session_name ? session_name : "" );
+    osc_server->send( gui_addr, "/nsm/gui/session/name", session_name ? session_name : "", session_path ? session_path : "" );
 
     DMESSAGE( "Registered with GUI" );
 }

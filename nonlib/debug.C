@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+extern char * program_invocation_short_name;
+
 void
 warnf ( warning_t level,
 	   const char *module,
@@ -36,8 +38,10 @@ warnf ( warning_t level,
 		"assertion", "\033[1;31m"
 	};
 
+        module = program_invocation_short_name;
+
 	if ( module )
-		fprintf( stderr, "[%s] ", module );
+		fprintf( stderr, "[\033[1;30m%s\033[0m] ", module );
 #ifndef NDEBUG
 	if ( file )
 		fprintf( stderr, "%s", file );

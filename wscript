@@ -41,7 +41,7 @@ def configure(conf):
             "-pipe"
             ]
 
-    debug_flags = [ '-g' ]
+    debug_flags = [ '-O0', '-g3' ]
 
 
     if Options.options.debug:

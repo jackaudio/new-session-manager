@@ -355,6 +355,7 @@ connect_path ( struct patch_record *pr )
         /* one of the ports doesn't exist yet... don't attempt
          * connection, jack will just complain. */
         printf( "Not attempting connection because one of the ports is missing.\n" );
+        return;
     }
 
     printf( "Connecting %s |> %s\n", srcport, dstport );

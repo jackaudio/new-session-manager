@@ -26,6 +26,8 @@
 
 #include "debug.h"
 
+#include "OSC/Endpoint.H"
+
 extern Timeline *timeline;
 
 OSC_Thread::OSC_Thread ( )
@@ -61,14 +63,17 @@ OSC_Thread::process ( void )
     _thread.name( "OSC" );
 
     DMESSAGE( "OSC Thread starting" );
-    
+
     while ( !_shutdown )
     {
+        if ( trylock() )
+        {
+            timeline->osc->check();        
+            timeline->process_osc();
+            unlock();
+        }
+
         usleep( 100 * 1000 );
-        
-        /* lock(); */
-        timeline->process_osc();
-        /* unlock(); */
     }
 
     DMESSAGE( "OSC Thread stopping." );

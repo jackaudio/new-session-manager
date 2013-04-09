@@ -66,9 +66,9 @@ Control_Sequence::Control_Sequence ( Track *track, const char *name ) : Sequence
 
     _track = track;
 
-    mode( OSC );
-
     this->name( name );
+
+    mode( OSC );
 
     if ( track )
         track->add( this );
@@ -198,6 +198,8 @@ Control_Sequence::cb_button ( Fl_Widget *w )
 void
 Control_Sequence::init ( void )
 {
+    timeline->osc->peer_signal_notification_callback( &Control_Sequence::peer_callback, NULL );
+
     labeltype( FL_NO_LABEL );
     {
         Control_Sequence_Header *o = new Control_Sequence_Header( x(), y(), Track::width(), 52 );
@@ -332,7 +334,7 @@ Control_Sequence::mode ( Mode m )
     {
         /* FIXME: use name here... */
         char *path;
-        asprintf( &path, "/track/%s/control/%i", track()->name(), track()->ncontrols() );
+        asprintf( &path, "/track/%s/%s", track()->name(), name() );
 
         char *s = escape_url( path );
 
@@ -347,8 +349,6 @@ Control_Sequence::mode ( Mode m )
         _osc_output( t );
 
         DMESSAGE( "osc_output: %p", _osc_output() );
-
-        connect_osc();
 
         header()->outputs_indicator->label( "osc" );
     }
@@ -589,6 +589,8 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
 void
 Control_Sequence::connect_osc ( void )
 {
+    timeline->osc_thread->lock();
+
     if ( _persistent_osc_connections.size() )
     {
         for ( std::list<char*>::iterator i = _persistent_osc_connections.begin();
@@ -597,7 +599,7 @@ Control_Sequence::connect_osc ( void )
         {
             if ( ! timeline->osc->connect_signal( _osc_output(), *i ) )
             {
-//                MESSAGE( "Failed to connect output %s to ", _osc_output->path(), *i );
+                /* WARNING( "Failed to connect output %s to %s", _osc_output()->path(), *i ); */
             }
             else
             {
@@ -606,6 +608,10 @@ Control_Sequence::connect_osc ( void )
             }
         }
     }
+
+    header()->outputs_indicator->value( _osc_output() && _osc_output()->connected() );
+  
+    timeline->osc_thread->unlock();
 }
 
 void
@@ -614,28 +620,26 @@ Control_Sequence::process_osc ( void )
     if ( mode() != OSC )
         return;
 
-    header()->outputs_indicator->value( _osc_output() && _osc_output()->connected() );
-
     if ( _osc_output() && _osc_output()->connected() )
     {
         sample_t buf[1];
-        
+ 
         play( buf, (nframes_t)transport->frame, (nframes_t) 1 );
         _osc_output()->value( (float)buf[0] );
     }
-}
-
-void
-Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig, void *v )
-{
-    ((Control_Sequence*)v)->peer_callback( name, sig );
 }
 
 static Fl_Menu_Button *peer_menu;
 static const char *peer_prefix;
 
 void
-Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig )
+Control_Sequence::update_osc_connection_state ( void )
+{
+    header()->outputs_indicator->value( _osc_output() && _osc_output()->connected() );
+}
+
+void
+Control_Sequence::peer_callback( OSC::Signal *sig,  OSC::Signal::State state, void *v )
 {
     char *s;
 
@@ -647,34 +651,44 @@ Control_Sequence::peer_callback( const char *name, const OSC::Signal *sig )
     if ( ! ( sig->parameter_limits().min == 0.0 &&
              sig->parameter_limits().max == 1.0 ) )
         return;         
+
+    if ( ! v )
+    {
+        if( state == OSC::Signal::Created )
+            timeline->connect_osc();
+        else
+            timeline->update_osc_connection_state();
+    }
+    else
+    {
+        /* building menu */
+        const char *name = sig->peer_name();
+   
+        assert( sig->path() );
+
+        char *path = strdup( sig->path() );
+
+        unescape_url( path );
+
+        asprintf( &s, "%s/%s%s", peer_prefix, name, path );
+
+        peer_menu->add( s, 0, NULL, (void*)( sig ),
+                            FL_MENU_TOGGLE |
+                        ( ((Control_Sequence*)v)->_osc_output()->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) );
     
+        free( path );
 
-    assert( sig->path() );
-
-    char *path = strdup( sig->path() );
-
-    unescape_url( path );
-
-    asprintf( &s, "%s/%s%s", peer_prefix, name, path );
-
-    peer_menu->add( s, 0, NULL, (void*)( sig ),
-                    FL_MENU_TOGGLE |
-                    ( _osc_output()->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) );
-
-    free( path );
-
-    free( s );
-
-    connect_osc();
+        free( s );
+    }
 }
 
 void
 Control_Sequence::add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix )
 {
-        peer_menu = m;
+    peer_menu = m;
     peer_prefix = prefix;
 
-    timeline->osc->list_peer_signals( &Control_Sequence::peer_callback, this );
+    timeline->osc->list_peer_signals( this );
 }
 
 Fl_Menu_Button &

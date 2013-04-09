@@ -71,8 +71,8 @@ private:
         }
 
 
-    static void peer_callback( const char *name, const OSC::Signal *sig, void *v );
-    void peer_callback( const char *name, const OSC::Signal *sig );
+    static void peer_callback(  OSC::Signal *sig,  OSC::Signal::State state, void *v );
+    void peer_callback( OSC::Signal *sig, OSC::Signal::State state );
     void add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix );
 
     static Fl_Widget *_highlighted;
@@ -116,6 +116,7 @@ public:
 
     void process_osc ( void );
     void connect_osc ( void );
+    void update_osc_connection_state ( void );
 
     static bool draw_with_polygon;
     static bool draw_with_grid;

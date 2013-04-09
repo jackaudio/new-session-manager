@@ -2082,15 +2082,6 @@ Timeline::session_manager_name ( void )
 /* OSC */
 /*******/
 
-const double OSC_INTERVAL = 0.2f;
-
-void
-Timeline::check_osc ( void * v )
-{
-    ((Timeline*)v)->osc->check();
-    Fl::repeat_timeout( OSC_INTERVAL, &Timeline::check_osc, v );
-}
-
 int
 Timeline::init_osc ( const char *osc_port )
 {
@@ -2107,11 +2098,6 @@ Timeline::init_osc ( const char *osc_port )
     
 //    osc->start();
     
-    /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
-    Fl::add_timeout( OSC_INTERVAL, &Timeline::check_osc, this );
-
-    osc->peer_scan_complete_callback( &Timeline::handle_peer_scan_complete, this );
-
     if ( ! osc_thread )
     {
         osc_thread = new OSC_Thread();
@@ -2123,9 +2109,19 @@ Timeline::init_osc ( const char *osc_port )
 }
 
 int
-Timeline::osc_non_hello ( const char *path, const char *, lo_arg **argv, int argc, lo_message, void * )
+Timeline::osc_non_hello ( const char *, const char *, lo_arg **, int , lo_message msg, void * )
 {
-    OSC_DMSG();
+    THREAD_ASSERT( OSC );
+
+    timeline->handle_hello(msg);
+    return 0;
+}
+
+void
+Timeline::handle_hello ( lo_message msg )
+{
+    int argc = lo_message_get_argc( msg );
+    lo_arg **argv = lo_message_get_argv( msg );
 
     if ( argc >= 4 )
     {
@@ -2134,64 +2130,14 @@ Timeline::osc_non_hello ( const char *path, const char *, lo_arg **argv, int arg
         const char *version = &argv[2]->s;
         const char *id = &argv[3]->s;
 
-        MESSAGE( "Discovered NON peer %s (%s) @ %s with ID \"%s\"", name, version, url, id );
-        MESSAGE( "Registering Signals" );
-
-        timeline->osc->hello( url );
+        MESSAGE( "Got hello from NON peer %s (%s) @ %s with ID \"%s\"", name, version, url, id );
         
-        return 0;
+        osc->handle_hello( &argv[3]->s, &argv[0]->s );
     }
-    
-    return -1;
 }
 
 void
-Timeline::reply_to_finger ( lo_message msg )
-{
-    int argc = lo_message_get_argc( msg );
-    lo_arg **argv = lo_message_get_argv( msg );
-
-    if ( argc < 1 )
-        return;
-
-    lo_address reply = lo_address_new_from_url( &argv[0]->s );
-    
-    osc->send( reply,
-               "/non/hello",
-               osc->url(),
-               APP_NAME,
-               VERSION,
-               instance_name );
-
-    osc->hello( &argv[0]->s );
-
-    lo_address_free( reply );
-}
-
-void 
-Timeline::handle_peer_scan_complete ( void *o )
-{
-    ((Timeline*)o)->connect_osc();
-}
-
-void
-Timeline::connect_osc ( void )
-{
-//    rdlock();
-
-    /* try to (re)connect OSC signals */
-    for ( int i = tracks->children(); i-- ; )
-    {
-        Track *t = (Track*)tracks->child( i );
-
-        t->connect_osc();
-    }
-
-//    unlock();
-}
-
-void
-Timeline::discover_peers ( void )
+Timeline::say_hello ( void )
 {
     if ( nsm_is_active( nsm ) )
     {
@@ -2208,6 +2154,28 @@ Timeline::discover_peers ( void )
     }
 }
 
+void
+Timeline::connect_osc ( void )
+{
+    /* reconnect OSC signals */
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+        
+        t->connect_osc();
+    }
+}
+void
+Timeline::update_osc_connection_state ( void )
+{
+    /* reconnect OSC signals */
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+        
+        t->update_osc_connection_state();
+    }
+}
 
 /* runs in the OSC thread... */
 void
@@ -2215,7 +2183,7 @@ Timeline::process_osc ( void )
 {
     THREAD_ASSERT( OSC );
 
-    rdlock();
+    /* rdlock(); */
 
     /* reconnect OSC signals */
     for ( int i = tracks->children(); i-- ; )
@@ -2225,6 +2193,6 @@ Timeline::process_osc ( void )
         t->process_osc();
     }
 
-    unlock();
+    /* unlock(); */
 }
 

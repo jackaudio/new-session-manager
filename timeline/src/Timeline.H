@@ -294,7 +294,9 @@ public:
     
     void connect_osc ( void );
 
-    void discover_peers ( void );
+    void update_osc_connection_state ( void );
+
+    void say_hello ( void );
 
     static void check_osc ( void * v );
     
@@ -304,7 +306,7 @@ public:
     static int osc_non_hello ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
     
 
-    void reply_to_finger ( lo_message msg );
+    void handle_hello ( lo_message msg );
 
     void add_cursor ( Cursor_Region *o );
     void add_cursor ( Cursor_Point *o );

@@ -56,7 +56,7 @@ command_open ( const char *name, const char *display_name, const char *client_id
     instance_name = strdup( client_id );
 
     timeline->osc->name( client_id );
-
+  
     int r = 0;
 
     if ( Project::validate( name ) )
@@ -79,8 +79,10 @@ command_open ( const char *name, const char *display_name, const char *client_id
             r = ERR_GENERAL;
         }
     }
+  
+    timeline->say_hello();
 
-    timeline->discover_peers();
+//    timeline->connect_osc();
 
     return r;
 }
@@ -89,8 +91,6 @@ static void
 command_session_is_loaded ( void *userdata )
 {
     MESSAGE( "NSM says session is loaded." );
-
-    timeline->discover_peers();
 }
 
 static int
@@ -101,7 +101,7 @@ command_broadcast ( const char *path, lo_message msg, void *userdata )
 
     if ( !strcmp( path, "/non/hello" ) )
     {
-        timeline->reply_to_finger( msg );
+        timeline->handle_hello( msg );
         return 0;
     }
     else 

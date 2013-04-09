@@ -94,34 +94,30 @@ static int osc_add_strip ( const char *path, const char *, lo_arg **, int , lo_m
    return 0;
 }
 
+ int
+Mixer::osc_non_hello ( const char *, const char *, lo_arg **, int , lo_message msg, void * )
+{
+    mixer->handle_hello( msg );
+    return 0;
+}
+
+
 void
-Mixer::reply_to_finger ( lo_message msg )
+Mixer::handle_hello ( lo_message msg )
 {    
     int argc = lo_message_get_argc( msg );
     lo_arg **argv = lo_message_get_argv( msg );
-
+    
     if ( argc >= 4 )
     {
         const char *url = &argv[0]->s;
         const char *name = &argv[1]->s;
         const char *version = &argv[2]->s;
         const char *id = &argv[3]->s;
-
-        MESSAGE( "Discovered NON peer %s (%s) @ %s with ID \"%s\"", name, version, url, id );
-        MESSAGE( "Registering Signals" );
-
-        lo_address to = lo_address_new_from_url( &argv[0]->s );
         
-        osc_endpoint->send( to,
-                            "/non/hello",
-                            osc_endpoint->url(),
-                            APP_NAME,
-                            VERSION,
-                            instance_name );
-        
-        mixer->osc_endpoint->hello( url );
-    
-        lo_address_free( to );
+        MESSAGE( "Got hello from NON peer %s (%s) @ %s with ID \"%s\"", name, version, url, id );
+                        
+        mixer->osc_endpoint->handle_hello( id, url );
     }
 }
 
@@ -450,6 +446,9 @@ Mixer::init_osc ( const char *osc_port )
     
     printf( "OSC=%s\n", osc_endpoint->url() );
 
+    osc_endpoint->add_method( "/non/hello", "ssss", &Mixer::osc_non_hello, osc_endpoint, "" );
+    
+//  
     osc_endpoint->add_method( "/non/mixer/add_strip", "", osc_add_strip, osc_endpoint, "" );
   
     osc_endpoint->start();
@@ -731,22 +730,6 @@ Mixer::handle ( int m )
 }
 
 
-
-void
-Mixer::discover_peers ( void )
-{
-    if ( nsm->is_active() )
-    {
-        lo_message m = lo_message_new();
-        
-        lo_message_add_string( m, "/non/finger" );
-        lo_message_add_string( m, osc_endpoint->url() );
-
-        nsm->broadcast( m );
-        
-        lo_message_free( m );
-    }
-}
 
 /************/
 /* Commands */

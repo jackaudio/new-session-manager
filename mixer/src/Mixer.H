@@ -71,6 +71,8 @@ private:
 
     static void handle_dirty ( int, void *v );
 
+    static int osc_non_hello ( const char *, const char *, lo_arg **, int , lo_message msg, void * );
+
 protected:
 
     int handle ( int m );
@@ -100,7 +102,7 @@ public:
     Mixer ( int X, int Y, int W, int H, const char *L );
     virtual ~Mixer();
 
-    void reply_to_finger ( lo_message msg );
+    void handle_hello ( lo_message msg );
 
     void announce ( const char *nash_url, const char *process_name );
 
@@ -109,8 +111,6 @@ public:
     void sm_active ( bool b );
 
     void say_hello ( void );
-
-    void discover_peers ( void );
 
 public:
 

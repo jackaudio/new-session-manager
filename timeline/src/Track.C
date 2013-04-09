@@ -1096,6 +1096,16 @@ Track::connect_osc ( void )
 }
 
 void
+Track::update_osc_connection_state ( void )
+{
+    for ( int j = control->children(); j--; )
+    {
+        Control_Sequence *c = (Control_Sequence*)control->child( j );
+        c->update_osc_connection_state();
+    }
+}
+
+void
 Track::process_osc ( void ) 
 {
     for ( int j = control->children(); j--; )

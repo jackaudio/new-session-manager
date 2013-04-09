@@ -242,6 +242,7 @@ public:
 
     void process_osc ( void );
     void connect_osc ( void );
+    void update_osc_connection_state ( void );
 
     /* Engine */
     const Audio_Region *capture_region ( void ) const;

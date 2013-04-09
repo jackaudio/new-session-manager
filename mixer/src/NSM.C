@@ -45,7 +45,7 @@ NSM_Client::command_broadcast ( const char *path, lo_message msg )
 
     if ( !strcmp( path, "/non/hello" ) )
     {
-        mixer->reply_to_finger( msg );
+        mixer->handle_hello( msg );
         return 0;
     }
     else 
@@ -103,7 +103,7 @@ NSM_Client::command_open ( const char *name, const char *display_name, const cha
         }
     }
 
-    mixer->discover_peers();
+    mixer->say_hello();
 
     Fl::unlock();
 

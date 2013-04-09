@@ -133,6 +133,11 @@ namespace OSC
 
     public:
 
+        enum State {
+            Created = 0,
+            Removed = 1
+        };
+
         enum Direction {
             Input,
             Output,
@@ -165,6 +170,10 @@ namespace OSC
         void *_connection_state_userdata;
 
     public:
+
+        const char * peer_name ( void ) const {
+            return _peer->name;
+        }
 
         Signal ( const char *path, Direction dir );
         ~Signal ( );
@@ -259,6 +268,8 @@ namespace OSC
         static int osc_sig_connect ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
         static int osc_sig_hello ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data );
 
+
+        Peer * add_peer ( const char *name, const char *url );
         void scan_peer ( const char *name, const char *url );
 
     private:
@@ -279,12 +290,22 @@ namespace OSC
         void del_signal ( Signal *signal );
         void send_signal_rename_notifications( Signal *s );
 
-    public:
+     
+        void (*_peer_signal_notification_callback)( OSC::Signal *,  OSC::Signal::State, void*);
+        void *_peer_signal_notification_userdata;
 
+    public:
+        
+        void peer_signal_notification_callback ( void (*cb)(OSC::Signal *, OSC::Signal::State, void*), void *userdata )
+            {
+                _peer_signal_notification_callback = cb;
+                _peer_signal_notification_userdata = userdata;
+            }
+        
         // can be used to point back to owning object.
         void *owner;
 
-        void list_peer_signals ( void (*callback) (const char *, const OSC::Signal *, void * ), void *v );
+        void list_peer_signals ( void *v );
 
         int init ( int proto, const char *port = 0 );
 
@@ -298,7 +319,6 @@ namespace OSC
         bool connect_signal ( OSC::Signal *s, const char *peer_name, const char *signal_path );        
         bool connect_signal ( OSC::Signal *s, const char *peer_name, int signal_id );
         bool connect_signal ( OSC::Signal *s, const char *peer_and_path );
-
 
         Signal * add_signal ( const char *path, Signal::Direction dir, float min, float max, float default_value, signal_handler handler, void *user_data );
         Method *add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data, const char *argument_description );
@@ -317,6 +337,7 @@ namespace OSC
         const char *name ( void ) { return _name; }
 
         void hello ( const char *url );
+        void handle_hello ( const char *peer_name, const char *peer_url );
 
         int send ( lo_address to, const char *path, std::list< OSC_Value > values );
 

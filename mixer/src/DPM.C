@@ -39,6 +39,8 @@ Fl_Color DPM::_dim_gradient[128];
 DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
     Meter( X, Y, W, H, L )
 {
+    _value = 0.0f;
+
     tooltip( peak_string );
 
     _last_drawn_hi_segment = 0;

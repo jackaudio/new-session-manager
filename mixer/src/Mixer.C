@@ -350,10 +350,27 @@ void Mixer::cb_menu(Fl_Widget* o, void* v) {
     ((Mixer*)(v))->cb_menu(o);
 }
 
+static void
+progress_cb ( int p, void *v )
+{
+    static int oldp = 0;
+
+    if ( p != oldp )
+    {
+        oldp = p;
+        if ( nsm )
+        {
+            nsm->progress( p / 100.0f );
+        }
+        Fl::check();
+    }
+}
+
 Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
 {
     Loggable::dirty_callback( &Mixer::handle_dirty, this );
+    Loggable::progress_callback( progress_cb, NULL );
 
     _rows = 1;
     box( FL_FLAT_BOX );
@@ -744,7 +761,7 @@ Mixer::command_save ( void )
 bool
 Mixer::command_load ( const char *path, const char *display_name )
 {
-    mixer->hide();
+    mixer->deactivate();
 
     if ( Project::open( path ) )
     {
@@ -757,7 +774,7 @@ Mixer::command_load ( const char *path, const char *display_name )
 
     update_menu();
 
-    mixer->show();
+    mixer->activate();
 
     return true;
 }

@@ -942,12 +942,12 @@ wait_for_killed_clients_to_die ( )
     
     MESSAGE( "Waiting for killed clients to die." );
     
-    for ( int i = 0; i < 24; i++ )
+    for ( int i = 0; i < 60; i++ )
     {
         MESSAGE( "Loop %i", i );
 
         if ( ! killed_clients_are_alive() )
-            break;
+            goto done;
         
         ssize_t s = read(signal_fd, &fdsi, sizeof(struct signalfd_siginfo));
         
@@ -959,17 +959,19 @@ wait_for_killed_clients_to_die ( )
         
         purge_dead_clients();
 
-        usleep( 200 * 1000 );
+        /* check OSC so we can get /progress messages. */
+        osc_server->check();
+
+        sleep(1);
     }
 
-    if ( killed_clients_are_alive() )
-    {
-        WARNING( "Killed clients are still alive" );
-    /* FIXME: give up on remaining clients and purge them */
-    }
-    else
-        MESSAGE( "All clients have died." );
+    WARNING( "Killed clients are still alive" );
+    
+    return;
 
+done:
+
+    MESSAGE( "All clients have died." );
 }
 
 

@@ -44,6 +44,8 @@
 
 #include <pthread.h>
 
+int client_active = 0;
+
 jack_client_t *client;
 
 pthread_mutex_t port_lock;
@@ -527,7 +529,9 @@ signal_handler ( int x )
 void
 die ( void )
 {
-    jack_deactivate( client );
+    if ( client_active )
+        jack_deactivate( client );
+
     jack_client_close( client );
     client = NULL;
     exit( 0 );
@@ -592,6 +596,16 @@ osc_save ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
     return 0;
 }
 
+void
+maybe_activate_jack_client ( void )
+{
+    if ( ! client_active )
+    {
+        jack_activate( client );
+        client_active = 1;
+    }
+}
+
 int
 osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
@@ -611,6 +625,7 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
         {
             /* wipe_ports(); */
             /* check_for_new_ports(); */
+            maybe_activate_jack_client();
             register_prexisting_ports();
         }
         else
@@ -621,6 +636,7 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
     }
     else
     {
+        maybe_activate_jack_client();
         clear_all_patches();
     }
 
@@ -720,19 +736,19 @@ main ( int argc, char **argv )
 
     pthread_mutex_init( &port_lock, NULL  );
     
-    jack_activate( client );
 
     set_traps();
-
+        
     if ( argc > 1 )
     {
+        maybe_activate_jack_client();
         if ( ! strcmp( argv[1], "--save" ) )
         {
             if ( argc > 2 )
             {
                 printf( "Saving current graph to: %s\n", argv[2] );
                 snapshot( argv[2] );
-                exit(0);
+                die();
             }
         }
         else
@@ -765,7 +781,8 @@ main ( int argc, char **argv )
     {
         lo_server_recv_noblock( losrv, 500 );
 
-        check_for_new_ports();
+        if ( client_active )
+            check_for_new_ports();
 
         if ( die_now )
             die();

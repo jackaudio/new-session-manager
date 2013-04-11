@@ -49,14 +49,8 @@
 #include <time.h>
 #include <getopt.h>
 
-#define APP_NAME "Non Session Manager"
-
-#ifdef HAVE_XPM
-#include "FL/Fl.H"
-#include "FL/x.H"
-#include <X11/xpm.h>
-#include "../icons/icon-16x16.xpm"
-#endif
+#define APP_NAME "Non-Session-Manager"
+#define APP_TITLE "Non Session Manager"
 
 // static lo_address nsm_addr = NULL;
 static time_t last_ping_response;
@@ -1251,15 +1245,6 @@ cb_main ( Fl_Widget *, void * )
 int
 main (int argc, char **argv )
 {
-
-#ifdef HAVE_XPM
-    fl_open_display(); 
-    Pixmap p, mask;
-
-    XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),
-                            (char**)icon_16x16, &p, &mask, NULL);
-#endif
-
     fl_register_images();
 
     Fl::lock();
@@ -1267,7 +1252,7 @@ main (int argc, char **argv )
     Fl_Double_Window *main_window;
 
     {
-        Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, APP_NAME );
+        Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, APP_TITLE );
         {
             main_window->xclass( APP_NAME );
 
@@ -1282,9 +1267,6 @@ main (int argc, char **argv )
 
         o->callback( (Fl_Callback*)cb_main, main_window );
 
-#ifdef HAVE_XPM
-        o->icon((char *)p);
-#endif        
         o->show( 0, NULL );
     }
     

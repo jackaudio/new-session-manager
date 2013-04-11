@@ -68,7 +68,7 @@ src/transport.C
               target       = 'non-sequencer',
               includes     = ['.', 'src', 'src/gui', '../FL', '../nonlib'],
               use = ['nonlib', 'fl_widgets'],
-              uselib = [ 'JACK', 'SIGCPP', 'LIBLO', 'XPM', 'NTK', 'NTK_IMAGES', 'PTHREAD'],
+              uselib = [ 'JACK', 'SIGCPP', 'LIBLO', 'NTK', 'NTK_IMAGES', 'PTHREAD'],
               install_path = '${BINDIR}')
 
     bld( features = 'subst',

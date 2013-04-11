@@ -57,12 +57,9 @@
 #include <signal.h>
 #include <unistd.h>
 
-#ifdef HAVE_XPM
 #include "FL/Fl.H"
 #include "FL/x.H"
-#include <X11/xpm.h>
-#include "../icons/icon-16x16.xpm"
-#endif
+#include "FL/Fl_PNG_Image.H"
 
 /* TODO: put these in a header */
 #define USER_CONFIG_DIR ".non-mixer/"
@@ -124,6 +121,7 @@ check_sigterm ( void * )
         mixer->quit();
     }
 }
+
 
 int
 main ( int argc, char **argv )
@@ -216,19 +214,10 @@ main ( int argc, char **argv )
         
         free( name );
     }
-    
-    Pixmap p, mask;
 
     if ( ! no_ui )
     {
         Fl::visual( FL_DOUBLE | FL_RGB );
-        
-#ifdef HAVE_XPM
-        fl_open_display(); 
-        
-        XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),
-                                (char**)icon_16x16, &p, &mask, NULL);
-#endif
         
         Fl::visible_focus( 0 );
 
@@ -239,6 +228,7 @@ main ( int argc, char **argv )
 
     Fl_Double_Window *main_window;
 
+    
     {
         Fl_Double_Window *o = main_window = new Fl_Double_Window( 800, 600, "Non Mixer" );
         {
@@ -257,11 +247,9 @@ main ( int argc, char **argv )
 
         if ( ! no_ui )
         {
-#ifdef HAVE_XPM
-            o->icon((char *)p);
-#endif
-            o->show( 0, 0 );
+            o->show( 0,0 );
         }
+                      
     }
 
     Plugin_Module::spawn_discover_thread();

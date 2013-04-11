@@ -100,6 +100,9 @@ decl {extern nsm_client_t *nsm;} {private global
 decl {extern char *user_config_dir;} {private global
 } 
 
+decl {extern char *APP_NAME;} {selected private global
+} 
+
 class TLE_Window {open : {public Fl_Overlay_Window}
 } {
   Function {TLE_Window(int W, int H, const char *L = 0) : Fl_Overlay_Window( W, H, L )} {open
@@ -249,8 +252,9 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label {Non Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	timeline->command_quit();} open
-      xywh {516 306 1025 770} type Double resizable
-      class TLE_Window xclass Non_DAW size_range {900 300 0 0} visible
+      xywh {520 266 1025 770} type Double resizable
+      code0 {o->xclass( APP_NAME );}
+      class TLE_Window size_range {900 300 0 0} visible
     } {
       Fl_Group {} {open
         xywh {0 -53 1025 126} box FLAT_BOX
@@ -623,7 +627,7 @@ timeline->redraw();}
             }
             MenuItem {} {
               label {&About}
-              callback {About_Dialog ab( PIXMAP_PATH "/non-timeline/icon-256x256.png" );
+              callback {About_Dialog ab( PIXMAP_PATH "/non-timeline/icon-256x256.png", "Non-Timeline" );
 
             ab.logo_box->label( VERSION );
 
@@ -656,14 +660,14 @@ ab.run();}
             code0 {o->spacing( 2 );}
           } {
             Fl_Box {} {
-              label PLAYHEAD selected
+              label PLAYHEAD
               private xywh {301 30 137 41} box FLAT_BOX color 47
               code0 {o->type( Clock::HMS );}
               code1 {o->run( &transport->frame );}
               class Clock
             }
             Fl_Box {} {
-              label PLAYHEAD selected
+              label PLAYHEAD
               xywh {440 30 137 41} box FLAT_BOX color 47
               code0 {o->type( Clock::BBT );}
               code1 {o->run( &transport->frame );}
@@ -1001,7 +1005,8 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {1398 301 520 775} type Double modal visible
+      private xywh {1189 128 520 775} type Double
+      code0 {o->xclass( APP_NAME );} modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}

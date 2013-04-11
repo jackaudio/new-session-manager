@@ -53,13 +53,6 @@
 
 extern void set_nsm_callbacks ( nsm_client_t *nsm );
 
-#ifdef HAVE_XPM
-#include "FL/Fl.H"
-#include "FL/x.H"
-#include <X11/xpm.h>
-#include "../icons/icon-16x16.xpm"
-#endif
-
 Engine *engine;
 Timeline *timeline;
 Transport *transport;
@@ -159,14 +152,6 @@ main ( int argc, char **argv )
     }
     
 
-#ifdef HAVE_XPM
-    fl_open_display(); 
-    Pixmap p, mask;
-
-    XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),
-                            (char**)icon_16x16, &p, &mask, NULL);
-#endif
-
     Thread::init();
 
     Thread thread( "UI" );
@@ -251,9 +236,6 @@ main ( int argc, char **argv )
 
     timeline->init_osc( osc_port );
 
-#ifdef HAVE_XPM
-    tle->main_window->icon((char *)p);
-#endif        
     tle->main_window->show( 0, NULL );
    
     char *nsm_url = getenv( "NSM_URL" );

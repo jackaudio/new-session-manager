@@ -89,9 +89,6 @@ def configure(conf):
     conf.check_cfg(package='jack', uselib_store='JACK', args="--cflags --libs",
                    atleast_version='0.103.0', mandatory=True)
 
-    conf.check_cfg(package='xpm', uselib_store='XMP',args="--cflags --libs",
-                      atleast_version='2.0.0', mandatory=True)
-
     conf.check_cfg(package='liblo', uselib_store='LIBLO',args="--cflags --libs",
                       atleast_version='0.26', mandatory=True)
 

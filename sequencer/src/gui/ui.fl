@@ -83,7 +83,7 @@ decl {extern Fl_Color velocity_colors[];} {private local
 } 
 
 widget_class Visual_Metronome {open
-  xywh {638 936 100 100} type Double visible
+  xywh {640 936 100 100} type Double visible
 } {
   Fl_Slider progress {
     private xywh {139 115 1149 23} type Horizontal box FLAT_BOX color 7 selection_color 54
@@ -131,8 +131,7 @@ if ( damage() & FL_DAMAGE_CHILD )
 else
 	draw_child( *progress );
 
-// _flip = ! _flip;} {selected
-    }
+// _flip = ! _flip;} {}
   }
   decl {int _bpb} {private local
   }
@@ -338,9 +337,10 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	return;
 	 
 if ( maybe_save_song() )
-	quit();} open
-      xywh {832 231 865 805} type Double color 47 resizable
-      code0 {o->color( FL_BACKGROUND_COLOR );} xclass non size_range {700 509 0 0} visible
+	quit();} open selected
+      xywh {834 231 865 805} type Double color 47 resizable
+      code0 {o->color( FL_BACKGROUND_COLOR );}
+      code1 {o->xclass( APP_NAME );} size_range {700 509 0 0} visible
     } {
       Fl_Group {} {open
         xywh {0 30 865 70} box FLAT_BOX
@@ -1232,7 +1232,7 @@ config.follow_playhead = val ? true : false;}
             }
             MenuItem {} {
               label {&About}
-              callback {About_Dialog ab( PIXMAP_PATH "/non-sequencer/icon-256x256.png" );
+              callback {About_Dialog ab( PIXMAP_PATH "/non-sequencer/icon-256x256.png", APP_NAME );
 
             ab.logo_box->label( VERSION );
 

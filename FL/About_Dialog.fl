@@ -18,10 +18,11 @@ Function {open_url( const char *url )} {open return_type void
 
 class About_Dialog {open
 } {
-  Function {About_Dialog( const char *logo_filename )} {} {
-    code {make_window( logo_filename );} {}
+  Function {About_Dialog( const char *logo_filename, const char *xclass )} {open
+  } {
+    code {make_window( logo_filename, xclass );} {}
   }
-  Function {run()} {return_type void
+  Function {run()} {open return_type void
   } {
     code {window->show();
 
@@ -30,7 +31,7 @@ while ( window->shown() )
 
 delete window;} {}
   }
-  Function {make_window( const char *logo_filename )} {open private
+  Function {make_window( const char *logo_filename, const char *xclass )} {open private
   } {
     Fl_Window window {
       label About
@@ -40,8 +41,9 @@ if ( logo_box->image() )
 {
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( 0 );
-}} open
-      private xywh {1183 305 560 695} type Double xclass {Non-DAW} visible
+}} open selected
+      private xywh {879 215 560 695} type Double
+      code0 {o->xclass( xclass );} visible
     } {
       Fl_Tabs {} {open
         xywh {0 352 558 296}
@@ -81,7 +83,7 @@ You should have received a copy of the GNU General Public License along with thi
         }
       }
       Fl_Box logo_box {
-        label VERSION selected
+        label VERSION
         xywh {5 5 550 305} color 48 labelfont 1 labelsize 18 align 16
         code0 {o->image( Fl_Shared_Image::get( logo_filename ) );}
         code1 {o->label( VERSION );}

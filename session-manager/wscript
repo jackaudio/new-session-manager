@@ -43,7 +43,7 @@ src/session-manager.C
 ''',
               target       = 'non-session-manager',
               includes     = ['.', 'src', '../nonlib', '..' ],
-              uselib = [  'LIBLO', 'XPM', 'NTK', 'NTK_IMAGES' ],
+              uselib = [  'LIBLO', 'NTK', 'NTK_IMAGES' ],
               use = [ 'fl_widgets', 'nonlib'],
               install_path = '${BINDIR}')
 
@@ -71,7 +71,7 @@ src/NSM_Proxy_UI.fl
 ''',
               target       = 'nsm-proxy-gui',
               includes     = ['.', 'src'],
-              uselib = [  'LIBLO', 'XPM', 'NTK', 'NTK_IMAGES ' ],
+              uselib = [  'LIBLO', 'NTK', 'NTK_IMAGES ' ],
               install_path = '${BINDIR}')
 
     bld.program( source = '''

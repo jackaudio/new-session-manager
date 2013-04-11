@@ -31,13 +31,6 @@
 #include "phrase.H"
 #include <signal.h>
 
-#ifdef HAVE_XPM
-#include "FL/Fl.H"
-#include "FL/x.H"
-#include <X11/xpm.h>
-#include "../icons/icon-16x16.xpm"
-#endif
-
 // extern const char *BUILD_ID;
 // extern const char *VERSION;
 
@@ -229,14 +222,6 @@ main ( int argc, char **argv )
         WARNING( "Xdbe not supported, FLTK will fake double buffering." );
     }
 
-#ifdef HAVE_XPM
-    fl_open_display(); 
-    Pixmap p, mask;
-
-    XpmCreatePixmapFromData(fl_display, DefaultRootWindow(fl_display),
-                            (char**)icon_16x16, &p, &mask, NULL);
-#endif
-
     ::signal( SIGTERM, sigterm_handler );
     ::signal( SIGHUP, sigterm_handler );
     ::signal( SIGINT, sigterm_handler );
@@ -272,9 +257,6 @@ main ( int argc, char **argv )
 
     ui = new UI;
 
-#ifdef HAVE_XPM
-    ui->main_window->icon((char *)p);
-#endif
     ui->main_window->show( 0, 0 );
 
     instance_name = strdup( APP_NAME );

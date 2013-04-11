@@ -119,15 +119,15 @@ public:
             int LX = 0;
             int LY = 0;
 
+            int RH = 0;
+
             for ( int i = 0; i < children(); ++i )
             {
                 Fl_Widget *o = child( i );
 
                 if ( ! o->visible() )
                     continue;
-
-                H = o->h() > H ? o->h() : H;
-
+                
                 if ( _flow )
                 {
                     if ( _flowdown && Y + o->h() < H )
@@ -138,17 +138,19 @@ public:
                     else if ( X + o->w() >= W )
                     {
                         /* maybe wrap to the next row */
-                        H += o->h();
-                        
+                        H += RH + _vspacing;
+                        RH = 0;
                         X = 0;
                     }
                     else
                     {
                         /* otherwise, put it in the next column */
-                        Y = 0;
+                        Y = H;
                     }                   
 
                 }
+
+                RH = o->h() > RH ? o->h() : RH;
 
                 LW = o->w();
                 LH = o->h();
@@ -182,6 +184,8 @@ public:
                 if ( X > _max_width )
                     _max_width = X;
             }
+
+            H += RH;
 
             if ( ! _flow )
                 W = X;

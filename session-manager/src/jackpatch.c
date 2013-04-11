@@ -442,19 +442,6 @@ void remove_known_port ( const char *port )
     inactivate_patch ( port );
 }
 
-
-/**
- * Attempt to activate all connections in patch list
- */
-void
-activate_all_patches ( void )
-{
-    struct patch_record *pr;
-
-    for ( pr = patch_list; pr; pr = pr->next )
-        connect_path( pr );
-}
-
 /** called for every new port */
 void
 handle_new_port ( const char *portname )
@@ -465,6 +452,24 @@ handle_new_port ( const char *portname )
     /* this is a new port */
     activate_patch( portname );
 }
+
+void
+register_prexisting_ports ( void )
+{
+    const char **port;
+    const char **ports = jack_get_ports( client, NULL, NULL, 0 );
+
+    if ( ! ports )
+        return;
+    
+    for ( port = ports; *port; port++ )
+    {
+        handle_new_port( *port );
+    }
+            
+    free( ports );
+}
+
 
 void
 snapshot ( const char *file )
@@ -601,12 +606,12 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
 
     if ( 0 == stat( new_filename, &st ) )
     {
+        printf( "Reading patch definitions from: %s\n", new_filename );
         if ( read_config( new_filename ) )
         {
-            printf( "Reading patch definitions from: %s\n", new_filename );
             /* wipe_ports(); */
             /* check_for_new_ports(); */
-            activate_all_patches();
+            register_prexisting_ports();
         }
         else
         {
@@ -698,7 +703,6 @@ port_registration_callback( jack_port_id_t id, int reg, void *arg )
 int
 main ( int argc, char **argv )
 {
-
     /* get_args( argc, argv ); */
 
     jack_status_t status;

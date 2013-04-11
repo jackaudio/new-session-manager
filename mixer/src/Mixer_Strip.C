@@ -439,7 +439,8 @@ Mixer_Strip::init ( )
                 } // Fl_Button* o
 
                 o->end();
-            } // Fl_Group* o
+            } // Fl_Group* o            
+
             { Fl_Flip_Button* o = tab_button = new Fl_Flip_Button(61, 183, 45, 22, "fader/signal");
                 o->type(1);
                 o->labelsize( 14 );
@@ -458,7 +459,19 @@ Mixer_Strip::init ( )
             { Fl_Group *o = fader_tab = new Fl_Group( 2, 116, 105, 330, "Fader" );
                 o->box( FL_NO_BOX );
                 o->labeltype( FL_NO_LABEL );
-                { Fl_Scalepack* o = new Fl_Scalepack(2, 116, 105, 330 );
+                { Fl_Pack *o = new Fl_Pack( 2, 116, 105, 15 );
+                    o->type( FL_VERTICAL );
+                    {
+                        Controller_Module *m = jack_input_controller = new Controller_Module( true );
+                        m->labeltype( FL_NO_LABEL );
+                        m->chain( _chain );
+                        m->pad( false );
+                        m->size( 105, 15 );
+                    }
+                    o->resizable(0);
+                    o->end();
+                }
+                { Fl_Scalepack* o = new Fl_Scalepack(2, 135, 105, 315 );
                     // o->box( FL_BORDER_BOX );
 //                        o->color( FL_RED );
                     o->spacing( 20 );
@@ -467,6 +480,7 @@ Mixer_Strip::init ( )
                         o->pad( false );
                         o->size( 33, 100 );
                     }
+
                     { Meter_Indicator_Module *o = meter_indicator = new Meter_Indicator_Module( true );
                         o->disable_context_menu( true );
                         o->pad( false );
@@ -491,28 +505,17 @@ Mixer_Strip::init ( )
 /*         { Fl_Pack *o = panner_pack = new Fl_Pack( 2, 465, 114, 40 ); */
 /*             o->spacing( 2 ); */
 /*             o->type( Fl_Pack::VERTICAL ); */
-            { Fl_Box *o = new Fl_Box( 0, 0, 100, 12 );
-                o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
-                o->labelsize( 10 );
+        { Fl_Box *o = new Fl_Box( 0, 0, 100, 12 );
+            o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
+            o->labelsize( 10 );
 //                o->label( "Spatialization" );
-            }
-            { Controller_Module *o = spatialization_controller = new Controller_Module( true );
-                o->hide();
-                o->pad( false );
-                o->size( 100, 100 );
-            }
-            { Fl_Box *o = new Fl_Box( 0, 0, 100, 12 );
-                o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
-                o->labelsize( 10 );
-                o->label( "Inputs" );
-            }
-            {
-                Controller_Module *m = jack_input_controller = new Controller_Module( true );
-                m->labeltype( FL_NO_LABEL );
-                m->chain( _chain );
-                m->pad( false );
-                m->size( 33, 24 );
-             }
+        }
+        { Controller_Module *o = spatialization_controller = new Controller_Module( true );
+            o->hide();
+            o->pad( false );
+            o->size( 100, 100 );
+        }
+         
 /*             o->end(); */
 /*         } */
         o->end();

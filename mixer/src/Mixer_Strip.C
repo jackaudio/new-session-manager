@@ -373,7 +373,7 @@ Mixer_Strip::init ( )
     _gain_controller_mode = 0;
     _chain = 0;
 
-    box( FL_BORDER_BOX );
+    box( FL_FLAT_BOX );
     labeltype( FL_NO_LABEL );
 
     Fl_Group::color( FL_BACKGROUND_COLOR );
@@ -392,8 +392,8 @@ Mixer_Strip::init ( )
                 name_field = o;
 
                 o->color( color() );
-                o->up_box( FL_ROUNDED_BOX );
-                o->box( FL_ROUNDED_BOX );
+                o->up_box( FL_DOWN_BOX );
+                o->box( FL_DOWN_BOX );
                 o->labeltype( FL_NO_LABEL );
                 o->labelcolor( FL_GRAY0 );
                 o->textcolor( FL_FOREGROUND_COLOR );
@@ -410,11 +410,20 @@ Mixer_Strip::init ( )
                     o->callback( ((Fl_Callback*)cb_handle), this );
                 } // Fl_Button* o
 
+
+                { Fl_Flip_Button* o = width_button = new Fl_Flip_Button(61, 183, 45, 22, "[]/[-]");
+                    o->type(1);
+                    o->tooltip( "Switch between wide and narrow views" );
+                    o->labelfont( FL_COURIER_BOLD );
+                    o->labelsize(10);
+                    o->callback( ((Fl_Callback*)cb_handle), this );
+                    o->when(FL_WHEN_RELEASE);
+                }
+
                 { Fl_Button* o = close_button = new Fl_Button(7, 143, 35, 25, "X");
                     o->tooltip( "Remove strip" );
                     o->type(0);
-                    o->labeltype( FL_EMBOSSED_LABEL );
-                    o->color( FL_LIGHT1 );
+                    o->labelfont( FL_COURIER_BOLD );
                     o->selection_color( FL_RED );
                     o->labelsize(10);
                     o->when( FL_WHEN_RELEASE );
@@ -432,12 +441,6 @@ Mixer_Strip::init ( )
                 o->end();
             } // Fl_Group* o
             { Fl_Flip_Button* o = tab_button = new Fl_Flip_Button(61, 183, 45, 22, "fader/signal");
-                o->type(1);
-                o->labelsize( 14 );
-                o->callback( ((Fl_Callback*)cb_handle), this );
-                o->when(FL_WHEN_RELEASE);
-            }
-            { Fl_Flip_Button* o = width_button = new Fl_Flip_Button(61, 183, 45, 22, "narrow/wide");
                 o->type(1);
                 o->labelsize( 14 );
                 o->callback( ((Fl_Callback*)cb_handle), this );
@@ -537,7 +540,8 @@ Mixer_Strip::draw ( void )
          damage() & FL_DAMAGE_CHILD )
         Fl_Group::draw();
 
-    Fl_Group::draw_box( FL_UP_FRAME, x(), y(), w(), h(), Fl::focus() == this ? Fl_Group::selection_color() : FL_BLACK );
+    fl_color(  Fl::focus() == this ? Fl_Group::selection_color() : FL_BLACK ); 
+    fl_rect( x(), y(), w(), h() );
 }
 
 /*****************/

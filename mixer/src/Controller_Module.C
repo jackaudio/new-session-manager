@@ -281,7 +281,7 @@ Controller_Module::connect_spatializer_to ( Module *m )
         o->labelcolor(FL_FOREGROUND_COLOR);
         o->align(FL_ALIGN_TOP);
         o->when(FL_WHEN_CHANGED);
-        o->label( "Spatialization" );
+        label( "Spatialization" );
 
         o->align(FL_ALIGN_TOP);
         o->labelsize( 10 );

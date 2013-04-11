@@ -103,6 +103,7 @@ private:
 
     Chain *_chain;
 
+    Fl_Box *spatialization_label;
     Controller_Module *gain_controller;
     Controller_Module *jack_input_controller;
     Controller_Module *spatialization_controller;

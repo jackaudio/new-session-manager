@@ -303,10 +303,12 @@ Mixer_Strip::set_spatializer_visibility ( void )
     if ( fader_tab->visible() && spatialization_controller->is_controlling() )
     {
          spatialization_controller->show();
+         spatialization_label->show();
     }
     else
     {
          spatialization_controller->hide();
+         spatialization_label->hide();
     }
 }
 
@@ -471,7 +473,7 @@ Mixer_Strip::init ( )
                     o->resizable(0);
                     o->end();
                 }
-                { Fl_Scalepack* o = new Fl_Scalepack(2, 135, 105, 315 );
+                { Fl_Scalepack* o = new Fl_Scalepack(2, 135, 105, 311 );
                     // o->box( FL_BORDER_BOX );
 //                        o->color( FL_RED );
                     o->spacing( 20 );
@@ -505,17 +507,18 @@ Mixer_Strip::init ( )
 /*         { Fl_Pack *o = panner_pack = new Fl_Pack( 2, 465, 114, 40 ); */
 /*             o->spacing( 2 ); */
 /*             o->type( Fl_Pack::VERTICAL ); */
-        { Fl_Box *o = new Fl_Box( 0, 0, 100, 12 );
-            o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
-            o->labelsize( 10 );
-//                o->label( "Spatialization" );
-        }
-        { Controller_Module *o = spatialization_controller = new Controller_Module( true );
-            o->hide();
-            o->pad( false );
-            o->size( 100, 100 );
-        }
-         
+            { Fl_Box *o = spatialization_label = new Fl_Box( 0, 0, 100, 12 );
+                o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
+                o->labelsize( 10 );
+                o->hide();
+                o->label( "Spatialization" );
+            }
+            { Controller_Module *o = spatialization_controller = new Controller_Module( true );
+                o->hide();
+                o->label( 0 );
+                o->pad( false );
+                o->size( 100, 100 );
+            }
 /*             o->end(); */
 /*         } */
         o->end();

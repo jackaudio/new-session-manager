@@ -48,7 +48,7 @@ Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
     : Module ( is_default, 50, 100, name() )
 {
     box( FL_FLAT_BOX );
-    color( FL_BACKGROUND_COLOR );
+    color( FL_BLACK );
 
     _disable_context_menu = false;
     _pad = true;
@@ -173,8 +173,6 @@ Meter_Indicator_Module::update_cb ( void )
                 control_value[i] = -70.0f;
                 dpm->value( -70.0f );
             }
-
-//            redraw();
 
 /*             engine->unlock(); */
         }

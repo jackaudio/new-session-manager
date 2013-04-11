@@ -39,8 +39,6 @@ Fl_Color DPM::_dim_gradient[128];
 DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
     Meter( X, Y, W, H, L )
 {
-    _value = 0.0f;
-
     tooltip( peak_string );
 
     _last_drawn_hi_segment = 0;
@@ -59,6 +57,8 @@ DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
 
     box( FL_FLAT_BOX );
     color( FL_BACKGROUND_COLOR );
+
+    resize( X,Y,W,H);
 }
 
 /* which marks to draw beside meter */
@@ -108,7 +108,7 @@ DPM::resize ( int X, int Y, int W, int H )
     else
         _segments = floor( H / (double)_pixels_per_segment );
 
-//    _last_drawn_hi_segment = 0;
+    _last_drawn_hi_segment = 0;
 
     Fl_Widget::resize( X, Y, W, H );
 }
@@ -116,14 +116,8 @@ DPM::resize ( int X, int Y, int W, int H )
 void
 DPM::draw ( void )
 {
-    if ( !_segments )
-        return;
-
     snprintf( peak_string, sizeof( peak_string ), "%.1f", peak() );
     tooltip( peak_string );
-
-    if ( ! fl_not_clipped( x(), y(), w(), h() ) )
-        return;
 
     int X = x() + 2;
     int Y = y() + 2;
@@ -138,11 +132,11 @@ DPM::draw ( void )
     int bh = h() / _segments;
     int bw = w() / _segments;
 
-    if ( damage() == FL_DAMAGE_ALL )
+    if ( damage() & FL_DAMAGE_ALL )
     {
         draw_label();
 
-        draw_box( FL_UP_FRAME, x(), y(), w(), h(), FL_BLACK );
+        draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
     }
 
     fl_push_clip( X, Y, W, H );
@@ -172,7 +166,6 @@ DPM::draw ( void )
     }
 
     _last_drawn_hi_segment = v;
-
 
     for ( int p = lo; p <= hi; p++ )
     {

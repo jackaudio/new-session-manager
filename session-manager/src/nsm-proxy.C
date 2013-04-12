@@ -119,7 +119,9 @@ public:
                 
                 setenv( "NSM_CLIENT_ID", nsm_client_id, 1 );
                 setenv( "NSM_SESSION_NAME", nsm_display_name, 1 );
-                
+                unsetenv( "NSM_URL" );
+        
+
                 if ( -1 == execvp( "/bin/sh", args ) )
                 {
                     WARNING( "Error starting process: %s", strerror( errno ) );

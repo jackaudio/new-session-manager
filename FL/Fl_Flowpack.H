@@ -130,7 +130,7 @@ public:
                 
                 if ( _flow )
                 {
-                    if ( _flowdown && Y + o->h() < H )
+                    if ( _flowdown && Y + o->h() < RH )
                     {
                         /* if it'll fit in this column, put it below the previous widget */
                         X = LX;

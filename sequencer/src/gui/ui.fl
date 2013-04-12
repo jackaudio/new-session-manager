@@ -109,7 +109,7 @@ Function {init_colors()} {open private C return_type {static void}
 } 
 
 widget_class Visual_Metronome {open
-  xywh {1166 936 100 100} type Double visible
+  xywh {1172 936 100 100} type Double visible
 } {
   Fl_Slider progress {
     private xywh {139 115 1149 23} type Horizontal box FLAT_BOX color 7 selection_color 54
@@ -121,6 +121,9 @@ widget_class Visual_Metronome {open
   } {
     code {if ( damage() & ~FL_DAMAGE_CHILD )
 {
+	if ( ! _bpb )
+		return;
+
 int bw = w() / _bpb;
 
 int b = _bpb;
@@ -409,7 +412,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {750 223 865 805} type Double color 47 resizable
+      xywh {706 149 865 805} type Double color 47 resizable
       code0 {o->color( FL_BACKGROUND_COLOR );}
       code1 {o->draw_overlay_callback( &UI::draw_overlay, this );}
       code2 {o->xclass( APP_NAME );}
@@ -776,7 +779,7 @@ o->maximum( phrase::phrases() );}
             xywh {0 91 865 637} box FLAT_BOX color 37 labelsize 100 align 16 resizable
             class Canvas
           }
-          Fl_Group pattern_settings_group {open
+          Fl_Group pattern_settings_group {
             xywh {0 731 865 54} box FLAT_BOX color 47
           } {
             Fl_Input pattern_name_field {
@@ -1048,7 +1051,7 @@ pattern_settings_group->redraw();}
               xywh {45 759 140 18} type Horizontal labelsize 10 align 4 minimum 1 maximum 128 step 1 value 1
             }
             Fl_Button {} {
-              label Select selected
+              label Select
               tooltip {Enable selection mode (you can also just hold down shift and drag the mouse)} xywh {260 735 45 45} type Toggle selection_color 5 labelsize 10
             }
           }
@@ -1312,29 +1315,46 @@ ab.run();}
           } {
             MenuItem {} {
               label {Add New}
-              callback {Grid *g = pattern_canvas_widget->grid()->create();
+              callback {Grid *g = current_canvas()->grid()->create();
 
-pattern_canvas_widget->grid( g );
+current_canvas()->grid( g );
 
 update_pattern_widgets();
-update_sequence_widgets();}
+update_sequence_widgets();
+update_phrase_widgets();}
               xywh {0 0 34 18} shortcut 0x61
             }
             MenuItem {} {
               label Previous
-              callback {pattern_number_spinner->value( max( 0, (int)pattern_number_spinner->value() - 1 ) );
-pattern_number_spinner->do_callback();}
+              callback {if ( tabs->value() == pattern_tab )
+{
+	pattern_number_spinner->value( max( 0, (int)pattern_number_spinner->value() - 1 ) );
+	pattern_number_spinner->do_callback();
+}
+else
+{
+	phrase_number_spinner->value( max( 0, (int)phrase_number_spinner->value() - 1 ) );
+	phrase_number_spinner->do_callback();
+}}
               xywh {10 10 34 18} shortcut 0x5b
             }
             MenuItem {} {
               label Next
-              callback {pattern_number_spinner->value( min( 127, (int)pattern_number_spinner->value() + 1 ));
-pattern_number_spinner->do_callback();}
+              callback {if ( tabs->value() == pattern_tab )
+{
+	pattern_number_spinner->value( min( 127, (int)pattern_number_spinner->value() + 1 ));
+	pattern_number_spinner->do_callback();
+}
+else
+{
+	phrase_number_spinner->value( min( 127, (int)phrase_number_spinner->value() + 1 ));
+	phrase_number_spinner->do_callback();
+}} selected
               xywh {20 20 34 18} shortcut 0x5d
             }
             MenuItem {} {
               label Duplicate
-              callback {Canvas *w = pattern_canvas_widget;
+              callback {Canvas *w = current_canvas();
 
 w->grid( w->grid()->clone() );
 
@@ -1344,7 +1364,7 @@ ui->update_sequence_widgets();}
             }
             MenuItem {} {
               label {Duplicate Range}
-              callback {Canvas *w = pattern_canvas_widget;
+              callback {Canvas *w = current_canvas();
 
 w->duplicate_range();
 
@@ -1354,14 +1374,14 @@ ui->update_sequence_widgets();}
             }
             MenuItem {} {
               label {Delete Selected}
-              callback {Canvas *w = pattern_canvas_widget;
+              callback {Canvas *w = current_canvas();
 
 w->grid()->delete_selected();}
               xywh {50 50 34 18} shortcut 0xffff
             }
             MenuItem {} {
               label Clear
-              callback {Canvas *w = pattern_canvas_widget;
+              callback {Canvas *w = current_canvas();
 
 w->grid()->clear();}
               xywh {60 60 34 18} shortcut 0x1ffff
@@ -1373,42 +1393,42 @@ w->grid()->clear();}
             }
             MenuItem {} {
               label {Select All}
-              callback {Canvas *w = pattern_canvas_widget;
+              callback {Canvas *w = current_canvas();
 
 w->grid()->clear();}
               xywh {70 70 34 18} shortcut 0x40061
             }
             MenuItem {} {
               label {Select None}
-              callback {Canvas *w = pattern_canvas_widget;
+              callback {Canvas *w = current_canvas();
 
 w->grid()->clear();}
               xywh {80 80 34 18} shortcut 0x50061
             }
             MenuItem {} {
               label {Invert Selection}
-              callback {Canvas *w = pattern_canvas_widget;
+              callback {Canvas *w = current_canvas();
 
 w->grid()->clear();}
               xywh {90 90 34 18} shortcut 0x50069
             }
             MenuItem {} {
               label Copy
-              callback {Canvas *w = pattern_canvas_widget;
+              callback {Canvas *w = current_canvas();
 
 w->grid()->clear();}
               xywh {100 100 34 18} shortcut 0x40063
             }
             MenuItem {} {
               label Cut
-              callback {Canvas *w = pattern_canvas_widget;
+              callback {Canvas *w = current_canvas();
 
 w->grid()->clear();}
               xywh {110 110 34 18} shortcut 0x40078
             }
             MenuItem {} {
               label Paste
-              callback {Canvas *w = pattern_canvas_widget;
+              callback {Canvas *w = current_canvas();
 
 w->grid()->clear();}
               xywh {120 120 34 18} shortcut 0x40076
@@ -1709,6 +1729,13 @@ if ( p )
 ie.set( i, n );
 
 ie.run();} {}
+  }
+  Function {current_canvas()} {open return_type {Canvas*}
+  } {
+    code {if ( tabs->value() == pattern_tab )
+	return pattern_canvas_widget;
+else if ( tabs->value() == phrase_tab )
+	return phrase_canvas_widget;} {}
   }
 } 
 

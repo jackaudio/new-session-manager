@@ -30,6 +30,8 @@
 #include "pattern.H"
 #include "phrase.H"
 #include <signal.h>
+#include <MIDI/midievent.H>
+using namespace MIDI;
 
 // extern const char *BUILD_ID;
 // extern const char *VERSION;

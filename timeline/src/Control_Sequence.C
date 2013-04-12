@@ -511,14 +511,13 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
 
     DMESSAGE( "Control_Sequence: menu_cb" );
 
-    if ( ! m->mvalue() ) // || m->mvalue()->flags & FL_SUBMENU_POINTER || m->mvalue()->flags & FL_SUBMENU )
+    if ( ! m->mvalue() || m->mvalue()->flags & ( FL_SUBMENU_POINTER | FL_SUBMENU ))
         return;
 
     m->item_pathname( picked, sizeof( picked ), m->mvalue() );
 
     if ( ! strncmp( picked, "Connect To/", strlen( "Connect To/" ) ) )
     { 
-
         char *peer_name = index( picked, '/' ) + 1;
     
         *index( peer_name, '/' ) = 0;

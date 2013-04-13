@@ -39,6 +39,7 @@
 #include "FL/menu_popup.H"
 #include "Mixer.H"
 
+#include "Plugin_Chooser.H"
 #include "OSC/Endpoint.H"
 
 #include "string_util.h"
@@ -602,61 +603,55 @@ Module::draw_label ( void )
 void
 Module::insert_menu_cb ( const Fl_Menu_ *m )
 {
-    if ( ! m->mvalue() || m->mvalue()->flags & FL_SUBMENU_POINTER || m->mvalue()->flags & FL_SUBMENU )
-        return;
-
-    void * v = m->mvalue()->user_data();
-
-    if ( v )
+    unsigned long id = Plugin_Chooser::plugin_chooser( this->ninputs() );
+    
+    Module *mod = NULL;
+    
+    switch ( id )
     {
-        unsigned long id = *((unsigned long *)v);
-
-        Module *mod = NULL;
-
-        switch ( id )
+        case 0:
+            return;
+        case 1:
+            mod = new JACK_Module();
+            break;
+        case 2:
+            mod = new Gain_Module();
+            break;
+        case 3:
+            mod = new Meter_Module();
+            break;
+        case 4:
+            mod = new Mono_Pan_Module();
+            break;
+        default:
         {
-            case 1:
-                mod = new JACK_Module();
-                break;
-            case 2:
-                mod = new Gain_Module();
-                break;
-            case 3:
-                mod = new Meter_Module();
-                break;
-            case 4:
-                mod = new Mono_Pan_Module();
-                break;
-            default:
-            {
-                Plugin_Module *m = new Plugin_Module();
+            Plugin_Module *m = new Plugin_Module();
 
-                m->load( id );
+            m->load( id );
 
-                mod = m;
-            }
+            mod = m;
+        }
+    }
+
+    if ( mod )
+    {
+        if ( !strcmp( mod->name(), "JACK" ) )
+        {
+            DMESSAGE( "Special casing JACK module" );
+            JACK_Module *jm = (JACK_Module*)mod;
+            jm->chain( chain() );
+            jm->configure_inputs( ninputs() );
+            jm->configure_outputs( ninputs() );
         }
 
-        if ( mod )
+        if ( ! chain()->insert( this, mod ) )
         {
-            if ( !strcmp( mod->name(), "JACK" ) )
-            {
-                DMESSAGE( "Special casing JACK module" );
-                JACK_Module *jm = (JACK_Module*)mod;
-                jm->chain( chain() );
-                jm->configure_inputs( ninputs() );
-                jm->configure_outputs( ninputs() );
-            }
-
-            if ( ! chain()->insert( this, mod ) )
-            {
-                fl_alert( "Cannot insert this module at this point in the chain" );
-                delete mod;
-                return;
-            }
-
-            redraw();
+            fl_alert( "Cannot insert this module at this point in the chain" );
+            delete mod;
+            return;
         }
+
+        redraw();
     }
 }
 
@@ -733,7 +728,10 @@ Module::menu ( void ) const
         insert_menu->add( "Meter", 0, 0, new unsigned long(3) );
         insert_menu->add( "Mono Pan", 0, 0, new unsigned long(4) );
 
-        Plugin_Module::add_plugins_to_menu( insert_menu );
+        insert_menu->add( "Plugin", 0, 0, new unsigned long(4) );
+
+
+        /* Plugin_Module::add_plugins_to_menu( insert_menu ); */
 
 //        menu_set_callback( insert_menu, &Module::insert_menu_cb, (void*)this );
         insert_menu->callback( &Module::insert_menu_cb, (void*)this );

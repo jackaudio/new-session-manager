@@ -57,6 +57,8 @@ src/Mixer_Strip.C
 src/Module.C
 src/Module_Parameter_Editor.C
 src/Mono_Pan_Module.C
+src/Plugin_Chooser_UI.fl
+src/Plugin_Chooser.C
 src/NSM.C
 src/Panner.C
 src/Plugin_Module.C

@@ -45,6 +45,8 @@
 
 #include <dsp.h>
 
+#include <algorithm>
+
 
 
 static LADSPAInfo *ladspainfo;
@@ -118,64 +120,6 @@ Plugin_Module::set ( Log_Entry &e )
 }
 
 
-
-void
-Plugin_Module::add_plugins_to_menu ( Fl_Menu_Button *menu )
-{
-    Plugin_Module::Plugin_Info *pia = Plugin_Module::get_all_plugins();
-
-    char path[1024];
-    for ( Plugin_Module::Plugin_Info *pi = pia; pi->path; ++pi )
-    {
-        snprintf( path, sizeof( path ), "Plugin/%s", pi->path );
-
-        menu->add(path, 0, NULL, new unsigned long( pi->id ), 0 );
-    }
-
-    delete[] pia;
-}
-
-/* allow the user to pick a plugin */
-Plugin_Module *
-Plugin_Module::pick_plugin ( void )
-{
-    /**************/
-    /* build menu */
-    /**************/
-
-    Fl_Menu_Button *menu = new Fl_Menu_Button( 0, 0, 400, 400 );
-    menu->type( Fl_Menu_Button::POPUP3 );
-
-    Plugin_Module::Plugin_Info *pia = Plugin_Module::get_all_plugins();
-
-    for ( Plugin_Module::Plugin_Info *pi = pia; pi->path; ++pi )
-    {
-        menu->add(pi->path, 0, NULL, pi, 0 );
-    }
-
-    menu->popup();
-
-    if ( menu->value() <= 0 )
-        return NULL;
-
-    /************************/
-    /* load selected plugin */
-    /************************/
-
-    Plugin_Module::Plugin_Info *pi = (Plugin_Module::Plugin_Info*)menu->menu()[ menu->value() ].user_data();
-
-    if ( ! pi )
-        return NULL;
-
-    Plugin_Module *m = new Plugin_Module();
-
-    m->load( pi->id );
-
-    delete[] pia;
-
-    return m;
-}
-
 
 void
 Plugin_Module::init ( void )
@@ -319,7 +263,7 @@ Plugin_Module::join_discover_thread ( void )
 }
 
 /* return a list of available plugins */
-Plugin_Module::Plugin_Info *
+std::list<Plugin_Module::Plugin_Info>
 Plugin_Module::get_all_plugins ( void )
 {
     if ( !ladspainfo )
@@ -330,19 +274,30 @@ Plugin_Module::get_all_plugins ( void )
             plugin_discover_thread->join();
     }
 
-    std::vector<LADSPAInfo::PluginEntry> plugins = ladspainfo->GetMenuList();
+    std::vector<LADSPAInfo::PluginInfo> plugins = ladspainfo->GetPluginInfo();
 
-    Plugin_Info* pi = new Plugin_Info[plugins.size() + 1];
+    std::list<Plugin_Module::Plugin_Info> pr;
 
     int j = 0;
-    for (std::vector<LADSPAInfo::PluginEntry>::iterator i=plugins.begin();
+    for (std::vector<LADSPAInfo::PluginInfo>::iterator i=plugins.begin();
          i!=plugins.end(); i++, j++)
     {
-        pi[j].path = i->Name.c_str();
-        pi[j].id = i->UniqueID;
+        Plugin_Info pi;
+
+        //   pi[j].path = i->Name.c_str();
+        pi.path = NULL;
+        pi.id = i->UniqueID;
+        pi.author = i->Maker.c_str();
+        pi.name = i->Name.c_str();
+        pi.audio_inputs = i->AudioInputs;
+        pi.audio_outputs = i->AudioOutputs;
+
+        pr.push_back( pi );
     }
 
-    return pi;
+    pr.sort();
+
+    return pr;
 }
 
 bool

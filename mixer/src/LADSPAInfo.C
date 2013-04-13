@@ -292,6 +292,12 @@ LADSPAInfo::GetMenuList(void)
 	return m_SSMMenuList;
 }
 
+const vector<LADSPAInfo::PluginInfo>
+LADSPAInfo::GetPluginInfo(void)
+{
+    return m_Plugins;
+}
+
 unsigned long
 LADSPAInfo::GetPluginListEntryByID(unsigned long unique_id)
 {
@@ -378,7 +384,7 @@ LADSPAInfo::DescendGroup(string prefix,
 			pe.Depth = depth;
 			pe.UniqueID = pi->UniqueID;
 			pe.Name = prefix + name;
-
+                  
 			plugins.push_back(pe);
 		}
 		plugins.sort();
@@ -599,6 +605,13 @@ LADSPAInfo::ExaminePluginLibrary(const string path,
 							library_added = true;
 						}
 
+                                                if ( ! desc->Name )
+                                                {
+                                                    printf( "WARNING: LADSPA Plugin with id %lu has no name!\n", desc->UniqueID );
+
+                                                    continue;
+                                                }
+
 					// Add plugin info
 						PluginInfo pi;
 						pi.LibraryIndex = m_Libraries.size() - 1;
@@ -607,18 +620,33 @@ LADSPAInfo::ExaminePluginLibrary(const string path,
 						pi.Label = desc->Label;
 						pi.Name = desc->Name;
 						pi.Descriptor = NULL;
-						m_Plugins.push_back(pi);
-
+                                                pi.Maker = desc->Maker;
+                                                pi.AudioInputs = 0;
+                                                pi.AudioOutputs = 0;
+                                                
 					// Find number of input ports
 						unsigned long in_port_count = 0;
 						for (unsigned long p = 0; p < desc->PortCount; p++) {
-							if (LADSPA_IS_PORT_INPUT(desc->PortDescriptors[p])) {
-								in_port_count++;
-							}
+                                                    if (LADSPA_IS_PORT_INPUT(desc->PortDescriptors[p])) {
+                                                        in_port_count++;
+                                                        if ( LADSPA_IS_PORT_AUDIO(desc->PortDescriptors[p] ) )
+                                                            pi.AudioInputs++;
+                                                    }
 						}
+                                                for (unsigned long p = 0; p < desc->PortCount; p++) {
+                                                    if (LADSPA_IS_PORT_OUTPUT(desc->PortDescriptors[p])) {
+                                                        
+                                                        if ( LADSPA_IS_PORT_AUDIO(desc->PortDescriptors[p] ) )
+                                                            pi.AudioOutputs++;
+                                                    }
+						}
+					
 						if (in_port_count > m_MaxInputPortCount) {
-							m_MaxInputPortCount = in_port_count;
+                                                    m_MaxInputPortCount = in_port_count;
+                                                    
 						}
+
+						m_Plugins.push_back(pi);
 
 					// Add to index
 						m_IDLookup[desc->UniqueID] = m_Plugins.size() - 1;

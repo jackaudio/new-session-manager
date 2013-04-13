@@ -35,12 +35,30 @@ public:
     {
         const char *path;
         unsigned long id;
+        const char *name;
+        const char *author;
+        const char *category;
+        int audio_inputs;
+        int audio_outputs;
+        const char *type;
+        bool favorite;
 
         Plugin_Info ( )
             {
                 path = 0;
                 id = 0;
+                name = 0;
+                author = 0;
+                category = 0;
+                audio_inputs = 0;
+                audio_outputs = 0;
+                type = "LADSPA";
+                favorite = 0;
             }
+
+        bool operator< ( const Plugin_Info &rhs ) {
+            return strcmp( name, rhs.name ) < 1;
+        }
     };
 
     bool load ( unsigned long id );
@@ -71,8 +89,7 @@ private:
     bool _crosswire;
 
     static void *discover_thread ( void * );
-    static Plugin_Info* get_all_plugins ( void );
-
+ 
 
     void set_input_buffer ( int n, void *buf );
     void set_output_buffer ( int n, void *buf );
@@ -89,14 +106,13 @@ private:
 
 public:
 
+    static std::list<Plugin_Info> get_all_plugins ( void );
+
     static void spawn_discover_thread ( void );
     static void join_discover_thread ( void );
 
     Plugin_Module ( );
     virtual ~Plugin_Module();
-
-    static Plugin_Module * pick_plugin ( void );
-    static void add_plugins_to_menu ( Fl_Menu_Button *menu );
 
     int plugin_ins ( void ) const { return _plugin_ins; }
     int plugin_outs ( void ) const { return _plugin_outs; }

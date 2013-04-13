@@ -97,8 +97,27 @@ public:
 		}
 	};
 
+
+// For cached plugin information
+	struct PluginInfo
+	{
+		unsigned long               LibraryIndex;   // Index of library in m_Libraries
+		unsigned long               Index;          // Plugin index in library
+		unsigned long               UniqueID;       // Unique ID
+		std::string                 Label;          // Plugin label
+		std::string                 Name;           // Plugin Name
+            std::string Maker;
+            unsigned int AudioInputs;
+            unsigned int AudioOutputs;
+            const LADSPA_Descriptor    *Descriptor;     // Descriptor, NULL
+
+            
+	};
+
 // Get ordered list of plugin names and IDs for plugin menu
 	const std::vector<PluginEntry>  GetMenuList(void);
+        
+        const std::vector<PluginInfo> GetPluginInfo(void);
 
 // Get the index in the above list for given Unique ID
 // If not found, this returns the size of the above list
@@ -138,17 +157,6 @@ private:
 		std::string                 Basename;       // Filename
 		unsigned long               RefCount;       // Count of descriptors requested
 		void                       *Handle;         // DLL Handle, NULL
-	};
-
-// For cached plugin information
-	struct PluginInfo
-	{
-		unsigned long               LibraryIndex;   // Index of library in m_Libraries
-		unsigned long               Index;          // Plugin index in library
-		unsigned long               UniqueID;       // Unique ID
-		std::string                 Label;          // Plugin label
-		std::string                 Name;           // Plugin Name
-		const LADSPA_Descriptor    *Descriptor;     // Descriptor, NULL
 	};
 
 // For cached RDF uri information

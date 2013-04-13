@@ -145,15 +145,19 @@ void Plugin_Table::draw_cell(TableContext context,
 
 	case CONTEXT_CELL:
 	{
+            fl_font(FL_HELVETICA, 12);
+	  
             const char *s2 = (char*)s;
             Fl_Align a = FL_ALIGN_CENTER;
             int symbol = 0;
-
+            Fl_Color c = FL_FOREGROUND_COLOR;
             switch ( C ) 
             {
                 case 0:
-                    sprintf( s, "%s", _plugin_rows[R]->favorite ? "@circle" : "" );
+                    sprintf( s, "%s", "@circle" );
+                    c = _plugin_rows[R]->favorite ? FL_LIGHT2 : FL_BLACK;
                     symbol = 1;
+                    fl_font(FL_HELVETICA, 9 );
                     break;
                 case 1:
                     a = FL_ALIGN_LEFT;
@@ -181,7 +185,7 @@ void Plugin_Table::draw_cell(TableContext context,
 		fl_rectf(X, Y, W, H);
 
 		// TEXT
-		fl_color(FL_FOREGROUND_COLOR);
+		fl_color(c);
 		fl_draw(s2, X, Y, W, H, a, 0, symbol );
 
 		// BORDER

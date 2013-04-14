@@ -291,11 +291,25 @@ Plugin_Module::get_all_plugins ( void )
         pi.name = i->Name.c_str();
         pi.audio_inputs = i->AudioInputs;
         pi.audio_outputs = i->AudioOutputs;
-
+        pi.category = "Unclassified";
         pr.push_back( pi );
     }
 
     pr.sort();
+
+    const std::vector<LADSPAInfo::PluginEntry> pe = ladspainfo->GetMenuList();
+  
+    for (std::vector<LADSPAInfo::PluginEntry>::const_iterator i= pe.begin();
+         i !=pe.end(); i++ )
+    {
+        for ( std::list<Plugin_Info>::iterator j = pr.begin(); j != pr.end(); j++ )
+        {
+            if ( j->id == i->UniqueID )
+            {
+                j->category = i->Category.c_str();
+            }
+        }
+    }
 
     return pr;
 }

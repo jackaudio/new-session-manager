@@ -90,6 +90,7 @@ public:
 		unsigned int    Depth;
 		unsigned long   UniqueID;
 		std::string     Name;
+            std::string Category;
 
 		bool operator<(const PluginEntry& pe)
 		{
@@ -107,7 +108,7 @@ public:
 		std::string                 Label;          // Plugin label
 		std::string                 Name;           // Plugin Name
             std::string Maker;
-            unsigned int AudioInputs;
+                  unsigned int AudioInputs;
             unsigned int AudioOutputs;
             const LADSPA_Descriptor    *Descriptor;     // Descriptor, NULL
 

@@ -39,7 +39,7 @@ Plugin_Chooser::plugin_chooser ( int ninputs )
 
     o->ui->inputs_input->value( ninputs );
 
-    o->search( "", "", ninputs, 0, o->ui->favorites_button->value() );
+    o->search( "", "", "Any", ninputs, 0, o->ui->favorites_button->value() );
 
     o->show();
     
@@ -54,7 +54,7 @@ Plugin_Chooser::plugin_chooser ( int ninputs )
 }
 
 void
-Plugin_Chooser::search ( const char *name, const char *author, int ninputs, int noutputs, bool favorites )
+Plugin_Chooser::search ( const char *name, const char *author, const char *category, int ninputs, int noutputs, bool favorites )
 {
     _plugin_rows.clear();
     
@@ -77,6 +77,15 @@ Plugin_Chooser::search ( const char *name, const char *author, int ninputs, int 
 
                 if ( favorites > 0 && ! p->favorite )
                     continue;
+                
+                if ( strcmp( category, "Any" ) )
+                {
+                    if ( !p->category && strcmp( category, "Unclassified" ))
+                        continue;
+                    
+                    if (strncmp( p->category, category, strlen( category )))
+                        continue;
+                }
 
                 _plugin_rows.push_back( p );
         }
@@ -99,8 +108,16 @@ Plugin_Chooser::cb_handle ( Fl_Widget *w )
         ui->favorites_button->value( !ui->all_button->value() );
     }
 
-    {   
-        search( ui->name_input->value(), ui->author_input->value(), ui->inputs_input->value(), ui->outputs_input->value(), ui->favorites_button->value() );
+    {  
+        char picked[512];
+        ui->category_choice->item_pathname( picked, sizeof( picked ) );
+  
+        search( ui->name_input->value(), 
+                ui->author_input->value(),
+                picked[0] == '/' ? &picked[1] : picked,
+                ui->inputs_input->value(), 
+                ui->outputs_input->value(),
+                ui->favorites_button->value() );
     }
 }
 
@@ -310,7 +327,37 @@ Plugin_Chooser::save_favorites ( void )
     
     fclose( fp );
 }
- 
+
+void 
+Plugin_Chooser::load_categories ( void )
+{
+    ui->category_choice->add( "Any" );
+
+    std::list<std::string> categories;
+
+    for ( std::list<Plugin_Module::Plugin_Info>::iterator i = _plugins.begin();
+          i != _plugins.end();
+          i++ )
+    {
+        if ( i->category )
+        {
+            categories.push_back(i->category);
+        }
+    }
+    
+    categories.sort();
+
+
+    for ( std::list<std::string>::const_iterator i = categories.begin();
+          i != categories.end();
+          i++ )
+    {
+        ui->category_choice->add( i->c_str() );
+    }
+
+    ui->category_choice->value( 0 );
+}
+
 Plugin_Chooser::Plugin_Chooser ( int X,int Y,int W,int H, const char *L )
     : Fl_Double_Window ( X,Y,W,H,L )
 {
@@ -343,6 +390,10 @@ Plugin_Chooser::Plugin_Chooser ( int X,int Y,int W,int H, const char *L )
         o->all_button->callback( &Plugin_Chooser::cb_handle, this );
         o->all_button->when( FL_WHEN_CHANGED );
 
+
+        o->category_choice->callback( &Plugin_Chooser::cb_handle, this );
+        o->category_choice->when( FL_WHEN_CHANGED );
+
         {
             Plugin_Table *o = new Plugin_Table(ui->table->x(),ui->table->y(),ui->table->w(),ui->table->h() );
             ui->table_group->add(o);
@@ -374,6 +425,8 @@ Plugin_Chooser::Plugin_Chooser ( int X,int Y,int W,int H, const char *L )
     size_range( 735, 300, 735, 0 );
     
     end();
+
+    load_categories();
 
     if ( load_favorites() )
     {

@@ -383,7 +383,9 @@ LADSPAInfo::DescendGroup(string prefix,
 
 			pe.Depth = depth;
 			pe.UniqueID = pi->UniqueID;
-			pe.Name = prefix + name;
+			pe.Name = name;
+                        pe.Category = prefix;
+                        pe.Category = pe.Category.substr(0, pe.Category.size()-1);
                   
 			plugins.push_back(pe);
 		}

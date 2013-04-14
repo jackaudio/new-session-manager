@@ -35,7 +35,7 @@ class Plugin_Chooser : public Fl_Double_Window
     static void cb_table ( Fl_Widget *w, void *v );
     void cb_table ( Fl_Widget *w );
 
-    void search ( const char *name, const char *author, int ninputs, int noutputs, bool favorites );
+    void search ( const char *name, const char *author, const char *category, int ninputs, int noutputs, bool favorites );
 
     unsigned long _value;
     
@@ -43,6 +43,7 @@ class Plugin_Chooser : public Fl_Double_Window
 
     void save_favorites ( void );
 
+    void load_categories ( void );
 public:
 
     unsigned long value ( void ) const { return _value; }

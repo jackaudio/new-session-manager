@@ -9,8 +9,8 @@ decl {\#include <FL/Fl_Table_Row.H>} {public global
 } 
 
 widget_class Plugin_Chooser_UI {
-  label {Plugin Selector} open selected
-  xywh {821 343 735 500} type Double resizable size_range {740 0 740 0} visible
+  label {Plugin Selector} open
+  xywh {823 366 735 500} type Double resizable size_range {740 0 740 0} visible
 } {
   Fl_Group {} {open
     xywh {10 5 155 20}
@@ -24,26 +24,30 @@ widget_class Plugin_Chooser_UI {
       xywh {65 5 100 20} type Radio down_box ROUND_DOWN_BOX
     }
   }
-  Fl_Group {} {open
+  Fl_Group {} {open selected
     xywh {5 29 725 77} box UP_FRAME
     code0 {o->resizable(0);}
   } {
     Fl_Input name_input {
       label {Name:}
-      xywh {65 38 555 24} labelsize 12 textsize 13
+      xywh {75 38 300 24} labelsize 12 textsize 13
     }
     Fl_Input author_input {
       label {Author:}
-      xywh {65 72 415 24} labelsize 12 textsize 13
+      xywh {435 39 210 22} labelsize 12 textsize 13
     }
     Fl_Value_Input outputs_input {
       label {Outputs:}
-      xywh {693 70 30 26} labelsize 12
+      xywh {693 70 30 24} labelsize 12
     }
     Fl_Value_Input inputs_input {
       label {Inputs:}
       xywh {693 39 30 24} labelsize 12
     }
+    Fl_Choice category_choice {
+      label {Category:} open
+      xywh {75 70 405 24} down_box BORDER_BOX labelsize 12 textsize 12
+    } {}
   }
   Fl_Group table_group {open
     xywh {5 115 725 380} resizable
@@ -54,7 +58,7 @@ widget_class Plugin_Chooser_UI {
   }
   Fl_Choice type_choice {
     label {Type:} open
-    xywh {520 135 100 28} down_box BORDER_BOX labelsize 12 hide
+    xywh {530 70 95 24} down_box BORDER_BOX labelsize 12 textsize 12
   } {
     MenuItem {} {
       label LADSPA

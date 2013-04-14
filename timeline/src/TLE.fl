@@ -627,17 +627,16 @@ timeline->redraw();}
             }
             MenuItem {} {
               label {&About}
-              callback {About_Dialog ab( PIXMAP_PATH "/non-timeline/icon-256x256.png", "Non-Timeline" );
+              callback {About_Dialog ab( PIXMAP_PATH "/non-timeline/icon-256x256.png" );
 
             ab.logo_box->label( VERSION );
 
         ab.title->label( "Non Timeline" );
 
-        ab.copyright->label( "Copyright (C) 2008-2010 Jonathan Moore Liles" );
+        ab.copyright->label( "Copyright (C) 2008-2013 Jonathan Moore Liles" );
         ab.credits->label( "Non Timeline was written from scratch by\\nJonathan Moore Liles for his own use\\n(see the manual).\\n\\nNobody planned. Nobody helped.\\nYou can help now by donating time, money,\\nand/or replacing the rest of Linux Audio\\nwith fast, light, reliable alternatives.\\n" );
 
         ab.website_url->label( "http://non.tuxfamily.org" );
-
 
 ab.run();}
               xywh {5 5 40 25}
@@ -1006,7 +1005,7 @@ if ( logo_box->image() )
 	logo_box->image( NULL );
 }} open
       private xywh {1189 128 520 775} type Double
-      code0 {o->xclass( APP_NAME );} modal visible
+      modal visible
     } {
       Fl_Value_Output {} {
         label {Sample Rate}
@@ -1041,7 +1040,7 @@ if ( logo_box->image() )
       Fl_Box logo_box {
         label {<LOGO>}
         private xywh {20 173 485 268} color 53 labelfont 1 labelsize 18 align 16
-        code0 {o->image( Fl_Shared_Image::get( PIXMAP_PATH "non-timeline/icon-256x256.png" ) );}
+        code0 {o->image( Fl_Shared_Image::get( PIXMAP_PATH "/non-timeline/icon-256x256.png" ) );}
         code1 {o->label( NULL );}
       }
       Fl_Text_Editor notes_field {

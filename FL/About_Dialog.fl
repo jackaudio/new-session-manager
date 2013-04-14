@@ -18,9 +18,9 @@ Function {open_url( const char *url )} {open return_type void
 
 class About_Dialog {open
 } {
-  Function {About_Dialog( const char *logo_filename, const char *xclass )} {open
+  Function {About_Dialog( const char *logo_filename )} {open
   } {
-    code {make_window( logo_filename, xclass );} {}
+    code {make_window( logo_filename );} {}
   }
   Function {run()} {open return_type void
   } {
@@ -31,7 +31,7 @@ while ( window->shown() )
 
 delete window;} {}
   }
-  Function {make_window( const char *logo_filename, const char *xclass )} {open private
+  Function {make_window( const char *logo_filename )} {open private
   } {
     Fl_Window window {
       label About
@@ -43,7 +43,7 @@ if ( logo_box->image() )
 	logo_box->image( 0 );
 }} open selected
       private xywh {879 215 560 695} type Double
-      code0 {o->xclass( xclass );} visible
+      visible
     } {
       Fl_Tabs {} {open
         xywh {0 352 558 296}
@@ -53,14 +53,7 @@ if ( logo_box->image() )
           xywh {2 386 553 261}
         } {
           Fl_Box credits {
-            label {Non-DAW was written from scratch by
- Jonathan Moore Liles for his own use
- (see the manual).
-
-Nobody planned. Nobody helped.
- You can help now by donating time, money,
-and/or replacing the rest of Linux Audio
-with fast, light, reliable alternatives.}
+            label {}
             xywh {5 389 545 249} box ROUNDED_BOX color 46 labelsize 18
           }
         }

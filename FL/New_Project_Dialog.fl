@@ -55,7 +55,7 @@ while ( _window->shown() )
   } {
     Fl_Window _window {
       label {New Project} open
-      xywh {762 252 550 195} type Double hide modal xclass Non_DAW
+      xywh {762 252 550 195} type Double hide modal
     } {
       Fl_File_Input _name {
         label {Named:}

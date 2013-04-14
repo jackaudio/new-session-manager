@@ -93,6 +93,19 @@ enum {
 
 static int pending_operation = COMMAND_NONE;
 
+
+#define GUIMSG( fmt, args... ) \
+{ \
+    MESSAGE( fmt, ## args ); \
+    if ( gui_is_active ) \
+    { \
+        char *s;\
+        asprintf( &s, fmt, ## args );\
+        osc_server->send( gui_addr, "/nsm/gui/server/message", s);\
+        free(s);\
+    }\
+}
+
 struct Client
 {
 private:
@@ -307,11 +320,11 @@ handle_client_process_death ( int pid )
 
         if ( dead_because_we_said )
         {
-            MESSAGE( "Client %s terminated because we told it to.", c->name );
+            GUIMSG( "Client %s terminated because we told it to.", c->name );
         }
         else
         {
-            MESSAGE( "Client %s died unexpectedly.", c->name );
+            GUIMSG( "Client %s died unexpectedly.", c->name );
         }
 
         if ( c->pending_command() == COMMAND_QUIT )
@@ -518,11 +531,11 @@ number_of_active_clients ( void )
 void
 wait_for_announce ( void )
 {
-    MESSAGE( "Waiting for announce messages from clients" );
+    GUIMSG( "Waiting for announce messages from clients" );
 
     int n = 5 * 1000;
     
-    int active;
+    long unsigned int active;
 
     while ( n > 0 )
     {
@@ -535,14 +548,15 @@ wait_for_announce ( void )
         if ( client.size() == active )
             break;
     }
-    
-    MESSAGE( "Done. %i out of %i clients announced within the initialization grace period", active, client.size() );
+
+    GUIMSG( "Done. %lu out of %lu clients announced within the initialization grace period", active, client.size() );
 }
 
 void
 wait_for_replies ( void )
 {    
-    MESSAGE( "Waiting for clients to reply to commands" );
+
+    GUIMSG( "Waiting for clients to reply to commands" );
 
     int n = 60 * 1000;                                          /* 60 seconds */
 
@@ -556,6 +570,7 @@ wait_for_replies ( void )
             break;
     }
 
+    GUIMSG( "Done waiting" );
     /* FIXME: do something about unresponsive clients */
 }
 
@@ -602,7 +617,7 @@ launch ( const char *executable, const char *client_id )
     int pid;
     if ( ! (pid = fork()) )
     {
-        MESSAGE( "Launching %s\n", executable );
+        GUIMSG( "Launching %s", executable );
 
         char *args[] = { strdup( executable ), NULL };
 
@@ -766,14 +781,14 @@ OSC_HANDLER( add )
 
 OSC_HANDLER( announce )
 {
-    MESSAGE( "Got announce" );
-
     const char *client_name = &argv[0]->s;
     const char *capabilities = &argv[1]->s;
     const char *executable_path = &argv[2]->s;
     int major = argv[3]->i;
     int minor = argv[4]->i;
     int pid = argv[5]->i;
+
+    GUIMSG( "Got announce from %s", client_name );
 
     if ( ! session_path )
     {
@@ -928,7 +943,7 @@ wait_for_dumb_clients_to_die ( )
 {
     struct signalfd_siginfo fdsi;
     
-    MESSAGE( "Waiting for any dumb clients to die." );
+    GUIMSG( "Waiting for any dumb clients to die." );
     
     for ( int i = 0; i < 6; i++ )
     {
@@ -947,6 +962,8 @@ wait_for_dumb_clients_to_die ( )
         
         usleep( 50000 );
     }
+    
+    GUIMSG( "Done waiting" );
 
     /* FIXME: give up on remaining clients and purge them */
 }
@@ -1015,7 +1032,7 @@ command_all_clients_to_save ( )
 {
     if ( session_path )
     {
-        MESSAGE( "Commanding attached clients to save." );
+        GUIMSG( "Commanding attached clients to save." );
         
         for ( std::list<Client*>::iterator i = client.begin();
               i != client.end();
@@ -1033,7 +1050,7 @@ command_all_clients_to_save ( )
 void
 command_client_to_stop ( Client *c )
 {
-    MESSAGE( "Stopping client %s", c->name );
+    GUIMSG( "Stopping client %s", c->name );
 
     if ( c->pid > 0 )
     {
@@ -1436,7 +1453,7 @@ OSC_HANDLER( new )
         close_session();
     }
 
-    MESSAGE( "Creating new session" );
+    GUIMSG( "Creating new session \"%s\"", &argv[0]->s );
 
     char *spath;
     asprintf( &spath, "%s/%s", session_root, &argv[0]->s );
@@ -1511,7 +1528,7 @@ list_file ( const char *fpath, const struct stat *sb, int tflag )
 
 OSC_HANDLER( list )
 {
-    MESSAGE( "Listing sessions" );
+    GUIMSG( "Listing sessions" );
 
     list_response_address = lo_message_get_source( msg );
     
@@ -1520,14 +1537,13 @@ OSC_HANDLER( list )
     osc_server->send( lo_message_get_source( msg ), path,
                       ERR_OK,
                       "Done." );
-
     return 0;
 }
 
 OSC_HANDLER( open )
 {
-    DMESSAGE( "Got open" );
-
+    GUIMSG( "Opening session %s", &argv[0]->s );
+    
     if ( pending_operation != COMMAND_NONE )
     {
             osc_server->send( lo_message_get_source( msg ), "/error", path,
@@ -1637,7 +1653,7 @@ OSC_HANDLER( abort )
         goto done;
     }
 
-    MESSAGE( "Commanding attached clients to quit." );
+    GUIMSG( "Commanding attached clients to quit." );
 
     close_session();
 
@@ -1645,6 +1661,7 @@ OSC_HANDLER( abort )
                       "Aborted." );
                       
     MESSAGE( "Done" );
+
 done:
 
     pending_operation = COMMAND_NONE;
@@ -1672,10 +1689,9 @@ OSC_HANDLER( close )
 
         goto done;
     }
-
     command_all_clients_to_save();
 
-    MESSAGE( "Commanding attached clients to quit." );
+    GUIMSG( "Commanding attached clients to quit." );
 
     close_session();
 

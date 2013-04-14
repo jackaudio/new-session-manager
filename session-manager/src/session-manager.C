@@ -40,7 +40,7 @@
 #include <FL/Fl_Tile.H>
 #include <FL/Fl_Shared_Image.H>
 #include <FL/Fl_Box.H>
-
+#include <FL/Fl_Text_Display.H>
 #include "FL/Fl_Packscroller.H"
 #include "FL/Fl_Scalepack.H"
 
@@ -517,6 +517,8 @@ public:
 
     Fl_Tree *session_browser;
     
+    Fl_Text_Display *status_display;
+
     static void cb_handle ( Fl_Widget *w, void *v )
         {
             ((NSM_Controller*)v)->cb_handle( w );
@@ -882,7 +884,7 @@ public:
             }
 
             { Fl_Tile *o = new Fl_Tile( X, Y + 30, W, H - 30 );
-                { Fl_Scalepack *o = new Fl_Scalepack( X, Y + 30, 300, H - 30 );
+                { Fl_Scalepack *o = new Fl_Scalepack( X, Y + 30, 300, H - 105 );
                     o->type( FL_VERTICAL );
                     o->spacing( 2 );
                     
@@ -890,7 +892,7 @@ public:
                     }
 
                     { 
-                        Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - 50 );
+                        Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - 125 );
                         o->callback( cb_handle, (void *)this );
                         o->color( FL_DARK1 );
                         o->item_labelbgcolor( o->color() );
@@ -907,7 +909,7 @@ public:
                 }
                 
                 Fl_Scalepack *scalepack;
-                { Fl_Scalepack *o = scalepack = new Fl_Scalepack( X + 300, Y + 30, W - 300, H - 30 );
+                { Fl_Scalepack *o = scalepack = new Fl_Scalepack( X + 300, Y + 30, W - 300, H - 105 );
                     o->type( FL_VERTICAL );
                     o->spacing( 2 );
                              
@@ -923,7 +925,7 @@ public:
                     }
                                    
                     {
-                        Fl_Packscroller *o = new Fl_Packscroller( 0, 0, 100, H - 100 );
+                        Fl_Packscroller *o = new Fl_Packscroller( 0, 0, 100, H - 105 );
                         o->align( FL_ALIGN_TOP );
                         o->labeltype( FL_SHADOW_LABEL );
                         {
@@ -940,12 +942,22 @@ public:
                     /* Fl_Group::current()->resizable( o ); */
                 } // Fl_Scalepack
 
-                { Fl_Box *o = new Fl_Box( X + 300, Y + 30, 100, H - 30 );
+                { Fl_Box *o = new Fl_Box( X + 300, Y + 30, 100, H - 105 );
                     Fl_Group::current()->resizable(o);
+                }
+
+                { Fl_Text_Display *o = status_display = new Fl_Text_Display( X, Y + H - 75, W, 75 );
+                    o->color( FL_DARK1 );
+                    o->textcolor( FL_GREEN );
+                    o->textfont( FL_COURIER );
+                    o->textsize( 10 );
+                    Fl_Text_Buffer *b = new Fl_Text_Buffer();
+                    o->buffer(b);
                 }
 
                 o->end();
                 resizable( o );
+                        
             } // Fl_tile
 
             end();
@@ -1004,6 +1016,7 @@ public:
 
             osc->add_method( "/nsm/server/broadcast", NULL, osc_broadcast_handler, osc, "msg" );
             osc->add_method( "/nsm/gui/server_announce", "s", osc_handler, osc, "msg" );
+            osc->add_method( "/nsm/gui/server/message", "s", osc_handler, osc, "msg" );
             osc->add_method( "/nsm/gui/gui_announce", "s", osc_handler, osc, "msg" );
             osc->add_method( "/nsm/gui/session/session", "s", osc_handler, osc, "path,display_name" );
             osc->add_method( "/nsm/gui/session/name", "ss", osc_handler, osc, "path,display_name" );
@@ -1070,7 +1083,13 @@ private:
             
             Fl::lock();
 
-            if ( !strcmp( path, "/nsm/gui/session/session" ) &&
+            if ( !strcmp( path, "/nsm/gui/server/message" ) && !strcmp( types, "s" ) )
+            {
+                controller->status_display->insert( &argv[0]->s );
+                controller->status_display->show_insert_position();
+                controller->status_display->insert( "\n" );
+            }
+            else if ( !strcmp( path, "/nsm/gui/session/session" ) &&
                  ! strcmp( types, "s" ) )
             {
                 controller->add_session_to_list( &argv[0]->s );
@@ -1143,7 +1162,12 @@ private:
                     last_ping_response = time( NULL );
                 }
                 else if ( ! strcmp( types, "ss" ) )
+                {
                     MESSAGE( "%s says %s", &argv[0]->s, &argv[1]->s);
+
+                    controller->status_display->insert( &argv[1]->s );
+                    controller->status_display->insert( "\n" );
+                }
             }
 
             if ( !strncmp( path, "/nsm/gui/client/", strlen( "/nsm/gui/client/" ) ) )

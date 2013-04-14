@@ -109,7 +109,6 @@ void
 sigterm_handler ( int )
 {
     got_sigterm = 1;
-    Fl::awake();
 }
 
 void
@@ -120,6 +119,7 @@ check_sigterm ( void * )
         MESSAGE( "Got SIGTERM, quitting..." );
         mixer->quit();
     }
+    Fl::repeat_timeout( 0.1f, check_sigterm );
 }
 
 
@@ -293,7 +293,7 @@ main ( int argc, char **argv )
         }
     }
 
-    Fl::add_check( check_sigterm );
+    Fl::add_timeout( 0.1f, check_sigterm );
     
     if ( ! no_ui )
     {

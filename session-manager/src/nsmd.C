@@ -474,19 +474,6 @@ get_client_by_address ( lo_address addr )
     return NULL;
 }
 
-bool
-replies_still_pending ( )
-{
-    for ( std::list<Client*>::const_iterator i = client.begin();
-          i != client.end();
-          ++i )
-        if ( (*i)->active && (*i)->reply_pending() )
-            return true;
-        /* if ( (*i)->reply_pending() ) */
-        /*     return true; */
-
-    return false;
-}
 
 char *
 generate_client_id ( Client *c ) 
@@ -502,21 +489,69 @@ generate_client_id ( Client *c )
     return strdup(id_str);
 }
 
-void
-wait_for_replies ( )
+
+bool
+replies_still_pending ( void )
 {
-    fprintf( stdout, "Waiting..." );
-    fflush(stdout);
+    for ( std::list<Client*>::const_iterator i = client.begin();
+          i != client.end();
+          ++i )
+        if ( (*i)->active && (*i)->reply_pending() )
+            return true;
 
-    int n = 7;
+    return false;
+}
 
-    while ( n-- )
+int
+number_of_active_clients ( void )
+{
+    int active = 0;
+    for ( std::list<Client*>::const_iterator i = client.begin(); i != client.end(); i++ )
     {
-        printf( "." );
-        fflush(stdout);
+        if ( (*i)->active )
+            active++;
+    }
 
-        osc_server->wait( 1000 );
+    return active;
+}
 
+void
+wait_for_announce ( void )
+{
+    MESSAGE( "Waiting for announce messages from clients" );
+
+    int n = 5 * 1000;
+    
+    int active;
+
+    while ( n > 0 )
+    {
+        n -= 100;
+
+        osc_server->wait(100);
+        
+         active = number_of_active_clients();
+
+        if ( client.size() == active )
+            break;
+    }
+    
+    MESSAGE( "Done. %i out of %i clients announced within the initialization grace period", active, client.size() );
+}
+
+void
+wait_for_replies ( void )
+{    
+    MESSAGE( "Waiting for clients to reply to commands" );
+
+    int n = 60 * 1000;                                          /* 60 seconds */
+
+    while ( n )
+    {
+        n -= 100;
+
+        osc_server->wait(100);
+        
         if ( ! replies_still_pending() )
             break;
     }
@@ -1229,7 +1264,10 @@ load_session_file ( const char * path )
      * messages immediately, even if no replies seem to be pending
      * yet. */
 
-//    osc_server->wait( 3000 );
+    /* dumb clients will never send an 'announce message', so we need
+     * to give up waiting on them fairly soon. */
+
+    wait_for_announce();
 
     wait_for_replies();
 
@@ -1735,7 +1773,7 @@ OSC_HANDLER( progress )
     {
         c->progress = argv[0]->f;
 
-        MESSAGE( "%s progress: %i%%", c->name, (int)(c->progress * 100.0f) );
+        /* MESSAGE( "%s progress: %i%%", c->name, (int)(c->progress * 100.0f) ); */
 
         if ( gui_is_active )
         {

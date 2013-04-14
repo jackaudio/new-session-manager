@@ -195,21 +195,22 @@ void Plugin_Table::draw_cell(TableContext context,
                     break;
             }
 
+            fl_color( row_selected(R) ? selection_color() : FL_DARK1);
+            fl_rectf(X, Y, W, H);
+            fl_color(color()); 
+            fl_rect(X, Y, W, H);
+
+            X+=4;
+            W-=8;
+            Y+=4;
+            H-=8;
+
 	    fl_push_clip(X, Y, W, H);
-	    {
-	        // BG COLOR
-		fl_color( row_selected(R) ? selection_color() : FL_DARK1);
-		fl_rectf(X, Y, W, H);
+	    
+            fl_color(c);
+            fl_draw(s2, X, Y, W, H, a, 0, symbol );
 
-		// TEXT
-		fl_color(c);
-		fl_draw(s2, X, Y, W, H, a, 0, symbol );
-
-		// BORDER
-		fl_color(color()); 
-		fl_rect(X, Y, W, H);
-	    }
-	    fl_pop_clip();
+            fl_pop_clip();
 	    return;
 	}
 

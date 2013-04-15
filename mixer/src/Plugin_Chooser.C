@@ -66,7 +66,7 @@ Plugin_Chooser::search ( const char *name, const char *author, const char *categ
              strcasestr( p->author, author ) )
         {
             if ( !
-                 ((( ( ninputs == 0 || ninputs == p->audio_inputs ) ) &&
+                 ((( ( ninputs == 0 || ninputs == p->audio_inputs || ( ninputs == 1 && p->audio_inputs == 2 ) ) ) &&
                   ( noutputs == 0 || noutputs == p->audio_outputs )) ||
                   ( p->audio_inputs == 1 && p->audio_outputs == 1 ) ) )
                 continue;

@@ -58,9 +58,9 @@ Module::Module ( int W, int H, const char *L ) : Fl_Group( 0, 0, W, H, L )
 
 Module::Module ( bool is_default, int W, int H, const char *L ) : Fl_Group( 0, 0, W, H, L ), Loggable( !is_default )
 {
-    this->is_default( is_default );
-
     init();
+
+    this->is_default( is_default );
 }
 
 Module::Module ( ) : Fl_Group( 0, 0, 50, 50, "Unnamed" )
@@ -88,9 +88,20 @@ Module::~Module ( )
         if ( control_input[i].connected() )
         {
             Module *o = (Module*)control_input[i].connected_port()->module();
+            
+            if ( ! o->is_default() )
+            {
+                control_input[i].disconnect();
 
-            control_input[i].disconnect();
-            delete o;
+                DMESSAGE( "Deleting connected module %s", o->label() );
+                
+                delete o;
+            }
+            else
+            {
+                control_input[i].disconnect();
+            }
+
         }
 
         control_input[i].destroy_osc_port();

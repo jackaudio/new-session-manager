@@ -386,6 +386,7 @@ LADSPAInfo::DescendGroup(string prefix,
 			pe.Name = name;
                         pe.Category = prefix;
                         pe.Category = pe.Category.substr(0, pe.Category.size()-1);
+
                   
 			plugins.push_back(pe);
 		}
@@ -607,13 +608,7 @@ LADSPAInfo::ExaminePluginLibrary(const string path,
 							library_added = true;
 						}
 
-                                                if ( ! desc->Name )
-                                                {
-                                                    printf( "WARNING: LADSPA Plugin with id %lu has no name!\n", desc->UniqueID );
-
-                                                    continue;
-                                                }
-
+                                            
 					// Add plugin info
 						PluginInfo pi;
 						pi.LibraryIndex = m_Libraries.size() - 1;
@@ -658,6 +653,7 @@ LADSPAInfo::ExaminePluginLibrary(const string path,
 					}
 				}
 
+                                
 				desc = desc_func(++i);
 			}
 		}
@@ -772,6 +768,11 @@ LADSPAInfo::CheckPlugin(const LADSPA_Descriptor *desc)
 	test(!LADSPA_IS_INPLACE_BROKEN(desc->Properties),
 			"WARNING: Plugin cannot use in place processing");
 	test(desc->PortCount, "WARNING: Plugin has no ports");
+        test(desc->Name, "WARNING: Plugin has no name" );
+        
+        test( !( LADSPA_IS_INPLACE_BROKEN( desc->Properties ) ), "WARNING: plugin inplace processing is broken" );
+
+        test ( LADSPA_IS_HARD_RT_CAPABLE( desc->Properties ), "WARNING: Plugin is not RT incapable" );
 
 	return true;
 }

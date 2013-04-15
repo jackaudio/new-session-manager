@@ -918,11 +918,15 @@ Timeline::prev_line ( nframes_t *frame, bool bar ) const
 
     const nframes_t window = sample_rate() * 60;
     nframes_t start = 0;
+    nframes_t length = when;
 
     if ( when > window )
+    {
         start = when - window;
+        length = window;
+    }
 
-    render_tempomap( start, when, prev_next_line_cb, &n );
+    render_tempomap( start, length, prev_next_line_cb, &n );
 
     *frame = n.closest;
 

@@ -10,26 +10,26 @@ decl {\#include <FL/Fl_Table_Row.H>} {public global
 
 widget_class Plugin_Chooser_UI {
   label {Plugin Selector} open
-  xywh {823 366 735 500} type Double resizable size_range {740 0 740 0} visible
+  xywh {825 389 735 500} type Double resizable size_range {740 0 740 0} visible
 } {
   Fl_Group {} {open
     xywh {10 5 155 20}
   } {
     Fl_Round_Button all_button {
-      label All
-      xywh {10 5 50 20} type Radio down_box ROUND_DOWN_BOX value 1
+      label {&All}
+      xywh {10 5 50 20} type Radio down_box ROUND_DOWN_BOX shortcut 0x80061 value 1
     }
     Fl_Round_Button favorites_button {
-      label Favorites
-      xywh {65 5 100 20} type Radio down_box ROUND_DOWN_BOX
+      label {&Favorites}
+      xywh {65 5 100 20} type Radio down_box ROUND_DOWN_BOX shortcut 0x80066
     }
   }
-  Fl_Group {} {open selected
+  Fl_Group {} {open
     xywh {5 29 725 77} box UP_FRAME
     code0 {o->resizable(0);}
   } {
     Fl_Input name_input {
-      label {Name:}
+      label {Name:} selected
       xywh {75 38 300 24} labelsize 12 textsize 13
     }
     Fl_Input author_input {

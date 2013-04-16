@@ -519,6 +519,8 @@ public:
     
     Fl_Text_Display *status_display;
 
+    int status_lines;
+
     static void cb_handle ( Fl_Widget *w, void *v )
         {
             ((NSM_Controller*)v)->cb_handle( w );
@@ -840,6 +842,8 @@ public:
     NSM_Controller ( int X, int Y, int W, int H, const char *L ) :
         Fl_Group( X, Y, W, H, L )
         {
+            status_lines = 0;
+
             align( FL_ALIGN_RIGHT | FL_ALIGN_CENTER | FL_ALIGN_INSIDE );
             
             { Fl_Pack *o = buttons_pack = new Fl_Pack( X, Y, W, 30 );
@@ -882,9 +886,11 @@ public:
                
                 o->end();
             }
+            
+            int SH = 14;
 
             { Fl_Tile *o = new Fl_Tile( X, Y + 30, W, H - 30 );
-                { Fl_Scalepack *o = new Fl_Scalepack( X, Y + 30, 300, H - 105 );
+                { Fl_Scalepack *o = new Fl_Scalepack( X, Y + 30, 300, H - ( 30 +  SH ) );
                     o->type( FL_VERTICAL );
                     o->spacing( 2 );
                     
@@ -892,7 +898,7 @@ public:
                     }
 
                     { 
-                        Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - 125 );
+                        Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - ( 50 + SH ) );
                         o->callback( cb_handle, (void *)this );
                         o->color( FL_DARK1 );
                         o->item_labelbgcolor( o->color() );
@@ -909,7 +915,7 @@ public:
                 }
                 
                 Fl_Scalepack *scalepack;
-                { Fl_Scalepack *o = scalepack = new Fl_Scalepack( X + 300, Y + 30, W - 300, H - 105 );
+                { Fl_Scalepack *o = scalepack = new Fl_Scalepack( X + 300, Y + 30, W - 300, H - ( 30 + SH ) );
                     o->type( FL_VERTICAL );
                     o->spacing( 2 );
                              
@@ -925,7 +931,7 @@ public:
                     }
                                    
                     {
-                        Fl_Packscroller *o = new Fl_Packscroller( 0, 0, 100, H - 105 );
+                        Fl_Packscroller *o = new Fl_Packscroller( 0, 0, 100, H - ( 30 + SH ) );
                         o->align( FL_ALIGN_TOP );
                         o->labeltype( FL_SHADOW_LABEL );
                         {
@@ -942,13 +948,14 @@ public:
                     /* Fl_Group::current()->resizable( o ); */
                 } // Fl_Scalepack
 
-                { Fl_Box *o = new Fl_Box( X + 300, Y + 30, 100, H - 105 );
+                { Fl_Box *o = new Fl_Box( X + 300, Y + 30, 100, H - ( 30 + SH ));
                     Fl_Group::current()->resizable(o);
                 }
 
-                { Fl_Text_Display *o = status_display = new Fl_Text_Display( X, Y + H - 75, W, 75 );
+                { Fl_Text_Display *o = status_display = new Fl_Text_Display( X, Y + H - SH, W, SH );
                     o->color( FL_DARK1 );
-                    o->textcolor( FL_GREEN );
+                    o->textcolor( FL_FOREGROUND_COLOR );
+                    o->box( FL_UP_BOX );
                     o->textfont( FL_COURIER );
                     o->textsize( 10 );
                     Fl_Text_Buffer *b = new Fl_Text_Buffer();
@@ -1086,7 +1093,8 @@ private:
             if ( !strcmp( path, "/nsm/gui/server/message" ) && !strcmp( types, "s" ) )
             {
                 controller->status_display->insert( &argv[0]->s );
-                controller->status_display->show_insert_position();
+                // controller->status_display->show_insert_position();
+                controller->status_display->scroll( ++controller->status_lines, 0 );
                 controller->status_display->insert( "\n" );
             }
             else if ( !strcmp( path, "/nsm/gui/session/session" ) &&
@@ -1166,6 +1174,7 @@ private:
                     MESSAGE( "%s says %s", &argv[0]->s, &argv[1]->s);
 
                     controller->status_display->insert( &argv[1]->s );
+                    controller->status_display->scroll( ++controller->status_lines, 0 );
                     controller->status_display->insert( "\n" );
                 }
             }

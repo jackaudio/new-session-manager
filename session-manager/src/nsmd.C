@@ -755,7 +755,7 @@ OSC_HANDLER( add )
 {
     if ( ! session_path )
     {
-        osc_server->send( lo_message_get_source( msg ), path,
+        osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "Cannot add to session because no session is loaded." );
                           
@@ -763,15 +763,23 @@ OSC_HANDLER( add )
         return 0;
     }
 
+    if ( strchr( &argv[0]->s, '/' ) )
+    {
+        osc_server->send( lo_message_get_source( msg ), "/error", path,
+                          ERR_LAUNCH_FAILED,
+                          "Absolute paths are not permitted. Clients must be in $PATH" );        
+        return 0;
+    }
+
     if ( ! launch( &argv[0]->s, NULL ) )
     {
-        osc_server->send( lo_message_get_source( msg ), path,
+        osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_LAUNCH_FAILED,
                           "Failed to launch process!" );
     }
     else
     {
-        osc_server->send( lo_message_get_source( msg ), path,
+        osc_server->send( lo_message_get_source( msg ), "/reply", path,
                           ERR_OK,
                           "Launched." );
     }
@@ -2263,7 +2271,7 @@ int main(int argc, char *argv[])
     osc_server->add_method( "/nsm/server/duplicate", "s", OSC_NAME( duplicate ), NULL, "" );
     osc_server->add_method( "/nsm/server/abort", "", OSC_NAME( abort ), NULL, "" );
     osc_server->add_method( "/nsm/server/list", "", OSC_NAME( list ), NULL, "" );
-    osc_server->add_method( "/nsm/server/add", "s", OSC_NAME( add ), NULL, "commandline" );
+    osc_server->add_method( "/nsm/server/add", "s", OSC_NAME( add ), NULL, "executable_name" );
     osc_server->add_method( "/nsm/server/new", "s", OSC_NAME( new ), NULL, "name" );
     osc_server->add_method( "/nsm/server/save", "", OSC_NAME( save ), NULL, "" );
     osc_server->add_method( "/nsm/server/open", "s", OSC_NAME( open ), NULL, "name" );

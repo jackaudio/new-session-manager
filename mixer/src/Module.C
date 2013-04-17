@@ -234,7 +234,10 @@ Module::handle_control_changed ( Port *p )
 bool
 Module::Port::connected_osc ( void ) const
 {
-    return _scaled_signal->connected();
+    if ( _scaled_signal )
+        return _scaled_signal->connected();
+    else
+        return false;
 }
 
 char *

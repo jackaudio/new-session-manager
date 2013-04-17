@@ -74,8 +74,6 @@ public:
     bool is_default ( void ) const { return _is_default; }
     void is_default ( bool v ) { _is_default = v; }
 
-    virtual bool allows_external_control ( void ) const { return true; }
-
     class Port
     {
         /* char *type_names[] = { "Audio", "Control" }; */
@@ -103,7 +101,8 @@ public:
             float maximum;
             float default_value;
             int dimensions;
-            
+            bool visible;
+
             Hints ( )
                 {
                     type = LINEAR;
@@ -112,6 +111,7 @@ public:
                     maximum = 0;
                     default_value = 0.0f;
                     dimensions = 1;
+                    visible = true;
                 }
         };
 
@@ -352,6 +352,18 @@ public:
     int ncontrol_outputs ( void ) const
         {
             return control_output.size();
+        }
+
+    int nvisible_control_inputs ( void ) const
+        {
+            int n = 0;
+            for ( std::vector<Port>::const_iterator i = control_input.begin();
+                  i != control_input.end();
+                  i++ )
+                if ( i->hints.visible )
+                    n++;
+
+            return n;
         }
 
     virtual bool bypass ( void ) const { return _bypass; }

@@ -246,9 +246,8 @@ Module::Port::generate_osc_path ()
 
     // /strip/STRIPNAME/MODULENAME/CONTROLNAME
 
-    if ( ! module()->allows_external_control() )
+    if ( ! p->hints.visible )
     {
-        /* Don't create signals for the default modules other than Gain */
         return NULL;
     }
 
@@ -854,7 +853,7 @@ Module::command_open_parameter_editor ( void )
     {
         _editor->show();
     }
-    else if ( ncontrol_inputs() )
+    else if ( ncontrol_inputs() && nvisible_control_inputs() )
     {
         DMESSAGE( "Opening module parameters for \"%s\"", label() );
         _editor = new Module_Parameter_Editor( this );

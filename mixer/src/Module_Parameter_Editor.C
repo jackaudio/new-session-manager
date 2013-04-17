@@ -153,6 +153,9 @@ Module_Parameter_Editor::make_controls ( void )
 
         Module::Port *p = &module->control_input[i];
 
+        if ( !p->hints.visible )
+            continue;
+
         if ( !strcasecmp( "Azimuth", p->name() ) &&
             180.0f == p->hints.maximum &&
             -180.0f == p->hints.minimum )

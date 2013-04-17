@@ -56,6 +56,8 @@ Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
 
     add_port( Port( this, Port::INPUT, Port::CONTROL ) );
 
+    control_input[0].hints.visible = false;
+
     dpm_pack = new Fl_Scalepack( x(), y(), w(), h() );
     dpm_pack->color( FL_BACKGROUND_COLOR );
     dpm_pack->box( FL_FLAT_BOX );

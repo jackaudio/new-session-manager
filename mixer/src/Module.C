@@ -33,6 +33,7 @@
 #include "Mono_Pan_Module.H"
 #include "Meter_Module.H"
 #include "Plugin_Module.H"
+#include "AUX_Module.H"
 
 #include <FL/Fl_Menu_Button.H>
 #include "FL/test_press.H"
@@ -395,7 +396,11 @@ Module::set ( Log_Entry &e )
 
         e.get( i, &s, &v );
 
-        if ( ! strcmp( s, ":chain" ) )
+        if ( ! ( strcmp( s, ":is_default" ) ) )
+        {
+            is_default( atoi( v ) );
+        }
+        else if ( ! strcmp( s, ":chain" ) )
         {
             /* This trickiness is because we may need to know the name of
                our chain before we actually get added to it. */
@@ -420,10 +425,6 @@ Module::set ( Log_Entry &e )
         if ( ! strcmp( s, ":parameter_values" ) )
         {
             set_parameters( v );
-        }
-        else if ( ! ( strcmp( s, ":is_default" ) ) )
-        {
-            is_default( atoi( v ) );
         }
         else if ( ! ( strcmp( s, ":active" ) ) )
         {
@@ -527,16 +528,9 @@ Module::set_parameters ( const char *parameters )
 
 
 void
-Module::draw_box ( void )
+Module::draw_box ( int tx, int ty, int tw, int th )
 {
     fl_color( fl_contrast( FL_FOREGROUND_COLOR, color() ) );
-
-    int tw, th, tx, ty;
-
-    tw = w();
-    th = h();
-    ty = y();
-    tx = x();
 
     fl_push_clip( tx, ty, tw, th );
 
@@ -575,10 +569,8 @@ Module::draw_box ( void )
 }
 
 void
-Module::draw_label ( void )
+Module::draw_label ( int tx, int ty, int tw, int th )
 {
-    int tw, th, tx, ty;
-
     bbox( tx, ty, tw, th );
 
     const char *lp = label();
@@ -616,47 +608,53 @@ Module::draw_label ( void )
 void
 Module::insert_menu_cb ( const Fl_Menu_ *m )
 {
-    unsigned long id = Plugin_Chooser::plugin_chooser( this->ninputs() );
     
+    const char * picked =  m->mvalue()->label();
+
+    DMESSAGE("picked = %s", picked );
+
     Module *mod = NULL;
     
-    switch ( id )
+    if ( !strcmp( picked, "Aux" ) )
     {
-        case 0:
-            return;
-        case 1:
-            mod = new JACK_Module();
-            break;
-        case 2:
-            mod = new Gain_Module();
-            break;
-        case 3:
-            mod = new Meter_Module();
-            break;
-        case 4:
-            mod = new Mono_Pan_Module();
-            break;
-        default:
+        int n = 0;
+        for ( int i = 0; i < chain()->modules(); i++ )
         {
-            Plugin_Module *m = new Plugin_Module();
-
-            m->load( id );
-
-            mod = m;
+            if ( !strcmp( chain()->module(i)->name(), "AUX" ) )
+                n++;
         }
+
+        AUX_Module *jm = new AUX_Module();
+        jm->chain( chain() );
+        jm->number( n );
+        jm->configure_inputs( ninputs() );
+        jm->configure_outputs( ninputs() );
+        jm->initialize();
+     
+        mod = jm;
+    }
+    else if ( !strcmp( picked, "Gain" ) )
+            mod = new Gain_Module();
+    else if ( !strcmp( picked, "Meter" ) )
+        mod = new Meter_Module();
+    else if ( !strcmp( picked, "Mono Pan" ))
+        mod = new Mono_Pan_Module();
+    else if ( !strcmp(picked, "Plugin" ))
+    {
+        unsigned long id = Plugin_Chooser::plugin_chooser( this->ninputs() );
+        
+        if ( id == 0 )
+            return;
+        
+        Plugin_Module *m = new Plugin_Module();
+        
+        m->load( id );
+        
+        mod = m;
     }
 
     if ( mod )
     {
-        if ( !strcmp( mod->name(), "JACK" ) )
-        {
-            DMESSAGE( "Special casing JACK module" );
-            JACK_Module *jm = (JACK_Module*)mod;
-            jm->chain( chain() );
-            jm->configure_inputs( ninputs() );
-            jm->configure_outputs( ninputs() );
-        }
-
         if ( ! chain()->insert( this, mod ) )
         {
             fl_alert( "Cannot insert this module at this point in the chain" );
@@ -737,16 +735,12 @@ Module::menu ( void ) const
     {
         insert_menu = new Fl_Menu_Button( 0, 0, 0, 0 );
 
-        insert_menu->add( "Gain", 0, 0, new unsigned long(2) );
-        insert_menu->add( "Meter", 0, 0, new unsigned long(3) );
-        insert_menu->add( "Mono Pan", 0, 0, new unsigned long(4) );
+        insert_menu->add( "Gain", 0, 0 );
+        insert_menu->add( "Meter", 0, 0 );
+        insert_menu->add( "Mono Pan", 0, 0 );
+        insert_menu->add( "Aux", 0, 0 );
+        insert_menu->add( "Plugin", 0, 0 );
 
-        insert_menu->add( "Plugin", 0, 0, new unsigned long(4) );
-
-
-        /* Plugin_Module::add_plugins_to_menu( insert_menu ); */
-
-//        menu_set_callback( insert_menu, &Module::insert_menu_cb, (void*)this );
         insert_menu->callback( &Module::insert_menu_cb, (void*)this );
     }
 

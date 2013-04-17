@@ -269,10 +269,10 @@ public:
 
     void bbox ( int &X, int &Y, int &W, int &H )
         {
-            X = x() + 5;
-            Y = y() + 5;
-            W = w() - 10;
-            H = h() - 10;
+            X += + 5;
+            Y += 5;
+            W -= 10;
+            H -= 10;
         }
 
     Module ( int W, int H, const char *L = 0 );
@@ -435,10 +435,10 @@ public:
 protected:
 
     void draw_connections ( void );
-    void draw_label ( void );
-    void draw_box ( void );
+    void draw_label ( int X, int Y, int W, int H );
+    void draw_box ( int X, int Y, int W, int H );
 
-    virtual void draw ( void ) { Module::draw_box(); Module::draw_label(); }
+    virtual void draw ( void ) { Module::draw_box(x(),y(),w(),h()); Module::draw_label(x(),y(),w(),h()); }
     virtual int handle ( int m );
 
     virtual void get ( Log_Entry &e ) const;

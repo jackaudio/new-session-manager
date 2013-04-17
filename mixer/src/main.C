@@ -51,7 +51,7 @@
 #include "Mono_Pan_Module.H"
 #include "Chain.H"
 #include "Mixer_Strip.H"
-
+#include "AUX_Module.H"
 #include "NSM.H"
 
 #include <signal.h>
@@ -156,6 +156,7 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Mono_Pan_Module );
     LOG_REGISTER_CREATE( Meter_Indicator_Module );
     LOG_REGISTER_CREATE( Controller_Module );
+    LOG_REGISTER_CREATE( AUX_Module );
 
     signal( SIGPIPE, SIG_IGN );
 

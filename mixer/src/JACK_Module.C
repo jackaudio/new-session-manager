@@ -32,41 +32,47 @@
 
 
 
-JACK_Module::JACK_Module ( )
+JACK_Module::JACK_Module ( bool log )
     : Module ( 50, 24, name() )
 {
-    /* FIXME: how do Controls find out that a connected value has changed? How does this work in ladspa? */
+    _prefix = 0;
+
+    if ( log )
     {
-        Port p( this, Port::INPUT, Port::CONTROL, "Inputs" );
-        p.hints.type = Port::Hints::INTEGER;
-        p.hints.minimum = 0;
-        p.hints.maximum = 16;
-        p.hints.ranged = true;
+        /* FIXME: how do Controls find out that a connected value has changed? How does this work in ladspa? */
+        {
+            Port p( this, Port::INPUT, Port::CONTROL, "Inputs" );
+            p.hints.type = Port::Hints::INTEGER;
+            p.hints.minimum = 0;
+            p.hints.maximum = 16;
+            p.hints.ranged = true;
+            p.hints.visible = false;
 
-        p.connect_to( new float );
-        p.control_value_no_callback( 0 );
+            p.connect_to( new float );
+            p.control_value_no_callback( 0 );
 
-        add_port( p );
+            add_port( p );
+        }
+
+        {
+            Port p( this, Port::INPUT, Port::CONTROL, "Outputs" );
+            p.hints.type = Port::Hints::INTEGER;
+            p.hints.minimum = 0;
+            p.hints.maximum = 16;
+            p.hints.ranged = true;
+            p.hints.visible = false;
+
+            p.connect_to( new float );
+            p.control_value_no_callback( 0 );
+
+            add_port( p );
+        }
+        color( FL_BLACK );
+
+        log_create();
     }
 
-    {
-        Port p( this, Port::INPUT, Port::CONTROL, "Outputs" );
-        p.hints.type = Port::Hints::INTEGER;
-        p.hints.minimum = 0;
-        p.hints.maximum = 16;
-        p.hints.ranged = true;
-
-        p.connect_to( new float );
-        p.control_value_no_callback( 0 );
-
-        add_port( p );
-    }
-
-    end();
-    
-    color( FL_BLACK );
-
-    log_create();
+    end();    
 }
 
 JACK_Module::~JACK_Module ( )
@@ -74,6 +80,8 @@ JACK_Module::~JACK_Module ( )
     log_destroy();
     configure_inputs( 0 );
     configure_outputs( 0 );
+    if ( _prefix )
+        free( _prefix );
 }
 
 
@@ -93,19 +101,26 @@ JACK_Module::configure_inputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port po( chain()->engine(), JACK::Port::Output, i );
+            JACK::Port *po = NULL;
 
-            if ( ! po.activate() )
+            if ( !_prefix )
+                po = new JACK::Port( chain()->engine(), JACK::Port::Output, i );
+            else
+                po = new JACK::Port( chain()->engine(), JACK::Port::Output, _prefix, i );
+
+            if ( ! po->activate() )
             {
-                jack_port_activation_error( &po );
+                jack_port_activation_error( po );
                 return false;
             }
 
-            if ( po.valid() )
+            if ( po->valid() )
             {
                 add_port( Port( this, Port::INPUT, Port::AUDIO ) );
-                jack_output.push_back( po );
+                jack_output.push_back( *po );
             }
+
+            delete po;
         }
     }
     else
@@ -119,7 +134,8 @@ JACK_Module::configure_inputs ( int n )
         }
     }
 
-    control_input[0].control_value_no_callback( n );
+    if ( is_default() )
+        control_input[0].control_value_no_callback( n );
 
     return true;
 }
@@ -139,19 +155,26 @@ JACK_Module::configure_outputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port po( chain()->engine(), JACK::Port::Input, i );
+            JACK::Port *po = NULL;
 
-            if ( ! po.activate() )
+            if ( !_prefix )
+                po = new JACK::Port( chain()->engine(), JACK::Port::Input, i );
+            else
+                po = new JACK::Port( chain()->engine(), JACK::Port::Input, _prefix, i );
+
+            if ( ! po->activate() )
             {
-                jack_port_activation_error( &po );
+                jack_port_activation_error( po );
                 return false;
             }
 
-            if ( po.valid() )
+            if ( po->valid() )
             {
                 add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
-                jack_input.push_back( po );
+                jack_input.push_back( *po );
             }
+
+            delete po;
         }
     }
     else
@@ -165,7 +188,8 @@ JACK_Module::configure_outputs ( int n )
         }
     }
 
-    control_input[1].control_value_no_callback( n );
+    if ( is_default() )
+        control_input[1].control_value_no_callback( n );
 
     return true;
 }
@@ -230,10 +254,19 @@ void
 JACK_Module::process ( nframes_t nframes )
 {
     for ( unsigned int i = 0; i < audio_input.size(); ++i )
+    {
         if ( audio_input[i].connected() )
-            buffer_copy( (sample_t*)jack_output[i].buffer( nframes ), (sample_t*)audio_input[i].buffer(), nframes );
+            buffer_copy( (sample_t*)jack_output[i].buffer( nframes ),
+                         (sample_t*)audio_input[i].buffer(),
+                         nframes );
+                         
+    }
 
     for ( unsigned int i = 0; i < audio_output.size(); ++i )
+    {
         if ( audio_output[i].connected() )
-            buffer_copy( (sample_t*)audio_output[i].buffer(), (sample_t*)jack_input[i].buffer( nframes ), nframes );
+            buffer_copy( (sample_t*)audio_output[i].buffer(),
+                         (sample_t*)jack_input[i].buffer( nframes ),
+                         nframes );
+    }
 }

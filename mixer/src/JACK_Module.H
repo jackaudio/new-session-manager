@@ -19,13 +19,27 @@
 
 #pragma once
 
-
 #include "Module.H"
 #include "JACK/Port.H"
 #include <vector>
 
 class JACK_Module : public Module
 {
+    char *_prefix;
+
+protected:
+    
+    void prefix ( const char *s )
+        {
+            if ( _prefix )
+                free( _prefix );
+            
+            _prefix = NULL;
+            
+            if ( s )
+                _prefix = strdup( s );
+        }
+
     std::vector<JACK::Port> jack_input;
     std::vector<JACK::Port> jack_output;
 
@@ -33,21 +47,19 @@ class JACK_Module : public Module
 
 public:
 
-    JACK_Module ( );
+    JACK_Module ( bool log = true );
     virtual ~JACK_Module ( );
 
-    const char *name ( void ) const { return "JACK"; }
+    virtual const char *name ( void ) const { return "JACK"; }
 
-    bool initialize ( void );
+    virtual bool initialize ( void );
 
-    int can_support_inputs ( int );
-    bool configure_inputs ( int n );
-    bool configure_outputs ( int n );
+    virtual int can_support_inputs ( int );
+    virtual bool configure_inputs ( int n );
+    virtual bool configure_outputs ( int n );
 
-    void add_output ( void );
-
-    void handle_control_changed ( Port *p );
-    void handle_chain_name_changed ();
+    virtual void handle_control_changed ( Port *p );
+    virtual void handle_chain_name_changed ();
 
     LOG_CREATE_FUNC( JACK_Module );
 

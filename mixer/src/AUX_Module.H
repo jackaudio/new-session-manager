@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2009 Jonathan Moore Liles                                     */
+/* Copyright (C) 2013 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -19,34 +19,36 @@
 
 #pragma once
 
-#include "Module.H"
+#include "JACK_Module.H"
 
-class Fl_Scalepack;
-
-class Meter_Module : public Module
+class AUX_Module : public JACK_Module
 {
-    Fl_Scalepack *dpm_pack;
-
-    volatile float *control_value;
-
-    static void update_cb ( void *v );
-    void update_cb ( void );
-
-public:
-
-    Meter_Module ( );
-    virtual ~Meter_Module ( );
-
-    const char *name ( void ) const { return "Meter"; }
-
-    int can_support_inputs ( int n ) { return n > 0 ? n : -1; }
-    bool configure_inputs ( int n );
-
-    LOG_CREATE_FUNC( Meter_Module );
+    int _number;
 
 protected:
 
-    virtual int handle ( int m );
+    virtual void get ( Log_Entry &e ) const;
+    virtual void set ( Log_Entry &e );
+
+public:
+
+    virtual const char *name ( void ) const { return "AUX"; }
+
+    virtual bool configure_outputs ( int n );
+    virtual bool configure_inputs ( int n );
+
+    void number ( int n );
+    int number ( void ) const { return _number; }
+
+    AUX_Module ( );
+    virtual ~AUX_Module ( );
+
+    LOG_CREATE_FUNC( AUX_Module );
+
+protected:
+
+    virtual void draw ( void );
     virtual void process ( nframes_t nframes );
-    virtual void draw ( void ) { draw_box(x(),y(),w(),h()); }
+
 };
+

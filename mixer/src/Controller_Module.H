@@ -91,7 +91,7 @@ public:
 
     void draw ( void )
         {
-            draw_box();
+            draw_box(x(),y(),w(),h());
             Fl_Group::draw();
         }
 

@@ -49,6 +49,7 @@ src/DPM.C
 src/Engine/Engine.C
 src/Gain_Module.C
 src/JACK_Module.C
+src/AUX_Module.C
 src/LADSPAInfo.C
 src/Meter_Indicator_Module.C
 src/Meter_Module.C

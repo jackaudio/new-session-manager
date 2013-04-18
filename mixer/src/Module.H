@@ -108,7 +108,9 @@ public:
                     type = LINEAR;
                     ranged = false;
                     minimum = 0;
-                    maximum = 0;
+                    maximum = 1;    /* FIXME: totally bogus, but some
+                                     * plugins (SWH delays) don't
+                                     * provide an upper bound. */
                     default_value = 0.0f;
                     dimensions = 1;
                     visible = true;

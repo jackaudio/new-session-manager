@@ -32,7 +32,6 @@
 
 class Fl_Packscroller : public Fl_Group
 {
-
     int _increment;
     int _yposition;
     static const int sbh = 15;                                  /* scroll button height */
@@ -43,7 +42,6 @@ public:
         {
             _increment = 30;
             _yposition = 0;
-
 //            color( FL_WHITE );
         }
 
@@ -60,7 +58,8 @@ public:
             if ( Y > 0 )
                 Y = 0;
 
-            const int H = h() - (sbh * 2);
+            const int H = h();
+// - (sbh * 2);
 
             Fl_Widget *o = child( 0 );
 
@@ -89,88 +88,113 @@ public:
     void bbox ( int &X, int &Y, int &W, int &H )
         {
             X = x();
-            Y = y() + sbh;
+            Y = y() + ( sbh * top_sb_visible() );
             W = w();
-            H = h() - (sbh * 2);
+            H = h() - ( sbh * ( top_sb_visible() + bottom_sb_visible() ) );
+        }
+
+    int top_sb_visible ( void )
+        {
+            return children() && child(0)->y() != y() ? 1 : 0;
+        }
+
+    int bottom_sb_visible ( void )
+        {
+            if ( children() )
+            {
+                Fl_Widget *o = child( 0 );
+           
+                if ( o->h() > h() && o->y() + o->h() != y() + h() )
+                    return 1;
+            }
+
+            return 0;
         }
 
     virtual void
     draw ( void )
         {
+            if ( damage() & FL_DAMAGE_ALL )
+            {
+                fl_rectf( x(), y(), w(), h(), color() );
+            }
+
             if ( ! children() )
                 return;
 
-            if ( ! fl_not_clipped( x(), y(), w(), h() ) )
-                return;
-
-//            draw_box();
-
             Fl_Widget *o = child( 0 );
 
-            o->position( x(), y() + sbh + _yposition );
+            o->position( x(), y() + _yposition );
 
-            if ( damage() != FL_DAMAGE_CHILD )
-            {
-                fl_rectf( x(), y(), w(), h(), color() );
-
-                fl_font( FL_HELVETICA, 12 );
-
-                if ( o->y() != y() + sbh )
-                {
-                    fl_draw_box( box(), x(), y(), w(), sbh, color() );
-                    fl_color( FL_BLACK );
-                    fl_draw( "@2<", x(), y(), w(), sbh, FL_ALIGN_CENTER );
-                }
-
-                if ( o->h() > h() - (sbh * 2) && o->y() + o->h() != y() + h() - sbh )
-                {
-                    fl_draw_box( box(), x(), y() + h() - sbh, w(), sbh, color() );
-                    fl_color( FL_BLACK );
-                    fl_draw( "@2>", x(), y() + h() - sbh, w(), sbh, FL_ALIGN_CENTER );
-                }
-
-            }
-
-            fl_push_clip( x(), y() + sbh, w(), h() - (sbh * 2 ) );
-
+            const int top_sb = top_sb_visible();
+            const int bottom_sb = bottom_sb_visible();
+            
+            fl_push_clip( x(), y() + ( sbh * top_sb ), w(), h() - (sbh * (top_sb + bottom_sb) ));
+            
             draw_children();
 
             fl_pop_clip();
+            
+            fl_font( FL_HELVETICA, 12 );
+            
+            if ( top_sb )
+            {
+                fl_draw_box( box(), x(), y(), w(), sbh, color() );
+                fl_color( fl_contrast( FL_FOREGROUND_COLOR, color() ) );
+                fl_draw( "@2<", x(), y(), w(), sbh, FL_ALIGN_CENTER );
+            }
+            
+            if ( bottom_sb )
+            {
+                fl_draw_box( box(), x(), y() + h() - sbh, w(), sbh, color() );
+                fl_color( fl_contrast( FL_FOREGROUND_COLOR, color() ) );
+                fl_draw( "@2>", x(), y() + h() - sbh, w(), sbh, FL_ALIGN_CENTER );
+            }
         }
 
     virtual int
     handle ( int m )
         {
-            if ( Fl_Group::handle( m ) )
-                return 1;
+            static int _button;
 
+            int r = 0;
             switch ( m )
             {
                 case FL_PUSH:
-                {
-                    if ( Fl::event_button1() )
+                    _button = Fl::event_button();
+
+                    if ( top_sb_visible() &&
+                         Fl::event_inside( x(), y(), w(), sbh ) )
                     {
-                        if ( Fl::event_inside( x(), y(), w(), sbh ) )
+                        return 1;
+                    }
+                    else if ( bottom_sb_visible() &&
+                              Fl::event_inside(  x(), y() + h() - sbh, w(), sbh ) )
+                    {
+                        return 1;
+                    }
+                    break;
+                case FL_RELEASE:
+                {
+                    int b = _button;
+                    _button = 0;
+                    if ( b == 1 )
+                    {
+                        if ( top_sb_visible() &&
+                             Fl::event_inside( x(), y(), w(), sbh ) )
                         {
                             yposition( yposition() + ( h() / 4 ) );
                             return 1;
                         }
-                        else if ( Fl::event_inside(  x(), y() + h() - sbh, w(), sbh ) )
+                        else if ( bottom_sb_visible() &&
+                                  Fl::event_inside(  x(), y() + h() - sbh, w(), sbh ) )
                         {
                             yposition( yposition() - (h() / 4 ) );
                             return 1;
                         }
-
-                        return 0;
                     }
+                    break;
                 }
-                return 0;
-                case FL_ENTER:
-                case FL_LEAVE:
-                    return 1;
-                case FL_FOCUS:
-                case FL_UNFOCUS:
-                    return 1;
                 case FL_KEYBOARD:
                 {
                     if ( Fl::event_key() == FL_Up )
@@ -183,7 +207,7 @@ public:
                         yposition( yposition() - (h() / 4 ) );
                         return 1;
                     }
-                    return 0;
+                    break;
                 }
                 case FL_MOUSEWHEEL:
                 {
@@ -193,6 +217,6 @@ public:
                 }
             }
 
-            return 0;
+            return Fl_Group::handle( m ) | r;
         }
 };

@@ -586,6 +586,7 @@ public:
             else if ( w == refresh_button )
             {
                 session_browser->clear();
+                session_browser->redraw();
                 MESSAGE( "Refreshing session list." );
                 foreach_daemon ( d )
                 {

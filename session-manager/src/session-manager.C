@@ -488,7 +488,7 @@ fl_awake_alert( void *v )
 {
     if ( v )
     {
-        fl_alert( (char*)v);
+        fl_alert( "%s", (char*)v );
         free( v );
     }
 }

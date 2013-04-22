@@ -36,6 +36,7 @@ Engine::Engine ( void (*process_callback)(nframes_t nframes, void *), void *user
     _process_callback_user_data = user_data;
     _buffer_size_callback = 0;
     _buffers_dropped = 0;
+    _port_connect_callback = 0;
 }
 
 Engine::~Engine ( )
@@ -50,6 +51,13 @@ Engine::buffer_size_callback (  void ( *buffer_size_callback ) ( nframes_t, void
 {
     _buffer_size_callback = buffer_size_callback;
     _buffer_size_callback_user_data = user_data;
+}
+
+void
+Engine::port_connect_callback (  void ( *port_connect_callback ) ( jack_port_id_t a, jack_port_id_t b, int connect, void *arg), void *user_data )
+{
+    _port_connect_callback = port_connect_callback;
+    _port_connect_callback_user_data = user_data;
 }
 
 /*************/
@@ -90,6 +98,15 @@ Engine::buffer_size ( nframes_t nframes )
 
     return 0;
 }
+
+/* THREAD: ?? */
+void
+Engine::port_connect( jack_port_id_t a, jack_port_id_t b, int connect )
+{
+    if ( _port_connect_callback )
+        _port_connect_callback( a, b, connect, _port_connect_callback_user_data );
+}
+
 
 /* THREAD: RT */
 int

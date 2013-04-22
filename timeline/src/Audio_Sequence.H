@@ -43,7 +43,6 @@ protected:
     void handle_widget_change ( nframes_t start, nframes_t length );
 
     void draw ( void );
-    int handle ( int m );
 
     static void cb_button ( Fl_Widget *w, void *v );
     void cb_button ( Fl_Widget *w );
@@ -51,6 +50,8 @@ protected:
     void init ( void );
 
 public:
+
+    int handle ( int m );
 
     LOG_CREATE_FUNC( Audio_Sequence );
 

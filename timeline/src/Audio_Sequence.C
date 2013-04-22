@@ -253,6 +253,8 @@ Audio_Sequence::handle ( int m )
     {
         case FL_PASTE:
         {
+            if ( ! Fl::event_inside( this ) )
+                return 0;
             const char *text = Fl::event_text();
 
             if ( ! strcmp( text, "Audio_Region" ) )
@@ -262,7 +264,7 @@ Audio_Sequence::handle ( int m )
 
             if ( ! sscanf( text, "file://%a[^\r\n]\n", &file ) )
             {
-                printf( "invalid drop \"%s\"\n", text );
+                WARNING( "invalid drop \"%s\"\n", text );
                 return 0;
             }
 

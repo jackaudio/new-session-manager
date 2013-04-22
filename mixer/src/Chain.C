@@ -458,6 +458,7 @@ Chain::name ( const char *name )
         _engine = new Engine( &Chain::process, this );
 
         engine()->buffer_size_callback( &Chain::buffer_size, this );
+        engine()->port_connect_callback( &Chain::port_connect, this );
 
         const char *jack_name = engine()->init( ename );
 
@@ -822,5 +823,45 @@ Chain::buffer_size ( nframes_t nframes )
         Module *m = module(i);
 
         m->resize_buffers( nframes );
+    }
+}
+
+void
+Chain::port_connect ( jack_port_id_t a, jack_port_id_t b, int connect, void *v )
+{
+    ((Chain*)v)->port_connect( a, b, connect );
+}
+
+/* handle jack port connection change */
+void
+Chain::port_connect ( jack_port_id_t a, jack_port_id_t b, int connect )
+{
+    /* this is called from JACK non-RT thread... */
+   
+    if ( jack_port_is_mine( engine()->jack_client(), jack_port_by_id( engine()->jack_client(), a ) ) ||
+         jack_port_is_mine( engine()->jack_client(), jack_port_by_id( engine()->jack_client(), b ) ))
+    {
+        Fl::awake( Chain::update_connection_status, this );
+    }
+}
+
+void
+Chain::update_connection_status ( void *v )
+{
+    ((Chain*)v)->update_connection_status();
+}
+
+void
+Chain::update_connection_status ( void )
+{
+    for ( int i = 0; i < modules(); i++ )
+    {
+        Module *m = module(i);
+        
+        if ( !strcmp( m->name(), "JACK" ) ||
+             !strcmp( m->name(), "AUX" ))
+        {
+            ((JACK_Module*)m)->update_connection_status();
+        }
     }
 }

@@ -74,6 +74,9 @@ namespace JACK
         void *buffer ( nframes_t nframes );
         void silence ( nframes_t nframes );
 
+        int connect ( const char *to );
+        int disconnect ( const char *from );
+        bool connected_to ( const char *to );
         /*  */
         const char ** connections ( void );
         bool connections ( const char **port_names );

@@ -133,6 +133,7 @@ Module::init ( void )
 
     box( FL_UP_BOX );
     labeltype( FL_NO_LABEL );
+    align( FL_ALIGN_CENTER | FL_ALIGN_INSIDE );
     set_visible_focus();
     selection_color( FL_RED );
     color( fl_color_average( FL_WHITE, FL_CYAN, 0.40 ) );
@@ -599,7 +600,7 @@ Module::draw_label ( int tx, int ty, int tw, int th )
 
     }
 
-    fl_draw( s ? s : lp, tx, ty, tw, th, (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE | FL_ALIGN_CLIP ) );
+    fl_draw( s ? s : lp, tx, ty, tw, th, align() | FL_ALIGN_CLIP );
 
     if ( s )
         delete[] s;
@@ -777,13 +778,15 @@ Module::handle_chain_name_changed ( )
 int
 Module::handle ( int m )
 {
+    static int _button = 0;
+
+    if ( Fl_Group::handle( m ) )
+        return 1;
+
     switch ( m )
     {
         case FL_KEYBOARD:
         {
-            if ( Fl_Group::handle( m ) )
-                return 1;
-
             if ( Fl::event_key() == FL_Menu )
             {
                 menu_popup( &menu(), x(), y() );
@@ -792,28 +795,35 @@ Module::handle ( int m )
             else
                 return menu().test_shortcut() != 0;
         }
-        case FL_PUSH:
-        {
+        case FL_PUSH:     
             take_focus();
-
-            if ( Fl_Group::handle( m ) )
-                return 1;
-            else if ( test_press( FL_BUTTON3 ) )
+            _button = Fl::event_button();
+            return 1;
+            // if ( Fl::visible_focus() && handle( FL_FOCUS )) Fl::focus(this);
+        case FL_DRAG:
+            _button = Fl::event_button();
+            return 1;
+        case FL_RELEASE:
+        {
+            int b = _button;
+            _button = 0;
+            DMESSAGE( "Button %i", b);
+            if ( 3 == b )
             {
                 menu_popup( &menu() );
                 return 1;
             }
-            else if ( test_press( FL_BUTTON1 ) )
+            else if ( 1 == b )
             {
                 command_open_parameter_editor();
                 return 1;
             }
-            else if ( test_press( FL_BUTTON3 | FL_CTRL ) )
+            else if ( 3 == b && Fl::event_ctrl() )
             {
                 command_remove();
                 return 1;
             }
-            else if ( test_press( FL_BUTTON2 ) )
+            else if ( 2 == b )
             {
                 if ( !bypassable() )
                 {
@@ -826,6 +836,10 @@ Module::handle ( int m )
                 }
                 return 1;
             }
+            /* else */
+            /* { */
+            /*     take_focus(); */
+            /* } */
 
             return 0;
         }
@@ -835,7 +849,7 @@ Module::handle ( int m )
             return 1;
     }
 
-    return Fl_Group::handle( m );
+    return 0;
 }
 
 

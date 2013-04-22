@@ -157,7 +157,6 @@ public:
         {
             static int _button;
 
-            int r = 0;
             switch ( m )
             {
                 case FL_PUSH:
@@ -217,6 +216,6 @@ public:
                 }
             }
 
-            return Fl_Group::handle( m ) | r;
+            return Fl_Group::handle( m );
         }
 };

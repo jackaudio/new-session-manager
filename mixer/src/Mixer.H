@@ -73,10 +73,6 @@ private:
 
     static int osc_non_hello ( const char *, const char *, lo_arg **, int , lo_message msg, void * );
 
-protected:
-
-    int handle ( int m );
-
 public:
 
     char * get_unique_track_name ( const char *name );

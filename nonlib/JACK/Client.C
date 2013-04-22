@@ -108,7 +108,11 @@ namespace JACK
         ((Client*)arg)->shutdown();
     }
 
-
+    void
+    Client::port_connect ( jack_port_id_t a, jack_port_id_t b, int connect, void *arg )
+    {
+        ((Client*)arg)->port_connect( a, b, connect );
+    }
 
 /** Connect to JACK using client name /client_name/. Return a static
  * pointer to actual name as reported by JACK */
@@ -125,6 +129,7 @@ namespace JACK
         set_callback( xrun );
         set_callback( freewheel );
         set_callback( buffer_size );
+        set_callback( port_connect );
 
         /* FIXME: should we wait to register this until after the project
            has been loaded (and we have disk threads running)? */

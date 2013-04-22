@@ -211,7 +211,7 @@ Mixer_Strip::chain ( Chain *c )
 
 void Mixer_Strip::cb_handle(Fl_Widget* o) {
     // parent()->parent()->damage( FL_DAMAGE_ALL, x(), y(), w(), h() );
-    DMESSAGE( "Callback for %s", o->label() );
+    // DMESSAGE( "Callback for %s", o->label() );
 
     if ( o == tab_button )
     {
@@ -440,8 +440,7 @@ Mixer_Strip::init ( )
                 } // Fl_Button* o
 
                 o->end();
-            } // Fl_Group* o            
-
+            } // Fl_Group* o
             { Fl_Flip_Button* o = tab_button = new Fl_Flip_Button(61, 183, 45, 22, "fader/signal");
                 o->type(1);
                 o->labelsize( 14 );
@@ -481,7 +480,6 @@ Mixer_Strip::init ( )
                         o->pad( false );
                         o->size( 33, 100 );
                     }
-
                     { Meter_Indicator_Module *o = meter_indicator = new Meter_Indicator_Module( true );
                         o->disable_context_menu( true );
                         o->pad( false );
@@ -693,15 +691,30 @@ Mixer_Strip::menu ( void ) const
 int
 Mixer_Strip::handle ( int m )
 {
+    static int _button = 0;
+
     Logger log( this );
+
+    if ( Fl_Group::handle( m ) )
+        return 1;
+
+    switch ( m )
+    {
+        case FL_FOCUS:
+            damage( FL_DAMAGE_USER1 );
+            return 1;
+        case FL_UNFOCUS:
+            damage( FL_DAMAGE_USER1 );
+            return 1;
+    }
+
+    /* if ( m == FL_PUSH ) */
+    /*     take_focus(); */
 
     switch ( m )
     {
         case FL_KEYBOARD:
         {
-            if ( Fl_Group::handle( m ) )
-                return 1;
-
             if ( Fl::event_key() == FL_Menu )
             {
                 menu_popup( &menu(), x(), y() );
@@ -712,34 +725,27 @@ Mixer_Strip::handle ( int m )
             break;
         }
         case FL_PUSH:
+            _button = Fl::event_button();
+        case FL_RELEASE:
         {
-            int r = 0;
-            if ( Fl::event_button1() )
-            {
-                take_focus();
-                r = 1;
-            }
-
-            if ( Fl_Group::handle( m ) )
-                return 1;
-            else if ( test_press( FL_BUTTON3 ) )
+            int b = _button;
+            _button = 0;
+ 
+            /* if ( 1 == b ) */
+            /* { */
+            /*     take_focus(); */
+            /* } */
+            /* else */
+            if ( 3 == b )
             {
                 menu_popup( &menu() );
                 return 1;
             }
-            else
-                return r;
             break;
         }
-        case FL_FOCUS:
-            damage( FL_DAMAGE_USER1 );
-            return Fl_Group::handle( m ) || 1;
-        case FL_UNFOCUS:
-            damage( FL_DAMAGE_USER1 );
-            return Fl_Group::handle( m ) || 1;
     }
-
-    return Fl_Group::handle( m );
+    
+    return 0;
 }
 
 

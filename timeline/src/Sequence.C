@@ -389,9 +389,7 @@ Sequence::handle ( int m )
             fl_cursor( FL_CURSOR_DEFAULT );
             Fl_Group::handle( m );
             return 1;
-        case FL_DND_DRAG:
-            return 1;
-        case FL_ENTER:
+      case FL_ENTER:
 //            DMESSAGE( "enter" );
             if ( Fl::event_x() >= drawable_x() )
             {
@@ -424,10 +422,14 @@ Sequence::handle ( int m )
             {
                 return Fl_Group::handle(m);
             }
+        case FL_DND_DRAG:
         case FL_DND_ENTER:
         case FL_DND_LEAVE:
         case FL_DND_RELEASE:
-            return 1;
+            if ( Fl::event_x() >= drawable_x() )
+                return 1;
+            else
+                return 0;
         case FL_MOVE:
         {
             if ( Fl::event_x() >= drawable_x() )

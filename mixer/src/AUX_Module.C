@@ -123,6 +123,7 @@ AUX_Module::draw ( void )
 {
     int W = 5;
 
+    child(0)->size( w() - W, 18 );
     Module::draw_box(x(),y(),w() - W,h());
     Module::draw_label(x(),y(),w() - W,h());
 

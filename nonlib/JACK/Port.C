@@ -298,6 +298,42 @@ namespace JACK
         return true;
     }
 
+    int
+    Port::connect ( const char *to )
+    {
+        const char *name = jack_port_name( _port );
+
+        if ( _direction == Output )
+        {  
+            return jack_connect( _client->jack_client(), name, to );
+        }
+        else
+        {
+            return jack_connect( _client->jack_client(), to, name );
+        }
+    }
+
+
+    int
+    Port::disconnect ( const char *from )
+    {
+        const char *name = jack_port_name( _port );
+
+        if ( _direction == Output )
+        {  
+            return jack_disconnect( _client->jack_client(), name, from );
+        }
+        else
+        {
+            return jack_disconnect( _client->jack_client(), from, name );
+        }
+    }
+
+    bool
+    Port::connected_to ( const char *to )
+    {
+        return jack_port_connected_to( _port, to );
+    }
 
     void
     Port::freeze ( void )

@@ -295,7 +295,8 @@ main ( int argc, char **argv )
     }
 
     Fl::add_timeout( 0.1f, check_sigterm );
-    
+    Fl::dnd_text_ops( 0 );
+
     if ( ! no_ui )
     {
         DMESSAGE( "Running UI..." );

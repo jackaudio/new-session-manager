@@ -47,6 +47,7 @@
 #include <FL/Fl_Menu_Button.H>
 #include "FL/menu_popup.H"
 
+extern char *instance_name;
 
 
 
@@ -997,6 +998,8 @@ Track::menu ( void ) const
 #include "FL/event_name.H"
 #include "FL/test_press.H"
 
+static Fl_Widget *receptive_to_drop = NULL;
+
 void
 Track::draw ( void )
 {
@@ -1020,6 +1023,12 @@ Track::draw ( void )
     else
         Fl_Group::draw();
 
+    if ( ((Track_Header*)child(0))->input_connector_handle == receptive_to_drop )
+    {
+        Fl_Widget *o = ((Track_Header*)child(0))->input_connector_handle;
+        fl_draw_box( FL_OVAL_BOX, o->x(), o->y(), o->w(), o->h(), fl_color_add_alpha( FL_GREEN, 127 ) );
+    }
+
     if ( ! Track::colored_tracks )
         color( saved_color );
 
@@ -1032,6 +1041,19 @@ Track::handle ( int m )
 
 /*     if ( m != FL_NO_EVENT ) */
 /*         DMESSAGE( "%s", event_name( m ) ); */
+    
+    switch ( m )
+    {
+        case FL_DND_ENTER:
+        case FL_DND_LEAVE:
+        case FL_DND_DRAG:
+        case FL_DND_RELEASE:
+        case FL_PASTE:
+            if ( Fl::event_x() > Track::width() )
+                return sequence()->handle(m);
+        default:
+            break;
+    }
 
     switch ( m )
     {
@@ -1065,6 +1087,9 @@ Track::handle ( int m )
         }
         case FL_PUSH:
         {
+            if ( Fl::event_inside( ((Track_Header*)child(0))->output_connector_handle ) )
+                return 1;
+            
             Logger log( this );
 
             if ( Fl_Group::handle( m ) )
@@ -1077,6 +1102,140 @@ Track::handle ( int m )
             }
 
             return 0;
+        }
+        /* we have to prevent Fl_Group::handle() from getting these, otherwise it will mess up Fl::belowmouse() */
+        case FL_ENTER:
+        case FL_LEAVE:
+        case FL_MOVE:
+            if ( Fl::event_x() >= Track::width() )
+            {
+                return sequence()->handle(m);
+            }
+            return 0;
+        case FL_DND_ENTER:
+            return 1;
+        case FL_DND_LEAVE:
+    
+            if ( ! Fl::event_inside(this) && this == receptive_to_drop )
+            {
+                receptive_to_drop = 0;
+                redraw();
+                Fl::selection_owner(0);
+            }
+            return 1;
+        case FL_DND_RELEASE:
+            receptive_to_drop = 0;
+            redraw();
+            Fl::selection_owner(0);
+            return 1;
+        case FL_DND_DRAG:
+        {
+            
+            if ( receptive_to_drop == ((Track_Header*)child(0))->input_connector_handle )
+                return 1;
+
+           
+
+            if ( Fl::event_inside( ((Track_Header*)child(0))->input_connector_handle )
+                 && receptive_to_drop != ((Track_Header*)child(0))->input_connector_handle )
+            
+            {
+                receptive_to_drop = ((Track_Header*)child(0))->input_connector_handle;
+                redraw();
+                return 1;
+            }
+            else
+            {
+                receptive_to_drop = NULL;
+                redraw();
+                return 0;
+            }
+        }
+        case FL_PASTE:
+        {
+            receptive_to_drop = 0;
+            redraw();
+
+            if (! Fl::event_inside( ((Track_Header*)child(0))->input_connector_handle ) )
+                return 0;
+
+            /* NOW we get the text... */
+            const char *text = Fl::event_text();
+
+            DMESSAGE( "Got drop text \"%s\"",text);
+
+            if ( strncmp( text, "jack.port://", strlen( "jack.port://" ) ) )
+            {
+                return 0;
+            }
+                        
+            std::vector<std::string> port_names;
+
+            char *port_name;
+            int end;
+            while (  sscanf( text, "jack.port://%a[^\r\n]\r\n%n", &port_name, &end ) > 0 )
+            {
+                DMESSAGE( "Scanning %s", port_name );
+                port_names.push_back( port_name );
+                free(port_name );
+                
+                text += end;
+            }
+
+            for ( unsigned int i = 0; i < input.size() && i < port_names.size(); i++)
+            {
+                const char *pn = port_names[i].c_str();
+                
+                JACK::Port *ji = &input[i];
+                
+                if ( ji->connected_to( pn ) )
+                {
+                    
+                    DMESSAGE( "Disconnecting from \"%s\"", pn );
+                    ji->disconnect( pn );
+                }
+                else
+                {
+                    DMESSAGE( "Connecting to %s", pn );
+                    ji->connect( pn );
+                }
+            }
+          
+            Fl::selection_owner(0);
+
+            return 1;
+        }
+        case FL_DRAG:
+        {
+            if ( this != Fl::selection_owner() &&
+                 Fl::event_inside( ((Track_Header*)child(0))->output_connector_handle ) )
+            {
+                char *s = (char*)malloc(256);
+                s[0] = 0;
+  
+                for ( unsigned int i = 0; i < output.size(); ++i )
+                {
+                    char *s2;
+                    asprintf(&s2, "jack.port://%s:%s\r\n", instance_name, output[i].name() );
+                    
+                    s = (char*)realloc( s, strlen( s ) + strlen( s2 ) + 1 ); 
+                    strcat( s, s2 );
+
+                    free( s2 );
+                }
+               
+                Fl::copy(s, strlen(s) + 1, 0);
+                Fl::selection_owner(this);
+
+                free( s );
+
+                Fl::dnd();
+        
+                return 1;
+            }
+            else
+                return 0;
+            
         }
         default:
             return Fl_Group::handle( m );

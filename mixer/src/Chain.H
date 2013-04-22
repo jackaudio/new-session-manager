@@ -73,6 +73,13 @@ private:
     static void buffer_size ( nframes_t nframes, void *v );
     void buffer_size ( nframes_t nframes );
 
+    
+    static void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect, void *v );
+    void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect );
+
+    static void update_connection_status ( void *v );
+    void update_connection_status ( void );
+
 protected:
 
     void get ( Log_Entry &e ) const;

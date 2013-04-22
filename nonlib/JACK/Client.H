@@ -40,6 +40,8 @@ namespace JACK
         volatile bool _freewheeling;
         volatile bool _zombified;
 
+        static void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect, void *arg );
+        virtual void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect ) { }
         static void shutdown ( void *arg );
         virtual void shutdown ( void ) = 0;
         static int process ( nframes_t nframes, void *arg );

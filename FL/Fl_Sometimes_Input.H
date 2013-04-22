@@ -69,7 +69,7 @@ public:
     virtual int
     handle ( int m )
         {
-            int r = Fl_Input::handle( m );
+            int r = 0;
 
             switch ( m )
             {
@@ -79,23 +79,31 @@ public:
                             Fl::event_key() == FL_Tab ) ) 
                     {
                         Fl::focus( NULL );
-                        return 1;
+                        r = 1;
                     }
-                    else
-                        return r;
+                    break;
                 }
                 case FL_FOCUS:
                     redraw();
-                    return 1;
+                    r = 1;
+                    break;
                 case FL_UNFOCUS:
                     do_callback();
-                    return 1;
+                    r = 1;
+                    break;
                 case FL_PUSH:
                     take_focus();
                     redraw();
-                    return 1;
+                    r = 1;
+                    break;
+                case FL_DND_ENTER:
+                    return 0;
+                case FL_PASTE:
+                    return 0;
                 default:
-                    return r;
+                    break;
             }
+            
+            return Fl_Input::handle( m ) | r;         
         }
 };

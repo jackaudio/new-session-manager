@@ -730,22 +730,6 @@ Mixer::update_menu ( void )
     project_name->label( Project::name() );
 }
 
-int
-Mixer::handle ( int m )
-{
-    if ( Fl_Group::handle( m ) )
-        return 1;
-
-    switch ( m )
-    {
-        case FL_ENTER:
-        case FL_LEAVE:
-            return 1;
-    }
-
-    return 0;
-}
-
 
 
 /************/

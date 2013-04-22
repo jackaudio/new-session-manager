@@ -19,6 +19,8 @@
 
 #pragma once
 
+class Fl_Box;
+class Fl_Browser;
 #include "Module.H"
 #include "JACK/Port.H"
 #include <vector>
@@ -45,14 +47,27 @@ protected:
 
     static void jack_port_activation_error ( JACK::Port *p );
 
+    Fl_Button * dec_button;
+    Fl_Button * inc_button;
+    Fl_Browser * connection_display;
+    Fl_Box * input_connection_handle;
+    Fl_Box * output_connection_handle;
+    
+    static void cb_button ( Fl_Widget *w, void *v );
+    void cb_button ( Fl_Widget *w );
+ 
 public:
+
+    void update_connection_status ( void );
 
     JACK_Module ( bool log = true );
     virtual ~JACK_Module ( );
 
     virtual const char *name ( void ) const { return "JACK"; }
-
     virtual bool initialize ( void );
+
+    virtual void draw ( void );
+    virtual int handle ( int m );
 
     virtual int can_support_inputs ( int );
     virtual bool configure_inputs ( int n );

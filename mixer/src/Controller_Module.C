@@ -367,7 +367,7 @@ Controller_Module::connect_to ( Port *p )
         o->minimum(1.5);
         o->maximum(0);
         o->value(1);
-        o->textsize(6);
+        o->textsize(9);
 
         if ( p->hints.ranged )
         {

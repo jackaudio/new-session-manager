@@ -726,6 +726,7 @@ Mixer_Strip::handle ( int m )
         }
         case FL_PUSH:
             _button = Fl::event_button();
+            break;
         case FL_RELEASE:
         {
             int b = _button;

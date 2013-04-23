@@ -778,7 +778,9 @@ Module::handle_chain_name_changed ( )
 int
 Module::handle ( int m )
 {
-    static int _button = 0;
+    static unsigned long _event_state = 0;
+
+    unsigned long evstate = Fl::event_state();
 
     if ( Fl_Group::handle( m ) )
         return 1;
@@ -797,33 +799,36 @@ Module::handle ( int m )
         }
         case FL_PUSH:     
             take_focus();
-            _button = Fl::event_button();
+            _event_state = evstate;
             return 1;
             // if ( Fl::visible_focus() && handle( FL_FOCUS )) Fl::focus(this);
         case FL_DRAG:
-            _button = Fl::event_button();
+            _event_state = evstate;
             return 1;
         case FL_RELEASE:
         {
-            int b = _button;
-            _button = 0;
-            DMESSAGE( "Button %i", b);
-            if ( 3 == b )
-            {
-                menu_popup( &menu() );
+            unsigned long e = _event_state;
+            _event_state = 0;
+
+            if ( ! Fl::event_inside( this ) )
                 return 1;
-            }
-            else if ( 1 == b )
+
+            if ( e & FL_BUTTON1 )
             {
                 command_open_parameter_editor();
                 return 1;
             }
-            else if ( 3 == b && Fl::event_ctrl() )
+            else if ( e & FL_BUTTON3 && e & FL_CTRL )
             {
                 command_remove();
                 return 1;
             }
-            else if ( 2 == b )
+            else if ( e & FL_BUTTON3 )
+            {
+                menu_popup( &menu() );
+                return 1;
+            }
+            else if ( e & FL_BUTTON2 )
             {
                 if ( !bypassable() )
                 {

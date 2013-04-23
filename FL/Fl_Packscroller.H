@@ -155,13 +155,9 @@ public:
     virtual int
     handle ( int m )
         {
-            static int _button;
-
             switch ( m )
             {
                 case FL_PUSH:
-                    _button = Fl::event_button();
-
                     if ( top_sb_visible() &&
                          Fl::event_inside( x(), y(), w(), sbh ) )
                     {
@@ -175,22 +171,17 @@ public:
                     break;
                 case FL_RELEASE:
                 {
-                    int b = _button;
-                    _button = 0;
-                    if ( b == 1 )
+                    if ( top_sb_visible() &&
+                         Fl::event_inside( x(), y(), w(), sbh ) )
                     {
-                        if ( top_sb_visible() &&
-                             Fl::event_inside( x(), y(), w(), sbh ) )
-                        {
-                            yposition( yposition() + ( h() / 4 ) );
-                            return 1;
-                        }
-                        else if ( bottom_sb_visible() &&
-                                  Fl::event_inside(  x(), y() + h() - sbh, w(), sbh ) )
-                        {
-                            yposition( yposition() - (h() / 4 ) );
-                            return 1;
-                        }
+                        yposition( yposition() + ( h() / 4 ) );
+                        return 1;
+                    }
+                    else if ( bottom_sb_visible() &&
+                              Fl::event_inside(  x(), y() + h() - sbh, w(), sbh ) )
+                    {
+                        yposition( yposition() - (h() / 4 ) );
+                        return 1;
                     }
                     break;
                 }

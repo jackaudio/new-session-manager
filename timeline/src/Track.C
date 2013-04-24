@@ -1109,9 +1109,9 @@ Track::handle ( int m )
         case FL_MOVE:
             if ( Fl::event_x() >= Track::width() )
             {
-                return sequence()->handle(m);
+                return Fl_Group::handle(m);
             }
-            return 0;
+            return 1;
         case FL_DND_ENTER:
             return 1;
         case FL_DND_LEAVE:

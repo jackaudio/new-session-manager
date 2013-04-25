@@ -8,7 +8,7 @@ class NSM_Proxy_UI {open
   } {
     Fl_Window {} {
       label {NSM Proxy} open
-      xywh {1011 106 490 665} type Double color 47 labelcolor 55 visible
+      xywh {1011 106 490 665} type Double color 47 labelcolor 55 visible xclass NSM-Proxy
     } {
       Fl_Box {} {
         label {Command-line options are incompatible with robust session management for a variety of reasons, so the NSM server does not support them directly. This proxy exists to allow programs which require command-line options to be included in an NSM session. Be warned that referring to files outside of the session directory will impair your ability to reliably archive and transport sessions. Patching the program to use NSM natively will result in a better experience.

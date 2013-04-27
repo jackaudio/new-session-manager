@@ -183,6 +183,7 @@ Meter_Indicator_Module::update_cb ( void )
             for ( int i = 0; i < dpm_pack->children(); ++i )
             {
                 ((DPM*)dpm_pack->child( i ))->value( control_value[i] );
+                control_value[i] = -70.0f;
             }
         }
     }
@@ -275,7 +276,9 @@ Meter_Indicator_Module::process ( nframes_t )
 
         for ( int i = 0; i < p->hints.dimensions; ++i )
 	  {
-            control_value[i] = ((float*)control_input[0].buffer())[i];
+              float dB = ((float*)control_input[0].buffer())[i];
+              if ( dB > control_value[i])
+                  control_value[i] = dB;
 	  }
     }
 }

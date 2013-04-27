@@ -89,7 +89,10 @@ Meter_Module::update_cb ( void )
     Fl::repeat_timeout( METER_UPDATE_FREQ, update_cb, this );
 
     for ( int i = dpm_pack->children(); i--; )
+    {
         ((DPM*)dpm_pack->child( i ))->value( control_value[i] );
+        control_value[i] = -70.0f;
+    }
 }
 
 bool
@@ -212,7 +215,8 @@ Meter_Module::process ( nframes_t nframes )
             float dB = 20 * log10( get_peak_sample( (float*)audio_input[i].buffer(), nframes ) );
 
             ((float*)control_output[0].buffer())[i] = dB;
-            control_value[i] = dB;
+            if (dB > control_value[i])
+                control_value[i] = dB;
         }
     }
 }

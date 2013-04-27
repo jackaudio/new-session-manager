@@ -86,7 +86,8 @@ JACK_Module::JACK_Module ( bool log )
 
             add_port( p );
         }
-        color( FL_BLACK );
+
+        color( FL_DARK1 );
 
         log_create();
     }

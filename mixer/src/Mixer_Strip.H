@@ -109,6 +109,8 @@ private:
     Controller_Module *spatialization_controller;
     Meter_Indicator_Module *meter_indicator;
 
+    Fl_Box *color_box;
+
     nframes_t nframes;
 
     Fl_Color _color;

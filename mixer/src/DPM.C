@@ -136,7 +136,7 @@ DPM::draw ( void )
     {
         draw_label();
 
-        draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_BLACK );
+        draw_box( FL_FLAT_BOX, x(), y(), w(), h(), FL_DARK1 );
     }
 
     fl_push_clip( X, Y, W, H );
@@ -197,7 +197,7 @@ DPM::draw ( void )
         
         if ( _pixels_per_segment > 3 )
         {
-            fl_color( FL_BLACK );
+            fl_color( FL_DARK1 );
 
             if ( type() == FL_HORIZONTAL )
             {

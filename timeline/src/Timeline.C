@@ -165,7 +165,7 @@ protected:
                 if ( !s )
                     continue;
                 
-                fl_color( FL_BLACK );
+                fl_color( FL_DARK1 );
                 
                 const double scale = (double)H / ( pack_visible_height( timeline->tracks ) );
                 

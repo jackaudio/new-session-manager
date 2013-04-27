@@ -171,8 +171,8 @@ void
 Mixer_Strip::color ( Fl_Color c )
 {
     _color = c;
-    name_field->color( _color );
-    name_field->redraw();
+    color_box->color( _color );
+    color_box->redraw();
 }
 
 Fl_Color
@@ -384,20 +384,25 @@ Mixer_Strip::init ( )
      { Fl_Scalepack *o = new Fl_Scalepack( 2, 2, 116, 595 );
          o->type( FL_VERTICAL );
          o->spacing( 2 );
+         
+         { Fl_Box *o = color_box = new Fl_Box( 0,0, 25, 10 );
+             o->box(FL_FLAT_BOX);
+         }
 
         { Fl_Pack *o = new Fl_Pack( 2, 2, 114, 100 );
             o->type( Fl_Pack::VERTICAL );
             o->spacing( 2 );
             {
-                Fl_Sometimes_Input *o = new Fl_Sometimes_Input( 2, 2, 144, 24 );
+                Fl_Sometimes_Input *o = new Fl_Sometimes_Input( 2, 2, 144, 15 );
                 name_field = o;
 
-                o->color( color() );
-                o->up_box( FL_DOWN_BOX );
-                o->box( FL_DOWN_BOX );
+                o->up_box( FL_NO_BOX );
+                o->box( FL_FLAT_BOX );
+                o->selection_color( FL_BLACK );
                 o->labeltype( FL_NO_LABEL );
                 o->labelcolor( FL_GRAY0 );
                 o->textcolor( FL_FOREGROUND_COLOR );
+                o->textsize( 12 );
                 o->value( name() );
                 o->callback( cb_handle, (void*)this );
             }

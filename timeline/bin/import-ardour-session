@@ -54,9 +54,9 @@ print "Gathering session info"
 if root.tag != "Session":
         print "Not an Ardour session?"
         sys.exit(1)
-if root.attrib["version"][0] != "2":
-        print "Only known to work with version 2 projects..."
-        sys.exit(1)
+
+print "Ardour session file version is " + root.attrib["version"]
+print "This program is known to work with versions <= 2.0.0"
 
 ProjectName = root.attrib["name"]
 
@@ -64,15 +64,27 @@ print "Converting Ardour session \"" + ProjectName + "\" to Non Timeline format.
 
 Info = open( NonTimelineProjectPath + "/info", 'w' )
 
-Info.write( "created by\n\tNon-Timeline 1.2.0\ncreated on\n\t" + date.today().ctime() + "\nversion\n\t2\nsample rate\n\t" + root.attrib["sample-rate"] + "\n" )
+try:
+        SampleRate = root.attrib["sample-rate"]
+except:
+        print "Couldn't find sample rate... Using default."
+        SampleRate = "48000"
+
+Info.write( "created by\n\tNon-Timeline 1.2.0\ncreated on\n\t" + date.today().ctime() + "\nversion\n\t2\nsample rate\n\t" + SampleRate + "\n" )
 
 print "Gathering sources."
 for node in root.findall( "./Sources/Source" ):
 	Sources[node.attrib["id"]] = node;
 #	print "\tFound source " + node.attrib["name"]
 
-print "Gathering diskstreams."
+print "Gathering version 2 diskstreams."
 for node in root.findall( "./DiskStreams/AudioDiskstream" ):
+	DiskStreams[node.attrib["id"]] = node;
+#	print "\tFound diskstream " + node.attrib["name"];
+
+
+print "Gathering version 1 diskstreams."
+for node in root.findall( "./DiskStreams/DiskStream" ):
 	DiskStreams[node.attrib["id"]] = node;
 #	print "\tFound diskstream " + node.attrib["name"];
 
@@ -126,8 +138,13 @@ for node in root.findall( "./Playlists/Playlist" ):
                                 if not os.path.exists( NonTimelineProjectPath + "/sources/" + SourceName ):
                                         print "\t\tCopying source: " + SourceName;
                                         
-                                        shutil.copy( os.path.dirname(ArdourFilePath) + "/interchange/" + ProjectName + "/audiofiles/" + SourceName,
+                                        try:
+                                                shutil.copy( os.path.dirname(ArdourFilePath) + "/interchange/" + ProjectName + "/audiofiles/" + SourceName,
                                                      NonTimelineProjectPath + "/sources/" )
+                                        except:
+                                                shutil.copy( os.path.dirname(ArdourFilePath) + "/sounds/" + SourceName,
+                                                     NonTimelineProjectPath + "/sources/" )
+
 
                                 History.write ("Audio_Region " + RegionID + 
                                        " create :source \"" + Sources[n2.attrib["source-" + ( "%i" % chan )]].attrib["name"] +

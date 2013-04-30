@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2013 Jonathan Moore Liles                                     #
+#                                                                             #
+# This program is free software; you can redistribute it and/or modify it     #
+# under the terms of the GNU General Public License as published by the       #
+# Free Software Foundation; either version 2 of the License, or (at your      #
+# option) any later version.                                                  #
+#                                                                             #
+# This program is distributed in the hope that it will be useful, but WITHOUT #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       #
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for   #
+# more details.                                                               #
+#                                                                             #
+# You should have received a copy of the GNU General Public License along     #
+# with This program; see the file COPYING.  If not,write to the Free Software #
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  #
+
+import xml.etree.ElementTree as et
+import random
+import sys
+import os
+from datetime import date
+import shutil
+
+if len(sys.argv) != 3:
+        print "Usage: import-ardour-session [PATH_TO_ARDOUR_FILE] [NAME_OF_NON_TIMELINE_PROJECT]"
+        sys.exit( 1 )
+
+ArdourFilePath = sys.argv[1];
+NonTimelineProjectPath = sys.argv[2];
+
+try:
+        os.makedirs( NonTimelineProjectPath );
+        os.makedirs( NonTimelineProjectPath + "/sources");
+except:
+        print "Output path already exists"
+        sys.exit( 1 )
+
+History = open( NonTimelineProjectPath + "/history", 'w' );
+
+try:
+        tree = et.parse( ArdourFilePath );
+except:
+        print "Invalid XML input"
+        sys.exit( 1 )
+
+root = tree.getroot();
+
+Sources = {}
+DiskStreams = {}
+
+print "Gathering session info"
+if root.tag != "Session":
+        print "Not an Ardour session?"
+        sys.exit(1)
+if root.attrib["version"][0] != "2":
+        print "Only known to work with version 2 projects..."
+        sys.exit(1)
+
+ProjectName = root.attrib["name"]
+
+print "Converting Ardour session \"" + ProjectName + "\" to Non Timeline format. Please be patient."
+
+Info = open( NonTimelineProjectPath + "/info", 'w' )
+
+Info.write( "created by\n\tNon-Timeline 1.2.0\ncreated on\n\t" + date.today().ctime() + "\nversion\n\t2\nsample rate\n\t" + root.attrib["sample-rate"] + "\n" )
+
+print "Gathering sources."
+for node in root.findall( "./Sources/Source" ):
+	Sources[node.attrib["id"]] = node;
+#	print "\tFound source " + node.attrib["name"]
+
+print "Gathering diskstreams."
+for node in root.findall( "./DiskStreams/AudioDiskstream" ):
+	DiskStreams[node.attrib["id"]] = node;
+#	print "\tFound diskstream " + node.attrib["name"];
+
+LoggableID = 1;
+
+def NewID():
+        global LoggableID
+        ID="0x%x" % LoggableID
+        LoggableID = LoggableID + 1
+        return ID
+
+
+print "Processing tempo."
+
+for node in root.findall("./TempoMap/Tempo"):
+        TempoID = NewID()
+        History.write( "Tempo_Point " + TempoID + " create :start 0 :tempo " + node.attrib["beats-per-minute"] + "\n")
+
+for node in root.findall("./TempoMap/Meter"):
+        TimeID = NewID()
+        History.write( "Time_Point " + TimeID + " create :start 0 :beats_per_bar " + node.attrib["beats-per-bar"] + " :beat_type " + node.attrib["note-type"] + "\n")
+ 
+
+print "Processing playlists."
+for node in root.findall( "./Playlists/Playlist" ):
+        
+        try:
+                Track = DiskStreams[node.attrib["orig_diskstream_id"]]
+        except:
+                print "\tSkipping playlist " + node.attrib["name"] + " for unknown diskstream"
+                continue
+
+        
+        if node.attrib["name"] == Track.attrib["playlist"]:
+                print "\tFound playlist " + node.attrib["name"]
+                for chan in range(0, int( Track.attrib["channels"] )):
+                        TrackID = NewID()
+                        SequenceID = NewID()
+                        if int(Track.attrib["channels"]) > 1:
+                                TrackName = Track.attrib["name"] + "-" + ( "%i" % chan )
+                        else:
+                                TrackName = Track.attrib["name"]
+
+                        History.write( "Track " + TrackID + " create :name \"" + TrackName + "\"" + ( " :sequence " + SequenceID ) + " :color " + ( "%i" % random.randint(256,123123123)) + " :inputs 1 :outputs 1\n" )
+                        History.write( "Audio_Sequence " + SequenceID + " create :track " + TrackID + " :name \"" + node.attrib["name"] + "\"\n" )
+                        for n2 in node.findall("./Region"):
+                                RegionID = NewID();
+                                
+                                SourceName = Sources[n2.attrib["source-" + ( "%i" % chan )]].attrib["name"];
+
+                                if not os.path.exists( NonTimelineProjectPath + "/sources/" + SourceName ):
+                                        print "\t\tCopying source: " + SourceName;
+                                        
+                                        shutil.copy( os.path.dirname(ArdourFilePath) + "/interchange/" + ProjectName + "/audiofiles/" + SourceName,
+                                                     NonTimelineProjectPath + "/sources/" )
+
+                                History.write ("Audio_Region " + RegionID + 
+                                       " create :source \"" + Sources[n2.attrib["source-" + ( "%i" % chan )]].attrib["name"] +
+                                       "\" :start " + n2.attrib["position"] + 
+                                       " :length " + n2.attrib["length"] +
+                                       " :offset " + n2.attrib["start"] +
+                                       " :sequence " + SequenceID + "\n")
+        else:
+                        print "\tSkipping inactive playlist"
+                        
+	
+print "Done. You've been freed. Go make music!"
+

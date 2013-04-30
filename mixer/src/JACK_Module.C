@@ -95,57 +95,68 @@ JACK_Module::JACK_Module ( bool log )
 
     { Fl_Scalepack *o = new Fl_Scalepack( x() +  Fl::box_dx(box()),
                                           y() + Fl::box_dy(box()),
-                                          w(),
-                                          24 - Fl::box_dh(box()) );
-        o->type( Fl_Pack::HORIZONTAL );
+                                          w() - Fl::box_dw(box()),
+                                          h() - Fl::box_dh(box()) );
+        o->type( Fl_Pack::VERTICAL );
+        o->spacing(0);
+
+
+        { Fl_Scalepack *o = new Fl_Scalepack( x() +  Fl::box_dx(box()),
+                                              y() + Fl::box_dy(box()),
+                                              w(),
+                                              24 - Fl::box_dh(box()) );
+            o->type( Fl_Pack::HORIZONTAL );
     
-        o->spacing( 0 );
+            o->spacing( 0 );
 
 
-        { Fl_Box *o = input_connection_handle = new Fl_Box( x(), y(), 18, 18 );
-        o->tooltip( "Drag and drop to make and break JACK connections.");
-        o->hide();
-        o->image( input_connector_image ? input_connector_image : input_connector_image = new Fl_PNG_Image( "input_connector", img_io_input_connector_10x10_png, img_io_input_connector_10x10_png_len ) );
+            { Fl_Box *o = input_connection_handle = new Fl_Box( x(), y(), 18, 18 );
+                o->tooltip( "Drag and drop to make and break JACK connections.");
+                o->hide();
+                o->image( input_connector_image ? input_connector_image : input_connector_image = new Fl_PNG_Image( "input_connector", img_io_input_connector_10x10_png, img_io_input_connector_10x10_png_len ) );
      
-        }        
+            }        
 
-        { Fl_Box *o = new Fl_Box( x() + 10, y(), w() - 20, h() );
+            { Fl_Box *o = new Fl_Box( x() + 10, y(), w() - 20, h() );
+                Fl_Group::current()->resizable(o);
+            }
+
+
+            { Fl_Button *o = dec_button = new Fl_Button( 0, 0, 12, h(), "-" );
+                o->callback( cb_button, this );
+                o->labelsize(10);
+                o->labelfont( FL_HELVETICA_BOLD );
+                o->hide();
+            }        
+            { Fl_Button *o = inc_button = new Fl_Button( 0,0, 12, h(), "+" );
+                o->labelsize(10);
+                o->labelfont( FL_HELVETICA_BOLD );
+                o->callback( cb_button, this );
+                o->hide();
+            }
+
+            { Fl_Box *o = output_connection_handle = new Fl_Box( x(), y(), 18, 18 );
+                o->tooltip( "Drag and drop to make and break JACK connections.");
+                o->image( output_connector_image ? output_connector_image : output_connector_image = new Fl_PNG_Image( "output_connector", img_io_output_connector_10x10_png, img_io_output_connector_10x10_png_len ) );
+                o->hide();
+            }
+
+            o->end();
+        }
+
+        {
+            Fl_Browser *o = connection_display = new Fl_Browser( 0, 0, w(), h() );
+            o->textsize( 11 );
+            o->textcolor( FL_LIGHT3 );
+            o->textfont( FL_COURIER );
+            o->box( FL_FLAT_BOX );
+                  o->color( fl_color_add_alpha( fl_rgb_color( 10, 10, 10 ), 25 ));
+            
             Fl_Group::current()->resizable(o);
         }
-
-
-        { Fl_Button *o = dec_button = new Fl_Button( 0, 0, 12, h(), "-" );
-            o->callback( cb_button, this );
-            o->labelsize(10);
-            o->labelfont( FL_HELVETICA_BOLD );
-            o->hide();
-        }        
-        { Fl_Button *o = inc_button = new Fl_Button( 0,0, 12, h(), "+" );
-            o->labelsize(10);
-            o->labelfont( FL_HELVETICA_BOLD );
-            o->callback( cb_button, this );
-            o->hide();
-        }
-
-        { Fl_Box *o = output_connection_handle = new Fl_Box( x(), y(), 18, 18 );
-            o->tooltip( "Drag and drop to make and break JACK connections.");
-            o->image( output_connector_image ? output_connector_image : output_connector_image = new Fl_PNG_Image( "output_connector", img_io_output_connector_10x10_png, img_io_output_connector_10x10_png_len ) );
-            o->hide();
-        }
-
         o->end();
         resizable(o);
     }
-
-    {
-        Fl_Browser *o = connection_display = new Fl_Browser( x() + Fl::box_dx(box()), y() + 25, w() - Fl::box_dw(box()), 300 );
-        o->textsize( 11 );
-        o->textcolor( FL_LIGHT3 );
-        o->textfont( FL_COURIER );
-        o->box( FL_FLAT_BOX );
-        o->color( fl_color_add_alpha( fl_rgb_color( 10, 10, 10 ), 25 ));
-    }
-
     end();    
 }
 
@@ -277,7 +288,11 @@ JACK_Module::update_connection_status ( void )
         n++;
     }
   
-    h( 25 + ( n * 13 ) );
+    /* limit number of lines displayed */
+    if ( n > 15 ) 
+        n = 15;
+
+    size( w(), 26 + ( n * ( connection_display->incr_height() ) ) );
 
     parent()->parent()->redraw();
 }

@@ -28,6 +28,15 @@ decl {const float STATUS_UPDATE_FREQ = 0.5f;} {private local
 decl {class Fl_Flowpack;} {public global
 } 
 
+decl {\#include <unistd.h>} {private local
+} 
+
+decl {\#include <sys/types.h>} {private local
+} 
+
+decl {\#include <sys/wait.h>} {private local
+} 
+
 decl {\#include <FL/Fl_Overlay_Window.H>} {private local
 } 
 
@@ -100,7 +109,7 @@ decl {extern nsm_client_t *nsm;} {private global
 decl {extern char *user_config_dir;} {private global
 } 
 
-decl {extern char *APP_NAME;} {selected private global
+decl {extern char *APP_NAME;} {private global
 } 
 
 class TLE_Window {open : {public Fl_Overlay_Window}
@@ -252,7 +261,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label {Non Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	timeline->command_quit();} open
-      xywh {520 266 1025 770} type Double resizable
+      xywh {200 266 1025 770} type Double resizable
       code0 {o->xclass( APP_NAME );}
       class TLE_Window size_range {900 300 0 0} visible
     } {
@@ -376,8 +385,43 @@ Project::compact();}
               xywh {25 25 40 25}
             }
             Submenu {} {
+              label {I&mport} open
+              xywh {20 20 74 25}
+            } {
+              MenuItem {} {
+                label {Import Ardour Session}
+                callback {if ( timeline->ntracks() )
+{
+	fl_alert( "You can only import into an empty session!" );
+	return;
+}
+
+pid_t pid;
+if ( ! (pid = fork()) )
+{
+	exit( system( "import-ardour-session_gui" ) );
+}
+
+char *path = strdup( Project::path() );
+
+Project::close();
+
+int status;
+
+while ( 0 == waitpid( pid, &status, WNOHANG ) )
+{
+	Fl::wait(0.2);
+}
+
+Project::open(path);
+
+free(path);}
+                xywh {20 20 40 25}
+              }
+            }
+            Submenu {} {
               label {&Export} open
-              xywh {5 5 74 25} deactivate
+              xywh {5 5 74 25} hide deactivate
             } {
               MenuItem {} {
                 label Project
@@ -779,7 +823,7 @@ ab.run();}
         }
       }
       Fl_Box {} {
-        label {<Timeline>}
+        label {<Timeline>} selected
         xywh {0 75 1025 692} box FLAT_BOX color 47 labeltype NO_LABEL labelsize 100 resizable
         code0 {timeline = o;}
         class Timeline
@@ -1004,8 +1048,7 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {1189 128 520 775} type Double
-      modal visible
+      private xywh {1193 174 520 775} type Double hide modal
     } {
       Fl_Value_Output {} {
         label {Sample Rate}

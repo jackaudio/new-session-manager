@@ -23,21 +23,30 @@ import os
 from datetime import date
 import shutil
 
-if len(sys.argv) != 3:
+if len(sys.argv) == 1:
         print "Usage: import-ardour-session [PATH_TO_ARDOUR_FILE] [NAME_OF_NON_TIMELINE_PROJECT]"
         sys.exit( 1 )
 
-ArdourFilePath = sys.argv[1];
-NonTimelineProjectPath = sys.argv[2];
+Overwrite=False
+
+i = 1;
+
+if ( sys.argv[i] == "--overwrite" ):
+        Overwrite = True
+        i = i + 1
+
+ArdourFilePath = sys.argv[i]
+i = i + 1
+NonTimelineProjectPath = sys.argv[i]
+i = i + 1 
 
 try:
         os.makedirs( NonTimelineProjectPath );
         os.makedirs( NonTimelineProjectPath + "/sources");
 except:
-        print "Output path already exists"
-        sys.exit( 1 )
-
-History = open( NonTimelineProjectPath + "/history", 'w' );
+        if not Overwrite:
+                print "Output path already exists!"
+                sys.exit( 1 )
 
 try:
         tree = et.parse( ArdourFilePath );
@@ -62,15 +71,6 @@ ProjectName = root.attrib["name"]
 
 print "Converting Ardour session \"" + ProjectName + "\" to Non Timeline format. Please be patient."
 
-Info = open( NonTimelineProjectPath + "/info", 'w' )
-
-try:
-        SampleRate = root.attrib["sample-rate"]
-except:
-        print "Couldn't find sample rate... Using default."
-        SampleRate = "48000"
-
-Info.write( "created by\n\tNon-Timeline 1.2.0\ncreated on\n\t" + date.today().ctime() + "\nversion\n\t2\nsample rate\n\t" + SampleRate + "\n" )
 
 print "Gathering sources."
 for node in root.findall( "./Sources/Source" ):
@@ -102,11 +102,13 @@ def NewID():
         return ID
 
 
+History = "{\n"
+
 print "Processing tempo."
 
 for node in root.findall("./TempoMap/Tempo"):
         TempoID = NewID()
-        History.write( "Tempo_Point " + TempoID + " create :start 0 :tempo " + node.attrib["beats-per-minute"] + "\n")
+        History += ( "\tTempo_Point " + TempoID + " create :start 0 :tempo " + node.attrib["beats-per-minute"] + "\n")
 
 for node in root.findall("./TempoMap/Meter"):
         TimeID = NewID()
@@ -115,7 +117,7 @@ for node in root.findall("./TempoMap/Meter"):
         except:
                 BPB = node.attrib["divisions-per-bar"]
 
-        History.write( "Time_Point " + TimeID + " create :start 0 :beats_per_bar " + BPB + " :beat_type " + node.attrib["note-type"] + "\n")
+        History += ( "\tTime_Point " + TimeID + " create :start 0 :beats_per_bar " + BPB + " :beat_type " + node.attrib["note-type"] + "\n")
  
 
 print "Processing playlists."
@@ -143,8 +145,8 @@ for node in root.findall( "./Playlists/Playlist" ):
                 TrackName = Track.attrib["name"]
                 Channels = int(Track.attrib["channels"])
 
-                History.write( "Track " + TrackID + " create :name \"" + TrackName + "\"" + ( " :sequence " + SequenceID ) + " :color " + ( "%i" % random.randint(256,123123123)) + ( " :inputs %i :outputs %i\n" % ( Channels, Channels ) ) )
-                History.write( "Audio_Sequence " + SequenceID + " create :track " + TrackID + " :name \"" + node.attrib["name"] + "\"\n" )
+                History += ( "\tTrack " + TrackID + " create :name \"" + TrackName + "\"" + ( " :sequence " + SequenceID ) + " :color " + ( "%i" % random.randint(256,123123123)) + ( " :inputs %i :outputs %i\n" % ( Channels, Channels ) ) )
+                History += ( "\tAudio_Sequence " + SequenceID + " create :track " + TrackID + " :name \"" + node.attrib["name"] + "\"\n" )
                 for n2 in node.findall("./Region"):
                         RegionID = NewID();
                                 
@@ -188,7 +190,7 @@ for node in root.findall( "./Playlists/Playlist" ):
                                                                      NonTimelineProjectPath + "/sources/" )
 
 
-                        History.write ("Audio_Region " + RegionID + 
+                        History +=  ("\tAudio_Region " + RegionID + 
                                        " create :source \"" + SourceName +
                                        "\" :start " + n2.attrib["position"] + 
                                        " :length " + n2.attrib["length"] +
@@ -196,7 +198,22 @@ for node in root.findall( "./Playlists/Playlist" ):
                                        " :sequence " + SequenceID + "\n")
         else:
                         print "\tSkipping inactive playlist"
-                        
+
+History += ("}\n")                        
+
+print "Comitting to disk."
+
+with open( NonTimelineProjectPath + "/info", 'w' ) as InfoFile:
+        try:
+                SampleRate = root.attrib["sample-rate"]
+        except:
+                print "Couldn't find sample rate... Using default."
+                SampleRate = "48000"
+                
+        InfoFile.write( "created by\n\tNon-Timeline 1.2.0\ncreated on\n\t" + date.today().ctime() + "\nversion\n\t2\nsample rate\n\t" + SampleRate + "\n" )
+
+with open( NonTimelineProjectPath + "/history", 'w' ) as HistoryFile:
+        HistoryFile.write( History )
 	
 print "Done. You've been freed. Go make music!"
 

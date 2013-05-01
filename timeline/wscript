@@ -95,12 +95,24 @@ src/main.C
               use = [ 'fl_widgets', 'nonlib'],
               install_path = '${BINDIR}')
 
+    obj = bld(features = 'cxx cxxprogram',
+              source='bin/import-ardour-session_gui.fl',
+              target       = 'import-ardour-session_gui',
+              includes     = ['.', 'src', '..', '../nonlib'],
+              uselib = [ 'NTK', 'NTK_IMAGES', 'PTHREAD'],
+         ##     use = [ 'fl_widgets', 'nonlib'],
+              install_path = '${BINDIR}')
+
+    bld.install_files('${BINDIR}', 'import-ardour-session', chmod=0555,
+                      cwd=bld.path.find_dir('bin'), relative_trick=True)
+
     bld( features = 'subst',
          source = 'non-timeline.desktop.in',
          target = 'non-timeline.desktop',
          encoding = 'utf8',
          install_path = "${DATADIR}" + '/applications',
          BIN_PATH = bld.env.BINDIR )
+
 
     bld.symlink_as( '${BINDIR}/' + 'non-daw', APPNAME )
 

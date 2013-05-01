@@ -133,34 +133,63 @@ for node in root.findall( "./Playlists/Playlist" ):
         
         if node.attrib["name"] == Track.attrib["playlist"]:
                 print "\tFound playlist " + node.attrib["name"]
-                for chan in range(0, int( Track.attrib["channels"] )):
-                        TrackID = NewID()
-                        SequenceID = NewID()
-                        if int(Track.attrib["channels"]) > 1:
-                                TrackName = Track.attrib["name"] + "-" + ( "%i" % chan )
-                        else:
-                                TrackName = Track.attrib["name"]
 
-                        History.write( "Track " + TrackID + " create :name \"" + TrackName + "\"" + ( " :sequence " + SequenceID ) + " :color " + ( "%i" % random.randint(256,123123123)) + " :inputs 1 :outputs 1\n" )
-                        History.write( "Audio_Sequence " + SequenceID + " create :track " + TrackID + " :name \"" + node.attrib["name"] + "\"\n" )
-                        for n2 in node.findall("./Region"):
-                                RegionID = NewID();
+                # for chan in range(0, int( Track.attrib["channels"] )):
+                TrackID = NewID()
+                SequenceID = NewID()
+                # if int(Track.attrib["channels"]) > 1:
+                #         TrackName = Track.attrib["name"] + "-" + ( "%i" % chan )
+                # else:
+                TrackName = Track.attrib["name"]
+                Channels = int(Track.attrib["channels"])
+
+                History.write( "Track " + TrackID + " create :name \"" + TrackName + "\"" + ( " :sequence " + SequenceID ) + " :color " + ( "%i" % random.randint(256,123123123)) + ( " :inputs %i :outputs %i\n" % ( Channels, Channels ) ) )
+                History.write( "Audio_Sequence " + SequenceID + " create :track " + TrackID + " :name \"" + node.attrib["name"] + "\"\n" )
+                for n2 in node.findall("./Region"):
+                        RegionID = NewID();
                                 
-                                SourceName = Sources[n2.attrib["source-" + ( "%i" % chan )]].attrib["name"];
+                        if ( int( Track.attrib["channels"] ) > 1 ):
 
+                                SourceList = []
+                                APath1 = os.path.dirname(ArdourFilePath) + "/sounds/"
+                                APath2 = os.path.dirname(ArdourFilePath) + "/interchange/" + ProjectName + "/audiofiles/"
+
+                                for chan in range(0, int( Track.attrib["channels"] )):
+                                        SourceName = Sources[n2.attrib["source-" + ( "%i" % chan )]].attrib["name"]
+
+                                        if os.path.exists( APath1 + SourceName):
+                                                SourceName = APath1 + SourceName
+                                        elif os.path.exists( APath2 + SourceName ):
+                                                SourceName = APath2 + SourceName
+                                        else:
+                                                print "source not found!"
+                                                
+                                        SourceList.append( "'" + SourceName + "'" );
+                                                        
+                                        s1,s2,s3 = Sources[n2.attrib["source-0"]].attrib["name"].partition( '%' )
+                                        
+                                        SourceName = s1 + ".wav"
+                                        OutputName = NonTimelineProjectPath + "/sources/" + SourceName
+     
+                                if not os.path.exists( OutputName ):
+                                        print "Combining multifile source into multichannel source"
+                                        os.system( "sox -S -M " + " ".join(SourceList) + " " + "'" + OutputName + "'" )
+                                        
+                        else:
+                                SourceName = Sources[n2.attrib["source-0"]].attrib["name"];
                                 if not os.path.exists( NonTimelineProjectPath + "/sources/" + SourceName ):
                                         print "\t\tCopying source: " + SourceName;
-                                        
+                                                
                                         try:
                                                 shutil.copy( os.path.dirname(ArdourFilePath) + "/interchange/" + ProjectName + "/audiofiles/" + SourceName,
-                                                     NonTimelineProjectPath + "/sources/" )
+                                                                     NonTimelineProjectPath + "/sources/" )
                                         except:
                                                 shutil.copy( os.path.dirname(ArdourFilePath) + "/sounds/" + SourceName,
-                                                     NonTimelineProjectPath + "/sources/" )
+                                                                     NonTimelineProjectPath + "/sources/" )
 
 
-                                History.write ("Audio_Region " + RegionID + 
-                                       " create :source \"" + Sources[n2.attrib["source-" + ( "%i" % chan )]].attrib["name"] +
+                        History.write ("Audio_Region " + RegionID + 
+                                       " create :source \"" + SourceName +
                                        "\" :start " + n2.attrib["position"] + 
                                        " :length " + n2.attrib["length"] +
                                        " :offset " + n2.attrib["start"] +

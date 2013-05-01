@@ -261,7 +261,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label {Non Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	timeline->command_quit();} open
-      xywh {200 266 1025 770} type Double resizable
+      xywh {202 266 1025 770} type Double resizable
       code0 {o->xclass( APP_NAME );}
       class TLE_Window size_range {900 300 0 0} visible
     } {
@@ -390,11 +390,18 @@ Project::compact();}
             } {
               MenuItem {} {
                 label {Import Ardour Session}
-                callback {if ( timeline->ntracks() )
+                callback {if ( !Project::open() )
+{
+	fl_alert( "You must create a new project before importing" );
+	return;
+}
+
+if ( timeline->ntracks() )
 {
 	fl_alert( "You can only import into an empty session!" );
 	return;
 }
+
 
 pid_t pid;
 if ( ! (pid = fork()) )
@@ -415,7 +422,7 @@ while ( 0 == waitpid( pid, &status, WNOHANG ) )
 
 Project::open(path);
 
-free(path);}
+free(path);} selected
                 xywh {20 20 40 25}
               }
             }
@@ -823,7 +830,7 @@ ab.run();}
         }
       }
       Fl_Box {} {
-        label {<Timeline>} selected
+        label {<Timeline>}
         xywh {0 75 1025 692} box FLAT_BOX color 47 labeltype NO_LABEL labelsize 100 resizable
         code0 {timeline = o;}
         class Timeline

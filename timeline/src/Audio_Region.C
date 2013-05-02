@@ -539,11 +539,11 @@ Audio_Region::draw ( void )
     nframes_t total_frames_needed = timeline->x_to_ts( total_peaks_needed );
 
     {
-        Fl_Color c = fl_color_average( FL_DARK1,
-                                       Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color,
-                                       0.75f );
+        /* Fl_Color c = fl_color_average( FL_DARK1, */
+        /*                                Audio_Region::inherit_track_color ? sequence()->track()->color() :  _box_color, */
+        /*                                0.75f ); */
     
-        fl_color( fl_color_add_alpha( c, 127 ) );
+        fl_color( fl_color_add_alpha( FL_DARK1, 127 ) );
 
         draw_fade( _fade_in, Fade::In, false, X, W );
         draw_fade( _fade_out, Fade::Out, false, X, W );

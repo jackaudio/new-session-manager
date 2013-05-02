@@ -65,6 +65,10 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
         _new_take_button->type(1);
         _new_take_button->labelsize(10);
     } // Fl_Button* _new_take_button
+    { _freewheel_button = new Fl_Button(225, 5, 60, 21, "Freewheel");
+        _freewheel_button->type(1);
+        _freewheel_button->labelsize(10);
+    } // Fl_Button* _new_take_button
     end();
 
     Fl_Button *o;
@@ -111,6 +115,14 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
     o->when( FL_WHEN_CHANGED );
     o->color2( fl_color_average( FL_GRAY, FL_YELLOW, 0.50 ) );
     o->tooltip( "Toggle automatic creation of new takes for armed tracks" );
+
+    o = _freewheel_button;
+    o->type( FL_TOGGLE_BUTTON );
+    o->shortcut( 'T' );
+    o->callback( cb_button, this );
+    o->when( FL_WHEN_CHANGED );
+    o->color2( fl_color_average( FL_GRAY, FL_BLUE, 0.50 ) );
+    o->tooltip( "When active, the next playback will be done in freewheeling mode" );
 
     flowdown( true );
 }
@@ -272,7 +284,12 @@ Transport::start ( void )
     }
 
     if ( engine )
+    {
+        if ( _freewheel_button->value() )
+            engine->freewheeling( true );
+
         engine->transport_start();
+    }
 }
 
 void
@@ -290,7 +307,15 @@ Transport::stop ( void )
     }
 
     if ( engine )
+    {
         engine->transport_stop();
+        
+        if ( _freewheel_button->value() )
+        {
+            engine->freewheeling( false );
+            _freewheel_button->value( false );
+        }
+    }
 }
 
 void

@@ -50,6 +50,7 @@ private:
     Fl_Button *_punch_button;
     Fl_Button *_loop_button;
     Fl_Button *_new_take_button;
+    Fl_Button *_freewheel_button;
 
     void update_record_state ( void );
 

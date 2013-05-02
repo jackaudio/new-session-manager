@@ -429,7 +429,7 @@ Peaks::peakfile_ready ( void ) const
         _rescan_needed = false;
     }
 
-    return current() && ! _first_block_pending;
+    return _first_block_pending || current();
 }
 
 /** start building peaks and/or peak mipmap in another thread. It is
@@ -640,6 +640,7 @@ Peaks::prepare_for_writing ( void )
 
     char *pn = peakname( _clip->filename() );
 
+    _first_block_pending = true;
     _peak_writer = new Peaks::Streamer( pn, _clip->channels(), cache_minimum );
 
     free( pn );
@@ -652,6 +653,8 @@ Peaks::finish_writing ( void )
 
     delete _peak_writer;
     _peak_writer = NULL;
+
+    _first_block_pending = false;
 }
 
 void

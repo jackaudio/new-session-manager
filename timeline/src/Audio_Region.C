@@ -602,20 +602,19 @@ Audio_Region::draw ( void )
 
         if ( start != ostart || end != oend )
         {
-            if ( _clip->peaks()->peakfile_ready() )
-            {
-                if ( _clip->read_peaks( timeline->fpp(),
+            _clip->peaks()->peakfile_ready();
+
+            if ( _clip->read_peaks( timeline->fpp(),
                                                  start,
                                                  end,
                                         &peaks, &pbuf, &channels ) )
-                {
-                    Waveform::scale( pbuf, peaks * channels, _scale );
+            {
+                Waveform::scale( pbuf, peaks * channels, _scale );
                     
-                    ostart = start;
-                    oend = end;
-                }
+                ostart = start;
+                oend = end;
             }
-            
+                        
             if ( _clip->peaks()->needs_more_peaks() && ! transport->rolling )
             {
                     /* maybe create a thread to make the peaks */

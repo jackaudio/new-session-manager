@@ -86,6 +86,7 @@ extern char *instance_name;
 Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
 
 {
+    _deleting = false;
     _engine = NULL;
 
     int X = 0;
@@ -170,6 +171,8 @@ Chain::~Chain ( )
     DMESSAGE( "Destroying chain" );
 
     log_destroy();
+
+    _deleting = true;
 
     engine()->lock();
 
@@ -836,6 +839,9 @@ Chain::port_connect ( jack_port_id_t a, jack_port_id_t b, int connect, void *v )
 void
 Chain::port_connect ( jack_port_id_t a, jack_port_id_t b, int connect )
 {
+    if ( _deleting )
+        return;
+
     /* this is called from JACK non-RT thread... */
    
     if ( jack_port_is_mine( engine()->jack_client(), jack_port_by_id( engine()->jack_client(), a ) ) ||

@@ -49,6 +49,10 @@
 /* for locking */
 #include "file.h"
 
+#include <map>
+#include <string>
+#include <algorithm>
+
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 static OSC::Endpoint *osc_server;
@@ -929,7 +933,6 @@ client_by_name ( const char *name,
     return NULL;
 }
 
-
 bool
 dumb_clients_are_alive ( )
 {
@@ -1221,17 +1224,39 @@ load_session_file ( const char * path )
     }
 
     MESSAGE( "Commanding unneeded and dumb clients to quit" );
+    
+    std::map<std::string,int> client_map;
+
+    /* count how many instances of each client are needed in the new session */
+    for ( std::list<Client*>::iterator i = new_clients.begin();
+          i != new_clients.end();
+          ++i )
+    {
+        if ( client_map.find( (*i)->name) != client_map.end() )
+            client_map[(*i)->name]++;
+        else
+            client_map[(*i)->name] = 1;
+    }
 
     for ( std::list<Client*>::iterator i = client.begin();
           i != client.end();
           ++i )
     {
-        if ( ! (*i)->is_capable_of( ":switch:" )
-             ||
-             ! client_by_name( (*i)->name, &new_clients ) )
+        if ( ! (*i)->is_capable_of( ":switch:" ) )
         {
             command_client_to_quit( *i );
         }
+        else
+        {
+            if ( client_map.find((*i)->name ) != client_map.end() )
+            {
+                /* client is switch capable and may be wanted in the new session */
+                if ( client_map[ (*i)->name ]-- <= 0 )
+                    /* nope,, we already have as many as we need, stop this one */
+                    command_client_to_quit( *i );
+            }
+        }
+        
     }
 
 //    wait_for_replies();

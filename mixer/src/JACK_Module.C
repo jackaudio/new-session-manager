@@ -146,11 +146,13 @@ JACK_Module::JACK_Module ( bool log )
 
         {
             Fl_Browser *o = connection_display = new Fl_Browser( 0, 0, w(), h() );
+            o->has_scrollbar(Fl_Browser_::VERTICAL);
             o->textsize( 11 );
             o->textcolor( FL_LIGHT3 );
             o->textfont( FL_COURIER );
             o->box( FL_FLAT_BOX );
-                  o->color( fl_color_add_alpha( fl_rgb_color( 10, 10, 10 ), 25 ));
+            o->color( FL_DARK1 );
+            // o->color( fl_color_add_alpha( fl_rgb_color( 10, 10, 10 ), 100 ));
             
             Fl_Group::current()->resizable(o);
         }
@@ -292,8 +294,11 @@ JACK_Module::update_connection_status ( void )
     if ( n > 15 ) 
         n = 15;
 
-    size( w(), 26 + ( n * ( connection_display->incr_height() ) ) );
-
+    if ( n > 0 )
+        size( w(), 26 + ( n * ( connection_display->incr_height() ) ) );
+    else
+        size( w(), 24 );
+        
     parent()->parent()->redraw();
 }
 

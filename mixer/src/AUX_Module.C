@@ -47,6 +47,8 @@ AUX_Module::AUX_Module ( ) : JACK_Module ( false )
 
     log_create();
 
+    color( FL_DARK1 );
+
     copy_label( "Aux" );
 }
 
@@ -123,7 +125,7 @@ AUX_Module::draw ( void )
 {
     int W = 5;
 
-    child(0)->size( w() - W, 18 );
+    child(0)->size( w() - W, h() );
     Module::draw_box(x(),y(),w() - W,h());
     Module::draw_label(x(),y(),w() - W,h());
 

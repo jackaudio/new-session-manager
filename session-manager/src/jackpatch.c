@@ -490,6 +490,8 @@ snapshot ( const char *file )
         return;
     }
 
+    clear_all_patches();
+
     for ( port = ports; *port; port++ )
     {
         jack_port_t *p;
@@ -506,7 +508,11 @@ snapshot ( const char *file )
 
         for ( connection = connections; *connection; connection++ )
         {
-            fprintf( fp, "%-40s |> %s\n", *port, *connection );
+            char *s;
+            asprintf( &s, "%-40s |> %s\n", *port, *connection );
+            fprintf( fp, "%s", s );
+            process_patch( s );
+            free(s);
             printf( "++ %s |> %s\n", *port, *connection );
         }
 

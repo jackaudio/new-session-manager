@@ -1242,19 +1242,17 @@ load_session_file ( const char * path )
           i != client.end();
           ++i )
     {
-        if ( ! (*i)->is_capable_of( ":switch:" ) )
+        if ( ! (*i)->is_capable_of( ":switch:" ) || client_map.find((*i)->name ) == client_map.end()  )
         {
+            /* client is not capable of switch, or is not wanted in the new session */
             command_client_to_quit( *i );
         }
         else
         {
-            if ( client_map.find((*i)->name ) != client_map.end() )
-            {
-                /* client is switch capable and may be wanted in the new session */
-                if ( client_map[ (*i)->name ]-- <= 0 )
-                    /* nope,, we already have as many as we need, stop this one */
-                    command_client_to_quit( *i );
-            }
+            /* client is switch capable and may be wanted in the new session */
+            if ( client_map[ (*i)->name ]-- <= 0 )
+                /* nope,, we already have as many as we need, stop this one */
+                command_client_to_quit( *i );
         }
         
     }

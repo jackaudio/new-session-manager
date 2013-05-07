@@ -160,8 +160,8 @@ public:
 
     int y_to_note ( int y ) const;
     int note_to_y ( int n ) const;
-    tick_t x_to_ts ( tick_t x ) const;
-    tick_t ts_to_x ( tick_t ts ) const;
+    tick_t x_to_ts ( unsigned long x ) const;
+    unsigned long ts_to_x ( tick_t ts ) const;
 
     virtual Grid * create ( void ) = 0;
     virtual Grid * clone ( void ) = 0;
@@ -258,14 +258,14 @@ Grid::note_to_y ( int n ) const
 }
 
 inline tick_t
-Grid::x_to_ts ( tick_t x ) const
+Grid::x_to_ts ( unsigned long x ) const
 {
     return (x * PPQN) / _ppqn;
 
 //    return x * (PPQN / _ppqn);
 }
 
-inline tick_t
+inline unsigned long
 Grid::ts_to_x ( tick_t ts ) const
 {
     return (ts * _ppqn) / PPQN;

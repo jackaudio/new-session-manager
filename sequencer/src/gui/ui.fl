@@ -109,7 +109,7 @@ Function {init_colors()} {open private C return_type {static void}
 } 
 
 widget_class Visual_Metronome {open
-  xywh {1172 936 100 100} type Double visible
+  xywh {1242 936 100 100} type Double visible
 } {
   Fl_Slider progress {
     private xywh {139 115 1149 23} type Horizontal box FLAT_BOX color 7 selection_color 54
@@ -362,7 +362,9 @@ Fl::visible_focus( 0 );
 Fl::add_timeout( TRANSPORT_POLL_INTERVAL, update_transport );
 
 
-playlist->signal_new_song.connect( sigc::mem_fun( this, &UI::update_sequence_widgets ) );} {}
+playlist->signal_new_song.connect( sigc::mem_fun( this, &UI::update_sequence_widgets ) );
+pattern_canvas_widget->signal_settings_change.connect( sigc::mem_fun( this, &UI::update_pattern_widgets ) );
+phrase_canvas_widget->signal_settings_change.connect( sigc::mem_fun( this, &UI::update_phrase_widgets ) );} {}
   }
   Function {~UI()} {open
   } {
@@ -412,7 +414,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {706 149 865 805} type Double color 47 resizable
+      xywh {492 227 865 805} type Double color 47 resizable
       code0 {o->color( FL_BACKGROUND_COLOR );}
       code1 {o->draw_overlay_callback( &UI::draw_overlay, this );}
       code2 {o->xclass( APP_NAME );}
@@ -422,32 +424,33 @@ if ( maybe_save_song() )
         xywh {0 25 865 65} box FLAT_BOX
       } {
         Fl_Group {} {open
-          xywh {665 36 195 52}
+          xywh {552 26 312 69}
+          code0 {o->resizable(0);}
         } {
           Fl_Value_Input {} {
             label BPM
             callback {transport.set_beats_per_minute( o->value() );}
-            xywh {825 68 35 19} labelsize 9 align 1 when 8 textsize 10
+            xywh {825 39 35 19} labelsize 9 align 1 when 8 textsize 10
             code1 {transport.signal_tempo_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
             code2 {o->value( transport.beats_per_minute );}
           }
           Fl_Group {} {
             label {Time Sig.} open
-            xywh {756 67 64 21} labelsize 9
+            xywh {756 38 64 21} labelsize 9
           } {
             Fl_Value_Input {} {
               callback {transport.set_beats_per_bar( o->value() );}
-              xywh {756 68 24 19} textsize 10
+              xywh {756 39 24 19} textsize 10
               code0 {transport.signal_bpb_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
               code1 {o->value( transport.beats_per_bar );}
             }
             Fl_Box {} {
               label {/}
-              xywh {780 67 14 21}
+              xywh {780 38 14 21}
             }
             Fl_Value_Input {} {
               callback {transport.set_beat_type( o->value() );}
-              xywh {795 68 24 19} textsize 10
+              xywh {795 39 24 19} textsize 10
               code0 {transport.signal_beat_change.connect( sigc::mem_fun( o, static_cast<int (Fl_Valuator::*)(double)>(&Fl_Valuator::value) ) );}
               code1 {o->value( transport.beat_type );}
             }
@@ -458,7 +461,7 @@ if ( maybe_save_song() )
 	config.record_mode = (record_mode_e)o->value();
 else
 	o->value( config.record_mode );}
-            xywh {755 36 105 19} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1 textsize 9
+            xywh {555 39 105 19} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1 textsize 9
           } {
             MenuItem {} {
               label Merge
@@ -479,7 +482,7 @@ else
           }
           Fl_Choice playback_mode_menu {
             label {Playback &Mode}
-            xywh {665 68 85 19} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
+            xywh {665 39 85 19} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
           } {
             MenuItem {} {
               label Pattern
@@ -502,46 +505,40 @@ else
               xywh {0 0 40 24} labelfont 3 labelsize 10
             }
           }
-          Fl_Choice edit_mode_menu {
-            label {Edit Mode}
-            xywh {665 36 85 19} box DOWN_BOX down_box BORDER_BOX color 37 labelsize 9 align 1
+          Fl_Pack {} {open
+            xywh {555 60 305 30} type HORIZONTAL
+            class Fl_Scalepack
           } {
-            MenuItem {} {
-              label Pattern
-              callback {tabs->value( pattern_tab );
-
-
-edit_menu->activate();
-menu_bar->redraw();}
-              xywh {15 15 40 25} shortcut 0x80031 labelfont 3 labelsize 10
-            }
-            MenuItem {} {
-              label Phrase
-              callback {tabs->value( phrase_tab );
-
-edit_menu->activate();
-menu_bar->redraw();}
-              xywh {25 25 40 25} shortcut 0x80032 labelfont 3 labelsize 11
-            }
-            MenuItem {} {
+            Fl_Button {} {
               label Sequence
               callback {tabs->value( sequence_tab );
 
 
 edit_menu->deactivate();
 menu_bar->redraw();}
-              xywh {25 25 40 25} shortcut 0x80033 labelfont 3 labelsize 10
+              xywh {565 70 68 15} type Radio shortcut 0x80031 selection_color 69
             }
-            MenuItem {} {
-              label Trigger
-              callback {song.play_mode = TRIGGER;}
-              xywh {35 35 40 25} labelfont 3 labelsize 10 hide deactivate
+            Fl_Button {} {
+              label Phrase
+              callback {tabs->value( phrase_tab );
+
+edit_menu->activate();
+menu_bar->redraw();}
+              xywh {575 80 68 5} type Radio shortcut 0x80032 selection_color 69
+            }
+            Fl_Button {} {
+              label Pattern
+              callback {tabs->value( pattern_tab );
+
+edit_menu->activate();
+menu_bar->redraw();}
+              xywh {585 90 68 0} type Radio shortcut 0x80033 value 1 selection_color 69
             }
           }
         }
         Fl_Pack vmetro_widget {
           label Metronome
-          xywh {160 27 500 60} type HORIZONTAL box UP_BOX color 40 selection_color 48 labelsize 33 align 0 resizable
+          xywh {160 27 390 61} type HORIZONTAL box UP_BOX color 40 selection_color 48 labelsize 33 align 0 resizable
           code0 {o->box( FL_FLAT_BOX );}
           class Visual_Metronome
         } {}
@@ -591,19 +588,19 @@ else
       }
       Fl_Tabs tabs {
         callback {((Fl_Group*)o->value())->child( 0 )->take_focus();} open
-        xywh {0 91 865 694} box FLAT_BOX color 47 labeltype SHADOW_LABEL labelsize 19 when 1 resizable
+        xywh {-1 91 868 694} box FLAT_BOX color 47 labeltype SHADOW_LABEL labelsize 19 when 1 resizable
         code0 {canvas_background_color = fl_rgb_color( 18, 18, 18 );}
       } {
         Fl_Group sequence_tab {open
-          xywh {0 91 865 678} box FLAT_BOX color 37 labeltype NO_LABEL hide resizable
+          xywh {0 91 865 692} box FLAT_BOX color 37 labeltype NO_LABEL labelsize 12 hide resizable
           code0 {update_sequence_widgets();}
         } {
           Fl_Group {} {open
-            xywh {10 118 233 502} labelsize 12
+            xywh {5 118 240 502} labelsize 12
           } {
             Fl_Browser playlist_browser {
               label Playlist
-              xywh {10 118 233 435} type Hold box EMBOSSED_BOX color 39 selection_color 30 labelcolor 55 align 1 when 4 textsize 18 textcolor 95 resizable
+              xywh {5 155 240 398} type Hold box EMBOSSED_BOX color 39 selection_color 30 labelsize 12 labelcolor 55 align 1 when 4 textsize 18 textcolor 95 resizable
               code0 {static int widths[] = { 40, 30, 0 };}
               code1 {o->column_widths( widths ); o->column_char( '\\t' );}
               code2 {o->value( 1 );}
@@ -623,7 +620,7 @@ if ( val > 1 )
 	if ( ! playlist_browser->value() )
 		playlist_browser->value( playlist_browser->size() );
 }}
-              xywh {14 559 73 25} shortcut 0xffff color 88 labelcolor 23
+              xywh {6 559 64 25} shortcut 0xffff color 88 labelcolor 23
             }
             Fl_Button sequence_phrase_up_button {
               label Up
@@ -633,7 +630,7 @@ if ( val > 1 )
 	playlist_browser->value( playlist_browser->value() - 1 );
 	update_sequence_widgets();
 }}
-              xywh {97 559 65 25} shortcut 0xffbf
+              xywh {135 559 45 25} shortcut 0xffbf
             }
             Fl_Button sequence_phrase_down_button {
               label Down
@@ -643,7 +640,7 @@ if ( val > 1 )
 	playlist_browser->value( playlist_browser->value() + 1 );
 	update_sequence_widgets();
 }}
-              xywh {169 559 74 25} shortcut 0xffc0
+              xywh {185 559 58 25} shortcut 0xffc0
             }
             Fl_Menu_Button sequence_phrase_choice {
               label {Insert Phrase}
@@ -657,13 +654,13 @@ if ( val )
 	playlist_browser->value( playlist_browser->value() + 1 );
 else
 	playlist_browser->value( playlist_browser->size() );} open
-              xywh {11 590 232 30} color 63
+              xywh {5 590 235 30} color 63
             } {}
           }
           Fl_Input sequence_name_field {
-            label {name:}
+            label Name
             callback {playlist->name( o->value() );}
-            xywh {91 733 158 26} color 36 align 20 when 1 textcolor 32
+            xywh {10 109 235 27} color 48 labelsize 12 align 1 when 1
           }
           Fl_Light_Button detach_button {
             label Detach
@@ -683,17 +680,17 @@ else
 	sequence_tab->resize( pattern_tab->x(), pattern_tab->y(), pattern_tab->w(), pattern_tab->h() );
 	tabs->do_callback();	
 }}
-            xywh {7 733 78 26}
+            xywh {7 749 78 26}
           }
           Fl_Text_Editor sequence_notes_edit {
             label {Notes:}
             callback {playlist->notes( o->buffer()->text() );}
-            xywh {254 684 606 73} selection_color 48 labelsize 12 align 5 textcolor 94
+            xywh {254 732 606 48} selection_color 48 labelsize 12 align 5 textcolor 94
             code0 {o->buffer( sequence_notes_buffer = new Fl_Text_Buffer );}
           }
           Fl_Box triggers_widget {
             label Patterns
-            xywh {253 118 607 549} box FLAT_BOX color 48 align 1 resizable
+            xywh {253 118 607 598} box FLAT_BOX color 48 labelsize 12 align 1 resizable
             code0 {o->color( FL_BACKGROUND_COLOR );}
             code1 {o->rows( 32 );}
             class Triggers
@@ -722,17 +719,17 @@ if ( playlist->length() )
             }
           }
         }
-        Fl_Group phrase_tab {open
-          xywh {0 91 865 678} box FLAT_BOX color 47 labeltype NO_LABEL hide
+        Fl_Group phrase_tab {
+          xywh {0 91 865 693} box FLAT_BOX color 47 labeltype NO_LABEL hide
           code0 {update_phrase_widgets();}
         } {
           Fl_Box phrase_canvas_widget {
             label Phrase
-            xywh {1 91 863 592} box FLAT_BOX color 37 labelsize 100 align 16 resizable
+            xywh {0 91 865 637} box FLAT_BOX color 37 labelsize 100 align 16 resizable
             class Canvas
           }
-          Fl_Group {} {open
-            xywh {5 690 856 77} box FLAT_BOX color 47
+          Fl_Group phrase_settings_group {open
+            xywh {0 728 865 55} box FLAT_BOX color 47
           } {
             Fl_Input phrase_name_field {
               label {name:}
@@ -740,38 +737,38 @@ if ( playlist->length() )
 
 // if the name changed..
 update_sequence_widgets();}
-              xywh {5 697 155 24} box ROUNDED_BOX color 49 labelfont 2 labelcolor 55 align 20 textfont 2
+              xywh {5 734 185 21} box ROUNDED_BOX color 49 labelfont 2 labelsize 12 labelcolor 55 align 20 textfont 2 textsize 12
               code0 {o->up_box( FL_ROUNDED_BOX );}
               class Fl_Sometimes_Input
             }
             Fl_Light_Button phrase_mute_button {
               label Mute
-              xywh {5 733 93 23} color 37 hide
+              xywh {0 751 93 23} color 37 hide
             }
             Fl_Light_Button phrase_solo_button {
               label Solo
-              xywh {111 733 87 23} color 37 hide
+              xywh {106 751 87 23} color 37 hide
             }
             Fl_Text_Editor phrase_notes_edit {
               label {Notes:}
               callback {phrase_canvas_widget->grid()->notes( o->buffer()->text() );}
-              xywh {170 702 685 58} selection_color 48 labelsize 12 textcolor 94 resizable
+              xywh {200 742 660 36} selection_color 48 labelsize 12 textcolor 94 resizable
               code0 {o->buffer( phrase_notes_buffer = new Fl_Text_Buffer );}
             }
             Fl_Value_Slider phrase_number_spinner {
-              label Phrase
+              label {Phrase:}
               callback {phrase *p = ((phrase *)phrase_canvas_widget->grid())->by_number( o->value() );
 
 if ( p )
     phrase_canvas_widget->grid( p );
 
 o->maximum( phrase::phrases() );}
-              xywh {5 737 155 24} type Horizontal labelsize 10 align 1 minimum 1 maximum 128 step 1 value 1 textsize 14
+              xywh {45 760 140 18} type Horizontal labelsize 10 align 4 minimum 1 maximum 128 step 1 value 1 textsize 14
             }
           }
         }
         Fl_Group pattern_tab {open
-          xywh {0 91 865 694} box FLAT_BOX color 47 labeltype NO_LABEL
+          xywh {0 91 867 694} box FLAT_BOX color 47 labeltype NO_LABEL
           code0 {update_pattern_widgets();}
         } {
           Fl_Box pattern_canvas_widget {
@@ -779,64 +776,64 @@ o->maximum( phrase::phrases() );}
             xywh {0 91 865 637} box FLAT_BOX color 37 labelsize 100 align 16 resizable
             class Canvas
           }
-          Fl_Group pattern_settings_group {
-            xywh {0 731 865 54} box FLAT_BOX color 47
+          Fl_Group pattern_settings_group {open
+            xywh {0 730 867 55} box FLAT_BOX color 47
           } {
-            Fl_Input pattern_name_field {
-              label {name:}
-              callback {pattern_canvas_widget->grid()->name( strdup( o->value() ) );}
-              xywh {5 734 185 21} box ROUNDED_BOX color 49 labelsize 12 align 20 when 8 textfont 2 textsize 12 textcolor 55
-              code0 {o->up_box( FL_ROUNDED_BOX );}
-              class Fl_Sometimes_Input
-            }
-            Fl_Light_Button pattern_mute_button {
-              label Mute
-              callback {Grid *g = pattern_canvas_widget->grid();
+            Fl_Group {} {open
+              xywh {5 733 300 44}
+              code0 {o->resizable(0);}
+            } {
+              Fl_Input pattern_name_field {
+                label {name:}
+                callback {pattern_canvas_widget->grid()->name( strdup( o->value() ) );}
+                xywh {5 734 185 21} box BORDER_BOX color 49 labelsize 12 align 20 when 8 textsize 12 textcolor 55
+                code0 {o->up_box( FL_BORDER_BOX );}
+                class Fl_Sometimes_Input
+              }
+              Fl_Light_Button pattern_mute_button {
+                label Mute
+                callback {Grid *g = pattern_canvas_widget->grid();
 
 g->mode( g->mode() == MUTE ? PLAY : MUTE );
 
 o->value( g->mode() == MUTE );
 
 pattern_solo_button->value( 0 );}
-              xywh {195 734 58 19} type Normal shortcut 0x6d color 37 labelsize 12
-            }
-            Fl_Light_Button pattern_solo_button {
-              label Solo
-              callback {Grid *g = pattern_canvas_widget->grid();
+                xywh {195 734 58 19} type Normal shortcut 0x6d color 37 labelsize 12
+              }
+              Fl_Light_Button pattern_solo_button {
+                label Solo
+                callback {Grid *g = pattern_canvas_widget->grid();
 
 g->mode( g->mode() == SOLO ? PLAY : SOLO );
 
 o->value( g->mode() == SOLO );
 
 pattern_mute_button->value( 0 );}
-              xywh {195 758 58 19} type Normal shortcut 0x73 color 37 labelsize 12
-            }
-            Fl_Text_Editor pattern_notes_edit {
-              label {Notes:}
-              callback {pattern_canvas_widget->grid()->notes( o->buffer()->text() );}
-              xywh {310 734 240 46} color 40 selection_color 48 labeltype NO_LABEL labelsize 10 textsize 11 textcolor 63 resizable
-              code0 {o->buffer( pattern_notes_buffer = new Fl_Text_Buffer );}
-              code1 {o->wrap_mode( Fl_Text_Editor::WRAP_AT_BOUNDS, 0  );}
+                xywh {195 758 58 19} type Normal shortcut 0x73 color 37 labelsize 12
+              }
+              Fl_Value_Slider pattern_number_spinner {
+                label Pattern
+                callback {pattern *p = ((pattern *)pattern_canvas_widget->grid())->by_number( o->value() );
+
+if ( p )
+    pattern_canvas_widget->grid( p );
+
+o->maximum( pattern::patterns() );}
+                xywh {45 759 140 18} type Horizontal labelsize 10 align 4 minimum 1 maximum 128 step 1 value 1
+              }
+              Fl_Button pattern_selection_mode {
+                label Select
+                callback {pattern_canvas_widget->selection_mode( o->value() );}
+                tooltip {Enable selection mode (you can also just hold down shift and drag the mouse)} xywh {260 733 45 44} type Toggle selection_color 5 labelsize 10
+              }
             }
             Fl_Group {} {open
-              xywh {555 731 310 49}
+              xywh {315 731 549 54}
             } {
-              Fl_Spinner pattern_channel_spinner {
-                label Channel
-                callback {((pattern *)pattern_canvas_widget->grid())->channel( o->value() - 1 );}
-                xywh {820 735 40 19} color 36 labelsize 10 when 1 textsize 12
-                code0 {\#include "../pattern.H"}
-                code1 {o->maximum( 16 );}
-              }
-              Fl_Spinner pattern_port_spinner {
-                label Port
-                callback {((pattern *)pattern_canvas_widget->grid())->port( o->value() - 1 );}
-                xywh {820 758 40 19} color 36 labelsize 10 when 1 textsize 12
-                code0 {o->maximum( 16 );}
-              }
               Fl_Output mapping_text {
                 label Mapping
-                xywh {555 758 105 19} labelsize 10 align 20 textsize 11
+                xywh {535 761 105 19} labelsize 10 align 20 textsize 11
               }
               Fl_Menu_Button mapping_menu {
                 label {@>}
@@ -863,7 +860,7 @@ if ( 0 == strncmp( picked, "Scale", strlen( "Scale" ) ) )
 
 	pattern_key_combo->activate();
 }} open
-                xywh {660 758 30 19} labeltype NO_LABEL labelsize 10 textsize 12
+                xywh {640 761 30 19} labeltype NO_LABEL labelsize 10 textsize 12
                 code0 {update_mapping_menu();}
               } {
                 Submenu mapping_scale_menu {
@@ -880,7 +877,7 @@ if ( 0 == strncmp( picked, "Scale", strlen( "Scale" ) ) )
                 callback {((pattern*)pattern_canvas_widget->grid())->mapping.key( o->value() );
 
 pattern_canvas_widget->changed_mapping();} open
-                xywh {720 758 75 19} down_box BORDER_BOX labelsize 10 when 1 textsize 11
+                xywh {700 761 75 19} down_box BORDER_BOX labelsize 10 when 1 textsize 11
               } {
                 MenuItem {} {
                   label C
@@ -934,7 +931,7 @@ pattern_canvas_widget->changed_mapping();} open
               Fl_Choice pattern_note_combo {
                 label {&Note 1/}
                 callback {((pattern*)pattern_canvas_widget->grid())->note( atoi( o->menu()[ o->value() ].text ));} open
-                xywh {730 735 45 19} down_box BORDER_BOX labelsize 10 when 1 textsize 12
+                xywh {715 736 45 19} down_box BORDER_BOX labelsize 10 when 1 textsize 12
               } {
                 MenuItem {} {
                   label 1
@@ -984,7 +981,7 @@ pattern_canvas_widget->changed_mapping();} open
               Fl_Choice pattern_res_combo {
                 label {&Resolution 1/}
                 callback {pattern_canvas_widget->grid()->resolution( atoi( o->menu()[ o->value() ].text ));} open
-                xywh {625 735 55 19} down_box BORDER_BOX labelsize 10 when 1 textsize 12
+                xywh {615 736 55 19} down_box BORDER_BOX labelsize 10 when 1 textsize 12
               } {
                 MenuItem {} {
                   label 1
@@ -1035,24 +1032,28 @@ pattern_canvas_widget->changed_mapping();} open
                   xywh {100 100 40 25} labelsize 11
                 }
               }
-            }
-            Fl_Value_Slider pattern_number_spinner {
-              label Pattern
-              callback {pattern *p = ((pattern *)pattern_canvas_widget->grid())->by_number( o->value() );
-
-if ( p )
-    pattern_canvas_widget->grid( p );
-
-update_pattern_widgets();
-
-o->maximum( pattern::patterns() );
-
-pattern_settings_group->redraw();}
-              xywh {45 759 140 18} type Horizontal labelsize 10 align 4 minimum 1 maximum 128 step 1 value 1
-            }
-            Fl_Button {} {
-              label Select
-              tooltip {Enable selection mode (you can also just hold down shift and drag the mouse)} xywh {260 735 45 45} type Toggle selection_color 5 labelsize 10
+              Fl_Choice pattern_channel_choice {
+                label {Channel:}
+                callback {((pattern *)pattern_canvas_widget->grid())->channel( o->value() );} open
+                xywh {810 735 47 19} down_box BORDER_BOX labelsize 10 textsize 12
+                code0 {char pat[3]; for ( int i = 1; i <= 16; i++ ) { snprintf( pat, 3, "%i", i ); o->add( pat ); }}
+              } {}
+              Fl_Choice pattern_port_choice {
+                label {Port:}
+                callback {((pattern *)pattern_canvas_widget->grid())->port( o->value() );} open
+                xywh {810 760 47 19} down_box BORDER_BOX labelsize 10 textsize 12
+                code0 {char pat[3]; for ( int i = 1; i <= 16; i++ ) { snprintf( pat, 3, "%i", i ); o->add( pat ); }}
+              } {}
+              Fl_Input_Choice pattern_bars_choice {
+                label {Bars:}
+                callback {((pattern *)pattern_canvas_widget->grid())->bars( atoi( o->value() ) );} open
+                xywh {486 736 55 19} labelsize 10 textsize 12
+                code0 {char pat[4]; for ( int i = 1; i <= 16; i++ ) { snprintf( pat, 3, "%i", i ); o->add( pat ); }}
+                code1 {for ( int i = 32; i <= 256; i <<= 1 ) { snprintf( pat, sizeof(pat), "%i", i ); o->add( pat ); }}
+              } {}
+              Fl_Box {} {
+                xywh {315 735 135 46} resizable
+              }
             }
           }
         }
@@ -1310,7 +1311,7 @@ ab.run();}
             }
           }
           Submenu edit_menu {
-            label {&Edit} open
+            label {&Edit} open selected
             xywh {0 0 68 18}
           } {
             MenuItem {} {
@@ -1349,7 +1350,7 @@ else
 {
 	phrase_number_spinner->value( min( 127, (int)phrase_number_spinner->value() + 1 ));
 	phrase_number_spinner->do_callback();
-}} selected
+}}
               xywh {20 20 34 18} shortcut 0x5d
             }
             MenuItem {} {
@@ -1361,16 +1362,6 @@ w->grid( w->grid()->clone() );
 // number of phrases may have changed.
 ui->update_sequence_widgets();}
               xywh {30 30 34 18} shortcut 0x64
-            }
-            MenuItem {} {
-              label {Duplicate Range}
-              callback {Canvas *w = current_canvas();
-
-w->duplicate_range();
-
-// number of phrases may have changed.
-ui->update_sequence_widgets();}
-              xywh {40 40 34 18} shortcut 0x10064
             }
             MenuItem {} {
               label {Delete Selected}
@@ -1395,42 +1386,42 @@ w->grid()->clear();}
               label {Select All}
               callback {Canvas *w = current_canvas();
 
-w->grid()->clear();}
+w->grid()->select_all();}
               xywh {70 70 34 18} shortcut 0x40061
             }
             MenuItem {} {
               label {Select None}
               callback {Canvas *w = current_canvas();
 
-w->grid()->clear();}
+w->grid()->select_none();}
               xywh {80 80 34 18} shortcut 0x50061
             }
             MenuItem {} {
               label {Invert Selection}
               callback {Canvas *w = current_canvas();
 
-w->grid()->clear();}
+w->grid()->invert_selection();}
               xywh {90 90 34 18} shortcut 0x50069
-            }
-            MenuItem {} {
-              label Copy
-              callback {Canvas *w = current_canvas();
-
-w->grid()->clear();}
-              xywh {100 100 34 18} shortcut 0x40063
             }
             MenuItem {} {
               label Cut
               callback {Canvas *w = current_canvas();
 
-w->grid()->clear();}
+w->cut();}
               xywh {110 110 34 18} shortcut 0x40078
+            }
+            MenuItem {} {
+              label Copy
+              callback {Canvas *w = current_canvas();
+
+w->copy();}
+              xywh {100 100 34 18} shortcut 0x40063
             }
             MenuItem {} {
               label Paste
               callback {Canvas *w = current_canvas();
 
-w->grid()->clear();}
+w->paste();}
               xywh {120 120 34 18} shortcut 0x40076
             }
           }
@@ -1507,10 +1498,16 @@ if ( !g )
 
 pattern_number_spinner->value( g->number() );
 pattern_name_field->value( g->name() );
-pattern_channel_spinner->value( 1 + g->channel() );
-pattern_port_spinner->value( 1 + g->port() );
+pattern_channel_choice->value( g->channel() );
+pattern_port_choice->value( g->port() );
 pattern_solo_button->value( g->mode() == SOLO );
 pattern_mute_button->value( g->mode() == MUTE );
+pattern_selection_mode->value( pattern_canvas_widget->selection_mode() );
+{
+        char pat[5];
+        snprintf( pat, sizeof(pat), "%i", g->bars() );
+        pattern_bars_choice->value( pat );
+}
 
 if ( g->mapping.key() == -1 )
 	pattern_key_combo->deactivate();
@@ -1526,11 +1523,13 @@ mapping_text->value( g->mapping.name() );
 
 pattern_note_combo->value( find_numeric_menu_item( menu_pattern_note_combo, g->note() ));
 pattern_res_combo->value( find_numeric_menu_item( menu_pattern_res_combo, g->resolution() ));
-
+/*
 if ( g->notes() )
 	pattern_notes_buffer->text( g->notes() );
 else
-	pattern_notes_buffer->text( strdup( "" ) );} {}
+	pattern_notes_buffer->text( strdup( "" ) );
+*/
+pattern_settings_group->redraw();} {}
   }
   Function {update_phrase_widgets()} {open
   } {
@@ -1554,7 +1553,9 @@ phrase_mute_button->value( g->mode() == MUTE );
 if ( g->notes() )
 	phrase_notes_buffer->text( g->notes() );
 else
-	phrase_notes_buffer->text( strdup( "" ) );} {}
+	phrase_notes_buffer->text( strdup( "" ) );
+
+phrase_settings_group->redraw();} {}
   }
   Function {update_sequence_widgets()} {open
   } {

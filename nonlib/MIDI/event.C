@@ -149,6 +149,7 @@ namespace MIDI
         p->duration = note_duration();
         p->velocity = note_velocity();
         p->note = note();
+        p->selected = selected();
     }
 
     void
@@ -158,5 +159,6 @@ namespace MIDI
         note_duration( p->duration );
         note_velocity( p->velocity );
         note( p->note );
+        selected( p->selected );
     }
 }

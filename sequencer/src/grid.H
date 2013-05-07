@@ -100,6 +100,8 @@ struct Viewport {
 
 class Grid : public trackable
 {
+    static MIDI::event_list _clipboard;
+
 protected:
 
     unsigned int     _height;
@@ -161,7 +163,7 @@ public:
     int y_to_note ( int y ) const;
     int note_to_y ( int n ) const;
     tick_t x_to_ts ( unsigned long x ) const;
-    unsigned long ts_to_x ( tick_t ts ) const;
+    double ts_to_x ( tick_t ts ) const;
 
     virtual Grid * create ( void ) = 0;
     virtual Grid * clone ( void ) = 0;
@@ -191,6 +193,8 @@ public:
     void height ( int h );
     tick_t length ( void ) const;
     void length ( tick_t l );
+
+    void bars ( int n );
     int bars ( void ) const;
     int beats ( void ) const;
     void trim ( void );
@@ -212,6 +216,7 @@ public:
 
     void delete_selected ( void );
     void move_selected ( int l );
+    void nudge_selected ( int l );
 
     void crop ( int l, int r );
     void crop ( int l, int r, int t, int b );
@@ -237,6 +242,12 @@ public:
 
     void get_note_properties ( int x, int y, MIDI::note_properties *p ) const;
 
+    int min_selected ( void ) const;
+
+    void cut ( void );
+    void copy ( void );
+    void paste ( int offset );
+
     virtual tick_t default_length ( void ) const
         {
             return PPQN;
@@ -261,14 +272,10 @@ inline tick_t
 Grid::x_to_ts ( unsigned long x ) const
 {
     return (x * PPQN) / _ppqn;
-
-//    return x * (PPQN / _ppqn);
 }
 
-inline unsigned long
+inline double
 Grid::ts_to_x ( tick_t ts ) const
 {
     return (ts * _ppqn) / PPQN;
-
-//    return ts / (PPQN / _ppqn);
 }

@@ -36,6 +36,7 @@ namespace MIDI
         tick_t duration;
         int note;
         int velocity;
+        bool selected;
     };
 
     class event : public midievent

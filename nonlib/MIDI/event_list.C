@@ -350,6 +350,59 @@ namespace MIDI
         }
     }
 
+
+    /** copy selected events into event list /el/ */
+    void
+    event_list::copy_selected ( event_list *el ) const
+    {
+        event *fi = first();
+
+        if ( ! fi )
+            return;
+
+        tick_t offset = fi->timestamp();
+
+        FOR_SELECTED( e )
+        {
+            event *nel = 0;
+
+            if ( e->linked() )
+                nel = new event(*e->link());
+            
+            event *ne = new event(*e);
+            ne->timestamp( ne->timestamp() - offset );
+
+            if ( nel )
+            {
+                nel->link( ne );
+                ne->link( nel );
+                nel->timestamp( nel->timestamp() - offset );
+            }
+
+            el->mix(ne);
+        }
+    }
+
+    /** add events from list /el/  */
+    void
+    event_list::paste ( tick_t offset, const event_list *el )
+    {
+        event *n;
+        
+        for ( event *e = el->_head; e; e = n )
+        {
+            n = e->_next;
+
+            event *ne = new event(*e);
+            ne->link( NULL );
+            ne->timestamp( ne->timestamp() + offset );
+
+            insert( ne );
+        }
+
+        relink();
+    }
+
 /** transpose selected notes (ignoring other event types) by /n/ tones
  * (may span octaves) */
     void
@@ -377,7 +430,7 @@ namespace MIDI
 
 /** get timestamp of earliest selected event */
     tick_t
-    event_list::selection_min ( void )
+    event_list::selection_min ( void ) const
     {
         FOR_SELECTED( e )
             return e->timestamp();
@@ -386,7 +439,7 @@ namespace MIDI
     }
 
     tick_t
-    event_list::selection_max ( void )
+    event_list::selection_max ( void ) const
     {
         RFOR_SELECTED( e )
             return e->timestamp();
@@ -396,7 +449,7 @@ namespace MIDI
 
 /** move selected events by offset /o/ */
     void
-    event_list::move_selected ( long o )
+    event_list::nudge_selected ( long o )
     {
         if ( o < 0 )
             if ( selection_min() < (tick_t)( 0 - o ) )
@@ -412,6 +465,31 @@ namespace MIDI
             RFOR_SELECTED( e )
                 move( e, o );
         }
+    }
+
+    /** move block of selected events to tick /tick/ */
+    void
+    event_list::move_selected ( tick_t tick )
+    {
+        /* if ( o < 0 ) */
+        /*     if ( selection_min() < (tick_t)( 0 - o ) ) */
+        /*         return; */
+
+        tick_t min = selection_min();
+        
+        tick_t offset = tick - min;
+        
+        nudge_selected( offset );
+
+        /* FOR_SELECTED( e ) */
+        /* {  */
+        /*     e->timestamp( e->timestamp() + offset ); */
+            
+        /*     sort( e ); */
+  
+        /*     move( e, o ); */
+        /* } */
+
     }
 
     void

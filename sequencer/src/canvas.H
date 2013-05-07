@@ -35,7 +35,15 @@ class Fl_Slider;
 class Canvas : public Fl_Group, public trackable
 {
     class Canvas_Panzoomer;
+    
+    struct SelectionRect {
+        int x1,y1,x2,y2;
+            };
 
+    SelectionRect _selection_rect;
+
+    int _selection_mode;
+    bool _move_mode;
     Canvas_Panzoomer *panzoomer;
     Fl_Slider *vzoom;
 
@@ -84,6 +92,7 @@ class Canvas : public Fl_Group, public trackable
         uint p3, p4;                                            /* row cursors */
     } m;
 
+    bool is_ruler_click ( void ) const;
     int rtn ( int r ) const;
     int ntr ( int n ) const;
 
@@ -104,7 +113,19 @@ class Canvas : public Fl_Group, public trackable
     static void draw_clip ( void *v, int X, int Y, int W, int H );
     void draw_clip ( int X, int Y, int W, int H );
 
+enum {
+    SELECT_NONE = 0,
+    SELECT_RECTANGLE,
+    SELECT_RANGE
+};
+
 public:
+
+    bool selection_mode ( void ) const { return _selection_mode; }
+    void selection_mode ( bool b )
+        {
+            _selection_mode = b ? SELECT_RECTANGLE : SELECT_NONE;
+        }
 
     enum { OFF, ON, TOGGLE };
 
@@ -112,7 +133,9 @@ public:
 
     Canvas ( int X, int Y, int W, int H, const char *L=0 );
     virtual ~Canvas ( );
-
+    
+    void cut ( void );
+    void paste ( void );
     void redraw_playhead ( void );
     void handle_event_change ( void );
     void set ( int x, int y );

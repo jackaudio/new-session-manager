@@ -187,7 +187,7 @@ Transport::locate ( tick_t ticks )
 {
     jack_nframes_t frame = trunc( ticks * transport.frames_per_tick );
 
-    MESSAGE( "Relocating transport to %lu, %lu", ticks, frame );
+    MESSAGE( "Relocating transport to %f, %lu", ticks, frame );
 
     jack_transport_locate( client, frame );
 }

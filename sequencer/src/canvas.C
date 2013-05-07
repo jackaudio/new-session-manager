@@ -154,6 +154,8 @@ static note_properties *ghost_note = 0;
 
 Canvas::Canvas ( int X, int Y, int W, int H, const char *L ) : Fl_Group( X,Y,W,H,L )
 {
+    _selection_mode = SELECT_NONE;
+    _move_mode = false;
 
     { Fl_Box *o = new Fl_Box( X, Y, W, H - 75 );
         /* this is a dummy group where the canvas goes */
@@ -218,7 +220,10 @@ Canvas::handle_event_change ( void )
     /* mark the song as dirty and pass the signal on */
     song.set_dirty();
 
-//    panzoomer->redraw();
+    Grid *g = grid();
+    panzoomer->x_value( g->x_to_ts( m.vp->x), g->x_to_ts( m.vp->w ), 0, g->length());
+
+    // panzoomer->redraw();
 
     redraw();
 }
@@ -255,7 +260,7 @@ Canvas::grid ( Grid *g )
     redraw();
 
 //     parent()->redraw();
-//    signal_settings_change();
+    signal_settings_change();
 }
 
 /** keep row compaction tables up-to-date */
@@ -401,6 +406,7 @@ gui_draw_ruler ( int x, int y, int w, int div_w, int div, int ofs, int p1, int p
 {
     /* Across the top */
 
+   
     fl_font( FL_TIMES, ruler_height );
 
     int h = ruler_height;
@@ -411,6 +417,7 @@ gui_draw_ruler ( int x, int y, int w, int div_w, int div, int ofs, int p1, int p
 
     //  fl_rectf( x, y, x + (div_w * w), y + h );
     fl_rectf( x, y, (div_w * w), h );
+
 
     fl_color( FL_FOREGROUND_COLOR );
 
@@ -437,28 +444,28 @@ gui_draw_ruler ( int x, int y, int w, int div_w, int div, int ofs, int p1, int p
         }
     }
 
-    /* if ( p1 != p2 ) */
-    /* { */
-    /*     if ( p1 >= 0 ) */
-    /*     { */
-    /*         if ( p1 < p2 ) */
-    /*             fl_color( FL_GREEN ); */
-    /*         else */
-    /*             fl_color( FL_RED ); */
+    if ( p1 != p2 )
+    {
+        if ( p1 >= 0 )
+        {
+            if ( p1 < p2 )
+                fl_color( fl_color_add_alpha( FL_GREEN, 100 ) );
+            else
+                fl_color( fl_color_add_alpha( FL_GREEN, 100 ) );
 
-    /*         fl_rectf( x + (div_w * p1), y + h / 2, div_w, h / 2 ); */
+            fl_rectf( x + (div_w * p1), y + h / 2, div_w, h / 2 );
 
-    /*     } */
-    /*     if ( p2 >= 0 ) */
-    /*     { */
-    /*         if ( p2 < p1 ) */
-    /*             fl_color( FL_GREEN ); */
-    /*         else */
-    /*             fl_color( FL_RED ); */
-    /*         fl_rectf( x + (div_w * p2), y + h / 2, div_w, h / 2 ); */
+        }
+        if ( p2 >= 0 )
+        {
+            if ( p2 < p1 )
+                fl_color( fl_color_add_alpha( FL_GREEN, 100 ) );
+            else
+                fl_color( fl_color_add_alpha( FL_RED, 100 ) );
+            fl_rectf( x + (div_w * p2), y + h / 2, div_w, h / 2 );
 
-    /*     } */
-    /* } */
+        }
+    }
 
     return h;
 }
@@ -614,8 +621,17 @@ Canvas::draw_dash ( tick_t x, int y, tick_t w, int color, int selected ) const
     if ( w > 4 )
     {
         fl_draw_box( FL_ROUNDED_BOX, x, y + 1, w, m.div_h - 1, color );
+        
         if ( selected )
-            fl_draw_box( FL_ROUNDED_FRAME, x, y + 1, w, m.div_h - 1, FL_MAGENTA );
+        {
+            cairo_set_operator( Fl::cairo_cc(),CAIRO_OPERATOR_HSL_COLOR );
+
+            fl_draw_box( FL_ROUNDED_BOX, x, y + 1, w, m.div_h - 1, FL_MAGENTA );
+
+            cairo_set_operator( Fl::cairo_cc(),CAIRO_OPERATOR_OVER);
+        }      
+  /* if ( selected ) */
+        /*     fl_draw_box( FL_ROUNDED_FRAME, x, y + 1, w, m.div_h - 1, FL_MAGENTA ); */
     }
 
 // fl_color_add_alpha( color, 170 ));
@@ -677,11 +693,29 @@ Canvas::draw_overlay ( void )
 
     draw_playhead();
 
+    if ( _selection_mode )
+    {
+        int X,Y,W,H;
+        
+        SelectionRect &s = _selection_rect;
+
+        X = s.x1 < s.x2 ? s.x1 : s.x2;
+        Y = s.y1 < s.y2 ? s.y1 : s.y2;
+        W = s.x1 < s.x2 ? s.x2 - s.x1 : s.x1 - s.x2;
+        H = s.y1 < s.y2 ? s.y2 - s.y1 : s.y1 - s.y2;
+               
+        /* fl_rectf( X,Y,W,H, fl_color_add_alpha( FL_MAGENTA, 50 ) ); */
+        
+        fl_rect( X,Y,W,H, FL_MAGENTA );
+        
+    }
+
     fl_pop_clip();
 
     panzoomer->draw_overlay();
 
     fl_pop_clip();
+
 }
 
 /** draw only the playhead--without reexamining the grid */
@@ -962,6 +996,12 @@ Canvas::is_row_press ( void ) const
         return -1;
 }
 
+bool
+Canvas::is_ruler_click ( void ) const
+{
+    return Fl::event_y() < m.origin_y + m.margin_top;
+}
+
 void
 Canvas::start_cursor ( int x, int y )
 {
@@ -971,7 +1011,9 @@ Canvas::start_cursor ( int x, int y )
     m.ruler_drawn = false;
 
     m.p1 = x;
-    m.p3 = ntr( y );
+
+
+    /* m.p3 = ntr( y ); */
 
     _lr();
 
@@ -987,7 +1029,8 @@ Canvas::end_cursor ( int x, int y )
     m.ruler_drawn = false;
 
     m.p2 = x;
-    m.p4 = ntr( y );
+
+    /* m.p4 = ntr( y ); */
 
     _lr();
 
@@ -1036,10 +1079,10 @@ Canvas::move_selected ( int dir, int n )
     switch ( dir )
     {
         case RIGHT:
-            m.grid->move_selected( n );
+            m.grid->nudge_selected( n );
             break;
         case LEFT:
-            m.grid->move_selected( 0 - n );
+            m.grid->nudge_selected( 0 - n );
             break;
         case UP:
         case DOWN:
@@ -1156,6 +1199,27 @@ Canvas::duplicate_range ( void )
 
     g->crop( m.p1, m.p2 );
     g->viewport.x = 0;
+}
+
+void
+Canvas::cut ( void )
+{
+    m.grid->cut();
+}
+
+void
+Canvas::copy ( void )
+{
+    m.grid->copy();
+}
+
+void
+Canvas::paste ( void ) 
+{
+    if ( m.p1 != m.p2 && m.p1 > m.vp->x && m.p1 < m.vp->x + m.vp->w )
+        m.grid->paste( m.p1 );
+    else
+        m.grid->paste( m.vp->x );
 }
 
 void
@@ -1289,11 +1353,17 @@ Canvas::notes ( void )
 {
     return m.grid->notes();
 }
-        
+
+
 int
 Canvas::handle ( int m )
 {
     Canvas *c = this;
+
+    static int last_move_x = 0;
+    static int last_move_y = 0;
+
+    static bool range_select;
 
     int ow, oh;
 
@@ -1307,9 +1377,6 @@ Canvas::handle ( int m )
     static int drag_y;
     static bool delete_note;
     static note_properties *drag_note;
-    static int adjusting_velocity;
-
-//    static note_properties;
 
     ow = c->grid()->viewport.w;
     oh = c->grid()->viewport.h;
@@ -1318,6 +1385,7 @@ Canvas::handle ( int m )
     {
         case FL_FOCUS:
         case FL_UNFOCUS:
+            damage( FL_DAMAGE_ALL );
             return 1;
         case FL_ENTER:
         case FL_LEAVE:
@@ -1338,11 +1406,10 @@ Canvas::handle ( int m )
         }
         case FL_KEYBOARD:
         {
-
+      
 /*             if ( Fl::event_state() & FL_ALT || Fl::event_state() & FL_CTRL ) */
 /*                 // this is more than a simple keypress. */
 /*                 return 0; */
-
 
             if ( Fl::event_state() & FL_CTRL )
             {
@@ -1459,12 +1526,40 @@ Canvas::handle ( int m )
         }
         case FL_PUSH:
         {
+            Fl::focus(this);
+
             switch ( Fl::event_button() )
             {
                 case 1:
                 {
+                    if ( is_ruler_click() )
+                    {
+                        c->start_cursor( x, y );
+                        //           return 1;
+                        _selection_mode = SELECT_RANGE;
+                       
+                    }
+
+                    if ( _selection_mode )
+                    {
+                        drag_x = Fl::event_x();
+                        drag_y = Fl::event_y();
+                    
+                        _selection_rect.x1 = drag_x;
+                        _selection_rect.y1 = drag_y;
+                        _selection_rect.x2 = drag_x;
+                        _selection_rect.y2 = drag_y;
+
+                        if ( _selection_mode == SELECT_RANGE )
+                        {
+                            _selection_rect.y1 = 0;
+                            _selection_rect.y2 = 2000;
+                        }
+
+                        return 1;
+                    }
+
                     delete_note = true;
-                    adjusting_velocity = 0;
 
                     if ( Fl::event_ctrl() )
                     {
@@ -1497,12 +1592,20 @@ Canvas::handle ( int m )
                         if ( ! this->m.grid->is_set( dx,dy ))
                         {
                             ghost_note = new note_properties;
-                        
+                            drag_note = new note_properties;
+
                             ghost_note->start = this->m.grid->x_to_ts( dx );
                             ghost_note->note = dy;
                             ghost_note->duration = this->m.grid->default_length();
                             ghost_note->velocity = 64;
+
+                            drag_note->start = this->m.grid->x_to_ts( dx );
+                            drag_note->note = dy;
+                            drag_note->duration = this->m.grid->default_length();
+                            drag_note->velocity = 64;
                     
+
+                            
                             delete_note = false;
 
                             processed = 1;
@@ -1510,13 +1613,26 @@ Canvas::handle ( int m )
                         }
                         else
                         {
-                            ghost_note = new note_properties;
-                            drag_note = new note_properties;
-                            this->m.grid->get_note_properties( dx, dy, ghost_note );
-                            this->m.grid->get_note_properties( dx, dy, drag_note );
-                            this->m.grid->del( dx, dy );
+                            note_properties np;
+                            this->m.grid->get_note_properties( dx, dy, &np );
 
-                            delete_note = true;
+                            if ( np.selected )
+                            {
+                                _move_mode = true;
+                                /* initiate move */
+                                last_move_x = dx;
+                                last_move_y = ntr( dy );
+                            }
+                            else
+                            {
+                                ghost_note = new note_properties;
+                                drag_note = new note_properties;
+                                this->m.grid->get_note_properties( dx, dy, ghost_note );
+                                this->m.grid->get_note_properties( dx, dy, drag_note );
+                                this->m.grid->del( dx, dy );
+                                
+                                delete_note = true;
+                            }
                         }
 
                         this->m.grid->get_start( &dx, &dy );                    
@@ -1552,11 +1668,31 @@ Canvas::handle ( int m )
                         }
                     }
                     else
-                        if ( Fl::event_state() & FL_SHIFT )
+                    {
+                        _selection_mode = SELECT_RECTANGLE;
                         {
-                            c->end_cursor( x, y );
-                            break;
+                            drag_x = Fl::event_x();
+                            drag_y = Fl::event_y();
+                        
+                            _selection_rect.x1 = drag_x;
+                            _selection_rect.y1 = drag_y;
+                            _selection_rect.x2 = drag_x;
+                            _selection_rect.y2 = drag_y;
+                            signal_settings_change();
+                            return 1;
                         }
+                        
+                        return 1;
+                        break;
+
+                  
+                    }
+
+                    /* if ( Fl::event_state() & FL_SHIFT ) */
+                    /* { */
+                    /*     c->end_cursor( x, y ); */
+                    /*     break; */
+                    /* } */
                     break;
                 }
                 default:
@@ -1565,63 +1701,156 @@ Canvas::handle ( int m )
             break;
         }
         case FL_RELEASE:
-            switch ( Fl::event_button() )
+        {
+            _move_mode = false;
+           
+            if ( SELECT_RANGE == _selection_mode )
             {
-                case 1:
+                select_range();
+                _selection_mode = SELECT_NONE;
+                return 1;
+            }
+            else if ( SELECT_RECTANGLE == _selection_mode )
+            {
+                int X,Y,W,H;
+                
+                SelectionRect &s = _selection_rect;
+        
+                X = s.x1 < s.x2 ? s.x1 : s.x2;
+                Y = s.y1 < s.y2 ? s.y1 : s.y2;
+                W = s.x1 < s.x2 ? s.x2 - s.x1 : s.x1 - s.x2;
+                H = s.y1 < s.y2 ? s.y2 - s.y1 : s.y1 - s.y2;
+                
+                int endx = X + W;
+                int endy = Y + H;
+                int beginx = X;
+                int beginy = Y;
+                
+                grid_pos( &beginx, &beginy );
+                grid_pos( &endx, &endy );
+               
+                /* if ( is_ruler_click() ) */
+                /* { */
+                /*     grid()->select( beginx, endx ); */
+                /* } */
+                /* else */
                 {
-                    int dx = x;
-                    int dy = y;
-                    grid_pos( &dx, &dy );
+                    grid()->select( beginx, endx, beginy, endy );
+                }
 
-                    if ( IS_PATTERN && Fl::event_state() & ( FL_ALT  | FL_CTRL ) )
-                        c->randomize_row( y );
-                    else
-                    {
-                        if ( delete_note )
-                        {
+                _selection_mode = SELECT_NONE;
+
+                _selection_rect.x1 = 0;
+                _selection_rect.y1 = 0;
+                _selection_rect.x2 = 0;
+                _selection_rect.y2 = 0;
+
+                damage(FL_DAMAGE_OVERLAY);
+                signal_settings_change();
+                return 1;
+            }
+
+            int dx = x;
+            int dy = y;
+            grid_pos( &dx, &dy );
+
+            if ( IS_PATTERN && Fl::event_state() & ( FL_ALT  | FL_CTRL ) )
+                c->randomize_row( y );
+            else
+            {
+                if ( delete_note )
+                {
 //                            this->m.grid->del( dx, dy );
-                            if ( ghost_note )
-                            {
-                                damage_grid( ghost_note->start, ghost_note->note, ghost_note->duration, 1 );
+                    if ( ghost_note )
+                    {
+                        damage_grid( ghost_note->start, ghost_note->note, ghost_note->duration, 1 );
 
-                                delete ghost_note;
-                            }
-                            ghost_note = 0;
-                        }
-                        else
-                            if ( ghost_note )
-                            {
-                                this->m.grid->put( this->m.grid->ts_to_x( ghost_note->start ), 
-                                                   ghost_note->note,
-                                                   ghost_note->duration,
-                                                   ghost_note->velocity);
+                        delete ghost_note;
+                    }
+                    ghost_note = 0;
+                }
+                else
+                    if ( ghost_note )
+                    {
+                        this->m.grid->put( this->m.grid->ts_to_x( ghost_note->start ), 
+                                           ghost_note->note,
+                                           ghost_note->duration,
+                                           ghost_note->velocity);
 
-                                delete_note = false;
+                        delete_note = false;
                                 
-                                delete ghost_note;
-                                ghost_note = 0;
-                            }
+                        delete ghost_note;
+                        ghost_note = 0;
+                    }
+            }
+
+            if ( drag_note )
+                delete drag_note;
+            drag_note = 0;
+
+            break;
+        }
+         
+        case FL_DRAG:
+
+            if ( Fl::event_is_click() )
+                return 1;
+
+            {
+                if ( _selection_mode )
+                {
+                    grid()->select_none();
+
+                    _selection_rect.x2 = x;
+                    _selection_rect.y2 = y;
+
+                    if ( SELECT_RANGE == _selection_mode )
+                    {
+                        _selection_rect.y2 = 2000;
+                        c->end_cursor( x, y );
                     }
 
-                    if ( drag_note )
-                        delete drag_note;
-                    drag_note = 0;
-
-                    break;
+                    damage(FL_DAMAGE_OVERLAY);
+                
+                    return 1;
                 }
-                default:
-                    processed = 0;
-                    break;
-            }
-            break;
-        case FL_DRAG:
-            if ( Fl::event_button1() )
-            {
+
+
                 int dx = x;
                 int dy = y;
 
                 grid_pos( &dx, &dy );
 
+                if ( _move_mode )
+                { 
+                    int odx = drag_x;
+                    int ody = drag_y;
+                    grid_pos( &odx, &ody );
+               
+                    if ( last_move_x != dx )
+                    {
+                        //this->m.grid->move_selected( dx - move_xoffset );
+                        if ( dx > last_move_x )
+                            move_selected( RIGHT, dx - last_move_x );
+                        else
+                            move_selected( LEFT, last_move_x - dx );
+                    }
+    
+                    dy = ntr( dy );
+
+                    if ( dy != last_move_y )
+                    {
+                        if ( dy > last_move_y  )
+                            move_selected( DOWN, dy - last_move_y );
+                        else
+                            move_selected( UP, last_move_y - dy );
+                    }
+                
+                    last_move_y = dy;
+                    last_move_x = dx;
+                    return 1;
+                }
+      
                 if ( ghost_note )
                 {
                     damage_grid( ghost_note->start, ghost_note->note, ghost_note->duration, 1 );
@@ -1635,8 +1864,6 @@ Canvas::handle ( int m )
                         
                         if ( ody != dy )
                         {
-                            adjusting_velocity = 1;
-
                             ghost_note->velocity =
                                 drag_note->velocity +
                                 ( (drag_y - y) / 3.0f );
@@ -1648,17 +1875,12 @@ Canvas::handle ( int m )
                         }
                     }
                     
-                    if ( ! adjusting_velocity )
+                    if ( dx > this->m.grid->ts_to_x( ghost_note->start ) )
                     {
-                        if ( dx > this->m.grid->ts_to_x( ghost_note->start ) )
-                        {
-                            ghost_note->duration = this->m.grid->x_to_ts( dx  ) - ghost_note->start;
-                        }
-                        
-                        damage_grid( ghost_note->start, ghost_note->note, ghost_note->duration, 1 );
+                        ghost_note->duration = this->m.grid->x_to_ts( dx  ) - ghost_note->start;
                     }
-                    else
-                        ghost_note->duration = drag_note->duration;
+                        
+                    damage_grid( ghost_note->start, ghost_note->note, ghost_note->duration, 1 );
 
                     delete_note = false;
 

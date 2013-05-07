@@ -57,12 +57,15 @@ namespace MIDI {
         void select_all ( void );
         void select_none ( void );
         void invert_selection ( void );
+        void copy_selected ( event_list *el ) const;
+        void paste ( tick_t offset, const event_list *el );
 
         void remove_selected ( void );
         void transpose_selected ( int n );
-        tick_t selection_min ( void );
-        tick_t selection_max ( void );
-        void move_selected ( long o );
+        tick_t selection_min ( void ) const;
+        tick_t selection_max ( void ) const;
+        void move_selected ( tick_t tick );
+        void nudge_selected ( long o );
         void push_selection ( void );
         void pop_selection ( void );
         bool verify ( void ) const;
@@ -80,7 +83,6 @@ namespace MIDI {
         void hi_lo_note ( int *hi, int *lo ) const;
         void rewrite_selected ( int from, int to );
         void selected_hi_lo_note ( int *hi, int *lo ) const;
-
 
         event_list & operator= ( const event_list &rhs );
         event_list & operator= ( const list <midievent> &rhs );

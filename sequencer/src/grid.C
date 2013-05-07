@@ -27,6 +27,8 @@
 
 using namespace MIDI;
 
+MIDI::event_list Grid::_clipboard;
+
 Grid::Grid ( void )
 {
     _name = NULL;
@@ -139,11 +141,13 @@ Grid::_event ( int x, int y, bool write ) const
 
     const event_list *r = write ? &_rw->events : &d->events;
 
-    if ( r->empty() || x_to_ts( x )  > _rd->length )
+    tick_t xt = x_to_ts(x);
+
+    if ( r->empty() )
+/* || xt  > _rd->length ) */
         return NULL;
 
     int note = y_to_note( y );
-    tick_t xt = x_to_ts( x );
 
     for ( event *e = r->first(); e; e = e->next() )
     {
@@ -153,14 +157,14 @@ Grid::_event ( int x, int y, bool write ) const
         if ( e->note() != note )
             continue;
 
-        unsigned long ts = e->timestamp();
-        unsigned long l = 0;
+        tick_t ts = e->timestamp();
+        tick_t l = 0;
 
         if ( e->linked() )
             l = e->link()->timestamp() - ts;
         else
             WARNING( "found unlinked event... event list is corrupt." );
-
+        
         if ( xt >= ts && xt < ts + l )
             // this is a little nasty
             return const_cast<event *>(e);
@@ -307,7 +311,8 @@ Grid::put ( int x, int y, tick_t l, int velocity )
     event *off = new event;
 
     // Don't allow overlap (Why not?)
-    if ( _event( x, y, false ) || _event( x + xl - 1, y, false ) )
+    if ( _event( x, y, false ) ||
+         _event( x + xl, y, false ) )
         return;
 
     DMESSAGE( "put %d,%d", x, y );
@@ -541,6 +546,37 @@ Grid::toggle_select ( int x, int y )
     unlock();
 }
 
+/** copy selected notes to clipboard */
+void
+Grid::copy ( void )
+{
+    _rd->events.copy_selected( &_clipboard );
+}
+
+void
+Grid::cut ( void )
+{
+    _rd->events.copy_selected( &_clipboard );
+
+    lock();
+
+    _rw->events.remove_selected();
+
+    unlock();
+}
+
+void
+Grid::paste ( int offset )
+{
+    lock();
+    
+    _rw->events.paste( x_to_ts( offset ), &_clipboard );
+
+    expand();
+
+    unlock();
+
+}
 
 /** insert /l/ ticks of time after /x/ */
 void
@@ -641,13 +677,26 @@ Grid::delete_selected ( void )
 }
 
 void
-Grid::move_selected ( int l )
+Grid::nudge_selected ( int l )
 {
-
     long o = x_to_ts( abs( l ) );
 
     if ( l < 0 )
         o = 0 - o;
+
+    lock();
+
+//    MESSAGE( "moving by %ld", o );
+
+    _rw->events.nudge_selected( o );
+
+    unlock();
+}
+
+void
+Grid::move_selected ( int l )
+{
+    tick_t o = x_to_ts( l );
 
     lock();
 
@@ -692,6 +741,11 @@ Grid::crop ( int l, int r, int t, int b )
     unlock();
 }
 
+int
+Grid::min_selected ( void ) const
+{
+    return ts_to_x( _rd->events.selection_min() );
+}
 
 void
 Grid::_relink ( void )
@@ -732,14 +786,6 @@ Grid::print ( void ) const
 void
 Grid::draw_notes ( draw_note_func_t draw_note, void *userdata ) const 
 {
-    /* int bx = viewport.x; */
-    /* int by = viewport.y; */
-    /* int bw = viewport.w + 100;                                  /\* FIXME: hack *\/ */
-    /* int bh = viewport.h; */
-
-    /* const tick_t start = x_to_ts( bx ); */
-    /* const tick_t end = x_to_ts( bx + bw ); */
-
     data *d = const_cast< data *>( _rd );
 
     for ( const event *e = d->events.first(); e; e = e->next() )
@@ -753,8 +799,7 @@ Grid::draw_notes ( draw_note_func_t draw_note, void *userdata ) const
 
         const tick_t tse = e->link()->timestamp();
 
-        /* if ( tse >= start && ts <= end ) */
-        draw_note( // ts_to_x( ts ),
+        draw_note(
             ts,
             note_to_y( e->note() ),
             tse - ts,
@@ -812,16 +857,32 @@ Grid::length ( tick_t l )
     unlock();
 }
 
+void
+Grid::bars ( int n )
+{
+    lock();
+    
+    _rw->length = n * _bpb * PPQN;
+    
+     _fix_length();
+
+    unlock();
+
+    // trim();
+
+    signal_events_change();
+}
+
 int
 Grid::bars ( void ) const
 {
-    return ts_to_x( _rd->length ) / (_ppqn * _bpb);
+    return beats() / _bpb;
 }
 
 int
 Grid::beats ( void ) const
 {
-    return ts_to_x( _rd->length ) / _ppqn;
+    return  _rd->length / PPQN;
 }
 
 int
@@ -842,21 +903,16 @@ Grid::ppqn ( void ) const
     return _ppqn;
 }
 
-/** set grid resolution to /n/, where 0 is 1/4 note, 1 is 1/8 note 2 is 1/16 note, etc. */
+/** set grid resolution to /n/, where /n/ is the denominator e.g. 1/n. */
 void
 Grid::resolution ( unsigned int n )
 {
-    /* if ( n < 4 ) */
-    /*     ASSERTION( "bad resolution: %d", n ); */
+    float W = viewport.w / _ppqn;
 
-//    _ppqn = n / 4;
     _ppqn = n;
-    DMESSAGE( "%d setting resolution to %d", n, _ppqn );
 
-    /* ensure that the correct number of bars are in the viewport */
-
-    viewport.w = _ppqn * _bpb * 2;
-
+    viewport.w = _ppqn * W;
+ 
     signal_events_change();
 
     signal_settings_change();
@@ -865,7 +921,7 @@ Grid::resolution ( unsigned int n )
 int
 Grid::resolution ( void ) const
 {
-    return _ppqn * 4;
+    return _ppqn;
 }
 
 int

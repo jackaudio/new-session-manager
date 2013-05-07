@@ -144,7 +144,7 @@ public:
 
             tick_t new_x = c->grid()->index();
 
-            fl_color( fl_color_add_alpha( FL_GREEN, 100 ) );
+            fl_color( fl_color_add_alpha( FL_RED, 100 ) );
             fl_line( x() + new_x * HS, y(), x() + new_x * HS, y() + h() );
         }
 
@@ -608,10 +608,13 @@ Canvas::draw_dash ( tick_t x, int y, tick_t w, int color, int selected ) const
     /* fl_rectf( x, y + 1, w, m.div_h - 1, fl_color_add_alpha( color, 170 ) ); */
 
     /* fl_rect( x, y + 1, w, m.div_h - 1, selected ? FL_MAGENTA : fl_lighter( FL_BACKGROUND_COLOR )); */
-
-    fl_draw_box( FL_ROUNDED_BOX, x, y + 1, w, m.div_h - 1, color );
-    if ( selected )
-        fl_draw_box( FL_ROUNDED_FRAME, x, y + 1, w, m.div_h - 1, FL_MAGENTA );
+    
+    if ( w > 4 )
+    {
+        fl_draw_box( FL_ROUNDED_BOX, x, y + 1, w, m.div_h - 1, color );
+        if ( selected )
+            fl_draw_box( FL_ROUNDED_FRAME, x, y + 1, w, m.div_h - 1, FL_MAGENTA );
+    }
 
 // fl_color_add_alpha( color, 170 ));
 }
@@ -702,7 +705,13 @@ Canvas::draw_playhead ( void )
     W = m.div_w;
     H = m.origin_y + m.margin_top + m.vp->h * m.div_h;
 
-    fl_rectf( X,Y,W,H, fl_color_add_alpha( FL_RED, 127 ) );
+    cairo_set_operator( Fl::cairo_cc(), CAIRO_OPERATOR_HSL_COLOR );
+
+    fl_rectf( X,Y,W,H, FL_RED );
+
+    cairo_set_operator( Fl::cairo_cc(), CAIRO_OPERATOR_OVER );
+
+    fl_rect( X,Y,W,H, FL_RED );
 }
 
 void
@@ -733,14 +742,16 @@ Canvas::draw_clip ( int X, int Y, int W, int H )
           gx < m.vp->x + m.vp->w + 200;                                   /* hack */
           gx++ )
     {
+        if ( m.grid->x_to_ts( gx ) > m.grid->length() )
+            continue;
+
         if ( gx % m.grid->division() == 0 )
-            fl_color( fl_color_add_alpha( FL_GRAY, 50 ));
+            fl_color( fl_color_average( FL_GRAY, FL_BLACK, 0.80 ) );
         else if ( gx % m.grid->subdivision() == 0 )
-            fl_color( fl_color_add_alpha( FL_GRAY, 30 ));
+            fl_color( fl_color_average( FL_GRAY, FL_BLACK, 0.40 ) );
         else
             continue;
         
-
         fl_rectf( m.origin_x + m.margin_left + ( ( gx - m.vp->x ) * m.div_w ),
                   m.origin_y + m.margin_top, 
                   m.div_w, 
@@ -760,12 +771,19 @@ Canvas::draw_clip ( int X, int Y, int W, int H )
 
     /* draw grid */
     
+    fl_begin_line();
+    
     if ( m.div_w > 4 )
     {
         for ( int gx = m.origin_x + m.margin_left;
               gx < x() + w();
               gx += m.div_w )
-            fl_line( gx, m.origin_y + m.margin_top, gx, y() + h() );
+        {
+//            fl_line(  gx, m.origin_y + m.margin_top, gx, y() + h() );
+            fl_vertex( gx, m.origin_y + m.margin_top );
+            fl_vertex( gx, y() + h() );
+            fl_gap();
+        }
     }
 
     if ( m.div_h > 2 )
@@ -773,10 +791,17 @@ Canvas::draw_clip ( int X, int Y, int W, int H )
         for ( int gy = m.origin_y + m.margin_top;
               gy < y() + h();
               gy += m.div_h )
-            fl_line( m.origin_x + m.margin_left, gy, x() + w(), gy );
+        {
+//            fl_line( m.origin_x + m.margin_left, gy,  x() + w(), gy ); 
+            fl_vertex( m.origin_x + m.margin_left, gy );
+            fl_vertex( x() + w(), gy );
+            fl_gap();
+        }
     }
 
+    fl_end_line();
 
+done:
     fl_pop_clip();
 
     fl_pop_clip();

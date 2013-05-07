@@ -126,13 +126,8 @@ phrase::by_number ( int n ) const
 }
 
 void
-phrase::put ( int x, int y, tick_t l )
+phrase::put ( int x, int y, tick_t l, int velocity )
 {
-    // FIXME: fix insertion length to the length of the pattern
-    // referred to by this row.
-
-    l = 4;
-
     // FIXME: use translation here.
     pattern *p = pattern::pattern_by_number( y + 1 );
 

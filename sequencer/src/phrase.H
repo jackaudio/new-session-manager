@@ -51,7 +51,7 @@ public:
     phrase *create ( void );
     phrase * by_number ( int n ) const;
 
-    void put ( int x, int y, tick_t l );
+    virtual void put ( int x, int y, tick_t l, int velocity = 64 );
     phrase * clone ( void );
     const char * row_name ( int r ) const;
     void draw_row_names ( Canvas *c ) const;

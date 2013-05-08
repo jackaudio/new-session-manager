@@ -103,7 +103,7 @@ src/main.C
          ##     use = [ 'fl_widgets', 'nonlib'],
               install_path = '${BINDIR}')
 
-    bld.install_files('${BINDIR}', 'import-ardour-session', chmod=0555,
+    bld.install_files('${BINDIR}', 'import-ardour-session', chmod=0o0555,
                       cwd=bld.path.find_dir('bin'), relative_trick=True)
 
     bld( features = 'subst',

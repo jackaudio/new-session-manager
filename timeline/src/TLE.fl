@@ -261,7 +261,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
       label {Non Timeline}
       callback {if ( Fl::event_key() != FL_Escape )
 	timeline->command_quit();} open
-      xywh {202 266 1025 770} type Double resizable
+      xywh {204 266 1025 770} type Double resizable
       code0 {o->xclass( APP_NAME );}
       class TLE_Window size_range {900 300 0 0} visible
     } {
@@ -330,21 +330,18 @@ pi.run();}
               label {&New}
               callback {save_timeline_settings();
 
-const char *templates[] = { "Default", NULL };
 
 char *default_path;
-char *selected_template;
 
         read_line( user_config_dir, "default_path", &default_path );
 
-        char *path = new_project_chooser( templates, &default_path, &selected_template );
+        char *path = new_project_chooser( &default_path  );
 
         if ( path )
         {
-            if ( ! Project::create( path, selected_template ) )
+            if ( ! Project::create( path, NULL ) )
                 fl_alert( "Error creating project!" );
             free( path );
-            free( selected_template );
         }
 
         if ( default_path )
@@ -422,7 +419,7 @@ while ( 0 == waitpid( pid, &status, WNOHANG ) )
 
 Project::open(path);
 
-free(path);} selected
+free(path);}
                 xywh {20 20 40 25}
               }
             }
@@ -1055,47 +1052,59 @@ if ( logo_box->image() )
 	((Fl_Shared_Image*)logo_box->image())->release();
 	logo_box->image( NULL );
 }} open
-      private xywh {1193 174 520 775} type Double hide modal
+      private xywh {1195 197 520 710} type Double modal visible
     } {
-      Fl_Value_Output {} {
-        label {Sample Rate}
-        xywh {40 80 90 25} labeltype SHADOW_LABEL align 1
-        code0 {o->value( timeline->sample_rate() );}
-      }
-      Fl_Output {} {
-        label {Size of Journal}
-        xywh {180 80 100 25} box UP_BOX labeltype SHADOW_LABEL align 1
-        code0 {static char pat[40];}
-        code1 {snprintf( pat, sizeof( pat ), "%.1fK", size( "history" ) / (float)1024 );}
-        code2 {o->value( pat );}
-        code3 {\#include "file.h"}
-      }
-      Fl_Output {} {
-        label {Created On}
-        xywh {320 80 180 25} box UP_BOX labeltype SHADOW_LABEL align 1 textfont 11 textsize 12
-        code0 {o->value( Project::created_on() );}
-      }
-      Fl_Output {} {
-        label Length
-        xywh {30 130 115 25} box BORDER_BOX color 47 align 1 textcolor 71
-        code0 {char pat[40];}
-        code1 {Clock::frame_to_HMS( pat, sizeof( pat ), timeline->length() );}
-        code2 {o->value( pat );}
-      }
-      Fl_Value_Output {} {
-        label Tracks
-        xywh {200 130 55 25} align 1
-        code0 {o->value( timeline->ntracks() );}
+      Fl_Group {} {open
+        xywh {25 30 470 75}
+      } {
+        Fl_Value_Output {} {
+          label {Sample Rate}
+          xywh {35 30 90 25} labeltype SHADOW_LABEL align 1
+          code0 {o->value( timeline->sample_rate() );}
+        }
+        Fl_Output {} {
+          label {Size of Journal}
+          xywh {175 30 100 25} box UP_BOX labeltype SHADOW_LABEL align 1
+          code0 {static char pat[40];}
+          code1 {snprintf( pat, sizeof( pat ), "%.1fK", size( "history" ) / (float)1024 );}
+          code2 {o->value( pat );}
+          code3 {\#include "file.h"}
+        }
+        Fl_Output {} {
+          label {Created On}
+          xywh {315 30 180 25} box UP_BOX labeltype SHADOW_LABEL align 1 textfont 11 textsize 12
+          code0 {o->value( Project::created_on() );}
+        }
+        Fl_Output {} {
+          label Length
+          xywh {25 80 115 25} box BORDER_BOX color 47 align 1 textcolor 71
+          code0 {char pat[40];}
+          code1 {Clock::frame_to_HMS( pat, sizeof( pat ), timeline->length() );}
+          code2 {o->value( pat );}
+        }
+        Fl_Value_Output {} {
+          label Tracks
+          xywh {195 80 55 25} align 1
+          code0 {o->value( timeline->ntracks() );}
+        }
+        Fl_Output {} {
+          label {Last Modified On}
+          xywh {315 80 180 25} box UP_BOX labeltype SHADOW_LABEL align 1 textfont 11 textsize 12
+          code0 {time_t t = modification_time( "history" );}
+          code1 {static char s[40];}
+          code2 {ctime_r( &t, s ); s[ strlen( s ) - 1 ] = 0;}
+          code3 {o->value( s );}
+        }
       }
       Fl_Box logo_box {
         label {<LOGO>}
-        private xywh {20 173 485 268} color 53 labelfont 1 labelsize 18 align 16
+        private xywh {18 117 485 268} color 53 labelfont 1 labelsize 18 align 16
         code0 {o->image( Fl_Shared_Image::get( PIXMAP_PATH "/non-timeline/icon-256x256.png" ) );}
         code1 {o->label( NULL );}
       }
       Fl_Text_Editor notes_field {
-        label {Notes:}
-        private xywh {20 475 480 245} color 47 selection_color 31 textsize 18 textcolor 92
+        label {Notes:} selected
+        private xywh {20 420 480 245} color 47 selection_color 31 textsize 18 textcolor 92
         code0 {o->buffer( new Fl_Text_Buffer() );}
         code1 {o->buffer()->loadfile( "notes" );}
       }
@@ -1104,28 +1113,12 @@ if ( logo_box->image() )
         callback {notes_field->buffer()->savefile( "notes" );
 
 window->do_callback();}
-        xywh {420 735 74 25}
-      }
-      Fl_Box {} {
-        label {Project Info}
-        xywh {40 18 405 27} box RSHADOW_BOX color 95 labeltype SHADOW_LABEL labelsize 18
-      }
-      Fl_Box {} {
-        label {Project Info}
-        xywh {25 18 470 33} box RSHADOW_BOX color 0 labelsize 20 labelcolor 32
+        xywh {422 676 74 25}
       }
       Fl_Button {} {
         label {&Discard}
         callback {window->do_callback();}
-        xywh {330 735 74 25}
-      }
-      Fl_Output {} {
-        label {Last Modified On}
-        xywh {320 130 180 25} box UP_BOX labeltype SHADOW_LABEL align 1 textfont 11 textsize 12
-        code0 {time_t t = modification_time( "history" );}
-        code1 {static char s[40];}
-        code2 {ctime_r( &t, s ); s[ strlen( s ) - 1 ] = 0;}
-        code3 {o->value( s );}
+        xywh {332 676 74 25}
       }
     }
   }

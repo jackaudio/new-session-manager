@@ -186,21 +186,18 @@ void Mixer::cb_menu(Fl_Widget* o) {
     if (! strcmp( picked, "&Project/&New") )
     {
         DMESSAGE( "New project" );
-        const char *templates[] = { "Default", NULL };
 
         char *default_path;
-        char *selected_template;
 
         read_line( user_config_dir, "default_path", &default_path );
 
-        char *path = new_project_chooser( templates, &default_path, &selected_template );
+        char *path = new_project_chooser( &default_path  );
 
         if ( path )
         {
-            if ( ! Project::create( path, selected_template ) )
+            if ( ! Project::create( path, NULL ) )
                 fl_alert( "Error creating project!" );
             free( path );
-            free( selected_template );
         }
 
         update_menu();

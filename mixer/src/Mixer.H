@@ -108,6 +108,12 @@ public:
 
     void say_hello ( void );
 
+    void save_default_project_settings ( void );
+    void load_default_project_settings ( void );
+    void reset_project_settings ( void );
+    void save_project_settings ( void );
+    void load_project_settings ( void );
+
 public:
 
     void command_new ( void );

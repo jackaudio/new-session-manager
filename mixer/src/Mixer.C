@@ -189,6 +189,8 @@ void Mixer::command_new ( void )
         free( path );
     }
     
+    load_project_settings();
+
     update_menu();
     
     if ( default_path )
@@ -207,6 +209,8 @@ void Mixer::cb_menu(Fl_Widget* o) {
      // const char *picked = menu->text();
 
     menu->item_pathname( picked, sizeof( picked ) );
+
+    DMESSAGE( "Picked %s", picked );
 
     if (! strcmp( picked, "&Project/&New") )
     {
@@ -265,17 +269,21 @@ void Mixer::cb_menu(Fl_Widget* o) {
                 fl_alert( "%s", "Failed to import strip!" );
         }
     }
-    else if (! strcmp( picked, "&Mixer/&Rows/One") )
+    else if (! strcmp( picked, "&Project/Se&ttings/&Rows/One") )
     {
         rows( 1 );
     }
-    else if (! strcmp( picked, "&Mixer/&Rows/Two") )
+    else if (! strcmp( picked, "&Project/Se&ttings/&Rows/Two") )
     {
         rows( 2 );
     }
-    else if (! strcmp( picked, "&Mixer/&Rows/Three") )
+    else if (! strcmp( picked, "&Project/Se&ttings/&Rows/Three") )
     {
         rows( 3 );
+    }
+    else if (! strcmp( picked, "&Project/Se&ttings/Make Default") )
+    {
+        save_default_project_settings();
     }
     else if (! strcmp( picked, "&View/&Theme") )
     {
@@ -366,6 +374,52 @@ progress_cb ( int p, void *v )
     }
 }
 
+void
+Mixer::save_default_project_settings ( void )
+{
+    char path[256];
+    snprintf( path, sizeof( path ), "%s/%s", user_config_dir, ".default_project_settings" );
+    
+    ((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Project/Se&ttings" ), path );
+}
+
+void
+Mixer::load_default_project_settings ( void )
+{
+    char path[256];
+    snprintf( path, sizeof( path ), "%s/%s", user_config_dir, ".default_project_settings" );
+    
+    ((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), path );
+}
+
+void
+Mixer::reset_project_settings ( void )
+{
+    rows(1);
+
+    load_default_project_settings();
+}
+
+void
+Mixer::save_project_settings ( void )
+{
+    if ( ! Project::open() )
+	return;
+    
+    ((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Project/Se&ttings" ), "options" );
+}
+
+void
+Mixer::load_project_settings ( void )
+{
+    reset_project_settings();
+
+    if ( Project::open() )
+	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), "options" );
+
+    update_menu();
+}
+
 Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
 {
@@ -380,14 +434,15 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         { Fl_Menu_Bar *o = menubar = new Fl_Menu_Bar( X, Y, W, 24 );
             o->add( "&Project/&New" );
             o->add( "&Project/&Open" );
+            o->add( "&Project/Se&ttings/&Rows/One", '1', 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
+            o->add( "&Project/Se&ttings/&Rows/Two", '2', 0, 0, FL_MENU_RADIO );
+            o->add( "&Project/Se&ttings/&Rows/Three", '3', 0, 0, FL_MENU_RADIO );
+            o->add( "&Project/Se&ttings/Make Default", 0,0,0);
             o->add( "&Project/&Save", FL_CTRL + 's', 0, 0 );
             o->add( "&Project/&Quit", FL_CTRL + 'q', 0, 0 );
             o->add( "&Mixer/&Add Strip", 'a', 0, 0 );
             o->add( "&Mixer/Add &N Strips" );
             o->add( "&Mixer/&Import Strip" );
-            o->add( "&Mixer/&Rows/One", '1', 0, 0 );
-            o->add( "&Mixer/&Rows/Two", '2', 0, 0 );
-            o->add( "&Mixer/&Rows/Three", '3', 0, 0 );
             o->add( "&View/&Theme", 0, 0, 0 );
             o->add( "_&Options/&Display/&Knobs/&Arc", 0, 0, 0, FL_MENU_RADIO   );
             o->add( "_&Options/&Display/&Knobs/&Burnished", 0, 0, 0, FL_MENU_RADIO );
@@ -730,6 +785,8 @@ Mixer::command_save ( void )
         update_menu();
     }    
 
+    save_project_settings();
+
     return Project::save();
 }
 
@@ -746,6 +803,8 @@ Mixer::command_load ( const char *path, const char *display_name )
 
     if ( display_name )
         Project::name( display_name );
+    
+    load_project_settings();
 
     update_menu();
 
@@ -762,6 +821,8 @@ Mixer::command_new ( const char *path, const char *display_name )
 
     if ( display_name )
         Project::name( display_name );
+
+    load_project_settings();
 
     update_menu();
 

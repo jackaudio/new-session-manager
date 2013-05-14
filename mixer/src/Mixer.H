@@ -110,6 +110,7 @@ public:
 
 public:
 
+    void command_new ( void );
     bool command_save ( void );
     bool command_load ( const char *path, const char *display_name = 0 );
     bool command_new ( const char *path, const char *display_name = 0 );

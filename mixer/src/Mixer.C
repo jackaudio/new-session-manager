@@ -172,6 +172,31 @@ Mixer::redraw_windows ( void )
             w->redraw();
 }
 
+void Mixer::command_new ( void )
+{
+    DMESSAGE( "New project" );
+    
+    char *default_path;
+    
+    read_line( user_config_dir, "default_path", &default_path );
+    
+    char *path = new_project_chooser( &default_path  );
+    
+    if ( path )
+    {
+        if ( ! Project::create( path, NULL ) )
+            fl_alert( "Error creating project!" );
+        free( path );
+    }
+    
+    update_menu();
+    
+    if ( default_path )
+    {
+        write_line( user_config_dir, "default_path", default_path );
+        free( default_path );
+    }
+}
 
 void Mixer::cb_menu(Fl_Widget* o) {
     Fl_Menu_Bar *menu = (Fl_Menu_Bar*)o;
@@ -185,29 +210,7 @@ void Mixer::cb_menu(Fl_Widget* o) {
 
     if (! strcmp( picked, "&Project/&New") )
     {
-        DMESSAGE( "New project" );
-
-        char *default_path;
-
-        read_line( user_config_dir, "default_path", &default_path );
-
-        char *path = new_project_chooser( &default_path  );
-
-        if ( path )
-        {
-            if ( ! Project::create( path, NULL ) )
-                fl_alert( "Error creating project!" );
-            free( path );
-        }
-
-        update_menu();
-
-        if ( default_path )
-        {
-            write_line( user_config_dir, "default_path", default_path );
-            free( default_path );
-        }
-
+        command_new();
     }
     else if (! strcmp( picked, "&Project/&Open" ) )
     {
@@ -709,21 +712,6 @@ Mixer::save_options ( void )
 void
 Mixer::update_menu ( void )
 {
-    bool b = Project::open();
-
-    if ( b )
-    {
-        ((Fl_Menu_Item*)menubar->find_item( "&Mixer" ))->flags &= ~FL_MENU_INACTIVE;
-        ((Fl_Menu_Item*)menubar->find_item( "&Project/&Save" ))->flags &= ~FL_MENU_INACTIVE;
-         mixer_strips->activate();
-    }
-    else
-    {
-        ((Fl_Menu_Item*)menubar->find_item( "&Mixer" ))->flags |= FL_MENU_INACTIVE;
-        ((Fl_Menu_Item*)menubar->find_item( "&Project/&Save" ))->flags |= FL_MENU_INACTIVE;
-        mixer_strips->deactivate();
-    }
-
     project_name->label( Project::name() );
 }
 
@@ -736,6 +724,12 @@ Mixer::update_menu ( void )
 bool
 Mixer::command_save ( void )
 {
+    if ( ! Project::open() )
+    {
+        command_new();
+        update_menu();
+    }    
+
     return Project::save();
 }
 

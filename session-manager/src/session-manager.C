@@ -501,6 +501,9 @@ browser_callback ( Fl_Widget *w, void * )
 
 class NSM_Controller : public Fl_Group
 {
+   
+    Fl_Text_Display *status_display;
+
 public:
 
     Fl_Pack *clients_pack;
@@ -516,15 +519,32 @@ public:
     Fl_Box *session_name_box;
 
     Fl_Tree *session_browser;
-    
-    Fl_Text_Display *status_display;
-
+ 
     int status_lines;
 
     static void cb_handle ( Fl_Widget *w, void *v )
         {
             ((NSM_Controller*)v)->cb_handle( w );
 
+        }
+
+    void log_status ( const char *s )
+        {
+            time_t now;
+
+            now = time( NULL );
+
+            struct tm * tm =  localtime( &now );
+            
+            char *ts;
+            asprintf( &ts, "%02i:%02i:%02i ", tm->tm_hour, tm->tm_min, tm->tm_sec );
+            
+            status_display->buffer()->append( ts );
+            free( ts );
+           
+            status_display->buffer()->append( s );
+            status_display->scroll( ++status_lines, 0 );
+            status_display->buffer()->append( "\n" );
         }
 
     void
@@ -1093,10 +1113,7 @@ private:
 
             if ( !strcmp( path, "/nsm/gui/server/message" ) && !strcmp( types, "s" ) )
             {
-                controller->status_display->insert( &argv[0]->s );
-                // controller->status_display->show_insert_position();
-                controller->status_display->scroll( ++controller->status_lines, 0 );
-                controller->status_display->insert( "\n" );
+                controller->log_status( &argv[0]->s );
             }
             else if ( !strcmp( path, "/nsm/gui/session/session" ) &&
                  ! strcmp( types, "s" ) )
@@ -1173,10 +1190,7 @@ private:
                 else if ( ! strcmp( types, "ss" ) )
                 {
                     MESSAGE( "%s says %s", &argv[0]->s, &argv[1]->s);
-
-                    controller->status_display->insert( &argv[1]->s );
-                    controller->status_display->scroll( ++controller->status_lines, 0 );
-                    controller->status_display->insert( "\n" );
+                    controller->log_status( &argv[1]->s );
                 }
             }
 

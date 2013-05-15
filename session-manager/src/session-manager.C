@@ -515,6 +515,7 @@ public:
     Fl_Button *new_button;
     Fl_Button *add_button;
     Fl_Button *duplicate_button;
+    Fl_Button *quit_button;
     Fl_Button *refresh_button;
     Fl_Box *session_name_box;
 
@@ -602,6 +603,10 @@ public:
                 {
                     osc->send( (*d)->addr, "/nsm/server/duplicate", name );
                 }
+            }
+            else if ( w == quit_button )
+            {
+                window()->do_callback( window(), this );
             }
             else if ( w == refresh_button )
             {
@@ -870,6 +875,11 @@ public:
             { Fl_Pack *o = buttons_pack = new Fl_Pack( X, Y, W, 30 );
                 o->type( Fl_Pack::HORIZONTAL );
                 o->box( FL_NO_BOX );
+                { Fl_Button *o = quit_button = new Fl_Button( 0, 0, 80, 50, "&Quit" );
+                    o->shortcut( FL_CTRL | 'q' );
+                    o->box( FL_UP_BOX );
+                    o->callback( cb_handle, (void*)this );
+                }
                 { Fl_Button *o = refresh_button = new Fl_Button( 0, 0, 80, 50, "&Refresh" );
                     o->shortcut( FL_CTRL | 'r' );
                     o->box( FL_UP_BOX );

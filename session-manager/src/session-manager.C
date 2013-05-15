@@ -1015,13 +1015,16 @@ public:
                     if ( active() )
                     {
                         deactivate();
-                        fl_alert( "Server is not responding..." );
+                        log_status( "Server is not responding..." );
                     }
                 }
                 else
                 {
                     if ( !active() )
+                    {
+                        log_status( "Server is back." );
                         activate();
+                    }
                 }
             }
         }

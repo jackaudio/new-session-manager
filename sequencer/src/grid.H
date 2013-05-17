@@ -28,7 +28,7 @@ class smf;
 
 #include "debug.h"
 
-const int MAX_UNDO = 10;
+const int MAX_UNDO = 50;
 
 #include <list>
 
@@ -247,6 +247,8 @@ public:
     void cut ( void );
     void copy ( void );
     void paste ( int offset );
+
+    void undo ( void );
 
     virtual tick_t default_length ( void ) const
         {

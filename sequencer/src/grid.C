@@ -977,6 +977,24 @@ Grid::mode ( void ) const
     return _mode;
 }
 
+void
+Grid::undo ( void )
+{
+    if ( ! _history.size() )
+        return;
+
+    data *d = _history.back();
+    
+    _history.pop_back();
+
+    // swap the copy back in (atomically).
+    _rd = (const data *)d;
+    
+    _rw = NULL;
+    
+    if ( ! _suspend_update )
+        signal_events_change();
+}
 
 /** return a pointer to a copy of grid's event list in raw form */
 event_list *

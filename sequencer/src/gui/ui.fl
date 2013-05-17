@@ -109,7 +109,7 @@ Function {init_colors()} {open private C return_type {static void}
 } 
 
 widget_class Visual_Metronome {open
-  xywh {1242 936 100 100} type Double visible
+  xywh {1244 936 100 100} type Double visible
 } {
   Fl_Slider progress {
     private xywh {139 115 1149 23} type Horizontal box FLAT_BOX color 7 selection_color 54
@@ -414,7 +414,7 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {492 227 865 805} type Double color 47 resizable
+      xywh {494 231 865 805} type Double color 47 resizable
       code0 {o->color( FL_BACKGROUND_COLOR );}
       code1 {o->draw_overlay_callback( &UI::draw_overlay, this );}
       code2 {o->xclass( APP_NAME );}
@@ -1311,7 +1311,7 @@ ab.run();}
             }
           }
           Submenu edit_menu {
-            label {&Edit} open selected
+            label {&Edit} open
             xywh {0 0 68 18}
           } {
             MenuItem {} {
@@ -1423,6 +1423,13 @@ w->copy();}
 
 w->paste();}
               xywh {120 120 34 18} shortcut 0x40076
+            }
+            MenuItem {} {
+              label Undo
+              callback {Canvas *w = current_canvas();
+
+w->grid()->undo();} selected
+              xywh {110 110 34 18} shortcut 0x4007a
             }
           }
         }

@@ -1164,8 +1164,6 @@ Timeline::draw_clip_tracks ( void * v, int X, int Y, int W, int H )
 
     tl->panzoomer->damage( pzd );
 
-    tl->draw_cursors();
-
     fl_pop_clip();
 }
 
@@ -1246,12 +1244,14 @@ Timeline::draw_cursors ( Cursor_Sequence *o ) const
                 
                 fl_rectf( (*i)->line_x(), tracks->y(), (*i)->abs_w(), tracks->h() );
             }
-
-            fl_color( fl_color_add_alpha( (*i)->box_color(), 127  ));
-
-            fl_line( (*i)->line_x(), tracks->y(), (*i)->line_x(), 9000 );
-
-            fl_line( (*i)->line_x() + (*i)->abs_w(), tracks->y(), (*i)->line_x() + (*i)->abs_w(), tracks->h() );
+            else
+            {
+                fl_color( fl_color_add_alpha( (*i)->box_color(), 127  ));
+                
+                fl_line( (*i)->line_x(), tracks->y(), (*i)->line_x(), tracks->y() + tracks->h() );
+                
+                fl_line( (*i)->line_x() + (*i)->abs_w(), tracks->y(), (*i)->line_x() + (*i)->abs_w(), tracks->y() + tracks->h() );
+            }
         }
     }
 
@@ -1343,8 +1343,6 @@ Timeline::draw ( void )
                       tile->h() );
 
         draw_child(*tile);
-
-        draw_cursors();
         
         fl_pop_clip();
         
@@ -1368,8 +1366,6 @@ Timeline::draw ( void )
 
         update_child(*tile);
         
-        draw_cursors();        
-
         fl_pop_clip();
         
         redraw_overlay();
@@ -1534,6 +1530,8 @@ Timeline::draw_overlay ( void )
     fl_push_no_clip();
 
     draw_playhead();
+
+    draw_cursors();
 
     if ( ! ( _selection.w && _selection.h ) )
     {

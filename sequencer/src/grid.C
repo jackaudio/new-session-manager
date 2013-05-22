@@ -57,7 +57,6 @@ Grid::Grid ( void )
     viewport.y = 0;
 
     _playing = false;
-    _suspend_update = false;
     _start = _end = _index = 0;
 }
 
@@ -129,8 +128,7 @@ Grid::unlock ( void )
 
         _rw = NULL;
 
-        if ( ! _suspend_update )
-            signal_events_change();
+        signal_events_change();
     }
 }
 
@@ -566,6 +564,16 @@ Grid::cut ( void )
 }
 
 void
+Grid::selected_velocity ( int v )
+{
+    lock();
+
+    _rw->events.selected_velocity( v );
+
+    unlock();
+}
+
+void
 Grid::paste ( int offset )
 {
     lock();
@@ -992,8 +1000,7 @@ Grid::undo ( void )
     
     _rw = NULL;
     
-    if ( ! _suspend_update )
-        signal_events_change();
+    signal_events_change();
 }
 
 /** return a pointer to a copy of grid's event list in raw form */

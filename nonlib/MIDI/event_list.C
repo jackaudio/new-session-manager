@@ -428,6 +428,18 @@ namespace MIDI
     }
 
 
+/** set velocity of selected notes to /v/ */
+    void
+    event_list::selected_velocity ( int v ) 
+    {
+        FOR_SELECTED( e )
+        {
+            if ( e->is_note_on() )
+                e->note_velocity( v );
+        }
+    }
+
+
 /** get timestamp of earliest selected event */
     tick_t
     event_list::selection_min ( void ) const

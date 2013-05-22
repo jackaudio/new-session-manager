@@ -142,8 +142,7 @@ public:
 
             double HS = (double)w() /(  _xmax - _xmin );
 
-            tick_t new_x = c->grid()->index();
-
+            tick_t new_x = c->grid()->x_to_ts( c->grid()->ts_to_x( c->grid()->index() ) );
             fl_color( fl_color_add_alpha( FL_RED, 100 ) );
             fl_line( x() + new_x * HS, y(), x() + new_x * HS, y() + h() );
         }
@@ -684,7 +683,7 @@ Canvas::draw_overlay ( void )
     if ( ! visible_r() )
         return;
 
-    fl_push_no_clip();
+    /* fl_push_no_clip(); */
     
     fl_push_clip( x() + m.margin_left,
                   y() + m.margin_top,
@@ -714,7 +713,7 @@ Canvas::draw_overlay ( void )
 
     panzoomer->draw_overlay();
 
-    fl_pop_clip();
+    /* fl_pop_clip(); */
 
 }
 
@@ -724,13 +723,13 @@ Canvas::draw_playhead ( void )
 {
     int x = m.grid->ts_to_x( m.grid->index() );
 
-    if ( m.playhead == x )
-        return;
+    /* if ( m.playhead == x ) */
+    /*     return; */
 
     m.playhead = x;
 
-    if ( m.playhead < m.vp->x || m.playhead >= m.vp->x + m.vp->w )
-        return;
+    /* if ( m.playhead < m.vp->x || m.playhead >= m.vp->x + m.vp->w ) */
+    /*     return; */
 
     int px = m.origin_x + m.margin_left + ( x - m.vp->x ) * m.div_w;
 
@@ -909,11 +908,13 @@ Canvas::cb_scroll ( Fl_Widget *w )
         Fl_Panzoomer *o = (Fl_Panzoomer*)w;
 
         _old_scroll_x = m.vp->x;
+        _old_scroll_y = m.vp->y;
 
         m.vp->x = grid()->ts_to_x( o->x_value() );
         m.vp->y = o->y_value();
 
-        damage( FL_DAMAGE_SCROLL );
+        if ( m.vp->x != _old_scroll_x || m.vp->y != _old_scroll_y )
+            damage( FL_DAMAGE_SCROLL );
 
         if ( o->zoom_changed() )
         {
@@ -1117,17 +1118,6 @@ Canvas::move_selected ( int dir, int n )
 }
 
 void
-Canvas::randomize_row ( int y )
-{
-    int x = m.margin_left;
-
-    if ( ! grid_pos( &x, &y ) )
-        return;
-
-    ((pattern*)m.grid)->randomize_row( y, song.random.feel, song.random.probability );
-}
-
-void
 Canvas::_lr ( void )
 {
     int l, r;
@@ -1312,6 +1302,12 @@ Canvas::h_zoom ( float n )
     resize_grid();
 
     song.set_dirty();
+}
+
+void
+Canvas::selected_velocity ( int v )
+{
+    grid()->selected_velocity( v );
 }
 
 void
@@ -1754,10 +1750,6 @@ Canvas::handle ( int m )
             int dy = y;
             grid_pos( &dx, &dy );
 
-            if ( IS_PATTERN && Fl::event_state() & ( FL_ALT  | FL_CTRL ) )
-                c->randomize_row( y );
-            else
-            {
                 if ( delete_note )
                 {
 //                            this->m.grid->del( dx, dy );
@@ -1782,11 +1774,12 @@ Canvas::handle ( int m )
                         delete ghost_note;
                         ghost_note = 0;
                     }
-            }
 
             if ( drag_note )
                 delete drag_note;
             drag_note = 0;
+
+            grid()->select_none();
 
             break;
         }
@@ -1855,13 +1848,14 @@ Canvas::handle ( int m )
                 {
                     damage_grid( ghost_note->start, ghost_note->note, ghost_note->duration, 1 );
 
+                    int ody = drag_y;
+                    int odx = drag_x;
+                    
                     if ( drag_note )
                     {
-                        int ody = drag_y;
-                        int odx = drag_x;
-                        
                         grid_pos( &odx, &ody );
                         
+                        /* cursor must leave the row to begin adjusting velocity. */
                         if ( ody != dy )
                         {
                             ghost_note->velocity =
@@ -1874,11 +1868,15 @@ Canvas::handle ( int m )
                                 ghost_note->velocity = 127;
                         }
                     }
+
+                    if ( dx != odx )
+                        {
+                            if ( dx > this->m.grid->ts_to_x( ghost_note->start ) )
+                            {
+                                ghost_note->duration = this->m.grid->x_to_ts( dx  ) - ghost_note->start;
+                            }
+                        }
                     
-                    if ( dx > this->m.grid->ts_to_x( ghost_note->start ) )
-                    {
-                        ghost_note->duration = this->m.grid->x_to_ts( dx  ) - ghost_note->start;
-                    }
                         
                     damage_grid( ghost_note->start, ghost_note->note, ghost_note->duration, 1 );
 

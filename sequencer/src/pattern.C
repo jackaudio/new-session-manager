@@ -142,6 +142,7 @@ pattern::reset ( void )
     }
 }
 
+/* runs in the UI thread */
 /* records a MIDI event into a temporary buffer. It'll only be
  * permanently added to pattern after recording stops or the pattern
  * loops. */
@@ -243,9 +244,7 @@ pattern::record_event ( const midievent *me )
                 p->_rw->events.insert( e );
             }
         
-        p->_suspend_update = true;
         p->unlock();
-        p->_suspend_update = false;
     }
 }
 
@@ -645,35 +644,6 @@ pattern::dump ( smf *f ) const
 }
 
 
-void
-pattern::randomize_row ( int y, int feel, float probability )
-{
-    lock();
-
-    int l = PPQN * 4 / _note;
-
-    int bx = ts_to_x( _rw->length - l );
-
-    float *p = (float *)alloca( feel * sizeof( float ) );
-
-    float prob = probability;
-    for ( int i = 0; i < feel; i++ )
-    {
-        p[i] = prob;
-        // reduce probability as we move away from center
-        prob *= 0.5;
-    }
-
-    for ( int x = 0; x < bx; x++ )
-    {
-        float r = ((float)rand()) / RAND_MAX;
-
-        if ( p[ x % feel ] + r >= 1 )
-            put( x, y, l );
-    }
-
-    unlock();
-}
 
 /*************/
 /* Recording */

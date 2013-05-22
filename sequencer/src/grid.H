@@ -109,8 +109,6 @@ protected:
     char     *_name;
     int      _number;
     
-    bool     _suspend_update;
-
     unsigned int     _bpb;                                  /* beats per bar */
     unsigned int     _ppqn;                                 /* pulses per quarter note (beat) */
 
@@ -217,6 +215,7 @@ public:
     void delete_selected ( void );
     void move_selected ( int l );
     void nudge_selected ( int l );
+    void selected_velocity ( int v );
 
     void crop ( int l, int r );
     void crop ( int l, int r, int t, int b );

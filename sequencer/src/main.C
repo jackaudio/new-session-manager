@@ -226,8 +226,6 @@ main ( int argc, char **argv )
     config.follow_playhead = true;
     config.record_mode = MERGE;
     song.play_mode = PATTERN;
-    song.random.feel = 8;
-    song.random.probability = 0.33;
 
     asprintf( &config.user_config_dir, "%s/%s", getenv( "HOME" ), USER_CONFIG_DIR );
     mkdir( config.user_config_dir, 0777 );

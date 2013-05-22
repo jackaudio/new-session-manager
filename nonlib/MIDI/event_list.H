@@ -68,6 +68,7 @@ namespace MIDI {
         void nudge_selected ( long o );
         void push_selection ( void );
         void pop_selection ( void );
+        void selected_velocity ( int v );
         bool verify ( void ) const;
         void link ( event *on );
         void insert_time ( tick_t start, tick_t l );

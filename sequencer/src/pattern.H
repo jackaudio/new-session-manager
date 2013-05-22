@@ -89,7 +89,6 @@ public:
     void queue ( int mode );
     int queue ( void ) const;
 
-    void randomize_row ( int y, int feel, float probability );
     void row_name_press ( int y );
 
     int port ( void ) const;

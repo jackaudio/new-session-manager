@@ -173,7 +173,6 @@ public:
     void v_zoom_fit ( void );
     void notes ( char *s );
     char * notes ( void );
-    void randomize_row ( int y );
     int playhead_moved ( void );
 
     void start_cursor ( int x, int y );
@@ -183,6 +182,7 @@ public:
     void insert_time ( void );
 
     void move_selected ( int dir, int n );
+    void selected_velocity ( int v );
 
     virtual int handle ( int m );
 

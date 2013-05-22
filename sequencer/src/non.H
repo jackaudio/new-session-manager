@@ -123,10 +123,5 @@ struct song_settings
             dirty( true );
         }
 
-    struct {
-        int feel;
-        float probability;
-    } random;
-
 };
 extern song_settings song;

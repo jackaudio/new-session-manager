@@ -109,7 +109,7 @@ Function {init_colors()} {open private C return_type {static void}
 } 
 
 widget_class Visual_Metronome {open
-  xywh {1244 936 100 100} type Double visible
+  xywh {978 1028 100 100} type Double visible
 } {
   Fl_Slider progress {
     private xywh {139 115 1149 23} type Horizontal box FLAT_BOX color 7 selection_color 54
@@ -342,8 +342,6 @@ seq_window = make_seq_window();
 
 init_colors();
 
-make_randomization_dialog();
-
 // make_instrument_edit_dialog();
 
 // use old focus behavior
@@ -401,8 +399,9 @@ free( path );} {}
   }
   Function {draw_overlay()} {open protected return_type void
   } {
-    code {if ( pattern_canvas_widget )
-	pattern_canvas_widget->draw_overlay();} {}
+    code {Canvas *c = current_canvas();
+if ( c )
+   c->draw_overlay();} {}
   }
   Function {make_main_window()} {open
   } {
@@ -414,14 +413,14 @@ if ( Fl::event() == FL_SHORTCUT && Fl::event_key() == FL_Escape )
 	 
 if ( maybe_save_song() )
 	quit();} open
-      xywh {494 231 865 805} type Double color 47 resizable
+      xywh {213 323 865 805} type Double color 47 resizable
       code0 {o->color( FL_BACKGROUND_COLOR );}
       code1 {o->draw_overlay_callback( &UI::draw_overlay, this );}
       code2 {o->xclass( APP_NAME );}
       class Overlay_Callback_Window size_range {700 509 0 0} visible
     } {
       Fl_Group {} {open
-        xywh {0 25 865 65} box FLAT_BOX
+        xywh {0 25 865 70} box FLAT_BOX
       } {
         Fl_Group {} {open
           xywh {552 26 312 69}
@@ -780,7 +779,7 @@ o->maximum( phrase::phrases() );}
             xywh {0 730 867 55} box FLAT_BOX color 47
           } {
             Fl_Group {} {open
-              xywh {5 733 300 44}
+              xywh {5 733 420 44}
               code0 {o->resizable(0);}
             } {
               Fl_Input pattern_name_field {
@@ -827,9 +826,14 @@ o->maximum( pattern::patterns() );}
                 callback {pattern_canvas_widget->selection_mode( o->value() );}
                 tooltip {Enable selection mode (you can also just hold down shift and drag the mouse)} xywh {260 733 45 44} type Toggle selection_color 5 labelsize 10
               }
+              Fl_Value_Slider velocity_slider {
+                label Velocity
+                callback {pattern_canvas_widget->selected_velocity( o->value() );} selected
+                xywh {310 742 110 18} type {Horz Fill} labelsize 10 align 1 maximum 127 value 64 textsize 9
+              }
             }
             Fl_Group {} {open
-              xywh {315 731 549 54}
+              xywh {455 731 409 54}
             } {
               Fl_Output mapping_text {
                 label Mapping
@@ -876,7 +880,7 @@ if ( 0 == strncmp( picked, "Scale", strlen( "Scale" ) ) )
                 label {&Key}
                 callback {((pattern*)pattern_canvas_widget->grid())->mapping.key( o->value() );
 
-pattern_canvas_widget->changed_mapping();} open
+pattern_canvas_widget->changed_mapping();}
                 xywh {700 761 75 19} down_box BORDER_BOX labelsize 10 when 1 textsize 11
               } {
                 MenuItem {} {
@@ -930,7 +934,7 @@ pattern_canvas_widget->changed_mapping();} open
               }
               Fl_Choice pattern_note_combo {
                 label {&Note 1/}
-                callback {((pattern*)pattern_canvas_widget->grid())->note( atoi( o->menu()[ o->value() ].text ));} open
+                callback {((pattern*)pattern_canvas_widget->grid())->note( atoi( o->menu()[ o->value() ].text ));}
                 xywh {715 736 45 19} down_box BORDER_BOX labelsize 10 when 1 textsize 12
               } {
                 MenuItem {} {
@@ -980,7 +984,7 @@ pattern_canvas_widget->changed_mapping();} open
               }
               Fl_Choice pattern_res_combo {
                 label {&Resolution 1/}
-                callback {pattern_canvas_widget->grid()->resolution( atoi( o->menu()[ o->value() ].text ));} open
+                callback {pattern_canvas_widget->grid()->resolution( atoi( o->menu()[ o->value() ].text ));}
                 xywh {615 736 55 19} down_box BORDER_BOX labelsize 10 when 1 textsize 12
               } {
                 MenuItem {} {
@@ -1052,7 +1056,7 @@ pattern_canvas_widget->changed_mapping();} open
                 code1 {for ( int i = 32; i <= 256; i <<= 1 ) { snprintf( pat, sizeof(pat), "%i", i ); o->add( pat ); }}
               } {}
               Fl_Box {} {
-                xywh {315 735 135 46} resizable
+                xywh {455 735 0 46} labelsize 8 align 1 resizable
               }
             }
           }
@@ -1238,16 +1242,6 @@ if ( tabs->value() == pattern_tab )
             }
           }
           Submenu {} {
-            label {&Settings} open
-            xywh {0 0 74 25} color 37
-          } {
-            MenuItem {} {
-              label {&Randomization Settings}
-              callback {randomization_dialog->show();}
-              xywh {0 0 40 25}
-            }
-          }
-          Submenu {} {
             label {&View} open
             xywh {10 10 74 25} color 37
           } {
@@ -1428,7 +1422,7 @@ w->paste();}
               label Undo
               callback {Canvas *w = current_canvas();
 
-w->grid()->undo();} selected
+w->grid()->undo();}
               xywh {110 110 34 18} shortcut 0x4007a
             }
           }
@@ -1440,13 +1434,12 @@ w->grid()->undo();} selected
       }
     }
   }
-  Function {make_seq_window()} {open
-  } {
+  Function {make_seq_window()} {} {
     Fl_Window seq_window {
       label {Non Sequencer - Sequence}
       callback {sequence_tab->activate();
 o->hide();
-detach_button->value( 0 );} open
+detach_button->value( 0 );}
       xywh {681 189 876 675} type Double hide resizable
     } {
       Fl_Group seq_detached_group {open
@@ -1454,44 +1447,7 @@ detach_button->value( 0 );} open
       } {}
     }
   }
-  Function {make_randomization_dialog()} {} {
-    Fl_Window randomization_dialog {
-      label {Randomization Settings} open
-      xywh {656 39 340 95} type Double hide
-      code0 {// feel->value( )}
-      code1 {probability->value( song.random.probability );} non_modal
-    } {
-      Fl_Choice feel {
-        label {Feel: 1/}
-        callback {song.random.feel = atoi( o->menu()[ find_numeric_menu_item( o->menu(), o->value() ) ].text );} open
-        xywh {67 55 50 24} down_box BORDER_BOX
-      } {
-        MenuItem {} {
-          label 4
-          xywh {10 10 40 25}
-        }
-        MenuItem {} {
-          label 8
-          xywh {0 0 40 25}
-        }
-        MenuItem {} {
-          label 16
-          xywh {10 10 40 25}
-        }
-      }
-      Fl_Box {} {
-        label {Randomization Settings}
-        xywh {10 15 321 28} box ROUNDED_BOX color 94 labelsize 22 labelcolor 39
-      }
-      Fl_Counter probability {
-        label Probability
-        callback {song.random.probability = o->value();}
-        xywh {216 53 112 26} type Simple align 4 when 4 minimum 0 maximum 1 step 0.01
-      }
-    }
-  }
-  Function {update_pattern_widgets()} {open
-  } {
+  Function {update_pattern_widgets()} {} {
     code {if ( ! pattern_settings_group )
 	return;
 
@@ -1538,8 +1494,7 @@ else
 */
 pattern_settings_group->redraw();} {}
   }
-  Function {update_phrase_widgets()} {open
-  } {
+  Function {update_phrase_widgets()} {} {
     code {if ( ! phrase_canvas_widget )
 	return;
 	
@@ -1564,8 +1519,7 @@ else
 
 phrase_settings_group->redraw();} {}
   }
-  Function {update_sequence_widgets()} {open
-  } {
+  Function {update_sequence_widgets()} {} {
     code {if ( playlist->notes() )
 	sequence_notes_buffer->text( playlist->notes() );
 else
@@ -1614,8 +1568,7 @@ free( s );
 if ( playback_mode_menu )
 	playback_mode_menu->value( song.play_mode );} {}
   }
-  Function {update_mapping_menu()} {open
-  } {
+  Function {update_mapping_menu()} {} {
     code {char **sa = Instrument::listing();
 
 if ( sa )
@@ -1659,7 +1612,7 @@ free( sa );} {}
 
 return 0;} {}
   }
-  Function {save_dialog( const char *name )} {open return_type void
+  Function {save_dialog( const char *name )} {return_type void
   } {
     code {if ( ! name )
 {
@@ -1691,7 +1644,7 @@ snprintf( pat, 256, "file://%s/non-sequencer/%s.html", DOCUMENT_PATH, file );
 
 open_url( pat );} {}
   }
-  Function {maybe_save_song()} {open return_type bool
+  Function {maybe_save_song()} {return_type bool
   } {
     code {if ( song.dirty() )
 {
@@ -1730,7 +1683,7 @@ if ( p )
 //	update_pattern_widgets();
 }} {}
   }
-  Function {edit_instrument_row( Instrument *i, int n )} {open return_type void
+  Function {edit_instrument_row( Instrument *i, int n )} {return_type void
   } {
     code {Instrument_Editor ie;
 
@@ -1743,7 +1696,9 @@ ie.run();} {}
     code {if ( tabs->value() == pattern_tab )
 	return pattern_canvas_widget;
 else if ( tabs->value() == phrase_tab )
-	return phrase_canvas_widget;} {}
+	return phrase_canvas_widget;
+else
+	return NULL;} {}
   }
 } 
 
@@ -1809,7 +1764,7 @@ while ( window->shown() )
   }
 } 
 
-class Trigger {open : {public Fl_Progress}
+class Trigger {: {public Fl_Progress}
 } {
   Function {Trigger( int X, int Y, int W, int H, const char *L =0) : Fl_Progress( X, Y, W, H, L )} {open
   } {
@@ -1893,7 +1848,7 @@ return r;} {}
   }
 } 
 
-widget_class Triggers {open
+widget_class Triggers {
   xywh {390 620 335 390} type Double hide
   code0 {\#include <FL/Fl_Dial.H>}
   code1 {populate();}
@@ -2006,8 +1961,7 @@ Fl_Group::draw();} {}
   }
 } 
 
-class List_Chooser {open
-} {
+class List_Chooser {} {
   Function {List_Chooser( const char *name, const char *action )} {} {
     Fl_Window window {open
       xywh {525 313 310 545} type Single hide resizable non_modal size_range {310 524 0 0}
@@ -2052,7 +2006,7 @@ window->hide();}
 decl {float status_intensity;} {private local
 } 
 
-Function {fade_status(void*)} {open private return_type {static void}
+Function {fade_status(void*)} {private return_type {static void}
 } {
   code {ui->status->labelcolor( fl_color_average( FL_FOREGROUND_COLOR, FL_BACKGROUND_COLOR, status_intensity ) );
 
@@ -2064,7 +2018,7 @@ Function {fade_status(void*)} {open private return_type {static void}
         Fl::repeat_timeout( 1 / 15.0f, fade_status );} {}
 } 
 
-Function {gui_status( const char *fmt, ... )} {open C return_type void
+Function {gui_status( const char *fmt, ... )} {C return_type void
 } {
   code {va_list args;
 

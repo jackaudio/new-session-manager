@@ -509,17 +509,16 @@ JACK_Module::handle_chain_name_changed ( void )
 int
 JACK_Module::handle ( int m )
 {
-    static JACK_Module *drag_source = 0;
-
     switch ( m ) 
     {
         case FL_PUSH:
             return Module::handle(m) || 1;
         case FL_RELEASE:
+            receptive_to_drop = NULL;
             return Module::handle(m) || 1;
         case FL_DRAG:
         {
-            if ( ! Fl::event_inside( this ) && this != drag_source )
+            if ( ! Fl::event_inside( this ) )
             {
                 DMESSAGE( "initiation of drag" );
 
@@ -542,8 +541,6 @@ JACK_Module::handle ( int m )
                 free( s );
 
                 Fl::dnd();
-                
-                drag_source = this;
 
                 return 1;
             }
@@ -570,9 +567,6 @@ JACK_Module::handle ( int m )
             return 1;
         case FL_DND_DRAG:
         {
-          if ( this == drag_source )
-                return 0;
-
             if ( this == receptive_to_drop )
                 return 1;
 
@@ -591,7 +585,8 @@ JACK_Module::handle ( int m )
             receptive_to_drop = NULL;
             redraw();
 
-            drag_source = NULL;
+            if ( ! Fl::event_inside( this ) )
+                return 0;
 
             /* NOW we get the text... */
             const char *text = Fl::event_text();

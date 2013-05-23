@@ -1619,6 +1619,16 @@ Timeline::handle_scroll ( int m )
         return 0;
 }
 
+Track *
+Timeline::event_inside ( void )
+{
+    for ( int i = tracks->children(); i--; )
+        if ( Fl::event_inside( tracks->child(i) ) )
+            return (Track*)tracks->child(i);
+    
+    return NULL;
+}
+
 int
 Timeline::handle ( int m )
 {
@@ -1899,6 +1909,14 @@ Timeline::add_track ( Track *track )
     /* FIXME: why is this necessary? doesn't the above add do DAMAGE_CHILD? */
     redraw();
 
+}
+
+void
+Timeline::insert_track ( Track *track, Track *before )
+{
+    tracks->insert( *track, before );
+
+    tracks->redraw();
 }
 
 void

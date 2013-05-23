@@ -139,8 +139,12 @@ class Timeline : public Fl_Single_Window, public RWLock
     void update_track_order ( void );
     void apply_track_order ( void );
     void insert_track ( Track *track, int n );
+    
 
 public:
+    
+    void insert_track ( Track *track, Track *before );
+    Track * event_inside ( void );
 
     /* called when widgets are moved etc */
     void damage_sequence ( void );

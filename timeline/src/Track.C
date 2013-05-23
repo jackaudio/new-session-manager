@@ -1041,7 +1041,8 @@ Track::handle ( int m )
 
 /*     if ( m != FL_NO_EVENT ) */
 /*         DMESSAGE( "%s", event_name( m ) ); */
-    
+    static Fl_Widget *dragging = NULL;
+
     switch ( m )
     {
         case FL_DND_ENTER:
@@ -1087,7 +1088,12 @@ Track::handle ( int m )
         }
         case FL_PUSH:
         {
-            if ( Fl::event_inside( ((Track_Header*)child(0))->output_connector_handle ) )
+            if ( Fl::event_button1() && Fl::event_inside( ((Track_Header*)child(0))->color_box ) )
+            {
+                dragging = this;
+                return 1;
+            }
+            if ( Fl::event_button1() && Fl::event_inside( ((Track_Header*)child(0))->output_connector_handle ) )
                 return 1;
             
             Logger log( this );
@@ -1123,6 +1129,15 @@ Track::handle ( int m )
                 Fl::selection_owner(0);
             }
             return 1;
+        case FL_RELEASE:
+            if ( dragging == this )
+            {
+                dragging = NULL;
+                timeline->insert_track( this, timeline->event_inside() );
+                return 1;
+            }
+            return 0;
+            break;
         case FL_DND_RELEASE:
             receptive_to_drop = 0;
             redraw();
@@ -1234,8 +1249,9 @@ Track::handle ( int m )
                 return 1;
             }
             else
-                return 0;
-            
+            {
+                return 1;
+            }
         }
         default:
             return Fl_Group::handle( m );

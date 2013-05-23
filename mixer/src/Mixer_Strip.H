@@ -91,8 +91,6 @@ private:
     Fl_Flip_Button *width_button;
     Fl_Flip_Button *tab_button;
     Fl_Button *close_button;
-    Fl_Button *left_button;
-    Fl_Button *right_button;
     Fl_Input *name_field;
 
     Fl_Flowpack *controls_pack;

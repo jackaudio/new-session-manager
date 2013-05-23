@@ -91,6 +91,7 @@ public:
     void insert ( Mixer_Strip *ms, Mixer_Strip *before );
     void insert ( Mixer_Strip *ms, int i );
     bool contains ( Mixer_Strip *ms );
+    Mixer_Strip * event_inside ( void );
 
     bool save ( void );
     void quit ( void );

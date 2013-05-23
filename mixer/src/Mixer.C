@@ -616,6 +616,17 @@ void Mixer::remove ( Mixer_Strip *ms )
         parent()->redraw();
 }
 
+
+Mixer_Strip *
+Mixer::event_inside ( void )
+{
+    for ( int i = mixer_strips->children(); i--; )
+        if ( Fl::event_inside( mixer_strips->child(i) ) )
+            return (Mixer_Strip*)mixer_strips->child(i);
+
+    return NULL;
+}   
+
 bool
 Mixer::contains ( Mixer_Strip *ms )
 {

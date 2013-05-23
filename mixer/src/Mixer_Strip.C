@@ -232,10 +232,6 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
 
         set_spatializer_visibility();
     }
-    else if ( o == left_button )
-        command_move_left();
-    else if ( o == right_button )
-        command_move_right();
     else if ( o == close_button )
     {
         if ( Fl::event_shift() || 1 == fl_choice( "Are you sure you want to remove this strip?\n\n(this action cannot be undone)", "Cancel", "Remove", NULL ) )
@@ -406,17 +402,9 @@ Mixer_Strip::init ( )
                 o->value( name() );
                 o->callback( cb_handle, (void*)this );
             }
-            { Fl_Scalepack *o = new Fl_Scalepack( 7, 143, 110, 25 );
+            { Fl_Scalepack *o = new Fl_Scalepack( 7, 143, 110, 18 );
                 o->type( Fl_Pack::HORIZONTAL );
-                { Fl_Button* o = left_button = new Fl_Button(7, 143, 35, 25, "@<-");
-                    o->tooltip( "Move left" );
-                    o->type(0);
-                    o->labelsize(10);
-                    o->when( FL_WHEN_RELEASE );
-                    o->callback( ((Fl_Callback*)cb_handle), this );
-                } // Fl_Button* o
-
-
+              
                 { Fl_Flip_Button* o = width_button = new Fl_Flip_Button(61, 183, 45, 22, "[]/[-]");
                     o->type(1);
                     o->tooltip( "Switch between wide and narrow views" );
@@ -431,14 +419,6 @@ Mixer_Strip::init ( )
                     o->type(0);
                     o->labelfont( FL_COURIER_BOLD );
                     o->selection_color( FL_RED );
-                    o->labelsize(10);
-                    o->when( FL_WHEN_RELEASE );
-                    o->callback( ((Fl_Callback*)cb_handle), this );
-                } // Fl_Button* o
-
-                { Fl_Button* o = right_button = new Fl_Button(7, 143, 35, 25, "@->");
-                    o->tooltip( "Move right" );
-                    o->type(0);
                     o->labelsize(10);
                     o->when( FL_WHEN_RELEASE );
                     o->callback( ((Fl_Callback*)cb_handle), this );
@@ -547,6 +527,7 @@ Mixer_Strip::draw ( void )
     if ( damage() & FL_DAMAGE_ALL ||
          damage() & FL_DAMAGE_CHILD )
         Fl_Group::draw();
+
 
     fl_color(  Fl::focus() == this ? Fl_Group::selection_color() : FL_BLACK ); 
     fl_rect( x(), y(), w(), h() );
@@ -699,6 +680,8 @@ Mixer_Strip::handle ( int m )
     static int _button = 0;
 
     Logger log( this );
+    
+    static Fl_Widget *dragging = NULL;
 
     if ( Fl_Group::handle( m ) )
         return 1;
@@ -725,15 +708,35 @@ Mixer_Strip::handle ( int m )
                 menu_popup( &menu(), x(), y() );
                 return 1;
             }
-             else
+            else
                 return menu().test_shortcut() != 0;
             break;
         }
         case FL_PUSH:
+            if ( Fl::event_button1() && Fl::event_inside( color_box ) )
+            {
+            }
+
             _button = Fl::event_button();
+          
+            return 1;
+       
+            break;
+        
+        case FL_DRAG:
+            if ( Fl::event_is_click() )
+                return 1;
+            
+            dragging = this;
             break;
         case FL_RELEASE:
-        {
+            if ( dragging == this )
+            {
+                mixer->insert( this, mixer->event_inside() );
+                dragging = NULL;
+                return 1;
+            }
+   
             int b = _button;
             _button = 0;
  
@@ -748,7 +751,6 @@ Mixer_Strip::handle ( int m )
                 return 1;
             }
             break;
-        }
     }
     
     return 0;

@@ -31,7 +31,7 @@
 #include <FL/Fl_Menu_.H>
 #include <FL/Fl_Light_Button.H>
 #include <FL/fl_draw.H>
-#include "FL/Fl_Dial.H"
+#include "FL/Fl_DialX.H"
 #include "FL/Fl_Labelpad_Group.H"
 #include "FL/Fl_Value_SliderX.H"
 #include "Panner.H"
@@ -362,8 +362,8 @@ Controller_Module::connect_to ( Port *p )
         w = o;
 
         o->type(4);
-        o->color(FL_DARK1);
-        o->selection_color(FL_RED);
+        o->color( FL_DARK1 );
+        o->selection_color( fl_color_average( FL_GRAY, FL_CYAN, 0.5 ) );
         o->minimum(1.5);
         o->maximum(0);
         o->value(1);
@@ -381,7 +381,7 @@ Controller_Module::connect_to ( Port *p )
     }
     else
     {
-        { Fl_Dial *o = new Fl_Dial( 0, 0, 50, 50, p->name() );
+        { Fl_DialX *o = new Fl_DialX( 0, 0, 50, 50, p->name() );
             w = o;
             control = o;
 

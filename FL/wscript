@@ -15,6 +15,8 @@ Fl_Menu_Settings.C
 Fl_Scalepack.C
 Fl_Text_Edit_Window.fl
 Fl_Value_SliderX.C
+Fl_DialX.C
+Fl_SliderX.C
 New_Project_Dialog.fl
 event_name.C
 menu_popup.C

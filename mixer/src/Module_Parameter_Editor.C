@@ -32,7 +32,7 @@
 #include "FL/Fl_Flowpack.H"
 #include "FL/Fl_Labelpad_Group.H"
 #include "FL/Fl_Value_SliderX.H"
-#include "FL/Fl_Dial.H"
+#include "FL/Fl_DialX.H"
 
 #include "Module.H"
 #include "Module_Parameter_Editor.H"
@@ -145,6 +145,9 @@ Module_Parameter_Editor::make_controls ( void )
     elevation_port_number = -1;
     float elevation_value = 0.0f;
 
+    Fl_Color fc = fl_color_add_alpha( FL_CYAN, 200 );
+    Fl_Color bc = FL_BACKGROUND2_COLOR;
+
     controls_by_port.resize( module->control_input.size() );
 
     for ( unsigned int i = 0; i < module->control_input.size(); ++i )
@@ -177,7 +180,7 @@ Module_Parameter_Editor::make_controls ( void )
         {
             Fl_Button *o = new Fl_Button( 0, 0, 30, 30, p->name() );
             w = o;
-            o->selection_color( FL_GREEN );
+            o->selection_color( fc );
             o->type( FL_TOGGLE_BUTTON );
             o->value( p->control_value() );
         }
@@ -203,7 +206,7 @@ Module_Parameter_Editor::make_controls ( void )
         {
             if ( mode_choice->value() == 0 )
             {
-                Fl_Dial *o = new Fl_Dial( 0, 0, 60, 60, p->name() );
+                Fl_DialX *o = new Fl_DialX( 0, 0, 60, 60, p->name() );
                 w = o;
 
                 if ( p->hints.ranged )
@@ -213,9 +216,8 @@ Module_Parameter_Editor::make_controls ( void )
                     o->minimum( p->hints.minimum );
                     o->maximum( p->hints.maximum );
                 }
-
-                o->color( FL_GRAY );
-                o->selection_color( FL_WHITE );
+                o->color( bc );
+                o->selection_color( fc );
                 o->value( p->control_value() );
 
 //                o->step( fabs( ( o->maximum() - o->minimum() ) ) / 32.0f );
@@ -229,7 +231,7 @@ Module_Parameter_Editor::make_controls ( void )
                 {
                     o->type( FL_HORIZONTAL );
 
-                    o->size( 120, 36 );
+                    o->size( 120, 24 );
                     if ( p->hints.ranged )
                     {
                         o->minimum( p->hints.minimum );
@@ -240,17 +242,18 @@ Module_Parameter_Editor::make_controls ( void )
                 {
                     o->type( FL_VERTICAL );
 
-                    o->size( 36, 120 );
+                    o->size( 24, 120 );
                     /* have to reverse the meaning of these to get the
                      * orientation of the slider right */
                     o->maximum( p->hints.minimum );
                     o->minimum( p->hints.maximum );
                 }
 
+                o->textsize( 8 );
+                o->box( FL_NO_BOX );
                 o->slider( FL_UP_BOX );
-//                o->color( FL_BACKGROUND2_COLOR );
-                o->color( FL_BACKGROUND2_COLOR );
-                o->selection_color( FL_WHITE );
+                o->color( bc );
+                o->selection_color( fc );
                 o->value( p->control_value() );
             }
 

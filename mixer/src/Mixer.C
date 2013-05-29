@@ -289,36 +289,6 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         fl_theme_chooser();
     }
-    else if (! strcmp( picked, "&Options/&Display/&Knobs/&Burnished") )
-    {
-        Fl_Dial::default_style( Fl_Dial::BURNISHED_DIAL );
-        redraw_windows();
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Knobs/&Arc") )
-    {
-        Fl_Dial::default_style( Fl_Dial::ARC_DIAL );
-        redraw_windows();
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Knobs/&Plastic") )
-    {
-        Fl_Dial::default_style( Fl_Dial::PLASTIC_DIAL );
-        redraw_windows();
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Sliders/&Nice") )
-    {
-        Fl_Value_SliderX::default_style( Fl_Value_SliderX::NICE_SLIDER );
-        redraw_windows();
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Sliders/&Fill") )
-    {
-        Fl_Value_SliderX::default_style( Fl_Value_SliderX::FILL_SLIDER );
-        redraw_windows();
-    }
-    else if (! strcmp( picked, "&Options/&Display/&Sliders/&Simple") )
-    {
-        Fl_Value_SliderX::default_style( Fl_Value_SliderX::SIMPLE_SLIDER );
-        redraw_windows();
-    }
     else if ( ! strcmp( picked, "&Help/&About" ) )
     {
         About_Dialog ab( PIXMAP_PATH "/non-mixer/icon-256x256.png" );
@@ -444,13 +414,6 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             o->add( "&Mixer/Add &N Strips" );
             o->add( "&Mixer/&Import Strip" );
             o->add( "&View/&Theme", 0, 0, 0 );
-            o->add( "_&Options/&Display/&Knobs/&Arc", 0, 0, 0, FL_MENU_RADIO   );
-            o->add( "_&Options/&Display/&Knobs/&Burnished", 0, 0, 0, FL_MENU_RADIO );
-            o->add( "_&Options/&Display/&Knobs/&Plastic", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
-            o->add( "_&Options/&Display/&Sliders/&Nice", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
-            o->add( "_&Options/&Display/&Sliders/&Fill", 0, 0, 0, FL_MENU_RADIO );
-            o->add( "_&Options/&Display/&Sliders/&Simple", 0, 0, 0, FL_MENU_RADIO );
-            o->add( "_&Options/&Display/&Colors/&System", 0, 0, 0, FL_MENU_RADIO );
             o->add( "&Help/&Manual" );
             o->add( "&Help/&About" );
             o->callback( cb_menu, this );
@@ -760,19 +723,19 @@ Mixer::load_options ( void )
 {
 // save options
 
-    char *path;
-    asprintf( &path, "%s/options", user_config_dir );
-    ((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options" ), path );
-    free( path );
+    /* char *path; */
+    /* asprintf( &path, "%s/options", user_config_dir ); */
+    /* ((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Options" ), path ); */
+    /* free( path ); */
 }
 
 void
 Mixer::save_options ( void )
 {
-    char *path;
-    asprintf( &path, "%s/%s", user_config_dir, options_filename );
-    ((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Options" ), path );
-    free( path );
+    /* char *path; */
+    /* asprintf( &path, "%s/%s", user_config_dir, options_filename ); */
+    /* ((Fl_Menu_Settings*)menubar)->dump( menubar->find_item( "&Options" ), path ); */
+    /* free( path ); */
 }
 
 void

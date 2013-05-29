@@ -60,22 +60,9 @@
 #include <nsm.h>
 extern nsm_client_t *nsm;
 
-#ifdef USE_WIDGET_FOR_TIMELINE
 #define BASE Fl_Group
-#define redraw_overlay() ((Fl_Overlay_Window*)window())->redraw_overlay()
 #define BX this->x()
 #define BY this->y()
-#else
-#ifdef USE_SINGLEBUFFERED_TIMELINE
-#warning Using singlebuffered timeline window. This may cause flicker and makes the cursors invisible.
-#define BASE Fl_Single_Window
-#define redraw_overlay()
-#else
-#define BASE Fl_Overlay_Window
-#endif
-#define BX 0
-#define BY 0
-#endif
 
 
 
@@ -197,6 +184,13 @@ protected:
 
 
 
+
+
+void
+Timeline::redraw_overlay ( void )
+{
+    ((Fl_Overlay_Window*)window())->redraw_overlay();
+}
 
 nframes_t 
 Timeline::range_start ( void ) const
@@ -609,10 +603,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
     xoffset = 0;
     _old_yposition = 0;
     _old_xposition = 0;
-
-#ifndef USE_WIDGET_FOR_TIMELINE
-    X = Y = 0;
-#endif
 
 //    range_start( range_end( 0 ) );
 
@@ -1527,8 +1517,6 @@ Timeline::update_cb ( void *arg )
 void
 Timeline::draw_overlay ( void )
 {
-    fl_push_no_clip();
-
     draw_playhead();
 
     draw_cursors();
@@ -1546,8 +1534,6 @@ Timeline::draw_overlay ( void )
     fl_color( FL_MAGENTA );
     fl_line_style( FL_SOLID, 0 );
     fl_rect( r.x, r.y, r.w, r.h );
-
-    fl_pop_clip();
 
     fl_pop_clip();
 }

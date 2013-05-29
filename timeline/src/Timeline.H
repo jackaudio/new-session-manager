@@ -58,19 +58,11 @@ class Fl_Panzoomer;
 class Fl_Tile;
 
 #include "RWLock.H"
+#include <FL/Fl_Overlay_Window.H>
 
 namespace OSC { class Endpoint; }
 
-#define USE_WIDGET_FOR_TIMELINE
-
-
 #include <lo/lo.h>
-
-#ifndef USE_SINGLEBUFFERED_TIMELINE
-#include <FL/Fl_Overlay_Window.H>
-#else
-#include <FL/Fl_Single_Window.H>
-#endif
 
 struct position_info;
 
@@ -85,17 +77,7 @@ struct Rectangle
     Rectangle ( int X, int Y, int W, int H ) : x( X ), y( Y ), w( W ), h( H ) {}
 };
 
-#ifdef USE_WIDGET_FOR_TIMELINE
 class Timeline : public Fl_Group, public RWLock
-#else
-#ifndef USE_SINGLEBUFFERED_TIMELINE
-class Timeline : public Fl_Overlay_Window, public RWLock
-#else
-class Timeline : public Fl_Single_Window, public RWLock
-#endif
-#endif
-
-
 {
 
     class Timeline_Panzoomer;
@@ -142,7 +124,9 @@ class Timeline : public Fl_Single_Window, public RWLock
     
 
 public:
-    
+
+    void redraw_overlay ( void );
+
     void insert_track ( Track *track, Track *before );
     Track * event_inside ( void );
 

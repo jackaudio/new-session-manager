@@ -59,6 +59,7 @@ void
 Cursor_Sequence::handle_widget_change ( nframes_t start, nframes_t length )
 {
     sort();
+    timeline->redraw_overlay();
     timeline->redraw();
 }
 

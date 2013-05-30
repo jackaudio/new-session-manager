@@ -514,11 +514,12 @@ JACK_Module::handle ( int m )
         case FL_PUSH:
             return Module::handle(m) || 1;
         case FL_RELEASE:
+            Fl::selection_owner(0);
             receptive_to_drop = NULL;
             return Module::handle(m) || 1;
         case FL_DRAG:
         {
-            if ( ! Fl::event_inside( this ) )
+            if ( ! Fl::event_inside( this ) && ! Fl::selection_owner() )
             {
                 DMESSAGE( "initiation of drag" );
 
@@ -537,6 +538,8 @@ JACK_Module::handle ( int m )
                 }
                
                 Fl::copy(s, strlen(s) + 1, 0);
+
+                Fl::selection_owner(this);
 
                 free( s );
 
@@ -562,6 +565,7 @@ JACK_Module::handle ( int m )
             }
             return 1;
         case FL_DND_RELEASE:
+            Fl::selection_owner(0);
             receptive_to_drop = NULL;
             redraw();
             return 1;

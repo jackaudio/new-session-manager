@@ -1522,10 +1522,7 @@ Timeline::draw_overlay ( void )
     draw_cursors();
 
     if ( ! ( _selection.w && _selection.h ) )
-    {
-        fl_pop_clip();
         return;
-    }
 
     fl_push_clip( tracks->x() + Track::width(), rulers->y() + rulers->h(),  tracks->w() - Track::width(), h() - rulers->h() - panzoomer->h() );
 

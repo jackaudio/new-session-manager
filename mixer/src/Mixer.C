@@ -54,6 +54,7 @@ extern char *user_config_dir;
 extern char *instance_name;
 
 #include "debug.h"
+#include "string_util.h"
 
 #include "NSM.H"
 
@@ -269,6 +270,10 @@ void Mixer::cb_menu(Fl_Widget* o) {
                 fl_alert( "%s", "Failed to import strip!" );
         }
     }
+    else if ( !strcmp( picked, "&Mixer/Paste" ) )
+    {
+        Fl::paste(*this);
+    }
     else if (! strcmp( picked, "&Project/Se&ttings/&Rows/One") )
     {
         rows( 1 );
@@ -413,6 +418,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             o->add( "&Mixer/&Add Strip", 'a', 0, 0 );
             o->add( "&Mixer/Add &N Strips" );
             o->add( "&Mixer/&Import Strip" );
+            o->add( "&Mixer/Paste", FL_CTRL + 'v', 0, 0 );
             o->add( "&View/&Theme", 0, 0, 0 );
             o->add( "&Help/&Manual" );
             o->add( "&Help/&About" );
@@ -745,6 +751,44 @@ Mixer::update_menu ( void )
 }
 
 
+
+int
+Mixer::handle ( int m )
+{
+    
+    if ( Fl_Group::handle( m ) )
+        return 1;
+
+    switch ( m )
+    {
+        case FL_PASTE:
+        {
+            if ( ! Fl::event_inside( this ) )
+                return 0;
+            
+            const char *text = Fl::event_text();
+
+            char *file;
+            
+            if ( ! sscanf( text, "file://%a[^\r\n]\n", &file ) )
+            {
+                WARNING( "invalid drop \"%s\"\n", text );
+                return 0;
+            }
+            
+            unescape_url( file );
+
+            printf( "pasted file \"%s\"\n", file );
+
+            if (! Mixer_Strip::import_strip( file ) )
+                fl_alert( "%s", "Failed to import strip!" );
+            
+            return 1;
+        }
+    }
+    
+    return 0;
+}
 
 /************/
 /* Commands */

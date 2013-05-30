@@ -58,6 +58,7 @@ public:
     static int open ( const char *name );
     static bool open ( void ) { return _is_open; }
     static bool create ( const char *name, const char *template_name );
-
+    
+    static const char *path ( void ) { return _path; }
     static const char *created_on ( void ) { return _created_on; }
 };

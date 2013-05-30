@@ -32,6 +32,7 @@
  */
 /* Each mixer strip comprises a fader and a panner */
 
+#include "Project.H"
 #include "Mixer_Strip.H"
 #include "Engine/Engine.H"
 #include <dsp.h>
@@ -597,6 +598,17 @@ Mixer_Strip::menu_cb ( const Fl_Menu_ *m )
     {
         ((Fl_Sometimes_Input*)name_field)->take_focus();
     }
+    else if ( ! strcmp( picked, "/Copy" ) )
+    {
+        export_strip( "clipboard.strip" );
+
+        char *s;
+        asprintf( &s, "file://%s/%s\r\n", Project::path(), "clipboard.strip" );
+
+        Fl::copy( s, strlen(s), 0 );
+
+        free(s);
+    }
     else if ( ! strcmp( picked, "/Color" ) )
     {
         unsigned char r, g, b;
@@ -661,6 +673,7 @@ Mixer_Strip::menu ( void ) const
             { "Move Left",      '[', 0, 0  },
             { "Move Right",     ']', 0, 0 },
             { "Color",           0, 0, 0 },
+            { "Copy",            FL_CTRL + 'c', 0, 0 },
             { "Export Strip",           0, 0, 0 },
             { "Rename",          FL_CTRL + 'n', 0, 0 },
             { "Remove",          FL_Delete, 0, 0 },

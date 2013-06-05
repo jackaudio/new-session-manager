@@ -226,12 +226,42 @@ Module::paste_before ( void )
 
 
 
+void
+Module::Port::send_feedback ( void )
+{
+
+    if ( _scaled_signal )
+    {
+        /* send feedback for by_name signal */
+        mixer->osc_endpoint->send_feedback( _scaled_signal->path(), control_value() );
+        
+/* send feedback for by number signal */
+        {        
+        int n = _module->chain()->strip()->number();
+
+        char *s = strdup( _scaled_signal->path() );
+
+        char *suffix = index( s, '/' );
+        suffix = index( suffix, '/' );
+        suffix = index( suffix, '/' );
+
+        char *path;
+        asprintf( &path, "/strip#/%i%s", suffix );
+        
+        mixer->osc_endpoint->send_feedback( path, control_value() );
+       
+        }
+     }
+
+}
 
 void
 Module::handle_control_changed ( Port *p )
 {
     if ( _editor )
         _editor->handle_control_changed ( p );
+
+    p->send_feedback();
 }
 
 bool

@@ -40,10 +40,12 @@ class Controller_Module : public Module
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( const Fl_Menu_ *m );
 
-    char *_osc_path;
-    char *_osc_path_cv;
-
 public:
+
+    static bool _learn_mode;
+
+    static bool learn_mode ( void ) { return _learn_mode; }
+    static void learn_mode ( bool b ) { _learn_mode = b; }
 
     enum Mode { GUI, CV, OSC, MIDI };
 
@@ -88,11 +90,7 @@ public:
 
     void process ( nframes_t nframes );
 
-    void draw ( void )
-        {
-            draw_box(x(),y(),w(),h());
-            Fl_Group::draw();
-        }
+    void draw ( void );
 
     int handle ( int m );
 

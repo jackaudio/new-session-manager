@@ -48,6 +48,8 @@
 #include "OSC/Endpoint.H"
 #include <lo/lo.h>
 
+#include "Controller_Module.H"
+
 extern char *user_config_dir;
 extern char *instance_name;
 
@@ -55,10 +57,24 @@ extern char *instance_name;
 #include "string_util.h"
 
 #include "NSM.H"
+#include <FL/Fl_Tooltip.H>
 
 extern NSM_Client *nsm;
 
 
+
+static void
+mixer_show_tooltip ( const char *s )
+{
+    mixer->status( s );
+}
+
+static void
+mixer_hide_tooltip ( void )
+{
+    mixer->status( 0 );
+}
+
 
 /************************/
 /* OSC Message Handlers */
@@ -262,6 +278,18 @@ void Mixer::cb_menu(Fl_Widget* o) {
                 fl_alert( "%s", "Failed to import strip!" );
         }
     }
+    else if ( ! strcmp( picked, "&Mixer/Start Learning" ) )
+    {
+        Controller_Module::learn_mode( true );
+        status( "Now in learn mode. Click on a highlighted control to teach it something." );
+        redraw();
+    }
+    else if ( ! strcmp( picked, "&Mixer/Stop Learning" ) )
+    {
+        Controller_Module::learn_mode( false );
+        status( "Learning complete" );
+        redraw();
+    }
     else if ( !strcmp( picked, "&Mixer/Paste" ) )
     {
         Fl::paste(*this);
@@ -285,18 +313,6 @@ void Mixer::cb_menu(Fl_Widget* o) {
     else if (! strcmp( picked, "&View/&Theme") )
     {
         fl_theme_chooser();
-    }
-    else if (! strcmp( picked, "&Options/&Display/Update Frequency/15 Hz" ) )
-    {
-        update_frequency( 15.0f );
-    }
-    else if (! strcmp( picked, "&Options/&Display/Update Frequency/30 Hz" ) )
-    {
-        update_frequency( 30.0f );
-    }
-    else if (! strcmp( picked, "&Options/&Display/Update Frequency/60 Hz" ) )
-    {
-        update_frequency( 60.0f );
     }
     else if ( ! strcmp( picked, "&Help/&About" ) )
     {
@@ -422,7 +438,7 @@ Mixer::load_project_settings ( void )
 {
     reset_project_settings();
 
-//    if ( Project::open() )
+    if ( Project::open() )
 	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), "options" );
 
     update_menu();
@@ -433,6 +449,15 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
 {
     Loggable::dirty_callback( &Mixer::handle_dirty, this );
     Loggable::progress_callback( progress_cb, NULL );
+
+    Fl_Tooltip::hoverdelay( 0 );
+    Fl_Tooltip::delay( 0 );
+    fl_show_tooltip = mixer_show_tooltip;
+    fl_hide_tooltip = mixer_hide_tooltip;
+    /* Fl_Tooltip::size( 11 ); */
+    /* Fl_Tooltip::textcolor( FL_FOREGROUND_COLOR ); */
+    /* Fl_Tooltip::color( fl_color_add_alpha( FL_DARK1, 0 ) ); */
+//    fl_tooltip_docked = 1;
 
     _rows = 1;
     box( FL_FLAT_BOX );
@@ -452,6 +477,8 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             o->add( "&Mixer/Add &N Strips" );
             o->add( "&Mixer/&Import Strip" );
             o->add( "&Mixer/Paste", FL_CTRL + 'v', 0, 0 );
+            o->add( "&Mixer/Start Learning", FL_F + 9, 0, 0 );
+            o->add( "&Mixer/Stop Learning", FL_F + 10, 0, 0 );
             o->add( "&View/&Theme", 0, 0, 0 );
             /* o->add( "&Options/&Display/Update Frequency/60 Hz", 0, 0, 0, FL_MENU_RADIO ); */
             /* o->add( "&Options/&Display/Update Frequency/30 Hz", 0, 0, 0, FL_MENU_RADIO); */
@@ -483,18 +510,17 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         } // Fl_Blink_Button* sm_blinker
         o->end();
     }
-    { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - 24 );
+    { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - ( 24 + 18 ) );
         o->box( FL_FLAT_BOX );
 //        o->type( Fl_Scroll::HORIZONTAL_ALWAYS );
 //        o->box( Fl_Scroll::BOTH );
         {
-            Fl_Flowpack *o = mixer_strips = new Fl_Flowpack( X, Y + 24, W, H - 18 - 24 );
+            Fl_Flowpack *o = mixer_strips = new Fl_Flowpack( X, Y + 24, W, H - ( 18*2 + 24 ));
 //            label( "Non-Mixer" );
             align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE) );
-            o->flow( false );
             o->box( FL_FLAT_BOX );
             o->type( Fl_Pack::HORIZONTAL );
-             o->hspacing( 2 );
+            o->hspacing( 2 );
             o->vspacing( 2 );
             o->end();
             Fl_Group::current()->resizable( o );
@@ -502,7 +528,12 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         o->end();
         Fl_Group::current()->resizable( o );
     }
-
+    { Fl_Box *o = _status = new Fl_Box( X, Y + H - 18, W, 18 );
+        o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
+        o->labelsize( 10 );
+        o->box( FL_FLAT_BOX );
+        o->color( FL_DARK1 );
+    }
     end();
 
     update_frequency( 15 );
@@ -510,6 +541,45 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     update_menu();
 
     load_options();
+}
+
+/* translate message addressed to strip number to appropriate strip */
+int
+Mixer::osc_strip_by_number ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+{
+    int n;
+    char *rem;
+    
+    OSC::Endpoint *ep = (OSC::Endpoint*)user_data;
+    
+    DMESSAGE( "%s", path );
+
+    if ( 2 != sscanf( path, "/strip#/%d/%a[^\n]", &n, &rem ) )
+        return -1;
+
+    DMESSAGE( "%s", rem );
+
+    Mixer_Strip *o = mixer->track_by_number( n );
+
+    if ( ! o )
+    {
+        DMESSAGE( "No strip by number %i", n );
+        return 0;
+    }
+
+    char *new_path;
+    
+    asprintf( &new_path, "/strip/%s/%s", o->name(), rem );
+
+    free( rem );
+
+         DMESSAGE( "Sending %s", new_path );
+
+    lo_send_message( ep->address(), new_path, msg );
+
+    free( new_path );
+
+    return 0;
 }
 
 int
@@ -569,6 +639,11 @@ void Mixer::add ( Mixer_Strip *ms )
    ms->take_focus();
 }
 
+int
+Mixer::find_strip ( const Mixer_Strip *m ) const
+{
+    return mixer_strips->find( m );
+}
 
 void
 Mixer::quit ( void )
@@ -584,8 +659,6 @@ Mixer::insert ( Mixer_Strip *ms, Mixer_Strip *before )
 {
 //    mixer_strips->remove( ms );
     mixer_strips->insert( *ms, before );
-
-//    scroll->redraw();
 }
 void
 Mixer::insert ( Mixer_Strip *ms, int i )
@@ -646,23 +719,26 @@ Mixer::rows ( int ideal_rows )
 {
     int sh;
 
-    int actual_rows;
+    int actual_rows = 1;
 
-    /* calculate how many rows will actually fit */
-    int can_fit = scroll->h() / ( Mixer_Strip::min_h() );
-    
-    actual_rows = can_fit > 0 ? can_fit : 1;
-    
-    if ( actual_rows > ideal_rows )
-        actual_rows = ideal_rows;
-    
-    /* calculate strip height */
-    if ( actual_rows > 1 )
+    if ( ideal_rows > 1 )
     {
-        sh = ( scroll->h() / (float)actual_rows ) - ( mixer_strips->vspacing() * ( actual_rows - 2 ));
-        mixer_strips->flow(true);
+        sh = (scroll->h() / ideal_rows ) - (mixer_strips->vspacing() * (ideal_rows - 1));
+        mixer_strips->flow( true );
+
+	if ( sh < Mixer_Strip::min_h() )
+	  {
+	    int can_fit = ( scroll->h() - 18 ) / Mixer_Strip::min_h();
+
+            actual_rows = can_fit > 0 ? can_fit : 1;
+	  }
+        else
+            actual_rows = ideal_rows;
     }
     else
+        actual_rows = 1;
+
+    if ( 1 == actual_rows )
     {
         sh = (scroll->h() - 18);
         mixer_strips->flow(false);
@@ -706,6 +782,15 @@ Mixer::track_by_name ( const char *name )
     }
 
     return NULL;
+}
+/** retrun a pointer to the track named /name/, or NULL if no track is named /name/ */
+Mixer_Strip *
+Mixer::track_by_number ( int n )
+{
+    if ( n < 0 || n >= mixer_strips->children() )
+        return NULL;
+    
+    return (Mixer_Strip*)mixer_strips->child(n);
 }
 
 /** return a malloc'd string representing a unique name for a new track */

@@ -180,6 +180,7 @@ namespace OSC
 
     Endpoint::Endpoint ( )
     {  
+        _learning_path = NULL;
         _peer_signal_notification_callback = 0;
         _peer_signal_notification_userdata = 0;
         _peer_scan_complete_callback = 0;
@@ -196,6 +197,10 @@ namespace OSC
 
         _server = lo_server_new_with_proto( port, proto, error_handler );
 
+        char *url = lo_server_get_url( _server );
+        _addr = lo_address_new_from_url( url );
+        free( url );
+        
         if ( ! _server )
         {
             WARNING( "Error creating OSC server" );
@@ -210,8 +215,8 @@ namespace OSC
         add_method( "/signal/created", "ssifff", &Endpoint::osc_sig_created, this, "" );
         add_method( "/signal/change", "iif", &Endpoint::osc_sig_handler, this, "" );
         add_method( "/signal/list", NULL, &Endpoint::osc_signal_lister, this, "" );
-        add_method( NULL, "", &Endpoint::osc_generic, this, "" );
         add_method( "/reply", NULL, &Endpoint::osc_reply, this, "" );
+        add_method( NULL, NULL, &Endpoint::osc_generic, this, "" );
 
         return 0;
     }
@@ -694,15 +699,45 @@ namespace OSC
         return 0;
     }
 
+    void
+    Endpoint::add_translation ( const char *a, const char *b )
+    {
+        _translations[a].path = b;
+    }
+
     int
     Endpoint::osc_generic ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
     {
 //        OSC_DMSG();
+        Endpoint *ep = (Endpoint*)user_data;
+
+        if ( ep->_learning_path )
+        {
+            ep->add_translation( path, ep->_learning_path );
+
+            DMESSAGE( "Learned translation \"%s\" -> \"%s\"", path, ep->_learning_path );
+            
+            free(ep->_learning_path);
+            ep->_learning_path = NULL;
+            
+            return 0;
+        }
+
+        {
+            std::map<std::string,TranslationDestination>::const_iterator i = ep->_translations.find( path );
+            
+            if ( i != ep->_translations.end() )
+            {
+                const char *dpath = i->second.path.c_str();
+
+                DMESSAGE( "Translating message \"%s\" to \"%s\"", path, dpath );
+                lo_send_message(ep->_addr, dpath, msg );
+                return 0;
+            }
+        }
 
         if ( argc || path[ strlen(path) - 1 ] != '/' )
             return -1;
-
-        Endpoint *ep = (Endpoint*)user_data;
 
         for ( std::list<Method*>::const_iterator i = ep->_methods.begin(); i != ep->_methods.end(); ++i )
         {
@@ -1210,6 +1245,51 @@ namespace OSC
 //        delete o;
 
         _signals.remove( o );
+    }
+
+    /* prepare to learn a translation for /path/. The next unhandled message to come through will be mapped to /path/ */
+    void
+    Endpoint::learn ( const char *path )
+    {
+        if ( _learning_path )
+            free( _learning_path );
+
+        _learning_path = NULL;
+
+        if ( path )
+            _learning_path = strdup( path );
+    }
+
+    /** if there's a translation with a destination of 'path', then send feedback for it */
+    void
+    Endpoint::send_feedback ( const char *path, float v )
+    {
+        for ( std::map<std::string,TranslationDestination>::iterator i = _translations.begin();
+              i != _translations.end();
+              i++ )
+        {
+            if ( ! strcmp( i->second.path.c_str(), path ) )
+            {
+                /* found it */
+                if ( i->second.current_value != v )
+                {
+                    const char *spath = i->first.c_str();
+
+                    DMESSAGE( "Sending feedback to \"%s\": %f", spath, v );
+
+                    /* send to all peers */
+                    for ( std::list<Peer*>::iterator p = _peers.begin(); 
+                          p != _peers.end();
+                          ++p )
+                    {
+                        send( (*p)->addr, spath, v );
+                    }
+
+                    i->second.current_value = v;
+                }
+
+            }
+        }
     }
 
     Peer *   

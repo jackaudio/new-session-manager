@@ -239,6 +239,8 @@ public:
                 update_connected_port_buffer();
             }
 
+        void send_feedback ( void );
+
         void disconnect ( void )
             {
                 if ( _connected && _connected != (void*)0x01 )

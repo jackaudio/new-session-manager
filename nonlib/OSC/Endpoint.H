@@ -22,8 +22,10 @@
 #include <lo/lo.h>
 #include "Thread.H"
 #include <list>
+#include <string>
 #include <stdlib.h>
 #include <string.h>
+#include <map>
 
 namespace OSC
 {
@@ -244,10 +246,22 @@ namespace OSC
 
 //        lo_server_thread _st;
         lo_server _server;
-
+        lo_address _addr;
+        
         std::list<Peer*> _peers;
         std::list<Signal*> _signals;
         std::list<Method*> _methods;
+
+        char *_learning_path;
+
+        class TranslationDestination {
+
+        public:
+            std::string path;
+            float current_value;
+        };
+
+        std::map<std::string,TranslationDestination> _translations;
 
         void (*_peer_scan_complete_callback)(void*);
         void *_peer_scan_complete_userdata;
@@ -295,6 +309,16 @@ namespace OSC
         void *_peer_signal_notification_userdata;
 
     public:
+        
+        void send_feedback ( const char *path, float v );
+        void learn ( const char *path );
+
+        lo_address address ( void )
+            {
+                return _addr;
+            }
+
+        void add_translation ( const char *a, const char *b );
         
         void peer_signal_notification_callback ( void (*cb)(OSC::Signal *, OSC::Signal::State, void*), void *userdata )
             {

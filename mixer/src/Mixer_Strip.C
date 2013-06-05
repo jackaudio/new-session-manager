@@ -389,6 +389,7 @@ Mixer_Strip::init ( )
          
          { Fl_Box *o = color_box = new Fl_Box( 0,0, 25, 10 );
              o->box(FL_FLAT_BOX);
+             o->tooltip( "Drag and drop to move strip" );
          }
 
         { Fl_Pack *o = new Fl_Pack( 2, 2, 114, 100 );
@@ -727,8 +728,9 @@ Mixer_Strip::handle ( int m )
         }
         case FL_PUSH:
             if ( Fl::event_button1() && Fl::event_inside( color_box ) )
-            {
-            }
+                dragging = this;
+            else
+                dragging = NULL;
 
             _button = Fl::event_button();
           
@@ -737,18 +739,17 @@ Mixer_Strip::handle ( int m )
             break;
         
         case FL_DRAG:
-            if ( Fl::event_is_click() )
-                return 1;
-            
-            dragging = this;
+            return 1;
             break;
         case FL_RELEASE:
-            if ( dragging == this )
+            if ( dragging == this && ! Fl::event_is_click() )
             {
                 mixer->insert( this, mixer->event_inside() );
                 dragging = NULL;
                 return 1;
             }
+            
+            dragging = NULL;
    
             int b = _button;
             _button = 0;
@@ -769,6 +770,11 @@ Mixer_Strip::handle ( int m )
     return 0;
 }
 
+int
+Mixer_Strip::number ( void ) const
+{
+    return mixer->find_strip( this );
+}
 
 /************/
 /* Commands */

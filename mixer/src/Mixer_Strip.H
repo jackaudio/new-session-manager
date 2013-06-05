@@ -141,6 +141,7 @@ protected:
 
 public:
 
+    int number ( void ) const;
     static bool import_strip ( const char *filename );
 
     void command_move_left ( void );

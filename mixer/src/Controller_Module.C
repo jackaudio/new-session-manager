@@ -45,6 +45,8 @@
 // needed for mixer->endpoint
 #include "Mixer.H"
 
+bool Controller_Module::_learn_mode = false;
+
 
 
 Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 50, 100, name() )
@@ -517,6 +519,19 @@ Controller_Module::menu ( void )
     return m;
 }
 
+void
+Controller_Module::draw ( void )
+{
+    draw_box(x(),y(),w(),h());
+    Fl_Group::draw();
+    
+
+    if ( learn_mode() )
+    {
+        fl_rectf( x(),y(),w(),h(), fl_color_add_alpha( FL_MAGENTA, 50 ) );
+    }
+}
+
 int
 Controller_Module::handle ( int m )
 {
@@ -525,7 +540,24 @@ Controller_Module::handle ( int m )
     {
         case FL_PUSH:
         {
-            if ( test_press( FL_BUTTON3 ) )
+            if ( learn_mode() )
+            {
+                tooltip( "Now learning control. Move the desired control on your controller" );
+
+                //connect_to( &module->control_input[port] );
+                Port *p = control_output[0].connected_port();
+                
+                if ( p )
+                {
+                    DMESSAGE( "Will learn %s", p->osc_path() );
+
+                    mixer->osc_endpoint->learn( p->osc_path() );
+                }
+
+                return 1;
+            }
+
+            if ( Fl::event_button3() )
             {
                 /* context menu */
                 if ( type() != SPATIALIZATION )

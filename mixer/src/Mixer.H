@@ -52,6 +52,7 @@ private:
     Fl_Color system_colors[3];
 
     Mixer_Strip* track_by_name ( const char *name );
+    Mixer_Strip* track_by_number ( int n );
 
     void snapshot ( void );
     static void snapshot ( void *v ) { ((Mixer*)v)->snapshot(); }
@@ -63,6 +64,7 @@ private:
     Fl_Scroll *scroll;
     Fl_Pack *pack;
     Fl_Box *project_name;
+    Fl_Box *_status;
 
     Fl_Flowpack *mixer_strips;
 
@@ -75,6 +77,7 @@ private:
     static void handle_dirty ( int, void *v );
 
     static int osc_non_hello ( const char *, const char *, lo_arg **, int , lo_message msg, void * );
+    static int osc_strip_by_number ( const char *, const char *, lo_arg **, int , lo_message msg, void * );
 
     static void update_cb ( void * );
     void update_cb ( void );
@@ -83,6 +86,11 @@ public:
 
     void update_frequency ( float f );
     
+    void status ( const char *s ) { 
+        if ( s ) _status->copy_label( s );
+        else _status->label(0); 
+        _status->redraw(); }
+
     virtual int handle ( int m );
 
     char * get_unique_track_name ( const char *name );
@@ -102,6 +110,7 @@ public:
     void insert ( Mixer_Strip *ms, int i );
     bool contains ( Mixer_Strip *ms );
     Mixer_Strip * event_inside ( void );
+    int find_strip ( const Mixer_Strip *m ) const;
 
     bool save ( void );
     void quit ( void );

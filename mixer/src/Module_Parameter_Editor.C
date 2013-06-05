@@ -382,15 +382,17 @@ Module_Parameter_Editor::cb_bound_handle ( Fl_Widget *w, void *v )
 
     Fl_Button *fv = (Fl_Button*)w;
 
-    fv->value( 1 );
+   fv->value( 1 );
 
-    cd->base_widget->bind_control( cd->port_number[0] );
+   cd->base_widget->bind_control( cd->port_number[0] );
 }
 
 void
 Module_Parameter_Editor::bind_control ( int i )
 {
     Module::Port *p = &_module->control_input[i];
+
+    /* p->learn_osc(); */
 
     if ( p->connected() )
         /* can only bind once */

@@ -20,9 +20,10 @@
 #pragma once
 
 #include <jack/jack.h>
+#include <jack/midiport.h>
 
 typedef jack_nframes_t nframes_t;
-typedef float sample_t;
+typedef jack_default_audio_sample_t sample_t;
 
 #include <list>
 

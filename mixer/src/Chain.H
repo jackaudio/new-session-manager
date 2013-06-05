@@ -104,6 +104,8 @@ public:
     const char *name ( void ) const { return _name; }
     void name ( const char *name );
 
+    void send_feedback ( void );
+
     int get_module_instance_number ( Module *m );
 
     void configure_ports ( void );

@@ -196,7 +196,7 @@ get_connections_for_ports ( std::vector<JACK::Port> ports )
         if ( ! connections )
             return names;
 
-        bool is_output = ports[i].type() == JACK::Port::Output;
+        bool is_output = ports[i].direction() == JACK::Port::Output;
 
         for ( const char **c = connections; *c; c++ )
         {
@@ -356,9 +356,9 @@ JACK_Module::configure_inputs ( int n )
             JACK::Port *po = NULL;
 
             if ( !_prefix )
-                po = new JACK::Port( chain()->engine(), JACK::Port::Output, i );
+                po = new JACK::Port( chain()->engine(), JACK::Port::Output, JACK::Port::Audio, i );
             else
-                po = new JACK::Port( chain()->engine(), JACK::Port::Output, _prefix, i );
+                po = new JACK::Port( chain()->engine(), JACK::Port::Output, JACK::Port::Audio, _prefix, i );
 
             if ( ! po->activate() )
             {
@@ -415,9 +415,9 @@ JACK_Module::configure_outputs ( int n )
             JACK::Port *po = NULL;
 
             if ( !_prefix )
-                po = new JACK::Port( chain()->engine(), JACK::Port::Input, i );
+                po = new JACK::Port( chain()->engine(), JACK::Port::Input, JACK::Port::Audio, i );
             else
-                po = new JACK::Port( chain()->engine(), JACK::Port::Input, _prefix, i );
+                po = new JACK::Port( chain()->engine(), JACK::Port::Input, JACK::Port::Audio, _prefix, i );
 
             if ( ! po->activate() )
             {

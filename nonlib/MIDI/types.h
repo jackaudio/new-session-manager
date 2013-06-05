@@ -1,6 +1,7 @@
 
+
 /*******************************************************************************/
-/* Copyright (C) 2012 Jonathan Moore Liles                                     */
+/* Copyright (C) 2007,2008 Jonathan Moore Liles                                */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -17,75 +18,11 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#include "OSC_Thread.H"
+#pragma once
 
-#include "Timeline.H"
+typedef unsigned char byte_t;
+typedef double tick_t;
+typedef unsigned int uint;
 
-#include <stdlib.h>
-#include <unistd.h>
-
-#include "debug.h"
-
-#include "OSC/Endpoint.H"
-
-extern Timeline *timeline;
-
-OSC_Thread::OSC_Thread ( )
-{
-    //   _thread.init();
-    _shutdown = false;
-}
-
-OSC_Thread::~OSC_Thread ( )
-{
-    if ( _shutdown == false )
-    {
-        _shutdown = true;
-        _thread.join();
-    }
-}
-
-void
-OSC_Thread::start ( )
-{
-    _thread.clone( &OSC_Thread::process, this );
-}
-
-void
-OSC_Thread::join ( )
-{
-    _thread.join();
-}
-
-void
-OSC_Thread::process ( void )
-{
-    _thread.name( "OSC" );
-
-    DMESSAGE( "OSC Thread starting" );
-
-    while ( !_shutdown )
-    {
-        if ( trylock() )
-        {
-            timeline->osc->check();        
-            timeline->process_osc();
-            unlock();
-        }
-
-        usleep( 50 * 1000 );
-    }
-
-    DMESSAGE( "OSC Thread stopping." );
-}
-
-void *
-OSC_Thread::process ( void *v )
-{
-    OSC_Thread *t = (OSC_Thread*)v;
-    
-    t->process();
-
-    return NULL;
-}
+#define elementsof(x) (sizeof((x)) / sizeof((x)[0]))
 

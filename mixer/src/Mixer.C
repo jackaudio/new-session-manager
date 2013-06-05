@@ -37,7 +37,7 @@
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Theme_Chooser.H>
 #include <FL/Fl_Value_SliderX.H>
-
+#include "FL/Fl_Text_Edit_Window.H"
 #include "file.h"
 
 #include <string.h>
@@ -49,6 +49,8 @@
 #include <lo/lo.h>
 
 #include "Controller_Module.H"
+
+const double FEEDBACK_UPDATE_FREQ = 1.0f;
 
 extern char *user_config_dir;
 extern char *instance_name;
@@ -63,16 +65,16 @@ extern NSM_Client *nsm;
 
 
 
-static void
-mixer_show_tooltip ( const char *s )
+void
+Mixer::show_tooltip ( const char *s )
 {
-    mixer->status( s );
+    mixer->_status->label( s );
 }
 
-static void
-mixer_hide_tooltip ( void )
+void
+Mixer::hide_tooltip ( void )
 {
-    mixer->status( 0 );
+    mixer->_status->label( 0 );
 }
 
 
@@ -94,6 +96,7 @@ static int osc_add_strip ( const char *path, const char *, lo_arg **, int , lo_m
    OSC_DMSG();
 
    Fl::lock();
+
    ((Mixer*)(OSC_ENDPOINT())->owner)->command_add_strip();
 
    Fl::unlock();
@@ -258,6 +261,10 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         command_add_strip();
     }
+    else if ( !strcmp( picked, "&Mixer/Send Feedback" ) )
+    {
+        send_feedback();
+    }
     else if ( !strcmp( picked, "&Mixer/Add &N Strips" ) )
     {
         const char *s = fl_input( "Enter number of strips to add" );
@@ -278,17 +285,36 @@ void Mixer::cb_menu(Fl_Widget* o) {
                 fl_alert( "%s", "Failed to import strip!" );
         }
     }
-    else if ( ! strcmp( picked, "&Mixer/Start Learning" ) )
+    else if ( ! strcmp( picked, "&Project/Se&ttings/Learn/By Strip Name" ) )
+    {
+        Controller_Module::learn_by_number = false;
+    }
+    else if ( ! strcmp( picked, "&Project/Se&ttings/Learn/By Strip Number" ) )
+    {
+        Controller_Module::learn_by_number = true;
+    }
+    else if ( ! strcmp( picked, "&Mixer/Remote Control/Start Learning" ) )
     {
         Controller_Module::learn_mode( true );
-        status( "Now in learn mode. Click on a highlighted control to teach it something." );
+        tooltip( "Now in learn mode. Click on a highlighted control to teach it something." );
         redraw();
     }
-    else if ( ! strcmp( picked, "&Mixer/Stop Learning" ) )
+    else if ( ! strcmp( picked, "&Mixer/Remote Control/Stop Learning" ) )
     {
         Controller_Module::learn_mode( false );
-        status( "Learning complete" );
+        tooltip( "Learning complete" );
         redraw();
+    }
+    else if ( ! strcmp( picked, "&Mixer/Remote Control/Clear Mappings" ) )
+    {
+        if ( 1 == fl_ask( "This will remove all mappings, are you sure?") )
+        {
+            command_clear_mappings();
+        }
+    }
+    else if ( ! strcmp( picked, "&Mixer/Remote Control/Edit Mappings" ) )
+    {
+        edit_translations();
     }
     else if ( !strcmp( picked, "&Mixer/Paste" ) )
     {
@@ -452,8 +478,8 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
 
     Fl_Tooltip::hoverdelay( 0 );
     Fl_Tooltip::delay( 0 );
-    fl_show_tooltip = mixer_show_tooltip;
-    fl_hide_tooltip = mixer_hide_tooltip;
+    fl_show_tooltip = &Mixer::show_tooltip;
+    fl_hide_tooltip = &Mixer::hide_tooltip;
     /* Fl_Tooltip::size( 11 ); */
     /* Fl_Tooltip::textcolor( FL_FOREGROUND_COLOR ); */
     /* Fl_Tooltip::color( fl_color_add_alpha( FL_DARK1, 0 ) ); */
@@ -471,18 +497,20 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             o->add( "&Project/Se&ttings/&Rows/Two", '2', 0, 0, FL_MENU_RADIO );
             o->add( "&Project/Se&ttings/&Rows/Three", '3', 0, 0, FL_MENU_RADIO );
             o->add( "&Project/Se&ttings/Make Default", 0,0,0);
+            o->add( "&Project/Se&ttings/Learn/By Strip Number", 0, 0, 0, FL_MENU_RADIO );
+            o->add( "&Project/Se&ttings/Learn/By Strip Name", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
             o->add( "&Project/&Save", FL_CTRL + 's', 0, 0 );
             o->add( "&Project/&Quit", FL_CTRL + 'q', 0, 0 );
             o->add( "&Mixer/&Add Strip", 'a', 0, 0 );
             o->add( "&Mixer/Add &N Strips" );
+            o->add( "&Mixer/Send Feedback" );
             o->add( "&Mixer/&Import Strip" );
             o->add( "&Mixer/Paste", FL_CTRL + 'v', 0, 0 );
-            o->add( "&Mixer/Start Learning", FL_F + 9, 0, 0 );
-            o->add( "&Mixer/Stop Learning", FL_F + 10, 0, 0 );
+            o->add( "&Mixer/Remote Control/Start Learning", FL_F + 9, 0, 0 );
+            o->add( "&Mixer/Remote Control/Stop Learning", FL_F + 10, 0, 0 );
+            o->add( "&Mixer/Remote Control/Clear Mappings", 0, 0, 0 );
+            o->add( "&Mixer/Remote Control/Edit Mappings", 0, 0, 0 );
             o->add( "&View/&Theme", 0, 0, 0 );
-            /* o->add( "&Options/&Display/Update Frequency/60 Hz", 0, 0, 0, FL_MENU_RADIO ); */
-            /* o->add( "&Options/&Display/Update Frequency/30 Hz", 0, 0, 0, FL_MENU_RADIO); */
-            /* o->add( "&Options/&Display/Update Frequency/15 Hz", 0, 0, 0,  FL_MENU_RADIO | FL_MENU_VALUE ); */
             o->add( "&Help/&Manual" );
             o->add( "&Help/&About" );
             o->callback( cb_menu, this );
@@ -510,7 +538,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
         } // Fl_Blink_Button* sm_blinker
         o->end();
     }
-    { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - ( 24 + 18 ) );
+    { Fl_Scroll *o = scroll = new Fl_Scroll( X, Y + 24, W, H - ( 100 ) );
         o->box( FL_FLAT_BOX );
 //        o->type( Fl_Scroll::HORIZONTAL_ALWAYS );
 //        o->box( Fl_Scroll::BOTH );
@@ -538,6 +566,8 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
 
     update_frequency( 15 );
 
+    Fl::add_timeout( FEEDBACK_UPDATE_FREQ, send_feedback_cb, this );
+
     update_menu();
 
     load_options();
@@ -549,15 +579,12 @@ Mixer::osc_strip_by_number ( const char *path, const char *types, lo_arg **argv,
 {
     int n;
     char *rem;
-    
+    char *client_name;
+
     OSC::Endpoint *ep = (OSC::Endpoint*)user_data;
     
-    DMESSAGE( "%s", path );
-
-    if ( 2 != sscanf( path, "/strip#/%d/%a[^\n]", &n, &rem ) )
+    if ( 3 != sscanf( path, "%a[^/]/strip#/%d/%a[^\n]", &client_name, &n, &rem ) )
         return -1;
-
-    DMESSAGE( "%s", rem );
 
     Mixer_Strip *o = mixer->track_by_number( n );
 
@@ -569,17 +596,88 @@ Mixer::osc_strip_by_number ( const char *path, const char *types, lo_arg **argv,
 
     char *new_path;
     
-    asprintf( &new_path, "/strip/%s/%s", o->name(), rem );
+    asprintf( &new_path, "%s/strip/%s/%s", client_name, o->name(), rem );
 
     free( rem );
-
-         DMESSAGE( "Sending %s", new_path );
 
     lo_send_message( ep->address(), new_path, msg );
 
     free( new_path );
 
     return 0;
+}
+
+void
+Mixer::load_translations ( void )
+{
+    FILE *fp = fopen( "mappings", "r" );
+
+    if ( ! fp )
+    {
+        WARNING( "Error opening mappings file for reading" );
+        return;
+    }
+
+    char *to;
+    char *from;
+
+    while ( 2 == fscanf( fp, "%a[^|> ] |> %a[^ \n]\n", &from, &to ) )
+    {
+        osc_endpoint->add_translation( from, to );
+        free(from);
+        free(to);
+    }
+
+    fclose( fp );
+}
+
+void
+Mixer::save_translations ( void )
+{
+    FILE *fp = fopen( "mappings", "w" );
+
+    if ( ! fp )
+    {
+        WARNING( "Error opening mappings file for writing" );
+        return;
+    }
+
+    for ( int i = 0; i < osc_endpoint->ntranslations(); i++ )
+    {
+        const char *to;
+        const char *from;
+
+        if ( osc_endpoint->get_translation( i, &to, &from ) )
+        {
+            fprintf( fp, "%s |> %s\n", to, from );
+        }
+    }
+
+    fclose( fp );
+}
+
+void
+Mixer::edit_translations ( void )
+{
+    char *file_contents = NULL;
+
+    if ( exists( "mappings" ) )
+    {
+        size_t l = ::size( "mappings" );
+
+        file_contents = (char*)malloc( l );
+        
+        FILE *fp = fopen( "mappings", "r" );
+
+        fread( file_contents, l, 1, fp );
+
+        fclose( fp );
+    }
+
+    char *s = fl_text_edit( "Mappings", "&Save", file_contents, 800, 600 );
+
+    if ( file_contents )
+        free(file_contents);
 }
 
 int
@@ -601,6 +699,8 @@ Mixer::init_osc ( const char *osc_port )
   
     osc_endpoint->start();
 
+   osc_endpoint->add_method( NULL, NULL, osc_strip_by_number, osc_endpoint, "");
+    
     return 0;
 }
 
@@ -613,7 +713,9 @@ Mixer::~Mixer ( )
 
     Fl::remove_timeout( &Mixer::update_cb, this );
 
-    /* FIXME: teardown */
+    Fl::remove_timeout( &Mixer::send_feedback_cb, this );
+ 
+/* FIXME: teardown */
     mixer_strips->clear();
 }
 
@@ -621,9 +723,9 @@ void Mixer::resize ( int X, int Y, int W, int H )
 {
     Fl_Group::resize( X, Y, W, H );
 
-    mixer_strips->resize( X, Y + 24, W, H - 18 - 24 );
+    mixer_strips->resize( X, Y + 24, W, H - (18*2) - 24 );
 
-    scroll->resize( X, Y + 24, W, H - 24 );
+    scroll->resize( X, Y + 24, W, H - 24 - 18 );
 
     rows( _rows );
 }
@@ -841,6 +943,8 @@ Mixer::save ( void )
     MESSAGE( "Saving state" );
     Loggable::snapshot_callback( &Mixer::snapshot, this );
     Loggable::snapshot( "snapshot" );
+
+    save_translations();
     return true;
 }
 
@@ -870,6 +974,27 @@ void
 Mixer::update_menu ( void )
 {
     project_name->label( Project::name() );
+}
+
+void
+Mixer::send_feedback_cb ( void *v )
+{
+    Mixer *m = (Mixer*)v;
+    
+    m->send_feedback();
+
+    Fl::repeat_timeout( FEEDBACK_UPDATE_FREQ, send_feedback_cb, v );
+}
+
+/** unconditionally send feedback to all mapped controls. This is
+ * useful for updating the state of an external controller. */
+void
+Mixer::send_feedback ( void )
+{
+    for ( int i = 0; i < mixer_strips->children(); i++ )
+    {
+        ((Mixer_Strip*)mixer_strips->child(i))->send_feedback();
+    }
 }
 
 
@@ -916,6 +1041,12 @@ Mixer::handle ( int m )
 /* Commands */
 /************/
 
+void
+Mixer::command_clear_mappings ( void )
+{
+    osc_endpoint->clear_translations();
+}
+
 bool
 Mixer::command_save ( void )
 {
@@ -949,6 +1080,8 @@ Mixer::command_load ( const char *path, const char *display_name )
         Project::name( display_name );
     
     load_project_settings();
+
+    load_translations();
 
     update_menu();
 

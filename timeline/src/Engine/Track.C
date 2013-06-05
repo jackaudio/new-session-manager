@@ -86,7 +86,7 @@ Track::configure_outputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port p( engine, JACK::Port::Output, name(), i );
+            JACK::Port p( engine, JACK::Port::Output,  JACK::Port::Audio, name(), i );
 
             if ( !p.activate() )
             {
@@ -139,7 +139,7 @@ Track::configure_inputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port p( engine, JACK::Port::Input, name(), i );
+            JACK::Port p( engine, JACK::Port::Input, JACK::Port::Audio, name(), i );
 
             if ( !p.activate() )
             {

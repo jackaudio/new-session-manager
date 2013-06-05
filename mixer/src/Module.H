@@ -123,6 +123,8 @@ public:
         static int osc_control_change_exact ( float v, void *user_data );
         static int osc_control_change_cv ( float v, void *user_data );
 
+        void learn_osc ( void );
+
         Hints hints;
 
         Port ( Module *module, Direction direction, Type type, const char *name = 0 )
@@ -176,6 +178,8 @@ public:
                     return NULL;
             }
 
+        char *osc_number_path ( void );
+
         void update_osc_port ( )
             {
 //                if ( INPUT == _direction )
@@ -199,6 +203,27 @@ public:
                 if ( buffer() )
                 {
                     *((float*)buffer()) = f;
+                }
+
+                if ( _scaled_signal )
+                {
+                    
+                    if ( hints.ranged )
+                    {
+                        // scale value to range.
+                        
+                        float scale = hints.maximum - hints.minimum;
+                        float offset = hints.minimum;
+        
+                        f =  ( f - offset ) / scale;
+                    }
+
+                    if ( f > 1.0 )
+                        f = 1.0;
+                    else if ( f < 0.0 )
+                        f = 0.0;
+                  
+//                    _scaled_signal->value( f );
                 }
             }
 
@@ -405,7 +430,8 @@ public:
 
     char *get_parameters ( void ) const;
     void set_parameters ( const char * );
-
+    
+    void send_feedback ( void );
     virtual bool initialize ( void ) { return true; }
 
     /* for the given number of inputs, return how many outputs this

@@ -41,14 +41,15 @@ namespace JACK
 
         bool operator < ( const Port & rhs ) const;
 
-        enum type_e { Output, Input };
+        enum direction_e { Output, Input };
+        enum type_e { Audio, MIDI };
 
         static int max_name ( void );
 
         Port ( JACK::Client *client, jack_port_t *port );
-        Port ( JACK::Client *client, const char *name, type_e dir );
-        Port ( JACK::Client *client, type_e dir, const char *base, int n, const char *type=0 );
-        Port ( JACK::Client *client, type_e dir, int n, const char *type=0 );
+        Port ( JACK::Client *client, const char *name, direction_e dir, type_e type );
+        Port ( JACK::Client *client, direction_e dir, type_e type, const char *base, int n, const char *subtype=0 );
+        Port ( JACK::Client *client, direction_e dir, type_e type, int n, const char *subtype=0 );
 
 //    Port ( );
         ~Port ( );
@@ -58,7 +59,8 @@ namespace JACK
 
         bool valid ( void ) const { return _port; }
         bool connected ( void ) const { return jack_port_connected( _port ); }
-        type_e type ( void ) const;
+        direction_e direction ( void ) const { return _direction; }
+        type_e type ( void ) const { return _type; }
         const char * name ( void ) const { return _name; }
         bool name ( const char *name );
         bool name ( const char *base, int n, const char *type=0 );
@@ -85,9 +87,10 @@ namespace JACK
 
     private:
 
-        type_e _direction;
+        direction_e _direction;
+        type_e _type;
 
-        bool activate ( const char *name, type_e dir );
+        bool activate ( const char *name, direction_e dir );
 
         /* holds all we need to know about a jack port to recreate it on a
          new client */

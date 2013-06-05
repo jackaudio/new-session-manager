@@ -28,7 +28,7 @@
 namespace JACK
 {
 
-    static const char *name_for_port ( Port::type_e dir, const char *base, int n, const char *type );
+    static const char *name_for_port ( Port::direction_e dir, const char *base, int n, const char *type );
 
     int
     Port::max_name ( void )
@@ -43,6 +43,7 @@ namespace JACK
         _client = rhs._client;
         _port = rhs._port;
         _direction = rhs._direction;
+        _type = rhs._type;
         _name = strdup( rhs._name );
 
         _client->port_added( this );
@@ -56,37 +57,44 @@ namespace JACK
         _port = port;
         _name = strdup( jack_port_name( port ) );
         _direction = jack_port_flags( _port ) == JackPortIsOutput ? Output : Input;
+        const char *type = jack_port_type( _port );
+
+        _type = Audio;
+        if ( strstr( type, "MIDI") )
+            _type = MIDI;
     }
 
-    Port::Port ( JACK::Client *client, const char *name, type_e dir )
+    Port::Port ( JACK::Client *client, const char *name, direction_e dir, type_e type )
     {
         _name = NULL;
         _freezer = NULL;
         _client = client;
         _direction = dir;
+        _type = type;
 
         _name = strdup( name );
     }
 
-    Port::Port ( JACK::Client *client, type_e dir, const char *base, int n, const char *type )
+    Port::Port ( JACK::Client *client, direction_e dir, type_e type, const char *base, int n, const char *subtype )
     {
         _name = NULL;
         _freezer = NULL;
         _client = client;
 
-        _name = strdup( name_for_port( dir, base, n, type ) );
+        _name = strdup( name_for_port( dir, base, n, subtype ) );
         _direction = dir;
+        _type = type;
     }
 
-    Port::Port ( JACK::Client *client, type_e dir, int n, const char *type )
+    Port::Port ( JACK::Client *client, direction_e dir, type_e type, int n, const char *subtype )
     {
         _name = NULL;
         _freezer = NULL;
         _client = client;
 
-        _name = strdup( name_for_port( dir, NULL, n, type ) );
+        _name = strdup( name_for_port( dir, NULL, n, subtype ) );
         _direction = dir;
-
+        _type = type;
     }
 
     Port::~Port ( )
@@ -118,7 +126,7 @@ namespace JACK
 
 
     static const char *
-    name_for_port ( Port::type_e dir, const char *base, int n, const char *type )
+    name_for_port ( Port::direction_e dir, const char *base, int n, const char *type )
     {
         static char pname[ 512 ];
 
@@ -145,7 +153,7 @@ namespace JACK
     }
 
     bool
-    Port::activate ( const char *name, type_e dir )
+    Port::activate ( const char *name, direction_e dir )
     {
         _name = strdup( name );
         _direction = dir;
@@ -157,7 +165,7 @@ namespace JACK
     Port::activate ( void )
     {
         _port = jack_port_register( _client->jack_client(), _name,
-                                    JACK_DEFAULT_AUDIO_TYPE,
+                                    _type == Audio ? JACK_DEFAULT_AUDIO_TYPE : JACK_DEFAULT_MIDI_TYPE,
                                     _direction == Output ? JackPortIsOutput : JackPortIsInput,
                                     0 );
 
@@ -217,7 +225,7 @@ namespace JACK
     bool
     Port::name ( const char *base, int n, const char *type )
     {
-        return name( name_for_port( this->type(), base, n, type ) );
+        return name( name_for_port( this->direction(), base, n, type ) );
     }
 
     void
@@ -250,12 +258,6 @@ namespace JACK
     Port::connections ( void )
     {
         return jack_port_get_connections( _port );
-    }
-
-    Port::type_e
-    Port::type ( void ) const
-    {
-        return _direction;
     }
 
     /** Restore the connections returned by connections() */

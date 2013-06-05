@@ -226,33 +226,70 @@ Module::paste_before ( void )
 
 
 
+char *
+Module::Port::osc_number_path ( void )
+{
+    int n = _module->chain()->strip()->number();
+    
+    char *rem;
+    char *client_name;
+    char *strip_name;
+
+    if ( 3 != sscanf( _scaled_signal->path(), "%a[^/]/strip/%a[^/]/%a[^\n]", &client_name, &strip_name, &rem ) )
+        return NULL;
+
+    free( strip_name );
+
+    char *path;
+    asprintf( &path, "%s/strip#/%i/%s", client_name, n, rem );
+
+    free( client_name );
+    free( rem );
+
+    return path;
+}
+
 void
 Module::Port::send_feedback ( void )
 {
+    float f = control_value();
 
+    if ( hints.ranged )
+    {
+        // scale value to range.
+        
+        float scale = hints.maximum - hints.minimum;
+        float offset = hints.minimum;
+        
+        f =  ( f - offset ) / scale;
+    }
+    
+    if ( f > 1.0 )
+        f = 1.0;
+    else if ( f < 0.0 )
+        f = 0.0;
+    
     if ( _scaled_signal )
     {
         /* send feedback for by_name signal */
-        mixer->osc_endpoint->send_feedback( _scaled_signal->path(), control_value() );
+        mixer->osc_endpoint->send_feedback( _scaled_signal->path(), f );
         
 /* send feedback for by number signal */
         {        
-        int n = _module->chain()->strip()->number();
-
-        char *s = strdup( _scaled_signal->path() );
-
-        char *suffix = index( s, '/' );
-        suffix = index( suffix, '/' );
-        suffix = index( suffix, '/' );
-
-        char *path;
-        asprintf( &path, "/strip#/%i%s", suffix );
-        
-        mixer->osc_endpoint->send_feedback( path, control_value() );
-       
+            char *path = osc_number_path();
+            
+            mixer->osc_endpoint->send_feedback( path, f  );
+            
+            free(path);
         }
      }
+}
 
+void
+Module::send_feedback ( void )
+{
+    for ( int i = 0; i < ncontrol_inputs(); i++ )
+        control_input[i].send_feedback();
 }
 
 void
@@ -271,6 +308,12 @@ Module::Port::connected_osc ( void ) const
         return _scaled_signal->connected();
     else
         return false;
+}
+
+void
+Module::Port::learn_osc ( void )
+{
+    _scaled_signal->learn_connection();
 }
 
 char *

@@ -45,8 +45,10 @@
 // needed for mixer->endpoint
 #include "Mixer.H"
 
-bool Controller_Module::_learn_mode = false;
+
 
+bool Controller_Module::learn_by_number = false;
+bool Controller_Module::_learn_mode = false;
 
 
 Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 50, 100, name() )
@@ -186,7 +188,7 @@ Controller_Module::mode ( Mode m )
 
             Port *p = control_output[0].connected_port();
 
-            JACK::Port po( chain()->engine(), JACK::Port::Input, p->name(), 0, "CV" );
+            JACK::Port po( chain()->engine(), JACK::Port::Input, JACK::Port::Audio, p->name(), 0, "CV" );
 
             if ( ! po.activate() )
             {
@@ -549,9 +551,24 @@ Controller_Module::handle ( int m )
                 
                 if ( p )
                 {
-                    DMESSAGE( "Will learn %s", p->osc_path() );
+                    if ( learn_by_number )
+                    {
+                        char *path = p->osc_number_path();
 
-                    mixer->osc_endpoint->learn( p->osc_path() );
+                        DMESSAGE( "Will learn %s", path );
+
+                        mixer->osc_endpoint->learn( path );
+
+                        free(path);
+                    }
+                    else
+                    {
+                        const char *path = p->osc_path();
+   
+                        DMESSAGE( "Will learn %s", path );
+
+                        mixer->osc_endpoint->learn( path );
+                    }
                 }
 
                 return 1;

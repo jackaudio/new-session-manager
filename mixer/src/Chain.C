@@ -313,6 +313,12 @@ Chain::remove ( Controller_Module *m )
     redraw();
 }
 
+void
+Chain::send_feedback ( void )
+{
+    for ( int i = 0; i < modules(); i++ )
+        module(i)->send_feedback();
+}
 
 /* remove a module from the chain. this isn't guaranteed to succeed,
  * because removing the module might result in an invalid routing */

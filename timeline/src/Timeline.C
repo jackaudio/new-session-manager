@@ -74,7 +74,7 @@ bool Timeline::snap_magnetic = true;
 bool Timeline::follow_playhead = true;
 bool Timeline::center_playhead = true;
 
-const float UPDATE_FREQ = 1.0 / 18.0f;
+const float UPDATE_FREQ = 1.0f / 18.0f;
 
 extern const char *instance_name;
 extern TLE *tle;

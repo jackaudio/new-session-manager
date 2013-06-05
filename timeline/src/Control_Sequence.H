@@ -102,6 +102,7 @@ protected:
     void draw ( void );
     int handle ( int m );
 
+    void update_osc_path ( void );
     void update_port_name ( void );
 
 

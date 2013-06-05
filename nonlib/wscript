@@ -19,6 +19,7 @@ Thread.C
 debug.C
 dsp.C
 file.C
+MIDI/midievent.C
 string_util.C
 ''',
         includes = '.',

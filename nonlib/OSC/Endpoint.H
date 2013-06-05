@@ -131,7 +131,7 @@ namespace OSC
 
     class Signal
     {
-        static int next_id;
+//        static int next_id;
 
     public:
 
@@ -151,8 +151,6 @@ namespace OSC
         Endpoint *_endpoint;
 
         Peer *_peer;
-
-        int _id;
 
         char *_path;
         char *_documentation;
@@ -180,14 +178,11 @@ namespace OSC
         Signal ( const char *path, Direction dir );
         ~Signal ( );
 
-        static Signal *get_peer_signal_by_id ( Peer *p, int signal_id );
         int noutput_connections() { return _outgoing.size(); }
         bool connected ( void ) const { return _outgoing.size() + _incoming.size(); }
        
         char * get_output_connection_peer_name_and_path ( int n );
      
-
-        int id ( void ) const { return _id; }
 
         Direction direction ( void ) const { return _direction; }
 
@@ -218,6 +213,8 @@ namespace OSC
         float value ( void ) const { return _value; }
 
         bool is_connected_to ( const Signal *s ) const;
+        
+        void learn_connection ( void );
 
         friend class Endpoint;
     };
@@ -243,6 +240,9 @@ namespace OSC
     class Endpoint
     {
         Thread _thread;
+        
+        friend class  Signal;
+        Signal *_learn_signal;
 
 //        lo_server_thread _st;
         lo_server _server;
@@ -259,6 +259,13 @@ namespace OSC
         public:
             std::string path;
             float current_value;
+            bool suppress_feedback;
+
+            TranslationDestination ( ) 
+                {
+                    suppress_feedback = false;
+                    current_value = -1.0f;
+                }
         };
 
         std::map<std::string,TranslationDestination> _translations;
@@ -291,9 +298,8 @@ namespace OSC
         static void *osc_thread ( void *arg );
         void osc_thread ( void );
             
-        OSC::Signal *find_signal_by_id ( int id );
         OSC::Signal *find_peer_signal_by_path ( Peer *p, const char *path );
-        OSC::Signal *find_peer_signal_by_id ( Peer *p, int id );
+        OSC::Signal *find_signal_by_path ( const char *path );
         
         Peer *find_peer_by_name ( const char *name );
         Peer *find_peer_by_address ( lo_address addr );
@@ -309,7 +315,7 @@ namespace OSC
         void *_peer_signal_notification_userdata;
 
     public:
-        
+
         void send_feedback ( const char *path, float v );
         void learn ( const char *path );
 
@@ -318,8 +324,14 @@ namespace OSC
                 return _addr;
             }
 
+        void clear_translations ( void );
+        void del_translation ( const char *a );
         void add_translation ( const char *a, const char *b );
-        
+        void rename_translation_destination ( const char *a, const char *b );
+        void rename_translation_source ( const char *a, const char *b );
+        int ntranslations ( void );
+        bool get_translation ( int n, const char **from, const char **to );
+
         void peer_signal_notification_callback ( void (*cb)(OSC::Signal *, OSC::Signal::State, void*), void *userdata )
             {
                 _peer_signal_notification_callback = cb;
@@ -338,10 +350,10 @@ namespace OSC
         ~Endpoint ( );
     
         bool disconnect_signal ( OSC::Signal *s, OSC::Signal *d );
-        bool disconnect_signal ( OSC::Signal *s, const char *peer_name, const char *signal_path );        
+        bool disconnect_signal ( OSC::Signal *s, const char *signal_path );        
         bool connect_signal ( OSC::Signal *s, OSC::Signal *d );
         bool connect_signal ( OSC::Signal *s, const char *peer_name, const char *signal_path );        
-        bool connect_signal ( OSC::Signal *s, const char *peer_name, int signal_id );
+//        bool connect_signal ( OSC::Signal *s, const char *peer_name, int signal_id );
         bool connect_signal ( OSC::Signal *s, const char *peer_and_path );
 
         Signal * add_signal ( const char *path, Signal::Direction dir, float min, float max, float default_value, signal_handler handler, void *user_data );
@@ -395,6 +407,8 @@ namespace OSC
 
         int send ( lo_address to, const char *path, lo_message msg );
 
+        int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, float v4, float v5, float v6 );
+  
         int send ( lo_address to, const char *path, const char *v1, const char *v2, int v3, float v4, float v5, float v6 );
 
         int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, int v4, float v5, float v6, float v7 );

@@ -1,20 +1,21 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0108 
+version 1.0300 
 header_name {.H} 
 code_name {.C}
-decl {\#include <string.h>} {} 
+decl {\#include <string.h>} {private local
+} 
 
-widget_class Fl_Text_Edit_Window {open selected
-  xywh {375 272 355 410} type Double resizable
+widget_class Fl_Text_Edit_Window {open
+  xywh {377 295 355 410} type Double resizable
   code0 {this->size_range( 0, 0, 400, 400 );}
-  class Fl_Window modal visible
+  class Fl_Double_Window modal visible
 } {
   Fl_Box title_box {
     label {<title>}
-    xywh {5 7 345 45}
+    xywh {5 7 345 28}
   }
-  Fl_Text_Editor text_editor {
-    xywh {5 58 345 320} resizable
+  Fl_Text_Editor text_editor {selected
+    xywh {5 37 345 341} resizable
     code0 {o->buffer( new Fl_Text_Buffer );}
   }
   Fl_Group {} {open
@@ -33,10 +34,11 @@ widget_class Fl_Text_Edit_Window {open selected
   }
 } 
 
-Function {fl_text_edit( const char *title, const char *button_text, const char *initial_text )} {open C return_type {char *}
+Function {fl_text_edit( const char *title, const char *button_text, const char *initial_text, int W = 355, int H = 410 )} {open C return_type {char *}
 } {
   code {Fl_Text_Edit_Window tew( 355, 410, title );
 
+tew.size( W, H );
 tew.return_button->label( button_text );
 tew.title_box->label( title );
 if ( initial_text )

@@ -770,6 +770,13 @@ Mixer_Strip::handle ( int m )
     return 0;
 }
 
+void
+Mixer_Strip::send_feedback ( void )
+{
+    if ( _chain )
+        _chain->send_feedback();
+}
+
 int
 Mixer_Strip::number ( void ) const
 {

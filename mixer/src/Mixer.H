@@ -46,6 +46,9 @@ private:
 
     float _update_interval;
 
+    static void show_tooltip ( const char *s );
+    static void hide_tooltip ( void );
+
     int _rows;
     int _strip_height;
 
@@ -71,7 +74,11 @@ private:
     void load_options ( void );
     void save_options ( void );
     void update_menu ( void );
-    
+    void save_translations ( void );
+    void load_translations ( void );
+
+    static void send_feedback_cb ( void *v );
+    void send_feedback ( void );
     void redraw_windows ( void );
 
     static void handle_dirty ( int, void *v );
@@ -135,7 +142,9 @@ public:
     void load_project_settings ( void );
 
 public:
-
+    
+    void edit_translations ( void );
+    void command_clear_mappings ( void );
     void command_new ( void );
     bool command_save ( void );
     bool command_load ( const char *path, const char *display_name = 0 );

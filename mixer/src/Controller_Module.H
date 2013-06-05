@@ -44,6 +44,7 @@ public:
 
     static bool _learn_mode;
 
+    static bool learn_by_number;
     static bool learn_mode ( void ) { return _learn_mode; }
     static void learn_mode ( bool b ) { _learn_mode = b; }
 

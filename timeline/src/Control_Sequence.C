@@ -133,8 +133,36 @@ Control_Sequence::name ( const char *s )
 
     if ( mode() == CV )
         update_port_name();
+    else
+        update_osc_path();
 
     redraw();
+}
+
+void
+Control_Sequence::update_osc_path ( void )
+{
+    char *path;
+    asprintf( &path, "/track/%s/%s", track()->name(), name() );
+    
+    char *s = escape_url( path );
+    
+    free( path );
+    
+    path = s;
+ 
+    if ( !_osc_output() )
+    {
+        OSC::Signal *t = timeline->osc->add_signal( path, OSC::Signal::Output, 0, 1, 0, NULL, NULL );
+               
+        _osc_output( t );
+    }
+    else
+    {
+        _osc_output()->rename( path );
+    }
+
+    free(path);
 }
 
 void
@@ -143,7 +171,7 @@ Control_Sequence::update_port_name ( void )
     bool needs_activation = false;
     if ( ! _output )
     {
-        _output = new JACK::Port( engine, JACK::Port::Output, track()->name(), track()->ncontrols(), "cv" );
+        _output = new JACK::Port( engine, JACK::Port::Output, JACK::Port::Audio, track()->name(), track()->ncontrols(), "cv" );
         needs_activation = true;
     }
     
@@ -332,23 +360,7 @@ Control_Sequence::mode ( Mode m )
     }
     else if ( OSC == m && mode() != OSC )
     {
-        /* FIXME: use name here... */
-        char *path;
-        asprintf( &path, "/track/%s/%s", track()->name(), name() );
-
-        char *s = escape_url( path );
-
-        free( path );
-
-        path = s;
-        
-        OSC::Signal *t = timeline->osc->add_signal( path, OSC::Signal::Output, 0, 1, 0, NULL, NULL );
-        
-        free( path );
-
-        _osc_output( t );
-
-        DMESSAGE( "osc_output: %p", _osc_output() );
+        update_osc_path();
 
         header()->outputs_indicator->label( "osc" );
     }
@@ -524,24 +536,21 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
 
         const char *path = ((OSC::Signal*)m->mvalue()->user_data())->path();
 
-        char *peer_and_path;
-        asprintf( &peer_and_path, "%s:%s", peer_name, path );
-
         if ( ! _osc_output()->is_connected_to( ((OSC::Signal*)m->mvalue()->user_data()) ) )
         {
-            _persistent_osc_connections.push_back( peer_and_path );
+            _persistent_osc_connections.push_back( strdup(path) );
             
             connect_osc();
         }
         else
         {
-            timeline->osc->disconnect_signal( _osc_output(), peer_name, path );
+            timeline->osc->disconnect_signal( _osc_output(), path );
             
             for ( std::list<char*>::iterator i = _persistent_osc_connections.begin();
                   i != _persistent_osc_connections.end();
                   ++i )
             {
-                if ( !strcmp( *i, peer_and_path ) )
+                if ( !strcmp( *i, path ) )
                 {
                     free( *i );
                     i = _persistent_osc_connections.erase( i );
@@ -549,7 +558,7 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
                 }
             }
             
-            free( peer_and_path );
+            //free( path );
         }
         
     }
@@ -619,7 +628,7 @@ Control_Sequence::process_osc ( void )
     if ( mode() != OSC )
         return;
 
-    if ( _osc_output() && _osc_output()->connected() )
+    if ( _osc_output() )
     {
         sample_t buf[1];
  
@@ -646,10 +655,12 @@ Control_Sequence::peer_callback( OSC::Signal *sig,  OSC::Signal::State state, vo
     if ( sig->direction() != OSC::Signal::Input )
         return;
 
+//    DMESSAGE( "Paramter limits: %f %f", sig->parameter_limits().min, sig->parameter_limits().max );
+
     /* only list CV signals for now */
     if ( ! ( sig->parameter_limits().min == 0.0 &&
              sig->parameter_limits().max == 1.0 ) )
-        return;         
+        return;
 
     if ( ! v )
     {
@@ -669,11 +680,12 @@ Control_Sequence::peer_callback( OSC::Signal *sig,  OSC::Signal::State state, vo
 
         unescape_url( path );
 
-        asprintf( &s, "%s/%s%s", peer_prefix, name, path );
+        asprintf( &s, "%s/%s", peer_prefix, path );
 
-        peer_menu->add( s, 0, NULL, (void*)( sig ),
-                            FL_MENU_TOGGLE |
-                        ( ((Control_Sequence*)v)->_osc_output()->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) );
+        peer_menu->add( s, 0, NULL, (void*)( sig ), 0 );
+
+                        /*     FL_MENU_TOGGLE | */
+                        /* ( ((Control_Sequence*)v)->_osc_output()->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) ); */
     
         free( path );
 

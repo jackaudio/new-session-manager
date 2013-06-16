@@ -45,6 +45,8 @@ Gain_Module::Gain_Module ( )
     end();
 
     log_create();
+
+    smoothing.sample_rate( sample_rate() );
 }
 
 Gain_Module::~Gain_Module ( )
@@ -71,6 +73,12 @@ Gain_Module::configure_inputs ( int n )
     return true;
 }
 
+void
+Gain_Module::handle_sample_rate_change ( nframes_t n )
+{
+    smoothing.sample_rate( n );
+}
+
 
 
 /**********/
@@ -80,13 +88,30 @@ Gain_Module::configure_inputs ( int n )
 void
 Gain_Module::process ( nframes_t nframes )
 {
-    float g = DB_CO( control_input[0].control_value() );
+    const float gt = DB_CO( control_input[0].control_value() );
 
-    for ( int i = audio_input.size(); i--; )
+    if ( !smoothing.target_reached( gt ) )
     {
-        if ( audio_input[i].connected() && audio_output[i].connected() )
+        sample_t gainbuf[nframes];
+        
+        smoothing.apply( gainbuf, nframes, gt );
+
+        for ( int i = audio_input.size(); i--; )
         {
-            buffer_apply_gain( (sample_t*)audio_input[i].buffer(), nframes, g );
+            if ( audio_input[i].connected() && audio_output[i].connected() )
+            {
+                sample_t *out = (sample_t*)audio_input[i].buffer();
+
+                buffer_apply_gain_buffer( out, gainbuf, nframes );
+            }
         }
     }
+    else
+        for ( int i = audio_input.size(); i--; )
+        {
+            if ( audio_input[i].connected() && audio_output[i].connected() )
+            {
+                buffer_apply_gain( (sample_t*)audio_input[i].buffer(), nframes, gt );
+            }
+        }
 }

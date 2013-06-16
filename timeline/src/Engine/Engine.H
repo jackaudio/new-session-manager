@@ -64,7 +64,7 @@ public:
 
     float frames_to_milliseconds ( nframes_t frames )
         {
-            return ( frames * 1000 ) / (float)frame_rate();
+            return ( frames * 1000 ) / (float)sample_rate();
         }
 };
 

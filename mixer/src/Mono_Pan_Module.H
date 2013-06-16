@@ -20,9 +20,12 @@
 #pragma once
 
 #include "Module.H"
+#include "dsp.h"
 
 class Mono_Pan_Module : public Module
 {
+    Value_Smoothing_Filter smoothing;
+    
 public:
 
     Mono_Pan_Module ( );
@@ -37,6 +40,8 @@ public:
 
     MODULE_CLONE_FUNC( Mono_Pan_Module );
 
+    virtual void handle_sample_rate_change ( nframes_t n );
+    
 protected:
 
     virtual void process ( nframes_t nframes );

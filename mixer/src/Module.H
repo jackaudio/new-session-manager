@@ -49,6 +49,7 @@ class Module : public Fl_Group, public Loggable {
 
     Module_Parameter_Editor *_editor;
 
+    static nframes_t _sample_rate;
     static Module *_copied_module_empty;
     static char *_copied_module_settings;
 
@@ -414,6 +415,9 @@ public:
 
     virtual void process ( nframes_t ) = 0;
 
+    /* called whenever the module is initialized or when the sample rate is changed at runtime */
+    virtual void handle_sample_rate_change ( nframes_t sample_rate ) {}
+        
     /* called whenever the value of a control port is changed.
        This can be used to take appropriate action from the GUI thread */
     virtual void handle_control_changed ( Port * );
@@ -436,6 +440,8 @@ public:
 
 protected:
 
+    nframes_t sample_rate ( void ) const { return Module::_sample_rate; }
+
     void draw_connections ( void );
     void draw_label ( int X, int Y, int W, int H );
     void draw_box ( int X, int Y, int W, int H );
@@ -447,6 +453,8 @@ protected:
     virtual void set ( Log_Entry &e );
 
 public:
+
+    static void set_sample_rate ( nframes_t srate ) { _sample_rate = srate; }
 
     void command_open_parameter_editor();
     virtual void command_activate ( void );

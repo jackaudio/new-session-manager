@@ -341,7 +341,7 @@ Plugin_Module::plugin_instances ( unsigned int n )
 
             DMESSAGE( "Instantiating plugin..." );
 
-            if ( ! (h = _idata->descriptor->instantiate( _idata->descriptor, Engine::sample_rate() ) ) )
+            if ( ! (h = _idata->descriptor->instantiate( _idata->descriptor, sample_rate() ) ) )
             {
                 WARNING( "Failed to instantiate plugin" );
                 return false;
@@ -474,7 +474,7 @@ Plugin_Module::load ( unsigned long id )
                     p.hints.minimum = _idata->descriptor->PortRangeHints[i].LowerBound;
                     if ( LADSPA_IS_HINT_SAMPLE_RATE(hd) )
                     {
-                        p.hints.minimum *= Engine::sample_rate();
+                        p.hints.minimum *= sample_rate();
                     }
                 }
                 if ( LADSPA_IS_HINT_BOUNDED_ABOVE(hd) )
@@ -483,7 +483,7 @@ Plugin_Module::load ( unsigned long id )
                     p.hints.maximum = _idata->descriptor->PortRangeHints[i].UpperBound;
                     if ( LADSPA_IS_HINT_SAMPLE_RATE(hd) )
                     {
-                        p.hints.maximum *= Engine::sample_rate();
+                        p.hints.maximum *= sample_rate();
                     }
                 }
 
@@ -500,7 +500,7 @@ Plugin_Module::load ( unsigned long id )
                         Min=_idata->descriptor->PortRangeHints[Port].LowerBound;
                         if (LADSPA_IS_HINT_SAMPLE_RATE(HintDesc))
                         {
-                            Min*=Engine::sample_rate();
+                            Min*=sample_rate();
                         }
                     }
                     if (LADSPA_IS_HINT_BOUNDED_ABOVE(HintDesc))
@@ -508,7 +508,7 @@ Plugin_Module::load ( unsigned long id )
                         Max=_idata->descriptor->PortRangeHints[Port].UpperBound;
                         if (LADSPA_IS_HINT_SAMPLE_RATE(HintDesc))
                         {
-                            Max*=Engine::sample_rate();
+                            Max*=sample_rate();
                         }
                     }
 
@@ -576,7 +576,7 @@ Plugin_Module::load ( unsigned long id )
                                 }
                             }
                             if (LADSPA_IS_HINT_SAMPLE_RATE(HintDesc)) {
-                                Default *= Engine::sample_rate();
+                                Default *= sample_rate();
                             }
                             if (LADSPA_IS_HINT_INTEGER(HintDesc)) {
                                 if ( p.hints.ranged &&

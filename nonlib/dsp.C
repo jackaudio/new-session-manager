@@ -127,3 +127,37 @@ buffer_copy_and_apply_gain ( sample_t *dst, const sample_t *src, nframes_t nfram
     memcpy( dst, src, nframes * sizeof( sample_t ) );
     buffer_apply_gain( dst, nframes, gain );
 }
+
+void
+Value_Smoothing_Filter::sample_rate ( nframes_t n )
+{
+    const float FS = n;
+    const float T = 0.05f;
+   
+    w = 10.0f / (FS * T);  
+}
+
+void
+Value_Smoothing_Filter::apply( sample_t *dst, nframes_t nframes, float gt )
+{
+    const float a = 0.07f;
+    const float b = 1 + a;
+    
+    const float gm = b * gt;
+
+    float g1 = this->g1;
+    float g2 = this->g2;
+
+    for (nframes_t i = 0; i < nframes; i++)
+    {
+        g1 += w * (gm - g1 - a * g2);
+        g2 += w * (g1 - g2);
+        dst[i] = g2;
+    }
+
+    if ( fabsf( gt - g2 ) < 0.0001f )
+        g2 = gt;
+
+    this->g1 = g1;
+    this->g2 = g2;
+}

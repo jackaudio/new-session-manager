@@ -47,6 +47,7 @@
 
 
 
+nframes_t Module::_sample_rate = 0;
 Module *Module::_copied_module_empty = 0;
 char *Module::_copied_module_settings = 0;
 

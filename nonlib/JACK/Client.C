@@ -29,7 +29,7 @@
 namespace JACK
 {
 
-    nframes_t Client::_sample_rate = 0;
+//    nframes_t Client::_sample_rate = 0;
 
     Client::Client ( )
     {
@@ -114,6 +114,13 @@ namespace JACK
         ((Client*)arg)->port_connect( a, b, connect );
     }
 
+    int
+    Client::sample_rate_changed ( nframes_t srate, void *arg )
+    {
+//        ((Client*)arg)->_sample_rate = srate;
+        return ((Client*)arg)->sample_rate_changed( srate );
+    }
+
 /** Connect to JACK using client name /client_name/. Return a static
  * pointer to actual name as reported by JACK */
     const char *
@@ -131,6 +138,8 @@ namespace JACK
         set_callback( buffer_size );
         set_callback( port_connect );
 
+        jack_set_sample_rate_callback( _client, &Client::sample_rate_changed, this );
+
         /* FIXME: should we wait to register this until after the project
            has been loaded (and we have disk threads running)? */
         if ( opts & SLOW_SYNC )
@@ -143,7 +152,7 @@ namespace JACK
 
         jack_activate( _client );
 
-        _sample_rate = frame_rate();
+//        _sample_rate = frame_rate();
 
         return jack_get_client_name( _client );
     }

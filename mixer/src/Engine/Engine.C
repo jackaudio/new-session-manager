@@ -20,7 +20,7 @@
 
 #include "Engine.H"
 
-#include "../Mixer.H" // for process()
+// #include "../Mixer.H" // for process()
 
 /* This is the home of the JACK process callback */
 
@@ -37,6 +37,7 @@ Engine::Engine ( void (*process_callback)(nframes_t nframes, void *), void *user
     _buffer_size_callback = 0;
     _buffers_dropped = 0;
     _port_connect_callback = 0;
+    _sample_rate_changed_callback = 0;
 }
 
 Engine::~Engine ( )
@@ -51,6 +52,13 @@ Engine::buffer_size_callback (  void ( *buffer_size_callback ) ( nframes_t, void
 {
     _buffer_size_callback = buffer_size_callback;
     _buffer_size_callback_user_data = user_data;
+}
+
+void
+Engine::sample_rate_changed_callback ( int ( *sample_rate_changed_callback ) ( nframes_t, void * ), void *user_data )
+{
+    _sample_rate_changed_callback = sample_rate_changed_callback;
+    _sample_rate_changed_callback_user_data = user_data;
 }
 
 void
@@ -132,6 +140,14 @@ Engine::process ( nframes_t nframes )
     return 0;
 }
 
+int
+Engine::sample_rate_changed ( nframes_t srate )
+{
+    if ( _sample_rate_changed_callback )
+        return _sample_rate_changed_callback( srate, _sample_rate_changed_callback_user_data );
+    
+    return 0;
+}
 
 /* TRHEAD: RT */
 void

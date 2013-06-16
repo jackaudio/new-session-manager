@@ -35,6 +35,27 @@ bool buffer_is_digital_black ( sample_t *buf, nframes_t nframes );
 void buffer_copy ( sample_t *dst, const sample_t *src, nframes_t nframes );
 void buffer_copy_and_apply_gain ( sample_t *dst, const sample_t *src, nframes_t nframes, float gain );
 
+class Value_Smoothing_Filter
+{
+    float w, g1, g2;
+  
+
+public:
+
+    Value_Smoothing_Filter ( )
+    {
+        g1 = g2 = 0;
+    }
+
+    void sample_rate ( nframes_t v );
+    
+    inline bool target_reached ( float gt ) const { return gt == g2; }
+ 
+    void apply ( sample_t *dst, nframes_t nframes, float target );
+
+};
+
+
 // from SWH plugins.
 // Convert a value in dB's to a coefficent
 #define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)

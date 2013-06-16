@@ -40,9 +40,13 @@ class Engine : public JACK::Client, public Mutex
     void ( * _buffer_size_callback ) ( nframes_t, void * );
     void *_buffer_size_callback_user_data;
 
+    int ( * _sample_rate_changed_callback ) ( nframes_t, void * );
+    void *_sample_rate_changed_callback_user_data;
+
     void ( * _port_connect_callback ) ( jack_port_id_t a, jack_port_id_t b, int connect, void * );
     void *_port_connect_callback_user_data;
 
+    int sample_rate_changed ( nframes_t srate );
     void shutdown ( void );
     int process ( nframes_t nframes );
     int xrun ( void );
@@ -67,5 +71,6 @@ public:
 
     int dropped ( void ) const { return _buffers_dropped; }
     void buffer_size_callback ( void ( *buffer_size_callback ) ( nframes_t, void * ), void *user_data );
+    void sample_rate_changed_callback ( int ( *sample_rate_changed_callback ) ( nframes_t, void * ), void *user_data );
     void port_connect_callback ( void ( *port_connect_callback ) ( jack_port_id_t a, jack_port_id_t b, int connect, void *arg), void *user_data );
 };

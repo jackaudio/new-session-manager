@@ -20,9 +20,12 @@
 #pragma once
 
 #include "Module.H"
+#include "dsp.h"
 
 class Gain_Module : public Module
 {
+    Value_Smoothing_Filter smoothing;
+
 public:
 
     Gain_Module ( );
@@ -37,6 +40,8 @@ public:
     LOG_CREATE_FUNC( Gain_Module );
 
     MODULE_CLONE_FUNC( Gain_Module );
+
+    virtual void handle_sample_rate_change ( nframes_t n );
 
 protected:
 

@@ -109,7 +109,7 @@ Track::configure_outputs ( int n )
     }
 
     if ( output.size() )
-        playback_ds = new Playback_DS( this, engine->frame_rate(), engine->nframes(), output.size() );
+        playback_ds = new Playback_DS( this, engine->sample_rate(), engine->nframes(), output.size() );
 
     /* FIXME: bogus */
     return true;
@@ -162,7 +162,7 @@ Track::configure_inputs ( int n )
     }
 
     if ( input.size() )
-        record_ds = new Record_DS( this, engine->frame_rate(), engine->nframes(), input.size() );
+        record_ds = new Record_DS( this, engine->sample_rate(), engine->nframes(), input.size() );
 
 //    engine->unlock();
 

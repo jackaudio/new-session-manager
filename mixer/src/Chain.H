@@ -74,6 +74,8 @@ private:
 
     static void buffer_size ( nframes_t nframes, void *v );
     void buffer_size ( nframes_t nframes );
+    static int sample_rate_change ( nframes_t nframes, void *v );
+    int sample_rate_change ( nframes_t nframes );
 
     
     static void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect, void *v );

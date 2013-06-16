@@ -250,13 +250,12 @@ Chain::initialize_with_default ( void )
         m->is_default( true );
         m->chain( this );
         m->configure_outputs( 1 );
-        m->initialize();
         add( m );
     }
 
     { Module *m = new Gain_Module();
         m->is_default( true );
-        m->initialize();
+        m->chain(this);
         add( m );
     }
 
@@ -268,7 +267,6 @@ Chain::initialize_with_default ( void )
     { JACK_Module *m = new JACK_Module();
         m->is_default( true );
         m->chain( this );
-        m->initialize();
         add( m );
     }
 }
@@ -462,7 +460,10 @@ Chain::name ( const char *name )
 
         engine()->buffer_size_callback( &Chain::buffer_size, this );
         engine()->port_connect_callback( &Chain::port_connect, this );
+        engine()->sample_rate_changed_callback( &Chain::sample_rate_change, this );
 
+        Module::set_sample_rate( engine()->sample_rate() );
+        
         const char *jack_name = engine()->init( ename );
 
         if ( ! jack_name )
@@ -580,6 +581,7 @@ Chain::insert ( Module *m, Module *n )
               n->ncontrol_inputs(),
               n->ncontrol_outputs() );
 
+    n->initialize();
     return true;
 
 err:
@@ -827,6 +829,26 @@ Chain::buffer_size ( nframes_t nframes )
 
         m->resize_buffers( nframes );
     }
+}
+
+int
+Chain::sample_rate_change ( nframes_t nframes, void *v )
+{
+    ((Chain*)v)->sample_rate_change( nframes );
+}
+
+int
+Chain::sample_rate_change ( nframes_t nframes )
+{
+    Module::set_sample_rate ( nframes );
+    for ( int i = 0; i < modules(); ++i )
+    {
+        Module *m = module(i);
+
+        m->handle_sample_rate_change( nframes );
+    }
+
+    return 0;
 }
 
 void

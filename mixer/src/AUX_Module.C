@@ -50,6 +50,8 @@ AUX_Module::AUX_Module ( ) : JACK_Module ( false )
     color( FL_DARK1 );
 
     copy_label( "Aux" );
+
+    smoothing.sample_rate( sample_rate() );
 }
 
 AUX_Module::~AUX_Module ( )
@@ -98,16 +100,38 @@ AUX_Module::number ( int n )
 }
 
 void
+AUX_Module::handle_sample_rate_change ( nframes_t n )
+{
+    smoothing.sample_rate( n );
+}
+
+void
 AUX_Module::process ( nframes_t nframes )
 {
     if ( !bypass() )
     {
-        float g = DB_CO( control_input[0].control_value() );
+        float gt = DB_CO( control_input[0].control_value() );
  
-        for ( unsigned int i = 0; i < audio_input.size(); ++i )
+        if ( !smoothing.target_reached( gt ) )
         {
-            if ( audio_input[i].connected() )
-                buffer_copy_and_apply_gain( (sample_t*)jack_output[i].buffer( nframes ), (sample_t*)audio_input[i].buffer(), nframes, g );
+            sample_t gainbuf[nframes];
+        
+            smoothing.apply( gainbuf, nframes, gt );
+
+            for ( unsigned int i = 0; i < audio_input.size(); ++i )
+            {
+                if ( audio_input[i].connected() )
+                    buffer_copy_and_apply_gain_buffer( (sample_t*)jack_output[i].buffer( nframes ), (sample_t*)audio_input[i].buffer(), gainbuf, nframes );
+            }
+
+        }
+        else
+        {
+            for ( unsigned int i = 0; i < audio_input.size(); ++i )
+            {
+                if ( audio_input[i].connected() )
+                    buffer_copy_and_apply_gain( (sample_t*)jack_output[i].buffer( nframes ), (sample_t*)audio_input[i].buffer(), nframes, gt );
+            }
         }
     }
     else

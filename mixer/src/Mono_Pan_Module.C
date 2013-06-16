@@ -47,6 +47,8 @@ Mono_Pan_Module::Mono_Pan_Module ( )
     end();
 
     log_create();
+ 
+    smoothing.sample_rate( sample_rate() );
 }
 
 Mono_Pan_Module::~Mono_Pan_Module ( )
@@ -56,6 +58,12 @@ Mono_Pan_Module::~Mono_Pan_Module ( )
 }
 
 
+
+void
+Mono_Pan_Module::handle_sample_rate_change ( nframes_t n )
+{
+    smoothing.sample_rate( n );
+}
 
 bool
 Mono_Pan_Module::configure_inputs ( int )
@@ -72,10 +80,6 @@ Mono_Pan_Module::configure_inputs ( int )
 void
 Mono_Pan_Module::process ( nframes_t nframes )
 {
-    const float g = control_input[0].control_value();
-
-    const float lg = (0.0f - g) + 1.0f;
-    const float rg = g + 1.0f;
 
     if ( audio_input[0].connected() &&
          audio_output[0].connected() &&
@@ -87,9 +91,38 @@ Mono_Pan_Module::process ( nframes_t nframes )
         }
         else
         {
-            buffer_copy_and_apply_gain( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes, rg );
+            const float gt = (control_input[0].control_value() + 1.0f) * 0.5f;
+
+            if ( ! smoothing.target_reached( gt ) )
+            {            
+                sample_t gainbuf[nframes];            
             
-            buffer_apply_gain( (sample_t*)audio_output[0].buffer(), nframes, lg );
+                smoothing.apply( gainbuf, nframes, gt );
+                
+                /* right channel */
+                
+                buffer_copy_and_apply_gain_buffer( (sample_t*)audio_output[1].buffer(),
+                                                   (sample_t*)audio_input[0].buffer(),
+                                                   gainbuf,
+                                                   nframes );
+                
+                /*  left channel  */
+                for ( nframes_t i = 0; i < nframes; i++ )
+                    gainbuf[i] = 1.0f - gainbuf[i];
+                
+                buffer_apply_gain_buffer( (sample_t*)audio_output[0].buffer(), gainbuf, nframes );
+            }
+            else
+            {
+                /* right channel */
+                buffer_copy_and_apply_gain( (sample_t*)audio_output[1].buffer(),
+                                                   (sample_t*)audio_input[0].buffer(),
+                                                   nframes,
+                                                   gt );
+                
+                /*  left channel  */
+                buffer_apply_gain( (sample_t*)audio_output[0].buffer(), nframes, 1.0f - gt);
+            }
         }
     }
 }

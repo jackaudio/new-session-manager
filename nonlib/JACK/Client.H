@@ -35,11 +35,13 @@ namespace JACK
 
         jack_client_t *_client;
 
-        static nframes_t _sample_rate;
+//        nframes_t _sample_rate;
         volatile int _xruns;
         volatile bool _freewheeling;
         volatile bool _zombified;
 
+        static int sample_rate_changed ( nframes_t srate, void *arg );
+        virtual int sample_rate_changed ( nframes_t srate ) { return 0; }
         static void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect, void *arg );
         virtual void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect ) { }
         static void shutdown ( void *arg );
@@ -93,14 +95,13 @@ namespace JACK
 
         void close ( void );
         nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }
-        float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }
-        static nframes_t sample_rate ( void ) { return _sample_rate; }
+//        float frame_rate ( void ) const { return jack_get_sample_rate( _client ); }
+        nframes_t sample_rate ( void ) const { return jack_get_sample_rate( _client ); }
         int xruns ( void ) const { return _xruns; };
         bool freewheeling ( void ) const { return _freewheeling; }
         void freewheeling ( bool yes );
         bool zombified ( void ) const { return _zombified; }
         float cpu_load ( void ) const { return jack_cpu_load( _client ); }
-
 
         void transport_stop ( void );
         void transport_start ( void );

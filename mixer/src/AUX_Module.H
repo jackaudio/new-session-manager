@@ -20,10 +20,13 @@
 #pragma once
 
 #include "JACK_Module.H"
+#include "dsp.h"
 
 class AUX_Module : public JACK_Module
 {
     int _number;
+
+    Value_Smoothing_Filter smoothing;
 
 protected:
 
@@ -44,6 +47,8 @@ public:
     virtual ~AUX_Module ( );
 
     LOG_CREATE_FUNC( AUX_Module );
+    
+    virtual void handle_sample_rate_change ( nframes_t n );
 
 protected:
 

@@ -32,10 +32,6 @@
 
 
 
-const float METER_UPDATE_FREQ = 0.2f;
-
-
-
 Meter_Module::Meter_Module ( )
     : Module ( 50, 100, name() )
 {
@@ -60,8 +56,6 @@ Meter_Module::Meter_Module ( )
 
     add_port( p );
 
-    Fl::add_timeout( METER_UPDATE_FREQ, update_cb, this );
-
     log_create();
 }
 
@@ -70,24 +64,14 @@ Meter_Module::~Meter_Module ( )
     if ( control_value )
         delete[] control_value;
 
-    Fl::remove_timeout( update_cb, this );
-
     log_destroy();
 }
 
 
 
 void
-Meter_Module::update_cb ( void *v )
+Meter_Module::update ( void )
 {
-    ((Meter_Module*)v)->update_cb();
-}
-
-void
-Meter_Module::update_cb ( void )
-{
-    Fl::repeat_timeout( METER_UPDATE_FREQ, update_cb, this );
-
     for ( int i = dpm_pack->children(); i--; )
     {
         ((DPM*)dpm_pack->child( i ))->value( control_value[i] );

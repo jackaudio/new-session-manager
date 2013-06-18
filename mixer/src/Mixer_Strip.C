@@ -361,6 +361,10 @@ void
 Mixer_Strip::update ( void )
 {
     THREAD_ASSERT( UI );
+
+    meter_indicator->update();
+    gain_controller->update();
+        _chain->update();
 }
 
 void

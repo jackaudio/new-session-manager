@@ -874,6 +874,22 @@ Chain::port_connect ( jack_port_id_t a, jack_port_id_t b, int connect )
 }
 
 void
+Chain::update ( void )
+{
+    for ( int i = 0; i < controls_pack->children(); ++i )
+    {
+        Controller_Module *cm = (Controller_Module*)controls_pack->child( i );
+        cm->update();
+    }
+
+    for ( int i = 0; i < modules(); i++ )
+    {
+        Module *m = module(i);
+        m->update();
+    }
+}
+
+void
 Chain::update_connection_status ( void *v )
 {
     ((Chain*)v)->update_connection_status();

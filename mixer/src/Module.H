@@ -74,6 +74,8 @@ public:
     /* true if this module was added by default and not under normal user control */
     bool is_default ( void ) const { return _is_default; }
     void is_default ( bool v ) { _is_default = v; }
+    
+    virtual void update ( void ) {}
 
     class Port
     {

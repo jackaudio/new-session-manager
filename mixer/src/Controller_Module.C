@@ -47,10 +47,6 @@
 
 
 
-const float CONTROL_UPDATE_FREQ = 0.2f;
-
-
-
 Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 50, 100, name() )
 {
 //    label( "" );
@@ -70,15 +66,11 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
 
     end();
 
-    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
-
     log_create();
 }
 
 Controller_Module::~Controller_Module ( )
 {
-    Fl::remove_timeout( update_cb, this );
-
     log_destroy();
 
     /* shutdown JACK port, if we have one */
@@ -427,16 +419,8 @@ Controller_Module::connect_to ( Port *p )
 }
 
 void
-Controller_Module::update_cb ( void *v )
+Controller_Module::update ( void )
 {
-    ((Controller_Module*)v)->update_cb();
-}
-
-void
-Controller_Module::update_cb ( void )
-{
-    Fl::repeat_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
-
     /* we only need this in CV (JACK) mode, because with other forms
      * of control the change happens in the GUI thread and we know it */
     if ( mode() != CV )

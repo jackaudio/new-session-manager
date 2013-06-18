@@ -40,10 +40,6 @@
 
 
 
-const float CONTROL_UPDATE_FREQ = 0.1f;
-
-
-
 Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
     : Module ( is_default, 50, 100, name() )
 {
@@ -71,8 +67,6 @@ Meter_Indicator_Module::Meter_Indicator_Module ( bool is_default )
     align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
 
     clear_visible_focus();
-
-    Fl::add_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
 }
 
 Meter_Indicator_Module::~Meter_Indicator_Module ( )
@@ -82,8 +76,6 @@ Meter_Indicator_Module::~Meter_Indicator_Module ( )
         delete[] control_value;
         control_value = NULL;
     }
-
-    Fl::remove_timeout( update_cb, this );
 
     log_destroy();
 }
@@ -140,16 +132,8 @@ Meter_Indicator_Module::set ( Log_Entry &e )
 
 
 void
-Meter_Indicator_Module::update_cb ( void *v )
+Meter_Indicator_Module::update ( void )
 {
-    ((Meter_Indicator_Module*)v)->update_cb();
-}
-
-void
-Meter_Indicator_Module::update_cb ( void )
-{
-    Fl::repeat_timeout( CONTROL_UPDATE_FREQ, update_cb, this );
-
     if ( control_input[0].connected() )
     {
         // A little hack to detect that the connected module's number

@@ -29,9 +29,6 @@ class Meter_Module : public Module
 
     volatile float *control_value;
 
-    static void update_cb ( void *v );
-    void update_cb ( void );
-
 public:
 
     Meter_Module ( );
@@ -43,6 +40,8 @@ public:
     bool configure_inputs ( int n );
 
     LOG_CREATE_FUNC( Meter_Module );
+
+    virtual void update ( void );
 
 protected:
 

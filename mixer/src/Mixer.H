@@ -44,6 +44,8 @@ public:
 
 private:
 
+    float _update_interval;
+
     int _rows;
 
     Fl_Color system_colors[3];
@@ -73,7 +75,12 @@ private:
 
     static int osc_non_hello ( const char *, const char *, lo_arg **, int , lo_message msg, void * );
 
+    static void update_cb ( void * );
+    void update_cb ( void );
+
 public:
+
+    void update_frequency ( float f );
     
     virtual int handle ( int m );
 

@@ -32,9 +32,6 @@ class Fl_Valuator;
 class Controller_Module : public Module
 {
 
-    static void update_cb ( void *v );
-    void update_cb ( void );
-
     bool _pad;
 
     volatile float control_value;
@@ -86,6 +83,8 @@ public:
     virtual void command_remove ( void );
 
     LOG_CREATE_FUNC( Controller_Module );
+
+    virtual void update ( void );
 
     void process ( nframes_t nframes );
 

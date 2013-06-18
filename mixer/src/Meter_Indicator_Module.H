@@ -30,8 +30,6 @@ class Meter_Indicator_Module : public Module
 {
     Fl_Scalepack *dpm_pack;
 
-    static void update_cb ( void *v );
-    void update_cb ( void );
 
     bool _pad;
 
@@ -40,6 +38,8 @@ class Meter_Indicator_Module : public Module
     bool _disable_context_menu;
 
 public:
+
+    virtual void update ( void );
 
     void disable_context_menu ( bool b ) { _disable_context_menu = b; }
 

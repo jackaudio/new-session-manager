@@ -48,8 +48,6 @@
 #include "OSC/Endpoint.H"
 #include <lo/lo.h>
 
-const double STATUS_UPDATE_FREQ = 0.2f;
-
 extern char *user_config_dir;
 extern char *instance_name;
 
@@ -59,12 +57,6 @@ extern char *instance_name;
 #include "NSM.H"
 
 extern NSM_Client *nsm;
-
-/* static void update_cb( void *v ) { */
-/*     Fl::repeat_timeout( STATUS_UPDATE_FREQ, update_cb, v ); */
-
-/*     ((Mixer*)v)->update(); */
-/* } */
 
 
 
@@ -294,6 +286,18 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         fl_theme_chooser();
     }
+    else if (! strcmp( picked, "&Options/&Display/Update Frequency/15 Hz" ) )
+    {
+        update_frequency( 15.0f );
+    }
+    else if (! strcmp( picked, "&Options/&Display/Update Frequency/30 Hz" ) )
+    {
+        update_frequency( 30.0f );
+    }
+    else if (! strcmp( picked, "&Options/&Display/Update Frequency/60 Hz" ) )
+    {
+        update_frequency( 60.0f );
+    }
     else if ( ! strcmp( picked, "&Help/&About" ) )
     {
         About_Dialog ab( PIXMAP_PATH "/non-mixer/icon-256x256.png" );
@@ -332,6 +336,32 @@ void Mixer::cb_menu(Fl_Widget* o) {
 void Mixer::cb_menu(Fl_Widget* o, void* v) {
     ((Mixer*)(v))->cb_menu(o);
 }
+
+void Mixer::update_frequency ( float v )
+{
+    _update_interval = 1.0f / v;
+
+    Fl::remove_timeout( &Mixer::update_cb );
+    Fl::add_timeout( _update_interval, &Mixer::update_cb, this );
+}
+
+void 
+Mixer::update_cb ( void *v )
+{
+    ((Mixer*)v)->update_cb();
+}
+
+void
+Mixer::update_cb ( void )
+{
+    Fl::repeat_timeout( _update_interval, &Mixer::update_cb, this );
+
+    for ( int i = 0; i < mixer_strips->children(); i++ )
+    {
+        ((Mixer_Strip*)mixer_strips->child(i))->update();
+    }
+}
+
 
 static void
 progress_cb ( int p, void *v )
@@ -420,6 +450,9 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             o->add( "&Mixer/&Import Strip" );
             o->add( "&Mixer/Paste", FL_CTRL + 'v', 0, 0 );
             o->add( "&View/&Theme", 0, 0, 0 );
+            /* o->add( "&Options/&Display/Update Frequency/60 Hz", 0, 0, 0, FL_MENU_RADIO ); */
+            /* o->add( "&Options/&Display/Update Frequency/30 Hz", 0, 0, 0, FL_MENU_RADIO); */
+            /* o->add( "&Options/&Display/Update Frequency/15 Hz", 0, 0, 0,  FL_MENU_RADIO | FL_MENU_VALUE ); */
             o->add( "&Help/&Manual" );
             o->add( "&Help/&About" );
             o->callback( cb_menu, this );
@@ -468,7 +501,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
 
     end();
 
-//    Fl::add_timeout( STATUS_UPDATE_FREQ, update_cb, this );
+    update_frequency( 15 );
 
     update_menu();
 

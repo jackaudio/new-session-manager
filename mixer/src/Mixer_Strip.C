@@ -364,6 +364,7 @@ Mixer_Strip::update ( void )
 
     meter_indicator->update();
     gain_controller->update();
+    if ( _chain )
         _chain->update();
 }
 

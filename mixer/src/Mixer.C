@@ -341,7 +341,7 @@ void Mixer::update_frequency ( float v )
 {
     _update_interval = 1.0f / v;
 
-    Fl::remove_timeout( &Mixer::update_cb );
+    Fl::remove_timeout( &Mixer::update_cb, this );
     Fl::add_timeout( _update_interval, &Mixer::update_cb, this );
 }
 
@@ -356,9 +356,12 @@ Mixer::update_cb ( void )
 {
     Fl::repeat_timeout( _update_interval, &Mixer::update_cb, this );
 
-    for ( int i = 0; i < mixer_strips->children(); i++ )
+    if ( active_r() && visible_r() )
     {
-        ((Mixer_Strip*)mixer_strips->child(i))->update();
+        for ( int i = 0; i < mixer_strips->children(); i++ )
+        {
+            ((Mixer_Strip*)mixer_strips->child(i))->update();
+        }
     }
 }
 
@@ -536,6 +539,8 @@ Mixer::~Mixer ( )
     DMESSAGE( "Destroying mixer" );
 
     save_options();
+
+    Fl::remove_timeout( &Mixer::update_cb, this );
 
     /* FIXME: teardown */
     mixer_strips->clear();

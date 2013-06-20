@@ -88,12 +88,16 @@ public:
 
     static
     void
-    blend ( Fl_Color min, Fl_Color max )
+    blend ( int nbreaks, int* b, Fl_Color *c )
         {
-            for ( int i = 128; i-- ; )
-                _gradient[ i ] = fl_color_average( max, min, i / (float)128 );
+            for ( int i = 0; i < nbreaks - 1; i++ )
+            {
+                int k = 0;
+                for ( int j = b[i]; j <= b[i+1]; j++, k++ )
+                    _gradient[ j ] = fl_color_average( c[i+1], c[i], ( k ) / (float)(b[i+1] - b[i] ));
+            }
 
-            for ( int i = 128; i-- ; )
+            for ( int i = 0; i < 127; i++ )
                 _dim_gradient[ i ] = fl_color_average( FL_BLACK, _gradient[ i ], _dim );
         }
 };

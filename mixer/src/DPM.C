@@ -53,7 +53,20 @@ DPM::DPM ( int X, int Y, int W, int H, const char *L ) :
 
     /* initialize gradients */
     if ( DPM::_gradient[ 0 ] == 0 )
-        DPM::blend( FL_GREEN, FL_RED );
+    {
+        int breaks[] = {0,60,70,80,90,127};
+
+        Fl_Color cols[] = { 
+            fl_rgb_color( 45,58,64),
+            fl_rgb_color( 84,181,195 ), 
+            fl_rgb_color( 122,200,211 ), 
+            fl_rgb_color( 178,213,212 ), 
+            fl_rgb_color( 209,213,179 ),
+            fl_rgb_color( 250, 40, 30 )
+        };
+
+        DPM::blend( 6, breaks, cols );
+    }
 
     box( FL_FLAT_BOX );
     color( FL_BACKGROUND_COLOR );
@@ -170,7 +183,7 @@ DPM::draw ( void )
     for ( int p = lo; p <= hi; p++ )
     {
         Fl_Color c;
-
+        
         if ( p > v && p != pv )
             c = dim_div_color( p );
         else if ( p != clipv )
@@ -208,6 +221,7 @@ DPM::draw ( void )
                 fl_line( X, yy, X + W - 1, yy );
             }
         }
+
         /* } */
         /* else */
         /* { */

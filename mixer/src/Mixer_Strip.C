@@ -506,7 +506,7 @@ Mixer_Strip::init ( )
                 o->hide();
                 o->label( 0 );
                 o->pad( false );
-                o->size( 100, 100 );
+                o->size( 92,92 );
             }
 /*             o->end(); */
 /*         } */

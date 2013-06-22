@@ -305,8 +305,8 @@ Module_Parameter_Editor::make_controls ( void )
 
     if ( azimuth_port_number >= 0 && elevation_port_number >= 0 )
     {
-        Panner *o = new Panner( 0,0, 300, 300 );
-        o->box(FL_THIN_UP_BOX);
+        Panner *o = new Panner( 0,0, 512,512 );
+        o->box(FL_FLAT_BOX);
         o->color(FL_GRAY0);
         o->selection_color(FL_BACKGROUND_COLOR);
         o->labeltype(FL_NORMAL_LABEL);

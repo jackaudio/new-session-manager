@@ -24,56 +24,11 @@
 #include <math.h>
 // #include <FL/fl_draw.H>
 
+#include <FL/Fl_Shared_Image.H>
+
 /* 2D Panner widget. Supports various multichannel configurations. */
 
 Panner::Point *Panner::drag;
-
-/* multichannel layouts, in degrees */
-int Panner::_configs[][12] =
-{
-    /* none, error condition? */
-    { NONE },
-    /* mono, panner disabled */
-    { NONE },
-    /* stereo */
-    { L, R },
-    /* stereo + mono */
-    { L, R, C },
-    /* quad */
-    { FL, FR, RL, RR },
-    /* 5.1 */
-    { FL, FR, RL, RR, C },
-    /* no such config */
-    { NONE },
-    /* 7.1 */
-    { FL, FR, RL, RR, C, L, R },
-};
-
-
-/* speaker symbol */
-#define BP fl_begin_polygon()
-#define EP fl_end_polygon()
-#define BCP fl_begin_complex_polygon()
-#define ECP fl_end_complex_polygon()
-#define BL fl_begin_line()
-#define EL fl_end_line()
-#define BC fl_begin_loop()
-#define EC fl_end_loop()
-#define vv(x,y) fl_vertex(x,y)
-
-static void draw_speaker ( Fl_Color col )
-{
-    fl_color(col);
-
-    BP; vv(0.2,0.4); vv(0.6,0.4); vv(0.6,-0.4); vv(0.2,-0.4); EP;
-    BP; vv(-0.6,0.8); vv(0.2,0.0); vv(-0.6,-0.8); EP;
-
-    fl_color( fl_darker( col ) );
-
-    BC; vv(0.2,0.4); vv(0.6,0.4); vv(0.6,-0.4); vv(0.2,-0.4); EC;
-    BC; vv(-0.6,0.8); vv(0.2,0.0); vv(-0.6,-0.8); EC;
-}
-
 
 /** set X, Y, W, and H to the bounding box of point /p/ in screen coords */
 void
@@ -126,46 +81,18 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
 {
     draw_box();
 
-    fl_line_style( FL_SOLID, 2 );
-
-    /* draw perimeter */
-    {
-        Fl_Color c1, c2;
-        int iter;
-
-        if ( Fl::belowmouse() == this )
-        {
-            iter = 12;
-            c1 = fl_darker( fl_darker( FL_RED ) );
-            c2 = FL_BLACK;
-        }
-        else
-        {
-            iter = 6;
-            c1 = FL_GRAY;
-            c2 = FL_BLACK;
-        }
-
-        Fl_Color c = c1;
-
-        for ( int i = iter; i--; )
-        {
-            fl_color( c );
-
-            fl_arc( tx + (i * (tw / iter)) / 2, ty + (i * (th / iter)) / 2, tw - (i * (tw / iter)), th - (i * ( th / iter )), 0, 360 );
-
-            /* fl_arc( cr, */
-            /*               tx + tw / 2, */
-            /*               ty + th / 2, */
-            /*               ((float)tw / iter) / 2, */
-            /*               0, 360 ); */
-
-            c = fl_color_average( c1, c2, (float)i / iter);
-        }
-    }
-
-    fl_line_style( FL_SOLID, 0 );
-
+     if ( tw == 92 )
+     {
+         Fl_Image *i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-92x92.png" );
+        
+         i->draw( tx, ty );
+     }
+   else if ( tw > 400 )
+   {
+         Fl_Image *i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-512x512.png" );
+        
+         i->draw( tx, ty );
+   }    
 }
 
 void
@@ -175,8 +102,9 @@ Panner::draw ( void )
 
     bbox( tx, ty, tw, th );
 
-    fl_push_clip( tx, ty, tw, th );
+    fl_push_clip( x(),y(),w(),h() );
 
+    draw_the_box( tx, ty, tw, th );
 
     const int b = 10;
 
@@ -193,68 +121,25 @@ Panner::draw ( void )
     }
    
 
-    tx += b;
-    ty += b;
-    tw -= b * 2;
-    th -= b * 2;
+    /* tx += b; */
+    /* ty += b; */
+    /* tw -= b * 2; */
+    /* th -= b * 2; */
 
-    if ( damage() & FL_DAMAGE_ALL )
-        draw_the_box( tx, ty, tw, th );
 
-    fl_line_style( FL_SOLID, 2 );
-
-//    fl_color( FL_RED );
+    fl_line_style( FL_SOLID, 1 );
 
     fl_color( FL_WHITE );
 
-/*     fl_arc( tx, ty, tw, th, 0, 360 ); */
-
-    if ( _configs[ _outs ][0] >= 0 )
     {
-        for ( int i = _outs; i--; )
-        {
-            int a = _configs[ _outs ][ i ];
+        Point *p = &_points[0];
 
-            Point p( 1.2f, (float)a );
+//        Fl_Color c = (Fl_Color)(10 + i);
 
-            float px, py;
-
-            p.axes( &px, &py );
-
-            fl_push_matrix();
-
-            const int bx = tx + ((tw / 2) * px + (tw / 2));
-            const int by = ty + ((th / 2) * py + (th / 2));
-
-            fl_translate( bx, by );
-
-            fl_scale( 5, 5 );
-
-            a = 90 - a;
-
-            fl_rotate( a );
-
-            draw_speaker( FL_WHITE );
-
-            fl_rotate( -a );
-
-            fl_pop_matrix();
-
-        }
-    }
-
-    /* ensure that points are drawn *inside* the circle */
-
-    for ( int i = _ins; i--; )
-    {
-        Point *p = &_points[ i ];
-
-        Fl_Color c = (Fl_Color)(10 + i);
-
+        Fl_Color c = fl_color_add_alpha( fl_rgb_color( 192, 192, 206 ), 127 );
+    
         int px, py, pw, ph;
         point_bbox( p, &px, &py, &pw, &ph );
-
-
 
         {
 
@@ -266,56 +151,36 @@ Panner::draw ( void )
                           py - ( po * 12 ),
                           pw + ( po * 24 ), ph + (po * 24 ));
 
-            if ( damage() & FL_DAMAGE_EXPOSE )
-                draw_the_box( tx, ty, tw, th );
+            fl_color( fl_color_add_alpha( fl_rgb_color( 254,254,254 ), 254  ) );
 
-            fl_color( FL_WHITE );
-            
-            /* draw point */
-            if ( p != drag )
-                fl_color( c );
-            
+            fl_pie( px + 5, py + 5, pw - 10, ph - 10, 0, 360 );
+
+            fl_color(c);
+
             fl_pie( px, py, pw, ph, 0, 360 );
-            
-            /* draw echo */
-            fl_color( c = fl_darker( c ) );
-//            fl_color_alpha( c = fl_darker( c ), 0.5 );
-        
-//            fl_arc( cr, px, py, pw + po * 1, 0, 360 );
-            fl_arc( px - po, py - po, pw + ( po * 2 ), ph + ( po * 2 ), 0, 360 );
 
             if ( Fl::belowmouse() == this )
             {
+                /* draw echo */
+                fl_color( c = fl_darker( c ) );
+
+                fl_arc( px - po, py - po, pw + ( po * 2 ), ph + ( po * 2 ), 0, 360 );
+                
                 fl_color( c = fl_darker( c ) );
             
-//                fl_color_alpha( c = fl_darker( c ), 0.5 );
                 fl_arc( px - ( po * 2 ), py - ( po * 2 ), pw + ( po * 4 ), ph + ( po * 4 ), 0, 360 );
-                /* fl_arc( cr, px, py, pw + po * 1, 0, 360 ); */
-
-            fl_color( c = fl_darker( c ) );
-
-//                fl_color_alpha( c = fl_darker( c ), 0.5 );
-                fl_arc( px - ( po * 4 ), py - ( po * 4 ), pw + ( po * 8 ), ph + (po * 8 ), 0, 360 );
-                /* fl_arc( cr, px, py, pw + po * 1, 0, 360 ); */
             }
 
             fl_pop_clip();
         }
+    
+        const char *s = p->label;
 
-        /* draw number */
-        char pat[4];
-        snprintf( pat, 4, "%d", i + 1 );
-
-        fl_color( FL_BLACK );
+        fl_color( fl_rgb_color( 125,125,130 ) );
         fl_font( FL_HELVETICA, ph + 2 );
-        fl_draw( pat, px + 1, py + 1, pw - 1, ph - 1, FL_ALIGN_CENTER );
-
-        /* draw line */
-
-/*         fl_color( FL_WHITE ); */
-/*         fl_line( bx + pw() / 2, by + ph() / 2, tx + (tw / 2), ty + (th / 2) ); */
-
+        fl_draw( s, px + 20, py + 1, 50, ph - 1, FL_ALIGN_LEFT );
     }
+
 done:
 
     fl_line_style( FL_SOLID, 0 );
@@ -378,11 +243,12 @@ Panner::handle ( int m )
             /*     return 1; */
             /* else */
 
-            float X = Fl::event_x() - x();
-            float Y = Fl::event_y() - y();
 
             int tx, ty, tw, th;
             bbox( tx, ty, tw, th );
+
+            float X = Fl::event_x() - tx;
+            float Y = Fl::event_y() - ty;
 
 /*             if ( _outs < 3 ) */
 /*                 drag->angle( (float)(X / (tw / 2)) - 1.0f, 0.0f ); */

@@ -42,8 +42,10 @@ class Panner : public Fl_Widget
         /* angle */
         float a;
 
-        Point ( ) : d( 0.0f ), a( 0.0f ) { }
-        Point ( float D, float A ) : d( D ), a( A ) { }
+        const char *label;
+
+        Point ( ) : d( 0.0f ), a( 0.0f ), label(0) { }
+        Point ( float D, float A ) : d( D ), a( A ), label(0) { }
 
         /** translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
         void
@@ -132,8 +134,8 @@ class Panner : public Fl_Widget
 
     vector <Point> _points;
 
-    static int pw ( void ) { return 12; }
-    static int ph ( void ) { return 12; }
+    static int pw ( void ) { return 16; }
+    static int ph ( void ) { return 16; }
 
     static int _configs[][12];
 
@@ -143,23 +145,21 @@ class Panner : public Fl_Widget
             H = h() - Fl::box_dh( box() );
             X = x() + Fl::box_dx( box() );
             Y = y() + Fl::box_dy( box() );
+
+            int S = W > H ? H : W;
+
+            if ( W > H )
+                X += ( (W/2) - (S/2) );
+            else if ( H > W )
+                Y += ( (H/2) - (S/2) );
+          
+            W = H = S;
         }
 
     void point_bbox ( const Point *p, int *X, int *Y, int *W, int *H ) const;
 
     Point * event_point ( void );
     Point angle_to_axes ( float a );
-
-    enum {
-        NONE = -1,
-        R    = 90,
-        L    = 270,
-        C   = 0,
-        FL   = 315,
-        FR   = 45,
-        RL   = 225,
-        RR   = 135,
-    };
 
     static Point * drag;
 
@@ -180,16 +180,7 @@ public:
 
             _outs = 1;
 
-//            _ins = _outs = 4;
-
-//            _points.push_back( Point( 1, FL ) );
-            _points.push_back( Point( 1, C ) );
-
-/*             _points.push_back( Point( 1, FR ) ); */
-/*             _points.push_back( Point( 1, RL ) ); */
-/*             _points.push_back( Point( 1, RR ) ); */
-
-
+            _points.push_back( Point( 1, 0 ) );
         }
 
     virtual ~Panner ( ) { }

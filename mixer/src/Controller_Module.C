@@ -269,9 +269,9 @@ Controller_Module::connect_spatializer_to ( Module *m )
     {
         clear();
 
-        Panner *o = new Panner( 0,0, 100, 100 );
+        Panner *o = new Panner( 0,0, 92,92 );
 
-        o->box(FL_THIN_UP_BOX);
+        o->box(FL_FLAT_BOX);
         o->color(FL_GRAY0);
         o->selection_color(FL_BACKGROUND_COLOR);
         o->labeltype(FL_NORMAL_LABEL);
@@ -756,7 +756,7 @@ Controller_Module::handle ( int m )
             if ( Fl::event_button3() )
             {
                 /* context menu */
-                if ( type() != SPATIALIZATION )
+                /* if ( type() != SPATIALIZATION ) */
                     menu_popup( &menu() );
 
                 return 1;

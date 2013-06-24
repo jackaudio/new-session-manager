@@ -51,6 +51,7 @@ static char *nsm_display_name;
 
 #define CONFIG_FILE_NAME "nsm-proxy.config"
 
+
 class NSM_Proxy {
 
     char *_label;
@@ -97,9 +98,17 @@ public:
 
     bool start ( void )
         {
+            dump( project_file );
+
             if ( _pid )
                 /* already running */
                 return true;
+
+            if ( !_executable )
+            {
+                WARNING( "Executable is null." );
+                return false;
+            }
 
             int pid;
             if ( ! (pid = fork()) )
@@ -121,7 +130,6 @@ public:
                 setenv( "NSM_SESSION_NAME", nsm_display_name, 1 );
                 unsetenv( "NSM_URL" );
         
-
                 if ( -1 == execvp( "/bin/sh", args ) )
                 {
                     WARNING( "Error starting process: %s", strerror( errno ) );
@@ -159,9 +167,14 @@ public:
 
 
     bool dump ( const char *path )
-        {
-            FILE *fp = fopen( path, "w" );
+        {  
+            char *fname;
+            asprintf( &fname, "%s/%s", path, CONFIG_FILE_NAME );
+            
+            FILE *fp = fopen( fname, "w" );
 
+            free( fname );
+            
             if ( !fp )
             {
                 WARNING( "Error opening file for saving: %s", strerror( errno ) );
@@ -246,6 +259,11 @@ public:
 
 NSM_Proxy *nsm_proxy;
 
+bool
+snapshot ( const char *file )
+{
+    return nsm_proxy->dump(file);
+}
 void
 announce ( const char *nsm_url, const char *client_name, const char *process_name )
 {
@@ -264,21 +282,6 @@ announce ( const char *nsm_url, const char *client_name, const char *process_nam
                   pid );
 
     lo_address_free( to );
-}
-
-bool
-snapshot ( const char *file )
-{
-    /* mkdir( file, 0777 ); */
-    
-    char *path;
-    asprintf( &path, "%s/%s", file, CONFIG_FILE_NAME );
-
-    bool r = nsm_proxy->dump( path );
-
-    free( path );
-
-    return r;
 }
 
 bool

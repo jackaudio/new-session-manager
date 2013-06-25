@@ -84,7 +84,7 @@ public:
     void pixels_per_segment ( int v ) { _pixels_per_segment = v; }
 
     float dim ( void ) const { return _dim; }
-    void dim ( float v ) { _dim = v; redraw(); }
+    void dim ( float v ) { _dim = v; if ( visible_r() ) redraw(); }
 
     static
     void

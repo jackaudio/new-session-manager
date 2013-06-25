@@ -577,7 +577,9 @@ Module::draw_label ( int tx, int ty, int tw, int th )
 
     const char *lp = label();
 
-    fl_color( fl_contrast( FL_FOREGROUND_COLOR, bypass() ? FL_BLACK : color() ) );
+    Fl_Color c = fl_contrast( FL_FOREGROUND_COLOR, bypass() ? FL_BLACK : color() );
+
+    fl_color( active_r() ? c : fl_inactive(c) );
 
     fl_font( FL_HELVETICA, 12 );
 

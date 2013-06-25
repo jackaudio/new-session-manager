@@ -47,6 +47,7 @@ private:
     float _update_interval;
 
     int _rows;
+    int _strip_height;
 
     Fl_Color system_colors[3];
 

@@ -518,7 +518,7 @@ Mixer_Strip::init ( )
 
     size( 96, h() );
 
-    redraw();
+//    redraw();
 
     //  _chain->configure_ports();
 }
@@ -526,15 +526,10 @@ Mixer_Strip::init ( )
 void
 Mixer_Strip::draw ( void )
 {
-    if ( !fl_not_clipped( x(), y(), w(), h() ) )
-        return;
-
      /* don't bother drawing anything else, all we're doing is drawing the focus. */
-    if ( damage() & FL_DAMAGE_ALL ||
-         damage() & FL_DAMAGE_CHILD )
+    if ( damage() & ~FL_DAMAGE_USER1 )
         Fl_Group::draw();
-
-
+    
     fl_color(  Fl::focus() == this ? Fl_Group::selection_color() : FL_BLACK ); 
     fl_rect( x(), y(), w(), h() );
 }

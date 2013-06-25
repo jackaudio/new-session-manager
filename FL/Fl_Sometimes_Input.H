@@ -52,7 +52,11 @@ public:
             else
             {
                 fl_draw_box( up_box(), x(), y(), w(), h(), color() );
-                fl_color( fl_contrast( textcolor(), color() ) );
+
+                Fl_Color c = fl_contrast( textcolor(), color() );
+
+                fl_color( active_r() ? c : fl_inactive( c ) );
+
                 fl_font( textfont(), textsize() );
                 fl_draw( value(), x(), y(), w(), h(), (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_CLIP) );
             }

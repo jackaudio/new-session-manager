@@ -422,7 +422,7 @@ Mixer::load_project_settings ( void )
 {
     reset_project_settings();
 
-    if ( Project::open() )
+//    if ( Project::open() )
 	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), "options" );
 
     update_menu();
@@ -491,9 +491,10 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             Fl_Flowpack *o = mixer_strips = new Fl_Flowpack( X, Y + 24, W, H - 18 - 24 );
 //            label( "Non-Mixer" );
             align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE) );
+            o->flow( false );
             o->box( FL_FLAT_BOX );
             o->type( Fl_Pack::HORIZONTAL );
-            o->hspacing( 2 );
+             o->hspacing( 2 );
             o->vspacing( 2 );
             o->end();
             Fl_Group::current()->resizable( o );
@@ -563,12 +564,11 @@ void Mixer::add ( Mixer_Strip *ms )
 
     mixer_strips->add( ms );
 
-    ms->take_focus();
-
-    rows( _rows );
-
-//    scroll->redraw();
+    ms->size( ms->w(), _strip_height );
+   ms->redraw();
+   ms->take_focus();
 }
+
 
 void
 Mixer::quit ( void )
@@ -582,10 +582,10 @@ Mixer::quit ( void )
 void
 Mixer::insert ( Mixer_Strip *ms, Mixer_Strip *before )
 {
-    mixer_strips->remove( ms );
+//    mixer_strips->remove( ms );
     mixer_strips->insert( *ms, before );
 
-    scroll->redraw();
+//    scroll->redraw();
 }
 void
 Mixer::insert ( Mixer_Strip *ms, int i )
@@ -646,31 +646,26 @@ Mixer::rows ( int ideal_rows )
 {
     int sh;
 
-    int actual_rows = 1;
+    int actual_rows;
 
-    if ( ideal_rows > 1 )
+    /* calculate how many rows will actually fit */
+    int can_fit = scroll->h() / ( Mixer_Strip::min_h() );
+    
+    actual_rows = can_fit > 0 ? can_fit : 1;
+    
+    if ( actual_rows > ideal_rows )
+        actual_rows = ideal_rows;
+    
+    /* calculate strip height */
+    if ( actual_rows > 1 )
     {
-        sh = (scroll->h() / ideal_rows ) - (mixer_strips->vspacing() * (ideal_rows - 1));
-        mixer_strips->flow( true );
-
-	if ( sh < Mixer_Strip::min_h() )
-	  {
-	    int can_fit = ( scroll->h() - 18 ) / Mixer_Strip::min_h();
-
-            actual_rows = can_fit > 0 ? can_fit : 1;
-	  }
-        else
-            actual_rows = ideal_rows;
+        sh = ( scroll->h() / (float)actual_rows ) - ( mixer_strips->vspacing() * ( actual_rows - 2 ));
+        mixer_strips->flow(true);
     }
     else
-        actual_rows = 1;
-
-    if ( 1 == actual_rows )
     {
-      sh = (scroll->h() - 18);
-      mixer_strips->flow( false );
-
-      actual_rows = 1;
+        sh = (scroll->h() - 18);
+        mixer_strips->flow(false);
     }
 
     int tw = 0;
@@ -690,8 +685,12 @@ Mixer::rows ( int ideal_rows )
         mixer_strips->size( tw, mixer_strips->h() );
 
     _rows = ideal_rows;
-
-    scroll->redraw();
+    
+    if ( _strip_height != sh );
+    {
+        scroll->redraw();
+        _strip_height = sh;
+    }
 }
 
 /** retrun a pointer to the track named /name/, or NULL if no track is named /name/ */
@@ -850,6 +849,10 @@ bool
 Mixer::command_load ( const char *path, const char *display_name )
 {
     mixer->deactivate();
+
+    chdir( path );
+
+    load_project_settings();
 
     if ( Project::open( path ) )
     {

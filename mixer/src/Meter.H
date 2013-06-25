@@ -83,7 +83,8 @@ public:
 
     virtual void value ( float v )
         {
-            damage( FL_DAMAGE_USER1 );
+            if ( visible_r() )
+                damage( FL_DAMAGE_USER1 );
 
             _value = v;
 

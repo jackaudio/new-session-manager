@@ -566,7 +566,8 @@ Controller_Module::handle_control_changed ( Port *p )
         pan->point( 0 )->azimuth( control_output[0].control_value() );
         pan->point( 0 )->elevation( control_output[1].control_value() );
 
-        pan->redraw();
+        if ( visible_r() )
+            pan->redraw();
     }
     else
     {

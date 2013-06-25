@@ -616,6 +616,9 @@ Module::draw_box ( int tx, int ty, int tw, int th )
 
     c = active() && ! bypass() ? c : FL_GRAY;
 
+    if ( ! active_r() )
+        c = fl_inactive( c );
+
     int spacing = w() / instances();
     for ( int i = instances(); i--; )
     {

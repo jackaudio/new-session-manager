@@ -459,7 +459,7 @@ Mixer::load_project_settings ( void )
 {
     reset_project_settings();
 
-    if ( Project::open() )
+//    if ( Project::open() )
 	((Fl_Menu_Settings*)menubar)->load( menubar->find_item( "&Project/Se&ttings" ), "options" );
 
     update_menu();
@@ -481,6 +481,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
 //    fl_tooltip_docked = 1;
 
     _rows = 1;
+    _strip_height = 0;
     box( FL_FLAT_BOX );
     labelsize( 96 );
     { Fl_Group *o = new Fl_Group( X, Y, W, 24 );
@@ -540,6 +541,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             Fl_Flowpack *o = mixer_strips = new Fl_Flowpack( X, Y + 24, W, H - ( 18*2 + 24 ));
 //            label( "Non-Mixer" );
             align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE) );
+            o->flow( false );
             o->box( FL_FLAT_BOX );
             o->type( Fl_Pack::HORIZONTAL );
             o->hspacing( 2 );
@@ -731,6 +733,8 @@ Mixer::insert ( Mixer_Strip *ms, Mixer_Strip *before )
 {
 //    mixer_strips->remove( ms );
     mixer_strips->insert( *ms, before );
+
+//    scroll->redraw();
 }
 void
 Mixer::insert ( Mixer_Strip *ms, int i )
@@ -747,6 +751,9 @@ Mixer::move_left ( Mixer_Strip *ms )
 
     if ( i > 0 )
         insert( ms, i - 1 );
+
+    /* FIXME: do better */
+    mixer_strips->redraw();
 }
 
 void
@@ -756,6 +763,9 @@ Mixer::move_right ( Mixer_Strip *ms )
 
     if ( i < mixer_strips->children() - 1 )
         insert( ms, i + 2 );
+
+    /* FIXME: do better */
+    mixer_strips->redraw();
 }
 
 void Mixer::remove ( Mixer_Strip *ms )
@@ -793,27 +803,29 @@ Mixer::rows ( int ideal_rows )
 
     int actual_rows = 1;
 
-    if ( ideal_rows > 1 )
+    /* calculate how many rows will actually fit */
+    int can_fit = scroll->h() / ( Mixer_Strip::min_h() );
+    
+    actual_rows = can_fit > 0 ? can_fit : 1;
+    
+    if ( actual_rows > ideal_rows )
+        actual_rows = ideal_rows;
+    
+    /* calculate strip height */
+    if ( actual_rows > 1 )
     {
-        sh = (scroll->h() / ideal_rows ) - (mixer_strips->vspacing() * (ideal_rows - 1));
-        mixer_strips->flow( true );
-
-	if ( sh < Mixer_Strip::min_h() )
-	  {
-	    int can_fit = ( scroll->h() - 18 ) / Mixer_Strip::min_h();
-
-            actual_rows = can_fit > 0 ? can_fit : 1;
-	  }
-        else
-            actual_rows = ideal_rows;
+        sh = ( scroll->h() / (float)actual_rows ) - ( mixer_strips->vspacing() * ( actual_rows - 2 ));
+        mixer_strips->flow(true);
     }
     else
         actual_rows = 1;
 
     if ( 1 == actual_rows )
     {
-        sh = (scroll->h() - 18);
-        mixer_strips->flow(false);
+      sh = (scroll->h() - 18);
+      mixer_strips->flow( false );
+
+      actual_rows = 1;
     }
 
     int tw = 0;
@@ -1049,8 +1061,6 @@ Mixer::command_load ( const char *path, const char *display_name )
     if ( display_name )
         Project::name( display_name );
     
-    load_project_settings();
-
     load_translations();
 
     update_menu();

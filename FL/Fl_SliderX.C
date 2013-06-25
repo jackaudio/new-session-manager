@@ -24,6 +24,8 @@
 void
 Fl_SliderX::draw ( int X, int Y, int W, int H)
 {
+    int act = active_r();
+
     if (damage()&FL_DAMAGE_ALL) draw_box();
     
     double val;
@@ -70,21 +72,29 @@ Fl_SliderX::draw ( int X, int Y, int W, int H)
       fl_push_clip(X, Y, W, H);
       draw_box();
       fl_pop_clip();
-      
-      Fl_Color black = active_r() ? FL_BLACK : FL_INACTIVE_COLOR;
   }
   //draw_bg(X, Y, W, H);
 
   fl_line_style( FL_SOLID, hh/6 );
   
-  fl_color( fl_darker(color()) );
+  Fl_Color c = fl_darker(color());
+
+  if ( !act )
+      c = fl_inactive(c);
+
+  fl_color(c);
 
   if ( horizontal() )
       fl_line ( X + S/2, Y + hh/2, X + W - S/2, Y + hh/2 );
   else
       fl_line ( X + hh/2, Y + S/2, X + hh/2, Y + H - S/2 );
 
-  fl_color( selection_color() );
+  c = selection_color();
+
+  if ( !act )
+      c = fl_inactive(c);
+
+  fl_color( c );
 
   if ( horizontal() )
       fl_line ( X + S/2, ysl, xsl + S/2, ysl );
@@ -93,18 +103,21 @@ Fl_SliderX::draw ( int X, int Y, int W, int H)
   
   fl_line_style( FL_SOLID, 0 );
 
-  fl_push_matrix();
-  if ( horizontal() )
-      fl_translate( xsl + (hh/2), ysl);
-  else
-      fl_translate( xsl, ysl + (hh/2) );
-
-  fl_color( fl_color_add_alpha( FL_WHITE, 127 ));
-  fl_begin_polygon(); fl_circle(0.0,0.0, hh/3); fl_end_polygon();
-  fl_color( FL_WHITE );
-  fl_begin_polygon(); fl_circle(0.0,0.0, hh/6); fl_end_polygon();
-  
-  fl_pop_matrix();
+  if ( act )
+  {
+      fl_push_matrix();
+      if ( horizontal() )
+          fl_translate( xsl + (hh/2), ysl);
+      else
+          fl_translate( xsl, ysl + (hh/2) );
+      
+      fl_color( fl_color_add_alpha( FL_WHITE, 127 ));
+      fl_begin_polygon(); fl_circle(0.0,0.0, hh/3); fl_end_polygon();
+      fl_color( FL_WHITE );
+      fl_begin_polygon(); fl_circle(0.0,0.0, hh/6); fl_end_polygon();
+      
+      fl_pop_matrix();
+  }
   
   draw_label(xsl, ysl, wsl, hsl);
 

@@ -25,6 +25,7 @@ void
 Fl_DialX::draw ( void )
 {
     int X,Y,S;
+    int act = active_r();
 
     {
     int ox, oy, ww, hh, side;
@@ -68,17 +69,26 @@ Fl_DialX::draw ( void )
     fl_line_style( FL_SOLID, S / 12 );
         
     /* background arc */
-    fl_color( fl_darker( color() ) );
+
+    Fl_Color c = fl_darker( color() ); 
+    if ( !act )
+        c = fl_inactive( c ); 
+    
+    fl_color( c );
     fl_arc( X, Y, S, S, 270 - angle1(), 270 - angle2() );
         
     /* foreground arc */
-    fl_color( selection_color() );
-    fl_arc( X, Y, S, S, 270 - angle1(), 270 - angle  );
+    c =  selection_color();
 
+    if ( !act )
+        c = fl_inactive( c );
+
+    fl_color(c);
+    fl_arc( X, Y, S, S, 270 - angle1(), 270 - angle  );
 
     fl_line_style( FL_SOLID, 0 );
  
-    if ( active_r() )
+    if ( act )
     {
         int W = OS;
         int H = OS;

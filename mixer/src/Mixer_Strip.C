@@ -745,6 +745,8 @@ Mixer_Strip::handle ( int m )
             if ( dragging == this && ! Fl::event_is_click() )
             {
                 mixer->insert( this, mixer->event_inside() );
+                /* FIXME: do better! */
+                mixer->redraw();
                 dragging = NULL;
                 return 1;
             }

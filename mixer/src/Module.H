@@ -248,7 +248,7 @@ public:
                     connected_port()->_module->handle_control_changed( connected_port() );
             }
 
-        float control_value ( ) const
+        float control_value ( void ) const
             {
                 if ( buffer() )
                     return *((float*)buffer());
@@ -284,6 +284,10 @@ public:
                 if ( _connected && _connected != (void*)0x01 )
                 {
                     _connected->_connected = NULL;
+
+                    if ( _connected->_module )
+                        _connected->_module->handle_control_disconnect( this );
+
                     _connected = NULL;
                 }
                 else
@@ -464,7 +468,7 @@ public:
     /* called whenever the value of a control port is changed.
        This can be used to take appropriate action from the GUI thread */
     virtual void handle_control_changed ( Port * );
-
+    virtual void handle_control_disconnect ( Port * ) {}
     /* called whenever the name of the chain changes (usually because
      * the name of the mixer strip changed). */
     virtual void handle_chain_name_changed ();

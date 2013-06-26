@@ -65,6 +65,7 @@ src/Panner.C
 src/Plugin_Module.C
 src/Project.C
 src/main.C
+src/Spatialization_Console.C
 ''',
               target       = 'non-mixer',
               includes     = ['.', 'src', '..', '../nonlib'],

@@ -31,6 +31,7 @@
 class Fl_Blink_Button;
 class Fl_Flowpack;
 class Fl_Menu_Bar;
+class Spatialization_Console;
 namespace OSC { class Endpoint; }
 #include <lo/lo.h>
 
@@ -55,7 +56,6 @@ private:
     Fl_Color system_colors[3];
 
     Mixer_Strip* track_by_name ( const char *name );
-    Mixer_Strip* track_by_number ( int n );
 
     void snapshot ( void );
     static void snapshot ( void *v ) { ((Mixer*)v)->snapshot(); }
@@ -90,6 +90,11 @@ private:
     void update_cb ( void );
 
 public:
+
+    static Spatialization_Console *spatialization_console;
+
+    int nstrips ( void ) const;
+    Mixer_Strip* track_by_number ( int n );
 
     void update_frequency ( float f );
     

@@ -37,6 +37,7 @@
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Theme_Chooser.H>
 #include <FL/Fl_Value_SliderX.H>
+#include <Spatialization_Console.H>
 #include "file.h"
 
 #include <string.h>
@@ -61,6 +62,8 @@ extern char *instance_name;
 #include <FL/Fl_Tooltip.H>
 
 extern NSM_Client *nsm;
+
+Spatialization_Console *Mixer::spatialization_console = 0;
 
 
 
@@ -315,6 +318,19 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         Fl::paste(*this);
     }
+    else if ( !strcmp( picked, "&Mixer/Spatialization Console" ) )
+    {
+        if ( ! spatialization_console )
+        {
+            Spatialization_Console *o = new Spatialization_Console();
+            spatialization_console = o;            
+        }
+
+        if ( spatialization_console->shown() )
+            spatialization_console->hide();
+        else
+            spatialization_console->show();
+    }
     else if (! strcmp( picked, "&Project/Se&ttings/&Rows/One") )
     {
         rows( 1 );
@@ -501,6 +517,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             o->add( "&Mixer/Add &N Strips" );
             o->add( "&Mixer/&Import Strip" );
             o->add( "&Mixer/Paste", FL_CTRL + 'v', 0, 0 );
+            o->add( "&Mixer/Spatialization Console", FL_F + 8, 0, 0 );
             o->add( "&Remote Control/Start Learning", FL_F + 9, 0, 0 );
             o->add( "&Remote Control/Stop Learning", FL_F + 10, 0, 0 );
             o->add( "&Remote Control/Send State" );
@@ -851,6 +868,12 @@ Mixer::rows ( int ideal_rows )
         scroll->redraw();
         _strip_height = sh;
     }
+}
+
+int
+Mixer::nstrips ( void ) const
+{
+    return mixer_strips->children();
 }
 
 /** retrun a pointer to the track named /name/, or NULL if no track is named /name/ */

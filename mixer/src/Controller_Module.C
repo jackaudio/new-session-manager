@@ -44,7 +44,7 @@
 
 // needed for mixer->endpoint
 #include "Mixer.H"
-
+#include "Spatialization_Console.H"
 #include "string_util.h"
 
 
@@ -81,23 +81,37 @@ Controller_Module::~Controller_Module ( )
 
     /* shutdown JACK port, if we have one */
     mode( GUI );
+
+//    disconnect();
 }
 
 void
 Controller_Module::handle_chain_name_changed()
 {
+    if ( type() == SPATIALIZATION )
+    {
+        if ( Mixer::spatialization_console )
+            Mixer::spatialization_console->update();
+    }
+
 //    change_osc_path( generate_osc_path() );
+}
+
+void
+Controller_Module::handle_control_disconnect ( Module::Port *p )
+{
+    if ( type() == SPATIALIZATION )
+    {
+        if ( Mixer::spatialization_console )
+            Mixer::spatialization_console->update();
+    }
 }
 
 void
 Controller_Module::disconnect ( void )
 {
-    for ( std::vector<Module::Port>::iterator i = control_output.begin();
-          i != control_output.end();
-          ++i )
-    {
-        (*i).disconnect();
-    }
+    for ( unsigned int i = 0; i < control_output.size(); ++i )
+        control_output[i].disconnect();
 }
 
 
@@ -266,51 +280,53 @@ Controller_Module::connect_spatializer_to ( Module *m )
     control_output[0].connect_to( azimuth_port );
     control_output[1].connect_to( elevation_port );
 
-    {
-        clear();
+    clear();
 
-        Panner *o = new Panner( 0,0, 92,92 );
+    Panner *o = new Panner( 0,0, 92,92 );
 
-        o->box(FL_FLAT_BOX);
-        o->color(FL_GRAY0);
-        o->selection_color(FL_BACKGROUND_COLOR);
-        o->labeltype(FL_NORMAL_LABEL);
-        o->labelfont(0);
-        o->labelcolor(FL_FOREGROUND_COLOR);
-        o->align(FL_ALIGN_TOP);
-        o->when(FL_WHEN_CHANGED);
-        label( "Spatialization" );
+    o->box(FL_FLAT_BOX);
+    o->color(FL_GRAY0);
+    o->selection_color(FL_BACKGROUND_COLOR);
+    o->labeltype(FL_NORMAL_LABEL);
+    o->labelfont(0);
+    o->labelcolor(FL_FOREGROUND_COLOR);
+    o->align(FL_ALIGN_TOP);
+    o->when(FL_WHEN_CHANGED);
+    label( "Spatialization" );
 
-        o->align(FL_ALIGN_TOP);
-        o->labelsize( 10 );
+    o->align(FL_ALIGN_TOP);
+    o->labelsize( 10 );
 //        o->callback( cb_panner_value_handle, new callback_data( this, azimuth_port_number, elevation_port_number ) );
 
-        o->point( 0 )->azimuth( azimuth_value );
-        o->point( 0 )->elevation( elevation_value );
+    o->point( 0 )->azimuth( azimuth_value );
+    o->point( 0 )->elevation( elevation_value );
 
-        o->callback( cb_spatializer_handle, this );
+    o->callback( cb_spatializer_handle, this );
 
-        control = (Fl_Valuator*)o;
+    control = (Fl_Valuator*)o;
 
-        if ( _pad )
-        {
-            Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( o );
-            flg->position( x(), y() );
-            flg->set_visible_focus();
-            size( flg->w(), flg->h() );
-            add( flg );
-        }
-        else
-        {
-            o->resize( x(), y(), w(), h() );
-            add( o );
-            resizable( o );
-            init_sizes();
-        }
-
-        _type = SPATIALIZATION;
-        return true;
+    if ( _pad )
+    {
+        Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( o );
+        flg->position( x(), y() );
+        flg->set_visible_focus();
+        size( flg->w(), flg->h() );
+        add( flg );
     }
+    else
+    {
+        o->resize( x(), y(), w(), h() );
+        add( o );
+        resizable( o );
+        init_sizes();
+    }
+
+    _type = SPATIALIZATION;
+
+    if ( Mixer::spatialization_console )
+        Mixer::spatialization_console->update();
+
+    return true;
 }
 
 void
@@ -762,6 +778,13 @@ void
 Controller_Module::handle_control_changed ( Port *p )
 {
     /* ignore changes initiated while mouse is over widget */
+
+    if ( type() == SPATIALIZATION )
+    {
+        if ( Mixer::spatialization_console )
+            Mixer::spatialization_console->handle_control_changed( this );
+    }
+
     if ( contains( Fl::pushed() ) )
         return;
 

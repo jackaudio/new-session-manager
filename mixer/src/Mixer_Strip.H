@@ -141,6 +141,8 @@ protected:
 
 public:
 
+    Controller_Module *spatializer ( void );
+
     void send_feedback ( void );
     int number ( void ) const;
     static bool import_strip ( const char *filename );

@@ -33,6 +33,7 @@ class Panner : public Fl_Widget
 
     void draw_the_box( int, int, int, int );
 
+public:
     struct Point
     {
         /* axes */
@@ -43,9 +44,13 @@ class Panner : public Fl_Widget
         float a;
 
         const char *label;
+        void *userdata;
+        Fl_Color color;
 
-        Point ( ) : d( 0.0f ), a( 0.0f ), label(0) { }
-        Point ( float D, float A ) : d( D ), a( A ), label(0) { }
+        bool visible;
+
+        Point ( ) : d( 0.0f ), a( 0.0f ), label(0), visible(1){ }
+        Point ( float D, float A ) : d( D ), a( A ), label(0), visible(1) { }
 
         /** translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
         void
@@ -125,6 +130,7 @@ class Panner : public Fl_Widget
 
     };
 
+private:
 
     /* channel configuration */
     int _ins,
@@ -183,8 +189,19 @@ public:
             _points.push_back( Point( 1, 0 ) );
         }
 
+    void clear_points ( void ) { _points.clear(); }
+
+    void add_point( Panner::Point &p )
+        {
+            _points.push_back( p );
+        }
+
     virtual ~Panner ( ) { }
 
     Panner::Point *point ( int i );
+
+    int points ( void ) const { return _points.size(); }
+
+    Panner::Point *pushed ( void ) { return drag; }
 
 };

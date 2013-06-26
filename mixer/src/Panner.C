@@ -58,11 +58,15 @@ Panner::point_bbox ( const Point *p, int *X, int *Y, int *W, int *H ) const
 Panner::Point *
 Panner::event_point ( void )
 {
-    for ( int i = _ins; i--; )
+    for ( int i = _points.size(); i--; )
     {
+       
         int px, py, pw, ph;
 
         Point *p = &_points[ i ];
+
+        if ( ! p->visible )
+            continue;
 
         point_bbox( p, &px, &py, &pw, &ph );
 
@@ -120,7 +124,6 @@ Panner::draw ( void )
         goto done;
     }
    
-
     /* tx += b; */
     /* ty += b; */
     /* tw -= b * 2; */
@@ -131,12 +134,14 @@ Panner::draw ( void )
 
     fl_color( FL_WHITE );
 
+    for ( unsigned int i = 0; i < _points.size(); i++ )
     {
-        Point *p = &_points[0];
+        Point *p = &_points[i];
 
-//        Fl_Color c = (Fl_Color)(10 + i);
+        if ( ! p->visible )
+            continue;
 
-        Fl_Color c = fl_color_add_alpha( fl_rgb_color( 192, 192, 206 ), 127 );
+        Fl_Color c = fl_color_add_alpha( p->color, 127 );
     
         int px, py, pw, ph;
         point_bbox( p, &px, &py, &pw, &ph );
@@ -151,7 +156,7 @@ Panner::draw ( void )
                           py - ( po * 12 ),
                           pw + ( po * 24 ), ph + (po * 24 ));
 
-            fl_color( fl_color_add_alpha( fl_rgb_color( 254,254,254 ), 254  ) );
+//            fl_color( fl_color_add_alpha( fl_rgb_color( 254,254,254 ), 254  ) );
 
             fl_pie( px + 5, py + 5, pw - 10, ph - 10, 0, 360 );
 
@@ -176,8 +181,8 @@ Panner::draw ( void )
     
         const char *s = p->label;
 
-        fl_color( fl_rgb_color( 125,125,130 ) );
-        fl_font( FL_HELVETICA, ph + 2 );
+        fl_color( fl_color_add_alpha( fl_rgb_color( 220,255,255 ), 127 ) );
+        fl_font( FL_HELVETICA_BOLD_ITALIC, 12 );
         fl_draw( s, px + 20, py + 1, 50, ph - 1, FL_ALIGN_LEFT );
     }
 
@@ -221,10 +226,10 @@ Panner::handle ( int m )
             return 1;
         }
         case FL_RELEASE:
-            if ( Fl::event_button1() && drag )
+            if ( drag )
             {
-                drag = NULL;
                 do_callback();
+                drag = NULL;
                 redraw();
                 return 1;
             }
@@ -233,6 +238,7 @@ Panner::handle ( int m )
         case FL_MOUSEWHEEL:
         {
             /* TODO: place point on opposite face of sphere */
+            return 0;
         }
         case FL_DRAG:
         {

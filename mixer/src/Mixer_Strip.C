@@ -688,6 +688,12 @@ Mixer_Strip::menu ( void ) const
     return m;
 }
 
+Controller_Module *
+Mixer_Strip::spatializer ( void )
+{
+    return spatialization_controller;
+}
+
 int
 Mixer_Strip::handle ( int m )
 {

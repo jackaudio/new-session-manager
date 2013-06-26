@@ -88,6 +88,7 @@ public:
 
     void handle_control_changed ( Port *p );
     void handle_chain_name_changed ( void );
+    void handle_control_disconnect ( Port *p );
 
     virtual void command_remove ( void );
 

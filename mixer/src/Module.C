@@ -627,7 +627,7 @@ Module::draw_box ( int tx, int ty, int tw, int th )
 
     if ( this == Fl::focus() )
     {
-        fl_draw_box( FL_UP_FRAME, x(), y(), w(), h(), selection_color() );
+        fl_draw_box( FL_UP_FRAME, tx, ty, tw, th, selection_color() );
     }
 
     if ( audio_input.size() && audio_output.size() )
@@ -644,7 +644,11 @@ Module::draw_box ( int tx, int ty, int tw, int th )
             fl_draw_box( FL_ROUNDED_BOX, tx + tw - 8, ty + 4, 5, 5, is_controlling() ? FL_YELLOW : fl_inactive( FL_YELLOW ) );
     }
 
+    fl_push_clip( tx + Fl::box_dx(box()), ty + Fl::box_dy(box()), tw - Fl::box_dw(box()), th - Fl::box_dh(box()) );
+
     Fl_Group::draw_children();
+
+    fl_pop_clip();
 
     fl_pop_clip();
 }

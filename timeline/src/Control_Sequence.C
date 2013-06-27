@@ -172,6 +172,7 @@ Control_Sequence::update_port_name ( void )
     if ( ! _output )
     {
         _output = new JACK::Port( engine, JACK::Port::Output, JACK::Port::Audio, track()->name(), track()->ncontrols(), "cv" );
+        _output->terminal( true );
         needs_activation = true;
     }
     

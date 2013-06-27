@@ -39,6 +39,7 @@ namespace JACK
 
     Port::Port ( const Port &rhs )
     {
+        _terminal = rhs._terminal;
         _freezer = rhs._freezer;
         _client = rhs._client;
         _port = rhs._port;
@@ -52,6 +53,7 @@ namespace JACK
 /* nframes is the number of frames to buffer */
     Port::Port ( JACK::Client *client, jack_port_t *port )
     {
+        _terminal = 0;
         _freezer = NULL;
         _client = client;
         _port = port;
@@ -66,6 +68,7 @@ namespace JACK
 
     Port::Port ( JACK::Client *client, const char *name, direction_e dir, type_e type )
     {
+        _terminal = 0;
         _name = NULL;
         _freezer = NULL;
         _client = client;
@@ -77,6 +80,7 @@ namespace JACK
 
     Port::Port ( JACK::Client *client, direction_e dir, type_e type, const char *base, int n, const char *subtype )
     {
+        _terminal = 0;
         _name = NULL;
         _freezer = NULL;
         _client = client;
@@ -88,6 +92,7 @@ namespace JACK
 
     Port::Port ( JACK::Client *client, direction_e dir, type_e type, int n, const char *subtype )
     {
+        _terminal = 0;
         _name = NULL;
         _freezer = NULL;
         _client = client;
@@ -166,7 +171,7 @@ namespace JACK
     {
         _port = jack_port_register( _client->jack_client(), _name,
                                     _type == Audio ? JACK_DEFAULT_AUDIO_TYPE : JACK_DEFAULT_MIDI_TYPE,
-                                    _direction == Output ? JackPortIsOutput : JackPortIsInput,
+                                    _direction == Output ? JackPortIsOutput : JackPortIsInput | _terminal ? JackPortIsTerminal : 0,
                                     0 );
 
         if ( ! _port )

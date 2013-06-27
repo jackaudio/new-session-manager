@@ -69,6 +69,7 @@ namespace JACK
         nframes_t latency ( void ) const;
         void latency ( nframes_t frames );
 
+        void terminal ( bool b ) { _terminal = b; }
         bool activate ( void );
         void shutdown ( void );
         void write ( sample_t *buf, nframes_t nframes );
@@ -89,6 +90,7 @@ namespace JACK
 
         direction_e _direction;
         type_e _type;
+        bool _terminal;
 
         bool activate ( const char *name, direction_e dir );
 

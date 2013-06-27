@@ -222,12 +222,6 @@ namespace MIDI
         return (opcode() == NOTE_OFF);
     }
 
-    inline unsigned char
-    midievent::note ( void ) const
-    {
-        return _data.lsb;
-    }
-
     inline bool
     midievent::operator< ( const midievent &rhs ) const
     {

@@ -74,8 +74,8 @@ namespace MIDI
         void deselect ( void );
         bool selected ( int n ) const;
         bool selected ( void ) const;
-        void note ( char note );
-        unsigned char note ( void ) const;
+        virtual void note ( char note );
+        virtual unsigned char note ( void ) const;
         tick_t note_duration ( void ) const;
         void note_duration ( tick_t l );
 

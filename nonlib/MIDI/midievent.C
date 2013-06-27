@@ -99,6 +99,12 @@ namespace MIDI
         _data.msb = vel & 0x7F;
     }
 
+    unsigned char
+    midievent::note ( void ) const
+    {
+        return _data.lsb;
+    }
+
     void
     midievent::note ( char note )
     {

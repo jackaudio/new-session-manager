@@ -58,7 +58,7 @@ namespace JACK
         _client = client;
         _port = port;
         _name = strdup( jack_port_name( port ) );
-        _direction = jack_port_flags( _port ) == JackPortIsOutput ? Output : Input;
+        _direction = ( jack_port_flags( _port ) & JackPortIsOutput ) ? Output : Input;
         const char *type = jack_port_type( _port );
 
         _type = Audio;
@@ -169,10 +169,19 @@ namespace JACK
     bool
     Port::activate ( void )
     {
+        int flags = 0;
+        
+        if ( _direction == Output )
+            flags |= JackPortIsOutput;
+        else
+            flags |= JackPortIsInput;
+
+        if ( _terminal )
+            flags |= JackPortIsTerminal;
+
         _port = jack_port_register( _client->jack_client(), _name,
                                     _type == Audio ? JACK_DEFAULT_AUDIO_TYPE : JACK_DEFAULT_MIDI_TYPE,
-                                    ( _direction == Output ? JackPortIsOutput : JackPortIsInput ) |
-                                    ( _terminal ? JackPortIsTerminal : 0 ),
+                                    flags,
                                     0 );
 
         if ( ! _port )

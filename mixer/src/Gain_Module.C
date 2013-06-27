@@ -90,12 +90,13 @@ Gain_Module::process ( nframes_t nframes )
 {
     const float gt = DB_CO( control_input[0].control_value() );
 
-    if ( !smoothing.target_reached( gt ) )
-    {
-        sample_t gainbuf[nframes];
-        
-        smoothing.apply( gainbuf, nframes, gt );
+    sample_t gainbuf[nframes];
+    
+    bool use_gainbuf = smoothing.apply( gainbuf, nframes, gt );
 
+    if ( use_gainbuf )
+    {
+  
         for ( int i = audio_input.size(); i--; )
         {
             if ( audio_input[i].connected() && audio_output[i].connected() )

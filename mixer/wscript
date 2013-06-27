@@ -48,6 +48,7 @@ src/Controller_Module.C
 src/DPM.C
 src/Engine/Engine.C
 src/Gain_Module.C
+src/Spatializer_Module.C
 src/JACK_Module.C
 src/AUX_Module.C
 src/LADSPAInfo.C
@@ -93,8 +94,11 @@ src/Spatialization_Console.C
                       cwd=start_dir, relative_trick=True)
 
     bld.install_as('${DATADIR}/pixmaps/' + APPNAME + '/icon-256x256.png', 'icons/hicolor/256x256/apps/' + APPNAME + '.png')
-    bld.install_as('${DATADIR}/pixmaps/' + APPNAME + '/panner-512x125.png', 'pixmaps/panner-512x512.png')
-    bld.install_as('${DATADIR}/pixmaps/' + APPNAME + '/panner-92x125.png', 'pixmaps/panner-92x92.png')
+
+    start_dir = bld.path.find_dir( 'pixmaps' )
+
+    bld.install_files('${DATADIR}/pixmaps/' + APPNAME + '/', start_dir.ant_glob('*.png'),
+                      cwd=start_dir, relative_trick=True)
 
     bld.install_files( '/'.join( [ '${DATADIR}/doc', APPNAME ] ), bld.path.ant_glob( 'doc/*.html doc/*.png' ) )
 

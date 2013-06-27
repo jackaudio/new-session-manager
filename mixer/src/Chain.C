@@ -908,8 +908,7 @@ Chain::update_connection_status ( void )
     {
         Module *m = module(i);
         
-        if ( !strcmp( m->name(), "JACK" ) ||
-             !strcmp( m->name(), "AUX" ))
+        if ( !strcmp( m->basename(), "JACK" ) )
         {
             ((JACK_Module*)m)->update_connection_status();
         }

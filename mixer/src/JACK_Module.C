@@ -54,6 +54,12 @@ JACK_Module::JACK_Module ( bool log )
 {
     _prefix = 0;
 
+    _connection_handle_outputs[0][0] = 0;
+    _connection_handle_outputs[0][1] = 0;
+    _connection_handle_outputs[1][0] = 0;
+    _connection_handle_outputs[1][1] = 0;
+
+
     align( FL_ALIGN_TOP | FL_ALIGN_INSIDE );
 
     if ( log )
@@ -135,7 +141,13 @@ JACK_Module::JACK_Module ( bool log )
                 o->hide();
             }
 
-            { Fl_Box *o = output_connection_handle = new Fl_Box( x(), y(), 18, 18 );
+            { Fl_Box *o = output_connection_handle = new Fl_Box( x(), y(), 12, 12 );
+                o->tooltip( "Drag and drop to make and break JACK connections.");
+                o->image( output_connector_image ? output_connector_image : output_connector_image = new Fl_PNG_Image( "output_connector", img_io_output_connector_10x10_png, img_io_output_connector_10x10_png_len ) );
+                o->hide();
+            }
+
+            { Fl_Box *o = output_connection2_handle = new Fl_Box( x(), y(), 12, 12 );
                 o->tooltip( "Drag and drop to make and break JACK connections.");
                 o->image( output_connector_image ? output_connector_image : output_connector_image = new Fl_PNG_Image( "output_connector", img_io_output_connector_10x10_png, img_io_output_connector_10x10_png_len ) );
                 o->hide();
@@ -335,6 +347,41 @@ JACK_Module::can_support_inputs ( int )
     return audio_output.size();
 }
 
+
+void
+JACK_Module::remove_jack_outputs ( void )
+{
+    for ( unsigned int i = jack_output.size(); i--; )
+    {
+        jack_output.back().shutdown();
+        jack_output.pop_back();
+    }
+}
+
+bool
+JACK_Module::add_jack_output ( const char *prefix, int n )
+{
+    JACK::Port *po = NULL;
+    
+    if ( !prefix )
+        po = new JACK::Port( chain()->engine(), JACK::Port::Output, JACK::Port::Audio, n );
+    else
+        po = new JACK::Port( chain()->engine(), JACK::Port::Output, JACK::Port::Audio, prefix, n );
+    
+    if ( ! po->activate() )
+    {
+        jack_port_activation_error( po );
+        return false;
+    }
+    
+    if ( po->valid() )
+    {
+        jack_output.push_back( *po );
+    }
+    
+    delete po;
+}
+
 bool
 JACK_Module::configure_inputs ( int n )
 {
@@ -385,6 +432,9 @@ JACK_Module::configure_inputs ( int n )
             jack_output.pop_back();
         }
     }
+
+    _connection_handle_outputs[0][0] = 0;
+    _connection_handle_outputs[0][1] = jack_output.size();
 
     if ( is_default() )
         control_input[0].control_value_no_callback( n );
@@ -465,7 +515,7 @@ JACK_Module::initialize ( void )
 void
 JACK_Module::handle_control_changed ( Port *p )
 {
-    THREAD_ASSERT( UI );
+//    THREAD_ASSERT( UI );
 
     if ( 0 == strcmp( p->name(), "Inputs" ) )
     {
@@ -492,6 +542,8 @@ JACK_Module::handle_control_changed ( Port *p )
             p->connected_port()->control_value( noutputs() );
         }
     }
+
+    Module::handle_control_changed( p );
 }
 
 void
@@ -519,14 +571,28 @@ JACK_Module::handle ( int m )
             return Module::handle(m) || 1;
         case FL_DRAG:
         {
-            if ( ! Fl::event_inside( this ) && ! Fl::selection_owner() )
+            if ( Fl::event_is_click() )
+                return 1;
+
+            int connection_handle = -1;
+            if ( Fl::event_inside( output_connection_handle ) )
+                connection_handle = 0;
+            if ( Fl::event_inside( output_connection2_handle ) )
+                connection_handle = 1;
+
+
+
+            if ( Fl::event_button1() &&
+                 connection_handle >= 0
+                 && ! Fl::selection_owner() )
             {
                 DMESSAGE( "initiation of drag" );
 
                 char *s = (char*)malloc(256);
                 s[0] = 0;
   
-                for ( unsigned int i = 0; i < jack_output.size(); ++i )
+                for ( unsigned int i = _connection_handle_outputs[connection_handle][0]; 
+                      i < jack_output.size() && i < _connection_handle_outputs[connection_handle][1]; ++i )
                 {
                     char *s2;
                     asprintf(&s2, "jack.port://%s/%s:%s\r\n", instance_name, chain()->name(), jack_output[i].name() );
@@ -552,12 +618,15 @@ JACK_Module::handle ( int m )
         }
         /* we have to prevent Fl_Group::handle() from getting these, otherwise it will mess up Fl::belowmouse() */
         case FL_MOVE:
-            return 0;
+            Module::handle(m);
+            return 1;
         case FL_ENTER:
         case FL_DND_ENTER:
+            Module::handle(m);
             return 1;
         case FL_LEAVE:
         case FL_DND_LEAVE:
+            Module::handle(m);
             if ( this == receptive_to_drop )
             {
                 receptive_to_drop = NULL;

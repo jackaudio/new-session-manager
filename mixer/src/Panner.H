@@ -19,129 +19,112 @@
 
 #pragma once
 
-#include <FL/Fl_Widget.H>
+#include <FL/Fl_Group.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl.H>
-
+#include <FL/Fl_Choice.H>
 #include <math.h>
 
 #include <vector>
 using namespace std;
 
-class Panner : public Fl_Widget
+class Panner : public Fl_Group
 {
+    Fl_Choice *_range_choice;
+    Fl_Choice *_projection_choice;
 
+    void draw_grid( int,int,int,int);
     void draw_the_box( int, int, int, int );
 
 public:
+
     struct Point
     {
-        /* axes */
-
-        /* distance from center (from 0 to 1) */
-        float d;
-        /* angle */
-        float a;
+        float x,y,z;
 
         const char *label;
         void *userdata;
         Fl_Color color;
-
         bool visible;
 
-        Point ( ) : d( 0.0f ), a( 0.0f ), label(0), visible(1){ }
-        Point ( float D, float A ) : d( D ), a( A ), label(0), visible(1) { }
+        Point ( ) {
+            x = 1;
+            y = 0;
+            z = 0;
+            label = 0;
+            visible = 1;
+            color = FL_WHITE;
+        }
 
-        /** translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
-        void
-        axes ( float *X, float *Y ) const
+        Point ( float D, float A )
             {
-                /* rotate */
-                float A = ( 270 - a ) * ( M_PI / 180 );
-
-                *X = -d * cosf( A );
-                *Y = d * sinf( A );
+                radius( D );
+                azimuth( A );
+                label = 0;
+                visible = 1;
+                color = FL_WHITE;
             }
 
-        float azimuth ( void ) const
+        static inline void spherical_to_cartesian (float a, float e, float &x, float &y, float &z )
             {
-                return a > 180.0f ? a - 360.0f : a;
+                a *= M_PI / 180.0f;
+                e *= M_PI / 180.0f;
+                
+                z = sinf(e);
+                const float ce = cosf(e);
+                x = ce * cosf(-a);
+                y = ce * sinf(-a);
             }
-
-
-        float elevation ( void ) const
+        
+        float azimuth ( void ) const {
+            return -atan2f( y,x ) * ( 180 / M_PI );
+        }
+        float elevation ( void ) const { 
+            return atan2f(z,sqrtf(powf(x,2)+powf(y,2)) ) * ( 180 / M_PI );
+        }
+        float radius ( void ) const {
+            return sqrtf(powf(x,2)+powf(y,2)+powf(z,2));
+        }
+        
+        void azimuth (  float v )
             {
-                return ( 1.0f - d ) * 90.0f;
-            }
+                float r = radius();
 
-         void azimuth (  float v )
-            {
-                a = v < 0.0f ? v + 360.0f : v;
-                a = a < 0.0f ? 0.0f : a > 360.0f ? 360.0f : a;
+                spherical_to_cartesian( v, elevation(), x,y,z );
+                x *= r;
+                y *= r;
+                z *= r;
             }
-
+        
          void elevation ( float v )
             {
-                d = 1.0f - ( v / 90.0f );
-                d = d < 0.0f ? 0.0f : d > 1.0f ? 1.0f : d;
-            }
+                float r = radius();
 
-        /** set point position in X, Y coordinates (0.0 to 1.0) */
-        void
-        angle ( float X1, float Y1 )
+                spherical_to_cartesian( azimuth(), v, x,y,z );
+                x *= r;
+                y *= r;
+                z *= r;
+            }
+        
+
+         void radius ( float v )
             {
+                float r = v;
 
-                float X2, Y2;
+                spherical_to_cartesian( azimuth(), elevation(), x,y,z );
 
-                Y2 = X2 = 0;
-
-                float t;
-
-                t = atan2( X2 - X1, Y2 - Y1 );
-
-                a = t * (180 / M_PI);
-
-                if ( a < 0 )
-                    a = 360 + a;
-
-                a = 360 - a;
-
-                /* standard distance calculation */
-                d = sqrt( pow( X2 - X1, 2 ) + pow( Y2 - Y1, 2 ) );
-
-                if ( d > 1.0f )
-                    d = 1.0f;
+                x *= r;
+                y *= r;
+                z *= r;
             }
-
-        /** return the distance between the point and that referenced by /p/ */
-        float
-        distance ( const Point &p )
-            {
-                /* first, transform point coords */
-
-                float x1, y1, x2, y2;
-
-                axes( &x1, &y1 );
-                p.axes( &x2, &y2 );
-
-                /* standard distance calculation */
-                return sqrt( pow( x1 - x2, 2 ) + pow( y1 - y2, 2 ) );
-            }
-
     };
 
 private:
+    
+    float _range;
 
-    /* channel configuration */
-    int _ins,
-        _outs;
-
-    bool _bypassed;
-
+    
     vector <Point> _points;
-
-    static int pw ( void ) { return 16; }
-    static int ph ( void ) { return 16; }
 
     static int _configs[][12];
 
@@ -169,6 +152,14 @@ private:
 
     static Point * drag;
 
+    void set_polar ( Point *p, float x, float y );
+    void set_ortho ( Point *p, float x, float y );
+    void set_polar_radius ( Point *p, float x, float y );
+    void project_polar ( const Point *p, float *X, float *Y, float *S ) const;
+    void project_ortho ( const Point *p, float *X, float *Y, float *S ) const;
+
+    int _projection;
+    
 protected:
 
     virtual void draw ( void );
@@ -176,18 +167,15 @@ protected:
 
 public:
 
+    enum { POLAR, ORTHO };
 
-    Panner ( int X, int Y, int W, int H, const char *L = 0 ) :
-        Fl_Widget( X, Y, W, H, L )
-        {
-            _bypassed = false;
+    float projection ( void ) const { return _projection_choice->value(); }
+    void projection ( int v ) { _projection_choice->value(v); }
 
-            _ins = 1;
+    Panner ( int X, int Y, int W, int H, const char *L = 0 );
 
-            _outs = 1;
-
-            _points.push_back( Point( 1, 0 ) );
-        }
+    float range ( void ) const { return *((int*)_range_choice->mvalue()->user_data()); }
+    /* void range ( float v ) { _range = v; } */
 
     void clear_points ( void ) { _points.clear(); }
 

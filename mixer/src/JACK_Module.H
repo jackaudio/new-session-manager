@@ -52,9 +52,14 @@ protected:
     Fl_Browser * connection_display;
     Fl_Box * input_connection_handle;
     Fl_Box * output_connection_handle;
+    Fl_Box * output_connection2_handle;
     
     static void cb_button ( Fl_Widget *w, void *v );
     void cb_button ( Fl_Widget *w );
+
+protected:
+
+    int _connection_handle_outputs[2][2];
  
 public:
 
@@ -63,6 +68,7 @@ public:
     JACK_Module ( bool log = true );
     virtual ~JACK_Module ( );
 
+    virtual const char *basename ( void ) const { return "JACK"; }
     virtual const char *name ( void ) const { return "JACK"; }
     virtual bool initialize ( void );
 
@@ -70,6 +76,8 @@ public:
     virtual int handle ( int m );
 
     virtual int can_support_inputs ( int );
+    bool add_jack_output ( const char *prefix, int n );
+    void remove_jack_outputs ( void );
     virtual bool configure_inputs ( int n );
     virtual bool configure_outputs ( int n );
 

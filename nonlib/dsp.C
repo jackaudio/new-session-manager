@@ -134,10 +134,10 @@ Value_Smoothing_Filter::sample_rate ( nframes_t n )
     const float FS = n;
     const float T = 0.05f;
    
-    w = 10.0f / (FS * T);  
+    w = _cutoff / (FS * T);  
 }
 
-void
+bool
 Value_Smoothing_Filter::apply( sample_t *dst, nframes_t nframes, float gt )
 {
     const float a = 0.07f;
@@ -147,6 +147,9 @@ Value_Smoothing_Filter::apply( sample_t *dst, nframes_t nframes, float gt )
 
     float g1 = this->g1;
     float g2 = this->g2;
+
+    if ( target_reached(gt) )
+        return false;
 
     for (nframes_t i = 0; i < nframes; i++)
     {
@@ -160,4 +163,6 @@ Value_Smoothing_Filter::apply( sample_t *dst, nframes_t nframes, float gt )
 
     this->g1 = g1;
     this->g2 = g2;
+
+    return true;
 }

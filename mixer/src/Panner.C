@@ -25,10 +25,48 @@
 // #include <FL/fl_draw.H>
 
 #include <FL/Fl_Shared_Image.H>
+#include <FL/Fl_Tiled_Image.H>
+
+#include "debug.h"
 
 /* 2D Panner widget. Supports various multichannel configurations. */
 
 Panner::Point *Panner::drag;
+
+Panner::Panner ( int X, int Y, int W, int H, const char *L ) :
+    Fl_Group( X, Y, W, H, L )
+{
+    _range = 15.0f;
+//    _projection = POLAR;
+    _points.push_back( Point( 1, 0 ) );
+    
+    static int ranges[] = { 1,5,10,15 };
+    { Fl_Choice *o = _range_choice = new Fl_Choice(X + 40,Y + H - 18,75,18,"Range:");
+        o->box(FL_UP_FRAME);
+        o->down_box(FL_DOWN_FRAME);
+        o->textsize(9);
+        o->labelsize(9);
+        o->align(FL_ALIGN_LEFT);
+        o->add("1 Meter",0,0,&ranges[0]);
+        o->add("5 Meters",0,0,&ranges[1]);
+        o->add("10 Meters",0,0,&ranges[2]);
+        o->add("15 Meters",0,0,&ranges[3]);
+        o->value(3);
+    }
+
+    { Fl_Choice *o = _projection_choice = new Fl_Choice(X + W - 75,Y + H - 18,75,18,"Projection:");
+        o->box(FL_UP_FRAME);
+        o->down_box(FL_DOWN_FRAME);
+        o->textsize(9);
+        o->labelsize(9);
+        o->align(FL_ALIGN_LEFT);
+        o->add("Spherical");
+        o->add("Planar");
+        o->value(0);
+    }
+                  
+    end();
+}
 
 /** set X, Y, W, and H to the bounding box of point /p/ in screen coords */
 void
@@ -38,21 +76,32 @@ Panner::point_bbox ( const Point *p, int *X, int *Y, int *W, int *H ) const
 
     bbox( tx, ty, tw, th );
 
-    const float PW = pw(); 
-    const float PH = ph();
-
-    tw -= PW;
-    th -= PH;
-
     float px, py;
+    float s = 1.0f;
+       
+    if ( projection() == POLAR )
+    {
+    project_polar( p, &px, &py, &s );
+    }
+    else
+    {
+        project_ortho( p, &px, &py, &s );
+    }
 
-    p->axes( &px, &py );
+    const float htw = float(tw)*0.5f;
+    const float hth = float(th)*0.5f;
 
-    *X = tx + ((tw / 2) * px + (tw / 2));
-    *Y = ty + ((th / 2) * py + (th / 2));
 
-    *W = PW;
-    *H = PH;
+    *W = *H = tw * s;
+     
+    if ( *W < 8 )
+        *W = 8;
+    if ( *H < 8 )
+        *H = 8;
+
+    *X = tx + (htw * px + htw) - *W/2;
+    *Y = ty + (hth * py + hth) - *H/2;
+
 }
 
 Panner::Point *
@@ -85,18 +134,183 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
 {
     draw_box();
 
-     if ( tw == 92 )
-     {
-         Fl_Image *i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-92x92.png" );
-        
-         i->draw( tx, ty );
-     }
-   else if ( tw > 400 )
-   {
-         Fl_Image *i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-512x512.png" );
-        
-         i->draw( tx, ty );
-   }    
+    Fl_Image *i = 0;
+
+    if ( projection() == POLAR )
+    {
+        switch ( tw )
+        {
+            case 802:
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-sphere-802x802.png" );
+                break;
+            case 92:
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-sphere-92x92.png" );
+                break;
+            case 502: 
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-sphere-502x502.png" );
+                break;
+        }
+    }
+    else
+    {
+        switch ( tw )
+        {
+            case 802:
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-plane-802x802.png" );
+                break;
+            case 92:
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-plane-92x92.png" );
+                break;
+            case 502: 
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-plane-502x502.png" );
+                break;
+        }
+    }
+
+    if ( i )
+        i->draw( tx, ty );
+}
+
+void
+Panner::draw_grid ( int tx, int ty, int tw, int th )
+{
+
+    fl_push_matrix();
+    fl_translate(tx,ty);
+    fl_scale(tw,th);
+
+    fl_color( fl_color_add_alpha( FL_WHITE, 25 ) );
+
+    for ( float x = 0.0f; x <= 1.0f; x += 0.05f )
+    {
+        fl_begin_line();
+        for ( float y = 0.0f; y <= 1.0f; y += 0.5f )
+        {
+            fl_vertex( x, y );
+        }
+        fl_end_line();
+    }
+
+  for ( float y = 0.0f; y <= 1.0f; y += 0.05f )
+    {
+        fl_begin_line();
+        for ( float x = 0.0f; x <= 1.0f; x += 0.5f )
+        {
+            fl_vertex( x, y );
+        }
+        fl_end_line();
+    }
+
+    for ( float x = 0.0f; x < 1.0f; x += 0.05f )
+    {
+        fl_begin_points();
+        for ( float y = 0.0f; y < 1.0f; y += 0.05f )
+        {
+            fl_vertex( x, y );
+        }
+        fl_end_points();
+    }
+
+    fl_pop_matrix();
+
+}
+
+/** translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
+void
+Panner::project_polar ( const Point *p, float *X, float *Y, float *S ) const
+{
+    float xp = 0.0f;
+    float yp = 0.0f;
+    float zp = 8.0f;
+
+    float x = 0 - p->y;
+    float y = 0 - p->x;
+    float z = 0 - p->z;
+    
+    x /= range();
+    y /= range();
+    z /= range();
+                
+    *X = ((x-xp) / (z + zp)) * (zp);
+    *Y = ((y-yp) / (z + zp)) * (zp);
+    *S = (0.025f / (z + zp)) * (zp);
+}
+
+/** translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
+void
+Panner::project_ortho ( const Point *p, float *X, float *Y, float *S ) const
+{
+    const float x = ( 0 - p->y ) / range();
+    const float y = ( 0 - p->x ) / range();
+    const float z = p->z;
+    
+    float zp = 4.0f;
+    
+    *X = x;
+    *Y = y;
+                
+    *S = 0.025f;
+}
+
+
+void
+Panner::set_ortho ( Point *p, float x, float y )
+{
+    y = 0 - y;
+
+    y *= 2;
+    x *= 2;
+    
+    p->x = (y) * range();
+    p->y = (0 - x) * range();
+}
+
+void
+Panner::set_polar ( Point *p, float x, float y )
+{
+    /* FIXME: not quite the inverse of the projection... */
+    x = 0 - x;
+    y = 0 - y;
+    x *= 2;
+    y *= 2;
+
+    float r = powf( x,2 ) + powf(y,2 );
+    float X = ( 2 * x ) / ( 1 + r );
+    float Y = ( 2 * y ) / ( 1 + r );
+    float Z = ( -1 + r ) / ( 1 + r );
+
+    float S = p->radius() / range();
+
+    X *= S;
+    Y *= S;
+    Z *= S;
+
+    p->azimuth( -atan2f( X,Y ) * ( 180 / M_PI ) );
+
+    if ( p->elevation() > 0.0f )
+        p->elevation( -atan2f( Z, sqrtf( powf(X,2) + powf( Y, 2 ))) * ( 180 / M_PI ) );
+    else
+        p->elevation( atan2f( Z, sqrtf( powf(X,2) + powf( Y, 2 ))) * ( 180 / M_PI ) );
+}
+
+
+
+void
+Panner::set_polar_radius ( Point *p, float x, float y )
+{
+    y = 0 - y;
+    
+    float r = sqrtf( powf( y, 2 ) + powf( x, 2 ) );
+
+    if ( r > 1.0f )
+        r = 1.0f;
+    
+    r *= range() * 2;
+
+    if ( r > range() )
+        r = range();
+
+    p->radius( r );
 }
 
 void
@@ -115,20 +329,19 @@ Panner::draw ( void )
 //    draw_box();
     draw_label();
 
-    if ( _bypassed )
-    {
-        draw_box();
-        fl_color( 0 );
-        fl_font( FL_HELVETICA, 12 );
-        fl_draw( "(bypass)", x(), y(), w(), h(), FL_ALIGN_CENTER );
-        goto done;
-    }
+    /* if ( _bypassed ) */
+    /* { */
+    /*     draw_box(); */
+    /*     fl_color( 0 ); */
+    /*     fl_font( FL_HELVETICA, 12 ); */
+    /*     fl_draw( "(bypass)", x(), y(), w(), h(), FL_ALIGN_CENTER ); */
+    /*     goto done; */
+    /* } */
    
     /* tx += b; */
     /* ty += b; */
     /* tw -= b * 2; */
     /* th -= b * 2; */
-
 
     fl_line_style( FL_SOLID, 1 );
 
@@ -141,50 +354,72 @@ Panner::draw ( void )
         if ( ! p->visible )
             continue;
 
-        Fl_Color c = fl_color_add_alpha( p->color, 127 );
-    
+        Fl_Color c = fl_color_add_alpha( p->color, 100 );
+
+        fl_color(c);
+
         int px, py, pw, ph;
         point_bbox( p, &px, &py, &pw, &ph );
-
+      
         {
-
-            const float S = ( 0.5 + ( 1.0f - p->d ) );
-
-            float po = 5 * S;
+            float po = 5;
 
             fl_push_clip( px - ( po * 12 ), 
                           py - ( po * 12 ),
                           pw + ( po * 24 ), ph + (po * 24 ));
 
-//            fl_color( fl_color_add_alpha( fl_rgb_color( 254,254,254 ), 254  ) );
-
             fl_pie( px + 5, py + 5, pw - 10, ph - 10, 0, 360 );
 
-            fl_color(c);
 
             fl_pie( px, py, pw, ph, 0, 360 );
 
-            if ( Fl::belowmouse() == this )
-            {
-                /* draw echo */
-                fl_color( c = fl_darker( c ) );
+            fl_pop_clip();
 
-                fl_arc( px - po, py - po, pw + ( po * 2 ), ph + ( po * 2 ), 0, 360 );
-                
-                fl_color( c = fl_darker( c ) );
-            
-                fl_arc( px - ( po * 2 ), py - ( po * 2 ), pw + ( po * 4 ), ph + ( po * 4 ), 0, 360 );
+            if ( projection() == POLAR )
+            {
+           
+            fl_color( fl_color_average( fl_rgb_color( 127,127,127 ), p->color, 0.50 ) );
+            fl_begin_loop();
+            fl_circle( tx + tw/2, ty + th/2, tw/2.0f * ( ( p->radius() / range() )));
+            fl_end_loop();
             }
 
-            fl_pop_clip();
         }
     
         const char *s = p->label;
 
         fl_color( fl_color_add_alpha( fl_rgb_color( 220,255,255 ), 127 ) );
-        fl_font( FL_HELVETICA_BOLD_ITALIC, 12 );
+        fl_font( FL_HELVETICA_BOLD_ITALIC, 10 );
         fl_draw( s, px + 20, py + 1, 50, ph - 1, FL_ALIGN_LEFT );
+
+        if ( tw > 100 )
+        {
+            char pat[50];
+            snprintf( pat, sizeof(pat), "%.1f°:%.1f° %.1fm", p->azimuth(), p->elevation(), p->radius() );
+            
+//        fl_color( fl_color_add_alpha( fl_rgb_color( 220,255,255 ), 127 ) );
+            fl_font( FL_COURIER, 9 );
+
+            fl_draw( pat, px + 20, py + 15, 50, ph - 1, FL_ALIGN_LEFT | FL_ALIGN_WRAP );
+
+            /* fl_font( FL_HELVETICA_ITALIC, 9 ); */
+            /* snprintf(pat, sizeof(pat), "range: %.1f meters", range() ); */
+            /* fl_draw( pat, tx, ty, tw, th, FL_ALIGN_LEFT | FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE ); */
+                
+            /* if ( _projection == POLAR ) */
+            /* { */
+            /*     fl_draw( "Polar perspective; azimuth, elevation and radius input. Right click controls radius.", tx, ty, tw, th, FL_ALIGN_BOTTOM | FL_ALIGN_RIGHT | FL_ALIGN_INSIDE ); */
+            /* } */
+            /* else */
+            /* { */
+            /*     fl_draw( "Polar orthographic; angle and distance input.", tx, ty, tw, th, FL_ALIGN_BOTTOM | FL_ALIGN_RIGHT | FL_ALIGN_INSIDE ); */
+            /* } */
+        }
+
     }
+    
+    if ( tw > 200 )
+        draw_children();
 
 done:
 
@@ -203,7 +438,7 @@ Panner::point( int i )
 int
 Panner::handle ( int m )
 {
-    int r = Fl_Widget::handle( m );
+    int r = Fl_Group::handle( m );
 
     switch ( m )
     {
@@ -213,16 +448,16 @@ Panner::handle ( int m )
             return 1;
         case FL_PUSH:
         {
-            if ( Fl::event_button2() )
-            {
-                _bypassed = ! _bypassed;
-                redraw();
-                return 1;
-            }
-
-            if ( Fl::event_button1() )
+            if ( Fl::event_button1() || Fl::event_button3() )
                 drag = event_point();
 
+            if ( Fl::event_button2() )
+            {
+                /* if ( _projection == POLAR ) */
+                /*     _projection = ORTHO; */
+                /* else */
+                /*     _projection = POLAR; */
+            }
             return 1;
         }
         case FL_RELEASE:
@@ -237,29 +472,42 @@ Panner::handle ( int m )
                 return 0;
         case FL_MOUSEWHEEL:
         {
-            /* TODO: place point on opposite face of sphere */
-            return 0;
+/*             Point *p = event_point(); */
+
+/*             if ( p ) */
+/*                 drag = p; */
+
+/*             if ( drag ) */
+/*             { */
+/* //                drag->elevation( drag->elevation() + Fl::event_dy()); */
+/*                 drag->elevation( 0 - drag->elevation() ); */
+/*                 do_callback(); */
+/*                 redraw(); */
+/*                 return 1; */
+/*             } */
+
+            return 1;
         }
         case FL_DRAG:
         {
             if ( ! drag )
                 return 0;
 
-            /* else if ( Fl::event_button1() && ( drag = event_point() ) ) */
-            /*     return 1; */
-            /* else */
-
-
             int tx, ty, tw, th;
             bbox( tx, ty, tw, th );
 
-            float X = Fl::event_x() - tx;
-            float Y = Fl::event_y() - ty;
-
-/*             if ( _outs < 3 ) */
-/*                 drag->angle( (float)(X / (tw / 2)) - 1.0f, 0.0f ); */
-/*             else */
-            drag->angle( (float)(X / (tw / 2)) - 1.0f, (float)(Y / (th / 2)) - 1.0f );
+            float X = (float(Fl::event_x() - tx) / tw ) - 0.5f;
+            float Y = (float(Fl::event_y() - ty) / th) - 0.5f;
+            
+            if ( Fl::event_button1() )
+            {
+                if ( POLAR == projection() )
+                    set_polar( drag,X,Y );
+                else 
+                    set_ortho( drag, X,Y );
+            }
+            else
+                set_polar_radius( drag,X,Y );
 
             if ( when() & FL_WHEN_CHANGED )
                 do_callback();

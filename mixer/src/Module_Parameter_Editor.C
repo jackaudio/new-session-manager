@@ -42,6 +42,8 @@
 
 #include "debug.h"
 
+
+
 
 
 Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_Window( 800, 600 )
@@ -144,7 +146,9 @@ Module_Parameter_Editor::make_controls ( void )
     float azimuth_value = 0.0f;
     elevation_port_number = -1;
     float elevation_value = 0.0f;
-
+    radius_port_number = -1;
+    float radius_value = 0.0f;
+    
     Fl_Color fc = fl_color_add_alpha( FL_CYAN, 200 );
     Fl_Color bc = FL_BACKGROUND2_COLOR;
 
@@ -173,6 +177,12 @@ Module_Parameter_Editor::make_controls ( void )
         {
             elevation_port_number = i;
             elevation_value = p->control_value();
+            continue;
+        } 
+        else if ( !strcasecmp( "Radius", p->name() ) )
+        {
+            radius_port_number = i;
+            radius_value = p->control_value();
             continue;
         }
 
@@ -268,10 +278,12 @@ Module_Parameter_Editor::make_controls ( void )
         w->align(FL_ALIGN_TOP);
         w->labelsize( 10 );
 
+        _callback_data.push_back( callback_data( this, i ) );
+
         if ( p->hints.type == Module::Port::Hints::BOOLEAN )
-            w->callback( cb_button_handle, new callback_data( this, i ) );
+            w->callback( cb_button_handle, &_callback_data.back() );
         else
-            w->callback( cb_value_handle, new callback_data( this, i ) );
+            w->callback( cb_value_handle, &_callback_data.back() );
 
         { Fl_Group *o = new Fl_Group( 0, 0, 50, 75 );
             {
@@ -284,7 +296,7 @@ Module_Parameter_Editor::make_controls ( void )
 
                     o->value( p->connected() );
 
-                    o->callback( cb_bound_handle, new callback_data( this, i ) );
+                    o->callback( cb_bound_handle, &_callback_data.back() );
                 }
 
                 o->resizable( 0 );
@@ -305,7 +317,7 @@ Module_Parameter_Editor::make_controls ( void )
 
     if ( azimuth_port_number >= 0 && elevation_port_number >= 0 )
     {
-        Panner *o = new Panner( 0,0, 512,512 );
+        Panner *o = new Panner( 0,0, 502,502 );
         o->box(FL_FLAT_BOX);
         o->color(FL_GRAY0);
         o->selection_color(FL_BACKGROUND_COLOR);
@@ -318,10 +330,13 @@ Module_Parameter_Editor::make_controls ( void )
 
         o->align(FL_ALIGN_TOP);
         o->labelsize( 10 );
-        o->callback( cb_panner_value_handle, new callback_data( this, azimuth_port_number, elevation_port_number ) );
+
+        _callback_data.push_back( callback_data( this, azimuth_port_number, elevation_port_number, radius_port_number ) );
+        o->callback( cb_panner_value_handle, &_callback_data.back() );
 
         o->point( 0 )->azimuth( azimuth_value );
         o->point( 0 )->elevation( elevation_value );
+        o->point( 0 )->radius( radius_value );
 
         Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( o );
 
@@ -329,6 +344,7 @@ Module_Parameter_Editor::make_controls ( void )
 
         controls_by_port[azimuth_port_number] = o;
         controls_by_port[elevation_port_number] = o;
+        controls_by_port[radius_port_number] = o;
     }
 
 
@@ -367,6 +383,8 @@ Module_Parameter_Editor::cb_panner_value_handle ( Fl_Widget *w, void *v )
 
     cd->base_widget->set_value( cd->port_number[0], ((Panner*)w)->point( 0 )->azimuth() );
     cd->base_widget->set_value( cd->port_number[1], ((Panner*)w)->point( 0 )->elevation() );
+    cd->base_widget->set_value( cd->port_number[2], ((Panner*)w)->point( 0 )->radius() );
+
 }
 
 void
@@ -417,7 +435,8 @@ Module_Parameter_Editor::handle_control_changed ( Module::Port *p )
     Fl_Widget *w = controls_by_port[i];
 
     if ( i == azimuth_port_number ||
-         i == elevation_port_number )
+         i == elevation_port_number ||
+        i == radius_port_number )
     {
         Panner *_panner = (Panner*)w;
 
@@ -425,6 +444,8 @@ Module_Parameter_Editor::handle_control_changed ( Module::Port *p )
             _panner->point(0)->azimuth( p->control_value() );
         else if ( i == elevation_port_number )
             _panner->point(0)->elevation( p->control_value() );
+        else if ( i == radius_port_number )
+            _panner->point(0)->radius( p->control_value() );
 
         _panner->redraw();
 

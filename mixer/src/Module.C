@@ -34,6 +34,7 @@
 #include "Meter_Module.H"
 #include "Plugin_Module.H"
 #include "AUX_Module.H"
+#include "Spatializer_Module.H"
 
 #include <FL/Fl_Menu_Button.H>
 #include "FL/test_press.H"
@@ -137,6 +138,7 @@ Module::init ( void )
     align( FL_ALIGN_CENTER | FL_ALIGN_INSIDE );
     set_visible_focus();
     selection_color( FL_RED );
+    labelsize(12);
     color( fl_color_average( FL_WHITE, FL_CYAN, 0.40 ) );
 }
 
@@ -664,7 +666,7 @@ Module::draw_label ( int tx, int ty, int tw, int th )
 
     fl_color( active_r() ? c : fl_inactive(c) );
 
-    fl_font( FL_HELVETICA, 12 );
+    fl_font( FL_HELVETICA, labelsize() );
 
     int LW = fl_width( lp );
 
@@ -720,8 +722,32 @@ Module::insert_menu_cb ( const Fl_Menu_ *m )
      
         mod = jm;
     }
+    if ( !strcmp( picked, "Spatializer" ) )
+    {
+        int n = 0;
+        for ( int i = 0; i < chain()->modules(); i++ )
+        {
+            if ( !strcmp( chain()->module(i)->name(), "Spatializer" ) )
+                n++;
+        }
+
+        if ( n == 0 )
+        {
+            Spatializer_Module *jm = new Spatializer_Module();
+            
+            jm->chain( chain() );
+//        jm->number( n );
+//        jm->configure_inputs( ninputs() );
+//        jm->configure_outputs( ninputs() );
+            jm->initialize();
+            
+            mod = jm;
+        }
+    }
     else if ( !strcmp( picked, "Gain" ) )
             mod = new Gain_Module();
+    /* else if ( !strcmp( picked, "Spatializer" ) ) */
+    /*         mod = new Spatializer_Module(); */
     else if ( !strcmp( picked, "Meter" ) )
         mod = new Meter_Module();
     else if ( !strcmp( picked, "Mono Pan" ))
@@ -826,6 +852,8 @@ Module::menu ( void ) const
         insert_menu->add( "Meter", 0, 0 );
         insert_menu->add( "Mono Pan", 0, 0 );
         insert_menu->add( "Aux", 0, 0 );
+        insert_menu->add( "Distance", 0, 0 );
+        insert_menu->add( "Spatializer", 0, 0 );
         insert_menu->add( "Plugin", 0, 0 );
 
         insert_menu->callback( &Module::insert_menu_cb, (void*)this );

@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2009 Jonathan Moore Liles                                     */
+/* Copyright (C) 2013 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -19,39 +19,44 @@
 
 #pragma once
 
-#include <FL/Fl_Double_Window.H>
-#include <Module.H>
-
-
-class Fl_Pack;
-class Fl_Flowpack;
-class Module;
-class Fl_Menu_Button;
-class Panner;
-class Controller_Module;
+#include "JACK_Module.H"
+#include "dsp.h"
 #include <vector>
 
-class Spatialization_Console : public Fl_Double_Window
+class filter;
+class delay;
+class ambisonic_panner;
+class Spatializer_Module : public JACK_Module
 {
-    Panner *panner;
-
-    static void cb_panner_value_handle ( Fl_Widget *w, void *v );
-    void make_controls ( void );
-
-    bool _resized;
-    int _min_width;
-
-    int azimuth_port_number;
-    int elevation_port_number;
-  
-    std::vector<Fl_Widget*> controls_by_port;  
-
+    Value_Smoothing_Filter gain_smoothing;
+    Value_Smoothing_Filter delay_smoothing;
+    
+    std::vector<filter*> _lowpass;
+    std::vector<filter*> _highpass;
+    std::vector<delay*> _delay;
+    
+    ambisonic_panner *_panner;
+    
 public:
 
-    void handle_control_changed ( Controller_Module *m );
+    virtual const char *name ( void ) const { return "Spatializer"; }
 
-    void update ( void );
+    int can_support_inputs ( int n ) { return n > 0 && n < 3 ? 4 : -1; }
 
-    Spatialization_Console ( );
-    virtual ~Spatialization_Console ( );
+    virtual bool configure_inputs ( int n );
+
+    Spatializer_Module ( );
+    virtual ~Spatializer_Module ( );
+
+    LOG_CREATE_FUNC( Spatializer_Module );
+    
+    virtual void handle_sample_rate_change ( nframes_t n );
+
+    virtual void draw ( void );
+
+protected:
+
+    virtual void process ( nframes_t nframes );
+
 };
+

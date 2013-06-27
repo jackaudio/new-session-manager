@@ -38,25 +38,38 @@ void buffer_copy_and_apply_gain ( sample_t *dst, const sample_t *src, nframes_t 
 class Value_Smoothing_Filter
 {
     float w, g1, g2;
-  
+    
+    float _cutoff;
 
 public:
 
     Value_Smoothing_Filter ( )
     {
         g1 = g2 = 0;
+        _cutoff = 10.0f;
     }
+
+    void cutoff ( float v ) { _cutoff = v; }
 
     void sample_rate ( nframes_t v );
     
     inline bool target_reached ( float gt ) const { return gt == g2; }
  
-    void apply ( sample_t *dst, nframes_t nframes, float target );
+    bool apply ( sample_t *dst, nframes_t nframes, float target );
 
 };
 
+static inline float interpolate_cubic ( const float fr, const float inm1, const float in, const float inp1, const float inp2)
+{
+    return in + 0.5f * fr * (inp1 - inm1 +
+                             fr * (4.0f * inp1 + 2.0f * inm1 - 5.0f * in - inp2 +
+                                   fr * (3.0f * (in - inp1) - inm1 + inp2)));
+}
 
 // from SWH plugins.
 // Convert a value in dB's to a coefficent
 #define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)
 #define CO_DB(v) (20.0f * log10f(v))
+
+#define DEG2RAD       0.01745329251f
+#define ONEOVERSQRT2  0.70710678118f

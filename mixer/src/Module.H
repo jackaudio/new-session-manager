@@ -344,6 +344,7 @@ public:
         }
 
     virtual const char *name ( void ) const = 0;
+    virtual const char *basename ( void ) const { return "Module"; }
 
     std::vector<Port> audio_input;
     std::vector<Port> audio_output;

@@ -35,10 +35,11 @@
 #include "Mixer.H"
 
 #include "debug.h"
+#include <FL/Fl_Menu_Bar.H>
 
 
 
-Spatialization_Console::Spatialization_Console ( void ) : Fl_Double_Window( 565, 565 )
+Spatialization_Console::Spatialization_Console ( void ) : Fl_Double_Window( 850, 850 )
 {
     _resized = false;
     _min_width = 100;
@@ -46,8 +47,8 @@ Spatialization_Console::Spatialization_Console ( void ) : Fl_Double_Window( 565,
     label( "Spatialization Console" );
 
     fl_font( FL_HELVETICA, 14 );
-
-    panner = new Panner( 25,25, 512, 512 );
+    
+    panner = new Panner( 25,25, 802,802 );
 
     panner->callback( cb_panner_value_handle, this );
     panner->when( FL_WHEN_CHANGED );
@@ -61,6 +62,11 @@ Spatialization_Console::~Spatialization_Console ( )
 {
 //    controls_by_port.clear();
 }
+
+
+
+
+
 
 
 
@@ -87,6 +93,7 @@ Spatialization_Console::make_controls ( void )
 
                 p.azimuth( o->spatializer()->control_output[0].control_value() );
                 p.elevation( o->spatializer()->control_output[1].control_value() );
+                p.radius( o->spatializer()->control_output[2].control_value() );
             }
             else
                 p.visible = false;
@@ -111,6 +118,7 @@ Spatialization_Console::cb_panner_value_handle ( Fl_Widget *w, void *v )
 
     cm->control_output[0].control_value( p->azimuth() );
     cm->control_output[1].control_value( p->elevation() );
+    cm->control_output[2].control_value( p->radius() );
 }
 
 /* Display changes initiated via automation or from other parts of the GUI */
@@ -128,6 +136,7 @@ Spatialization_Console::handle_control_changed ( Controller_Module *m )
         {
             p->azimuth( m->control_output[0].control_value() );
             p->elevation( m->control_output[1].control_value() );
+            p->radius( m->control_output[2].control_value() );
 
             if ( panner->visible_r() )
                 panner->redraw();

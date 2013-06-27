@@ -43,6 +43,7 @@
 /* for registration */
 #include "Module.H"
 #include "Gain_Module.H"
+#include "Spatializer_Module.H"
 #include "Plugin_Module.H"
 #include "JACK_Module.H"
 #include "Meter_Module.H"
@@ -151,6 +152,7 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Chain );
     LOG_REGISTER_CREATE( Plugin_Module );
     LOG_REGISTER_CREATE( Gain_Module );
+    LOG_REGISTER_CREATE( Spatializer_Module );
     LOG_REGISTER_CREATE( Meter_Module );
     LOG_REGISTER_CREATE( JACK_Module );
     LOG_REGISTER_CREATE( Mono_Pan_Module );

@@ -28,11 +28,12 @@ class Fl_Menu_Button;
 class Panner;
 
 #include <vector>
+#include <list>
 
 class Module_Parameter_Editor : public Fl_Double_Window
 {
     Module *_module;
-
+    
     struct callback_data
     {
         Module_Parameter_Editor *base_widget;
@@ -44,6 +45,7 @@ class Module_Parameter_Editor : public Fl_Double_Window
                 this->base_widget = base_widget;
                 this->port_number[0] = port_number;
                 this->port_number[1] = -1;
+                this->port_number[2] = -1;
             }
 
         callback_data ( Module_Parameter_Editor *base_widget, int port_number1, int port_number2 )
@@ -51,6 +53,15 @@ class Module_Parameter_Editor : public Fl_Double_Window
                 this->base_widget = base_widget;
                 this->port_number[0] = port_number1;
                 this->port_number[1] = port_number2;
+                this->port_number[2] = -1;
+            }
+
+        callback_data ( Module_Parameter_Editor *base_widget, int port_number1, int port_number2, int port_number3 )
+            {
+                this->base_widget = base_widget;
+                this->port_number[0] = port_number1;
+                this->port_number[1] = port_number2;
+                this->port_number[2] = port_number3;
             }
 
     };
@@ -72,7 +83,9 @@ class Module_Parameter_Editor : public Fl_Double_Window
 
     int azimuth_port_number;
     int elevation_port_number;
-  
+    int radius_port_number;
+
+    std::list<callback_data> _callback_data;
     std::vector<Fl_Widget*> controls_by_port;  
 
 public:

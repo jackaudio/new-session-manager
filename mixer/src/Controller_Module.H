@@ -84,6 +84,7 @@ public:
 
     void connect_to ( Port *p );
     bool connect_spatializer_to ( Module *m );
+    bool connect_spatializer_radius_to ( Module *m );
     void disconnect ( void );
 
     void handle_control_changed ( Port *p );
@@ -111,6 +112,7 @@ protected:
 
 private:
 
+    void maybe_create_panner ( void );
     char *generate_osc_path ( void );
     void change_osc_path ( char *path );
     

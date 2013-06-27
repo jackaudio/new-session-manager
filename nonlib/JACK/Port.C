@@ -126,7 +126,7 @@ namespace JACK
         if ( type() == rhs.type() )
             return strcmp( name(), rhs.name() );
         else
-            return type() == Port::Input;
+            return direction() == Port::Input;
     }
 
 
@@ -171,7 +171,8 @@ namespace JACK
     {
         _port = jack_port_register( _client->jack_client(), _name,
                                     _type == Audio ? JACK_DEFAULT_AUDIO_TYPE : JACK_DEFAULT_MIDI_TYPE,
-                                    _direction == Output ? JackPortIsOutput : JackPortIsInput | _terminal ? JackPortIsTerminal : 0,
+                                    ( _direction == Output ? JackPortIsOutput : JackPortIsInput ) |
+                                    ( _terminal ? JackPortIsTerminal : 0 ),
                                     0 );
 
         if ( ! _port )
@@ -278,7 +279,7 @@ namespace JACK
             const char *dst;
             const char *name = jack_port_name( _port );
 
-            if ( type() == Output )
+            if ( direction() == Output )
             {
                 src = name;
                 dst = *port_name;

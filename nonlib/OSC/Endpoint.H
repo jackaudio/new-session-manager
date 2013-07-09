@@ -324,6 +324,7 @@ namespace OSC
                 return _addr;
             }
 
+        const char * * get_connections ( const char *path );
         void clear_translations ( void );
         void del_translation ( const char *a );
         void add_translation ( const char *a, const char *b );

@@ -45,6 +45,8 @@
 // needed for mixer->endpoint
 #include "Mixer.H"
 
+#include "string_util.h"
+
 
 
 bool Controller_Module::learn_by_number = false;
@@ -358,7 +360,7 @@ Controller_Module::connect_to ( Port *p )
         w = o;
 
         o->type(4);
-        o->color( FL_DARK1 );
+        o->color( FL_BACKGROUND2_COLOR );
         o->selection_color( fl_color_average( FL_GRAY, FL_CYAN, 0.5 ) );
         o->minimum(1.5);
         o->maximum(0);
@@ -496,6 +498,181 @@ Controller_Module::menu_cb ( const Fl_Menu_ *m )
         mode( CV );
     else if ( ! strcmp( picked, "/Remove" ) )
         command_remove();
+    else if ( ! strncmp( picked, "Connect To/", strlen( "Connect To/" ) ) )
+    { 
+        char *peer_name = index( picked, '/' ) + 1;
+    
+        *index( peer_name, '/' ) = 0;
+
+//        OSC::Signal s = (OSC::Signal*)m->mvalue()->user_data();
+        const char *path = ((OSC::Signal*)m->mvalue()->user_data())->path();
+
+        /* if ( ! _osc_output()->is_connected_to( ((OSC::Signal*)m->mvalue()->user_data()) ) ) */
+        /* { */
+            /* _persistent_osc_connections.push_back( strdup(path) ); */
+
+            Port *p = control_output[0].connected_port();
+
+            if ( learn_by_number )
+            {
+                char *our_path = p->osc_number_path();
+                
+                mixer->osc_endpoint->add_translation( path, our_path );
+
+                free(our_path);
+            }
+            else
+                mixer->osc_endpoint->add_translation( path, p->osc_path() );
+    }
+    else if ( ! strncmp( picked, "Disconnect From/", strlen( "Disconnect From/" ) ) )
+    { 
+        /* char *peer_name = index( picked, '/' ) + 1; */
+    
+        /* *index( peer_name, '/' ) = 0; */
+
+//        OSC::Signal s = (OSC::Signal*)m->mvalue()->user_data();
+        const char *path = (const char*)m->mvalue()->user_data();
+
+        /* if ( ! _osc_output()->is_connected_to( ((OSC::Signal*)m->mvalue()->user_data()) ) ) */
+        /* { */
+            /* _persistent_osc_connections.push_back( strdup(path) ); */
+
+        //        Port *p = control_output[0].connected_port();
+
+            mixer->osc_endpoint->del_translation( path );
+
+            /* if ( learn_by_number ) */
+            /* { */
+            /*     char *our_path = p->osc_number_path(); */
+                
+            /*     mixer->osc_endpoint->add_translation( path, our_path ); */
+
+            /*     free(our_path); */
+            /* } */
+            /* else */
+            /*     mixer->osc_endpoint->add_translation( path, p->osc_path() ); */
+    }
+
+
+
+        /* } */
+        /* else */
+        /* { */
+        /*     /\* timeline->osc->disconnect_signal( _osc_output(), path ); *\/ */
+            
+        /*     /\* for ( std::list<char*>::iterator i = _persistent_osc_connections.begin(); *\/ */
+        /*     /\*       i != _persistent_osc_connections.end(); *\/ */
+        /*     /\*       ++i ) *\/ */
+        /*     /\* { *\/ */
+        /*     /\*     if ( !strcmp( *i, path ) ) *\/ */
+        /*     /\*     { *\/ */
+        /*     /\*         free( *i ); *\/ */
+        /*     /\*         i = _persistent_osc_connections.erase( i ); *\/ */
+        /*     /\*         break; *\/ */
+        /*     /\*     } *\/ */
+        /*     /\* } *\/ */
+            
+        /*     //free( path ); */
+        /* } */
+   
+
+    
+}
+static Fl_Menu_Button *peer_menu;
+static const char *peer_prefix;
+
+void
+Controller_Module::peer_callback( OSC::Signal *sig,  OSC::Signal::State state, void *v )
+{
+    char *s;
+
+   DMESSAGE( "Paramter limits: %f %f", sig->parameter_limits().min, sig->parameter_limits().max );
+
+    /* only show outputs */
+    if ( sig->direction() != OSC::Signal::Output )
+        return;
+
+
+    /* only list CV signals for now */
+    if ( ! ( sig->parameter_limits().min == 0.0 &&
+             sig->parameter_limits().max == 1.0 ) )
+        return;
+
+    if ( ! v )
+    {
+        /* if( state == OSC::Signal::Created ) */
+        /*     timeline->connect_osc(); */
+        /* else */
+        /*     timeline->update_osc_connection_state(); */
+    }
+    else
+    {
+        /* building menu */
+        const char *name = sig->peer_name();
+   
+        assert( sig->path() );
+
+        char *path = strdup( sig->path() );
+
+        unescape_url( path );
+
+        asprintf( &s, "%s/%s", peer_prefix, path );
+
+        peer_menu->add( s, 0, NULL, (void*)( sig ), 0 );
+
+                        /*     FL_MENU_TOGGLE | */
+                        /* ( ((Controller_Module*)v)->_osc_output()->is_connected_to( sig ) ? FL_MENU_VALUE : 0 ) ); */
+    
+        free( path );
+
+        free( s );
+    }
+}
+
+void
+Controller_Module::add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix )
+{
+    mixer->osc_endpoint->peer_signal_notification_callback( &Controller_Module::peer_callback, NULL );
+
+    peer_menu = m;
+    peer_prefix = prefix;
+
+    mixer->osc_endpoint->list_peer_signals( this );
+}
+
+void
+Controller_Module::add_osc_connections_to_menu ( Fl_Menu_Button *m, const char *prefix )
+{
+    /* peer_menu = m; */
+    const char *peer_prefix = prefix;
+
+//    mixer->osc_endpoint->list_peer_signals( this );
+
+    Port *p = control_output[0].connected_port();
+    
+    const char ** conn = mixer->osc_endpoint->get_connections( p->osc_path() );
+
+    if ( conn )
+    {
+        for ( const char **s = conn; *s; s++ )
+        {
+        /* building menu */
+     
+            char *path = strdup( *s );
+            
+            unescape_url( path );
+
+            char *ns;
+            asprintf( &ns, "%s/%s", peer_prefix, path );
+            
+            peer_menu->add( ns, 0, NULL, const_cast<char*>(*s), 0 );
+    
+            free( path );
+//            free(*s);
+        }
+
+        free( conn );
+    }
 }
 
 /** build the context menu for this control */
@@ -504,19 +681,21 @@ Controller_Module::menu ( void )
 {
     static Fl_Menu_Button m( 0, 0, 0, 0, "Controller" );
 
-    Fl_Menu_Item items[] =
-        {
-            { "Mode",             0, 0, 0,  FL_SUBMENU    },
-            { "GUI + OSC",       0, 0, 0,  FL_MENU_RADIO | ( mode() == GUI ? FL_MENU_VALUE : 0 ) },
-            { "Control Voltage (JACK)",           0, 0, 0,  FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ) },
-            { 0 },
-            { "Remove", 0, 0, 0, 0 },
-            { 0 },
-        };
+    m.clear();
 
-    menu_set_callback( items, &Controller_Module::menu_cb, (void*)this );
+    if ( mode() == GUI )
+    {
+        add_osc_peers_to_menu( &m, "Connect To" );
+        add_osc_connections_to_menu( &m, "Disconnect From" );
+    }
 
-    m.copy( items, (void*)this );
+    m.add( "Mode/GUI + OSC", 0, 0, 0,  FL_MENU_RADIO | ( mode() == GUI ? FL_MENU_VALUE : 0 ));
+    m.add( "Mode/Control Voltage (JACK)", 0, 0, 0,  FL_MENU_RADIO | ( mode() == CV ? FL_MENU_VALUE : 0 ));
+    m.add( "Remove", 0, 0, 0, is_default() ? FL_MENU_INACTIVE : 0 );
+
+//    menu_set_callback( m.items(), &Controller_Module::menu_cb, (void*)this );
+    m.callback( &Controller_Module::menu_cb, (void*)this );
+    //   m.copy( items, (void*)this );
 
     return m;
 }

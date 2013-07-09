@@ -625,6 +625,29 @@ namespace OSC
         return 1;
     }
 
+    const char**
+    Endpoint::get_connections ( const char *path )
+    {
+        const char **  conn = NULL;
+
+        int j = 0;
+        for ( std::map<std::string,TranslationDestination>::iterator i = _translations.begin();
+              i != _translations.end();
+              i++ )
+        {
+            if ( !strcmp( i->second.path.c_str(), path ) )
+            {
+                conn = (const char**)realloc( conn, sizeof( char * ) * (j+2));
+                conn[j++] = i->first.c_str();
+            }
+        }
+        
+        if ( conn )
+            conn[j] = 0;
+
+        return conn;
+    }
+
     void
     Endpoint::clear_translations ( void )
     {

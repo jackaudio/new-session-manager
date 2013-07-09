@@ -170,6 +170,8 @@ public:
         void buffer ( void *buf, nframes_t nframes ) { _buf = buf; _nframes = nframes; };
         void *buffer ( void ) const { return _buf; }
 
+        OSC::Signal *scaled_signal ( void ) { return _scaled_signal; }
+
         const char *osc_path ( )
             {
                 if ( _scaled_signal )

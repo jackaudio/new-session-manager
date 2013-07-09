@@ -40,6 +40,12 @@ class Controller_Module : public Module
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( const Fl_Menu_ *m );
 
+
+    static void peer_callback(  OSC::Signal *sig,  OSC::Signal::State state, void *v );
+    void peer_callback( OSC::Signal *sig, OSC::Signal::State state );
+    void add_osc_peers_to_menu ( Fl_Menu_Button *m, const char *prefix );
+    void add_osc_connections_to_menu ( Fl_Menu_Button *m, const char *prefix );
+
 public:
 
     static bool _learn_mode;

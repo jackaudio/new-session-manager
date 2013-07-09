@@ -138,6 +138,8 @@ public:
                 _module = module;
                 _scaled_signal = 0;
                 _unscaled_signal = 0;
+                _by_number_path = 0;
+                _by_number_number = -1;
             }
 
         Port ( const Port& p )
@@ -152,10 +154,16 @@ public:
                 hints = p.hints;
                 _scaled_signal = p._scaled_signal;
                 _unscaled_signal = p._unscaled_signal;
+                _by_number_path = 0;
+                _by_number_number = -1;
             }
 
         virtual ~Port ( )
             {
+                if ( _by_number_path )
+                    free( _by_number_path );
+                _by_number_path = NULL;
+
                 //     change_osc_path( NULL );
                 //   disconnect();
             }
@@ -172,6 +180,9 @@ public:
 
         OSC::Signal *scaled_signal ( void ) { return _scaled_signal; }
 
+        int _by_number_number;
+        char *_by_number_path;
+
         const char *osc_path ( )
             {
                 if ( _scaled_signal )
@@ -180,7 +191,7 @@ public:
                     return NULL;
             }
 
-        char *osc_number_path ( void );
+        const char *osc_number_path ( void );
 
         void update_osc_port ( )
             {

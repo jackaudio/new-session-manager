@@ -72,8 +72,8 @@ src/main.C
               uselib = [ 'JACK', 'LIBLO', 'LRDF', 'NTK', 'NTK_IMAGES', 'PTHREAD', 'DL', 'M' ],
               install_path = '${BINDIR}')
 
-    bld.program( source = 'src/midi-to-osc.C',
-                 target       = 'midi-to-osc',
+    bld.program( source = 'src/midi-mapper.C',
+                 target       = 'non-midi-mapper',
                  includes     = ['.', 'src', '..', '../nonlib'],
                  use = ['nonlib', 'fl_widgets'],
                  uselib = [ 'JACK', 'LIBLO', 'LRDF', 'NTK', 'NTK_IMAGES', 'PTHREAD', 'DL', 'M' ],

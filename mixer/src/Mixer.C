@@ -37,7 +37,6 @@
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Theme_Chooser.H>
 #include <FL/Fl_Value_SliderX.H>
-#include "FL/Fl_Text_Edit_Window.H"
 #include "file.h"
 
 #include <string.h>
@@ -261,10 +260,6 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         command_add_strip();
     }
-    else if ( !strcmp( picked, "&Mixer/Send Feedback" ) )
-    {
-        send_feedback();
-    }
     else if ( !strcmp( picked, "&Mixer/Add &N Strips" ) )
     {
         const char *s = fl_input( "Enter number of strips to add" );
@@ -293,28 +288,28 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         Controller_Module::learn_by_number = true;
     }
-    else if ( ! strcmp( picked, "&Mixer/Remote Control/Start Learning" ) )
+    else if ( ! strcmp( picked, "&Remote Control/Start Learning" ) )
     {
         Controller_Module::learn_mode( true );
         tooltip( "Now in learn mode. Click on a highlighted control to teach it something." );
         redraw();
     }
-    else if ( ! strcmp( picked, "&Mixer/Remote Control/Stop Learning" ) )
+    else if ( ! strcmp( picked, "&Remote Control/Stop Learning" ) )
     {
         Controller_Module::learn_mode( false );
         tooltip( "Learning complete" );
         redraw();
     }
-    else if ( ! strcmp( picked, "&Mixer/Remote Control/Clear Mappings" ) )
+    else if ( !strcmp( picked, "&Remote Control/Send State" ) )
+    {
+        send_feedback();
+    }
+    else if ( ! strcmp( picked, "&Remote Control/Clear All Mappings" ) )
     {
         if ( 1 == fl_ask( "This will remove all mappings, are you sure?") )
         {
             command_clear_mappings();
         }
-    }
-    else if ( ! strcmp( picked, "&Mixer/Remote Control/Edit Mappings" ) )
-    {
-        edit_translations();
     }
     else if ( !strcmp( picked, "&Mixer/Paste" ) )
     {
@@ -496,20 +491,19 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             o->add( "&Project/Se&ttings/&Rows/One", '1', 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
             o->add( "&Project/Se&ttings/&Rows/Two", '2', 0, 0, FL_MENU_RADIO );
             o->add( "&Project/Se&ttings/&Rows/Three", '3', 0, 0, FL_MENU_RADIO );
-            o->add( "&Project/Se&ttings/Make Default", 0,0,0);
             o->add( "&Project/Se&ttings/Learn/By Strip Number", 0, 0, 0, FL_MENU_RADIO );
             o->add( "&Project/Se&ttings/Learn/By Strip Name", 0, 0, 0, FL_MENU_RADIO | FL_MENU_VALUE );
+            o->add( "&Project/Se&ttings/Make Default", 0,0,0);
             o->add( "&Project/&Save", FL_CTRL + 's', 0, 0 );
             o->add( "&Project/&Quit", FL_CTRL + 'q', 0, 0 );
             o->add( "&Mixer/&Add Strip", 'a', 0, 0 );
             o->add( "&Mixer/Add &N Strips" );
-            o->add( "&Mixer/Send Feedback" );
             o->add( "&Mixer/&Import Strip" );
             o->add( "&Mixer/Paste", FL_CTRL + 'v', 0, 0 );
-            o->add( "&Mixer/Remote Control/Start Learning", FL_F + 9, 0, 0 );
-            o->add( "&Mixer/Remote Control/Stop Learning", FL_F + 10, 0, 0 );
-            o->add( "&Mixer/Remote Control/Clear Mappings", 0, 0, 0 );
-            o->add( "&Mixer/Remote Control/Edit Mappings", 0, 0, 0 );
+            o->add( "&Remote Control/Start Learning", FL_F + 9, 0, 0 );
+            o->add( "&Remote Control/Stop Learning", FL_F + 10, 0, 0 );
+            o->add( "&Remote Control/Send State" );
+            o->add( "&Remote Control/Clear All Mappings", 0, 0, 0 );
             o->add( "&View/&Theme", 0, 0, 0 );
             o->add( "&Help/&Manual" );
             o->add( "&Help/&About" );
@@ -654,30 +648,6 @@ Mixer::save_translations ( void )
     }
 
     fclose( fp );
-}
-
-void
-Mixer::edit_translations ( void )
-{
-    char *file_contents = NULL;
-
-    if ( exists( "mappings" ) )
-    {
-        size_t l = ::size( "mappings" );
-
-        file_contents = (char*)malloc( l );
-        
-        FILE *fp = fopen( "mappings", "r" );
-
-        fread( file_contents, l, 1, fp );
-
-        fclose( fp );
-    }
-
-    char *s = fl_text_edit( "Mappings", "&Save", file_contents, 800, 600 );
-
-    if ( file_contents )
-        free(file_contents);
 }
 
 int

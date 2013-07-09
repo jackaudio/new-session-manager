@@ -514,13 +514,7 @@ Controller_Module::menu_cb ( const Fl_Menu_ *m )
             Port *p = control_output[0].connected_port();
 
             if ( learn_by_number )
-            {
-                char *our_path = p->osc_number_path();
-                
-                mixer->osc_endpoint->add_translation( path, our_path );
-
-                free(our_path);
-            }
+                mixer->osc_endpoint->add_translation( path, p->osc_number_path());
             else
                 mixer->osc_endpoint->add_translation( path, p->osc_path() );
     }
@@ -608,7 +602,7 @@ Controller_Module::peer_callback( OSC::Signal *sig,  OSC::Signal::State state, v
     else
     {
         /* building menu */
-        const char *name = sig->peer_name();
+//        const char *name = sig->peer_name();
    
         assert( sig->path() );
 
@@ -649,29 +643,37 @@ Controller_Module::add_osc_connections_to_menu ( Fl_Menu_Button *m, const char *
 //    mixer->osc_endpoint->list_peer_signals( this );
 
     Port *p = control_output[0].connected_port();
-    
-    const char ** conn = mixer->osc_endpoint->get_connections( p->osc_path() );
 
-    if ( conn )
+    const char *number_path = p->osc_number_path();
+    const char *name_path = p->osc_path();
+
+    const char *paths[] = { number_path,name_path,NULL };
+
+    for ( const char **cpath = paths; *cpath; cpath++ )
     {
-        for ( const char **s = conn; *s; s++ )
+        const char ** conn = mixer->osc_endpoint->get_connections( *cpath );
+
+        if ( conn )
         {
-        /* building menu */
+            for ( const char **s = conn; *s; s++ )
+            {
+                /* building menu */
      
-            char *path = strdup( *s );
+                char *path = strdup( *s );
             
-            unescape_url( path );
+                unescape_url( path );
 
-            char *ns;
-            asprintf( &ns, "%s/%s", peer_prefix, path );
+                char *ns;
+                asprintf( &ns, "%s/%s", peer_prefix, path );
             
-            peer_menu->add( ns, 0, NULL, const_cast<char*>(*s), 0 );
+                peer_menu->add( ns, 0, NULL, const_cast<char*>(*s), 0 );
     
-            free( path );
+                free( path );
 //            free(*s);
-        }
+            }
 
-        free( conn );
+            free( conn );
+        }
     }
 }
 
@@ -730,24 +732,11 @@ Controller_Module::handle ( int m )
                 
                 if ( p )
                 {
-                    if ( learn_by_number )
-                    {
-                        char *path = p->osc_number_path();
+                    const char * path =  learn_by_number ? p->osc_number_path() : p->osc_path();
 
-                        DMESSAGE( "Will learn %s", path );
+                    DMESSAGE( "Will learn %s", path );
 
-                        mixer->osc_endpoint->learn( path );
-
-                        free(path);
-                    }
-                    else
-                    {
-                        const char *path = p->osc_path();
-   
-                        DMESSAGE( "Will learn %s", path );
-
-                        mixer->osc_endpoint->learn( path );
-                    }
+                    mixer->osc_endpoint->learn( path );
                 }
 
                 return 1;

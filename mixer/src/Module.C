@@ -226,11 +226,17 @@ Module::paste_before ( void )
 
 
 
-char *
+const char *
 Module::Port::osc_number_path ( void )
 {
     int n = _module->chain()->strip()->number();
     
+    if ( _by_number_path && n == _by_number_number )
+        return _by_number_path;
+
+    if ( _by_number_path )
+        free( _by_number_path );
+
     char *rem;
     char *client_name;
     char *strip_name;
@@ -245,6 +251,9 @@ Module::Port::osc_number_path ( void )
 
     free( client_name );
     free( rem );
+    
+    _by_number_path = path;
+    _by_number_number = n;
 
     return path;
 }
@@ -274,15 +283,9 @@ Module::Port::send_feedback ( void )
         /* send feedback for by_name signal */
         mixer->osc_endpoint->send_feedback( _scaled_signal->path(), f );
         
-/* send feedback for by number signal */
-        {        
-            char *path = osc_number_path();
-            
-            mixer->osc_endpoint->send_feedback( path, f  );
-            
-            free(path);
-        }
-     }
+        /* send feedback for by number signal */
+        mixer->osc_endpoint->send_feedback( osc_number_path(), f  );
+    }
 }
 
 void

@@ -44,6 +44,8 @@ using namespace MIDI;
 
 #undef APP_NAME
 const char *APP_NAME = "non-midi-mapper";
+#undef APP_TITLE
+const char *APP_TITLE = "Non-MIDI-Mapper";
 #undef VERSION
 const char *VERSION = "1.0";
 
@@ -100,7 +102,7 @@ say_hello ( void )
         lo_message_add( m, "sssss",
                         "/non/hello",
                         osc->url(),
-                        APP_NAME,
+                        APP_TITLE,
                         VERSION,
                         instance_name );
         
@@ -618,7 +620,7 @@ main ( int argc, char **argv )
     {
         if ( ! nsm_init( nsm, nsm_url ) )
         {
-            nsm_send_announce( nsm, APP_NAME, ":dirty:", argv[0] );
+            nsm_send_announce( nsm, APP_TITLE, ":dirty:", basename( argv[0] ) );
 
             /* poll so we can keep OSC handlers running in the GUI thread and avoid extra sync */
 //            Fl::add_timeout( NSM_CHECK_INTERVAL, check_nsm, NULL );
@@ -629,7 +631,7 @@ main ( int argc, char **argv )
 
     DMESSAGE( "Creating JACK engine" );
 
-    if ( ! engine->init("midi-to-osc" ) )
+    if ( ! engine->init( APP_NAME ) )
     {
         WARNING( "Failed to create JACK client" );
     }

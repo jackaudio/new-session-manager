@@ -217,27 +217,6 @@ public:
                 {
                     *((float*)buffer()) = f;
                 }
-
-                if ( _scaled_signal )
-                {
-                    
-                    if ( hints.ranged )
-                    {
-                        // scale value to range.
-                        
-                        float scale = hints.maximum - hints.minimum;
-                        float offset = hints.minimum;
-        
-                        f =  ( f - offset ) / scale;
-                    }
-
-                    if ( f > 1.0 )
-                        f = 1.0;
-                    else if ( f < 0.0 )
-                        f = 0.0;
-                  
-//                    _scaled_signal->value( f );
-                }
             }
 
         void control_value ( float f )

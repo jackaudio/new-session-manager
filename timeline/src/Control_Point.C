@@ -78,7 +78,7 @@ Control_Point::draw_box ( void )
     else
         fl_color( box_color() );
 
-    fl_pie( x() - w() / 2, y() - h() / 2, w(), h(), 0, 360 );
+    fl_pie( x() - ( abs_w() / 2 ), y() - ( h() / 2 ), abs_w(), h(), 0, 360 );
 
     if ( this == Sequence_Widget::belowmouse() ||
          this == Sequence_Widget::pushed() )

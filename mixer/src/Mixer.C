@@ -309,7 +309,7 @@ void Mixer::cb_menu(Fl_Widget* o) {
     }
     else if ( ! strcmp( picked, "&Remote Control/Clear All Mappings" ) )
     {
-        if ( 1 == fl_ask( "This will remove all mappings, are you sure?") )
+        if ( 1 == fl_choice( "This will remove all mappings, are you sure?", "No", "Yes", NULL ) )
         {
             command_clear_mappings();
         }

@@ -840,7 +840,7 @@ Chain::buffer_size ( nframes_t nframes )
 int
 Chain::sample_rate_change ( nframes_t nframes, void *v )
 {
-    ((Chain*)v)->sample_rate_change( nframes );
+    return ((Chain*)v)->sample_rate_change( nframes );
 }
 
 int

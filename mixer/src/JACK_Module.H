@@ -59,7 +59,7 @@ protected:
 
 protected:
 
-    int _connection_handle_outputs[2][2];
+    unsigned int _connection_handle_outputs[2][2];
  
 public:
 

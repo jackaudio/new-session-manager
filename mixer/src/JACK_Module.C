@@ -380,6 +380,8 @@ JACK_Module::add_jack_output ( const char *prefix, int n )
     }
     
     delete po;
+
+    return true;
 }
 
 bool

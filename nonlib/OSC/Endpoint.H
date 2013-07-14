@@ -157,9 +157,6 @@ namespace OSC
         
         float _value;
 
-        std::list<Signal*> _outgoing;
-        std::list<Signal*> _incoming;
-
         Direction _direction;
 
         signal_handler _handler;
@@ -177,12 +174,6 @@ namespace OSC
 
         Signal ( const char *path, Direction dir );
         ~Signal ( );
-
-        int noutput_connections() { return _outgoing.size(); }
-        bool connected ( void ) const { return _outgoing.size() + _incoming.size(); }
-       
-        char * get_output_connection_peer_name_and_path ( int n );
-     
 
         Direction direction ( void ) const { return _direction; }
 
@@ -214,8 +205,6 @@ namespace OSC
 
         bool is_connected_to ( const Signal *s ) const;
         
-        void learn_connection ( void );
-
         friend class Endpoint;
     };
 
@@ -242,7 +231,6 @@ namespace OSC
         Thread _thread;
         
         friend class  Signal;
-        Signal *_learn_signal;
 
 //        lo_server_thread _st;
         lo_server _server;

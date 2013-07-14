@@ -266,21 +266,21 @@ Control_Sequence::get_unjournaled ( Log_Entry &e ) const
 {
     e.add( ":interpolation", _interpolation );
 
-    if ( _osc_output() && _osc_output()->connected() )
-    {
-        DMESSAGE( "OSC Output connections: %i", _osc_output()->noutput_connections() );
+    /* if ( _osc_output() && _osc_output()->connected() ) */
+    /* { */
+    /*     DMESSAGE( "OSC Output connections: %i", _osc_output()->noutput_connections() ); */
 
-        for ( int i = 0; i < _osc_output()->noutput_connections(); ++i )
-        {
-            char *s;
+    /*     for ( int i = 0; i < _osc_output()->noutput_connections(); ++i ) */
+    /*     { */
+    /*         char *s; */
 
-            s = _osc_output()->get_output_connection_peer_name_and_path(i);
+    /*         s = _osc_output()->get_output_connection_peer_name_and_path(i); */
 
-            e.add( ":osc-output", s );
+    /*         e.add( ":osc-output", s ); */
         
-            free( s );
-        }
-    }
+    /*         free( s ); */
+    /*     } */
+    /* } */
 
     e.add( ":mode", mode() );
 }
@@ -537,30 +537,30 @@ Control_Sequence::menu_cb ( const Fl_Menu_ *m )
 
         const char *path = ((OSC::Signal*)m->mvalue()->user_data())->path();
 
-        if ( ! _osc_output()->is_connected_to( ((OSC::Signal*)m->mvalue()->user_data()) ) )
+        /* if ( ! _osc_output()->is_connected_to( ((OSC::Signal*)m->mvalue()->user_data()) ) ) */
         {
             _persistent_osc_connections.push_back( strdup(path) );
             
             connect_osc();
         }
-        else
-        {
-            timeline->osc->disconnect_signal( _osc_output(), path );
+        /* else */
+        /* { */
+        /*     timeline->osc->disconnect_signal( _osc_output(), path ); */
             
-            for ( std::list<char*>::iterator i = _persistent_osc_connections.begin();
-                  i != _persistent_osc_connections.end();
-                  ++i )
-            {
-                if ( !strcmp( *i, path ) )
-                {
-                    free( *i );
-                    i = _persistent_osc_connections.erase( i );
-                    break;
-                }
-            }
+        /*     for ( std::list<char*>::iterator i = _persistent_osc_connections.begin(); */
+        /*           i != _persistent_osc_connections.end(); */
+        /*           ++i ) */
+        /*     { */
+        /*         if ( !strcmp( *i, path ) ) */
+        /*         { */
+        /*             free( *i ); */
+        /*             i = _persistent_osc_connections.erase( i ); */
+        /*             break; */
+        /*         } */
+        /*     } */
             
-            //free( path );
-        }
+        /*     //free( path ); */
+        /* } */
         
     }
     else if ( ! strcmp( picked, "Interpolation/Linear" ) )
@@ -618,7 +618,7 @@ Control_Sequence::connect_osc ( void )
         }
     }
 
-    header()->outputs_indicator->value( _osc_output() && _osc_output()->connected() );
+    /* header()->outputs_indicator->value( _osc_output() && _osc_output()->connected() ); */
   
     timeline->osc_thread->unlock();
 }
@@ -644,7 +644,7 @@ static const char *peer_prefix;
 void
 Control_Sequence::update_osc_connection_state ( void )
 {
-    header()->outputs_indicator->value( _osc_output() && _osc_output()->connected() );
+    /* header()->outputs_indicator->value( _osc_output() && _osc_output()->connected() ); */
 }
 
 void

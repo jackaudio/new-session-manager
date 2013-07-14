@@ -110,36 +110,11 @@ namespace OSC
         _path = new_path;
     }
 
-    bool
-    Signal::is_connected_to ( const OSC::Signal *s ) const
-    {
-        for ( std::list<Signal*>::const_iterator i = _outgoing.begin();
-              i != _outgoing.end();
-              ++i )
-        {
-            /* if ( (*i)->_peer == s->_peer && */
-            /*      (*i)->id() == s->id() ) */
-            /*     return true; */
-        }
-
-        return false;
-    }
-    
     void
     Signal::value ( float f )
     {
         if ( f == _value )
             return;
-
-      
-        /* for ( std::list<Signal*>::const_iterator i = _outgoing.begin(); */
-        /*       i != _outgoing.end(); */
-        /*       ++i ) */
-        /* { */
-            /* /\* FIXME: won't work for loopback *\/ */
-            /* if ( (*i)->_value != f ) */
-            /* { */
-            /*     (*i)->_value = f; */
         
         _value = f;
         
@@ -156,55 +131,49 @@ namespace OSC
 
             // free(s);   
         }
-        else if ( direction() == Input )
-        {
-            DMESSAGE( "Sending value feedback for signal %s...", path() );
-            for ( std::list<Signal*>::iterator i = _incoming.begin();
-                  i != _incoming.end();
-                  ++i )
-            {
-                DMESSAGE( "Sending value feedback to %s %s %f", lo_address_get_url( (*i)->_peer->addr), (*i)->path() , f);
-                _endpoint->send( (*i)->_peer->addr, 
-                                 (*i)->path(),
-                                 f );
-            }
-        }
+        /* else if ( direction() == Input ) */
+        /* { */
+        /*     DMESSAGE( "Sending value feedback for signal %s...", path() ); */
+        /*     for ( std::list<Signal*>::iterator i = _incoming.begin(); */
+        /*           i != _incoming.end(); */
+        /*           ++i ) */
+        /*     { */
+        /*         DMESSAGE( "Sending value feedback to %s %s %f", lo_address_get_url( (*i)->_peer->addr), (*i)->path() , f); */
+        /*         _endpoint->send( (*i)->_peer->addr,  */
+        /*                          (*i)->path(), */
+        /*                          f ); */
+        /*     } */
+        /* } */
     }
 
-    void
-    Signal::learn_connection ( void )
-    {
-        _endpoint->_learn_signal = this;
-    }
+    /* char * */
+    /* Signal::get_output_connection_peer_name_and_path ( int n ) */
+    /* { */
+    /*     Signal *t = NULL; */
 
-    char *
-    Signal::get_output_connection_peer_name_and_path ( int n )
-    {
-        Signal *t = NULL;
+    /*     int j = 0; */
+    /*     for ( std::list<Signal*>::const_iterator i = _outgoing.begin(); */
+    /*           i != _outgoing.end(); */
+    /*           ++i, ++j ) */
+    /*     { */
+    /*         if ( j == n ) */
+    /*         { */
+    /*             t = *i; */
+    /*             break; */
+    /*         } */
+    /*     } */
 
-        int j = 0;
-        for ( std::list<Signal*>::const_iterator i = _outgoing.begin();
-              i != _outgoing.end();
-              ++i, ++j )
-        {
-            if ( j == n )
-            {
-                t = *i;
-                break;
-            }
-        }
+    /*     if ( t ) */
+    /*     { */
+    /*         char *r; */
+    /*         asprintf( &r, "%s%s", t->_peer->name, t->path() ); */
 
-        if ( t )
-        {
-            char *r;
-            asprintf( &r, "%s%s", t->_peer->name, t->path() );
-
-            return r;
-        }
-        else
-            return NULL;
-    }
-
+    /*         return r; */
+    /*     } */
+    /*     else */
+    /*         return NULL; */
+    /* } */
+    /*  */
 
 
     void
@@ -222,7 +191,6 @@ namespace OSC
         _peer_scan_complete_userdata = 0;
         _server = 0;
         _name = 0;
-        _learn_signal = 0;
         owner = 0;
     }
 
@@ -402,8 +370,6 @@ namespace OSC
 
         if ( s->_direction == Signal::Input )
         {
-            /* s->_incoming.remove( ps ); */
-            
             DMESSAGE( "Peer %s has disconnected from signal %s", our_name, their_name );
  
             ep->del_translation( their_name );
@@ -456,14 +422,6 @@ namespace OSC
         
         Endpoint *ep = (Endpoint*)user_data;
         
-        /* Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) ); */
-        
-        /* if ( ! p ) */
-        /* { */
-        /*     WARNING( "Got signal remove notification from unknown peer." ); */
-        /*     return 0; */
-        /* } */
-
         Signal *o = ep->find_signal_by_path( name );
 
         if ( ! o )
@@ -474,34 +432,6 @@ namespace OSC
 
         DMESSAGE( "Signal %s:%s was removed", o->_peer->name, o->path() );
 
-        /* /\* disconnect it *\/ */
-        /* if ( o->_outgoing.size() ) */
-        /* { */
-        /*     for ( std::list<Signal*>::iterator i = o->_outgoing.begin(); */
-        /*           i != o->_outgoing.end(); */
-        /*           ) */
-        /*     { */
-        /*         Signal *s = *i; */
-        /*         /\* avoid messing up iterator *\/ */
-        /*         ++i; */
-
-        /*         ep->disconnect_signal( o, s ); */
-        /*     } */
-        /* } */
-
-        /* if ( o->_incoming.size() ) */
-        /* { */
-        /*     for ( std::list<Signal*>::iterator i = o->_incoming.begin(); */
-        /*       i != o->_incoming.end(); */
-        /*           ) */
-        /*     { */
-        /*         Signal *s = *i; */
-        /*         /\* avoid messing up iterator *\/ */
-        /*         ++i; */
-                
-        /*         ep->disconnect_signal( s, o ); */
-        /*     } */
-        /* } */
 
         if ( ep->_peer_signal_notification_callback )
             ep->_peer_signal_notification_callback( o, Signal::Removed, ep->_peer_signal_notification_userdata );
@@ -596,13 +526,11 @@ namespace OSC
     {
         Signal *o;
         float f = 0.0;
-        Endpoint *ep = NULL;
 
         if ( ! strcmp( types, "f" ) )
         {
             /* accept a value for signal named in path */
             o = (Signal*)user_data;
-            ep = o->_endpoint;
             f = argv[0]->f;
         }
         else if ( ! types || 0 == types[0] )
@@ -896,77 +824,24 @@ namespace OSC
     }
 
     bool
-    Endpoint::disconnect_signal ( OSC::Signal *s, OSC::Signal *d )
-    {
-        /* if ( ! s->is_connected_to( d ) ) */
-        /*     return false; */
-        
-        if ( d->_peer )
-        {
-            MESSAGE( "Disconnecting signal output \"%s\" from %s:%s", s->path(), d->_peer->name, d->_path );
-            
-            /* send( d->_peer->addr, "/signal/disconnect",  */
-            /*       s->_id, /\* our signal id *\/ */
-            /*       d->_id  /\* their signal id *\/ ); */
-        }
-        else
-        {
-            /* MESSAGE( "Disconnecting signal output \"%s\" to (unknown):%i", s->path(), d->_id ); */
-        }
-
-        s->_outgoing.remove( d );
-        d->_incoming.remove( s );
-
-        return true;
-    }
-
-    bool
     Endpoint::disconnect_signal ( OSC::Signal *s, const char *signal_path )
     {
         if ( s->_direction == Signal::Output )
         {
-            /* Peer *p = find_peer_by_name( peer_name ); */
-            
-            /* if ( ! p ) */
-            /*     return false; */
-
-            Signal *ps = find_signal_by_path( signal_path );
-            
-            if ( ! ps )
-                return false;
-
-            if ( ! s->is_connected_to( ps ) )
-                return false;
-
-            return disconnect_signal( s, ps );     
+            for ( std::list<Peer*>::iterator i = _peers.begin(); 
+                  i != _peers.end();
+                  ++i )
+            {
+                send( (*i)->addr, "/signal/disconnect",
+                      s->path(),
+                      signal_path);
+            }
+                
+            return true;
         }
 
         return false;
     }
-
-
-    /* bool */
-    /* Endpoint::connect_signal ( OSC::Signal *s, OSC::Signal *d ) */
-    /* { */
-    /*     /\* if ( s->is_connected_to( d ) ) *\/ */
-    /*     /\* { *\/ */
-    /*     /\*     return false; *\/ */
-    /*     /\* } *\/ */
-        
-    /*     MESSAGE( "Connecting signal output \"%s\" to %s:%s", s->path(), d->_peer->name, d->path() ); */
-        
-    /*     s->_outgoing.push_back( d ); */
-
-    /*     /\* make a record of it ourselves *\/ */
-    /*     d->_incoming.push_back( s ); */
-        
-    /*     send( d->_peer->addr, "/signal/connect", */
-    /*           s->path(), */
-    /*           d->path() ); */
-        
-    /*     return true; */
-    /* } */
-
   
     bool
     Endpoint::connect_signal( OSC::Signal *s, const char *signal_path )
@@ -1162,37 +1037,6 @@ namespace OSC
                   "/signal/removed", 
                   o->path() );
         }
-
-        Endpoint *ep = this;
-
-        /* /\* disconnect it *\/ */
-        /* if ( o->_outgoing.size() ) */
-        /* { */
-        /*     for ( std::list<Signal*>::iterator i = o->_outgoing.begin(); */
-        /*           i != o->_outgoing.end(); */
-        /*           ) */
-        /*     { */
-        /*         Signal *s = *i; */
-        /*         /\* avoid messing up iterator *\/ */
-        /*         ++i; */
-
-        /*         ep->disconnect_signal( o, s ); */
-        /*     } */
-        /* } */
-
-        /* if ( o->_incoming.size() ) */
-        /* { */
-        /*     for ( std::list<Signal*>::iterator i = o->_incoming.begin(); */
-        /*       i != o->_incoming.end(); */
-        /*           ) */
-        /*     { */
-        /*         Signal *s = *i; */
-        /*         /\* avoid messing up iterator *\/ */
-        /*         ++i; */
-                
-        /*         ep->disconnect_signal( s, o ); */
-        /*     } */
-        /* } */
 
         /* FIXME: clear loopback connections first! */
 

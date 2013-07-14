@@ -306,20 +306,14 @@ Module::handle_control_changed ( Port *p )
     p->send_feedback();
 }
 
-bool
-Module::Port::connected_osc ( void ) const
-{
-    if ( _scaled_signal )
-        return _scaled_signal->connected();
-    else
-        return false;
-}
-
-void
-Module::Port::learn_osc ( void )
-{
-    _scaled_signal->learn_connection();
-}
+/* bool */
+/* Module::Port::connected_osc ( void ) const */
+/* { */
+/*     if ( _scaled_signal ) */
+/*         return _scaled_signal->connected(); */
+/*     else */
+/*         return false; */
+/* } */
 
 char *
 Module::Port::generate_osc_path ()
@@ -639,7 +633,7 @@ Module::draw_box ( int tx, int ty, int tw, int th )
         {
             fl_draw_box( FL_ROUNDED_BOX, tx + 4, ty + 4, 5, 5, is_being_controlled() ? FL_YELLOW : fl_inactive( FL_YELLOW ) );
 
-            fl_draw_box( FL_ROUNDED_BOX, tx + 4, ty + th - 8, 5, 5, is_being_controlled_osc() ? FL_YELLOW : fl_inactive( FL_YELLOW ) );
+            /* fl_draw_box( FL_ROUNDED_BOX, tx + 4, ty + th - 8, 5, 5, is_being_controlled_osc() ? FL_YELLOW : fl_inactive( FL_YELLOW ) ); */
         }
 
         if ( control_output.size() )

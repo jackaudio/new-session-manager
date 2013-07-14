@@ -123,8 +123,6 @@ public:
         static int osc_control_change_exact ( float v, void *user_data );
         static int osc_control_change_cv ( float v, void *user_data );
 
-        void learn_osc ( void );
-
         Hints hints;
 
         Port ( Module *module, Direction direction, Type type, const char *name = 0 )
@@ -334,14 +332,14 @@ public:
             return false;
         }
 
-    bool
-    is_being_controlled_osc ( void ) const
-        {
-            for ( nframes_t i = control_input.size(); i--; )
-                if ( control_input[i].connected_osc() )
-                    return true;
-            return false;
-        }
+    /* bool */
+    /* is_being_controlled_osc ( void ) const */
+    /*     { */
+    /*         for ( nframes_t i = control_input.size(); i--; ) */
+    /*             if ( control_input[i].connected_osc() ) */
+    /*                 return true; */
+    /*         return false; */
+    /*     } */
 
     virtual const char *name ( void ) const = 0;
     virtual const char *basename ( void ) const { return "Module"; }

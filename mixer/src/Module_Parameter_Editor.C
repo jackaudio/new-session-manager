@@ -410,8 +410,6 @@ Module_Parameter_Editor::bind_control ( int i )
 {
     Module::Port *p = &_module->control_input[i];
 
-    /* p->learn_osc(); */
-
     if ( p->connected() )
         /* can only bind once */
         return;

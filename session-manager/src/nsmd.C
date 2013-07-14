@@ -97,6 +97,8 @@ enum {
 
 static int pending_operation = COMMAND_NONE;
 
+static void wait ( long );
+
 
 #define GUIMSG( fmt, args... ) \
 { \
@@ -352,7 +354,6 @@ handle_client_process_death ( int pid )
      }
 }
 
-
 void handle_sigchld ( )
 {
     for ( ;; )
@@ -381,7 +382,6 @@ path_is_valid ( const char *path )
 
     return r;
 }
-
 
 int
 mkpath ( const char *path, bool create_final_directory )
@@ -545,9 +545,9 @@ wait_for_announce ( void )
     {
         n -= 100;
 
-        osc_server->wait(100);
+        wait(100);
         
-         active = number_of_active_clients();
+        active = number_of_active_clients();
 
         if ( client.size() == active )
             break;
@@ -568,7 +568,7 @@ wait_for_replies ( void )
     {
         n -= 100;
 
-        osc_server->wait(100);
+        wait(100);
         
         if ( ! replies_still_pending() )
             break;
@@ -2164,16 +2164,30 @@ OSC_HANDLER( null )
 
 
 
+static void
+wait ( long timeout )
+{
+    struct signalfd_siginfo fdsi;
+    
+    ssize_t s = read(signal_fd, &fdsi, sizeof(struct signalfd_siginfo));
+    
+    if (s == sizeof(struct signalfd_siginfo))
+    {
+        if (fdsi.ssi_signo == SIGCHLD)
+                handle_sigchld();
+    }
+    
+    osc_server->wait( timeout );
+    
+    purge_dead_clients();
+}
 
 int main(int argc, char *argv[])
 {
     sigset_t mask;
-
     sigemptyset( &mask );
     sigaddset( &mask, SIGCHLD );
-
     sigprocmask(SIG_BLOCK, &mask, NULL );
-
     signal_fd = signalfd( -1, &mask, SFD_NONBLOCK );
 
     /* generate random seed for client ids */
@@ -2318,23 +2332,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    struct signalfd_siginfo fdsi;
-
-
     /* listen for sigchld signals and process OSC messages forever */
     for ( ;; )
     {
-        ssize_t s = read(signal_fd, &fdsi, sizeof(struct signalfd_siginfo));
-        
-        if (s == sizeof(struct signalfd_siginfo))
-        {
-            if (fdsi.ssi_signo == SIGCHLD)
-                handle_sigchld();
-        }
-        
-        osc_server->wait( 1000 );
-
-        purge_dead_clients();
+        wait( 1000 );
     }
     
 //    osc_server->run();

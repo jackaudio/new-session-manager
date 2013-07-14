@@ -53,7 +53,24 @@ Fl_Scalepack::resize ( int X, int Y, int W, int H )
 {
     /* Fl_Group's resize will change our child widget sizes, which
      interferes with our own resizing method. */
+    long dx = X - x();
+    long dy = Y - y();
+    
+    bool r = W != w() || H != h();
+
     Fl_Widget::resize( X, Y, W, H );
+
+    Fl_Widget*const* a = array();
+
+    for (int i=children(); i--;)
+    {
+        Fl_Widget* o = *a++;
+
+        o->position( o->x() + dx, o->y() + dy );
+    }
+
+    if ( r )
+        redraw();
 }
 
 void

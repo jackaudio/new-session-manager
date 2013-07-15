@@ -116,13 +116,16 @@ DPM::draw_label ( void )
 void
 DPM::resize ( int X, int Y, int W, int H )
 {
+    int old_segments = _segments;
+
     if ( type() == FL_HORIZONTAL )
         _segments = floor( W / (double)_pixels_per_segment );
     else
         _segments = floor( H / (double)_pixels_per_segment );
-
-    _last_drawn_hi_segment = 0;
-
+    
+    if ( old_segments != _segments )
+        _last_drawn_hi_segment = 0;
+    
     Fl_Widget::resize( X, Y, W, H );
 }
 

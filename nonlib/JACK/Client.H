@@ -21,6 +21,7 @@
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#include <Mutex.H>
 
 typedef jack_nframes_t nframes_t;
 typedef jack_default_audio_sample_t sample_t;
@@ -33,6 +34,8 @@ namespace JACK
     class Client
     {
         std::list <JACK::Port*> _active_ports;
+
+        Mutex _frozen;
 
         jack_client_t *_client;
 

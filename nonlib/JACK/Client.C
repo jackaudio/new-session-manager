@@ -24,6 +24,8 @@
 
 
 
+#include "debug.h"
+
 
 
 namespace JACK
@@ -60,7 +62,16 @@ namespace JACK
     int
     Client::process ( nframes_t nframes, void *arg )
     {
-        return ((Client*)arg)->process( nframes );
+        Client *c = (Client*)arg;
+     
+        if ( ! c->_frozen.trylock() )
+            return 0;
+        
+        int r = c->process(nframes);
+
+        c->_frozen.unlock();
+
+        return r;
     }
 
     int
@@ -111,7 +122,13 @@ namespace JACK
     void
     Client::port_connect ( jack_port_id_t a, jack_port_id_t b, int connect, void *arg )
     {
+        Client *c = (Client*)arg;
+        if  (! c->_frozen.trylock() )
+            return;
+
         ((Client*)arg)->port_connect( a, b, connect );
+        
+        c->_frozen.unlock();
     }
 
     int
@@ -232,16 +249,22 @@ namespace JACK
          * create a client with the new name, and restore our
          * connections. Lovely. */
 
+
         freeze_ports();
 
         jack_deactivate( _client );
+        
         jack_client_close( _client );
 
         _client = NULL;
 
+        _frozen.lock();
+
         s = init( s );
 
         thaw_ports();
+        
+        _frozen.unlock();
 
         return s;
     }

@@ -82,7 +82,6 @@ public:
     virtual bool configure_outputs ( int n );
 
     virtual void handle_control_changed ( Port *p );
-    virtual void handle_chain_name_changed ();
 
     LOG_CREATE_FUNC( JACK_Module );
 

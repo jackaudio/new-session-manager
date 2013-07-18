@@ -25,10 +25,13 @@
 #include <stdio.h> // sprintf
 #include <errno.h>
 
+#include <assert.h>
+#include "debug.h"
+
 namespace JACK
 {
 
-    static const char *name_for_port ( Port::direction_e dir, const char *base, int n, const char *type );
+    static char *name_for_port ( Port::direction_e dir, const char *base, int n, const char *type );
 
     int
     Port::max_name ( void )
@@ -39,8 +42,9 @@ namespace JACK
 
     Port::Port ( const Port &rhs )
     {
+        _connections = NULL;
         _terminal = rhs._terminal;
-        _freezer = rhs._freezer;
+//        _connections = rhs._connections;
         _client = rhs._client;
         _port = rhs._port;
         _direction = rhs._direction;
@@ -54,7 +58,7 @@ namespace JACK
     Port::Port ( JACK::Client *client, jack_port_t *port )
     {
         _terminal = 0;
-        _freezer = NULL;
+        _connections = NULL;
         _client = client;
         _port = port;
         _name = strdup( jack_port_name( port ) );
@@ -64,59 +68,66 @@ namespace JACK
         _type = Audio;
         if ( strstr( type, "MIDI") )
             _type = MIDI;
+
+        _client->port_added( this );
+
     }
 
     Port::Port ( JACK::Client *client, const char *name, direction_e dir, type_e type )
     {
+        _port = 0;
         _terminal = 0;
         _name = NULL;
-        _freezer = NULL;
+        _connections = NULL;
         _client = client;
         _direction = dir;
         _type = type;
 
         _name = strdup( name );
+
+        _client->port_added( this );
+
     }
 
     Port::Port ( JACK::Client *client, direction_e dir, type_e type, const char *base, int n, const char *subtype )
     {
+        _port = 0;
         _terminal = 0;
         _name = NULL;
-        _freezer = NULL;
+        _connections = NULL;
         _client = client;
 
-        _name = strdup( name_for_port( dir, base, n, subtype ) );
+        _name = name_for_port( dir, base, n, subtype );
         _direction = dir;
         _type = type;
+
+        _client->port_added( this );
     }
 
     Port::Port ( JACK::Client *client, direction_e dir, type_e type, int n, const char *subtype )
     {
+        _port = 0;
         _terminal = 0;
         _name = NULL;
-        _freezer = NULL;
+        _connections = NULL;
         _client = client;
 
-        _name = strdup( name_for_port( dir, NULL, n, subtype ) );
+        _name = name_for_port( dir, NULL, n, subtype );
         _direction = dir;
         _type = type;
+
+        _client->port_added( this );
     }
 
     Port::~Port ( )
     {
-        if ( _name )
-            free( _name );
-
         _client->port_removed( this );
-/*         if ( _freezer ) */
-/*         { */
-/*             delete _freezer; */
-/*             _freezer = NULL; */
-/*         } */
-
-/*    if ( _port ) */
-/*         jack_port_unregister( _client, _port ); */
-
+ 
+       if ( _name )
+       {
+           free( _name );
+           _name = NULL;
+       }
     }
 
     /* sort input before output and then by alpha */
@@ -130,45 +141,26 @@ namespace JACK
     }
 
 
-    static const char *
+    static char *
     name_for_port ( Port::direction_e dir, const char *base, int n, const char *type )
     {
-        static char pname[ 512 ];
+        char *pname;
 
         const char *dir_s = dir == Port::Output ? "out" : "in";
 
-        pname[0] = '\0';
-
-        if ( base )
-        {
-            strncpy( pname, base, Port::max_name() );
-            strcat( pname, "/" );
-        }
-
-        pname[ Port::max_name() - 1 ] = '\0';
-
-        int l = strlen( pname );
-
         if ( type )
-            snprintf( pname + l, sizeof( pname ) - l, "%s-%s-%d", type, dir_s, n + 1 );
+            asprintf( &pname, "%s-%s%s%s-%d", type, base ? base : "", base ? "/" : "", dir_s, n + 1 );
         else
-            snprintf( pname + l, sizeof( pname ) - l, "%s-%d", dir_s, n + 1 );
+            asprintf( &pname, "%s%s%s-%d", base ? base : "", base ? "/" : "", dir_s, n + 1 );
 
         return pname;
     }
 
     bool
-    Port::activate ( const char *name, direction_e dir )
-    {
-        _name = strdup( name );
-        _direction = dir;
-
-        return activate();
-    }
-
-    bool
     Port::activate ( void )
     {
+        /* assert( !_port ); */
+
         int flags = 0;
         
         if ( _direction == Output )
@@ -179,16 +171,19 @@ namespace JACK
         if ( _terminal )
             flags |= JackPortIsTerminal;
 
+        DMESSAGE( "Activating port name %s", _name );
         _port = jack_port_register( _client->jack_client(), _name,
                                     _type == Audio ? JACK_DEFAULT_AUDIO_TYPE : JACK_DEFAULT_MIDI_TYPE,
                                     flags,
                                     0 );
 
+        DMESSAGE( "Port = %p", _port );
+
         if ( ! _port )
             return false;
 
         _client->port_added( this );
-
+ 
         return true;
     }
 
@@ -222,16 +217,27 @@ namespace JACK
     void
     Port::shutdown ( void )
     {
+        deactivate();
+
+        _client->port_removed( this );
+    }
+
+    void 
+    Port::deactivate ( void )
+    {
         if ( _port )
             jack_port_unregister( _client->jack_client(), _port );
 
-        _client->port_removed( this );
+        _port = 0;
     }
 
 /** rename port */
     bool
     Port::name ( const char *name )
     {
+        if ( _name )
+            free( _name );
+
         _name = strdup( name );
 
         return 0 == jack_port_set_name( _port, name );
@@ -240,7 +246,10 @@ namespace JACK
     bool
     Port::name ( const char *base, int n, const char *type )
     {
-        return name( name_for_port( this->direction(), base, n, type ) );
+        char *s = name_for_port( this->direction(), base, n, type );
+        bool b = name( s );
+        free(s);
+        return b;
     }
 
     void
@@ -284,32 +293,8 @@ namespace JACK
 
         for ( const char **port_name = port_names; *port_name; ++port_name )
         {
-            const char *src;
-            const char *dst;
-            const char *name = jack_port_name( _port );
-
-            if ( direction() == Output )
-            {
-                src = name;
-                dst = *port_name;
-            }
-            else
-            {
-                src = *port_name;
-                dst = name;
-            }
-
-            if ( int err = jack_connect( _client->jack_client(), src, dst ) )
-            {
-                if ( EEXIST == err )
-                {
-                    /* connection already exists, not a problem */
-                }
-                else
-                {
-                    return false;
-                }
-            }
+            printf( "Attempting to reconnect to %s\n", *port_name );
+            connect( *port_name );
         }
 
         return true;
@@ -355,25 +340,30 @@ namespace JACK
     void
     Port::freeze ( void )
     {
-        if ( _freezer )
-            delete _freezer;
+        if ( _connections )
+            free( _connections );
 
-        freeze_state *f = new freeze_state();
+//        DMESSAGE( "Freezing port %s", _name );
 
-        f->connections = connections();
-        f->name = strdup( name() );
+        _connections = connections();
 
-        _freezer = f;
+        //      deactivate();
     }
 
     void
     Port::thaw ( void )
     {
+//        DMESSAGE( "Thawing port %s", _name );
+
         activate();
+        
+        if ( _connections )
+        {
+            connections( _connections );
+            
+            free( _connections );
 
-        connections( _freezer->connections );
-
-        delete _freezer;
-        _freezer = NULL;
+            _connections = NULL;
+        }
     }
 }

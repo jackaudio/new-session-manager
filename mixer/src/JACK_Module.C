@@ -548,18 +548,6 @@ JACK_Module::handle_control_changed ( Port *p )
     Module::handle_control_changed( p );
 }
 
-void
-JACK_Module::handle_chain_name_changed ( void )
-{
-    for ( unsigned int i = 0; i < jack_output.size(); ++i )
-        jack_output[ i ].name( NULL, i  );
-
-    for ( unsigned int i = 0; i < jack_input.size(); ++i )
-        jack_input[ i ].name( NULL, i );
-
-    Module::handle_chain_name_changed();
-}
-
 int
 JACK_Module::handle ( int m )
 {

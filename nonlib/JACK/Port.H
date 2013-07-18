@@ -92,36 +92,10 @@ namespace JACK
         type_e _type;
         bool _terminal;
 
-        bool activate ( const char *name, direction_e dir );
+        void deactivate ( void );
+        /* bool activate ( const char *name, direction_e dir ); */
 
-        /* holds all we need to know about a jack port to recreate it on a
-         new client */
-        struct freeze_state
-        {
-            const char **connections;
-            char *name;
-
-            freeze_state ( )
-                {
-                    connections = NULL;
-                    name = NULL;
-                }
-
-            ~freeze_state ( )
-                {
-                    if ( connections )
-                    {
-                        free( connections );
-                        connections = NULL;
-                    }
-                    if ( name )
-                    {
-                        free( name );
-                    }
-                }
-        };
-
-        freeze_state *_freezer;
+        const char **_connections;
 
     };
 

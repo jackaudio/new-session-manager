@@ -846,7 +846,6 @@ Module::menu ( void ) const
         insert_menu->add( "Meter", 0, 0 );
         insert_menu->add( "Mono Pan", 0, 0 );
         insert_menu->add( "Aux", 0, 0 );
-        insert_menu->add( "Distance", 0, 0 );
         insert_menu->add( "Spatializer", 0, 0 );
         insert_menu->add( "Plugin", 0, 0 );
 

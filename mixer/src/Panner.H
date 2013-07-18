@@ -46,6 +46,7 @@ public:
         void *userdata;
         Fl_Color color;
         bool visible;
+        bool radius_enabled;
 
         Point ( ) {
             x = 1;
@@ -54,6 +55,7 @@ public:
             label = 0;
             visible = 1;
             color = FL_WHITE;
+            radius_enabled = false;
         }
 
         Point ( float D, float A )
@@ -63,6 +65,7 @@ public:
                 label = 0;
                 visible = 1;
                 color = FL_WHITE;
+                radius_enabled = false;
             }
 
         static inline void spherical_to_cartesian (float a, float e, float &x, float &y, float &z )
@@ -83,7 +86,10 @@ public:
             return atan2f(z,sqrtf(powf(x,2)+powf(y,2)) ) * ( 180 / M_PI );
         }
         float radius ( void ) const {
-            return sqrtf(powf(x,2)+powf(y,2)+powf(z,2));
+            if ( ! radius_enabled )
+                return 1.0f;
+            else
+                return sqrtf(powf(x,2)+powf(y,2)+powf(z,2));
         }
         
         void azimuth (  float v )
@@ -109,6 +115,9 @@ public:
 
          void radius ( float v )
             {
+                if (! radius_enabled )
+                    return; 
+
                 float r = v;
 
                 spherical_to_cartesian( azimuth(), elevation(), x,y,z );

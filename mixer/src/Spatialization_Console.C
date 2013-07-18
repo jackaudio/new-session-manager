@@ -65,9 +65,6 @@ Spatialization_Console::~Spatialization_Console ( )
 
 
 
-
-
-
 
 
 void
@@ -93,7 +90,11 @@ Spatialization_Console::make_controls ( void )
 
                 p.azimuth( o->spatializer()->control_output[0].control_value() );
                 p.elevation( o->spatializer()->control_output[1].control_value() );
-                p.radius( o->spatializer()->control_output[2].control_value() );
+                if ( o->spatializer()->control_output[2].connected() )
+                {
+                    p.radius_enabled = true;
+                    p.radius( o->spatializer()->control_output[2].control_value() );
+                }
             }
             else
                 p.visible = false;
@@ -118,7 +119,8 @@ Spatialization_Console::cb_panner_value_handle ( Fl_Widget *w, void *v )
 
     cm->control_output[0].control_value( p->azimuth() );
     cm->control_output[1].control_value( p->elevation() );
-    cm->control_output[2].control_value( p->radius() );
+    if ( p->radius_enabled )
+        cm->control_output[2].control_value( p->radius() );
 }
 
 /* Display changes initiated via automation or from other parts of the GUI */
@@ -136,7 +138,8 @@ Spatialization_Console::handle_control_changed ( Controller_Module *m )
         {
             p->azimuth( m->control_output[0].control_value() );
             p->elevation( m->control_output[1].control_value() );
-            p->radius( m->control_output[2].control_value() );
+            if ( p->radius_enabled )
+                p->radius( m->control_output[2].control_value() );
 
             if ( panner->visible_r() )
                 panner->redraw();

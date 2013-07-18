@@ -126,7 +126,6 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
 
 Module_Parameter_Editor::~Module_Parameter_Editor ( )
 {
-    controls_by_port.clear();
 }
 
 
@@ -336,7 +335,11 @@ Module_Parameter_Editor::make_controls ( void )
 
         o->point( 0 )->azimuth( azimuth_value );
         o->point( 0 )->elevation( elevation_value );
-        o->point( 0 )->radius( radius_value );
+        if ( radius_port_number >= 0 )
+        {
+            o->point( 0 )->radius_enabled = true;
+            o->point( 0 )->radius( radius_value );
+        }
 
         Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( o );
 
@@ -344,7 +347,8 @@ Module_Parameter_Editor::make_controls ( void )
 
         controls_by_port[azimuth_port_number] = o;
         controls_by_port[elevation_port_number] = o;
-        controls_by_port[radius_port_number] = o;
+        if ( radius_port_number >= 0 )
+            controls_by_port[radius_port_number] = o;
     }
 
 
@@ -468,9 +472,11 @@ Module_Parameter_Editor::handle_control_changed ( Module::Port *p )
 void
 Module_Parameter_Editor::set_value (int i, float value )
 {
-    _module->control_input[i].control_value( value );
-    if ( _module->control_input[i].connected() )
-        _module->control_input[i].connected_port()->module()->handle_control_changed( _module->control_input[i].connected_port() );
-
+    if ( i >= 0 )
+    {
+        _module->control_input[i].control_value( value );
+        if ( _module->control_input[i].connected() )
+            _module->control_input[i].connected_port()->module()->handle_control_changed( _module->control_input[i].connected_port() );
+    }
 //    _module->handle_control_changed( &_module->control_input[i] );
 }

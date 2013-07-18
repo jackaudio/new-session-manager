@@ -509,6 +509,44 @@ load_settings ( void )
     return true;
 }
 
+static bool
+create_engine ( void )
+{
+    if ( engine ) 
+    {
+        delete engine->midi_input_port;
+        delete engine->midi_output_port;
+        delete engine;
+    }
+
+    DMESSAGE( "Creating JACK engine" );
+
+    engine = new Engine();
+    
+    if ( ! engine->init( instance_name ) )
+    {
+        WARNING( "Failed to create JACK client" );
+        return false;
+    }
+
+    engine->midi_input_port = new JACK::Port( engine, "midi-in", JACK::Port::Input, JACK::Port::MIDI );
+    engine->midi_output_port = new JACK::Port( engine, "midi-out", JACK::Port::Output, JACK::Port::MIDI );
+
+    if ( !engine->midi_input_port->activate() )
+    {
+        WARNING( "Failed to activate JACK port" );
+        return false;
+    }
+
+    if ( !engine->midi_output_port->activate() )
+    {
+        WARNING( "Failed to activate JACK port" );
+        return false;
+    }
+
+    return true;
+}
+
 
 static int 
 command_open ( const char *name, const char *display_name, const char *client_id, char **out_msg, void *userdata )
@@ -522,6 +560,11 @@ command_open ( const char *name, const char *display_name, const char *client_id
 
     mkdir( name, 0777 );
     chdir( name );
+
+    if ( ! create_engine() )
+    {
+        return ERR_GENERAL;
+    }
 
     load_settings();
 
@@ -627,31 +670,6 @@ main ( int argc, char **argv )
         }
     }
     
-    engine = new Engine();
-
-    DMESSAGE( "Creating JACK engine" );
-
-    if ( ! engine->init( APP_NAME ) )
-    {
-        WARNING( "Failed to create JACK client" );
-    }
-
-    engine->midi_input_port = new JACK::Port( engine, "midi-in", JACK::Port::Input, JACK::Port::MIDI );
-    engine->midi_output_port = new JACK::Port( engine, "midi-out", JACK::Port::Output, JACK::Port::MIDI );
-
-    if ( !engine->midi_input_port->activate() )
-    {
-        WARNING( "Failed to activate JACK port" );
-    }
-
-    if ( !engine->midi_output_port->activate() )
-    {
-        WARNING( "Failed to activate JACK port" );
-    }
-
-
-    WARNING( "Can fit %i events in a period", ( engine->nframes() * 4 ) / 3 );
-
     osc = new OSC::Endpoint();
 
     osc->init( LO_UDP, NULL );
@@ -670,6 +688,12 @@ main ( int argc, char **argv )
     midievent e;
     while ( true )
     {
+        osc->wait(20);
+        check_nsm();
+
+        if ( ! engine )
+            continue;
+
         while ( jack_ringbuffer_read( engine->input_ring_buf, (char *)&ev, sizeof( jack_midi_event_t ) ) )
         {
             e.timestamp( ev.time );
@@ -762,9 +786,6 @@ main ( int argc, char **argv )
             }
 //            e.pretty_print();
         }
-        osc->wait(20);
-        check_nsm();
-
 //    usleep( 500 );
     }
 }

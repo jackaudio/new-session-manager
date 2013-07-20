@@ -129,8 +129,12 @@ class delay
     long _write_index;
     unsigned int _buffer_mask;
     float _max_delay;
- 
+    nframes_t _samples_since_motion;
+    nframes_t _interpolation_delay_samples;
+    float _interpolation_delay_coeff;
+
 public:
+
     void sample_rate ( float srate )
         {
             if ( _buffer )
@@ -150,11 +154,17 @@ public:
             _sample_rate = srate;
 
             _write_index = 0;
+
+            _interpolation_delay_samples = 0.2f * srate;
+            _interpolation_delay_coeff = 1.0f / (float)_interpolation_delay_samples;
         }
 
     
     delay ( float max_delay )
         {
+            _interpolation_delay_samples = 0;
+            _interpolation_delay_coeff = 0;
+            _samples_since_motion = 0;
             _max_delay = max_delay;
             _write_index = 0;
             _sample_rate = 0;
@@ -198,6 +208,8 @@ public:
 
                     buf[i] = read;
                 }
+
+                _samples_since_motion = 0;
             }
             else
             {
@@ -209,24 +221,49 @@ public:
                     delay_samples = min_delay_samples;
 
                 long idelay_samples = (long)delay_samples;
-                const float frac = delay_samples - idelay_samples;
-
-                for (nframes_t i = 0; i < nframes; i++ ) 
+         
+                if ( _samples_since_motion >= _interpolation_delay_samples )
                 {
-                    const long read_index = _write_index - idelay_samples;
+                    /* switch to non-interpolating mode */
+                    for (nframes_t i = 0; i < nframes; i++ ) 
+                    {
+                        const long read_index = _write_index - idelay_samples;
 
-                    _buffer[_write_index++ & _buffer_mask] = buf[i];
+                        _buffer[_write_index++ & _buffer_mask] = buf[i];
+                        
+                        const float read = _buffer[read_index & _buffer_mask];
+                        
+                        buf[i] = read;
+                    }
+                }
+                else
+                {
+                    /* linearly interpolate our way to an integer sample delay */
 
-                    const float read = interpolate_cubic (frac,
-                                                          _buffer[(read_index-1) & _buffer_mask],
-                                                          _buffer[read_index & _buffer_mask],
-                                                          _buffer[(read_index+1) & _buffer_mask],
-                                                          _buffer[(read_index+2) & _buffer_mask]);
+                    float frac = delay_samples - idelay_samples;
 
-                    buf[i] = read;
+                    const float scale = 1.0f - (_samples_since_motion * _interpolation_delay_coeff);
+
+                    for (nframes_t i = 0; i < nframes; i++ ) 
+                    {
+                        const long read_index = _write_index - idelay_samples;
+
+                        _buffer[_write_index++ & _buffer_mask] = buf[i];
+
+                        frac *= scale;
+                        
+                        const float read = interpolate_cubic (frac,
+                                                              _buffer[(read_index-1) & _buffer_mask],
+                                                              _buffer[read_index & _buffer_mask],
+                                                              _buffer[(read_index+1) & _buffer_mask],
+                                                              _buffer[(read_index+2) & _buffer_mask]);
+                        
+                        buf[i] = read;
+                    }
+
+                    _samples_since_motion += nframes;
                 }
             }
-          
         }    
 };
 

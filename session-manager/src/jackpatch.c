@@ -37,7 +37,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <errno.h>
-
+#include <stdlib.h>
 #include <jack/jack.h>
 
 #include <lo/lo.h>
@@ -472,6 +472,10 @@ register_prexisting_ports ( void )
     free( ports );
 }
 
+static int stringsort ( const void *a, const void *b )
+{
+    return strcmp(* (char * const *) a, * (char * const *) b);
+}
 
 void
 snapshot ( const char *file )
@@ -492,6 +496,11 @@ snapshot ( const char *file )
 
     clear_all_patches();
 
+    const int table_increment = 16;
+    int table_index = 0;
+    size_t table_size = table_increment;
+    char **table = (char**)malloc( sizeof( char * ) * table_increment );
+
     for ( port = ports; *port; port++ )
     {
         jack_port_t *p;
@@ -510,9 +519,16 @@ snapshot ( const char *file )
         {
             char *s;
             asprintf( &s, "%-40s |> %s\n", *port, *connection );
-            fprintf( fp, "%s", s );
+
+            if ( table_index >= table_size )
+            {
+                table_size += table_increment;
+                table = (char**)realloc( table, table_size * sizeof( char *) );
+            }
+
+            table[table_index++] = s;
+
             process_patch( s );
-            free(s);
             printf( "++ %s |> %s\n", *port, *connection );
         }
 
@@ -520,6 +536,17 @@ snapshot ( const char *file )
     }
 
     free( ports );
+
+    qsort( table, table_index, sizeof(char*), stringsort );
+    
+    int i;
+    for ( i = 0; i < table_index; i++ )
+    {
+        fprintf( fp, "%s", table[i] );
+        free(table[i]);
+    }
+
+    free(table);
 
     fclose( fp );
 }

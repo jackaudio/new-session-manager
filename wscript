@@ -37,6 +37,9 @@ def configure(conf):
             "-O3",
             "-fomit-frame-pointer",
             "-ffast-math",
+            "-msse",
+            "-mfpmath=sse",
+            "-ftree-vectorize",
 #            "-fstrength-reduce",
             "-pipe"
             ]

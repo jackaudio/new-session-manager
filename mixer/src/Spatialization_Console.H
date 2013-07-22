@@ -21,7 +21,7 @@
 
 #include <FL/Fl_Double_Window.H>
 #include <Module.H>
-
+#include "Loggable.H"
 
 class Fl_Pack;
 class Fl_Flowpack;
@@ -31,12 +31,15 @@ class Panner;
 class Controller_Module;
 #include <vector>
 
-class Spatialization_Console : public Fl_Double_Window
+class Spatialization_Console : public Loggable, public Fl_Double_Window
 {
     Panner *panner;
 
     static void cb_panner_value_handle ( Fl_Widget *w, void *v );
     void make_controls ( void );
+
+    static void cb_window ( Fl_Widget *w, void *v );
+    static void cb_window ( Fl_Widget *w );
 
     bool _resized;
     int _min_width;
@@ -46,7 +49,14 @@ class Spatialization_Console : public Fl_Double_Window
   
     std::vector<Fl_Widget*> controls_by_port;  
 
+protected:
+
+    virtual void get ( Log_Entry &e ) const;
+    virtual void set ( Log_Entry &e );
+
 public:
+
+    LOG_CREATE_FUNC( Spatialization_Console );
 
     void handle_control_changed ( Controller_Module *m );
 

@@ -66,6 +66,33 @@ Panner::Panner ( int X, int Y, int W, int H, const char *L ) :
     }
                   
     end();
+    
+    _bg_image[0] = _bg_image[1] = 0;
+}
+
+Panner::~Panner (  )
+{
+    if ( _bg_image[0] )
+        ((Fl_Shared_Image*)_bg_image[0])->release();
+    if ( _bg_image[1] )
+        ((Fl_Shared_Image*)_bg_image[1])->release();
+}
+
+static int find_numeric_menu_item( const Fl_Menu_Item *menu, int n )
+{
+    for ( unsigned int i = 0; menu[i].text; i++ )
+    {
+	if ( atoi( menu[i].text ) == n )
+            return i;
+    }
+}
+
+void
+Panner::range ( float v )
+{
+    int i = find_numeric_menu_item( _range_choice->menu(), v );
+    
+    _range_choice->value( i );
 }
 
 /** set X, Y, W, and H to the bounding box of point /p/ in screen coords */
@@ -136,8 +163,10 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
 
     Fl_Image *i = 0;
 
-    if ( projection() == POLAR )
+    if ( ! ( _bg_image[0] && _bg_image[1] ))
     {
+        Fl_Image *i;
+    
         switch ( tw )
         {
             case 802:
@@ -150,9 +179,9 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
                 i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-sphere-502x502.png" );
                 break;
         }
-    }
-    else
-    {
+    
+        _bg_image[0] = i;
+
         switch ( tw )
         {
             case 802:
@@ -165,54 +194,16 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
                 i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-plane-502x502.png" );
                 break;
         }
+    
+        _bg_image[1] = i;
     }
+    if ( projection() == POLAR )
+        i = _bg_image[0];
+    else
+        i = _bg_image[1];
 
     if ( i )
         i->draw( tx, ty );
-}
-
-void
-Panner::draw_grid ( int tx, int ty, int tw, int th )
-{
-
-    fl_push_matrix();
-    fl_translate(tx,ty);
-    fl_scale(tw,th);
-
-    fl_color( fl_color_add_alpha( FL_WHITE, 25 ) );
-
-    for ( float x = 0.0f; x <= 1.0f; x += 0.05f )
-    {
-        fl_begin_line();
-        for ( float y = 0.0f; y <= 1.0f; y += 0.5f )
-        {
-            fl_vertex( x, y );
-        }
-        fl_end_line();
-    }
-
-  for ( float y = 0.0f; y <= 1.0f; y += 0.05f )
-    {
-        fl_begin_line();
-        for ( float x = 0.0f; x <= 1.0f; x += 0.5f )
-        {
-            fl_vertex( x, y );
-        }
-        fl_end_line();
-    }
-
-    for ( float x = 0.0f; x < 1.0f; x += 0.05f )
-    {
-        fl_begin_points();
-        for ( float y = 0.0f; y < 1.0f; y += 0.05f )
-        {
-            fl_vertex( x, y );
-        }
-        fl_end_points();
-    }
-
-    fl_pop_matrix();
-
 }
 
 /** translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */

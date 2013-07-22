@@ -318,19 +318,6 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         Fl::paste(*this);
     }
-    else if ( !strcmp( picked, "&Mixer/Spatialization Console" ) )
-    {
-        if ( ! spatialization_console )
-        {
-            Spatialization_Console *o = new Spatialization_Console();
-            spatialization_console = o;            
-        }
-
-        if ( spatialization_console->shown() )
-            spatialization_console->hide();
-        else
-            spatialization_console->show();
-    }
     else if (! strcmp( picked, "&Project/Se&ttings/&Rows/One") )
     {
         rows( 1 );
@@ -342,6 +329,19 @@ void Mixer::cb_menu(Fl_Widget* o) {
     else if (! strcmp( picked, "&Project/Se&ttings/&Rows/Three") )
     {
         rows( 3 );
+    }
+    else if (! strcmp( picked, "&Mixer/&Spatialization Console") )
+    {
+        if ( ! spatialization_console )
+        {
+            Spatialization_Console *o = new Spatialization_Console();
+            spatialization_console = o;            
+        }
+        
+        if ( ! menu->mvalue()->value() )
+            spatialization_console->hide();
+        else
+            spatialization_console->show();
     }
     else if (! strcmp( picked, "&Project/Se&ttings/Make Default") )
     {
@@ -517,7 +517,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             o->add( "&Mixer/Add &N Strips" );
             o->add( "&Mixer/&Import Strip" );
             o->add( "&Mixer/Paste", FL_CTRL + 'v', 0, 0 );
-            o->add( "&Mixer/Spatialization Console", FL_F + 8, 0, 0 );
+            o->add( "&Mixer/&Spatialization Console", FL_F + 8, 0, 0, FL_MENU_TOGGLE );
             o->add( "&Remote Control/Start Learning", FL_F + 9, 0, 0 );
             o->add( "&Remote Control/Stop Learning", FL_F + 10, 0, 0 );
             o->add( "&Remote Control/Send State" );
@@ -933,6 +933,9 @@ Mixer::handle_dirty ( int d, void *v )
 void
 Mixer::snapshot ( void )
 {
+    if ( spatialization_console )
+        spatialization_console->log_create();
+
     for ( int i = 0; i < mixer_strips->children(); ++i )
         ((Mixer_Strip*)mixer_strips->child( i ))->log_children();
 }
@@ -981,6 +984,9 @@ void
 Mixer::update_menu ( void )
 {
     project_name->label( Project::name() );
+
+    const_cast<Fl_Menu_Item*>(menubar->find_item( "&Mixer/&Spatialization Console" ))
+        ->flags = FL_MENU_TOGGLE | ( ( spatialization_console && spatialization_console->shown() ) ? FL_MENU_VALUE : 0 );
 }
 
 void

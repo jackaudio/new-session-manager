@@ -53,17 +53,67 @@ Spatialization_Console::Spatialization_Console ( void ) : Fl_Double_Window( 850,
     panner->callback( cb_panner_value_handle, this );
     panner->when( FL_WHEN_CHANGED );
 
+    callback( cb_window, this );
     end();
 
     make_controls();
+
+    mixer->spatialization_console = this;
 }
 
 Spatialization_Console::~Spatialization_Console ( )
 {
 //    controls_by_port.clear();
+    mixer->spatialization_console = NULL;
+    
+}
+
+
+void 
+Spatialization_Console::get ( Log_Entry &e ) const
+{
+    e.add( ":range", panner->range() );
+    e.add( ":projection", panner->projection() );
+    e.add( ":shown", ((const Fl_Double_Window*)this)->shown() );
+}
+
+void
+Spatialization_Console::set ( Log_Entry &e )
+{
+    for ( int i = 0; i < e.size(); ++i )
+    {
+        const char *s, *v;
+
+        e.get( i, &s, &v );
+
+        if ( ! ( strcmp( s, ":range" ) ) )
+            panner->range( atoi( v ) );
+        if ( ! ( strcmp( s, ":projection" ) ) )
+            panner->projection( atoi( v ) );
+        else if ( ! ( strcmp( s, ":shown" ) ) )
+        {
+            if ( atoi( v ) )
+                show();
+            else
+                hide();
+        }
+    }
 }
 
 
+
+void
+Spatialization_Console::cb_window ( Fl_Widget *w, void *v )
+{
+    ((Spatialization_Console*)v)->cb_window(w);
+}
+
+void
+Spatialization_Console::cb_window ( Fl_Widget *w )
+{
+    w->hide();
+    mixer->update_menu();
+}
 
 
 

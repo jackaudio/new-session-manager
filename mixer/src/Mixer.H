@@ -73,7 +73,6 @@ private:
 
     void load_options ( void );
     void save_options ( void );
-    void update_menu ( void );
     void save_translations ( void );
     void load_translations ( void );
 
@@ -90,6 +89,8 @@ private:
     void update_cb ( void );
 
 public:
+
+    void update_menu ( void );
 
     static Spatialization_Console *spatialization_console;
 

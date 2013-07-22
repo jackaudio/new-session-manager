@@ -54,6 +54,7 @@
 #include "Mixer_Strip.H"
 #include "AUX_Module.H"
 #include "NSM.H"
+#include "Spatialization_Console.H"
 
 #include <signal.h>
 #include <unistd.h>
@@ -159,6 +160,7 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Meter_Indicator_Module );
     LOG_REGISTER_CREATE( Controller_Module );
     LOG_REGISTER_CREATE( AUX_Module );
+    LOG_REGISTER_CREATE( Spatialization_Console );
 
     signal( SIGPIPE, SIG_IGN );
 

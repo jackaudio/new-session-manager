@@ -24,7 +24,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Choice.H>
 #include <math.h>
-
+#include <FL/Fl_Image.H>
 #include <vector>
 using namespace std;
 
@@ -33,6 +33,7 @@ class Panner : public Fl_Group
     Fl_Choice *_range_choice;
     Fl_Choice *_projection_choice;
 
+    Fl_Image *_bg_image[2]; 
     void draw_grid( int,int,int,int);
     void draw_the_box( int, int, int, int );
 
@@ -177,14 +178,14 @@ protected:
 public:
 
     enum { POLAR, ORTHO };
-
-    float projection ( void ) const { return _projection_choice->value(); }
+    
+    int projection ( void ) const { return _projection_choice->value(); }
     void projection ( int v ) { _projection_choice->value(v); }
 
     Panner ( int X, int Y, int W, int H, const char *L = 0 );
 
     float range ( void ) const { return *((int*)_range_choice->mvalue()->user_data()); }
-    /* void range ( float v ) { _range = v; } */
+    void range ( float v );
 
     void clear_points ( void ) { _points.clear(); }
 
@@ -193,7 +194,7 @@ public:
             _points.push_back( p );
         }
 
-    virtual ~Panner ( ) { }
+    virtual ~Panner ( );
 
     Panner::Point *point ( int i );
 

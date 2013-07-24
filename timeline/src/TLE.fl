@@ -203,8 +203,8 @@ Fl::visible_focus( 0 );
 
         Fl::screen_xywh( sx, sy, sw, sh );
 
+        main_window->size_range( 947, 500 );
         main_window->size( 947, 600 );
-        main_window->size_range( 947, 600 );
 
         if ( main_window->w() > sw ||
              main_window->h() > sh )
@@ -263,7 +263,7 @@ Loggable::progress_callback( &TLE::progress_cb, this );} {}
 	timeline->command_quit();} open
       xywh {204 266 1025 770} type Double resizable
       code0 {o->xclass( APP_NAME );}
-      class TLE_Window size_range {900 300 0 0} visible
+      class TLE_Window size_range {947 300 0 0} visible
     } {
       Fl_Group {} {open
         xywh {0 -53 1025 126} box FLAT_BOX

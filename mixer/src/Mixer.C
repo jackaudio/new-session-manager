@@ -190,11 +190,11 @@ void Mixer::command_new ( void )
 {
     DMESSAGE( "New project" );
     
-    char *default_path;
+    char *default_path = read_line( user_config_dir, "default_path" );
     
-    read_line( user_config_dir, "default_path", &default_path );
-    
-    char *path = new_project_chooser( &default_path  );
+    char *result_path = default_path;
+
+    char *path = new_project_chooser( &result_path );
     
     if ( path )
     {
@@ -207,10 +207,13 @@ void Mixer::command_new ( void )
 
     update_menu();
     
-    if ( default_path )
+    if ( result_path != default_path )
+        free(default_path);
+
+    if ( result_path )
     {
-        write_line( user_config_dir, "default_path", default_path );
-        free( default_path );
+        write_line( user_config_dir, "default_path", result_path );
+        free( result_path );
     }
 }
 

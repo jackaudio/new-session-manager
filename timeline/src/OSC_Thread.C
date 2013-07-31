@@ -38,12 +38,15 @@ OSC_Thread::OSC_Thread ( )
 
 OSC_Thread::~OSC_Thread ( )
 {
+    lock();
     if ( _shutdown == false )
     {
         _shutdown = true;
         _thread.join();
     }
-}
+    unlock();
+}   
+        
 
 void
 OSC_Thread::start ( )

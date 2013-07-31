@@ -144,7 +144,7 @@ class NSM_Client : public Fl_Group
 
             client_name->copy_label( l );
             
-            // _client_label = l;
+            free(l);
 
             redraw();
         }
@@ -178,7 +178,7 @@ public:
         {
             if ( _client_id ) 
                 free( _client_id );
-
+            
             _client_id = strdup( v );
         }
 
@@ -240,11 +240,7 @@ public:
     void
     pending_command ( const char *command )
         {
-            char *cmd = strdup( command );
-            
-            free( (void*)_progress->label() );
-
-            _progress->label( cmd );
+            _progress->copy_label( command );
 
             stopped( 0 );
                 
@@ -375,7 +371,7 @@ public:
             { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 75, H * 0.50, NULL );
                 o->box( FL_FLAT_BOX );
                 o->color( FL_BLACK );
-                o->label( strdup( "launch" ) );
+                o->copy_label( "launch" );
                 o->labelsize( 12 );
                 o->minimum( 0.0f );
                 o->maximum( 1.0f );
@@ -462,6 +458,12 @@ public:
 
     ~NSM_Client ( )
         {
+            if ( _client_id )
+            {
+                free( _client_id );
+                _client_id = NULL;
+            }
+
             if ( _client_name )
             {
                 free( _client_name );
@@ -925,7 +927,7 @@ public:
                     o->type( FL_VERTICAL );
                     o->spacing( 2 );
                     
-                    { Fl_Box *o = new Fl_Box( 0,0,100, 24, "Sessions" );
+                    { new Fl_Box( 0,0,100, 24, "Sessions" );
                     }
 
                     { 
@@ -1049,8 +1051,6 @@ public:
         
             osc->owner = this;
             
-            osc->url();
-
             osc->add_method( "/error", "sis", osc_handler, osc, "msg" );
             osc->add_method( "/reply", "ss", osc_handler, osc, "msg" );
             osc->add_method( "/reply", "s", osc_handler, osc, "" );
@@ -1398,14 +1398,13 @@ main (int argc, char **argv )
         {
             /* pass non-option arguments on to daemon */
 
-            char **args = (char **)malloc( 4 + argc - optind );
+            char *args[4 + argc - optind];
 
             int i = 0;
-            args[i++] = (char*)"nsmd";
-            args[i++] = (char*)"--gui-url";
+            args[i++] = strdup("nsmd");
+            args[i++] = strdup("--gui-url");
             args[i++] = url;
             
-
             for ( ; optind < argc; i++, optind++ )
             {
                 DMESSAGE( "Passing argument: %s", argv[optind] );
@@ -1419,6 +1418,8 @@ main (int argc, char **argv )
                 FATAL( "Error starting process: %s", strerror( errno ) );
             }
         }
+
+        free(url);
     }
 
     Fl::add_timeout( 1.0, ping, NULL );

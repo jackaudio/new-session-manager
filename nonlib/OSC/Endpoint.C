@@ -48,6 +48,8 @@ namespace OSC
             free( _path );
         if ( _typespec )
             free( _typespec );
+        if ( _documentation )
+            free( _documentation );
     }
 
     /**********/
@@ -228,12 +230,24 @@ namespace OSC
     Endpoint::~Endpoint ( )
     {
 //    lo_server_thread_free( _st );
+        
+        for ( std::list<Method*>::iterator i = _methods.begin();
+              i != _methods.end();
+              i++ )
+            delete(*i);
+
+        _methods.clear();
+
         if ( _server )
         {
             lo_server_free( _server );
             _server = 0;
         }
+
+        lo_address_free( _addr );
+        _addr = 0;
     }
+
 
     OSC::Signal *
     Endpoint::find_target_by_peer_address ( std::list<Signal*> *l, lo_address addr )
@@ -947,14 +961,13 @@ namespace OSC
     Signal *
     Endpoint::add_signal ( const char *path, Signal::Direction dir, float min, float max, float default_value, signal_handler handler, void *user_data )
     {
-        Signal *o = new Signal( path, dir );
-        
         char *s;
         asprintf( &s, "%s%s", name(), path );
 
-        if ( s )
-            o->_path = s;
+        Signal *o = new Signal( s, dir );
         
+        free(s);
+
         o->_handler = handler;
         o->_user_data = user_data;
         o->_endpoint = this;

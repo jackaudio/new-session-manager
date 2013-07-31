@@ -126,7 +126,7 @@ nsd.default_path( *default_path );
 nsd.run();
 
 if ( nsd.default_path() )
-	*default_path = strdup( nsd.default_path() );
+	*default_path = nsd.default_path();
 
 return nsd.path;} {}
 } 

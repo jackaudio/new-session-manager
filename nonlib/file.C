@@ -159,25 +159,27 @@ write_line ( const char *dir, const char *name, const char *value )
 }
 
 /** write a single string to a file */
-void
-read_line ( const char *dir, const char *name, char **value )
+char *
+read_line ( const char *dir, const char *name  )
 {
     char path[512];
-
-    *value = 0;
 
     snprintf( path, sizeof( path ), "%s/%s", dir, name );
 
     FILE *fp = fopen( path, "r" );
 
     if ( ! fp )
-        return;
+        return 0;
 
-    *value = (char*)malloc( 512 );
+    char *value = (char*)malloc( 512 );
 
-    fgets( *value, 512, fp );
+    value[0] = 0;
+
+    fgets( value, 512, fp );
 
     fclose( fp );
+
+    return value;
 }
 
 #include <sys/statvfs.h>

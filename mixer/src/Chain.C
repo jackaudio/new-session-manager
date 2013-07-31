@@ -176,6 +176,9 @@ Chain::~Chain ( )
 
     engine()->lock();
 
+    for ( unsigned int i = scratch_port.size(); i--; )
+        delete[] (sample_t*)scratch_port[i].buffer();
+    
     /* if we leave this up to FLTK, it will happen after we've
      already destroyed the engine */
     modules_pack->clear();

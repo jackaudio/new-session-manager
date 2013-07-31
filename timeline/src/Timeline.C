@@ -395,6 +395,8 @@ Timeline::menu_cb ( Fl_Menu_ *m )
 
         Track *t = new Track( name );
 
+        free( name );
+
         Audio_Sequence *o = new Audio_Sequence( t );
 
         add_track( t );
@@ -582,6 +584,8 @@ Timeline::~Timeline ( )
 {
     delete osc_thread;
     osc_thread = 0;
+    delete osc;
+    osc = 0;
 }
 
 Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W, H, L )
@@ -2095,7 +2099,9 @@ Timeline::init_osc ( const char *osc_port )
     
     osc->owner = this;
     
-    printf( "OSC=%s\n", osc->url() );
+    char *url = osc->url();
+    printf( "OSC=%s\n", url  );
+    free(url);
     
     osc->add_method( "/non/hello", "ssss", &Timeline::osc_non_hello, osc, "" );
     

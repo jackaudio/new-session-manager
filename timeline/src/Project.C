@@ -209,7 +209,7 @@ Project::close ( void )
 
     *Project::_name = '\0';
     *Project::_created_on = '\0';
-
+    
     release_lock( &_lockfd, ".lock" );
 
     delete engine;
@@ -325,6 +325,9 @@ Project::open ( const char *name )
     }
     else
         *_created_on = 0;
+
+    free( created_by );
+    free( creation_date );
 
     set_name( name );
 

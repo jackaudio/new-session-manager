@@ -345,7 +345,7 @@ pi.run();}
             free( path );
         }
 
-        if ( reuslt_path != default_path )
+        if ( result_path != default_path )
             free(default_path);
 
         if ( result_path )
@@ -364,9 +364,9 @@ main_window->redraw();}
             }
             MenuItem {} {
               label {&Open}
-              callback {char *path;
+              callback {
 
-read_line( user_config_dir, "default_path", &path );
+char *path = read_line( user_config_dir, "default_path" );
 
 const char *name = fl_dir_chooser( "Open Project", path );
 

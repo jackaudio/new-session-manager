@@ -219,12 +219,6 @@ midievent::is_note_off ( void ) const
     return (opcode() == NOTE_OFF);
 }
 
-inline unsigned char
-midievent::note ( void ) const
-{
-    return _data.lsb;
-}
-
 inline bool
 midievent::operator< ( const midievent &rhs ) const
 {

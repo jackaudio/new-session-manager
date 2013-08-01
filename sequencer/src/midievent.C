@@ -102,6 +102,13 @@ midievent::note ( char note )
     _data.lsb = note & 0x7F;
 }
 
+
+unsigned char
+midievent::note ( void ) const
+{
+    return _data.lsb;
+}
+
 unsigned char
 midievent::note_velocity ( void ) const
 {

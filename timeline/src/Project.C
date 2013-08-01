@@ -326,8 +326,8 @@ Project::open ( const char *name )
     else
         *_created_on = 0;
 
-    free( created_by );
-    free( creation_date );
+    if ( created_by )
+        free( created_by );
 
     set_name( name );
 

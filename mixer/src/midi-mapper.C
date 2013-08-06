@@ -529,8 +529,8 @@ create_engine ( void )
         return false;
     }
 
-    engine->midi_input_port = new JACK::Port( engine, "midi-in", JACK::Port::Input, JACK::Port::MIDI );
-    engine->midi_output_port = new JACK::Port( engine, "midi-out", JACK::Port::Output, JACK::Port::MIDI );
+    engine->midi_input_port = new JACK::Port( engine, NULL, "midi-in", JACK::Port::Input, JACK::Port::MIDI );
+    engine->midi_output_port = new JACK::Port( engine, NULL, "midi-out", JACK::Port::Output, JACK::Port::MIDI );
 
     if ( !engine->midi_input_port->activate() )
     {

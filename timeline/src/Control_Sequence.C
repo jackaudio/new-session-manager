@@ -169,19 +169,22 @@ void
 Control_Sequence::update_port_name ( void )
 {
     bool needs_activation = false;
+
+    char s[512];
+    snprintf( s, sizeof(s), "%s-cv", name() );
+
     if ( ! _output )
     {
-        _output = new JACK::Port( engine, JACK::Port::Output, JACK::Port::Audio, track()->name(), track()->ncontrols(), "cv" );
+        _output = new JACK::Port( engine, track()->name(), s, JACK::Port::Output, JACK::Port::Audio );
         _output->terminal( true );
         needs_activation = true;
     }
     
     if ( name() )
     {
-        char n[1024];
-        snprintf( n, sizeof(n), "%s/%s-cv", track()->name(), name() );
-        
-        _output->name( n );
+        _output->trackname( track()->name() );
+        _output->name( s );
+        _output->rename();
     }
 
     if ( needs_activation )

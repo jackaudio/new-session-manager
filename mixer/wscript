@@ -46,7 +46,6 @@ def build(bld):
 src/Chain.C
 src/Controller_Module.C
 src/DPM.C
-src/Engine/Engine.C
 src/Gain_Module.C
 src/Spatializer_Module.C
 src/JACK_Module.C
@@ -65,6 +64,7 @@ src/NSM.C
 src/Panner.C
 src/Plugin_Module.C
 src/Project.C
+src/Group.C
 src/main.C
 src/Spatialization_Console.C
 ''',

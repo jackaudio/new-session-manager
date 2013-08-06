@@ -53,11 +53,16 @@ void
 Track::update_port_names ( void )
 {
     for ( unsigned int i = 0; i < output.size(); ++i )
-        output[ i ].name( name(), i );
+    {
+        output[ i ].trackname( name() );
+        output[ i ].rename();
+    }
 
     for ( unsigned int i = 0; i < input.size(); ++i )
-        input[ i ].name( name(), i );
-
+    {
+        input[ i ].trackname( name() );
+        input[ i ].rename();
+    }
 /*     /\* tell any attached control sequences to do the same *\/ */
 /*     for ( int i = control->children(); i-- ) */
 /*         ((Control_Sequence*)control->child( i ))->update_port_names(); */
@@ -86,7 +91,10 @@ Track::configure_outputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port p( engine, JACK::Port::Output,  JACK::Port::Audio, name(), i );
+            char s[512];
+            snprintf( s, sizeof(s), "out-%i", i + 1 );
+
+            JACK::Port p( engine, name(), s, JACK::Port::Output,  JACK::Port::Audio );
 
             p.terminal(true);
 
@@ -141,7 +149,10 @@ Track::configure_inputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port p( engine, JACK::Port::Input, JACK::Port::Audio, name(), i );
+            char s[512];
+            snprintf( s, sizeof(s), "in-%i", i + 1 );
+
+            JACK::Port p( engine, name(), s, JACK::Port::Input, JACK::Port::Audio );
             
             p.terminal( true );
 

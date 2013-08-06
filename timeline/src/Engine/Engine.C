@@ -40,6 +40,7 @@ Engine::Engine ( ) : _thread( "RT" )
 
 Engine::~Engine ( )
 {
+    DMESSAGE( "Deleting engine" );
     /* We have to deactivate here in order to avoid our process
        callback is being invoked after we're already destroyed, but
        before the base class is */

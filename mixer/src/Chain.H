@@ -28,11 +28,11 @@
 #include <vector>
 #include <list>
 #include "Loggable.H"
+#include "Group.H"
 
 class Mixer_Strip;
 class Fl_Flowpack;
 class Fl_Flip_Button;
-class Engine;
 class Controller_Module;
 
 class Chain : public Fl_Group, public Loggable {
@@ -49,8 +49,6 @@ class Chain : public Fl_Group, public Loggable {
     std::list<Module*> process_queue;
 
     std::vector <Module::Port> scratch_port;
-
-    Engine *_engine;
 
     Fl_Callback *_configure_outputs_callback;
     void *_configure_outputs_userdata;
@@ -69,18 +67,6 @@ private:
     void build_process_queue ( void );
     void add_to_process_queue ( Module *m );
 
-    static void process ( nframes_t, void * );
-    void process ( nframes_t );
-
-    static void buffer_size ( nframes_t nframes, void *v );
-    void buffer_size ( nframes_t nframes );
-    static int sample_rate_change ( nframes_t nframes, void *v );
-    int sample_rate_change ( nframes_t nframes );
-
-    
-    static void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect, void *v );
-    void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect );
-
     static void update_connection_status ( void *v );
     void update_connection_status ( void );
 
@@ -90,6 +76,11 @@ protected:
     void set ( Log_Entry &e );
 
 public:
+
+    void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect );
+    void buffer_size ( nframes_t nframes );
+    int sample_rate_change ( nframes_t nframes );
+    void process ( nframes_t );
 
     Chain ( int X, int Y, int W, int H, const char *L = 0 );
     Chain ( );
@@ -140,7 +131,12 @@ public:
 
     static unsigned int maximum_name_length ( void );
 
-    Engine *engine ( void ) const { return _engine; }
+    Group *client ( void );
+
+    void freeze_ports ( void );
+    void thaw_ports ( void );
+
+//    void client ( Client * );
 
     LOG_CREATE_FUNC( Chain );
 };

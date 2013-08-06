@@ -41,7 +41,7 @@
 #include "LADSPAInfo.h"
 
 #include "Chain.H"
-#include "Engine/Engine.H"
+//#include "Client/Client.H"
 
 #include <dsp.h>
 
@@ -684,7 +684,7 @@ Plugin_Module::activate ( void )
         FATAL( "Attempt to activate already active plugin" );
 
     if ( chain() )
-        chain()->engine()->lock();
+        chain()->client()->lock();
 
     if ( _idata->descriptor->activate )
         for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
@@ -693,7 +693,7 @@ Plugin_Module::activate ( void )
     _bypass = false;
 
     if ( chain() )
-        chain()->engine()->unlock();
+        chain()->client()->unlock();
 }
 
 void
@@ -705,7 +705,7 @@ Plugin_Module::deactivate( void )
     DMESSAGE( "Deactivating plugin \"%s\"", label() );
 
     if ( chain() )
-        chain()->engine()->lock();
+        chain()->client()->lock();
 
     _bypass = true;
    
@@ -714,7 +714,7 @@ Plugin_Module::deactivate( void )
             _idata->descriptor->deactivate( _idata->handle[i] );
 
     if ( chain() )
-        chain()->engine()->unlock();
+        chain()->client()->unlock();
 }
 
 void
@@ -743,7 +743,7 @@ Plugin_Module::handle_port_connection_change ( void )
 
 
 /**********/
-/* Engine */
+/* Client */
 /**********/
 
 void

@@ -35,6 +35,7 @@ namespace JACK
 
     Client::Client ( )
     {
+        _active = false;
         _freewheeling = false;
         _zombified = false;
         _client = NULL;
@@ -43,7 +44,7 @@ namespace JACK
 
     Client::~Client ( )
     {
-        jack_client_close( _client );
+        close();
     }
 
     /** Tell JACK to stop calling process callback. This MUST be called in
@@ -51,9 +52,12 @@ namespace JACK
     void
     Client::deactivate ( )
     {
-        jack_deactivate( _client );
-    }
+        if ( _active )
+            jack_deactivate( _client );
 
+        _active = false;
+    }
+    
 
 /*******************/
 /* Static Wrappers */
@@ -138,6 +142,14 @@ namespace JACK
         return ((Client*)arg)->sample_rate_changed( srate );
     }
 
+    
+    void
+    Client::activate ( void )
+    {
+        jack_activate( _client );
+        _active = true;
+    }
+
 /** Connect to JACK using client name /client_name/. Return a static
  * pointer to actual name as reported by JACK */
     const char *
@@ -167,14 +179,12 @@ namespace JACK
 
         jack_on_shutdown( _client, &Client::shutdown, this );
 
-        jack_activate( _client );
+        activate();
 
 //        _sample_rate = frame_rate();
 
         return jack_get_client_name( _client );
     }
-
-
 
 /* THREAD: RT */
 /** enter or leave freehweeling mode */
@@ -185,7 +195,12 @@ namespace JACK
             ;
 //            WARNING( "Unkown error while setting freewheeling mode" );
     }
-
+    
+    const char *
+    Client::jack_name ( void ) const
+    {
+        return jack_get_client_name( _client );
+    }
 
     void
     Client::port_added ( Port *p )
@@ -235,8 +250,13 @@ namespace JACK
     void
     Client::close ( void )
     {
-        jack_deactivate( _client );
-        jack_client_close( _client );
+        deactivate();
+        
+        if ( _client )
+        {
+            DMESSAGE( "Closing JACK client" );
+            jack_client_close( _client );
+        }
 
         _client = NULL;
     }

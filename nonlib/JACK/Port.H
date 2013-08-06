@@ -28,7 +28,9 @@ namespace JACK
     class Port
     {
         jack_port_t *_port;
+        char *_trackname;
         char *_name;
+        
         JACK::Client *_client;
 
         /* FIXME: reference count? */
@@ -47,23 +49,27 @@ namespace JACK
         static int max_name ( void );
 
         Port ( JACK::Client *client, jack_port_t *port );
-        Port ( JACK::Client *client, const char *name, direction_e dir, type_e type );
-        Port ( JACK::Client *client, direction_e dir, type_e type, const char *base, int n, const char *subtype=0 );
-        Port ( JACK::Client *client, direction_e dir, type_e type, int n, const char *subtype=0 );
+        /* Port ( JACK::Client *client, const char *name, direction_e dir, type_e type ); */
+        Port ( JACK::Client *client, const char *trackname, const char *name, direction_e dir, type_e type );
+        /* Port ( JACK::Client *client, direction_e dir, type_e type, const char *base, int n, const char *subtype=0 ); */
+        /* Port ( JACK::Client *client, direction_e dir, type_e type, int n, const char *subtype=0 ); */
 
 //    Port ( );
         ~Port ( );
 
         Port ( const Port & rhs );
 
-
         bool valid ( void ) const { return _port; }
         bool connected ( void ) const { return jack_port_connected( _port ); }
         direction_e direction ( void ) const { return _direction; }
         type_e type ( void ) const { return _type; }
         const char * name ( void ) const { return _name; }
-        bool name ( const char *name );
-        bool name ( const char *base, int n, const char *type=0 );
+        const char * trackname ( void ) const { return _trackname; }
+        void name ( const char *name );
+        void trackname ( const char *trackname );
+        bool rename ( void );
+        const char * jack_name ( void ) const { return jack_port_name( _port ); }
+//        bool name ( const char *base, int n, const char *type=0 );
 
         nframes_t total_latency ( void ) const;
         nframes_t latency ( void ) const;
@@ -85,6 +91,8 @@ namespace JACK
         bool connections ( const char **port_names );
         void freeze ( void );
         void thaw ( void );
+        JACK::Client * client ( void )  const { return _client; }
+        void client ( JACK::Client *c ) { _client = c; }
 
     private:
 

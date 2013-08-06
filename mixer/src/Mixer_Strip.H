@@ -32,7 +32,6 @@
 #include <FL/Fl_Value_Slider.H>
 #include <FL/Fl_Counter.H>
 #include <FL/Fl_Progress.H>
-//#include "Fader.H"
 #include <JACK/Port.H>
 
 
@@ -48,6 +47,8 @@ class Fl_Flip_Button;
 class Fl_Input;
 class Fl_Menu_;
 class Fl_Menu_Button;
+class Fl_Choice;
+class Group;
 
 class Mixer_Strip : public Fl_Group, public Loggable {
 
@@ -60,6 +61,7 @@ public:
     virtual ~Mixer_Strip();
 
     void chain ( Chain *c );
+    Chain *chain ( void ) { return _chain; }
 
     virtual void log_children ( void ) const;
 
@@ -92,6 +94,7 @@ private:
     Fl_Flip_Button *tab_button;
     Fl_Button *close_button;
     Fl_Input *name_field;
+    Fl_Choice *group_choice;
 
     Fl_Flowpack *controls_pack;
     Fl_Group *tab_group;
@@ -100,6 +103,7 @@ private:
     Fl_Pack *panner_pack;
 
     Chain *_chain;
+    Group *_group;
 
     Fl_Box *spatialization_label;
     Controller_Module *gain_controller;
@@ -141,8 +145,14 @@ protected:
 
 public:
 
+    void update_group_choice ( void );
+
     Controller_Module *spatializer ( void );
 
+    Group *group ( void ) { return _group;}
+
+    //  int group ( void ) const;
+    void group ( Group * );
     void send_feedback ( void );
     int number ( void ) const;
     static bool import_strip ( const char *filename );

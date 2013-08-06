@@ -122,7 +122,7 @@ AUX_Module::process ( nframes_t nframes )
             for ( unsigned int i = 0; i < audio_input.size(); ++i )
             {
                 if ( audio_input[i].connected() )
-                    buffer_copy_and_apply_gain_buffer( (sample_t*)jack_output[i].buffer( nframes ), (sample_t*)audio_input[i].buffer(), gainbuf, nframes );
+                    buffer_copy_and_apply_gain_buffer( (sample_t*)aux_audio_output[i].buffer(), (sample_t*)audio_input[i].buffer(), gainbuf, nframes );
             }
 
         }
@@ -131,7 +131,7 @@ AUX_Module::process ( nframes_t nframes )
             for ( unsigned int i = 0; i < audio_input.size(); ++i )
             {
                 if ( audio_input[i].connected() )
-                    buffer_copy_and_apply_gain( (sample_t*)jack_output[i].buffer( nframes ), (sample_t*)audio_input[i].buffer(), nframes, gt );
+                    buffer_copy_and_apply_gain( (sample_t*)aux_audio_output[i].buffer(), (sample_t*)audio_input[i].buffer(), nframes, gt );
             }
         }
     }
@@ -140,7 +140,7 @@ AUX_Module::process ( nframes_t nframes )
         for ( unsigned int i = 0; i < audio_input.size(); ++i )
         {
             if ( audio_input[i].connected() )
-                buffer_fill_with_silence( (sample_t*)jack_output[i].buffer( nframes ), nframes );
+                buffer_fill_with_silence( (sample_t*)aux_audio_output[i].buffer(), nframes );
         }
     }
 }

@@ -34,7 +34,6 @@
 
 #include "Project.H"
 #include "Mixer_Strip.H"
-#include "Engine/Engine.H"
 #include <dsp.h>
 #include <string.h>
 #include "debug.h"
@@ -58,6 +57,8 @@
 #include "FL/test_press.H"
 #include "FL/menu_popup.H"
 #include <FL/Fl_File_Chooser.H>
+#include <FL/Fl_Choice.H>
+#include "Group.H"
 
 extern Mixer *mixer;
 
@@ -70,6 +71,8 @@ Mixer_Strip::Mixer_Strip( const char *strip_name ) : Fl_Group( 0, 0, 120, 600 )
     labeltype( FL_NO_LABEL );
 
     init();
+
+    _group = new Group(strip_name, true);
 
     chain( new Chain() );
 
@@ -96,17 +99,17 @@ Mixer_Strip::~Mixer_Strip ( )
 {
     DMESSAGE( "Destroying mixer strip" );
 
-    _chain->engine()->lock();
+//    _chain->engine()->lock();
+
+    log_destroy();
+
+    mixer->remove( this );
 
     /* make sure this gets destroyed before the chain */
     fader_tab->clear();
 
     delete _chain;
     _chain = NULL;
-
-    log_destroy();
-
-    mixer->remove( this );
 }
 
 
@@ -121,6 +124,11 @@ Mixer_Strip::get ( Log_Entry &e ) const
     /* since the default controllers aren't logged, we have to store
      * this setting as part of the mixer strip */
     e.add( ":gain_mode", gain_controller->mode() );
+    if ( ! _group->single() )
+        e.add( ":group", _group );
+    else
+        e.add( ":group", (Loggable*)0 );
+
 
 }
 
@@ -154,7 +162,26 @@ Mixer_Strip::set ( Log_Entry &e )
         {
             _gain_controller_mode = atoi( v );
         }
+        else if ( ! strcmp( s, ":group" ) )
+        {
+            int i;
+            sscanf( v, "%X", &i );
+
+            if ( i )
+            {
+                Group *t = (Group*)Loggable::find( i );
+
+                assert( t );
+                
+                group( t );
+            }
+            else
+                group( 0 );
+        }
     }
+
+    if ( ! _group )
+        group(0);
 
     if ( ! mixer->contains( this ) )
         mixer->add( this );
@@ -204,6 +231,8 @@ Mixer_Strip::chain ( Chain *c )
     c->configure_outputs_callback( configure_outputs, this );
     c->name( name() );
 
+    /* FIXME: don't hardcode this list of modules */
+    spatialization_controller->chain( c );
     gain_controller->chain( c );
     jack_input_controller->chain( c );
     meter_indicator->chain( c );
@@ -253,10 +282,74 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
          if ( parent() )
              parent()->parent()->redraw();
     }
+    else if ( o == group_choice )
+    {
+        // group(group_choice->value());
+        Group *g = NULL;
+
+        if ( group_choice->value() == group_choice->size() - 2 )
+        {
+            /* create a new group */
+            const char *s = fl_input( "Name for Group:" );
+            if ( !s )
+                return;
+           
+            char *n = mixer->get_unique_group_name( s );
+
+            g = new Group( n, false );
+
+            free( n );
+
+            mixer->add_group( g );
+        }
+        else
+        {
+            g = (Group*)group_choice->mvalue()->user_data();
+        }
+
+        group(g);
+    }
 }
 
 void Mixer_Strip::cb_handle(Fl_Widget* o, void* v) {
     ((Mixer_Strip*)(v))->cb_handle(o);
+}
+
+void
+Mixer_Strip::group ( Group *g )
+{
+    if ( !g && _group && _group->single() )
+        return;
+
+    if ( _group )
+    {
+        _group->remove(this);
+        if ( ! _group->nstrips() )
+        {
+            if ( ! _group->single() )
+                mixer->remove_group( _group );
+
+            delete _group;
+
+            _group = NULL;
+        }
+    }
+
+    if ( ! g )
+        g = new Group(name(), true);
+
+    const Fl_Menu_Item *menu = group_choice->menu();
+        
+    for ( unsigned int i = 0; menu[i].text; i++ )
+        if ( menu[i].user_data() == g )
+            group_choice->value( i );
+
+//    group_choice->color( (Fl_Color)n );
+//    group_choice->value( n );
+
+    _group = g;
+
+    g->add(this);
 }
 
 void
@@ -375,6 +468,7 @@ Mixer_Strip::init ( )
 
     _gain_controller_mode = 0;
     _chain = 0;
+    _group = 0;
 
     box( FL_FLAT_BOX );
     labeltype( FL_NO_LABEL );
@@ -433,6 +527,14 @@ Mixer_Strip::init ( )
 
                 o->end();
             } // Fl_Group* o
+            { Fl_Choice* o = group_choice = new Fl_Choice(61, 183, 45, 22);
+                o->labeltype(FL_NO_LABEL);
+                o->labelsize(10);
+                o->textsize(10);
+                o->add("---");
+                o->value(0);
+                o->callback( ((Fl_Callback*)cb_handle), this );
+            }
             { Fl_Flip_Button* o = tab_button = new Fl_Flip_Button(61, 183, 45, 22, "fader/signal");
                 o->type(1);
                 o->labelsize( 14 );
@@ -519,9 +621,47 @@ Mixer_Strip::init ( )
 
     size( 96, h() );
 
+    update_group_choice();
 //    redraw();
 
     //  _chain->configure_ports();
+}
+
+void
+Mixer_Strip::update_group_choice ( void )
+{
+    Fl_Choice *o = group_choice;
+
+    o->clear();
+    o->add( "---" );
+     
+    for ( std::list<Group*>::iterator i = mixer->groups.begin(); i != mixer->groups.end(); )
+    {
+        Group *g = *i;
+
+        i++;
+
+        if ( i == mixer->groups.end() )
+        {
+            o->add( g->name(), 0, 0, (void*)g, FL_MENU_DIVIDER );
+            break;
+        }
+        else
+            o->add( g->name(), 0, 0, (void*)g );
+    }
+
+    o->add( "New Group" );
+
+    const Fl_Menu_Item *menu = o->menu();
+
+    if ( ! group() || ( group() && group()->single() ) )
+        o->value(0);
+    else
+    {
+        for ( unsigned int i = 0; menu[i].text; i++ )
+            if ( menu[i].user_data() == group() )
+                o->value( i );
+    }
 }
 
 void

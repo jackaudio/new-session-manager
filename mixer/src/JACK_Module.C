@@ -28,7 +28,6 @@
 
 #include "dsp.h"
 
-#include "Engine/Engine.H"
 #include "Chain.H"
 
 #include "JACK_Module.H"
@@ -45,6 +44,9 @@ static Fl_PNG_Image *input_connector_image = NULL;
 static Fl_PNG_Image *output_connector_image = NULL;
 
 extern char *instance_name;
+
+#include "Mixer.H"
+#include "Group.H"
 
 
 static JACK_Module *receptive_to_drop = NULL;
@@ -197,18 +199,18 @@ JACK_Module::draw ( void )
 }
 
 static std::list<std::string>
-get_connections_for_ports ( std::vector<JACK::Port> ports )
+get_connections_for_ports ( std::vector<Module::Port> ports )
 {
     std::list<std::string> names;
 
     for ( unsigned int i = 0; i < ports.size(); ++i )
     {
-        const char **connections = ports[i].connections();
+        const char **connections = ports[i].jack_port()->connections();
 
         if ( ! connections )
             return names;
 
-        bool is_output = ports[i].direction() == JACK::Port::Output;
+        bool is_output = ports[i].jack_port()->direction() == JACK::Port::Output;
 
         for ( const char **c = connections; *c; c++ )
         {
@@ -217,6 +219,15 @@ get_connections_for_ports ( std::vector<JACK::Port> ports )
             //      char *client_name = 0;
            
             if ( 2 == sscanf( *c, "Non-Mixer.%a[^:/]/%a[^:]:", &client_id, &strip_name ) )
+            {
+                free( client_id );
+                char *s = NULL;
+                asprintf( &s, "%s%s", is_output ? "@r" : "", strip_name );
+                free( strip_name );
+                strip_name = s;
+            }
+            else
+            if ( 2 == sscanf( *c, "Non-Mixer.%a[^:(] (%a[^:)]):", &client_id, &strip_name ) )
             {
                 free( client_id );
                 char *s = NULL;
@@ -281,8 +292,8 @@ get_connections_for_ports ( std::vector<JACK::Port> ports )
 void
 JACK_Module::update_connection_status ( void )
 {
-    std::list<std::string> output_names = get_connections_for_ports( jack_output );
-    std::list<std::string> input_names = get_connections_for_ports( jack_input );
+    std::list<std::string> output_names = get_connections_for_ports( aux_audio_output );
+    std::list<std::string> input_names = get_connections_for_ports( aux_audio_input );
 
     connection_display->clear();
 
@@ -349,52 +360,25 @@ JACK_Module::can_support_inputs ( int )
 
 
 void
-JACK_Module::remove_jack_outputs ( void )
+JACK_Module::remove_aux_audio_outputs ( void )
 {
-    for ( unsigned int i = jack_output.size(); i--; )
+    for ( unsigned int i = aux_audio_output.size(); i--; )
     {
-        jack_output.back().shutdown();
-        jack_output.pop_back();
+        aux_audio_output.back().jack_port()->shutdown();
+        aux_audio_output.pop_back();
     }
-}
-
-bool
-JACK_Module::add_jack_output ( const char *prefix, int n )
-{
-    JACK::Port *po = NULL;
-    
-    if ( !prefix )
-        po = new JACK::Port( chain()->engine(), JACK::Port::Output, JACK::Port::Audio, n );
-    else
-        po = new JACK::Port( chain()->engine(), JACK::Port::Output, JACK::Port::Audio, prefix, n );
-    
-    if ( ! po->activate() )
-    {
-        jack_port_activation_error( po );
-        return false;
-    }
-    
-    if ( po->valid() )
-    {
-        jack_output.push_back( *po );
-    }
-    
-    delete po;
-
-    return true;
 }
 
 bool
 JACK_Module::configure_inputs ( int n )
 {
-   if ( n > 0 )
-   {
-       if ( is_default() )
-           control_input[0].hints.minimum = 1;
+    if ( n > 0 )
+    {
+        if ( is_default() )
+            control_input[0].hints.minimum = 1;
 
-       output_connection_handle->show();
-   }
-
+        output_connection_handle->show();
+    }
   
     int on = audio_input.size();
 
@@ -402,26 +386,10 @@ JACK_Module::configure_inputs ( int n )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port *po = NULL;
-
-            if ( !_prefix )
-                po = new JACK::Port( chain()->engine(), JACK::Port::Output, JACK::Port::Audio, i );
-            else
-                po = new JACK::Port( chain()->engine(), JACK::Port::Output, JACK::Port::Audio, _prefix, i );
-
-            if ( ! po->activate() )
-            {
-                jack_port_activation_error( po );
-                return false;
-            }
-
-            if ( po->valid() )
+            if ( add_aux_audio_output(_prefix, i ) )
             {
                 add_port( Port( this, Port::INPUT, Port::AUDIO ) );
-                jack_output.push_back( *po );
             }
-
-            delete po;
         }
     }
     else
@@ -430,13 +398,14 @@ JACK_Module::configure_inputs ( int n )
         {
             audio_input.back().disconnect();
             audio_input.pop_back();
-            jack_output.back().shutdown();
-            jack_output.pop_back();
+            aux_audio_output.back().jack_port()->shutdown();
+            delete aux_audio_output.back().jack_port();
+            aux_audio_output.pop_back();
         }
     }
 
     _connection_handle_outputs[0][0] = 0;
-    _connection_handle_outputs[0][1] = jack_output.size();
+    _connection_handle_outputs[0][1] = aux_audio_output.size();
 
     if ( is_default() )
         control_input[0].control_value_no_callback( n );
@@ -444,46 +413,24 @@ JACK_Module::configure_inputs ( int n )
     return true;
 }
 
-void
-JACK_Module::jack_port_activation_error ( JACK::Port *p )
-{
-    fl_alert( "Could not activate JACK port \"%s\"", p->name() );
-}
-
 bool
 JACK_Module::configure_outputs ( int n )
 {
-   int on = audio_output.size();
+    int on = audio_output.size();
    
-   if ( n > 0 )
-   {
-       input_connection_handle->show();
-   }
+    if ( n > 0 )
+    {
+        input_connection_handle->show();
+    }
    
     if ( n > on )
     {
         for ( int i = on; i < n; ++i )
         {
-            JACK::Port *po = NULL;
-
-            if ( !_prefix )
-                po = new JACK::Port( chain()->engine(), JACK::Port::Input, JACK::Port::Audio, i );
-            else
-                po = new JACK::Port( chain()->engine(), JACK::Port::Input, JACK::Port::Audio, _prefix, i );
-
-            if ( ! po->activate() )
-            {
-                jack_port_activation_error( po );
-                return false;
-            }
-
-            if ( po->valid() )
+            if ( add_aux_audio_input(_prefix, i ) )
             {
                 add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
-                jack_input.push_back( *po );
             }
-
-            delete po;
         }
     }
     else
@@ -492,8 +439,9 @@ JACK_Module::configure_outputs ( int n )
         {
             audio_output.back().disconnect();
             audio_output.pop_back();
-            jack_input.back().shutdown();
-            jack_input.pop_back();
+            aux_audio_input.back().jack_port()->shutdown();
+            delete aux_audio_input.back().jack_port();
+            aux_audio_input.pop_back();
         }
     }
 
@@ -582,10 +530,11 @@ JACK_Module::handle ( int m )
                 s[0] = 0;
   
                 for ( unsigned int i = _connection_handle_outputs[connection_handle][0]; 
-                      i < jack_output.size() && i < _connection_handle_outputs[connection_handle][1]; ++i )
+                      i < aux_audio_output.size() && i < _connection_handle_outputs[connection_handle][1]; ++i )
                 {
                     char *s2;
-                    asprintf(&s2, "jack.port://%s/%s:%s\r\n", instance_name, chain()->name(), jack_output[i].name() );
+                    asprintf(&s2, "jack.port://%s\r\n", 
+                             aux_audio_output[i].jack_port()->jack_name() );
                     
                     s = (char*)realloc( s, strlen( s ) + strlen( s2 ) + 1 ); 
                     strcat( s, s2 );
@@ -633,7 +582,7 @@ JACK_Module::handle ( int m )
             if ( this == receptive_to_drop )
                 return 1;
 
-            if ( jack_input.size() )
+            if ( aux_audio_input.size() )
             {
      
                 receptive_to_drop = this;
@@ -674,11 +623,11 @@ JACK_Module::handle ( int m )
                 text += end;
             }
             
-            for ( unsigned int i = 0; i < jack_input.size() && i < port_names.size(); i++)
+            for ( unsigned int i = 0; i < aux_audio_input.size() && i < port_names.size(); i++)
             {
                 const char *pn = port_names[i].c_str();
                 
-                JACK::Port *ji = &jack_input[i];
+                JACK::Port *ji = aux_audio_input[i].jack_port();
                 
                 if ( ji->connected_to( pn ) )
                 {
@@ -712,17 +661,21 @@ JACK_Module::process ( nframes_t nframes )
     for ( unsigned int i = 0; i < audio_input.size(); ++i )
     {
         if ( audio_input[i].connected() )
-            buffer_copy( (sample_t*)jack_output[i].buffer( nframes ),
+        {
+            buffer_copy( (sample_t*)aux_audio_output[i].jack_port()->buffer(nframes),
                          (sample_t*)audio_input[i].buffer(),
                          nframes );
+         }
                          
     }
 
     for ( unsigned int i = 0; i < audio_output.size(); ++i )
     {
         if ( audio_output[i].connected() )
+        {
             buffer_copy( (sample_t*)audio_output[i].buffer(),
-                         (sample_t*)jack_input[i].buffer( nframes ),
+                         (sample_t*)aux_audio_input[i].jack_port()->buffer(nframes),
                          nframes );
+        }
     }
 }

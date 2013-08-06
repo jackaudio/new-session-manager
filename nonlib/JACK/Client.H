@@ -43,6 +43,7 @@ namespace JACK
         volatile int _xruns;
         volatile bool _freewheeling;
         volatile bool _zombified;
+        volatile bool _active;
 
         static int sample_rate_changed ( nframes_t srate, void *arg );
         virtual int sample_rate_changed ( nframes_t srate ) { return 0; }
@@ -72,8 +73,10 @@ namespace JACK
         void thaw_ports ( void );
 
     protected:
-
+        
+        bool active ( void ) const { return _active; }
         void deactivate ( void );
+        void activate ( void );
 
     private:
 
@@ -96,6 +99,8 @@ namespace JACK
 
         const char * init ( const char *client_name, unsigned int opts = 0 );
         const char * name ( const char * );
+
+        const char *jack_name ( void ) const;
 
         void close ( void );
         nframes_t nframes ( void ) const { return jack_get_buffer_size( _client ); }

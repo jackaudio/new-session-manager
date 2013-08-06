@@ -31,7 +31,7 @@
 namespace JACK
 {
 
-    static char *name_for_port ( Port::direction_e dir, const char *base, int n, const char *type );
+    /* static char *name_for_port ( Port::direction_e dir, const char *base, int n, const char *type ); */
 
     int
     Port::max_name ( void )
@@ -49,8 +49,11 @@ namespace JACK
         _port = rhs._port;
         _direction = rhs._direction;
         _type = rhs._type;
+        _name = NULL;
         _name = strdup( rhs._name );
-
+        _trackname = NULL;
+        if ( rhs._trackname )
+            _trackname = strdup( rhs._trackname );
         _client->port_added( this );
     }
 
@@ -62,6 +65,7 @@ namespace JACK
         _client = client;
         _port = port;
         _name = strdup( jack_port_name( port ) );
+        _trackname = NULL;
         _direction = ( jack_port_flags( _port ) & JackPortIsOutput ) ? Output : Input;
         const char *type = jack_port_type( _port );
 
@@ -73,51 +77,55 @@ namespace JACK
 
     }
 
-    Port::Port ( JACK::Client *client, const char *name, direction_e dir, type_e type )
+    Port::Port ( JACK::Client *client, const char *trackname, const char *name, direction_e dir, type_e type )
     {
         _port = 0;
         _terminal = 0;
         _name = NULL;
+        _trackname = NULL;
         _connections = NULL;
         _client = client;
         _direction = dir;
         _type = type;
+        _trackname = NULL;
+
+        if ( trackname )
+            _trackname = strdup( trackname );
 
         _name = strdup( name );
 
         _client->port_added( this );
-
     }
 
-    Port::Port ( JACK::Client *client, direction_e dir, type_e type, const char *base, int n, const char *subtype )
-    {
-        _port = 0;
-        _terminal = 0;
-        _name = NULL;
-        _connections = NULL;
-        _client = client;
+    /* Port::Port ( JACK::Client *client, direction_e dir, type_e type, const char *base, int n, const char *subtype ) */
+    /* { */
+    /*     _port = 0; */
+    /*     _terminal = 0; */
+    /*     _name = NULL; */
+    /*     _connections = NULL; */
+    /*     _client = client; */
 
-        _name = name_for_port( dir, base, n, subtype );
-        _direction = dir;
-        _type = type;
+    /*     _name = name_for_port( dir, base, n, subtype ); */
+    /*     _direction = dir; */
+    /*     _type = type; */
 
-        _client->port_added( this );
-    }
+    /*     _client->port_added( this ); */
+    /* } */
 
-    Port::Port ( JACK::Client *client, direction_e dir, type_e type, int n, const char *subtype )
-    {
-        _port = 0;
-        _terminal = 0;
-        _name = NULL;
-        _connections = NULL;
-        _client = client;
+    /* Port::Port ( JACK::Client *client, direction_e dir, type_e type, int n, const char *subtype ) */
+    /* { */
+    /*     _port = 0; */
+    /*     _terminal = 0; */
+    /*     _name = NULL; */
+    /*     _connections = NULL; */
+    /*     _client = client; */
 
-        _name = name_for_port( dir, NULL, n, subtype );
-        _direction = dir;
-        _type = type;
+    /*     _name = name_for_port( dir, NULL, n, subtype ); */
+    /*     _direction = dir; */
+    /*     _type = type; */
 
-        _client->port_added( this );
-    }
+    /*     _client->port_added( this ); */
+    /* } */
 
     Port::~Port ( )
     {
@@ -128,6 +136,12 @@ namespace JACK
            free( _name );
            _name = NULL;
        }
+       if ( _trackname )
+       {
+           free( _trackname );
+           _trackname = NULL;
+       }
+
     }
 
     /* sort input before output and then by alpha */
@@ -141,20 +155,20 @@ namespace JACK
     }
 
 
-    static char *
-    name_for_port ( Port::direction_e dir, const char *base, int n, const char *type )
-    {
-        char *pname;
+    /* static char * */
+    /* name_for_port ( Port::direction_e dir, const char *base, int n, const char *type ) */
+    /* { */
+    /*     char *pname; */
 
-        const char *dir_s = dir == Port::Output ? "out" : "in";
+    /*     const char *dir_s = dir == Port::Output ? "out" : "in"; */
 
-        if ( type )
-            asprintf( &pname, "%s-%s%s%s-%d", type, base ? base : "", base ? "/" : "", dir_s, n + 1 );
-        else
-            asprintf( &pname, "%s%s%s-%d", base ? base : "", base ? "/" : "", dir_s, n + 1 );
+    /*     if ( type ) */
+    /*         asprintf( &pname, "%s-%s%s%s-%d", type, base ? base : "", base ? "/" : "", dir_s, n + 1 ); */
+    /*     else */
+    /*         asprintf( &pname, "%s%s%s-%d", base ? base : "", base ? "/" : "", dir_s, n + 1 ); */
 
-        return pname;
-    }
+    /*     return pname; */
+    /* } */
 
     bool
     Port::activate ( void )
@@ -171,8 +185,12 @@ namespace JACK
         if ( _terminal )
             flags |= JackPortIsTerminal;
 
-        DMESSAGE( "Activating port name %s", _name );
-        _port = jack_port_register( _client->jack_client(), _name,
+        char jackname[max_name()];
+
+        snprintf( jackname, sizeof(jackname), "%s%s%s", _trackname ? _trackname : "", _trackname ? "/" : "", _name );
+
+        DMESSAGE( "Activating port name %s", jackname );
+        _port = jack_port_register( _client->jack_client(), jackname,
                                     _type == Audio ? JACK_DEFAULT_AUDIO_TYPE : JACK_DEFAULT_MIDI_TYPE,
                                     flags,
                                     0 );
@@ -231,25 +249,39 @@ namespace JACK
         _port = 0;
     }
 
-/** rename port */
-    bool
+
+    void
     Port::name ( const char *name )
     {
         if ( _name )
             free( _name );
 
         _name = strdup( name );
+    }
 
-        return 0 == jack_port_set_name( _port, name );
+    void
+    Port::trackname ( const char *trackname )
+    {
+        if ( _trackname )
+            free( _trackname );
+
+        _trackname = NULL;
+
+        if ( trackname )
+            _trackname = strdup( trackname );
     }
 
     bool
-    Port::name ( const char *base, int n, const char *type )
+    Port::rename ( void )
     {
-        char *s = name_for_port( this->direction(), base, n, type );
-        bool b = name( s );
-        free(s);
-        return b;
+        char jackname[max_name()];
+
+        snprintf( jackname, sizeof(jackname), "%s%s%s", _trackname ? _trackname : "", _trackname ? "/" : "", _name );
+
+        if ( _port )
+            return 0 == jack_port_set_name( _port, jackname );
+        else
+            return false;
     }
 
     void

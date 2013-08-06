@@ -273,17 +273,17 @@ main ( int argc, char **argv )
     
     /* cleanup for valgrind's sake */
 
-    if ( engine )
-    {
-        delete engine;
-        engine = NULL;
-    }
-
     delete timeline;
     timeline = NULL;
 
     delete tle;
     tle = NULL;
+
+    if ( engine )
+    {
+        delete engine;
+        engine = NULL;
+    }
 
     nsm_free( nsm );
     nsm = NULL;

@@ -29,7 +29,6 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl.H>
 #include <FL/New_Project_Dialog.H>
-#include "Engine/Engine.H"
 #include <FL/Fl_Flowpack.H>
 #include "Project.H"
 #include <FL/Fl_Menu_Settings.H>
@@ -39,7 +38,7 @@
 #include <FL/Fl_Value_SliderX.H>
 #include <Spatialization_Console.H>
 #include "file.h"
-
+#include "Group.H"
 #include <string.h>
 #include "debug.h"
 #include <unistd.h>
@@ -60,6 +59,7 @@ extern char *instance_name;
 
 #include "NSM.H"
 #include <FL/Fl_Tooltip.H>
+#include "Chain.H"
 
 extern NSM_Client *nsm;
 
@@ -499,6 +499,8 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     /* Fl_Tooltip::color( fl_color_add_alpha( FL_DARK1, 0 ) ); */
 //    fl_tooltip_docked = 1;
 
+//    _groups.resize(16);
+
     _rows = 1;
     _strip_height = 0;
     box( FL_FLAT_BOX );
@@ -713,6 +715,24 @@ Mixer::~Mixer ( )
     mixer_strips->clear();
 }
 
+void
+Mixer::add_group ( Group *g )
+{
+    groups.push_back( g );
+
+    for ( int i = mixer_strips->children(); i--; )
+        ((Mixer_Strip*)mixer_strips->child(i))->update_group_choice();
+}
+
+void
+Mixer::remove_group ( Group *g )
+{
+    groups.remove(g);
+
+    for ( int i = mixer_strips->children(); i--; )
+        ((Mixer_Strip*)mixer_strips->child(i))->update_group_choice();
+}
+
 void Mixer::resize ( int X, int Y, int W, int H )
 {
     Fl_Group::resize( X, Y, W, H );
@@ -755,7 +775,6 @@ Mixer::insert ( Mixer_Strip *ms, Mixer_Strip *before )
 {
 //    mixer_strips->remove( ms );
     mixer_strips->insert( *ms, before );
-
 //    scroll->redraw();
 }
 void
@@ -795,6 +814,8 @@ void Mixer::remove ( Mixer_Strip *ms )
     MESSAGE( "Remove mixer strip \"%s\"", ms->name() );
 
     mixer_strips->remove( ms );
+    
+    ms->group()->remove( ms );
 
     if ( parent() )
         parent()->redraw();
@@ -821,7 +842,7 @@ Mixer::contains ( Mixer_Strip *ms )
 void
 Mixer::rows ( int ideal_rows )
 {
-    int sh;
+    int sh = 0;
 
     int actual_rows = 1;
 
@@ -919,6 +940,31 @@ Mixer::get_unique_track_name ( const char *name )
     return strdup( pat );
 }
 
+Group *
+Mixer::group_by_name ( const char *name )
+{
+    for ( std::list<Group*>::iterator i = groups.begin();
+          i != groups.end();
+          i++ )
+        if ( !strcmp( (*i)->name(), name ))
+            return *i;
+
+    return NULL;
+}
+
+char *
+Mixer::get_unique_group_name ( const char *name )
+{
+    char pat[256];
+
+    strcpy( pat, name );
+
+    for ( int i = 1; group_by_name( pat ); ++i )
+        snprintf( pat, sizeof( pat ), "%s.%d", name, i );
+
+    return strdup( pat );
+}
+
 void
 Mixer::handle_dirty ( int d, void *v )
 {
@@ -938,6 +984,9 @@ Mixer::snapshot ( void )
 {
     if ( spatialization_console )
         spatialization_console->log_create();
+
+    for ( std::list<Group*>::iterator i = groups.begin(); i != groups.end(); ++i )
+        (*i)->log_create();
 
     for ( int i = 0; i < mixer_strips->children(); ++i )
         ((Mixer_Strip*)mixer_strips->child( i ))->log_children();
@@ -1085,6 +1134,8 @@ Mixer::command_load ( const char *path, const char *display_name )
     chdir( path );
 
     load_project_settings();
+
+    Project::close();
 
     if ( Project::open( path ) )
     {

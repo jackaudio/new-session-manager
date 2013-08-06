@@ -512,7 +512,7 @@ Spatializer_Module::draw ( void )
 
     int spacing, offset;
 
-    int ni = jack_output.size();
+    int ni = aux_audio_output.size();
   
     spacing = h() / ni;
     offset = spacing / 2;
@@ -566,9 +566,9 @@ Spatializer_Module::process ( nframes_t nframes )
 
             /* send to late reverb */
             if ( i == 0 )
-                buffer_copy( (sample_t*)jack_output[0].buffer(nframes), buf, nframes );
+                buffer_copy( (sample_t*)aux_audio_output[0].jack_port()->buffer(nframes), buf, nframes );
             else
-                buffer_mix( (sample_t*)jack_output[0].buffer(nframes), buf, nframes );
+                buffer_mix( (sample_t*)aux_audio_output[0].jack_port()->buffer(nframes), buf, nframes );
 
             /* /\* FIXME: use smoothed value... *\/ */
             /* buffer_apply_gain( (sample_t*)jack_output[0].buffer(nframes), nframes, 1.0f / sqrt(D) ); */
@@ -606,7 +606,7 @@ Spatializer_Module::process ( nframes_t nframes )
   
         /* send to early reverb */
         for ( int i = 4; i--; )
-            buffer_copy( (sample_t*)jack_output[1 + i].buffer(nframes),
+            buffer_copy( (sample_t*)aux_audio_output[1 + i].jack_port()->buffer(nframes),
                          (sample_t*)audio_output[0 + i].buffer(),
                          nframes );
 
@@ -678,7 +678,7 @@ Spatializer_Module::configure_inputs ( int n )
     
     if ( n == 0 )
     {
-        remove_jack_outputs();
+        remove_aux_audio_outputs();
         audio_output.clear();
         audio_input.clear();
     }
@@ -692,20 +692,20 @@ Spatializer_Module::configure_inputs ( int n )
             }
         }
 
-        if ( jack_output.size() != 5 )
+        if ( aux_audio_output.size() != 5 )
         {
-            add_jack_output( "late reverb", 0 );
-            add_jack_output( "early reverb", 0 );
-            add_jack_output( "early reverb", 1 );
-            add_jack_output( "early reverb", 2 );
-            add_jack_output( "early reverb", 3 );
+            add_aux_audio_output( "late reverb", 0 );
+            add_aux_audio_output( "early reverb", 0 );
+            add_aux_audio_output( "early reverb", 1 );
+            add_aux_audio_output( "early reverb", 2 );
+            add_aux_audio_output( "early reverb", 3 );
         }
     }
 
     _connection_handle_outputs[0][0] = 0;
     _connection_handle_outputs[0][1] = 1;
     _connection_handle_outputs[1][0] = 1;
-    _connection_handle_outputs[1][1] = jack_output.size();
+    _connection_handle_outputs[1][1] = aux_audio_output.size();
 
     return true;
 }

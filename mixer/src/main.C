@@ -55,6 +55,7 @@
 #include "AUX_Module.H"
 #include "NSM.H"
 #include "Spatialization_Console.H"
+#include "Group.H"
 
 #include <signal.h>
 #include <unistd.h>
@@ -161,6 +162,7 @@ main ( int argc, char **argv )
     LOG_REGISTER_CREATE( Controller_Module );
     LOG_REGISTER_CREATE( AUX_Module );
     LOG_REGISTER_CREATE( Spatialization_Console );
+    LOG_REGISTER_CREATE( Group );
 
     signal( SIGPIPE, SIG_IGN );
 
@@ -258,7 +260,7 @@ main ( int argc, char **argv )
     }
 
     Plugin_Module::spawn_discover_thread();
-    
+
     mixer->init_osc( osc_port );
 
     char *nsm_url = getenv( "NSM_URL" );

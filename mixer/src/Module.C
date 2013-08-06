@@ -73,7 +73,7 @@ Module::Module ( ) : Fl_Group( 0, 0, 50, 50, "Unnamed" )
 
 Module::~Module ( )
 {
-    /* we assume that the engine for this chain is already locked */
+    /* we assume that the client for this chain is already locked */
 
     if ( _editor )
     {
@@ -880,6 +880,21 @@ Module::handle_chain_name_changed ( )
     
         control_input[i].update_osc_port();
     }
+
+    if ( ! chain()->strip()->group()->single() )
+    {
+        /* we have to rename our JACK ports... */
+        for ( unsigned int i = 0; i < aux_audio_input.size(); i++ )
+        {
+            aux_audio_input[i].jack_port()->trackname( chain()->name() );
+            aux_audio_input[i].jack_port()->rename();
+        }
+        for ( unsigned int i = 0; i < aux_audio_output.size(); i++ )
+        {
+            aux_audio_output[i].jack_port()->trackname( chain()->name() );
+            aux_audio_output[i].jack_port()->rename();
+        }
+    }
 }
 
 int
@@ -963,6 +978,148 @@ Module::handle ( int m )
 
     return 0;
 }
+
+/*************/
+/* AUX Ports */
+/*************/
+
+
+static char *
+generate_port_name ( const char *aux, int direction, int n )
+{
+    char *s;
+    asprintf( &s, "%s%s%s-%i",
+              aux ? aux : "",
+              aux ? "/" : "",
+              direction == JACK::Port::Input ? "in" : "out",
+              n + 1 );
+
+    return s;
+}
+
+static void
+jack_port_activation_error ( JACK::Port *p )
+{
+    fl_alert( "Could not activate JACK port \"%s\"", p->name() );
+}
+
+/* freeze/disconnect all jack ports--used when changing groups */
+void
+Module::freeze_ports ( void )
+{
+    // pass it along to our connected Controller_Modules, if any.
+    for ( int i = 0; i < ncontrol_inputs(); ++i )
+    {
+        if ( control_input[i].connected() )
+            control_input[i].connected_port()->module()->freeze_ports();
+    }
+
+    for ( unsigned int i = 0; i < aux_audio_input.size(); ++i )
+    {   
+        aux_audio_input[i].jack_port()->freeze();
+        aux_audio_input[i].jack_port()->shutdown();
+    }
+
+    for ( unsigned int i = 0; i < aux_audio_output.size(); ++i )
+    {
+        aux_audio_output[i].jack_port()->freeze();
+        aux_audio_output[i].jack_port()->shutdown();
+    }
+}
+
+/* rename and thaw all jack ports--used when changing groups */
+void
+Module::thaw_ports ( void )
+{
+    // pass it along to our connected Controller_Modules, if any.
+    for ( int i = 0; i < ncontrol_inputs(); ++i )
+    {
+        if ( control_input[i].connected() )
+            control_input[i].connected_port()->module()->thaw_ports();
+    }
+
+    const char *trackname = chain()->strip()->group()->single() ? NULL : chain()->name();
+
+    for ( unsigned int i = 0; i < aux_audio_input.size(); ++i )
+    {   
+        /* if we're entering a group we need to add the chain name
+         * prefix and if we're leaving one, we need to remove it */
+        
+        aux_audio_input[i].jack_port()->client( chain()->client() );
+        aux_audio_input[i].jack_port()->trackname( trackname );
+        aux_audio_input[i].jack_port()->thaw();
+    }
+
+    for ( unsigned int i = 0; i < aux_audio_output.size(); ++i )
+    {
+        /* if we're entering a group we won't actually be using our
+         * JACK output ports anymore, just mixing into the group outputs */
+        aux_audio_output[i].jack_port()->client( chain()->client() );
+        aux_audio_output[i].jack_port()->trackname( trackname );
+        aux_audio_output[i].jack_port()->thaw();
+    }
+}
+
+bool
+Module::add_aux_port ( bool input, const char *prefix, int i )
+{
+    const char *trackname = chain()->strip()->group()->single() ? NULL : chain()->name();
+
+    JACK::Port::direction_e direction = input ? JACK::Port::Input : JACK::Port::Output;
+
+    char *portname = generate_port_name( prefix, direction, i );
+
+    JACK::Port *po = new JACK::Port( chain()->client(), trackname, portname, direction, JACK::Port::Audio );
+
+    free(portname);
+
+    if ( ! po->activate() )
+    {
+        jack_port_activation_error( po );
+        return false;
+    }
+    
+    if ( po->valid() )
+    {
+        if ( input )
+        {
+            Module::Port mp( (Module*)this, Module::Port::INPUT, Module::Port::AUX_AUDIO );
+            
+            mp.jack_port( po );
+
+            aux_audio_input.push_back( mp );
+        }
+        else
+        {
+            Module::Port mp( (Module*)this, Module::Port::OUTPUT, Module::Port::AUX_AUDIO );
+            
+            mp.jack_port( po );
+            
+            aux_audio_output.push_back( mp );
+        }
+    }
+    else
+    {
+        delete po;
+        return false;
+    }
+
+    return true;
+}
+
+bool
+Module::add_aux_audio_output( const char *prefix, int i )
+{
+    return add_aux_port ( false, prefix, i );
+}
+
+bool
+Module::add_aux_audio_input( const char *prefix, int i )
+{
+    return add_aux_port ( true, prefix, i );
+}
+
+
 
 
 /************/

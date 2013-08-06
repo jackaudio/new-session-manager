@@ -56,7 +56,7 @@ private:
 public:
 
     Engine ( );
-    ~Engine ( );
+    virtual ~Engine ( );
 
     int dropped ( void ) const { return _buffers_dropped; }
 

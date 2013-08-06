@@ -91,7 +91,7 @@ public:
     public:
 
         enum Direction { INPUT, OUTPUT };
-        enum Type { AUDIO, CONTROL };
+        enum Type { AUDIO, CONTROL, AUX_AUDIO };
 
         /* hints for control ports (specifically control inputs) */
         struct Hints
@@ -138,6 +138,7 @@ public:
                 _unscaled_signal = 0;
                 _by_number_path = 0;
                 _by_number_number = -1;
+                _jack_port = 0;
             }
 
         Port ( const Port& p )
@@ -154,6 +155,7 @@ public:
                 _unscaled_signal = p._unscaled_signal;
                 _by_number_path = 0;
                 _by_number_number = -1;
+                _jack_port = p._jack_port;
             }
 
         virtual ~Port ( )
@@ -273,6 +275,9 @@ public:
                 /* FIXME: do something! */
             }
 
+        void jack_port ( JACK::Port *v ) { _jack_port = v; }
+        JACK::Port *jack_port ( void ) { return _jack_port; }
+
     private:
 
         char *generate_osc_path ( void );
@@ -285,7 +290,8 @@ public:
         void *_buf;
         nframes_t _nframes;
         Module *_module;
-
+        /* used for auxilliary I/Os */
+        JACK::Port *_jack_port;
 
         OSC::Signal *_scaled_signal;
         OSC::Signal *_unscaled_signal;
@@ -348,6 +354,8 @@ public:
     std::vector<Port> audio_output;
     std::vector<Port> control_input;
     std::vector<Port> control_output;
+    std::vector<Port> aux_audio_input;
+    std::vector<Port> aux_audio_output;
 
     void add_port ( const Port &p )
         {
@@ -477,7 +485,15 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
 
+    bool add_aux_port ( bool input, const char *prefix, int n );
+
 public:
+
+    void freeze_ports ( void );
+    void thaw_ports ( void );
+
+    bool add_aux_audio_output ( const char *prefix, int n );
+    bool add_aux_audio_input ( const char *prefix, int n );
 
     static void set_sample_rate ( nframes_t srate ) { _sample_rate = srate; }
 

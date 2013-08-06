@@ -42,11 +42,6 @@ protected:
                 _prefix = strdup( s );
         }
 
-    std::vector<JACK::Port> jack_input;
-    std::vector<JACK::Port> jack_output;
-
-    static void jack_port_activation_error ( JACK::Port *p );
-
     Fl_Button * dec_button;
     Fl_Button * inc_button;
     Fl_Browser * connection_display;
@@ -76,8 +71,7 @@ public:
     virtual int handle ( int m );
 
     virtual int can_support_inputs ( int );
-    bool add_jack_output ( const char *prefix, int n );
-    void remove_jack_outputs ( void );
+    void remove_aux_audio_outputs ( void );
     virtual bool configure_inputs ( int n );
     virtual bool configure_outputs ( int n );
 

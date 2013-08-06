@@ -31,6 +31,151 @@
   to suit your needs. Set the color scheme, widget style, and other graphic
   options to your liking. These options are global and affect all projects.
 
+::: Mixer Groups
+
+  Groups serve several purposes. Firstly, they allow for some
+  organization of strips. Groups also allow parallel relationships of
+  mixer strips to be made explicit. This has important performance
+  implications in JACK2. Non Mixer supports an unlimited number of
+  groups, each of which can contain an unlimited number of mixer
+  strips.
+
+:::: How to Choose Groupings
+     
+  All strips in a group should be completely parallel with no feedback
+  loop connections. A typical group might be named 'Input' and contain
+  all input strips (strips that accept input from Non Timeline and
+  have outputs all connecting to some master bus).
+
+  To put it another way, if you have 100 inputs strips with identical
+  output configurations (e.g. stereo or B-Format), that all connect to
+  a master bus, then you have a candidate for a group.
+
+:::: Considering JACK Overhead
+
+  JACK provides immense flexibility. But, as in most situations, that
+  flexibility comes with a cost. In JACK the cost is a context switch
+  per client. This applies /even for many clients which belong to the
+  same process/, as in Non Mixer. Various factors go into determining
+  the price of a context switch on any given system. It's not very
+  expensive, but it does add up. It becomes problematic in sessions
+  involving many clients (think 100s), each of which having a small
+  DSP load (often smaller than the cost of JACK's context context
+  switch). JACK *could* be smart enough to recognize that some clients
+  belong to the same process and could be executed serially without
+  requiring a context switch, but at the time of writing neither JACK1
+  nor JACK2's scheduling is that smart.
+
+  If you're mixing a normal song (couple of dozen tracks) at low
+  latency, this overhead will probably account for less than 1% of the
+  total DSP load. If you're mixing an entire orchestra at ultra-low
+  latency, then it might account for a quarter or more of the total
+  DSP load.
+
+  Groups mitigate this cost by reducing the number of JACK clients
+  required for a mix. Strips in a group will execute serially without
+  context switches or thread synchronization--reducing the total JACK
+  overhead. However, if you have several groups, then they may all by
+  run in parallel by JACK2.
+
+  A mixer which uses a single JACK client (which is basically the way
+  everything other than Non Mixer has been designed) is not a viable
+  solution by this author's definition, because such a mixer cannot be
+  from/to any other JACK clients without introducing an extra period
+  of latency.
+
+  To illustrate this point here are some figures from an actual song
+  session including the whole Non suite plus a sampler, a synth and an
+  ambisonics convolution reverb with a total of 13 strips in 4 groups
+  in different configurations on the same system.
+
+  JACK's DSP load figures are interpreted thus: if at a 2.7ms software
+  latency setting the average time a proces cycle takes to complete is
+  2.7ms, then the DSP load is 100%. The usable ceiling on DSP load is
+  80%. This is true for both JACK1 and JACK2. The difference is that
+  JACK2 may use all available CPU cores to execute the graph \(if
+  there are enough clients in parallel signal flow\).
+
+  32-bit Intel Core2 Duo @1.6Ghz -r 48000 -p 256 -n 2 (5.3ms)
+
+[[ JACK Ver, Groups, DSP Load
+[[ JACK1, N, 39%
+[[ JACK1, Y, 27%
+[[ JACK2, N, 24%
+[[ JACK2, Y, 31%
+
+ AMD FX-8350 @ 4.2Ghz 64-bit -r 48000 -p 256 -n 2 (5.3ms)
+
+[[ JACK Ver, Groups, DSP Load
+[[ JACK1, N, 28%
+[[ JACK1, Y, 12%
+[[ JACK2, N, 12%
+[[ JACK2, Y, 11%
+
+ AMD FX-8350 @ 4.2Ghz 64-bit -r 48000 -p 128 -n 2 (2.7ms)
+
+[[ JACK Ver, Groups, DSP Load
+[[ JACK1, N, 29%
+[[ JACK1, Y, 17%
+[[ JACK2, N, 17%
+[[ JACK2, Y, 17%
+
+ AMD FX-8350 @ 4.2Ghz 64-bit -r 48000 -p 32 -n 2 (0.7ms)
+
+[[ JACK Ver, Groups, DSP Load
+[[ JACK1, N, x
+[[ JACK1, Y, x
+[[ JACK2, N, 43%
+[[ JACK2, Y, 41%
+
+  As you can see, for multiprocessor systems, JACK2 clearly has an
+  advantage even without grouping.
+
+  Of course, results will vary depending on the system and the mix. On
+  the dual core system, performance actually degraded with JACK2 when
+  using groups--this is because the number of parallel flows that
+  JACK2 detected was reduced and the second core was being under
+  utilized. Similarly, the performance of the 8-core AMD system
+  doesn't seem that great even in the ungrouped mode--this is because
+  the DSP load of each individual client is around the same as the
+  cost of the context switching. It's a wash either way (if each strip
+  had more or more complex modules on it, then the ungrouped mode
+  would probably perform better). Since JACK1 cannot take advantage of
+  more than 1 CPU core, there is no benefit to parallelism and grouped
+  mode always outperforms ungrouped mode.
+
+  So, for maximum capacity the combination of a multicore CPU with
+  JACK2 and mixer groups is best. 
+
+#  All strips in a group *MUST* have the same output configuration. All
+#  outputs will be mixed together by identity. That is, the 'AUX \(A\)'
+#  outputs of each strip will be mixed together into a single 'AUX \(A\)'
+#  output of the group. A strip within a group whose output
+#  configuration differs from the group configuration will be marked as
+#  invalid and will not be executed.
+
+:::: Creating a New Group
+
+  Groups can be created by selecting the group dropdown on any mixer
+  strip and choosing 'New Group'. A window will popup asking for a
+  group name. Group names must be unique. The group will then be
+  created and the selected strip added to it.
+
+:::: Adding a Strip to an Existing Group
+
+  To add a strip to an existing group, simply select a group name from
+  the group dropdown on the strip.
+
+:::: Removing a Strip from a Group
+     
+  Select '---' from the group dropdown. The strip will be removed from
+  the group and will run in an independent JACK client.
+
+:::: Removing a Group
+
+  Groups are destroyed automatically as soon as they contain zero
+  strips.
+
 ::: Mixer Strips
 
 / Mixer Strip

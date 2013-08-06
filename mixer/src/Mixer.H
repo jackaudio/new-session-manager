@@ -34,6 +34,7 @@ class Fl_Menu_Bar;
 class Spatialization_Console;
 namespace OSC { class Endpoint; }
 #include <lo/lo.h>
+class Group;
 
 class Mixer : public Fl_Group
 {
@@ -88,8 +89,17 @@ private:
     static void update_cb ( void * );
     void update_cb ( void );
 
+
 public:
 
+    Group * group_by_name ( const char * name );
+    char *get_unique_group_name ( const char *name );
+
+    std::list <Group*> groups;
+    Group *group ( int n );
+    void add_group ( Group *g );
+    void remove_group ( Group *g );
+    
     void update_menu ( void );
 
     static Spatialization_Console *spatialization_console;
@@ -114,7 +124,6 @@ public:
     virtual void resize ( int X, int Y, int W, int H );
 
     void new_strip ( void );
-    void process ( unsigned int nframes );
     void add ( Mixer_Strip *ms );
     void remove ( Mixer_Strip *ms );
     void move_left ( Mixer_Strip *ms );

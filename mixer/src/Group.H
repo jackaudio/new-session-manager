@@ -1,6 +1,6 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/* Copyright (C) 2013 Jonathan Moore Liles                                     */
 /*                                                                             */
 /* This program is free software; you can redistribute it and/or modify it     */
 /* under the terms of the GNU General Public License as published by the       */
@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include <list>
+class Mixer_Strip;
+
 #include "Mutex.H"
 
 class Port;
@@ -26,25 +29,17 @@ class Port;
 #include "JACK/Client.H"
 
 #include "Thread.H"
+#include "Loggable.H"
 
-class Engine : public JACK::Client, public Mutex
+class Group : public Loggable, public JACK::Client, public Mutex
 {
+    bool _single;
+    char *_name;
+
     Thread _thread;                                            /* only used for thread checking */
 
     int _buffers_dropped;                                       /* buffers dropped because of locking */
 /*     int _buffers_dropped;                                       /\* buffers dropped because of locking *\/ */
-
-    void ( * _process_callback ) ( nframes_t, void * );
-    void *_process_callback_user_data;
-
-    void ( * _buffer_size_callback ) ( nframes_t, void * );
-    void *_buffer_size_callback_user_data;
-
-    int ( * _sample_rate_changed_callback ) ( nframes_t, void * );
-    void *_sample_rate_changed_callback_user_data;
-
-    void ( * _port_connect_callback ) ( jack_port_id_t a, jack_port_id_t b, int connect, void * );
-    void *_port_connect_callback_user_data;
 
     int sample_rate_changed ( nframes_t srate );
     void shutdown ( void );
@@ -54,23 +49,48 @@ class Engine : public JACK::Client, public Mutex
     int buffer_size ( nframes_t nframes );
     void thread_init ( void );
     void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect );
-    Engine ( const Engine &rhs );
-    Engine & operator = ( const Engine &rhs );
+
+    /* not allowed */
+    Group ( const Group &rhs );
+    Group & operator = ( const Group &rhs );
 
     void request_locate ( nframes_t frame );
+
+
+protected:
+
+    virtual void get ( Log_Entry &e ) const;
+    virtual void set ( Log_Entry &e );
 
 private:
 
     friend class Port;
     friend class Transport;
 
-public:
+public: 
 
-    Engine ( void (*process_callback) (nframes_t, void *), void *user_data );
-    ~Engine ( );
+    LOG_CREATE_FUNC( Group );
 
+    int nstrips ( void ) const { return strips.size(); }
     int dropped ( void ) const { return _buffers_dropped; }
-    void buffer_size_callback ( void ( *buffer_size_callback ) ( nframes_t, void * ), void *user_data );
-    void sample_rate_changed_callback ( int ( *sample_rate_changed_callback ) ( nframes_t, void * ), void *user_data );
-    void port_connect_callback ( void ( *port_connect_callback ) ( jack_port_id_t a, jack_port_id_t b, int connect, void *arg), void *user_data );
+
+    Group ( );
+    Group ( const char * name, bool single );
+    virtual ~Group ( );
+
+    bool single ( void ) const { return _single; }
+
+    const char * name ( void ) const { return _name; }
+    void name ( const char *n );
+
+    std::list<Mixer_Strip*> strips;
+
+    /* static void process ( nframes_t nframes, void *v ); */
+    /* void process ( nframes_t nframes ); */
+
+    void add (Mixer_Strip*);
+    void remove (Mixer_Strip*);
+
+    /* Engine *engine ( void ) { return _engine; } */
 };
+

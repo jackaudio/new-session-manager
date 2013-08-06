@@ -116,7 +116,6 @@ private:
     char *generate_osc_path ( void );
     void change_osc_path ( char *path );
     
-    std::vector<JACK::Port> jack_input;
     Mode _mode;
     Type _type;
 

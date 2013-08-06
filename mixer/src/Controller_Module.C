@@ -38,7 +38,6 @@
 #include "FL/test_press.H"
 #include "FL/menu_popup.H"
 
-#include "Engine/Engine.H"
 #include "Chain.H"
 #include "OSC/Endpoint.H"
 
@@ -195,40 +194,31 @@ Controller_Module::set ( Log_Entry &e )
 void
 Controller_Module::mode ( Mode m )
 {
-
     if( mode() != CV && m == CV )
     {
         if ( control_output[0].connected() )
         {
-            chain()->engine()->lock();
+            chain()->client()->lock();
 
             Port *p = control_output[0].connected_port();
+            
+            char prefix[512];
+            snprintf( prefix, sizeof(prefix), "CV-%s", p->name() );
+            
+            add_aux_audio_input( prefix, 0 );
 
-            JACK::Port po( chain()->engine(), JACK::Port::Input, JACK::Port::Audio, p->name(), 0, "CV" );
-
-            if ( ! po.activate() )
-            {
-                fl_alert( "Could not activate JACK port \"%s\"", po.name() );
-                chain()->engine()->unlock();
-                return;
-            }
-
-            if ( po.valid() )
-            {
-                jack_input.push_back( po );
-            }
-
-            chain()->engine()->unlock();
+            chain()->client()->unlock();
         }
     }
     else if ( mode() == CV && m != CV )
     {
-        chain()->engine()->lock();
+        chain()->client()->lock();
+        
+        delete aux_audio_input.back().jack_port();
 
-        jack_input.back().shutdown();
-        jack_input.pop_back();
+        aux_audio_input.pop_back();
 
-        chain()->engine()->unlock();
+        chain()->client()->unlock();
     }
 
     _mode = m ;
@@ -909,7 +899,7 @@ Controller_Module::command_remove ( void )
 }
 
 /**********/
-/* Engine */
+/* Client */
 /**********/
 
 void
@@ -928,7 +918,7 @@ Controller_Module::process ( nframes_t nframes )
 
         if ( mode() == CV )
         {
-            f = *((float*)jack_input[0].buffer( nframes ));
+            f = *((float*)aux_audio_input[0].jack_port()->buffer( nframes ));
 
             const Port *p = control_output[0].connected_port();
 

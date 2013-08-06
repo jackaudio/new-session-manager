@@ -32,7 +32,6 @@
 #include "FL/Fl_Labelpad_Group.H"
 #include "FL/Fl_Scalepack.H"
 
-#include "Engine/Engine.H"
 #include "Chain.H"
 #include "DPM.H"
 

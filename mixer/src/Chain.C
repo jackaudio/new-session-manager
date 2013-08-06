@@ -72,11 +72,11 @@
 #include "FL/test_press.H"
 
 #include "debug.h"
-#include "Engine/Engine.H"
+#include "Group.H"
 
 #include "Mixer_Strip.H"
 #include <dsp.h>
-
+#include "Mixer.H"
 extern char *instance_name;
 
 
@@ -87,7 +87,6 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
 
 {
     _deleting = false;
-    _engine = NULL;
 
     int X = 0;
     int Y = 0;
@@ -174,18 +173,23 @@ Chain::~Chain ( )
 
     _deleting = true;
 
-    engine()->lock();
+    client()->lock();
 
     for ( unsigned int i = scratch_port.size(); i--; )
         delete[] (sample_t*)scratch_port[i].buffer();
     
     /* if we leave this up to FLTK, it will happen after we've
-     already destroyed the engine */
+     already destroyed the client */
     modules_pack->clear();
     controls_pack->clear();
 
-    delete _engine;
-    _engine = NULL;
+    client()->unlock();
+}
+
+Group *
+Chain::client ( void ) 
+{
+    return strip()->group();
 }
 
 
@@ -302,7 +306,7 @@ Chain::remove ( Controller_Module *m )
 {
     DMESSAGE( "Removing controller module from chain" );
 
-    engine()->lock();
+    client()->lock();
 
     m->disconnect();
 
@@ -311,7 +315,7 @@ Chain::remove ( Controller_Module *m )
 
     build_process_queue();
 
-    engine()->unlock();
+    client()->unlock();
 
     redraw();
 }
@@ -340,7 +344,7 @@ Chain::remove ( Module *m )
         fl_alert( "Can't remove module at this point because the resultant chain is invalid" );
     }
 
-    engine()->lock();
+    client()->lock();
 
     strip()->handle_module_removed( m );
 
@@ -348,7 +352,7 @@ Chain::remove ( Module *m )
 
     configure_ports();
 
-    engine()->unlock();
+    client()->unlock();
 }
 
 /* determine number of output ports, signal if changed.  */
@@ -357,7 +361,7 @@ Chain::configure_ports ( void )
 {
      int nouts = 0;
 
-    engine()->lock();
+    client()->lock();
 
     for ( int i = 0; i < modules(); ++i )
     {
@@ -378,15 +382,15 @@ Chain::configure_ports ( void )
         for ( unsigned int i = 0; i < req_buffers; ++i )
         {
             Module::Port p( NULL, Module::Port::OUTPUT, Module::Port::AUDIO );
-            p.connect_to( new sample_t[engine()->nframes()] );
-            buffer_fill_with_silence( (sample_t*)p.buffer(), engine()->nframes() );
+            p.connect_to( new sample_t[client()->nframes()] );
+            buffer_fill_with_silence( (sample_t*)p.buffer(), client()->nframes() );
             scratch_port.push_back( p );
         }
     }
 
     build_process_queue();
 
-    engine()->unlock();
+    client()->unlock();
 
     parent()->redraw();
 }
@@ -454,47 +458,40 @@ Chain::maximum_name_length ( void )
     return JACK::Client::maximum_name_length() - ( strlen( instance_name ) + 1 );
 }
 
+void
+Chain::freeze_ports ( void )
+{
+    for ( int i = 0; i < modules(); i++ )
+    {
+        Module *m = module(i);
+        m->freeze_ports();
+    }
+}
+
+void
+Chain::thaw_ports ( void )
+{
+    for ( int i = 0; i < modules(); i++ )
+    {
+        Module *m = module(i);
+        m->thaw_ports();
+    }
+}
+
 /* rename chain... we have to let our modules know our name has
  * changed so they can take the appropriate action (in particular the
  * JACK module). */
 void
 Chain::name ( const char *name )
 {
-    char ename[512];
-    snprintf( ename, sizeof(ename), "%s/%s", instance_name, name );
-
-    if ( ! _engine )
-    {
-        _engine = new Engine( &Chain::process, this );
-
-        engine()->buffer_size_callback( &Chain::buffer_size, this );
-        engine()->port_connect_callback( &Chain::port_connect, this );
-        engine()->sample_rate_changed_callback( &Chain::sample_rate_change, this );
-
-        Module::set_sample_rate( engine()->sample_rate() );
-        
-        const char *jack_name = engine()->init( ename );
-
-        if ( ! jack_name )
-        {
-            _engine = NULL;
-
-            fl_alert( "Could not create JACK client. Perhaps the sound device already in use. In any event, now I'll die." );
-            exit( 1 );
-            return;
-        }
-    }
-    else
-    {
-        DMESSAGE( "Renaming JACK client from \"%s\" to \"%s\"", _name, ename );
-
-        _name = engine()->name( ename );
-        /* FIXME: discarding the name jack picked is technically wrong! */
-
-    }
-
     _name = name;
 
+    if ( strip()->group() )
+    {
+        if ( strip()->group()->single() )
+            strip()->group()->name(name);
+    }
+    
     for ( int i = 0; i < modules(); ++i )
     {
         module( i )->handle_chain_name_changed();
@@ -522,7 +519,7 @@ Chain::add ( Controller_Module *m )
 bool
 Chain::insert ( Module *m, Module *n )
 {
-    engine()->lock();
+    client()->lock();
 
     if ( !m )
     {
@@ -581,7 +578,7 @@ Chain::insert ( Module *m, Module *n )
 
     configure_ports();
 
-    engine()->unlock();
+    client()->unlock();
 
     DMESSAGE( "Module \"%s\" has %i:%i audio and %i:%i control ports",
               n->name(),
@@ -595,7 +592,7 @@ Chain::insert ( Module *m, Module *n )
 
 err:
 
-    engine()->unlock();
+    client()->unlock();
 
     DMESSAGE( "Insert failed" );
 
@@ -606,13 +603,13 @@ err:
 void
 Chain::add_control ( Controller_Module *m )
 {
-    engine()->lock();
+    client()->lock();
 
     controls_pack->add( m );
 
     configure_ports();
 
-    engine()->unlock();
+    client()->unlock();
 
     controls_pack->redraw();
 }
@@ -797,14 +794,8 @@ Chain::do_export ( const char *filename )
 
 
 /**********/
-/* Engine */
+/* Client */
 /**********/
-
-void
-Chain::process ( nframes_t nframes, void *v )
-{
-    ((Chain*)v)->process( nframes );
-}
 
 void
 Chain::process ( nframes_t nframes )
@@ -815,12 +806,6 @@ Chain::process ( nframes_t nframes )
 
         m->process( nframes );
     }
-}
-
-void
-Chain::buffer_size ( nframes_t nframes, void *v )
-{
-    ((Chain*)v)->buffer_size( nframes );
 }
 
 void
@@ -841,12 +826,6 @@ Chain::buffer_size ( nframes_t nframes )
 }
 
 int
-Chain::sample_rate_change ( nframes_t nframes, void *v )
-{
-    return ((Chain*)v)->sample_rate_change( nframes );
-}
-
-int
 Chain::sample_rate_change ( nframes_t nframes )
 {
     Module::set_sample_rate ( nframes );
@@ -860,12 +839,6 @@ Chain::sample_rate_change ( nframes_t nframes )
     return 0;
 }
 
-void
-Chain::port_connect ( jack_port_id_t a, jack_port_id_t b, int connect, void *v )
-{
-    ((Chain*)v)->port_connect( a, b, connect );
-}
-
 /* handle jack port connection change */
 void
 Chain::port_connect ( jack_port_id_t a, jack_port_id_t b, int connect )
@@ -875,8 +848,8 @@ Chain::port_connect ( jack_port_id_t a, jack_port_id_t b, int connect )
 
     /* this is called from JACK non-RT thread... */
    
-    if ( jack_port_is_mine( engine()->jack_client(), jack_port_by_id( engine()->jack_client(), a ) ) ||
-         jack_port_is_mine( engine()->jack_client(), jack_port_by_id( engine()->jack_client(), b ) ))
+    if ( jack_port_is_mine( client()->jack_client(), jack_port_by_id( client()->jack_client(), a ) ) ||
+         jack_port_is_mine( client()->jack_client(), jack_port_by_id( client()->jack_client(), b ) ))
     {
         Fl::awake( Chain::update_connection_status, this );
     }

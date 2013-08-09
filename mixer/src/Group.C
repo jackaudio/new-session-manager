@@ -23,18 +23,21 @@
 #include "Mixer_Strip.H"
 #include "Module.H"
 
+#include <unistd.h>
 extern char *instance_name;
 
 Group::Group ( )
 {
     _single =false;
     _name = NULL;
+    _dsp_load = _load_coef = 0;
 }
 
 Group::Group ( const char *name, bool single ) : Loggable ( !single )
 {
     _single = single;
     _name = strdup(name);
+    _dsp_load = _load_coef = 0;
 
     // this->name( name );
     
@@ -117,6 +120,8 @@ Group::freewheel ( bool starting )
 int
 Group::buffer_size ( nframes_t nframes )
 {
+    recal_load_coef();
+
     /* JACK calls this in the RT thread, even though it's a
      * non-realtime operation. This mucks up our ability to do
      * THREAD_ASSERT, so just lie and say this is the UI thread... */
@@ -154,6 +159,8 @@ Group::port_connect( jack_port_id_t a, jack_port_id_t b, int connect )
 int
 Group::process ( nframes_t nframes )
 {
+    jack_time_t then = jack_get_time();
+
     /* FIXME: wrong place for this */
     _thread.set( "RT" );
 
@@ -166,6 +173,7 @@ Group::process ( nframes_t nframes )
         ++_buffers_dropped;
         return 0;
     }
+
 
     /* since feedback loops are forbidden and outputs are
      * summed, we don't care what order these are processed
@@ -180,12 +188,21 @@ Group::process ( nframes_t nframes )
 
     unlock();
 
+    _dsp_load = (float)(jack_get_time() - then ) * _load_coef;
+
     return 0;
 }
 
+void
+Group::recal_load_coef ( void )
+{
+    _load_coef = 1.0f / ( nframes() / (float)sample_rate() * 1000000.0 );
+}
 int
 Group::sample_rate_changed ( nframes_t srate )
 {
+    recal_load_coef();
+
     for ( std::list<Mixer_Strip*>::iterator i = strips.begin();
           i != strips.end();
           i++ )

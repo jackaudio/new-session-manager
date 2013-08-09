@@ -41,6 +41,9 @@ class Group : public Loggable, public JACK::Client, public Mutex
     int _buffers_dropped;                                       /* buffers dropped because of locking */
 /*     int _buffers_dropped;                                       /\* buffers dropped because of locking *\/ */
 
+    volatile float _dsp_load;
+    float _load_coef;
+
     int sample_rate_changed ( nframes_t srate );
     void shutdown ( void );
     int process ( nframes_t nframes );
@@ -56,6 +59,7 @@ class Group : public Loggable, public JACK::Client, public Mutex
 
     void request_locate ( nframes_t frame );
 
+    void recal_load_coef ( void );
 
 protected:
 
@@ -71,6 +75,7 @@ public:
 
     LOG_CREATE_FUNC( Group );
 
+    float dsp_load ( void ) const { return _dsp_load; }
     int nstrips ( void ) const { return strips.size(); }
     int dropped ( void ) const { return _buffers_dropped; }
 

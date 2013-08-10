@@ -74,6 +74,8 @@ Mixer_Strip::Mixer_Strip( const char *strip_name ) : Fl_Group( 0, 0, 120, 600 )
 
     _group = new Group(strip_name, true);
 
+    _group->add( this );
+
     chain( new Chain() );
 
     _chain->initialize_with_default();

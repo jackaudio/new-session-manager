@@ -19,6 +19,8 @@ def options(opt):
     #                help="Link to system-installed shared NTK instead of bundled version")    
     opt.add_option('--enable-debug', action='store_true', default=False, dest='debug',
                     help='Build for debugging')
+    opt.add_option('--disable-sse', action='store_false', default=True, dest='sse',
+                    help='Disable SSE optimization')
     opt.add_option('--project', action='store', default=False, dest='project',
                     help='Limit build to a single project (' + ', '.join( projects ) + ')')
 
@@ -32,43 +34,6 @@ def configure(conf):
     conf.load('ntk_fluid')
     conf.load('gccdeps')
     conf.line_just = 52
-
-    optimization_flags = [
-            "-O3",
-            "-fomit-frame-pointer",
-            "-ffast-math",
-            "-msse",
-            "-mfpmath=sse",
-            "-ftree-vectorize",
-#            "-fstrength-reduce",
-            "-pipe"
-            ]
-
-    debug_flags = [ '-O0', '-g3' ]
-
-
-    if Options.options.debug:
-        conf.env.append_value('CFLAGS', debug_flags )
-        conf.env.append_value('CXXFLAGS', debug_flags )
-    else:
-        conf.env.append_value('CFLAGS', optimization_flags )
-        conf.env.append_value('CXXFLAGS', optimization_flags )
-        conf.define( 'NDEBUG', 1 )
-
-    conf.define( "_GNU_SOURCE", 1)
-
-    conf.env.append_value('CFLAGS',['-Wall'])
-#    conf.env.append_value('CXXFLAGS',['-Wall','-fno-exceptions', '-fno-rtti'])
-    conf.env.append_value('CXXFLAGS',['-Wall','-fno-rtti'])
-
-    global_flags = [ '-pthread',
-                     '-D_LARGEFILE64_SOURCE',
-                     '-D_FILE_OFFSET_BITS=64',
-                     '-D_GNU_SOURCE' ]
-
-    
-    conf.env.append_value('CFLAGS', global_flags )
-    conf.env.append_value('CXXFLAGS', global_flags )
 
     conf.env['LIB_PTHREAD'] = ['pthread']
     conf.env['LIB_DL'] = ['dl']
@@ -95,11 +60,53 @@ def configure(conf):
     conf.check_cfg(package='liblo', uselib_store='LIBLO',args="--cflags --libs",
                       atleast_version='0.26', mandatory=True)
 
-
 ###
 
     for i in common:
         conf.recurse(i)
+
+    optimization_flags = [
+            "-O3",
+            "-fomit-frame-pointer",
+            "-ffast-math",
+            "-pipe"
+            ]
+    
+    if Options.options.sse:
+        print('Using SSE optimization')
+        optimization_flags.extend( [
+            "-msse2",
+            "-mfpmath=sse",
+            "-ftree-vectorize" ] )
+        conf.define( 'USE_SSE', 1 )
+
+    debug_flags = [ '-O0', '-g3' ]
+
+    if Options.options.debug:
+        print('Building for debugging')
+        conf.env.append_value('CFLAGS', debug_flags )
+        conf.env.append_value('CXXFLAGS', debug_flags )
+    else:
+        print('Building for performance')
+        conf.env.append_value('CFLAGS', optimization_flags )
+        conf.env.append_value('CXXFLAGS', optimization_flags )
+        conf.define( 'NDEBUG', 1 )
+
+    conf.define( "_GNU_SOURCE", 1)
+
+    conf.env.append_value('CFLAGS',['-Wall'])
+#    conf.env.append_value('CXXFLAGS',['-Wall','-fno-exceptions', '-fno-rtti'])
+    conf.env.append_value('CXXFLAGS',['-Wall','-fno-rtti'])
+
+    global_flags = [ '-pthread',
+                     '-D_LARGEFILE64_SOURCE',
+                     '-D_FILE_OFFSET_BITS=64',
+                     '-D_GNU_SOURCE' ]
+
+    
+    conf.env.append_value('CFLAGS', global_flags )
+    conf.env.append_value('CXXFLAGS', global_flags )
+
 
     conf.env.PROJECT = conf.options.project
 

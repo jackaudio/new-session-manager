@@ -26,7 +26,9 @@
 
 #include "debug.h"
 
-
+#ifdef __SSE2_MATH__
+#include <xmmintrin.h>
+#endif
 
 namespace JACK
 {
@@ -113,6 +115,11 @@ namespace JACK
     void
     Client::thread_init ( void *arg )
     {
+#if __SSE2_MATH__
+    /* set FTZ and DAZ flags */
+    _mm_setcsr(_mm_getcsr() | 0x8040);
+#endif
+
         ((Client*)arg)->thread_init();
     }
 

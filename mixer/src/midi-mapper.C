@@ -37,6 +37,7 @@ using namespace MIDI;
 #include <map>
 #include <string>
 
+#include <signal.h>
 #include <unistd.h>                                             /* usleep */
 /* simple program to translate from MIDI<->OSC Signals using a fixed mapping  */
 
@@ -129,6 +130,10 @@ public:
             midi_output_port = 0;
         }
 
+    virtual ~Engine ( )
+        {
+            deactivate();
+        }
      
     int process ( nframes_t nframes )
         {
@@ -645,10 +650,23 @@ decode_nrpn ( nrpn_state *state, midievent e, int *take_action )
     return NULL;
 }
 
+
+static volatile int got_sigterm = 0;
+
+void
+sigterm_handler ( int )
+{
+    got_sigterm = 1;
+}
+
 int
 main ( int argc, char **argv )
 {
     nrpn_state nrpn_state[16];
+
+    signal( SIGTERM, sigterm_handler );
+    signal( SIGHUP, sigterm_handler );
+    signal( SIGINT, sigterm_handler );
 
     nsm = nsm_new();
 //    set_nsm_callbacks( nsm );
@@ -686,7 +704,7 @@ main ( int argc, char **argv )
 
     jack_midi_event_t ev;
     midievent e;
-    while ( true )
+    while ( ! got_sigterm )
     {
         osc->wait(20);
         check_nsm();
@@ -786,6 +804,12 @@ main ( int argc, char **argv )
             }
 //            e.pretty_print();
         }
+
+
 //    usleep( 500 );
     }
+
+    delete engine;
+
+    return 0;
 }

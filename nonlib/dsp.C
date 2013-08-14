@@ -21,47 +21,73 @@
 
 #include "dsp.h"
 #include "string.h" // for memset.
+#include <stdlib.h> 
 
-/* TODO: these functions are all targets for optimization (SSE?) */
+static const int ALIGNMENT = 16;
+
+sample_t *
+buffer_alloc ( nframes_t size )
+{
+    void *p;
+    
+    posix_memalign( &p, ALIGNMENT, size * sizeof( sample_t ) );
+
+    return (sample_t*)p;
+}
 
 void
-buffer_apply_gain ( sample_t *buf, nframes_t nframes, float g )
+buffer_apply_gain ( sample_t * __restrict__ buf, nframes_t nframes, float g )
 {
+    sample_t * buf_ = (sample_t*) __builtin_assume_aligned(buf,ALIGNMENT);
+	
     if ( g != 1.0f )
         while ( nframes-- )
-            *(buf++) *= g;
+	  *(buf_++) *= g;
 }
 
 void
-buffer_apply_gain_buffer ( sample_t *buf, const sample_t *gainbuf, nframes_t nframes )
+buffer_apply_gain_buffer ( sample_t * __restrict__ buf, const sample_t * __restrict__ gainbuf, nframes_t nframes )
 {
+    sample_t * buf_ = (sample_t*) __builtin_assume_aligned(buf,ALIGNMENT);
+    const sample_t * gainbuf_ = (const sample_t*) __builtin_assume_aligned(gainbuf,ALIGNMENT);
+
     while ( nframes-- )
-        *(buf++) *= *(gainbuf++);
+        *(buf_++) *= *(gainbuf_++);
 }
 
 void
-buffer_copy_and_apply_gain_buffer ( sample_t *dst, const sample_t *src, const sample_t *gainbuf, nframes_t nframes )
+buffer_copy_and_apply_gain_buffer ( sample_t * __restrict__ dst, const sample_t * __restrict__ src, const sample_t * __restrict__ gainbuf, nframes_t nframes )
 {
-    while ( nframes-- )
-        *(dst++) = *(src++) * *(gainbuf++);
+    sample_t * dst_ = (sample_t*) __builtin_assume_aligned(dst,ALIGNMENT);
+    const sample_t * src_ = (const sample_t*) __builtin_assume_aligned(src,ALIGNMENT);
+    const sample_t * gainbuf_ = (const sample_t*) __builtin_assume_aligned(gainbuf,ALIGNMENT);
+    
+	while ( nframes-- )
+        *(dst_++) = *(src_++) * *(gainbuf_++);
 }
 
 void
-buffer_mix ( sample_t *dst, const sample_t *src, nframes_t nframes )
+buffer_mix ( sample_t * __restrict__ dst, const sample_t * __restrict__ src, nframes_t nframes )
 {
+    sample_t * dst_ = (sample_t*) __builtin_assume_aligned(dst,ALIGNMENT);
+    const sample_t * src_ = (const sample_t*) __builtin_assume_aligned(src,ALIGNMENT);
+
     while ( nframes-- )
-        *(dst++) += *(src++);
+        *(dst_++) += *(src_++);
 }
 
 void
-buffer_mix_with_gain ( sample_t *dst, const sample_t *src, nframes_t nframes, float g )
+buffer_mix_with_gain ( sample_t * __restrict__ dst, const sample_t * __restrict__ src, nframes_t nframes, float g )
 {
+    sample_t * dst_ = (sample_t*) __builtin_assume_aligned(dst,ALIGNMENT);
+    const sample_t * src_ = (const sample_t*) __builtin_assume_aligned(src,ALIGNMENT);
+   
     while ( nframes-- )
-        *(dst++) += *(src++) * g;
+        *(dst_++) += *(src_++) * g;
 }
 
 void
-buffer_interleave_one_channel ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes )
+buffer_interleave_one_channel ( sample_t * __restrict__ dst, const sample_t * __restrict__ src, int channel, int channels, nframes_t nframes )
 {
     dst += channel;
 
@@ -73,7 +99,7 @@ buffer_interleave_one_channel ( sample_t *dst, const sample_t *src, int channel,
 }
 
 void
-buffer_interleave_one_channel_and_mix ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes )
+buffer_interleave_one_channel_and_mix ( sample_t *__restrict__ dst, const sample_t * __restrict__ src, int channel, int channels, nframes_t nframes )
 {
     dst += channel;
 
@@ -85,7 +111,7 @@ buffer_interleave_one_channel_and_mix ( sample_t *dst, const sample_t *src, int 
 }
 
 void
-buffer_deinterleave_one_channel ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes )
+buffer_deinterleave_one_channel ( sample_t * __restrict__ dst, const sample_t * __restrict__ src, int channel, int channels, nframes_t nframes )
 {
     src += channel;
 
@@ -115,18 +141,35 @@ buffer_is_digital_black ( sample_t *buf, nframes_t nframes )
     return true;
 }
 
+float
+buffer_get_peak ( const sample_t * __restrict__ buf, nframes_t nframes )
+{
+    const sample_t * buf_ = (const sample_t*) __builtin_assume_aligned(buf,ALIGNMENT);
+
+    float p = 0.0f;
+  
+    while ( nframes-- )
+    {
+	const float s = fabs(*(buf_++));
+        p = s > p ? s : p;
+    }
+
+    return p;
+}
+
 void
-buffer_copy ( sample_t *dst, const sample_t *src, nframes_t nframes )
+buffer_copy ( sample_t * __restrict__ dst, const sample_t * __restrict__ src, nframes_t nframes )
 {
     memcpy( dst, src, nframes * sizeof( sample_t ) );
 }
 
 void
-buffer_copy_and_apply_gain ( sample_t *dst, const sample_t *src, nframes_t nframes, float gain )
+buffer_copy_and_apply_gain ( sample_t * __restrict__ dst, const sample_t * __restrict__ src, nframes_t nframes, float gain )
 {
     memcpy( dst, src, nframes * sizeof( sample_t ) );
     buffer_apply_gain( dst, nframes, gain );
 }
+
 
 void
 Value_Smoothing_Filter::sample_rate ( nframes_t n )
@@ -138,8 +181,10 @@ Value_Smoothing_Filter::sample_rate ( nframes_t n )
 }
 
 bool
-Value_Smoothing_Filter::apply( sample_t *dst, nframes_t nframes, float gt )
+Value_Smoothing_Filter::apply( sample_t * __restrict__ dst, nframes_t nframes, float gt )
 {
+    sample_t * dst_ = (sample_t*) __builtin_assume_aligned(dst,ALIGNMENT);
+    
     const float a = 0.07f;
     const float b = 1 + a;
     
@@ -155,7 +200,7 @@ Value_Smoothing_Filter::apply( sample_t *dst, nframes_t nframes, float gt )
     {
         g1 += w * (gm - g1 - a * g2);
         g2 += w * (g1 - g2);
-        dst[i] = g2;
+        dst_[i] = g2;
     }
 
     if ( fabsf( gt - g2 ) < 0.0001f )

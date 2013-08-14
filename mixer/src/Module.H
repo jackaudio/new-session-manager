@@ -316,7 +316,7 @@ public:
     LOG_NAME_FUNC( Module );
 
     nframes_t nframes ( void ) const { return _nframes; }
-    void resize_buffers ( nframes_t v ) { _nframes = v; }
+    virtual void resize_buffers ( nframes_t v ) { _nframes = v; }
 
 
     int instances ( void ) const { return _instances; }

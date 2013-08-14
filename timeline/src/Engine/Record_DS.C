@@ -77,9 +77,9 @@ Record_DS::disk_thread ( void )
     const nframes_t nframes = _nframes * _disk_io_blocks;
 
     /* buffer to hold the interleaved data returned by the track reader */
-    sample_t *buf = new sample_t[ nframes * channels() ];
+    sample_t *buf = buffer_alloc( nframes * channels() );
 #ifndef AVOID_UNNECESSARY_COPYING
-    sample_t *cbuf = new sample_t[ nframes ];
+    sample_t *cbuf = buffer_alloc( nframes );
 #endif
 
     const size_t block_size = nframes * sizeof( sample_t );
@@ -98,7 +98,6 @@ Record_DS::disk_thread ( void )
         {
 
 #ifdef AVOID_UNNECESSARY_COPYING
-
             /* interleave direcectly from the ringbuffer to avoid
              * unnecessary copying */
 
@@ -122,7 +121,6 @@ Record_DS::disk_thread ( void )
                 const nframes_t f = rbd[ 0 ].len / sizeof( sample_t );
 
                 /* do the first half */
-                buffer_deinterleave_one_channel( (sample_t*)rbd[ 0 ].buf, buf, i, channels(), f );
                 buffer_interleave_one_channel( buf, (sample_t*)rbd[ 0 ].buf, i, channels(), f );
 
                 assert( rbd[ 1 ].len >= ( nframes - f ) * sizeof( sample_t ) );
@@ -158,7 +156,7 @@ Record_DS::disk_thread ( void )
         const size_t block_size = _nframes * sizeof( sample_t );
 
 #ifdef AVOID_UNNECESSARY_COPYING
-        sample_t *cbuf = new sample_t[ nframes ];
+        sample_t *cbuf = buffer_alloc( nframes );
 #endif
 
         while ( blocks_ready-- > 0 || ( ! sem_trywait( &_blocks ) && errno != EAGAIN ) )
@@ -184,14 +182,14 @@ Record_DS::disk_thread ( void )
         }
 
 #ifdef AVOID_UNNECESSARY_COPYING
-        delete[] cbuf;
+        free(cbuf);
 #endif
 
     }
 
-    delete[] buf;
+    free(buf);
 #ifndef AVOID_UNNECESSARY_COPYING
-    delete[] cbuf;
+    free(cbuf);
 #endif
 
     DMESSAGE( "finalzing capture" );

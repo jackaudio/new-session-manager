@@ -29,6 +29,7 @@
 #include "Meter_Module.H"
 #include "DPM.H"
 #include "JACK/Port.H"
+#include "dsp.h"
 
 
 
@@ -170,23 +171,6 @@ Meter_Module::handle ( int m )
 /* Engine */
 /**********/
 
-static float
-get_peak_sample ( const sample_t* buf, nframes_t nframes )
-{
-    float p = 0.0f;
-
-    const sample_t *f = buf;
-
-    for ( int j = nframes; j--; ++f )
-    {
-        const float s = fabs( *f );
-
-        if ( s > p )
-            p = s;
-    }
-
-    return p;
-}
 
 void
 Meter_Module::process ( nframes_t nframes )
@@ -196,7 +180,7 @@ Meter_Module::process ( nframes_t nframes )
         if ( audio_input[i].connected() )
         {
 //            float dB = 20 * log10( get_peak_sample( (float*)audio_input[i].buffer(), nframes ) / 2.0f );
-            float dB = 20 * log10( get_peak_sample( (float*)audio_input[i].buffer(), nframes ) );
+            float dB = 20 * log10( buffer_get_peak( (sample_t*) audio_input[i].buffer(), nframes ) );
 
             ((float*)control_output[0].buffer())[i] = dB;
             if (dB > control_value[i])

@@ -176,7 +176,7 @@ Chain::~Chain ( )
     client()->lock();
 
     for ( unsigned int i = scratch_port.size(); i--; )
-        delete[] (sample_t*)scratch_port[i].buffer();
+        free( (sample_t*)scratch_port[i].buffer() );
     
     /* if we leave this up to FLTK, it will happen after we've
      already destroyed the client */
@@ -376,13 +376,13 @@ Chain::configure_ports ( void )
     if ( scratch_port.size() < req_buffers )
     {
         for ( unsigned int i = scratch_port.size(); i--; )
-            delete[] (sample_t*)scratch_port[i].buffer();
+            free(scratch_port[i].buffer());
         scratch_port.clear();
 
         for ( unsigned int i = 0; i < req_buffers; ++i )
         {
             Module::Port p( NULL, Module::Port::OUTPUT, Module::Port::AUDIO );
-            p.connect_to( new sample_t[client()->nframes()] );
+            p.connect_to( buffer_alloc( client()->nframes() ) );
             buffer_fill_with_silence( (sample_t*)p.buffer(), client()->nframes() );
             scratch_port.push_back( p );
         }
@@ -812,7 +812,7 @@ void
 Chain::buffer_size ( nframes_t nframes )
 {
     for ( unsigned int i = scratch_port.size(); i--; )
-        delete[] (sample_t*)scratch_port[i].buffer();
+        free(scratch_port[i].buffer());
     scratch_port.clear();
 
     configure_ports();

@@ -119,9 +119,9 @@ Playback_DS::disk_thread ( void )
     DMESSAGE( "playback thread running" );
 
     /* buffer to hold the interleaved data returned by the track reader */
-    sample_t *buf = new sample_t[ _nframes * channels() * _disk_io_blocks ];
+    sample_t *buf = buffer_alloc( _nframes * channels() * _disk_io_blocks );
 #ifndef AVOID_UNNECESSARY_COPYING
-    sample_t *cbuf = new sample_t[ _nframes * _disk_io_blocks ];
+    sample_t *cbuf = buffer_alloc( _nframes * _disk_io_blocks );
 #endif
 
     int blocks_ready = 0;
@@ -168,6 +168,7 @@ Playback_DS::disk_thread ( void )
         {
 
 #ifdef AVOID_UNNECESSARY_COPYING
+
             /* deinterleave direcectly into the ringbuffer to avoid
              * unnecessary copying */
 
@@ -217,9 +218,9 @@ done:
 
     DMESSAGE( "playback thread terminating" );
 
-    delete[] buf;
+    free(buf);
 #ifndef AVOID_UNNECESSARY_COPYING
-    delete[] cbuf;
+    free(cbuf);
 #endif
 
     _terminate = false;

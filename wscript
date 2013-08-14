@@ -76,8 +76,8 @@ def configure(conf):
         print('Using SSE optimization')
         optimization_flags.extend( [
             "-msse2",
-            "-mfpmath=sse",
-            "-ftree-vectorize" ] )
+            "-mfpmath=sse" ] );
+
         conf.define( 'USE_SSE', 1 )
 
     debug_flags = [ '-O0', '-g3' ]

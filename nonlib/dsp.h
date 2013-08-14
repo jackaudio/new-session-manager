@@ -22,6 +22,8 @@
 #include "JACK/Client.H"
 #include <math.h>
 
+
+sample_t *buffer_alloc ( nframes_t size );
 void buffer_apply_gain ( sample_t *buf, nframes_t nframes, float g );
 void buffer_apply_gain_buffer ( sample_t *buf, const sample_t *gainbuf, nframes_t nframes );
 void buffer_copy_and_apply_gain_buffer ( sample_t *dst, const sample_t *src, const sample_t *gainbuf, nframes_t nframes );
@@ -31,7 +33,8 @@ void buffer_interleave_one_channel ( sample_t *dst, const sample_t *src, int cha
 void buffer_interleave_one_channel_and_mix ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes );
 void buffer_deinterleave_one_channel ( sample_t *dst, const sample_t *src, int channel, int channels, nframes_t nframes );
 void buffer_fill_with_silence ( sample_t *buf, nframes_t nframes );
-bool buffer_is_digital_black ( sample_t *buf, nframes_t nframes );
+bool buffer_is_digital_black ( const sample_t *buf, nframes_t nframes );
+float buffer_get_peak ( const sample_t *buf, nframes_t nframes );
 void buffer_copy ( sample_t *dst, const sample_t *src, nframes_t nframes );
 void buffer_copy_and_apply_gain ( sample_t *dst, const sample_t *src, nframes_t nframes, float gain );
 

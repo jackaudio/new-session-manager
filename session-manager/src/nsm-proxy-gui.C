@@ -25,6 +25,7 @@
 #define APP_NAME "NSM Proxy"
 #define APP_TITLE "NSM Proxy"
 
+#include <FL/Fl_File_Chooser.H>
 #include "NSM_Proxy_UI.H"
 #include <lo/lo.h>
 #include <signal.h>
@@ -50,6 +51,8 @@ osc_update ( const char *path, const char *types, lo_arg **argv, int argc, lo_me
         ui->arguments_input->value( &argv[0]->s );
     else if (!strcmp( path, "/nsm/proxy/executable" ))
         ui->executable_input->value( &argv[0]->s );
+    else if (!strcmp( path, "/nsm/proxy/config_file" ))
+        ui->config_file_input->value( &argv[0]->s );
     else if (!strcmp( path, "/nsm/proxy/save_signal" ))
     {
         if ( argv[0]->i == SIGUSR1 )
@@ -60,6 +63,15 @@ osc_update ( const char *path, const char *types, lo_arg **argv, int argc, lo_me
             ui->save_signal_choice->value( 3 );
         else
             ui->save_signal_choice->value( 0 );
+    }
+    else if (!strcmp( path, "/nsm/proxy/stop_signal" ))
+    {
+        if ( argv[0]->i == SIGTERM )
+            ui->stop_signal_choice->value( 0 );
+        else if ( argv[0]->i == SIGINT )
+            ui->stop_signal_choice->value( 1 );
+        else if ( argv[0]->i == SIGHUP )
+            ui->stop_signal_choice->value( 2 );
     }
 
     Fl::unlock();
@@ -85,8 +97,10 @@ init_osc ( const char *osc_port )
 
     lo_server_thread_add_method( loth, "/nsm/proxy/executable", "s", osc_update, NULL );
     lo_server_thread_add_method( loth, "/nsm/proxy/arguments", "s", osc_update, NULL );
+    lo_server_thread_add_method( loth, "/nsm/proxy/config_file", "s", osc_update, NULL );
     lo_server_thread_add_method( loth, "/nsm/proxy/label", "s", osc_update, NULL );
     lo_server_thread_add_method( loth, "/nsm/proxy/save_signal", "i", osc_update, NULL );
+    lo_server_thread_add_method( loth, "/nsm/proxy/stop_signal", "i", osc_update, NULL );
 
     lo_server_thread_start( loth );
 }
@@ -104,9 +118,10 @@ handle_kill ( Fl_Widget *o, void *v )
 void
 handle_start ( Fl_Widget *o, void *v )
 {
-    lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/start", "ss",
+    lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/start", "sss",
                   ui->executable_input->value(),
-                  ui->arguments_input->value() );
+                  ui->arguments_input->value(),
+                  ui->config_file_input->value() );
 }
 
 void
@@ -120,6 +135,20 @@ void
 handle_executable ( Fl_Widget *o, void *v )
 {
     ui->label_input->value( ui->executable_input->value() );
+}
+
+
+void
+handle_config_file ( Fl_Widget *o, void *v )
+{
+}
+
+void
+handle_config_file_browse ( Fl_Widget *o, void *v )
+{
+    const char * file = fl_file_chooser( "Pick file", "*", NULL, 1 );
+
+    ui->config_file_input->value( file );
 }
 
 void
@@ -141,13 +170,34 @@ handle_save_signal ( Fl_Widget *o, void *v )
 }
 
 void
+handle_stop_signal ( Fl_Widget *o, void *v )
+{
+    int sig = SIGTERM;
+    
+    const char* picked = ui->stop_signal_choice->mvalue()->label();
+    
+    if ( !strcmp( picked, "SIGTERM" ) )
+        sig = SIGTERM;
+    else if ( !strcmp( picked, "SIGINT" ) )
+        sig = SIGINT;
+    else if ( !strcmp( picked, "SIGHUP" ) )
+        sig = SIGHUP;
+
+    lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE,"/nsm/proxy/stop_signal", "i",
+                  sig );
+}
+
+void
 connect_ui ( void )
 {
     ui->executable_input->callback( handle_executable, NULL );
+    ui->config_file_input->callback( handle_config_file, NULL );
     ui->kill_button->callback( handle_kill, NULL );
     ui->start_button->callback( handle_start, NULL );
     ui->save_signal_choice->callback( handle_save_signal, NULL );
+    ui->stop_signal_choice->callback( handle_stop_signal, NULL );
     ui->label_input->callback( handle_label, NULL );
+    ui->config_file_browse_button->callback( handle_config_file_browse, NULL );
 }
 
 

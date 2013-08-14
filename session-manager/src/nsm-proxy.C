@@ -56,16 +56,19 @@ class NSM_Proxy {
 
     char *_label;
     char *_executable;
+    char *_config_file;
     char *_arguments;
     int _save_signal;
+    int _stop_signal;
     int _pid;
 
 public:
 
     NSM_Proxy ( )
         {
-            _label = _executable = _arguments = 0;
+            _label = _executable = _arguments = _config_file = 0;
             _save_signal = 0;
+            _stop_signal = SIGTERM;
             _pid = 0;
         }
 
@@ -76,15 +79,17 @@ public:
     void kill ( void )
         {
             if ( _pid )
-                ::kill( _pid, SIGTERM );
+                ::kill( _pid, _stop_signal );
         }
 
-    bool start ( const char *executable, const char *arguments )
+    bool start ( const char *executable, const char *arguments, const char *config_file )
         {
             if ( _executable )
                 free( _executable );
             if ( _arguments )
                 free( _arguments );
+            if ( _config_file )
+                free( _config_file );
 
             _executable = strdup( executable );
 
@@ -92,6 +97,11 @@ public:
                 _arguments = strdup( arguments );
             else
                 _arguments = NULL;
+
+            if ( config_file )
+                _config_file = strdup( config_file );
+            else
+                _config_file = NULL;
 
             return start();
         }
@@ -128,6 +138,8 @@ public:
                 
                 setenv( "NSM_CLIENT_ID", nsm_client_id, 1 );
                 setenv( "NSM_SESSION_NAME", nsm_display_name, 1 );
+                if ( _config_file )
+                    setenv( "CONFIG_FILE", _config_file, 1 );
                 unsetenv( "NSM_URL" );
         
                 if ( -1 == execvp( "/bin/sh", args ) )
@@ -146,6 +158,11 @@ public:
     void save_signal ( int s )
         {
             _save_signal = s;
+        }
+
+    void stop_signal ( int s )
+        {
+            _stop_signal = s;
         }
     
     void label ( const char *s )
@@ -187,7 +204,12 @@ public:
             if ( _arguments && strlen(_arguments) )
                 fprintf( fp, "arguments\n\t%s\n", _arguments );
 
+            if ( _config_file && strlen(_config_file) )
+                fprintf( fp, "config file\n\t%s\n", _config_file );
+
             fprintf( fp, "save signal\n\t%i\n", _save_signal );
+
+            fprintf( fp, "stop signal\n\t%i\n", _stop_signal );
             
             if ( _label && strlen(_label) )
                 fprintf( fp, "label\n\t%s\n", _label );
@@ -221,9 +243,16 @@ public:
                     _executable = value;
                 else if (!strcmp( name, "arguments" ) )
                     _arguments = value;
+                else if (!strcmp( name, "config file" ) )
+                    _config_file = value;
                 else if ( !strcmp( name, "save signal" ) )
                 {
                     _save_signal = atoi( value );
+                    free( value );
+                }
+                else if ( !strcmp( name, "stop signal" ) )
+                {
+                    _stop_signal = atoi( value );
                     free( value );
                 }
                 else if ( !strcmp( name, "label" ) )
@@ -254,6 +283,8 @@ public:
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/label", "s", _label ? _label : "" );
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/executable", "s", _executable ? _executable : "" );
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/arguments", "s", _arguments ? _arguments : "" );
+            lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/config_file", "s", _config_file ? _config_file : "" );
+            lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/stop_signal", "i",  _stop_signal );
         }
 };
 
@@ -494,11 +525,19 @@ osc_save_signal ( const char *path, const char *types, lo_arg **argv, int argc, 
 }
 
 int
+osc_stop_signal ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+{
+    nsm_proxy->stop_signal( argv[0]->i );
+    
+    return 0;
+}
+
+int
 osc_start ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
     snapshot( project_file );
 
-    if ( nsm_proxy->start( &argv[0]->s, &argv[1]->s ) )
+    if ( nsm_proxy->start( &argv[0]->s, &argv[1]->s, &argv[2]->s ) )
     {
         hide_gui();
     }
@@ -567,8 +606,9 @@ init_osc ( const char *osc_port )
     /* GUI */
     lo_server_add_method( losrv, "/nsm/proxy/label", "s", osc_label, NULL );
     lo_server_add_method( losrv, "/nsm/proxy/save_signal", "i", osc_save_signal, NULL );
+    lo_server_add_method( losrv, "/nsm/proxy/stop_signal", "i", osc_stop_signal, NULL );
     lo_server_add_method( losrv, "/nsm/proxy/kill", "", osc_kill, NULL );
-    lo_server_add_method( losrv, "/nsm/proxy/start", "ss", osc_start, NULL );
+    lo_server_add_method( losrv, "/nsm/proxy/start", "sss", osc_start, NULL );
     lo_server_add_method( losrv, "/nsm/proxy/update", "", osc_update, NULL );
 
 }

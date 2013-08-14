@@ -42,13 +42,11 @@
 
 #include <lo/lo.h>
 
-#include <pthread.h>
+#include <jack/ringbuffer.h>
 
 int client_active = 0;
 
 jack_client_t *client;
-
-pthread_mutex_t port_lock;
 
 lo_server losrv;
 lo_address nsm_addr;
@@ -72,14 +70,20 @@ struct patch_record {
 
 struct port_record {
     char *port;
-    int reg;                                                    /* true if registered, false if unregistered */
     struct port_record *next;
 };
 
-static struct port_record *new_ports = NULL;
+struct port_notification_record {
+    int len;
+    int reg;                                                    /* true if registered, false if unregistered */
+    char port[];
+};
+
 static struct port_record *known_ports = NULL;
 
 static struct patch_record *patch_list = NULL;
+
+static jack_ringbuffer_t *port_ringbuffer = NULL;
 
 /**
  * Pretty-print patch relationship of /pr/
@@ -114,34 +118,18 @@ dequeue ( struct patch_record *pr )
 }
 
 void
-enqueue_port ( struct port_record **q, const char *port, int reg )
+enqueue_port ( struct port_record **q, const char *port )
 {
     struct port_record *p = malloc( sizeof( struct port_record ));
 
     p->port = strdup( port );
-    p->reg = reg;
     p->next = *q;
     *q = p;
 }
 
-struct port_record *
-dequeue_port ( struct port_record **q )
-{
-    if ( *q )
-    {
-        struct port_record *p = *q;
-
-        *q = p->next;
-
-        return p;
-    }
-
-    return NULL;
-}
-
 void enqueue_known_port ( const char *port )
 {
-    enqueue_port( &known_ports, port, 1 );
+    enqueue_port( &known_ports, port );
 }
 
 const char * find_known_port ( const char *port )
@@ -154,29 +142,6 @@ const char * find_known_port ( const char *port )
 
     return NULL;
 }
-
-
-void
-enqueue_new_port ( const char *port, int reg )
-{
-    pthread_mutex_lock( &port_lock );
-
-    enqueue_port( &new_ports, port, reg );
-
-    pthread_mutex_unlock( &port_lock );
-}
-
-struct port_record *
-dequeue_new_port ( void )
-{
-    pthread_mutex_lock( &port_lock );
-
-    struct port_record *p = dequeue_port( &new_ports );
-
-    pthread_mutex_unlock( &port_lock );
-    return p;
-}
-
 
 int
 process_patch ( const char *patch )
@@ -565,6 +530,8 @@ die ( void )
     if ( client_active )
         jack_deactivate( client );
 
+    printf( "JACKPATCH: Closing jack client\n" );
+
     jack_client_close( client );
     client = NULL;
     exit( 0 );
@@ -719,11 +686,31 @@ init_osc ( const char *osc_port )
     lo_server_add_method( losrv, "/reply", "ssss", osc_announce_reply, NULL );
 }
 
+struct port_notification_record *
+dequeue_new_port ( void )
+{
+    int size = 0;
+
+    if ( sizeof( int ) == jack_ringbuffer_peek( port_ringbuffer, (char*)&size, sizeof( int ) ) )
+    {
+        if ( jack_ringbuffer_read_space( port_ringbuffer ) >= size );
+        {
+            struct port_notification_record *pr = malloc( size );
+            
+            jack_ringbuffer_read( port_ringbuffer, (char*)pr, size );
+
+            return pr;
+        }
+    }
+
+    return NULL;
+}
+
 
 void
 check_for_new_ports ( void )
 {
-    struct port_record *p = NULL;
+    struct port_notification_record *p = NULL;
 
     while ( ( p = dequeue_new_port() ) )
     {
@@ -732,7 +719,6 @@ check_for_new_ports ( void )
         else
             remove_known_port( p->port );
         
-        free( p->port );
         free( p );
     }
 }
@@ -741,10 +727,22 @@ void
 port_registration_callback( jack_port_id_t id, int reg, void *arg )
 {
     jack_port_t *p = jack_port_by_id( client, id );
-    
     const char *port = jack_port_name( p );
 
-    enqueue_new_port( port, reg );
+    int size = strlen(port) + 1 + sizeof( struct port_notification_record );
+
+    struct port_notification_record *pr = malloc( size );
+
+    pr->len = size;
+    pr->reg = reg;
+    strcpy( pr->port, port );
+
+    if ( size != jack_ringbuffer_write( port_ringbuffer, (const char *)pr, size ) )
+    {
+        fprintf( stderr, "ERROR: port notification buffer overrun" );
+    }
+
+//    enqueue_new_port( port, reg );
 }
 
 /*  */
@@ -767,8 +765,7 @@ main ( int argc, char **argv )
         
     }
 
-    pthread_mutex_init( &port_lock, NULL  );
-    
+    port_ringbuffer = jack_ringbuffer_create( 1024 * 8 );
 
     set_traps();
         
@@ -812,7 +809,7 @@ main ( int argc, char **argv )
 
     for ( ;; )
     {
-        lo_server_recv_noblock( losrv, 500 );
+        lo_server_recv_noblock( losrv, 200 );
 
         if ( client_active )
             check_for_new_ports();

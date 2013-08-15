@@ -192,7 +192,7 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
     /* apply gain */
 
-    buffer_apply_gain( buf + ofs, cnt, _scale );
+    buffer_apply_gain_unaligned( buf + ofs, cnt, _scale );
 
     /* perform declicking if necessary */
 

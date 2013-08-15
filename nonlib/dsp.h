@@ -25,6 +25,7 @@
 
 sample_t *buffer_alloc ( nframes_t size );
 void buffer_apply_gain ( sample_t *buf, nframes_t nframes, float g );
+void buffer_apply_gain_unaligned ( sample_t *buf, nframes_t nframes, float g );
 void buffer_apply_gain_buffer ( sample_t *buf, const sample_t *gainbuf, nframes_t nframes );
 void buffer_copy_and_apply_gain_buffer ( sample_t *dst, const sample_t *src, const sample_t *gainbuf, nframes_t nframes );
 void buffer_mix ( sample_t *dst, const sample_t *src, nframes_t nframes );

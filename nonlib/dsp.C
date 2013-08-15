@@ -46,6 +46,14 @@ buffer_apply_gain ( sample_t * __restrict__ buf, nframes_t nframes, float g )
 }
 
 void
+buffer_apply_gain_unaligned ( sample_t * __restrict__ buf, nframes_t nframes, float g )
+{
+    if ( g != 1.0f )
+        while ( nframes-- )
+	  *(buf++) *= g;
+}
+
+void
 buffer_apply_gain_buffer ( sample_t * __restrict__ buf, const sample_t * __restrict__ gainbuf, nframes_t nframes )
 {
     sample_t * buf_ = (sample_t*) __builtin_assume_aligned(buf,ALIGNMENT);

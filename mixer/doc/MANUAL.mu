@@ -4,9 +4,7 @@
 
 -- Table Of Contents
 
-: User Manual
-
-:: The Mixer
+: Non Mixer User Manual
 
 / Mixer
 < non-mixer-complex.png
@@ -25,13 +23,9 @@
   After the project has been created. Hit `a` or choose `Mixer\/Add
   Strip` from the menu to add a new strip to the mixer.
 
-::: Display Options
+:: Mixer Groups
 
-  The display options, found in the `Options\/Display` submenu may be adjusted
-  to suit your needs. Set the color scheme, widget style, and other graphic
-  options to your liking. These options are global and affect all projects.
-
-::: Mixer Groups
+< group-dropdown.png
 
   Groups serve several purposes. Firstly, they allow for some
   organization of strips. Groups also allow parallel relationships of
@@ -40,7 +34,7 @@
   groups, each of which can contain an unlimited number of mixer
   strips.
 
-:::: How to Choose Groupings
+::: How to Choose Groupings
      
   All strips in a group should be completely parallel with no feedback
   loop connections. A typical group might be named 'Input' and contain
@@ -51,7 +45,7 @@
   output configurations (e.g. stereo or B-Format), that all connect to
   a master bus, then you have a candidate for a group.
 
-:::: Considering JACK Overhead
+::: Considering JACK Overhead
 
   JACK provides immense flexibility. But, as in most situations, that
   flexibility comes with a cost. In JACK the cost is a context switch
@@ -93,8 +87,8 @@
   latency setting the average time a proces cycle takes to complete is
   2.7ms, then the DSP load is 100%. The usable ceiling on DSP load is
   80%. This is true for both JACK1 and JACK2. The difference is that
-  JACK2 may use all available CPU cores to execute the graph \(if
-  there are enough clients in parallel signal flow\).
+  JACK2 may use all available CPU cores to execute the graph (if
+  there are enough clients in parallel signal flow).
 
   32-bit Intel Core2 Duo @1.6Ghz -r 48000 -p 256 -n 2 (5.3ms)
 
@@ -154,29 +148,38 @@
 #  configuration differs from the group configuration will be marked as
 #  invalid and will not be executed.
 
-:::: Creating a New Group
+::: Creating a New Group
 
   Groups can be created by selecting the group dropdown on any mixer
   strip and choosing 'New Group'. A window will popup asking for a
   group name. Group names must be unique. The group will then be
   created and the selected strip added to it.
 
-:::: Adding a Strip to an Existing Group
+::: Adding a Strip to an Existing Group
 
   To add a strip to an existing group, simply select a group name from
   the group dropdown on the strip.
 
-:::: Removing a Strip from a Group
+::: Removing a Strip from a Group
      
   Select '---' from the group dropdown. The strip will be removed from
   the group and will run in an independent JACK client.
 
-:::: Removing a Group
+::: Removing a Group
 
   Groups are destroyed automatically as soon as they contain zero
   strips.
 
-::: Mixer Strips
+::: Monitoring Group DSP Load
+
+  Above the grop dropdown on each strip is a DSP load meter for the
+  selected group. For ungrouped strips or strips which are the only
+  one in their group, this is simply the DSP load of the single strip.
+
+  If DSP usage goes up when strips are fed silence, then you're
+  probably running a plugin which has denormal issues. 
+
+:: Mixer Strips
 
 / Mixer Strip
 < single-strip.png
@@ -199,12 +202,12 @@
   To see how an audio signal traveling through this strip will be
   processed, switch to its /signal/ view.
 
-:::: Navigation
+::: Navigation
 
   A strip is focused when you click on it. Focus can be moved among
   strips with the `Tab` and `Shift-Tab` keys.
 
-:::: Control
+::: Control
 
   The focused strip can be moved in the display order via the `[` and
   `]` keys. `Delete` removes a strip (with confirmation dialog). `n`
@@ -213,12 +216,12 @@
   views. The strip's context menu can be invoked without the mouse by
   hitting the `Menu` key (assuming your keyboard has one).
 
-:::: Signal Chain
+::: Signal Chain
 
   The signal chain view of a mixer strip provides a way to view and
   manipulate the signal processing of a mixer strip.
 
-::::: Modules
+:::: Modules
 
 / Modules
 < modules.png
@@ -252,10 +255,14 @@
 	= Digital Peak Meter
 = Mono Pan
 	= Performs intensity panning of a mono signal into a stereo signal.
+= Aux
+	= Provides auxiliary outputs
+= Spatializer
+	= Provides advanced Ambisonics spatialization with distance simulation.
 = Plugin
 	= Hosts a LADSPA plugin
 
-:::::: OSC Control
+::::: OSC Control
 
   The input parameters of all modules are controllable via OSC,
   regardless of whether the parameter is set as controllable.
@@ -292,7 +299,7 @@
   controlled via Control Sequences in Non-DAW without the need to
   specify an OSC URL.
 
-:::::: Manipulation
+::::: Manipulation
 
   Left-clicking on a module brings up a Module Parameter Editor window
   for the selected module.
@@ -316,28 +323,22 @@
   boundaries. The normal module I\/O constraints also apply to pasted
   modules.
 
-:::::: Module Parameter Editor
+::::: Module Parameter Editor
 
 / Module Parameter Editor
-< gverb-parameters-knobs.png
+< module-parameter-editor.png
 
   The Module Parameter Editor is used to alter the values of a
   module's parameters, and in addition, to bind its parameters to
   controls. A menu button in the upper left-hand corner allows you to
   select between knob, vertical slider and horizontal slider controls.
 
-/ Horizontal Sliders
-< gverb-parameters-hsliders.png
-
-/ Vertical Sliders
-< gverb-parameters-vsliders.png
-
   Underneath each control is a bind button. Clicking adds a new
   control to the chain's /Controls/ view and binds it to the parameter
   in question. For simplicity, only one control at a time may be bound
   to a given parameter.
 
-:::::: Controls
+::::: Controls
 
 / Control View
 < controls.png
@@ -358,7 +359,7 @@
 { events. Hold down the `Ctrl` key while scrolling the mousewheel to
 { achieve finer resolution.
 
-::::::: Control Voltages
+:::::: Control Voltages
 
   The control voltage concept should be familiar to anyone who has
   experience with analog modular synthesizers. MIDI, while having
@@ -386,20 +387,87 @@
 { of parameter automation, as LADSPA plugins are incapable of
 { processing Control Voltage signals at full audio resolution  anyway.
 
-:::::: Spatialization 
+::::: Spatialization 
+
+:::::: Spatializer Module
+
+< spatializer-module.png
+
+  The Spatializer Module included with Non Mixer allows one to not
+  only control the position of a sound source (angle and elevation),
+  but also to control it's apparent distance from the listener.
+
+  Distance cues are based on physical properties--the speed of sound
+  in air, the damping effect of humidity, the ratio of reverb early and
+  late reflections, the volume of the sound. 
+
+  In legacy mixers, all of these properties must be controlled
+  individually by the engineer. This is nearly always a process of
+  trial and error. Much of a studio engineers' skill lies in his
+  ability to guess at these values and arrive at a reasonably
+  realistic sounding result.
+
+  Non Mixer eliminates the guesswork and combines all of these
+  controls into a single spatialization point encoding both a sound
+  source's position relative to the listener and its distance. No
+  matter where the point is placed, the result will be realistic.
+
+  Use of the Spatializer Modules eliminates much complexity from the
+  mixing process. No more back and forth, no more guessing at values
+  for reverb sends and predelay and EQ. The Spatializer does it all
+  for you.
+
+  The B-Format outputs of the Spatializer Module are in the order
+  standard order WXYZ.
+
+  All Spatializer Module instances will present controls and aziumuth,
+  elevation, and radius. Additionally, a /Highpass/ control is
+  provided to compensate for the proximity effect in close-mic'd
+  signals. The default cutoff is 200Hz. Adjust it according to the
+  nature of the input signal.
+
+  A Spatializer Module fed stereo input will perform stereo encoding
+  and will present a /Width/ control. 
+
+::::::: Reverb Routing
+
+  The Spatializer module is intended to work with an external reverb
+  engine having Ambisonics B-Format inputs for early reflections and a
+  Mono input for reverb tail (and, of course, B-Format outputs).
+
+< reverb-routing.png
+
+  The Spatializer Module has two sets auxiliary outputs for reverb
+  send. One, consisting of a single mono signal, is intended to be
+  connected to the input of a reverb tail, otherwise known as a
+  diffuse field. Another set of outputs in B-Format is indended to be
+  connected to the B-Format inputs of an early reflection reverb
+  engine. The output of the reverb engine should be 100% 'wet'.
+
+  I have crafted several jconvolver config files that meet these
+  specifications. They can be found in #(url,http:\/\/non.tuxfamily.org\/ambiverb.tar.bz2,ambiverb.tar.bz2)
+
+  The main outputs of the strip should go to a master bus, into which
+  the output of the reverb engine is also fed.
+
+:::::: LADSPA Plugins
+
+  There are several Ambisonics panners\/encoders released as LADSPA
+  plugins. When one of these plugins is added to a strip, Non Mixer
+  will detect its parameter signature and create a Spatialization
+  Control for it just as with the Spatializer Module.
 
 / Spatialization Control on a Strip
 < spatialization-on-strip.png
 
-  Non-Mixer supports Ambisonic spatialization via the excellent amb-\*
-  LADSPA plugin set and others. Whenever a LADSPA plugin is added to a
-  strip whose set of parameters include parameters named Azimuth and
-  Elevation, Non-Mixer will detect this and automatically attach a
-  Spatializer control to these parameters. The Spatializer will be
-  displayed at the bottom of the mixer strip. A larger version of the
-  control may also be found in the Module Parameter Editor.
+  Whenever a module is added to a strip whose set of parameters
+  include parameters named Azimuth and Elevation (and perhaps Radius),
+  Non-Mixer will detect this and automatically attach a Spatializer
+  control to these parameters. The Spatializer will be displayed at
+  the bottom of the mixer strip. A larger version of the control may
+  also be found in the Module Parameter Editor.
 
-/ Larger Spatialization Control
+/ Spatialization Control in the Module Parameter Editor
 < spatialization-in-mpe.png
 
   The spatialization control may be visualized as moving the sound
@@ -412,7 +480,23 @@
   routed (through JACK) into a single master decoder instance on a
   final strip.
 
-::: Projects
+:: Spatialization Console
+
+< spatialization-console.png
+
+  The Spatialization Console allows the user to view and control all 
+  of the source positions in an Ambisonics mix at once.
+
+  The visibility of the Spatialization Console may be toggled with the `F8` key.
+
+  The console will display a point for each Spatializer Module or
+  other Ambisonics panner plugin contained in the mix. 
+
+  There are two projections available, Planar and Spherical. The range
+  of the view can be adjusted with the range dropdown in the lower
+  lefthand corner.
+
+:: Projects
 
   A Non-Mixer project is a directory where Non-Mixer keeps the strip
   settings, project specific settings, and some meta-data.  A project
@@ -420,7 +504,7 @@
 
 > $ mv Project-A Project-B
 
-:::: JACK I/O
+::: JACK I/O
 
   Each mixer strip is presented as a separate JACK "client". This
   helps to avoid the necessity of internally duplicating JACK's

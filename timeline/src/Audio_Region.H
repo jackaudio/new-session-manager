@@ -69,17 +69,17 @@ public:
          * of type /type/.*/
         /* FIXME: calling a function per sample is bad, switching on
          * type mid fade is bad. */
-        inline double
-        gain ( const double fi ) const
+        inline float
+        gain ( const float fi ) const
             {
                 switch ( type )
                 {
                     case Linear:
                         return fi;
                     case Sigmoid:
-                        return (1.0f - cos( fi * M_PI )) / 2.0f;
+                        return (1.0f - cosf( fi * M_PI )) * 0.5f;
                     case Logarithmic:
-                        return pow( 0.1f, (1.0f - fi) * 3.0f );
+                        return powf( 0.1f, (1.0f - fi) * 3.0f );
                     case Parabolic:
                         return 1.0f - (1.0f - fi) * (1.0f - fi);
                     default:

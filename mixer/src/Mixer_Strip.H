@@ -85,6 +85,8 @@ public:
 
 private:
 
+    unsigned int _dsp_load_index;
+
     /* used to defer setting the mode of the gain controller until the
      chain has been added and the controller connected to a default
      module */

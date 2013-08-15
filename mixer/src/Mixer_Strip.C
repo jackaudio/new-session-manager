@@ -464,7 +464,25 @@ Mixer_Strip::update ( void )
         _chain->update();
     }
     if ( group() )
-        dsp_load_progress->value( group()->dsp_load()  );
+    {
+        if ( ( _dsp_load_index++ % 10 ) == 0 )
+        {
+            float l = group()->dsp_load();
+   
+            dsp_load_progress->value( l );
+
+            {
+                char pat[20];
+                snprintf( pat, sizeof(pat), "%.1f%%", l * 100.0f );
+                dsp_load_progress->copy_tooltip( pat );
+            }
+            
+            if ( l <= 0.15f )
+                dsp_load_progress->color2( fl_rgb_color( 127,127,127 ) );
+            else
+                dsp_load_progress->color2( FL_RED );
+        }
+    }
 }
 
 void
@@ -475,6 +493,8 @@ Mixer_Strip::init ( )
     _gain_controller_mode = 0;
     _chain = 0;
     _group = 0;
+
+    _dsp_load_index = 0;
 
     box( FL_FLAT_BOX );
     labeltype( FL_NO_LABEL );

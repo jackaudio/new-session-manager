@@ -63,6 +63,10 @@ def configure(conf):
     conf.check_cfg(package='liblo', uselib_store='LIBLO',args="--cflags --libs",
                       atleast_version='0.26', mandatory=True)
 
+    conf.check_cc(msg='Checking for compiler pointer alignment hints',
+                  uselib_store='HAS_BUILTIN_ASSUME_ALIGNED',
+                  fragment='int main ( char**argv, int argc ) { const char *s = (const char*)__builtin_assume_aligned( 0, 16 ); return 0; }',
+                  execute=False, mandatory=False)
 ###
 
     for i in common:

@@ -42,11 +42,13 @@ const Audio_File::format_desc Audio_File_SF::supported_formats[] =
     {      "Wav 24",       "wav",   SF_FORMAT_WAV    | SF_FORMAT_PCM_24    | SF_ENDIAN_FILE },
     {      "Wav 16",       "wav",   SF_FORMAT_WAV    | SF_FORMAT_PCM_16    | SF_ENDIAN_FILE },
     {      "Wav f32",      "wav",   SF_FORMAT_WAV    | SF_FORMAT_FLOAT     | SF_ENDIAN_FILE },
-    {      "Au 24",       "au",     SF_FORMAT_AU     | SF_FORMAT_PCM_24    | SF_ENDIAN_FILE },
-    {      "Au 16",       "au",     SF_FORMAT_AU     | SF_FORMAT_PCM_16    | SF_ENDIAN_FILE },
-    {      "FLAC",       "flac",    SF_FORMAT_FLAC   | SF_FORMAT_PCM_24 },
-#ifdef HAS_SF_FORMAT_VORBIS
-    {      "Ogg Vorbis", "ogg",     SF_FORMAT_OGG    | SF_FORMAT_VORBIS | SF_FORMAT_PCM_16 },
+    {      "Au 24",        "au",    SF_FORMAT_AU     | SF_FORMAT_PCM_24    | SF_ENDIAN_FILE },
+    {      "Au 16",        "au",    SF_FORMAT_AU     | SF_FORMAT_PCM_16    | SF_ENDIAN_FILE },
+    {      "FLAC",         "flac",  SF_FORMAT_FLAC   | SF_FORMAT_PCM_24 },
+#ifdef HAVE_SF_FORMAT_VORBIS
+    {      "Vorbis q10",   "ogg",   SF_FORMAT_OGG    | SF_FORMAT_VORBIS, 10 },
+    {      "Vorbis q6",    "ogg",   SF_FORMAT_OGG    | SF_FORMAT_VORBIS, 6 },
+    {      "Vorbis q3",    "ogg",   SF_FORMAT_OGG    | SF_FORMAT_VORBIS, 3 },
 #endif
     {      0,            0          }
 };
@@ -123,6 +125,14 @@ Audio_File_SF::create ( const char *filename, nframes_t samplerate, int channels
         printf( "couldn't create soundfile.\n" );
         free( name );
         return NULL;
+    }
+
+    if ( !strcmp( fd->extension, "ogg" ) )
+    {
+        /* set high quality encoding for vorbis */
+        double quality = ( fd->quality + 1 ) / (float)11;
+
+        sf_command( out, SFC_SET_VBR_ENCODING_QUALITY, &quality, sizeof( double ) );                    
     }
 
     Audio_File_SF *c = new Audio_File_SF;

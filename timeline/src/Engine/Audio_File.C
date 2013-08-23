@@ -88,6 +88,21 @@ Audio_File::filename ( void ) const
     return _path;
 }
 
+static bool is_poor_seeker ( const char * filename )
+{
+    if ( ( strlen(filename) > 4 &&
+           ! strcasecmp( &filename[strlen(filename)-4], ".ogg" ) )
+         ||
+         ( strlen(filename) > 5 &&
+           ! strcasecmp( &filename[strlen(filename)-5], ".flac" ) )
+        )
+    {
+        return true;
+    }
+
+    return false;
+}
+
 /** attempt to open any supported filetype */
 Audio_File *
 Audio_File::from_file ( const char * filename )
@@ -96,11 +111,21 @@ Audio_File::from_file ( const char * filename )
 
     Audio_File *a;
 
-    if ( ( a = _open_files[ std::string( filename ) ] ) )
+    if ( is_poor_seeker(filename) )
     {
-        ++a->_refs;
-
-        return a;
+        /* OGG and FLAC have poor seek performance, so they require
+         * separate file descriptors to be useful */
+    }
+    else
+    {
+        /* WAV are quick enough to seek that we can save
+         * filedescriptors by sharing them between regions */
+        if ( ( a = _open_files[ std::string( filename ) ] ) )
+        {
+            ++a->_refs;
+            
+            return a;
+        }
     }
 
     if ( ( a = Audio_File_SF::from_file( filename ) ) )
@@ -118,7 +143,7 @@ Audio_File::from_file ( const char * filename )
 
 done:
 
-    ASSERT( ! _open_files[ std::string( filename ) ], "Programming errror" );
+    /* ASSERT( ! _open_files[ std::string( filename ) ], "Programming errror" ); */
 
     _open_files[ std::string( filename ) ] = a;
 
@@ -130,8 +155,15 @@ done:
 Audio_File *
 Audio_File::duplicate ( void )
 {
-    ++_refs;
-    return this;
+    if ( is_poor_seeker( _filename ) )
+    {
+        return from_file(_filename);
+    }
+    else
+    {
+        ++_refs;
+        return this;
+    }
 }
 
 /** release the resources assoicated with this audio file if no other

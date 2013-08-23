@@ -49,6 +49,7 @@ protected:
         const char *name;
         const char *extension;
         unsigned long id;
+        int quality;
     };
 
     char *_filename;

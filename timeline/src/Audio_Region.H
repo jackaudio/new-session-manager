@@ -88,7 +88,9 @@ public:
             }
 
         void apply ( sample_t *buf, fade_dir_e dir, nframes_t start, nframes_t nframes ) const;
-    };
+        void apply_interleaved ( sample_t *buf, fade_dir_e dir, nframes_t start, nframes_t nframes, int channels ) const;
+   
+ };
 
 /*     struct Fade_In : public Fade; */
 /*     struct Fade_Out : public Fade; */
@@ -166,7 +168,7 @@ public:
 
     virtual Fl_Color actual_box_color ( void )  const;
     /* Engine */
-    nframes_t read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const;
+    nframes_t read ( sample_t *buf, bool buf_is_empty, nframes_t pos, nframes_t nframes, int out_channels ) const;
     nframes_t write ( nframes_t nframes );
     void prepare ( void );
     bool finalize ( nframes_t frame );

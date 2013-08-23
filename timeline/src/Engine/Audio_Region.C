@@ -57,19 +57,46 @@ Audio_Region::Fade::apply ( sample_t *buf, Audio_Region::Fade::fade_dir_e dir, n
             *(buf++) *= gain( fi );
 }
 
-/** read the overlapping part of /channel/ at /pos/ for /nframes/ of
-    this region into /buf/, where /pos/ is in timeline frames */
+void
+Audio_Region::Fade::apply_interleaved ( sample_t *buf, Audio_Region::Fade::fade_dir_e dir, nframes_t start, nframes_t nframes, int channels ) const
+{
+//    printf( "apply fade %s: start=%ld end=%lu\n", dir == Fade::Out ? "out" : "in", start, end );
+    if ( ! nframes )
+        return;
+
+    nframes_t n = nframes;
+
+    const double inc = increment();
+    double fi = start / (double)length;
+
+    if ( dir == Fade::Out )
+    {
+        fi = 1.0f - fi;
+        for ( ; n--; fi -= inc  )
+        {
+            const float g = gain(fi);
+
+            for ( int i = channels; i--; )
+                *(buf++) *= g;
+        }
+    }
+    else
+        for ( ; n--; fi += inc )
+        {
+            const float g = gain(fi);
+
+            for ( int i = channels; i--; )
+                *(buf++) *= g;
+        }
+}
+
+
+/** read the overlapping at /pos/ for /nframes/ of this region into
+    /buf/, where /pos/ is in timeline frames. /buf/ is an interleaved
+    buffer of /channels/ channels */
 /* this runs in the diskstream thread. */
-/* FIXME: it is far more efficient to read all the channels from a
-   multichannel source at once... But how should we handle the case of a
-   mismatch between the number of channels in this region's source and
-   the number of channels on the track/buffer this data is being read
-   for? Would it not be better to simply buffer and deinterlace the
-   frames in the Audio_File class instead, so that sequential requests
-   for different channels at the same position avoid hitting the disk
-   again? */
 nframes_t
-Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channel ) const
+Audio_Region::read ( sample_t *buf, bool buf_is_empty, nframes_t pos, nframes_t nframes, int channels ) const
 {
     THREAD_ASSERT( Playback );
 
@@ -78,6 +105,20 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
     /* do nothing if we aren't covered by this frame range */
     if ( pos > r.start + r.length || pos + nframes < r.start )
         return 0;
+
+    sample_t *cbuf = NULL;
+
+    if ( buf_is_empty && channels == _clip->channels() )
+    {
+        /* in this case we don't need a temp buffer */
+        cbuf = buf;
+    }
+    else
+    {
+        /* temporary buffer to hold interleaved samples from the clip */
+        cbuf = buffer_alloc( _clip->channels() * nframes );
+        memset(cbuf, 0, _clip->channels() * sizeof(sample_t) * nframes );
+    }
 
     /* calculate offsets into file and sample buffer */
 
@@ -101,50 +142,56 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
         sofs = pos - r.start;
     }
 
-    if ( ofs >= nframes )
-        return 0;
 
 //    const nframes_t start = ofs + r.start + sofs;
     const nframes_t start = r.offset + sofs;
     const nframes_t len = cnt;
 
+    /* FIXME: keep the declick defults someplace else */
+    Fade declick;
+
+    declick.length = (float)timeline->sample_rate() * 0.01f;
+    declick.type   = Fade::Sigmoid;
+
+    if ( ofs >= nframes )
+    {
+        cnt = 0;
+        goto done;
+    }
+
     if ( len == 0 )
-        return 0;
+    {
+        cnt = 0;
+        goto done;
+    }
 
     /* now that we know how much and where to read, get on with it */
 
     //    printf( "reading region ofs = %lu, sofs = %lu, %lu-%lu\n", ofs, sofs, start, end  );
 
-    /* FIXME: keep the declick defults someplace else */
-    Fade declick;
-
-    declick.length = 256;
-    declick.type   = Fade::Sigmoid;
 
     if ( _loop )
     {
         nframes_t lofs = sofs % _loop;
         nframes_t lstart = r.offset + lofs;
 
-
+        /* read interleaved channels */
         if ( lofs + len > _loop )
         {
-            /* this buffer covers a loop binary */
+            /* this buffer covers a loop boundary */
 
             /* read the first part */
-            cnt = _clip->read( buf + ofs, channel, lstart, len - ( ( lofs + len ) - _loop ) );
+            cnt = _clip->read( cbuf + ( _clip->channels() * ofs ), -1, lstart, len - ( ( lofs + len ) - _loop ) );
             /* read the second part */
-            cnt += _clip->read( buf + ofs + cnt, channel, lstart + cnt, len - cnt );
-
-            /* TODO: declick/crossfade transition? */
+            cnt += _clip->read( cbuf + ( _clip->channels() * ( ofs + cnt ) ), -1, lstart + cnt, len - cnt );
 
             assert( cnt == len );
         }
         else
-            cnt = _clip->read( buf + ofs, channel, lstart, len );
+            cnt = _clip->read( cbuf + ( channels * ofs ), -1, lstart, len );
 
         /* this buffer is inside declicking proximity to the loop boundary */
-
+        
         if ( lofs + cnt + declick.length > _loop /* buffer ends within declick length of the end of loop */
              &&
              sofs + declick.length < r.length /* not the last loop */
@@ -166,9 +213,9 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
 
             const nframes_t fl = cnt - declick_onset_offset;
 
-            declick.apply( buf + ofs + declick_onset_offset,
-                           Fade::Out,
-                           declick_offset, fl );
+            declick.apply_interleaved( cbuf + ( _clip->channels() * ( ofs + declick_onset_offset  ) ),
+                                       Fade::Out,
+                                       declick_offset, fl, _clip->channels() );
         }
             
         if ( lofs < declick.length /* buffer begins within declick length of beginning of loop */
@@ -181,38 +228,59 @@ Audio_Region::read ( sample_t *buf, nframes_t pos, nframes_t nframes, int channe
             const nframes_t click_len = lofs + cnt > declick_end ? declick_end - lofs : cnt;
 
             /* this is the beginning of the loop next boundary */
-            declick.apply( buf + ofs, Fade::In, lofs, click_len );
+            declick.apply_interleaved( cbuf + ( _clip->channels() * ofs ), Fade::In, lofs, click_len, _clip->channels() );
         }
     }
     else
-        cnt = _clip->read( buf + ofs, channel, start, len );
+        cnt = _clip->read( cbuf + ( _clip->channels() * ofs ), -1, start, len );
 
     if ( ! cnt )
-        return 0;
+        goto done;
 
     /* apply gain */
 
-    buffer_apply_gain_unaligned( buf + ofs, cnt, _scale );
+    /* just do the whole buffer so we can use the alignment optimized
+     * version when we're in the middle of a region, this will be full
+     * anyway */
+    buffer_apply_gain( cbuf, nframes * _clip->channels(), _scale );
 
     /* perform declicking if necessary */
-
-
     {
         assert( cnt <= nframes );
             
         Fade fade;
 
         fade = declick < _fade_in ? _fade_in : declick;
-
+        
         /* do fade in if necessary */
         if ( sofs < fade.length )
-            fade.apply( buf + ofs, Fade::In, sofs, cnt );
+            fade.apply_interleaved( cbuf + ( _clip->channels() * ofs ), Fade::In, sofs, cnt, _clip->channels() );
 
         fade = declick < _fade_out ? _fade_out : declick;
 
         /* do fade out if necessary */
         if ( start + fade.length > r.offset + r.length )
-            fade.apply( buf, Fade::Out, ( start + fade.length ) - ( r.offset + r.length ), cnt );                
+            fade.apply_interleaved( cbuf, Fade::Out, ( start + fade.length ) - ( r.offset + r.length ), cnt, _clip->channels() );
+    }
+
+    if ( buf != cbuf )
+    {
+        /* now interleave the clip channels into the playback buffer */
+        for ( int i = 0; i < channels && i < _clip->channels(); i++ )
+        {
+            if ( buf_is_empty )
+                buffer_interleaved_copy( buf, cbuf, i, i, channels, _clip->channels(), nframes );
+            else
+                buffer_interleaved_mix( buf, cbuf, i, i, channels, _clip->channels(), nframes );
+            
+        }
+    }
+
+done:
+
+    if ( buf != cbuf )
+    {
+        free( cbuf );
     }
 
     return cnt;

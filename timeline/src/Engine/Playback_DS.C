@@ -88,7 +88,6 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
         {
             if ( sequence() )
             {
-                
                 /* FIXME: how does this work if _delay is not a multiple of bufsize? */
                 
                 if ( _frame >= _delay )
@@ -121,7 +120,7 @@ Playback_DS::disk_thread ( void )
     /* buffer to hold the interleaved data returned by the track reader */
     sample_t *buf = buffer_alloc( _nframes * channels() * _disk_io_blocks );
 #ifndef AVOID_UNNECESSARY_COPYING
-    sample_t *cbuf = buffer_alloc( _nframes * _disk_io_blocks );
+    sample_t *cbuf = buffer_alloc( _nframes * channels() * _disk_io_blocks );
 #endif
 
     int blocks_ready = 0;

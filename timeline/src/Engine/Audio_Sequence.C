@@ -40,32 +40,23 @@ Audio_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes, int ch
 {
     THREAD_ASSERT( Playback );
 
-    sample_t *cbuf = new sample_t[ nframes ];
-
-    memset( cbuf, 0, nframes * sizeof( sample_t ) );
+    bool buf_is_empty = true;
 
     /* quick and dirty--let the regions figure out coverage for themselves */
     for ( list <Sequence_Widget *>::const_iterator i = _widgets.begin();
           i != _widgets.end(); ++i )
     {
         const Audio_Region *r = (Audio_Region*)(*i);
+        
+        int nfr;
+        
+        /* read mixes into buf */
+        if ( ! ( nfr = r->read( buf, buf_is_empty, frame, nframes, channels ) ) )
+            /* error ? */
+            continue;
 
-        for ( int i = channels; i--;  )
-        {
-            int nfr;
-
-            if ( ! ( nfr = r->read( cbuf, frame, nframes, i ) ) )
-                /* error ? */
-                continue;
-
-            if ( channels == 1 )
-                buffer_mix( buf, cbuf, nframes );
-            else
-                buffer_interleave_one_channel_and_mix( buf, cbuf, i, channels, nframes );
-        }
+        buf_is_empty = false;
     }
-
-    delete[] cbuf;
 
     /* FIXME: bogus */
     return nframes;

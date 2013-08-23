@@ -136,6 +136,39 @@ buffer_deinterleave_one_channel ( sample_t * __restrict__ dst, const sample_t * 
     }
 }
 
+void
+buffer_interleaved_mix ( sample_t *__restrict__ dst, const sample_t * __restrict__ src, int dst_channel, int src_channel, int dst_channels, int src_channels, nframes_t nframes )
+{
+    sample_t * dst_ = (sample_t*) assume_aligned(dst);
+    const sample_t * src_ = (const sample_t*) assume_aligned(src);
+
+    dst_ += dst_channel;
+    src_ += src_channel;
+
+    while ( nframes-- )
+    {
+        *dst_ += *src_;
+        dst_ += dst_channels;
+        src_ += src_channels;
+    }
+}
+
+void
+buffer_interleaved_copy ( sample_t *__restrict__ dst, const sample_t * __restrict__ src, int dst_channel, int src_channel, int dst_channels, int src_channels, nframes_t nframes )
+{
+    sample_t * dst_ = (sample_t*) assume_aligned(dst);
+    const sample_t * src_ = (const sample_t*) assume_aligned(src);
+
+    dst_ += dst_channel;
+    src_ += src_channel;
+
+    while ( nframes-- )
+    {
+        *dst_ = *src_;
+        dst_ += dst_channels;
+        src_ += src_channels;
+    }
+}
 
 void
 buffer_fill_with_silence ( sample_t *buf, nframes_t nframes )

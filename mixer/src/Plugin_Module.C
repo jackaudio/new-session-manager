@@ -165,7 +165,7 @@ Plugin_Module::can_support_inputs ( int n )
 bool
 Plugin_Module::configure_inputs( int n )
 {
-    int inst = _idata->handle.size();
+    unsigned int inst = _idata->handle.size();
 
     if ( ninputs() != n )
     {
@@ -214,17 +214,19 @@ Plugin_Module::configure_inputs( int n )
     if ( loaded() )
     {
         bool b = bypass();
-
-        if ( !b )
-            deactivate();
-
-        if ( plugin_instances( inst ) )
-            instances( inst );
-        else
-            return false;
-
-        if ( !b )
-            activate();
+        if ( inst != _idata->handle.size() )
+        {
+            if ( !b )
+                deactivate();
+            
+            if ( plugin_instances( inst ) )
+                instances( inst );
+            else
+                return false;
+            
+            if ( !b )
+                activate();
+        }
     }
 
     return true;

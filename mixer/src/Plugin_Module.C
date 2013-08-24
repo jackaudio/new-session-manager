@@ -580,18 +580,19 @@ Plugin_Module::load ( unsigned long id )
                             if (LADSPA_IS_HINT_SAMPLE_RATE(HintDesc)) {
                                 Default *= sample_rate();
                             }
-                            if (LADSPA_IS_HINT_INTEGER(HintDesc)) {
-                                if ( p.hints.ranged &&
-                                     0 == p.hints.minimum &&
-                                     1 == p.hints.maximum )
-                                    p.hints.type = Port::Hints::BOOLEAN;
-                                else
-                                    p.hints.type = Port::Hints::INTEGER;
-                                Default = floorf(Default);
-                            }
-                            if (LADSPA_IS_HINT_TOGGLED(HintDesc)){
+                        }
+
+                        if (LADSPA_IS_HINT_INTEGER(HintDesc)) {
+                            if ( p.hints.ranged &&
+                                 0 == p.hints.minimum &&
+                                 1 == p.hints.maximum )
                                 p.hints.type = Port::Hints::BOOLEAN;
-                            }
+                            else
+                                p.hints.type = Port::Hints::INTEGER;
+                            Default = floorf(Default);
+                        }
+                        if (LADSPA_IS_HINT_TOGGLED(HintDesc)){
+                            p.hints.type = Port::Hints::BOOLEAN;
                         }
                     }
 #else

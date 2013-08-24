@@ -336,6 +336,8 @@ JACK_Module::cb_button( Fl_Widget *w )
 {
     int n = audio_output.size();
 
+    Logger log(this);
+
     if ( w == dec_button )
     {
         --n;
@@ -344,12 +346,8 @@ JACK_Module::cb_button( Fl_Widget *w )
     {
         ++n;
     }
-    
-    if ( chain()->can_configure_outputs( this, n ) )
-    {
-        configure_outputs( n );
-        chain()->configure_ports();
-    }
+ 
+    control_input[1].control_value( n );
 }
 
 int

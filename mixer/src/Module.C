@@ -654,7 +654,10 @@ Module::draw_label ( int tx, int ty, int tw, int th )
 {
     bbox( tx, ty, tw, th );
 
-    const char *lp = label();
+    if ( ! label() )
+        return;
+
+    char *lab = strdup( label() );
 
     Fl_Color c = fl_contrast( FL_FOREGROUND_COLOR, bypass() ? FL_BLACK : color() );
 
@@ -662,27 +665,53 @@ Module::draw_label ( int tx, int ty, int tw, int th )
 
     fl_font( FL_HELVETICA, labelsize() );
 
-    int LW = fl_width( lp );
-
-    char *s = NULL;
-    if ( LW > tw )
+    char *di = index( lab, '-' );
+    if ( di )
     {
-        s = new char[strlen(lp)];
-        char *sp = s;
-
-        for ( ; *lp; ++lp )
-            switch ( *lp )
-            {
-                case 'i': case 'e': case 'o': case 'u': case 'a':
-                    break;
-                default:
-                    *(sp++) = *lp;
-            }
-        *sp = '\0';
-
+        *di = '\0';
     }
 
-    fl_draw( s ? s : lp, tx, ty, tw, th, align() | FL_ALIGN_CLIP );
+    int LW = fl_width( lab );
+    char *s = NULL;
+
+    bool initial = true;
+    if ( LW > tw )
+    {
+        s = new char[strlen(lab) + 1];
+        char *sp = s;
+        const char *lp = lab;
+
+        for ( ; *lp; ++lp )
+        {
+            bool skip = false;
+
+            switch ( *lp )
+            {
+                case ' ':
+                    initial = true;
+                    skip = false;
+                    break;
+                case 'i': case 'e': case 'o': case 'u': case 'a':
+                    skip = ! initial;
+                    initial = false;
+                    break;
+                default:
+                    skip = false;
+                    initial = false;
+                    break;
+            }
+            
+            if ( ! skip )
+                *(sp++) = *lp;
+        }
+     
+        *sp = '\0';
+   
+    }
+
+    fl_draw( s ? s : lab, tx, ty, tw, th, align() | FL_ALIGN_CLIP );
+
+    free(lab);
 
     if ( s )
         delete[] s;

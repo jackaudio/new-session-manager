@@ -301,6 +301,28 @@ Track::record ( Capture *c, nframes_t frame )
 //    Fl::unlock();
 
     c->region->prepare();
+
+    nframes_t min,max;
+
+    input[0].get_latency( JACK::Port::Input, &min, &max );
+
+    if ( transport->freewheel_enabled() )
+    {
+        /* in freewheeling mode, assume we're bouncing and only
+         * compensate for capture latency */
+        _capture_offset = min;
+    }
+    else
+    {
+        /* not freewheeling, so assume we're overdubbing and need to
+         * compensate for both capture and playback latency */
+        _capture_offset = min;
+        
+        /* since the track output might not be connected to
+         * anything, just get the playback latency */
+        
+        _capture_offset += engine->playback_latency();
+    }
 }
 
 /** write a block to the (already opened) capture file */
@@ -331,22 +353,10 @@ Track::finalize ( Capture *c, nframes_t frame )
 
     c->region->finalize( frame );
 
-    nframes_t capture_offset = 0;
+    DMESSAGE( "Adjusting capture by %lu frames.", (unsigned long)_capture_offset );
 
-    /* Add the system latency twice. Once for the input (usually
-     * required) and again for the output latency of whatever we're
-     * playing along to (should only apply when overdubbing) */
-
-    /* Limitations in the JACK latency reporting API prevent us from
-     * compensating from any software latency introduced by other
-     * clients in our graph... Oh well */
-
-    capture_offset += engine->system_latency();
-    capture_offset += engine->system_latency();
-
-    DMESSAGE( "Adjusting capture by %lu frames.", (unsigned long)capture_offset );
-
-    c->region->offset( capture_offset );
+    c->region->offset( _capture_offset );
+    _capture_offset = 0;
 
     timeline->unlock();
 }

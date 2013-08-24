@@ -124,6 +124,8 @@ Plugin_Module::set ( Log_Entry &e )
 void
 Plugin_Module::init ( void )
 {
+    _latency = 0;
+    _last_latency = 0;
     _idata = new Plugin_Module::ImplementationData();
     _idata->handle.clear();
     /* module will be bypassed until plugin is loaded */
@@ -136,6 +138,19 @@ Plugin_Module::init ( void )
     int tw, th, tx, ty;
 
     bbox( tx, ty, tw, th );
+}
+
+void
+Plugin_Module::update ( void )
+{
+    if ( _last_latency != _latency )
+    {
+        DMESSAGE( "Plugin latency changed to %lu", (unsigned long)_latency );
+
+        chain()->client()->recompute_latencies();
+    }
+
+    _last_latency = _latency;
 }
 
 int
@@ -341,7 +356,7 @@ Plugin_Module::plugin_instances ( unsigned int n )
         {
             LADSPA_Handle h;
 
-            DMESSAGE( "Instantiating plugin..." );
+            DMESSAGE( "Instantiating plugin... with sample rate %lu", (unsigned long)sample_rate());
 
             if ( ! (h = _idata->descriptor->instantiate( _idata->descriptor, sample_rate() ) ) )
             {
@@ -389,6 +404,31 @@ Plugin_Module::bypass ( bool v )
         else
             activate();
     }
+}
+
+nframes_t
+Plugin_Module::get_plugin_latency ( void ) const
+{
+    for ( unsigned int i = ncontrol_outputs(); i--; )
+    {
+        if ( !strcasecmp( "latency", control_output[i].name() ) )
+        {
+            return control_output[i].control_value();
+        }
+    } 
+    
+    return 0;
+}
+
+
+nframes_t
+Plugin_Module::get_latency ( JACK::Port::direction_e dir ) const
+{
+    nframes_t latency = Module::get_latency( dir );
+    
+    latency += get_plugin_latency();
+
+    return latency;
 }
 
 bool
@@ -467,6 +507,7 @@ Plugin_Module::load ( unsigned long id )
 
                 Port p( this, d, Port::CONTROL, _idata->descriptor->PortNames[ i ] );
 
+                p.hints.default_value = 0;
 
                 LADSPA_PortRangeHintDescriptor hd = _idata->descriptor->PortRangeHints[i].HintDescriptor;
 
@@ -768,6 +809,8 @@ Plugin_Module::process ( nframes_t nframes )
             buffer_copy( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes );
         }
     }
+
+    _latency = get_plugin_latency();
 }
 
 

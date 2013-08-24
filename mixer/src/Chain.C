@@ -395,6 +395,32 @@ Chain::configure_ports ( void )
     parent()->redraw();
 }
 
+/** invoked from the JACK latency callback... We need to update the latency values on this chains ports */
+void
+Chain::set_latency ( JACK::Port::direction_e dir )
+{
+    nframes_t total_latency = 0;
+
+    if ( dir == JACK::Port::Input )
+    {
+        for ( int i = 0; i < modules(); ++i )
+        {
+            Module *m = module( i );
+            total_latency += m->get_latency( dir );
+            m->set_latency( dir, total_latency );
+        }
+    }
+    else
+    {
+        for ( int i = modules(); i--; )
+        {
+            Module *m = module( i );
+            total_latency += m->get_latency( dir );
+            m->set_latency( dir, total_latency );
+        }
+    }
+}
+
 int 
 Chain::get_module_instance_number ( Module *m )
 {

@@ -66,6 +66,9 @@ namespace JACK
         static void thread_init ( void *arg );
         virtual void thread_init ( void ) = 0;
 
+        static void latency ( jack_latency_callback_mode_t mode, void *arg );
+        virtual void latency ( jack_latency_callback_mode_t mode ) { }
+        
         Client ( const Client &rhs );
         Client & operator = ( const Client &rhs );
 
@@ -89,7 +92,7 @@ namespace JACK
                        SLOW_SYNC = 1 << 0,
                        TIMEBASE_MASTER = 1 << 1 };
 
-        jack_client_t * jack_client ( void ) { return _client; }
+        jack_client_t * jack_client ( void ) const { return _client; }
 
         void port_added ( JACK::Port * p );
         void port_removed ( JACK::Port *p );
@@ -116,7 +119,8 @@ namespace JACK
         void transport_start ( void );
         void transport_locate ( nframes_t frame );
         jack_transport_state_t transport_query ( jack_position_t *pos );
-
+        
+        void recompute_latencies ( void );
 
         static int maximum_name_length ( void ) { return jack_client_name_size(); }
     };

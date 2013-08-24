@@ -125,6 +125,8 @@ public:
             _configure_outputs_userdata = v;
         }
 
+    void set_latency ( JACK::Port::direction_e );
+
     Fl_Callback * configure_outputs_callback ( void ) const { return _configure_outputs_callback; }
 
     virtual void log_children ( void ) const;

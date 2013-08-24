@@ -61,6 +61,7 @@ public:
     int dropped ( void ) const { return _buffers_dropped; }
 
     nframes_t system_latency ( void ) const { return nframes(); }
+    nframes_t playback_latency ( void ) const;
 
     float frames_to_milliseconds ( nframes_t frames )
         {

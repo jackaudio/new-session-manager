@@ -46,6 +46,7 @@ class Module : public Fl_Group, public Loggable {
     nframes_t _nframes;
     Chain *_chain;
     bool _is_default;
+//    nframes_t _latency;
 
     Module_Parameter_Editor *_editor;
 
@@ -70,6 +71,9 @@ protected:
     volatile bool _bypass;
 
 public:
+
+    virtual nframes_t get_latency ( JACK::Port::direction_e dir ) const;
+    virtual void set_latency ( JACK::Port::direction_e dir, nframes_t latency );
 
     /* true if this module was added by default and not under normal user control */
     bool is_default ( void ) const { return _is_default; }
@@ -276,7 +280,7 @@ public:
             }
 
         void jack_port ( JACK::Port *v ) { _jack_port = v; }
-        JACK::Port *jack_port ( void ) { return _jack_port; }
+        JACK::Port *jack_port ( void ) const { return _jack_port; }
 
     private:
 

@@ -124,6 +124,12 @@ namespace JACK
     }
 
     void
+    Client::latency ( jack_latency_callback_mode_t mode, void *arg )
+    {
+        ((Client*)arg)->latency( mode );
+    }
+
+    void
     Client::shutdown ( void *arg )
     {
         ((Client*)arg)->_zombified = true;
@@ -175,6 +181,10 @@ namespace JACK
         set_callback( port_connect );
 
         jack_set_sample_rate_callback( _client, &Client::sample_rate_changed, this );
+  
+#ifdef HAVE_JACK_PORT_GET_LATENCY_RANGE
+        set_callback( latency );
+#endif
 
         /* FIXME: should we wait to register this until after the project
            has been loaded (and we have disk threads running)? */
@@ -294,6 +304,12 @@ namespace JACK
         _frozen.unlock();
 
         return s;
+    }
+
+    void
+    Client::recompute_latencies ( void )
+    {
+        jack_recompute_total_latencies( _client );
     }
 
     void

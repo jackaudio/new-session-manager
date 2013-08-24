@@ -79,6 +79,7 @@ public:
 
     LOG_CREATE_FUNC( JACK_Module );
 
+
 protected:
 
     virtual void process ( nframes_t nframes );

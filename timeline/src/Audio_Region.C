@@ -643,7 +643,8 @@ Audio_Region::draw ( void )
             }
         }
         else
-            WARNING( "Pbuf == %p, peaks = %lu", pbuf, (unsigned long)peaks );
+            ;
+//            WARNING( "Pbuf == %p, peaks = %lu", pbuf, (unsigned long)peaks );
         
         if ( peaks < loop_peaks_needed )
         {

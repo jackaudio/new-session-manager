@@ -80,6 +80,22 @@ Engine::buffer_size ( nframes_t nframes )
     return 0;
 }
 
+nframes_t
+Engine::playback_latency ( void ) const
+{
+#ifdef HAVE_JACK_PORT_GET_LATENCY_RANGE
+    jack_latency_range_t range;
+
+    jack_port_get_latency_range( jack_port_by_name( jack_client(), "system:playback_1" ),
+                                 JackPlaybackLatency, 
+                                 &range );
+
+    return range.min;
+#else
+    return jack_port_get_latency( jack_port_by_name( jack_client(), "system:playback_1" ) );
+#endif
+}
+
 /* THREAD: RT */
 /** This is the jack slow-sync callback. */
 int

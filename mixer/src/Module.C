@@ -127,6 +127,7 @@ Module::~Module ( )
 void
 Module::init ( void )
 {
+//    _latency = 0;
     _is_default = false;
     _editor = 0;
     _chain = 0;
@@ -1088,6 +1089,76 @@ Module::thaw_ports ( void )
         aux_audio_output[i].jack_port()->thaw();
     }
 }
+
+nframes_t
+Module::get_latency ( JACK::Port::direction_e dir ) const
+{
+    nframes_t tmin = 0;
+    nframes_t tmax = 0;
+
+    if ( dir == JACK::Port::Input )
+    {
+        if ( aux_audio_input.size() )
+        {
+            for ( unsigned int i = 0; i < aux_audio_input.size(); i++ )
+            {
+                nframes_t min,max;
+
+                aux_audio_input[i].jack_port()->get_latency( dir, &min, &max );
+
+                tmin += min;
+                tmax += max;
+            }
+
+            tmin /= aux_audio_input.size();
+            tmax /= aux_audio_input.size();
+        }
+
+        return tmin;
+        /* for ( unsigned int i = 0; i < aux_audio_output.size(); i++ ) */
+        /*     aux_audio_output[i].set_latency( dir, tmin, tmax ); */
+    }
+    else
+    {
+        if ( aux_audio_output.size() )
+        {
+            for ( unsigned int i = 0; i < aux_audio_output.size(); i++ )
+            {
+                nframes_t min,max;
+
+                aux_audio_output[i].jack_port()->get_latency( dir, &min, &max );
+                
+                tmin += min;
+                tmax += max;
+            }
+            
+            tmin /= aux_audio_output.size();
+            tmax /= aux_audio_output.size();
+        }
+        
+        return tmin;
+
+
+        /* for ( unsigned int i = 0; i < aux_audio_output.size(); i++ ) */
+        /*     aux_audio_output[i].set_latency( dir, tmin, tmax ); */
+    }
+}
+
+void
+Module::set_latency ( JACK::Port::direction_e dir, nframes_t latency )
+{
+    if ( dir == JACK::Port::Input )
+    {
+        for ( unsigned int i = 0; i < aux_audio_output.size(); i++ )
+            aux_audio_output[i].jack_port()->set_latency( dir, latency, latency );
+    }
+    else
+    {
+        for ( unsigned int i = 0; i < aux_audio_input.size(); i++ )
+            aux_audio_input[i].jack_port()->set_latency( dir, latency, latency );
+    }
+}
+
 
 bool
 Module::add_aux_port ( bool input, const char *prefix, int i )

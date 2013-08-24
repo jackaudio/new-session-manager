@@ -98,6 +98,18 @@ Group::set ( Log_Entry &e )
 /* Callbacks */
 /*************/
 
+void
+Group::latency ( jack_latency_callback_mode_t mode )
+{
+    for ( std::list<Mixer_Strip*>::iterator i = strips.begin();
+          i != strips.end();
+          i++ )
+    {
+        if ( (*i)->chain() )            
+            (*i)->chain()->set_latency(mode == JackCaptureLatency ? JACK::Port::Input : JACK::Port::Output );
+    }
+}
+
 /* THREAD: RT */
 /** This is the jack xrun callback */
 int

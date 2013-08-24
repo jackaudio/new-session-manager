@@ -65,6 +65,11 @@ public:
 
 private:
 
+    volatile nframes_t _latency;
+    nframes_t _last_latency;
+
+    nframes_t get_plugin_latency ( void ) const;
+
     void init ( void );
 
     void bbox ( int &X, int &Y, int &W, int &H )
@@ -105,6 +110,9 @@ private:
     bool loaded ( void ) const;
 
 public:
+
+    virtual void update ( void );
+    virtual nframes_t get_latency ( JACK::Port::direction_e dir ) const;
 
     static std::list<Plugin_Info> get_all_plugins ( void );
 

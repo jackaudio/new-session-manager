@@ -263,7 +263,6 @@ public:
 
     int total_playback_xruns ( void );
     int total_capture_xruns ( void );
-    nframes_t total_output_latency ( void ) const;
 
     bool record ( void );
     void stop ( void );

@@ -58,6 +58,7 @@ public:
 
     Transport ( int X, int Y, int W, int H, const char *L=0 );
 
+    bool freewheel_enabled ( void ) const;
     bool rec_enabled ( void ) const;
     bool punch_enabled ( void ) const;
     bool loop_enabled ( void ) const;

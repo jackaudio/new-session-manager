@@ -38,8 +38,7 @@ namespace JACK
     {
         return jack_port_name_size() - jack_client_name_size() - 6;
     }
-
-
+    
     Port::Port ( const Port &rhs )
     {
         _connections = NULL;
@@ -131,16 +130,16 @@ namespace JACK
     {
         _client->port_removed( this );
  
-       if ( _name )
-       {
-           free( _name );
-           _name = NULL;
-       }
-       if ( _trackname )
-       {
-           free( _trackname );
-           _trackname = NULL;
-       }
+        if ( _name )
+        {
+            free( _name );
+            _name = NULL;
+        }
+        if ( _trackname )
+        {
+            free( _trackname );
+            _trackname = NULL;
+        }
 
     }
 
@@ -207,18 +206,13 @@ namespace JACK
 
 /** returns the sum of latency of all ports between this one and a
     terminal port. */
-/* FIMXE: how does JACK know that input A of client Foo connects to
-   output Z of the same client in order to draw the line through Z to a
-   terminal port? And, if this determination cannot be made, what use is
-   this function? */
-
     nframes_t
     Port::total_latency ( void ) const
     {
 #ifdef HAVE_JACK_PORT_GET_LATENCY_RANGE
         jack_latency_range_t range;
 
-        jack_port_get_latency_range( _port, _direction == Output ? JackPlaybackLatency : JackCaptureLatency, &range );   
+        jack_port_get_latency_range( _port, _direction == Input ? JackPlaybackLatency : JackCaptureLatency, &range );   
 
         return range.max;
 #else
@@ -227,33 +221,36 @@ namespace JACK
     }
 
 /** returns the number of frames of latency assigned to this port */
-    nframes_t
-    Port::latency ( void ) const
+    void
+    Port::get_latency ( direction_e dir, nframes_t *min, nframes_t *max ) const
     {
 #ifdef HAVE_JACK_PORT_GET_LATENCY_RANGE
         jack_latency_range_t range;
 
-        jack_port_get_latency_range( _port, _direction == Output ? JackPlaybackLatency : JackCaptureLatency, &range );   
+        jack_port_get_latency_range( _port, dir == Output ? JackPlaybackLatency : JackCaptureLatency, &range );   
 
-        return range.max;
+        *min = range.min;
+        *max = range.max;
 #else
-        return jack_port_get_latency( _port );
+        *min = *max = jack_port_get_latency( _port );
 #endif
 
     }
 
 /** inform JACK that port has /frames/ frames of latency */
     void
-    Port::latency ( nframes_t frames )
+    Port::set_latency ( direction_e dir, nframes_t min, nframes_t max )
     {
 #ifdef HAVE_JACK_PORT_GET_LATENCY_RANGE
         jack_latency_range_t range;
+//        DMESSAGE( "Setting port latency!" );
 
-        range.min = range.max = frames;
-        
-        jack_port_set_latency_range( _port, _direction == Output ? JackPlaybackLatency : JackCaptureLatency, &range );
+        range.max = max;
+        range.min = min;
+
+        jack_port_set_latency_range( _port, dir == Output ? JackPlaybackLatency : JackCaptureLatency, &range );   
 #else
-        jack_port_set_latency( _port, frames );
+        jack_port_set_latency( _port, max );
 #endif
     }
 

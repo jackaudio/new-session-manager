@@ -923,7 +923,7 @@ static char stats[100];
 if ( engine && ! engine->zombified() )
 {
 snprintf( stats, sizeof( stats ), "latency: %.1fms, xruns: %d",
-	engine->frames_to_milliseconds( timeline->total_output_latency() ),
+	engine->frames_to_milliseconds( engine->system_latency() ),
 	engine->xruns() );
 }
 else

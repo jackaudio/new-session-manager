@@ -52,6 +52,7 @@ class Group : public Loggable, public JACK::Client, public Mutex
     int buffer_size ( nframes_t nframes );
     void thread_init ( void );
     void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect );
+    virtual void latency ( jack_latency_callback_mode_t mode );
 
     /* not allowed */
     Group ( const Group &rhs );

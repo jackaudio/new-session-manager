@@ -128,6 +128,7 @@ Track::~Track ( )
 void
 Track::init ( void )
 {
+    _capture_offset = 0;
     _row = 0;
     _sequence = NULL;
     _name = NULL;

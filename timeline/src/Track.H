@@ -105,6 +105,8 @@ private:
 
     int _row;
 
+    nframes_t _capture_offset;
+
     enum { AUDIO } _type;
 
     Audio_Sequence *_sequence;

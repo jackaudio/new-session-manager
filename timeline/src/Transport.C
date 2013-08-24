@@ -191,6 +191,12 @@ Transport::toggle_record ( void )
 }
 
 bool
+Transport::freewheel_enabled ( void ) const
+{
+    return _freewheel_button->value();
+}
+
+bool
 Transport::rec_enabled ( void ) const
 {
     return _record_button->value();

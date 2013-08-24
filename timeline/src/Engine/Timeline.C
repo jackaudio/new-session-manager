@@ -323,15 +323,3 @@ Timeline::total_capture_xruns ( void )
 
     return r;
 }
-
-#include "Engine.H"
-extern Engine *engine;
-
-nframes_t
-Timeline::total_output_latency ( void ) const
-{
-    /* Due to flaws in the JACK latency reporting API, we cannot
-     * reliably account for software latency. Using the system latency
-     * is the best we can do here. */
-    return engine->system_latency();
-}

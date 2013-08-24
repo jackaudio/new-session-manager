@@ -72,8 +72,11 @@ namespace JACK
 //        bool name ( const char *base, int n, const char *type=0 );
 
         nframes_t total_latency ( void ) const;
-        nframes_t latency ( void ) const;
-        void latency ( nframes_t frames );
+
+        void get_latency ( direction_e dir, nframes_t *min, nframes_t *max ) const;
+
+        /* it's only valid to call this in a latency callback! */
+        void set_latency ( direction_e dir, nframes_t min, nframes_t max );
 
         void terminal ( bool b ) { _terminal = b; }
         bool activate ( void );
@@ -95,6 +98,8 @@ namespace JACK
         void client ( JACK::Client *c ) { _client = c; }
 
     private:
+
+        friend class Client;
 
         direction_e _direction;
         type_e _type;

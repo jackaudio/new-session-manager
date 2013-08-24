@@ -271,8 +271,6 @@ stop_all_patterns ( void )
 static int
 sync ( jack_transport_state_t state, jack_position_t *pos, void * )
 {
-    static bool seeking = false;
-
     switch ( state )
     {
         case JackTransportStopped:           /* new position requested */
@@ -303,7 +301,6 @@ static int
 process ( jack_nframes_t nframes, void *arg )
 {
     static tick_t oph = 0;
-    static tick_t onph = 0;
     static int old_play_mode = PATTERN;
 
     static int not_dropped = 0;
@@ -335,7 +332,7 @@ process ( jack_nframes_t nframes, void *arg )
 
     ++not_dropped;
 
-    onph = nph;
+//    onph = nph;
 
     if ( old_play_mode != song.play_mode )
     {

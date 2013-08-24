@@ -85,16 +85,13 @@ Meter_Module::configure_inputs ( int n )
 {
     THREAD_ASSERT( UI );
 
-    int tx, ty, tw, th;
-    bbox( tx,ty,tw,th );
-
     int on = audio_input.size();
 
     if ( n > on )
     {
         for ( int i = on; i < n; ++i )
         {
-            DPM *dpm = new DPM( tx, ty, tw, th );
+            DPM *dpm = new DPM( 0, 0, w(), h() );
             dpm->type( FL_VERTICAL );
             align( (Fl_Align)(FL_ALIGN_CENTER | FL_ALIGN_INSIDE ) );
 

@@ -248,7 +248,7 @@ Group::name ( const char *n )
 
     if ( !active() )
     {
-        const char *jack_name = Client::init( ename );
+        Client::init( ename );
         Module::set_sample_rate( sample_rate() );
     }
     else

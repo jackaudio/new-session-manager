@@ -868,9 +868,9 @@ Controller_Module::handle_control_changed ( Port *p )
 
         if ( control_output[2].connected() )
         {
-            Port *pp = control_output[2].connected_port();
+//            Port *pp = control_output[2].connected_port();
             float v = control_output[2].control_value();
-            float s = pp->hints.maximum - pp->hints.minimum;
+//            float s = pp->hints.maximum - pp->hints.minimum;
 
             pan->point( 0 )->radius( v );
         }

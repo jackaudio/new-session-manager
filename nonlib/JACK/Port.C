@@ -215,21 +215,46 @@ namespace JACK
     nframes_t
     Port::total_latency ( void ) const
     {
+#ifdef HAVE_JACK_PORT_GET_LATENCY_RANGE
+        jack_latency_range_t range;
+
+        jack_port_get_latency_range( _port, _direction == Output ? JackPlaybackLatency : JackCaptureLatency, &range );   
+
+        return range.max;
+#else
         return jack_port_get_total_latency( _client->jack_client() , _port );
+#endif
     }
 
 /** returns the number of frames of latency assigned to this port */
     nframes_t
     Port::latency ( void ) const
     {
+#ifdef HAVE_JACK_PORT_GET_LATENCY_RANGE
+        jack_latency_range_t range;
+
+        jack_port_get_latency_range( _port, _direction == Output ? JackPlaybackLatency : JackCaptureLatency, &range );   
+
+        return range.max;
+#else
         return jack_port_get_latency( _port );
+#endif
+
     }
 
 /** inform JACK that port has /frames/ frames of latency */
     void
     Port::latency ( nframes_t frames )
     {
+#ifdef HAVE_JACK_PORT_GET_LATENCY_RANGE
+        jack_latency_range_t range;
+
+        range.min = range.max = frames;
+        
+        jack_port_set_latency_range( _port, _direction == Output ? JackPlaybackLatency : JackCaptureLatency, &range );
+#else
         jack_port_set_latency( _port, frames );
+#endif
     }
 
     void

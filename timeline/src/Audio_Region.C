@@ -56,14 +56,14 @@ Fl_Color Audio_Region::_selection_color = FL_MAGENTA;
 
 
 
-static Fl_Color fl_invert_color ( Fl_Color c )
-{
-    unsigned char r, g, b;
+/* static Fl_Color fl_invert_color ( Fl_Color c ) */
+/* { */
+/*     unsigned char r, g, b; */
 
-    Fl::get_color( c, r, g, b );
+/*     Fl::get_color( c, r, g, b ); */
 
-    return fl_rgb_color( 255 - r, 255 - g, 255 - b );
-}
+/*     return fl_rgb_color( 255 - r, 255 - g, 255 - b ); */
+/* } */
 
 
 

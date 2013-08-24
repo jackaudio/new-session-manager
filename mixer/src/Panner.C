@@ -85,6 +85,8 @@ static int find_numeric_menu_item( const Fl_Menu_Item *menu, int n )
 	if ( atoi( menu[i].text ) == n )
             return i;
     }
+
+    return -1;
 }
 
 void
@@ -165,7 +167,7 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
 
     if ( ! ( _bg_image[0] && _bg_image[1] ))
     {
-        Fl_Image *i;
+        Fl_Image *i = NULL;
     
         switch ( tw )
         {
@@ -181,6 +183,8 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
         }
     
         _bg_image[0] = i;
+
+	i = NULL;
 
         switch ( tw )
         {
@@ -233,9 +237,9 @@ Panner::project_ortho ( const Point *p, float *X, float *Y, float *S ) const
 {
     const float x = ( 0 - p->y ) / range();
     const float y = ( 0 - p->x ) / range();
-    const float z = p->z;
+//    const float z = p->z;
     
-    float zp = 4.0f;
+//    float zp = 4.0f;
     
     *X = x;
     *Y = y;
@@ -314,8 +318,6 @@ Panner::draw ( void )
     fl_push_clip( x(),y(),w(),h() );
 
     draw_the_box( tx, ty, tw, th );
-
-    const int b = 10;
 
 //    draw_box();
     draw_label();
@@ -411,8 +413,6 @@ Panner::draw ( void )
     
     if ( tw > 200 )
         draw_children();
-
-done:
 
     fl_line_style( FL_SOLID, 0 );
 

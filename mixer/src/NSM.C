@@ -40,7 +40,7 @@ int command_save ( char **out_msg );
 int
 NSM_Client::command_broadcast ( const char *path, lo_message msg )
 {
-    int argc = lo_message_get_argc( msg );
+//    int argc = lo_message_get_argc( msg );
 //    lo_arg **argv = lo_message_get_argv( msg );
 
     if ( !strcmp( path, "/non/hello" ) )

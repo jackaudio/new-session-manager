@@ -302,7 +302,7 @@ Canvas::update_mapping ( void )
 
     adj_size();
 
-    int old_margin = m.margin_left;
+//    int old_margin = m.margin_left;
 
     m.margin_left = 0;
 
@@ -502,12 +502,8 @@ void
 Canvas::draw_row_name ( int y, const char *name, int color )
 {
     bool draw = m.draw;
-    bool clear = false;
 
     y = ntr( y );
-
-    if ( ! m.row_compact && ! name )
-        clear = true;
 
     y -= m.vp->y;
 
@@ -535,7 +531,7 @@ Canvas::draw_row_name ( int y, const char *name, int color )
 void
 Canvas::draw_mapping ( void )
 {
-    int old_margin = m.margin_left;
+//    int old_margin = m.margin_left;
 
     m.margin_left = 0;
 
@@ -836,7 +832,7 @@ Canvas::draw_clip ( int X, int Y, int W, int H )
 
     fl_end_line();
 
-done:
+//done:
     fl_pop_clip();
 
     fl_pop_clip();
@@ -1359,9 +1355,7 @@ Canvas::handle ( int m )
     static int last_move_x = 0;
     static int last_move_y = 0;
 
-    static bool range_select;
-
-    int ow, oh;
+//    static bool range_select;
 
     int x, y;
     int processed = 1;
@@ -1373,9 +1367,6 @@ Canvas::handle ( int m )
     static int drag_y;
     static bool delete_note;
     static note_properties *drag_note;
-
-    ow = c->grid()->viewport.w;
-    oh = c->grid()->viewport.h;
 
     switch ( m )
     {
@@ -1890,10 +1881,6 @@ Canvas::handle ( int m )
         default:
             processed = 0;
     }
-
-    int nw, nh;
-    nw = c->grid()->viewport.w;
-    nh = c->grid()->viewport.h;
 
     if ( processed )
         window()->damage(FL_DAMAGE_OVERLAY);

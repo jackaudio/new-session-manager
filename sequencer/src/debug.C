@@ -40,7 +40,7 @@ warnf ( warning_t level,
 	if ( file )
 		fprintf( fp, "%s", file );
 	if ( line )
-		fprintf( fp, ":%i", line );
+		fprintf( fp, ":%lu", line );
 	if ( function )
 		fprintf( fp, " %s()", function );
 

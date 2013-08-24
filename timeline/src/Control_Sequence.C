@@ -676,7 +676,7 @@ Control_Sequence::peer_callback( OSC::Signal *sig,  OSC::Signal::State state, vo
     else
     {
         /* building menu */
-        const char *name = sig->peer_name();
+//        const char *name = sig->peer_name();
    
         assert( sig->path() );
 

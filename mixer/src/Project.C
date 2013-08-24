@@ -272,10 +272,10 @@ Project::open ( const char *name )
     else
         *_created_on = 0;
 
-    set_name( name );
 
-    *_path = '\0';
-    fl_filename_absolute( _path, sizeof( _path ), "." );
+    getcwd( _path, sizeof( _path ) );
+
+    set_name( _path );
 
     _is_open = true;
 

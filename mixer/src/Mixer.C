@@ -1131,11 +1131,14 @@ Mixer::command_load ( const char *path, const char *display_name )
 {
     mixer->deactivate();
 
-    chdir( path );
-
-    load_project_settings();
-
     Project::close();
+    
+    char *pwd = (char*)malloc( PATH_MAX + 1 );
+    getcwd( pwd, PATH_MAX );
+    chdir( path );
+    load_project_settings();
+    chdir( pwd );
+    free( pwd );
 
     if ( Project::open( path ) )
     {

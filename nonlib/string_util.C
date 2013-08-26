@@ -62,13 +62,19 @@ char *escape_url ( const char *url )
     {
         switch ( *s )
         {
-            case ' ':
             case '<':
             case '>':
             case '%':
+// liblo doesn't like these in method names
+            case '[':
+            case ']':
+            case '{':
+            case '}':
+            case '?':
+            case ',':
             case '#':
             case '*':
-            case ',':
+            case ' ':
                 sprintf( w, "%%%2X", *s );
                 w += 2;
                 break;

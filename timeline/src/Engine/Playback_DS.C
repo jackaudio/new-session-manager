@@ -108,8 +108,6 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
     }
 }
 
-#define AVOID_UNNECESSARY_COPYING 1
-
 void
 Playback_DS::disk_thread ( void )
 {
@@ -119,9 +117,7 @@ Playback_DS::disk_thread ( void )
 
     /* buffer to hold the interleaved data returned by the track reader */
     sample_t *buf = buffer_alloc( _nframes * channels() * _disk_io_blocks );
-#ifndef AVOID_UNNECESSARY_COPYING
-    sample_t *cbuf = buffer_alloc( _nframes * channels() * _disk_io_blocks );
-#endif
+    sample_t *cbuf = buffer_alloc( _nframes * _disk_io_blocks );
 
     int blocks_ready = 0;
 
@@ -165,51 +161,16 @@ Playback_DS::disk_thread ( void )
 
         for ( int i = channels(); i--; )
         {
-
-#ifdef AVOID_UNNECESSARY_COPYING
-
-            /* deinterleave direcectly into the ringbuffer to avoid
-             * unnecessary copying */
-
-            jack_ringbuffer_data_t rbd[2];
-
-            memset( rbd, 0, sizeof( rbd ) );
-
-            jack_ringbuffer_get_write_vector( _rb[ i ], rbd );
-
-            if ( rbd[ 0 ].len >= block_size )
-            {
-                /* it'll all fit in one go */
-                buffer_deinterleave_one_channel( (sample_t*)rbd[ 0 ].buf, buf, i, channels(), nframes );
-            }
-            else if ( rbd[ 0 ].len + rbd[ 1 ].len >= block_size )
-            {
-                /* there's enough space in the ringbuffer, but it's not contiguous */
-
-                assert( ! ( rbd[ 0 ].len % sizeof( sample_t )  ) );
-//                assert( ! ( rbd[ 1 ].len % sizeof( sample_t )  ) );
-
-                const nframes_t f = rbd[ 0 ].len / sizeof( sample_t );
-
-                /* do the first half */
-                buffer_deinterleave_one_channel( (sample_t*)rbd[ 0 ].buf, buf, i, channels(), f );
-
-                assert( rbd[ 1 ].len >= ( nframes - f ) * sizeof( sample_t ) );
-
-                /* do the second half */
-                buffer_deinterleave_one_channel( (sample_t*)rbd[ 1 ].buf, buf + f, i, channels(), nframes - f );
-            }
-            else
-                ++_xruns;
-
-            jack_ringbuffer_write_advance( _rb[ i ], block_size );
-#else
             buffer_deinterleave_one_channel( cbuf, buf, i, channels(), nframes );
 
-            if ( jack_ringbuffer_write( _rb[ i ], (char*)cbuf, block_size ) < block_size )
-                ++_xruns;
-#endif
-        }
+            size_t wr = 0;
+
+            while ( wr < block_size )
+            {
+                wr += jack_ringbuffer_write( _rb[ i ], ((char*)cbuf) + wr, block_size - wr );
+//                usleep( 10 * 1000 );
+            }
+         }
 
     }
 
@@ -218,9 +179,7 @@ done:
     DMESSAGE( "playback thread terminating" );
 
     free(buf);
-#ifndef AVOID_UNNECESSARY_COPYING
     free(cbuf);
-#endif
 
     _terminate = false;
 
@@ -234,21 +193,32 @@ Playback_DS::process ( nframes_t nframes )
 {
     THREAD_ASSERT( RT );
 
-
     const size_t block_size = nframes * sizeof( sample_t );
 
 //    printf( "process: %lu %lu %lu\n", _frame, _frame + nframes, nframes );
 
     for ( int i = channels(); i--;  )
     {
-
         void *buf = track()->output[ i ].buffer( nframes );
 
-        if ( jack_ringbuffer_read( _rb[ i ], (char*)buf, block_size ) < block_size )
+        if ( engine->freewheeling() )
         {
-            ++_xruns;
-            memset( buf, 0, block_size );
-            /* FIXME: we need to resync somehow */
+            size_t rd = 0;
+
+            while ( rd < block_size )
+            {
+                rd += jack_ringbuffer_read( _rb[ i ], ((char*)buf) + rd, block_size - rd );
+//                usleep( 10 * 1000 );
+            }
+        }
+        else
+        {
+            if ( jack_ringbuffer_read( _rb[ i ], (char*)buf, block_size ) < block_size )
+            {
+                ++_xruns;
+                memset( buf, 0, block_size );
+                /* FIXME: we need to resync somehow */
+            }
         }
 
         /* TODO: figure out a way to stop IO while muted without losing sync */

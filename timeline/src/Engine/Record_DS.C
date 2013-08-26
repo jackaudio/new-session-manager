@@ -33,6 +33,8 @@
 #include "debug.h"
 #include "Thread.H"
 
+#include <unistd.h>
+
 const Audio_Region *
 Record_DS::capture_region ( void ) const
 {
@@ -63,8 +65,6 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
     _frames_written += nframes;
 }
 
-#define AVOID_UNNECESSARY_COPYING 1
-
 void
 Record_DS::disk_thread ( void )
 {
@@ -78,9 +78,7 @@ Record_DS::disk_thread ( void )
 
     /* buffer to hold the interleaved data returned by the track reader */
     sample_t *buf = buffer_alloc( nframes * channels() );
-#ifndef AVOID_UNNECESSARY_COPYING
     sample_t *cbuf = buffer_alloc( nframes );
-#endif
 
     const size_t block_size = nframes * sizeof( sample_t );
 
@@ -96,50 +94,15 @@ Record_DS::disk_thread ( void )
         /* pull data from the per-channel ringbuffers and interlace it */
         for ( int i = channels(); i--; )
         {
+            size_t rd = 0;
 
-#ifdef AVOID_UNNECESSARY_COPYING
-            /* interleave direcectly from the ringbuffer to avoid
-             * unnecessary copying */
-
-            jack_ringbuffer_data_t rbd[2];
-
-            memset( rbd, 0, sizeof( rbd ) );
-
-            jack_ringbuffer_get_read_vector( _rb[ i ], rbd );
-
-            if ( rbd[ 0 ].len >= block_size )
+            while ( rd < block_size )
             {
-                /* it'll all fit in one go */
-                buffer_interleave_one_channel( buf, (sample_t*)rbd[ 0 ].buf, i, channels(), nframes );
+                rd += jack_ringbuffer_read( _rb[ i ], ((char*)cbuf) + rd, block_size - rd );
+//                usleep( 10 * 1000 );
             }
-            else if ( rbd[ 0 ].len + rbd[ 1 ].len >= block_size )
-            {
-                /* there's enough space in the ringbuffer, but it's not contiguous */
-
-                assert( ! ( rbd[ 0 ].len % sizeof( sample_t )  ) );
-
-                const nframes_t f = rbd[ 0 ].len / sizeof( sample_t );
-
-                /* do the first half */
-                buffer_interleave_one_channel( buf, (sample_t*)rbd[ 0 ].buf, i, channels(), f );
-
-                assert( rbd[ 1 ].len >= ( nframes - f ) * sizeof( sample_t ) );
-
-                /* do the second half */
-                buffer_interleave_one_channel( buf + f, (sample_t*)rbd[ 0 ].buf, i, channels(), nframes - f );
-
-            }
-            else
-                ++_xruns;
-
-            jack_ringbuffer_read_advance( _rb[ i ], block_size );
-#else
-            if ( jack_ringbuffer_read( _rb[ i ], (char*)cbuf, block_size ) < block_size )
-                ++_xruns;
 
             buffer_interleave_one_channel( buf, cbuf, i, channels(), nframes );
-#endif
-
         }
 
         write_block( buf, nframes );
@@ -155,42 +118,32 @@ Record_DS::disk_thread ( void )
         const nframes_t nframes = _nframes;
         const size_t block_size = _nframes * sizeof( sample_t );
 
-#ifdef AVOID_UNNECESSARY_COPYING
-        sample_t *cbuf = buffer_alloc( nframes );
-#endif
-
         while ( blocks_ready-- > 0 || ( ! sem_trywait( &_blocks ) && errno != EAGAIN ) )
         {
+            for ( int i = channels(); i--; )
+            {
+                jack_ringbuffer_read( _rb[ i ], (char*)cbuf, block_size );
 
-                for ( int i = channels(); i--; )
-                {
-                    jack_ringbuffer_read( _rb[ i ], (char*)cbuf, block_size );
+                buffer_interleave_one_channel( buf, cbuf, i, channels(), nframes );
+            }
 
-                    buffer_interleave_one_channel( buf, cbuf, i, channels(), nframes );
-                }
+            const nframes_t frames_remaining = (_stop_frame - _frame ) - _frames_written;
 
-                const nframes_t frames_remaining = (_stop_frame - _frame ) - _frames_written;
-
-                if ( frames_remaining < nframes )
-                {
-                    /* this is the last block, might be partial  */
-                    write_block( buf, frames_remaining );
-                    break;
-                }
-                else
-                    write_block( buf, nframes );
+            if ( frames_remaining < nframes )
+            {
+                /* this is the last block, might be partial  */
+                write_block( buf, frames_remaining );
+                break;
+            }
+            else
+                write_block( buf, nframes );
         }
 
-#ifdef AVOID_UNNECESSARY_COPYING
-        free(cbuf);
-#endif
 
     }
 
     free(buf);
-#ifndef AVOID_UNNECESSARY_COPYING
     free(cbuf);
-#endif
 
     DMESSAGE( "finalzing capture" );
 
@@ -300,17 +253,28 @@ Record_DS::process ( nframes_t nframes )
         /* read the entire input buffer */
         void *buf = track()->input[ i ].buffer( nframes );
 
-/*         if ( buffer_is_digital_black( (sample_t*)buf, nframes ) ) */
-/*              DWARNING( "recording an entirely blank buffer" ); */
-
         /* FIXME: this results in a ringbuffer size that is no longer
          necessarily a multiple of nframes...  how will the other side
          handle that? */
-        if ( jack_ringbuffer_write( _rb[ i ], (char*)buf + offset, block_size ) < block_size )
+
+        if ( engine->freewheeling() )
         {
-            ++_xruns;
-            memset( buf, 0, block_size );
-            /* FIXME: we need to resync somehow */
+            size_t wr = 0;
+
+            while ( wr < block_size )
+            {
+                wr += jack_ringbuffer_write( _rb[ i ], ((char*)buf) + offset_size + wr, block_size - wr );
+//                usleep( 10 * 1000 );
+            }
+        }
+        else
+        {
+            if ( jack_ringbuffer_write( _rb[ i ], ((char*)buf) + offset_size, block_size ) < block_size )
+            {
+                ++_xruns;
+                memset( buf, 0, block_size );
+                /* FIXME: we need to resync somehow */
+            }
         }
     }
 

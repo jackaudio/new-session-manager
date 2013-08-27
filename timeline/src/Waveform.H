@@ -34,6 +34,6 @@ public:
     static void scale ( Peak *pbuf, int npeaks, float gain );
     static void draw ( int X, int Y, int W, int H,
                        const Peak *pbuf, int peaks, int skip,
-                       Fl_Color color );
+                       Fl_Color fg_color, Fl_Color bg_color );
 
 };

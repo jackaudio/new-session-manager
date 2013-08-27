@@ -55,7 +55,7 @@ Waveform::scale ( Peak *pbuf, int npeaks, float gain )
 void
 Waveform::draw ( int X, int Y, int W, int H,
                  const Peak *pbuf, int peaks, int skip,
-                 Fl_Color color )
+                 Fl_Color fg_color, Fl_Color bg_color )
 {
     int j;
 
@@ -69,6 +69,8 @@ Waveform::draw ( int X, int Y, int W, int H,
 
     if ( ! W )
         return;
+
+    fg_color = fl_color_add_alpha( Fl::get_color( fg_color ), 200 );
     
     if ( Waveform::fill )
     {
@@ -81,14 +83,11 @@ Waveform::draw ( int X, int Y, int W, int H,
 
                 const float diff = fabs( p.max - p.min );
  
-               if ( diff > 2.0f )
+                if ( diff > 2.0f )
                     fl_color( FL_RED );
                 else
-                    if ( Waveform::vary_color )
-                        fl_color( fl_color_average( FL_WHITE, color, diff * 0.5f ) );
-                    else
-                        fl_color( color );
-
+                    fl_color( fl_color_average( fg_color, bg_color, diff * 0.5f ) );
+                
                 const int ty = mid - ( halfheight * p.min );
                 const int by = mid - ( halfheight * p.max );
                 fl_line( x, ty, x, by );
@@ -96,8 +95,8 @@ Waveform::draw ( int X, int Y, int W, int H,
         }
         else
         {
-            fl_color( color );
-            
+            fl_color( fg_color );
+   
             fl_begin_complex_polygon();
             
             j = start;
@@ -116,7 +115,7 @@ Waveform::draw ( int X, int Y, int W, int H,
 
     if ( Waveform::outline )
     {
-        fl_color( fl_darker( fl_darker( color ) ) );
+        fl_color( bg_color );
 
         fl_line_style( FL_SOLID, 0 );
 

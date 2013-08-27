@@ -559,16 +559,15 @@ Audio_Region::draw ( void )
         nframes_t loop_frames_needed = _loop ? _loop : total_frames_needed;
         int loop_peaks_needed = timeline->ts_to_x( loop_frames_needed );
         
-        Fl_Color c = Fl::get_color( _color );
+        Fl_Color fg_color = FL_FOREGROUND_COLOR;
+        Fl_Color bg_color = FL_BACKGROUND_COLOR;
 
-        if ( recording() )
+        if ( !active_r() )
         {
-//            loop_peaks_needed = timeline->ts_to_x( _range.length );
-            c = FL_BLACK;
+            fg_color = fl_inactive(fg_color);
+            bg_color = fl_inactive(bg_color);
         }
         
-        c = fl_color_add_alpha( c, 220 );
-
         if ( ! fo )                                             /* first loop... */
         {
             if ( _loop )
@@ -639,7 +638,7 @@ Audio_Region::draw ( void )
                                 loop_peaks_needed,
                                 ch,
                                 pbuf + i, peaks, channels,
-                                c );
+                                fg_color, bg_color );
             }
         }
         else

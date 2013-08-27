@@ -666,11 +666,13 @@ Module::draw_label ( int tx, int ty, int tw, int th )
 
     fl_font( FL_HELVETICA, labelsize() );
 
-    char *di = index( lab, '-' );
+    char *di = strstr( lab, " -" );
+    
+    if ( ! di )
+        strstr( lab, "  " );
+
     if ( di )
-    {
         *di = '\0';
-    }
 
     int LW = fl_width( lab );
     char *s = NULL;

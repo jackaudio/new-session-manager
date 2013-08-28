@@ -160,7 +160,7 @@ Module::get ( Log_Entry &e ) const
     e.add( ":active", ! bypass() );
 }
 
-void
+bool
 Module::copy ( void ) const
 {
     Module *m = clone_empty();
@@ -168,6 +168,7 @@ Module::copy ( void ) const
     if ( ! m )
     {
         DMESSAGE( "Module \"%s\" doesn't support cloning", name() );
+        return false;
     }
 
     Log_Entry *ne = new Log_Entry();
@@ -196,6 +197,8 @@ Module::copy ( void ) const
     }
 
     _copied_module_settings = ne->print();
+
+    return true;
 }
 
 void
@@ -840,10 +843,11 @@ Module::menu_cb ( const Fl_Menu_ *m )
         }
     else if ( ! strcmp( picked, "Cut" ) )
     {
-        copy();
-
-        chain()->remove( this );
-        Fl::delete_widget( this );
+        if ( copy() )
+        {
+            chain()->remove( this );
+            Fl::delete_widget( this );
+        }
     }
     else if ( ! strcmp( picked, "Copy" ) )
     {

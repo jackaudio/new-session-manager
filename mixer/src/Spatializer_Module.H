@@ -49,6 +49,8 @@ public:
     virtual ~Spatializer_Module ( );
 
     LOG_CREATE_FUNC( Spatializer_Module );
+
+    MODULE_CLONE_FUNC(Spatializer_Module);
     
     virtual void handle_sample_rate_change ( nframes_t n );
 

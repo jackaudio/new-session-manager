@@ -63,7 +63,7 @@ class Module : public Fl_Group, public Loggable {
     static void menu_cb ( Fl_Widget *w, void *v );
     Fl_Menu_Button & menu ( void ) const;
 
-    void copy ( void ) const;
+    bool copy ( void ) const;
     void paste_before ( void );
 
 protected:

@@ -551,15 +551,15 @@ Chain::insert ( Module *m, Module *n )
     {
         if ( modules() == 0 && n->can_support_inputs( 0 ) >= 0 )
         {
+            n->chain( this );
             n->configure_inputs( 0 );
             modules_pack->add( n );
-            n->chain( this );
         }
         else if ( n->can_support_inputs( module( modules() - 1 )->noutputs() ) >= 0 )
         {
+            n->chain( this );
             n->configure_inputs( module( modules() - 1 )->noutputs() );
             modules_pack->add( n );
-            n->chain( this );
         }
         else
         {
@@ -571,6 +571,8 @@ Chain::insert ( Module *m, Module *n )
     else
     {
         int i = modules_pack->find( m );
+
+        n->chain( this );
 
         if ( 0 == i )
         {
@@ -596,7 +598,6 @@ Chain::insert ( Module *m, Module *n )
         }
 
         modules_pack->insert( *n, i );
-        n->chain( this );
     }
 
 

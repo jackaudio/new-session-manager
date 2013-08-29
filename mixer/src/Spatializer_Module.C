@@ -431,7 +431,7 @@ Spatializer_Module::Spatializer_Module ( ) : JACK_Module ( false )
         p.hints.ranged = true;
         p.hints.minimum = 0.0f;
         p.hints.maximum = 600.0f;
-        p.hints.default_value = 200.0f;
+        p.hints.default_value = 0.0f;
         
         p.connect_to( new float );
         p.control_value( p.hints.default_value );

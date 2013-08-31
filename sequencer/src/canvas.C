@@ -203,6 +203,8 @@ Canvas::Canvas ( int X, int Y, int W, int H, const char *L ) : Fl_Group( X,Y,W,H
 
     m.vp = NULL;
 
+    m.grid = NULL;
+
     end();
 
     resize( X,Y,W,H);

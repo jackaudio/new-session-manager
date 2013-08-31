@@ -1234,7 +1234,7 @@ Timeline::draw_cursors ( Cursor_Sequence *o ) const
         {
             if ( Timeline::draw_with_cursor_overlay )
             {
-                fl_color( fl_color_add_alpha( (*i)->box_color(), 50 ) );
+                fl_color( fl_color_add_alpha( (*i)->box_color(), 25 ) );
                 
                 fl_rectf( (*i)->line_x(), tracks->y(), (*i)->abs_w(), tracks->h() );
             }

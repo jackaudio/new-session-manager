@@ -166,7 +166,11 @@ public:
 
                 if ( _flow )
                 {
-                    Y += LH + _vspacing;
+                    if ( _flowdown )
+                        Y += LH + _vspacing;
+                    else
+                        Y += RH + _vspacing;
+
                     X += LW + _hspacing;
                 }
                 else

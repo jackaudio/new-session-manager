@@ -107,6 +107,8 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
             { Fl_Flowpack *o = control_pack = new Fl_Flowpack( 50, 0, w() - 100, h() );
 /*                 o->box( FL_ROUNDED_BOX ); */
 /*                 o->color( FL_GRAY ); */
+                o->type( FL_HORIZONTAL );
+                o->flow( true );
                 o->vspacing( 10 );
                 o->hspacing( 10 );
                 o->end();
@@ -159,8 +161,8 @@ Module_Parameter_Editor::make_controls ( void )
 
         Module::Port *p = &module->control_input[i];
 
-        if ( !p->hints.visible )
-            continue;
+        /* if ( !p->hints.visible ) */
+        /*     continue; */
 
         if ( !strcasecmp( "Azimuth", p->name() ) &&
             180.0f == p->hints.maximum &&
@@ -309,6 +311,10 @@ Module_Parameter_Editor::make_controls ( void )
                 o->size( flg->w(), flg->h() + bound->h() );
                 o->init_sizes();
             }
+
+            if (! p->hints.visible )
+                o->hide();
+
             control_pack->add( o );
         }
 
@@ -326,8 +332,6 @@ Module_Parameter_Editor::make_controls ( void )
         o->align(FL_ALIGN_TOP);
         o->when(FL_WHEN_CHANGED);
         o->label( "Spatialization" );
-
-        o->align(FL_ALIGN_TOP);
         o->labelsize( 10 );
 
         _callback_data.push_back( callback_data( this, azimuth_port_number, elevation_port_number, radius_port_number ) );
@@ -351,6 +355,7 @@ Module_Parameter_Editor::make_controls ( void )
             controls_by_port[radius_port_number] = o;
     }
 
+    update_control_visibility();
 
     int width = control_pack->max_width() + 100;
     int height = control_pack->h() + 50;
@@ -361,6 +366,20 @@ Module_Parameter_Editor::make_controls ( void )
     main_pack->size( width, height );
     size( width, height );
     size_range( width, height, width, height );
+}
+
+void 
+Module_Parameter_Editor::update_control_visibility ( void )
+{
+    for ( unsigned int i = 0; i < _module->control_input.size(); ++i )
+    {
+        const Module::Port *p = &_module->control_input[i];
+
+        if ( p->hints.visible )
+            controls_by_port[i]->parent()->parent()->show();
+        else
+            controls_by_port[i]->parent()->parent()->hide();
+    }
 }
 
 void
@@ -472,7 +491,8 @@ Module_Parameter_Editor::handle_control_changed ( Module::Port *p )
 void
 Module_Parameter_Editor::reload ( void )
 {
-    make_controls();
+//    make_controls();
+    update_control_visibility();
     redraw();
 }
 

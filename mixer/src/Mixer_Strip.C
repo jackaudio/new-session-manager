@@ -126,6 +126,7 @@ Mixer_Strip::get ( Log_Entry &e ) const
     /* since the default controllers aren't logged, we have to store
      * this setting as part of the mixer strip */
     e.add( ":gain_mode", gain_controller->mode() );
+    e.add( ":mute_mode", mute_controller->mode() );
     if ( ! _group->single() )
         e.add( ":group", _group );
     else
@@ -163,6 +164,10 @@ Mixer_Strip::set ( Log_Entry &e )
         else if ( ! strcmp( s, ":gain_mode" ) )
         {
             _gain_controller_mode = atoi( v );
+        }
+        else if ( ! strcmp( s, ":mute_mode" ) )
+        {
+            _mute_controller_mode = atoi( v );
         }
         else if ( ! strcmp( s, ":group" ) )
         {
@@ -236,6 +241,7 @@ Mixer_Strip::chain ( Chain *c )
     /* FIXME: don't hardcode this list of modules */
     spatialization_controller->chain( c );
     gain_controller->chain( c );
+    mute_controller->chain( c );
     jack_input_controller->chain( c );
     meter_indicator->chain( c );
 }
@@ -422,6 +428,8 @@ Mixer_Strip::handle_module_added ( Module *m )
         {
             gain_controller->connect_to( &m->control_input[0] );
             gain_controller->mode( (Controller_Module::Mode)_gain_controller_mode );
+            mute_controller->connect_to( &m->control_input[1] );
+            mute_controller->mode( (Controller_Module::Mode)_mute_controller_mode );
         }
         else if ( 0 == strcmp( m->name(), "Meter" ) )
         {
@@ -459,6 +467,8 @@ Mixer_Strip::update ( void )
 
     meter_indicator->update();
     gain_controller->update();
+    mute_controller->update();
+
     if ( _chain )
     {
         _chain->update();
@@ -490,6 +500,7 @@ Mixer_Strip::init ( )
 {
     selection_color( FL_RED );
 
+    _mute_controller_mode = 0;
     _gain_controller_mode = 0;
     _chain = 0;
     _group = 0;
@@ -575,6 +586,10 @@ Mixer_Strip::init ( )
                 o->labelsize( 14 );
                 o->callback( ((Fl_Callback*)cb_handle), this );
                 o->when(FL_WHEN_RELEASE);
+            }
+            { Controller_Module *o = mute_controller = new Controller_Module( true );
+                o->pad( false );
+                o->size( 45, 22 );
             }
             o->end();
         }

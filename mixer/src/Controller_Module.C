@@ -395,9 +395,11 @@ Controller_Module::connect_to ( Port *p )
 
     if ( p->hints.type == Module::Port::Hints::BOOLEAN )
     {
-        Fl_Light_Button *o = new Fl_Light_Button( 0, 0, 40, 40, p->name() );
+        Fl_Button *o = new Fl_Button( 0, 0, 40, 40, p->name() );
         w = o;
+        o->type( FL_TOGGLE_BUTTON );
         o->value( p->control_value() );
+        o->selection_color( fl_color_average( FL_GRAY, FL_CYAN, 0.5 ) );
 
         _type = TOGGLE;
 
@@ -487,7 +489,14 @@ Controller_Module::connect_to ( Port *p )
     else
     {
         /* HACK: hide label */
-        w->labeltype( FL_NO_LABEL );
+        if ( _type == TOGGLE )
+        {
+            w->align( FL_ALIGN_INSIDE );
+        }
+        else
+        {
+            w->labeltype( FL_NO_LABEL );
+        }
         w->resize( x(), y(), this->w(), h() );
         add( w );
         resizable( w );

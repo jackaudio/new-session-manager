@@ -30,17 +30,33 @@ Gain_Module::Gain_Module ( )
     add_port( Port( this, Port::INPUT, Port::AUDIO ) );
     add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
 
-    Port p( this, Port::INPUT, Port::CONTROL, "Gain (dB)" );
-    p.hints.type = Port::Hints::LOGARITHMIC;
-    p.hints.ranged = true;
-    p.hints.minimum = -70.0f;
-    p.hints.maximum = 6.0f;
-    p.hints.default_value = 0.0f;
+    {
+        Port p( this, Port::INPUT, Port::CONTROL, "Gain (dB)" );
+        p.hints.type = Port::Hints::LOGARITHMIC;
+        p.hints.ranged = true;
+        p.hints.minimum = -70.0f;
+        p.hints.maximum = 6.0f;
+        p.hints.default_value = 0.0f;
 
-    p.connect_to( new float );
-    p.control_value( p.hints.default_value );
+        p.connect_to( new float );
+        p.control_value( p.hints.default_value );
 
-    add_port( p );
+        add_port( p );
+    }
+
+    {
+        Port p( this, Port::INPUT, Port::CONTROL, "Mute" );
+        p.hints.type = Port::Hints::BOOLEAN;
+        p.hints.ranged = true;
+        p.hints.minimum = 0.0f;
+        p.hints.maximum = 1.0f;
+        p.hints.default_value = 0.0f;
+
+        p.connect_to( new float );
+        p.control_value( p.hints.default_value );
+
+        add_port( p );
+    }
 
     end();
 
@@ -52,6 +68,7 @@ Gain_Module::Gain_Module ( )
 Gain_Module::~Gain_Module ( )
 {
     delete (float*)control_input[0].buffer();
+    delete (float*)control_input[1].buffer();
     log_destroy();
 }
 
@@ -88,7 +105,7 @@ Gain_Module::handle_sample_rate_change ( nframes_t n )
 void
 Gain_Module::process ( nframes_t nframes )
 {
-    const float gt = DB_CO( control_input[0].control_value() );
+    const float gt = DB_CO( control_input[1].control_value() ? -90.f : control_input[0].control_value() );
 
     sample_t gainbuf[nframes];
     
@@ -96,7 +113,6 @@ Gain_Module::process ( nframes_t nframes )
 
     if ( use_gainbuf )
     {
-  
         for ( int i = audio_input.size(); i--; )
         {
             if ( audio_input[i].connected() && audio_output[i].connected() )

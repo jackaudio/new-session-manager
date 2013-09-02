@@ -91,6 +91,7 @@ private:
      chain has been added and the controller connected to a default
      module */
     int _gain_controller_mode;
+    int _mute_controller_mode;
 
     Fl_Flip_Button *width_button;
     Fl_Flip_Button *tab_button;
@@ -109,6 +110,7 @@ private:
 
     Fl_Box *spatialization_label;
     Controller_Module *gain_controller;
+    Controller_Module *mute_controller;
     Controller_Module *jack_input_controller;
     Controller_Module *spatialization_controller;
     Meter_Indicator_Module *meter_indicator;

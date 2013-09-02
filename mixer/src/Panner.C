@@ -32,6 +32,8 @@
 /* 2D Panner widget. Supports various multichannel configurations. */
 
 Panner::Point *Panner::drag;
+int Panner::_range_mode = 1;
+int Panner::_projection_mode = 0;
 
 Panner::Panner ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
@@ -51,7 +53,8 @@ Panner::Panner ( int X, int Y, int W, int H, const char *L ) :
         o->add("5 Meters",0,0,&ranges[1]);
         o->add("10 Meters",0,0,&ranges[2]);
         o->add("15 Meters",0,0,&ranges[3]);
-        o->value(1);
+        o->value(_range_mode);
+        o->callback( cb_mode, this );
     }
 
     { Fl_Choice *o = _projection_choice = new Fl_Choice(X + W - 75,Y + H - 18,75,18,"Projection:");
@@ -62,7 +65,8 @@ Panner::Panner ( int X, int Y, int W, int H, const char *L ) :
         o->align(FL_ALIGN_LEFT);
         o->add("Spherical");
         o->add("Planar");
-        o->value(0);
+        o->value(_projection_mode);
+        o->callback( cb_mode, this );
     }
                   
     end();
@@ -90,11 +94,28 @@ static int find_numeric_menu_item( const Fl_Menu_Item *menu, int n )
 }
 
 void
+Panner::cb_mode ( Fl_Widget *w, void *v )
+{
+    ((Panner*)v)->cb_mode( w );
+}
+
+void
+Panner::cb_mode ( Fl_Widget *w )
+{
+    if ( w == _range_choice )
+        _range_mode = _range_choice->value();
+    else if ( w == _projection_choice )
+        _projection_mode = _projection_choice->value();
+}
+
+void
 Panner::range ( float v )
 {
     int i = find_numeric_menu_item( _range_choice->menu(), v );
     
     _range_choice->value( i );
+
+    _range_mode = i;
 }
 
 /** set X, Y, W, and H to the bounding box of point /p/ in screen coords */
@@ -435,6 +456,8 @@ Panner::handle ( int m )
     {
         case FL_ENTER:
         case FL_LEAVE:
+            _projection_choice->value(_projection_mode);
+            _range_choice->value(_range_mode);
             redraw();
             return 1;
         case FL_PUSH:

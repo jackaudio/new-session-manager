@@ -36,6 +36,9 @@ class Panner : public Fl_Group
     Fl_Image *_bg_image[2]; 
     void draw_grid( int,int,int,int);
     void draw_the_box( int, int, int, int );
+    
+    static int _range_mode;
+    static int _projection_mode;
 
 public:
 
@@ -168,8 +171,9 @@ private:
     void project_polar ( const Point *p, float *X, float *Y, float *S ) const;
     void project_ortho ( const Point *p, float *X, float *Y, float *S ) const;
 
-    int _projection;
-    
+    static void cb_mode ( Fl_Widget *w, void *v );
+    void cb_mode ( Fl_Widget *w );
+            
 protected:
 
     virtual void draw ( void );
@@ -179,12 +183,12 @@ public:
 
     enum { POLAR, ORTHO };
     
-    int projection ( void ) const { return _projection_choice->value(); }
-    void projection ( int v ) { _projection_choice->value(v); }
+    int projection ( void ) const { return _projection_mode; }
+    void projection ( int v ) { _projection_choice->value(v); _projection_mode = v; }
 
     Panner ( int X, int Y, int W, int H, const char *L = 0 );
 
-    float range ( void ) const { return *((int*)_range_choice->mvalue()->user_data()); }
+    float range ( void ) const { return *((int*)_range_choice->menu()[_range_mode].user_data()); }
     void range ( float v );
 
     void clear_points ( void ) { _points.clear(); }

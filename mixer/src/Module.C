@@ -141,6 +141,7 @@ Module::init ( void )
     selection_color( FL_RED );
     labelsize(12);
     color( fl_color_average( FL_WHITE, FL_CYAN, 0.40 ) );
+    tooltip( "Left click to edit parameters; Ctrl + left click to select; right click or MENU key for menu." );
 }
 
 
@@ -625,10 +626,6 @@ Module::draw_box ( int tx, int ty, int tw, int th )
         fl_draw_box( box(), tx + (spacing * i), ty, tw / instances(), th, c );
     }
 
-    if ( this == Fl::focus() )
-    {
-        fl_draw_box( FL_UP_FRAME, tx, ty, tw, th, selection_color() );
-    }
 
     if ( audio_input.size() && audio_output.size() )
     {
@@ -649,6 +646,11 @@ Module::draw_box ( int tx, int ty, int tw, int th )
     Fl_Group::draw_children();
 
     fl_pop_clip();
+
+    if ( this == Fl::focus() )
+    {
+        fl_draw_box( FL_UP_FRAME, tx, ty, tw, th, selection_color() );
+    }
 
     fl_pop_clip();
 }
@@ -833,14 +835,17 @@ Module::menu_cb ( const Fl_Menu_ *m )
     if ( ! strcmp( picked, "Edit Parameters" ) )
         command_open_parameter_editor();
     else if ( ! strcmp( picked, "Bypass" ) )
+    {
         if ( ! bypassable() )
         {
             fl_alert( "Due to its channel configuration, this module cannot be bypassed." );
         }
         else
         {
-            bypass( ! ( m->mvalue()->flags & FL_MENU_VALUE ) );
+            bypass( !bypass() );
+            redraw();
         }
+    }
     else if ( ! strcmp( picked, "Cut" ) )
     {
         if ( copy() )
@@ -940,6 +945,14 @@ Module::handle ( int m )
 
     unsigned long evstate = Fl::event_state();
 
+    switch ( m )
+    {
+        case FL_ENTER:
+//            Fl::focus(this);
+        case FL_LEAVE:
+            return 1;
+    }
+
     if ( Fl_Group::handle( m ) )
         return 1;
 
@@ -971,7 +984,12 @@ Module::handle ( int m )
             if ( ! Fl::event_inside( this ) )
                 return 1;
 
-            if ( e & FL_BUTTON1 )
+            if ( ( e & FL_BUTTON1 ) && ( e & FL_CTRL ) )
+            {
+                Fl::focus(this);
+                return 1;
+            }
+            else if ( e & FL_BUTTON1 )
             {
                 command_open_parameter_editor();
                 return 1;

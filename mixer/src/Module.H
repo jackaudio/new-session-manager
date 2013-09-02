@@ -406,7 +406,7 @@ public:
         }
 
     virtual bool bypass ( void ) const { return _bypass; }
-    virtual void bypass ( bool v ) { _bypass = v; redraw(); }
+    virtual void bypass ( bool v ) { _bypass = v; }
 
     virtual bool bypassable ( void ) const
         {

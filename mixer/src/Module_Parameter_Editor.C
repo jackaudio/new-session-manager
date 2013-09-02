@@ -470,6 +470,13 @@ Module_Parameter_Editor::handle_control_changed ( Module::Port *p )
 }
 
 void
+Module_Parameter_Editor::reload ( void )
+{
+    make_controls();
+    redraw();
+}
+
+void
 Module_Parameter_Editor::set_value (int i, float value )
 {
     if ( i >= 0 )

@@ -30,12 +30,15 @@ class Spatializer_Module : public JACK_Module
 {
     Value_Smoothing_Filter gain_smoothing;
     Value_Smoothing_Filter delay_smoothing;
+    Value_Smoothing_Filter late_gain_smoothing;
+    Value_Smoothing_Filter early_gain_smoothing;
     
     std::vector<filter*> _lowpass;
     std::vector<filter*> _highpass;
     std::vector<delay*> _delay;
     
     ambisonic_panner *_panner;
+    ambisonic_panner *_early_panner;
     
 public:
 
@@ -53,7 +56,7 @@ public:
     MODULE_CLONE_FUNC(Spatializer_Module);
     
     virtual void handle_sample_rate_change ( nframes_t n );
-
+    virtual void handle_control_changed ( Port *p );
     virtual void draw ( void );
 
 protected:

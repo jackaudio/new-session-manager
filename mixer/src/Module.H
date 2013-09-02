@@ -48,8 +48,6 @@ class Module : public Fl_Group, public Loggable {
     bool _is_default;
 //    nframes_t _latency;
 
-    Module_Parameter_Editor *_editor;
-
     static nframes_t _sample_rate;
     static Module *_copied_module_empty;
     static char *_copied_module_settings;
@@ -67,6 +65,8 @@ class Module : public Fl_Group, public Loggable {
     void paste_before ( void );
 
 protected:
+
+    Module_Parameter_Editor *_editor;
 
     volatile bool _bypass;
 

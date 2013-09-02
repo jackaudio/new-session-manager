@@ -51,7 +51,7 @@ Panner::Panner ( int X, int Y, int W, int H, const char *L ) :
         o->add("5 Meters",0,0,&ranges[1]);
         o->add("10 Meters",0,0,&ranges[2]);
         o->add("15 Meters",0,0,&ranges[3]);
-        o->value(3);
+        o->value(1);
     }
 
     { Fl_Choice *o = _projection_choice = new Fl_Choice(X + W - 75,Y + H - 18,75,18,"Projection:");

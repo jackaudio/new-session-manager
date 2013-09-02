@@ -42,16 +42,31 @@
 Spatialization_Console::Spatialization_Console ( void ) : Fl_Double_Window( 850, 850 )
 {
     _resized = false;
-    _min_width = 100;
   
     label( "Spatialization Console" );
 
     fl_font( FL_HELVETICA, 14 );
-    
-    panner = new Panner( 25,25, 802,802 );
 
+    int padding = 48;
+    int S = 802;
+    
+    {
+        int sx, sy, sw, sh;
+        
+        Fl::screen_xywh( sx, sy, sw, sh );
+
+        if ( sw < 850 || sh < 850 )
+        {
+            /* if screen isn't big enough, use smaller version of control */
+            S = 502;
+        }
+    }
+
+    panner = new Panner( 25,25, S, S );
     panner->callback( cb_panner_value_handle, this );
     panner->when( FL_WHEN_CHANGED );
+
+    size( S + padding, S + padding );
 
     callback( cb_window, this );
     end();

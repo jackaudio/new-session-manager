@@ -50,6 +50,8 @@ class Fl_Menu_Button;
 class Fl_Choice;
 class Group;
 
+#include "Module.H"
+
 class Mixer_Strip : public Fl_Group, public Loggable {
 
 public:
@@ -85,6 +87,9 @@ public:
 
 private:
 
+    char *_auto_input;
+    void auto_input ( const char *s );
+    
     unsigned int _dsp_load_index;
 
     /* used to defer setting the mode of the gain controller until the
@@ -92,7 +97,9 @@ private:
      module */
     int _gain_controller_mode;
     int _mute_controller_mode;
+    bool _manual_connection;
 
+    Fl_Menu_Button *output_connection_button;
     Fl_Flip_Button *width_button;
     Fl_Flip_Button *tab_button;
     Fl_Button *close_button;
@@ -150,6 +157,13 @@ protected:
     virtual void draw ( void );
 
 public:
+
+    void manual_connection ( bool b );
+    bool has_group_affinity ( void ) const;
+    void auto_connect_outputs ( void );
+    bool maybe_auto_connect_output ( Module::Port *p );
+       
+    void get_output_ports ( std::list<std::string> &ports );
 
     void update_group_choice ( void );
 

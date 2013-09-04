@@ -493,6 +493,9 @@ protected:
 
 public:
 
+    void auto_connect_outputs();
+    void auto_disconnect_outputs();
+
     void freeze_ports ( void );
     void thaw_ports ( void );
 

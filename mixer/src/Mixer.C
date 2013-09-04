@@ -1101,6 +1101,89 @@ Mixer::handle ( int m )
     return 0;
 }
 
+#include <algorithm>
+
+std::list <std::string>
+Mixer::get_auto_connect_targets ( void )
+{
+    std::list <std::string> sl;
+    std::list <std::string> rl;
+
+    for ( int i = mixer_strips->children(); i--; )
+    {
+        ((Mixer_Strip*)mixer_strips->child(i))->get_output_ports(sl);
+    }
+
+    for ( std::list<std::string>::iterator i = sl.begin(); i != sl.end(); i++ )
+    {
+        char *s = strdup( i->c_str() );
+
+        *rindex( s, '/' ) = 0;
+
+        if ( !index( s, '/' ) )
+        {
+            char *o;
+            asprintf( &o, "%s/mains", s );
+            free(s);
+            s = o;
+        }
+
+        if ( std::find( rl.begin(), rl.end(), s ) == rl.end() )
+        {
+            rl.push_back( s );
+        }
+
+        free(s);
+    }
+
+    return rl;
+}
+
+void
+Mixer::auto_connect ( void )
+{
+    /* give strips with group affinity the first shot */
+    for ( int i = 0; i < mixer_strips->children(); i++ )
+    {
+        Mixer_Strip *s = ((Mixer_Strip*)mixer_strips->child(i));
+        
+        if ( s->has_group_affinity() )
+            s->auto_connect_outputs();
+    }
+
+    /* now do that catch-alls, first one wins! */
+    for ( int i = 0; i < mixer_strips->children(); i++ )
+    {
+        Mixer_Strip *s = ((Mixer_Strip*)mixer_strips->child(i));
+        
+        if ( ! s->has_group_affinity() )
+            s->auto_connect_outputs();
+    }
+}
+
+void
+Mixer::maybe_auto_connect_output ( Module::Port *p )
+{
+    /* give strips with group affinity the first shot */
+    for ( int i = 0; i < mixer_strips->children(); i++ )
+    {
+        Mixer_Strip *s = ((Mixer_Strip*)mixer_strips->child(i));
+        
+        if ( s->has_group_affinity() )
+            if ( s->maybe_auto_connect_output( p ) )
+                return;
+    }
+
+    /* now do that catch-alls, first one wins! */
+    for ( int i = 0; i < mixer_strips->children(); i++ )
+    {
+        Mixer_Strip *s = ((Mixer_Strip*)mixer_strips->child(i));
+        
+        if ( ! s->has_group_affinity() )
+            if ( s->maybe_auto_connect_output( p ) )
+                return;
+    }
+}
 /************/
 /* Commands */
 /************/
@@ -1151,6 +1234,8 @@ Mixer::command_load ( const char *path, const char *display_name )
     load_translations();
 
     update_menu();
+
+    auto_connect();
 
     mixer->activate();
 

@@ -161,7 +161,7 @@ JACK_Module::JACK_Module ( bool log )
         {
             Fl_Browser *o = connection_display = new Fl_Browser( 0, 0, w(), h() );
             o->has_scrollbar(Fl_Browser_::VERTICAL);
-            o->textsize( 11 );
+            o->textsize( 10 );
             o->textcolor( FL_LIGHT3 );
             o->textfont( FL_COURIER );
             o->box( FL_FLAT_BOX );
@@ -497,13 +497,38 @@ JACK_Module::handle_control_changed ( Port *p )
 int
 JACK_Module::handle ( int m )
 {
+    static unsigned long _event_state = 0;
+
+    unsigned long evstate = Fl::event_state();
+
     switch ( m ) 
     {
         case FL_PUSH:
+            if ( Fl::event_inside( output_connection_handle ) ||
+                 Fl::event_inside( output_connection2_handle ) ||
+                 Fl::event_inside( input_connection_handle ) )
+            {
+                _event_state = evstate;
+                return 1;
+            }
+
             return Module::handle(m) || 1;
+
         case FL_RELEASE:
             Fl::selection_owner(0);
             receptive_to_drop = NULL;
+
+            if ( Fl::event_inside( output_connection_handle ) ||
+                 Fl::event_inside( output_connection2_handle ) ||
+                 Fl::event_inside( input_connection_handle ) )
+            {
+                if ( _event_state & FL_BUTTON3 )
+                {
+                    /* was a right click */
+                    // TODO: Pop up connection menu.
+                }
+            }
+
             return Module::handle(m) || 1;
         case FL_DRAG:
         {
@@ -515,8 +540,6 @@ JACK_Module::handle ( int m )
                 connection_handle = 0;
             if ( Fl::event_inside( output_connection2_handle ) )
                 connection_handle = 1;
-
-
 
             if ( Fl::event_button1() &&
                  connection_handle >= 0
@@ -555,6 +578,15 @@ JACK_Module::handle ( int m )
         }
         /* we have to prevent Fl_Group::handle() from getting these, otherwise it will mess up Fl::belowmouse() */
         case FL_MOVE:
+            if ( Fl::event_inside( output_connection_handle ) ||
+                 Fl::event_inside( output_connection2_handle ) ||
+                 Fl::event_inside( input_connection_handle ) )
+            {
+                fl_cursor( FL_CURSOR_HAND );
+            }
+            else
+                fl_cursor( FL_CURSOR_DEFAULT );
+
             Module::handle(m);
             return 1;
         case FL_ENTER:
@@ -569,6 +601,7 @@ JACK_Module::handle ( int m )
                 receptive_to_drop = NULL;
                 redraw();
             }
+            fl_cursor( FL_CURSOR_DEFAULT );
             return 1;
         case FL_DND_RELEASE:
             Fl::selection_owner(0);

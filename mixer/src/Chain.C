@@ -791,6 +791,47 @@ Chain::resize ( int X, int Y, int W, int H )
     controls_pack->size( W, controls_pack->h() );
 }
 
+void
+Chain::get_output_ports ( std::list<std::string> &sl)
+{
+    for ( int i = 0; i < modules(); i++ )
+    {
+        Module *m = module(i);
+        
+        for ( unsigned int j = 0; j < m->aux_audio_output.size(); j++ )
+        {
+            char *s;
+
+            asprintf( &s, "%s/%s", 
+                      strip()->group()->single() ? "*" : strip()->group()->name(), 
+                      m->aux_audio_output[j].jack_port()->name() );
+
+            sl.push_back( s );
+
+            free(s);
+        }
+    }
+}
+
+void
+Chain::auto_connect_outputs ( void )
+{
+    for ( int i = 0; i < modules(); i++ )
+    {
+        module(i)->auto_connect_outputs();
+    }
+}
+
+void
+Chain::auto_disconnect_outputs ( void )
+{
+    for ( int i = 0; i < modules(); i++ )
+    {
+        module(i)->auto_disconnect_outputs();
+    }
+}
+
+
 
 
 /*****************/

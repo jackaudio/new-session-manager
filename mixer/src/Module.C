@@ -1110,6 +1110,32 @@ Module::thaw_ports ( void )
         aux_audio_output[i].jack_port()->client( chain()->client() );
         aux_audio_output[i].jack_port()->trackname( trackname );
         aux_audio_output[i].jack_port()->thaw();
+
+        mixer->maybe_auto_connect_output( &aux_audio_output[i] );
+    }
+}
+
+void
+Module::auto_connect_outputs ( void )
+{
+    for ( unsigned int i = 0; i < aux_audio_output.size(); ++i )
+    {
+        mixer->maybe_auto_connect_output( &aux_audio_output[i] );
+    }
+}
+
+void
+Module::auto_disconnect_outputs ( void )
+{
+    for ( unsigned int i = 0; i < aux_audio_output.size(); ++i )
+    {
+        Module::Port *p = &aux_audio_output[i];
+
+        if ( p->connected_port() )
+        {
+            p->connected_port()->jack_port()->disconnect( p->jack_port()->jack_name() );
+            p->disconnect();
+        }
     }
 }
 
@@ -1233,7 +1259,12 @@ Module::add_aux_port ( bool input, const char *prefix, int i )
 bool
 Module::add_aux_audio_output( const char *prefix, int i )
 {
-    return add_aux_port ( false, prefix, i );
+    bool r = add_aux_port ( false, prefix, i );
+
+    if ( r )
+        mixer->maybe_auto_connect_output( &aux_audio_output.back() );
+
+    return r;
 }
 
 bool
@@ -1241,8 +1272,6 @@ Module::add_aux_audio_input( const char *prefix, int i )
 {
     return add_aux_port ( true, prefix, i );
 }
-
-
 
 
 /************/

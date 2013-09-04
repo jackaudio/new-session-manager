@@ -132,8 +132,8 @@ Mixer_Strip::get ( Log_Entry &e ) const
         e.add( ":group", _group );
     else
         e.add( ":group", (Loggable*)0 );
-
-
+    e.add( ":auto_input", _auto_input );
+    e.add( ":manual_connection", _manual_connection );
 }
 
 void
@@ -169,6 +169,14 @@ Mixer_Strip::set ( Log_Entry &e )
         else if ( ! strcmp( s, ":mute_mode" ) )
         {
             _mute_controller_mode = atoi( v );
+        }
+        else if ( ! strcmp( s, ":auto_input" ) )
+        {
+            auto_input( v );
+        }
+        else if ( ! strcmp( s, ":manual_connection" ) )
+        {
+            manual_connection( atoi( v ) );
         }
         else if ( ! strcmp( s, ":group" ) )
         {
@@ -288,8 +296,19 @@ void Mixer_Strip::cb_handle(Fl_Widget* o) {
         else
             size( 96, h() );
 
-         if ( parent() )
-             parent()->parent()->redraw();
+        if ( parent() )
+            parent()->parent()->redraw();
+    }
+    else if ( o == output_connection_button )
+    {
+        if ( output_connection_button->value() == 1 )
+            o->label( output_connection_button->mvalue()->label() );
+        else
+            o->label( NULL );
+            
+        manual_connection( output_connection_button->value() );
+
+//        _manual_connection = output_connection_button->value();
     }
     else if ( o == group_choice )
     {
@@ -401,13 +420,13 @@ Mixer_Strip::set_spatializer_visibility ( void )
 {
     if ( fader_tab->visible() && spatialization_controller->is_controlling() )
     {
-         spatialization_controller->show();
-         spatialization_label->show();
+        spatialization_controller->show();
+        spatialization_label->show();
     }
     else
     {
-         spatialization_controller->hide();
-         spatialization_label->hide();
+        spatialization_controller->hide();
+        spatialization_label->hide();
     }
 }
 
@@ -501,6 +520,8 @@ Mixer_Strip::init ( )
 {
     selection_color( FL_MAGENTA );
 
+    _manual_connection = 0;
+    _auto_input = 0;
     _mute_controller_mode = 0;
     _gain_controller_mode = 0;
     _chain = 0;
@@ -515,14 +536,14 @@ Mixer_Strip::init ( )
 
     set_visible_focus();
 
-     { Fl_Scalepack *o = new Fl_Scalepack( 2, 2, 116, 595 );
-         o->type( FL_VERTICAL );
-         o->spacing( 2 );
+    { Fl_Scalepack *o = new Fl_Scalepack( 2, 2, 116, 595 );
+        o->type( FL_VERTICAL );
+        o->spacing( 2 );
          
-         { Fl_Box *o = color_box = new Fl_Box( 0,0, 25, 10 );
-             o->box(FL_FLAT_BOX);
-             o->tooltip( "Drag and drop to move strip" );
-         }
+        { Fl_Box *o = color_box = new Fl_Box( 0,0, 25, 10 );
+            o->box(FL_FLAT_BOX);
+            o->tooltip( "Drag and drop to move strip" );
+        }
 
         { Fl_Pack *o = new Fl_Pack( 2, 2, 114, 100 );
             o->type( Fl_Pack::VERTICAL );
@@ -649,20 +670,31 @@ Mixer_Strip::init ( )
 /*         { Fl_Pack *o = panner_pack = new Fl_Pack( 2, 465, 114, 40 ); */
 /*             o->spacing( 2 ); */
 /*             o->type( Fl_Pack::VERTICAL ); */
-            { Fl_Box *o = spatialization_label = new Fl_Box( 0, 0, 100, 12 );
-                o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
-                o->labelsize( 10 );
-                o->hide();
-                o->label( "Spatialization" );
-            }
-            { Controller_Module *o = spatialization_controller = new Controller_Module( true );
-                o->hide();
-                o->label( 0 );
-                o->pad( false );
-                o->size( 92,92 );
-            }
+        { Fl_Box *o = spatialization_label = new Fl_Box( 0, 0, 100, 12 );
+            o->align( (Fl_Align)(FL_ALIGN_BOTTOM | FL_ALIGN_INSIDE) );
+            o->labelsize( 10 );
+            o->hide();
+            o->label( "Spatialization" );
+        }
+        { Controller_Module *o = spatialization_controller = new Controller_Module( true );
+            o->hide();
+            o->label( 0 );
+            o->pad( false );
+            o->size( 92,92 );
+        }
 /*             o->end(); */
 /*         } */
+
+        { Fl_Menu_Button *o = output_connection_button = new Fl_Menu_Button( 0, 0, 10, 18 );
+            o->labelsize( 9 );
+            o->add("- auto -");
+            o->add("- manual -");
+            o->align( FL_ALIGN_CLIP );
+            o->labelcolor( FL_YELLOW );
+            o->callback( cb_handle, this );
+            o->hide();
+        }
+
         o->end();
     }
 
@@ -718,9 +750,9 @@ Mixer_Strip::update_group_choice ( void )
 void
 Mixer_Strip::draw ( void )
 {
-     /* don't bother drawing anything else, all we're doing is drawing the focus. */
+    /* don't bother drawing anything else, all we're doing is drawing the focus. */
 //    if ( damage() & ~FL_DAMAGE_USER1 )
-        Fl_Group::draw();
+    Fl_Group::draw();
 
     if ( Fl::focus() == this )
         draw_focus_frame( x(),y(),w(),h(), Fl_Group::selection_color() );
@@ -833,6 +865,23 @@ Mixer_Strip::menu_cb ( const Fl_Menu_ *m )
         if ( Fl::event_shift() || 1 == fl_choice( "Are you sure you want to remove this strip?\n\n(this action cannot be undone)", "Cancel", "Remove", NULL ) )
             command_close();
     }
+    else if ( ! strcmp( picked, "Auto Output/On" ) )
+    {
+        manual_connection( false );
+    }
+    else if ( ! strcmp( picked, "Auto Output/Off" ) )
+    {
+        manual_connection( true );
+    }
+    else if ( ! strncmp( picked, "Auto Input/", strlen( "Auto Input/" ) ))
+    {
+        const char *s = index( picked, '/' ) + 1;
+        
+        if ( ! strcmp( s, "Off" ) )
+            auto_input( NULL );
+        else
+            auto_input( s );
+    }
 }
 
 void
@@ -841,6 +890,153 @@ Mixer_Strip::menu_cb ( Fl_Widget *w, void *v )
     ((Mixer_Strip*)v)->menu_cb( (Fl_Menu_*) w );
 }
 
+void
+Mixer_Strip::auto_input ( const char *s )
+{
+    if ( _auto_input )
+        free( _auto_input );
+    
+    _auto_input = NULL;
+
+    if ( s )
+        _auto_input = strdup( s );
+
+    mixer->auto_connect();
+}
+
+void
+Mixer_Strip::manual_connection ( bool b )
+{
+    _manual_connection = b;
+    output_connection_button->value(b);
+   
+    if ( chain() )
+    {
+        if ( b )
+            chain()->auto_disconnect_outputs();
+        else
+            chain()->auto_connect_outputs();
+    }
+}
+
+static bool matches_pattern ( const char *pattern, Module::Port *p )
+{
+    char group_name[256];
+    char port_group[256];
+    
+    if ( 2 == sscanf( pattern, "%[^/]/%[^\n]", group_name, port_group ))
+    {
+        if ( strcmp( group_name, "*" ) && 
+             strcmp( group_name, p->module()->chain()->strip()->group()->name() ))
+        {
+            /* group mismatch */
+            return false;
+        }
+
+        /* group matches... try port group */
+        if ( ! strcmp( port_group, "mains" ) )
+        { 
+            if ( index( p->jack_port()->name(), '/' ) )
+                return false;
+            else
+                return true;
+        }
+        else
+        {
+            const char *pn = p->jack_port()->name();
+            const char *n = rindex( pn, '/' );
+            
+            if ( n )
+            {
+//                *n = 0;
+                if ( ! strncmp( port_group, pn, ( n - 1 ) - pn ) )
+                    return true;
+                else
+                    return false;
+            }
+            else
+                return false;
+        }
+    }
+
+    return false;
+}
+
+
+#include "JACK_Module.H"
+
+void
+Mixer_Strip::auto_connect_outputs ( void )
+{
+    chain()->auto_connect_outputs();
+}
+
+bool
+Mixer_Strip::has_group_affinity ( void ) const
+{
+    return _auto_input && strncmp( _auto_input, "*/", 2 );
+}
+
+
+bool
+Mixer_Strip::maybe_auto_connect_output ( Module::Port *p )
+{
+    if ( p->module()->chain()->strip()->_manual_connection )
+        return true;
+
+    if ( p->module()->chain()->strip() == this )
+        /* don't auto connect to self! */
+        return false;
+
+    if ( ! _auto_input )
+    {
+        if ( p->connected_port() && p->connected_port()->module()->chain()->strip() == this )
+        {
+            /* first break previous auto connection */
+            p->connected_port()->jack_port()->disconnect( p->jack_port()->jack_name() );
+            p->disconnect();
+        }
+    }
+    
+    if ( _auto_input && matches_pattern( _auto_input, p ) )
+    {
+        DMESSAGE( "Auto connecting port" );
+
+        if ( p->connected_port() )
+        {
+            /* first break previous auto connection */
+            p->connected_port()->jack_port()->disconnect( p->jack_port()->jack_name() );
+            p->disconnect();
+        }
+
+        const char* jack_name = p->jack_port()->jack_name();
+       
+        /* get port number */
+        const char *s = rindex( jack_name, '-' );
+        unsigned int n = atoi( s + 1 ) - 1;
+
+        /* FIXME: safe assumption? */
+        JACK_Module *m = (JACK_Module*)chain()->module(0);
+        
+        if ( n < m->aux_audio_input.size() )
+        {
+            m->aux_audio_input[n].jack_port()->connect( jack_name );
+            /* make a note of the connection so we know to disconnected later */
+            m->aux_audio_input[n].connect_to( p );
+        }
+
+        if ( p->module()->is_default() )
+        {
+            /* only do this for mains */
+            p->module()->chain()->strip()->output_connection_button->copy_label( name() );
+            p->module()->chain()->strip()->output_connection_button->labelcolor( FL_FOREGROUND_COLOR );
+        }
+
+        return true;
+    }
+
+    return false;
+}
 
 /** build the context menu */
 Fl_Menu_Button &
@@ -853,30 +1049,38 @@ Mixer_Strip::menu ( void ) const
     m.label( label );
 
 //    int c = output.size();
+    
+    m.clear();
 
-    Fl_Menu_Item menu[] =
-        {
-            { "Width",            0, 0, 0, FL_SUBMENU    },
-            { "Narrow",         'n', 0, 0, FL_MENU_RADIO | ( ! width_button->value() ? FL_MENU_VALUE : 0 ) },
-            { "Wide",           'w', 0, 0, FL_MENU_RADIO | ( width_button->value() ? FL_MENU_VALUE : 0 ) },
-            { 0                  },
-            { "View",            0, 0, 0, FL_SUBMENU    },
-            { "Fader",          'f', 0, 0, FL_MENU_RADIO | ( 0 == tab_button->value() ? FL_MENU_VALUE : 0 ) },
-            { "Signal",         's', 0, 0, FL_MENU_RADIO | ( 1 == tab_button->value() ? FL_MENU_VALUE : 0 ) },
-            { 0                  },
-            { "Move Left",      '[', 0, 0  },
-            { "Move Right",     ']', 0, 0 },
-            { "Color",           0, 0, 0 },
-            { "Copy",            FL_CTRL + 'c', 0, 0 },
-            { "Export Strip",           0, 0, 0 },
-            { "Rename",          FL_CTRL + 'n', 0, 0 },
-            { "Remove",          FL_Delete, 0, 0 },
-            { 0 },
-        };
+    std::list<std::string> sl = mixer->get_auto_connect_targets();
 
-    menu_set_callback( menu, &Mixer_Strip::menu_cb, (void*)this );
 
-    m.copy( menu, (void*)this );
+    m.add( "Auto Output/On", 0, 0, 0, FL_MENU_RADIO | ( _manual_connection ? 0 : FL_MENU_VALUE )  );
+    m.add( "Auto Output/Off", 0, 0, 0, FL_MENU_RADIO | ( ! _manual_connection ? 0 : FL_MENU_VALUE )  );
+    m.add( "Auto Input/Off", 0, 0, 0, FL_MENU_DIVIDER | FL_MENU_RADIO | ( _auto_input ? 0 : FL_MENU_VALUE )  );
+
+    for ( std::list<std::string>::iterator i = sl.begin(); i != sl.end(); i++ )
+    {
+        char *s;
+        asprintf( &s, "Auto Input/%s", i->c_str() );
+
+        m.add( s, 0,0,0, FL_MENU_RADIO | ( _auto_input && !strcmp( _auto_input, i->c_str() ) ? FL_MENU_VALUE : 0 ));
+        free(s );
+    }
+
+    m.add( "Width/Narrow",  'n', 0, 0, FL_MENU_RADIO | ( ! width_button->value() ? FL_MENU_VALUE : 0 ));
+    m.add( "Width/Wide", 'w', 0, 0, FL_MENU_RADIO | ( width_button->value() ? FL_MENU_VALUE : 0 ) );
+    m.add( "View/Fader",          'f', 0, 0, FL_MENU_RADIO | ( 0 == tab_button->value() ? FL_MENU_VALUE : 0 ) );
+    m.add( "View/Signal",      's', 0, 0, FL_MENU_RADIO | ( 1 == tab_button->value() ? FL_MENU_VALUE : 0 ) );
+    m.add( "Move Left",      '[', 0, 0  );
+    m.add( "Move Right",     ']', 0, 0 );
+    m.add( "Color",           0, 0, 0 );
+    m.add( "Copy",            FL_CTRL + 'c', 0, 0 );
+    m.add( "Export Strip",           0, 0, 0 );
+    m.add( "Rename",          FL_CTRL + 'n', 0, 0 );
+    m.add( "Remove",          FL_Delete, 0, 0 );
+    
+    menu_set_callback( const_cast<Fl_Menu_Item*>(m.menu()), &Mixer_Strip::menu_cb, (void*)this );
 
     return m;
 }
@@ -885,6 +1089,12 @@ Controller_Module *
 Mixer_Strip::spatializer ( void )
 {
     return spatialization_controller;
+}
+
+void
+Mixer_Strip::get_output_ports ( std::list<std::string> &ports )
+{
+    _chain->get_output_ports(ports);
 }
 
 int
@@ -1003,8 +1213,8 @@ Mixer_Strip::command_move_right ( void )
 void
 Mixer_Strip::command_close ( void )
 {
-        mixer->remove( this );
-        Fl::delete_widget( this );
+    mixer->remove( this );
+    Fl::delete_widget( this );
 }
 
 void

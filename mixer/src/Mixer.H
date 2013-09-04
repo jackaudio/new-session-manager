@@ -91,7 +91,10 @@ private:
 
 
 public:
-
+    
+    void auto_connect ( void );
+    void maybe_auto_connect_output ( Module::Port *p );
+    std::list<std::string> get_auto_connect_targets ( void );
     Group * group_by_name ( const char * name );
     char *get_unique_group_name ( const char *name );
 

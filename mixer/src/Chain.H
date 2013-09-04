@@ -77,6 +77,11 @@ protected:
 
 public:
 
+    void auto_connect_outputs ( void );
+    void auto_disconnect_outputs ( void );
+
+    void get_output_ports ( std::list<std::string> &sl);
+
     void port_connect ( jack_port_id_t a, jack_port_id_t b, int connect );
     void buffer_size ( nframes_t nframes );
     int sample_rate_change ( nframes_t nframes );

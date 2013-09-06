@@ -174,10 +174,6 @@ Engine::process ( nframes_t nframes )
 
     if ( freewheeling() )
     {
-        /* freewheeling mode/export. We're actually running
-           non-RT. Assume that everything is quiescent. do I/O
-           synchronously */
-        
         if ( timeline )
         {
             timeline->rdlock();
@@ -185,9 +181,6 @@ Engine::process ( nframes_t nframes )
             timeline->process( nframes );
 
             timeline->unlock();
-
-            /* because we're going faster than realtime. */
-            timeline->wait_for_buffers();
         }
     }
     else

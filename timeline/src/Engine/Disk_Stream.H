@@ -56,14 +56,15 @@ protected:
 
     sem_t _blocks;          /* semaphore to wake the IO thread with */
 
-    int _total_blocks; /* total number of blocks that we can  buffer */
-    int _disk_io_blocks; /* the number of blocks to read/write to/from disk at once */
+    nframes_t _total_blocks; /* total number of blocks that we can  buffer */
+    nframes_t _disk_io_blocks; /* the number of blocks to read/write to/from disk at once */
 
 
     nframes_t _frame_rate;      /* used for buffer size calculations */
 
     volatile nframes_t _frame;             /* location of disk read */
-    volatile nframes_t _pending_seek; /* absolute transport position to seek to */
+    volatile nframes_t _seek_frame; /* absolute transport position to seek to */
+    volatile bool _pending_seek; /* absolute transport position to seek to */
     volatile int _terminate;
 
     volatile int _xruns;
@@ -82,6 +83,9 @@ protected:
     void block_processed ( void ) { sem_post( &_blocks ); }
     bool wait_for_block ( void )
         {
+            if ( _terminate )
+                return false;
+
             while ( ! sem_wait( &_blocks ) && errno == EINTR )
             {}
 
@@ -117,6 +121,6 @@ public:
 
     virtual nframes_t process ( nframes_t nframes ) = 0;
 
-    int buffer_percent ( void );
+    virtual int buffer_percent ( void );
 
 };

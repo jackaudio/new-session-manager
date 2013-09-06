@@ -61,13 +61,14 @@ Disk_Stream::Disk_Stream ( Track *track, float frame_rate, nframes_t nframes, in
 
     _frame = 0;
     _terminate = false;
-    _pending_seek = -1;
+    _pending_seek = false;
+    _seek_frame = 0;
     _xruns = 0;
     _frame_rate = frame_rate;
 
+    sem_init( &_blocks, 0, 0 );
+        
     _resize_buffers( nframes, channels );
-
-    sem_init( &_blocks, 0, _total_blocks );
 }
 
 Disk_Stream::~Disk_Stream ( )
@@ -94,37 +95,18 @@ Disk_Stream::~Disk_Stream ( )
 void
 Disk_Stream::base_flush ( bool is_output )
 {
-    THREAD_ASSERT( RT );
+//    THREAD_ASSERT( RT );
 
     /* flush buffers */
-    for ( int i = _rb.size(); i--; )
-        jack_ringbuffer_read_advance( _rb[ i ], jack_ringbuffer_read_space( _rb[ i ] ) );
+    for ( unsigned int i = _rb.size(); i--; )
+        jack_ringbuffer_reset( _rb[ i ] );
 
-/*  sem_destroy( &_blocks ); */
-
-/*     if ( is_output ) */
-/*         sem_init( &_blocks, 0, _total_blocks ); */
-/*     else */
-/*         sem_init( &_blocks, 0, 0 ); */
-
+    sem_destroy( &_blocks );
+    
     if ( is_output )
-    {
-        int n;
-        sem_getvalue( &_blocks, &n );
-
-        n = _total_blocks - n;
-
-        while ( n-- )
-            sem_post( &_blocks );
-    }
+        sem_init( &_blocks, 0, _total_blocks );
     else
-    {
-        sem_destroy( &_blocks );
-
         sem_init( &_blocks, 0, 0 );
-    }
-
-
 }
 
 /** signal thread to terminate, then detach it */
@@ -156,10 +138,6 @@ Disk_Stream::shutdown ( void )
         }
         
         _thread.join();
-
-        sem_destroy( &_blocks );
-
-        sem_init( &_blocks, 0, 0 );
     }
 }
 
@@ -195,7 +173,7 @@ Disk_Stream::_resize_buffers ( nframes_t nframes, int channels )
 
     _nframes = nframes;
 
-    _total_blocks = _frame_rate * seconds_to_buffer / nframes;
+    _total_blocks = ( _frame_rate * seconds_to_buffer ) / nframes;
 
     size_t bufsize = _total_blocks * nframes * sizeof( sample_t );
 
@@ -222,9 +200,9 @@ Disk_Stream::resize_buffers ( nframes_t nframes )
         if ( was_running )
             shutdown();
 
-        flush();
-
         _resize_buffers( nframes, channels() );
+
+        flush();
 
         if ( was_running )
             run();

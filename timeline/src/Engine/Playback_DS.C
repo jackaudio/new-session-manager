@@ -38,7 +38,7 @@
 bool
 Playback_DS::seek_pending ( void )
 {
-    return _pending_seek != (nframes_t)-1;
+    return _pending_seek || buffer_percent() < 50;
 }
 
 /** request that the IO thread perform a seek and rebuffer.  This is
@@ -56,9 +56,11 @@ Playback_DS::seek ( nframes_t frame )
     if ( seek_pending() )
         printf( "seek error, attempt to seek while seek is pending\n" );
 
-    _pending_seek = frame;
+    _seek_frame = frame;
+    _pending_seek = true;
 
-    flush();
+    /* wake the IO thread */
+    block_processed();
 }
 
 /** set the playback delay to /frames/ frames. This be called prior to
@@ -82,30 +84,28 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
     if ( !timeline )
         return;
 
-    while ( ! _terminate )
+    while ( timeline->tryrdlock() )
     {
-        if ( ! timeline->tryrdlock() )
-        {
-            if ( sequence() )
-            {
-                /* FIXME: how does this work if _delay is not a multiple of bufsize? */
-                
-                if ( _frame >= _delay )
-                {
-                    if ( ! sequence()->play( buf, _frame - _delay, nframes, channels() ) )
-                        WARNING( "Programming error?" );
-                }
-                
-                _frame += nframes;
-            }
-            
-            timeline->unlock();
-            
+        if ( _terminate )
             return;
-        }
-
+        
         usleep( 1000 * 10 );
     }
+    
+    if ( sequence() )
+    {
+        /* FIXME: how does this work if _delay is not a multiple of bufsize? */
+        
+        if ( _frame >= _delay )
+        {
+            if ( ! sequence()->play( buf, _frame - _delay, nframes, channels() ) )
+                WARNING( "Programming error?" );
+        }
+        
+        _frame += nframes;
+    }
+    
+    timeline->unlock();
 }
 
 void
@@ -117,61 +117,63 @@ Playback_DS::disk_thread ( void )
 
     /* buffer to hold the interleaved data returned by the track reader */
     sample_t *buf = buffer_alloc( _nframes * channels() * _disk_io_blocks );
-    sample_t *cbuf = buffer_alloc( _nframes * _disk_io_blocks );
+    sample_t *cbuf = buffer_alloc( _nframes );
 
-    int blocks_ready = 0;
+    const nframes_t nframes = _nframes;
+    nframes_t blocks_written;
 
-    const nframes_t nframes = _nframes * _disk_io_blocks;
-
-    while ( wait_for_block() )
+    while ( ! _terminate )
     {
 
+    seek:
+
+        blocks_written = 0;
+        read_block( buf, nframes * _disk_io_blocks );
+
+        while ( blocks_written < _disk_io_blocks &&
+                wait_for_block() )
+        {
 //        lock(); // for seeking
-
-        if ( seek_pending() )
-        {
-            /* FIXME: non-RT-safe IO */
-            DMESSAGE( "performing seek to frame %lu", (unsigned long)_pending_seek );
-
-            _frame = _pending_seek;
-            _pending_seek = -1;
-            blocks_ready = 0;
-        }
-
-        if ( ++blocks_ready < _disk_io_blocks )
-        {
-            /* wait for more space */
-            continue;
-        }
-
-        /* reset */
-        blocks_ready = 0;
-
-        read_block( buf, nframes );
-
-        /* might have received terminate signal while waiting for block */
-        if ( _terminate )
-            goto done;
-
-//        unlock(); // for seeking
-
-        /* deinterleave the buffer and stuff it into the per-channel ringbuffers */
-
-        const size_t block_size = nframes * sizeof( sample_t );
-
-        for ( int i = channels(); i--; )
-        {
-            buffer_deinterleave_one_channel( cbuf, buf, i, channels(), nframes );
-
-            size_t wr = 0;
-
-            while ( wr < block_size )
+            
+            if ( _pending_seek )
             {
-                wr += jack_ringbuffer_write( _rb[ i ], ((char*)cbuf) + wr, block_size - wr );
-//                usleep( 10 * 1000 );
-            }
-         }
+                /* FIXME: non-RT-safe IO */
+                DMESSAGE( "performing seek to frame %lu", (unsigned long)_seek_frame );
+                
+                _frame = _seek_frame;
+                _pending_seek = false;
 
+                flush();
+                
+                goto seek;
+            }
+
+            /* might have received terminate signal while waiting for block */
+            if ( _terminate )
+                goto done;
+        
+//        unlock(); // for seeking
+        
+            /* deinterleave the buffer and stuff it into the per-channel ringbuffers */
+
+            const size_t block_size = nframes * sizeof( sample_t );
+
+            for ( int i = 0; i < channels(); i++ )
+            {
+                buffer_deinterleave_one_channel( cbuf,
+                                                 buf + ( blocks_written * nframes * channels() ),
+                                                 i,
+                                                 channels(), 
+                                                 nframes );
+
+                while ( jack_ringbuffer_write_space( _rb[ i ] ) < block_size )
+                    usleep( 100 * 1000 );
+
+                jack_ringbuffer_write( _rb[ i ], ((char*)cbuf), block_size );
+            }
+
+            blocks_written++;
+        }
     }
 
 done:
@@ -203,21 +205,24 @@ Playback_DS::process ( nframes_t nframes )
 
         if ( engine->freewheeling() )
         {
-            size_t rd = 0;
-
-            while ( rd < block_size )
-            {
-                rd += jack_ringbuffer_read( _rb[ i ], ((char*)buf) + rd, block_size - rd );
-//                usleep( 10 * 1000 );
-            }
+            /* only ever read nframes at a time */
+            while ( jack_ringbuffer_read_space( _rb[i] ) < block_size )
+                usleep( 10 * 1000 );
+            
+            jack_ringbuffer_read( _rb[ i ], ((char*)buf), block_size );
         }
         else
-        {
-            if ( jack_ringbuffer_read( _rb[ i ], (char*)buf, block_size ) < block_size )
+       {
+            /* only ever read nframes at a time */
+            if ( jack_ringbuffer_read_space( _rb[i] ) < block_size )
             {
                 ++_xruns;
                 memset( buf, 0, block_size );
                 /* FIXME: we need to resync somehow */
+            }
+            else
+            {
+                jack_ringbuffer_read( _rb[ i ], (char*)buf, block_size );
             }
         }
 

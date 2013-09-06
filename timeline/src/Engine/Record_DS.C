@@ -74,39 +74,40 @@ Record_DS::disk_thread ( void )
 
     track()->record( _capture, _frame );
 
-    const nframes_t nframes = _nframes * _disk_io_blocks;
+    const nframes_t nframes = _nframes;
 
     /* buffer to hold the interleaved data returned by the track reader */
-    sample_t *buf = buffer_alloc( nframes * channels() );
+    sample_t *buf = buffer_alloc( nframes * channels() * _disk_io_blocks );
     sample_t *cbuf = buffer_alloc( nframes );
 
     const size_t block_size = nframes * sizeof( sample_t );
 
-    int blocks_ready = 0;
+    nframes_t blocks_read = 0;
 
     while ( wait_for_block() )
     {
-        if ( ++blocks_ready < _disk_io_blocks )
-            continue;
-        else
-            blocks_ready = 0;
-
         /* pull data from the per-channel ringbuffers and interlace it */
         for ( int i = channels(); i--; )
         {
-            size_t rd = 0;
+            while ( jack_ringbuffer_read_space( _rb[ i ] ) < block_size )
+                usleep( 10 * 1000 );
 
-            while ( rd < block_size )
-            {
-                rd += jack_ringbuffer_read( _rb[ i ], ((char*)cbuf) + rd, block_size - rd );
-//                usleep( 10 * 1000 );
-            }
-
-            buffer_interleave_one_channel( buf, cbuf, i, channels(), nframes );
+            jack_ringbuffer_read( _rb[ i ], ((char*)cbuf), block_size );
+            
+            buffer_interleave_one_channel( buf + ( blocks_read * nframes * channels() ),
+                                           cbuf, 
+                                           i,
+                                           channels(),
+                                           nframes );
         }
 
-        write_block( buf, nframes );
+        blocks_read++;
 
+        if ( blocks_read == _disk_io_blocks )
+        {
+            write_block( buf, nframes * _disk_io_blocks );
+            blocks_read = 0;
+        }
     }
 
     DMESSAGE( "capture thread terminating" );
@@ -114,11 +115,7 @@ Record_DS::disk_thread ( void )
     /* flush what remains in the buffer out to disk */
 
     {
-        /* use JACk sized blocks for this last bit */
-        const nframes_t nframes = _nframes;
-        const size_t block_size = _nframes * sizeof( sample_t );
-
-        while ( blocks_ready-- > 0 || ( ! sem_trywait( &_blocks ) && errno != EAGAIN ) )
+        while ( blocks_read-- > 0 || ( ! sem_trywait( &_blocks ) && errno != EAGAIN ) )
         {
             for ( int i = channels(); i--; )
             {
@@ -138,8 +135,6 @@ Record_DS::disk_thread ( void )
             else
                 write_block( buf, nframes );
         }
-
-
     }
 
     free(buf);
@@ -259,21 +254,22 @@ Record_DS::process ( nframes_t nframes )
 
         if ( engine->freewheeling() )
         {
-            size_t wr = 0;
+            while ( jack_ringbuffer_write_space( _rb[i] ) < block_size )
+                usleep( 10 * 1000 );
 
-            while ( wr < block_size )
-            {
-                wr += jack_ringbuffer_write( _rb[ i ], ((char*)buf) + offset_size + wr, block_size - wr );
-//                usleep( 10 * 1000 );
-            }
+            jack_ringbuffer_write( _rb[ i ], ((char*)buf) + offset_size, block_size );
         }
         else
         {
-            if ( jack_ringbuffer_write( _rb[ i ], ((char*)buf) + offset_size, block_size ) < block_size )
+            if ( jack_ringbuffer_write_space( _rb[i] ) < block_size )
             {
-                ++_xruns;
                 memset( buf, 0, block_size );
                 /* FIXME: we need to resync somehow */
+                ++_xruns;
+            }
+            else
+            {
+                jack_ringbuffer_write( _rb[ i ], ((char*)buf) + offset_size, block_size );
             }
         }
     }

@@ -1075,7 +1075,7 @@ Track::handle ( int m )
         {
             Logger log( this );
 
-            if ( ! Fl::event_shift() )
+            if ( ! Fl::event_alt() )
                 return Fl_Group::handle( m );
 
             int d = Fl::event_dy();

@@ -625,8 +625,8 @@ Plugin_Module::load ( unsigned long id )
 
                         if (LADSPA_IS_HINT_INTEGER(HintDesc)) {
                             if ( p.hints.ranged &&
-                                 0 == p.hints.minimum &&
-                                 1 == p.hints.maximum )
+                                 0 == (int)p.hints.minimum &&
+                                 1 == (int)p.hints.maximum )
                                 p.hints.type = Port::Hints::BOOLEAN;
                             else
                                 p.hints.type = Port::Hints::INTEGER;

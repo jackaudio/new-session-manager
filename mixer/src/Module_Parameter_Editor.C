@@ -231,6 +231,11 @@ Module_Parameter_Editor::make_controls ( void )
                 o->selection_color( fc );
                 o->value( p->control_value() );
 
+                o->precision( 2 );
+                /* a couple of plugins have ridiculously small units */
+                if ( p->hints.maximum < 0.5f )
+                    o->precision( 5 );
+
 //                o->step( fabs( ( o->maximum() - o->minimum() ) ) / 32.0f );
             }
             else
@@ -259,6 +264,11 @@ Module_Parameter_Editor::make_controls ( void )
                     o->maximum( p->hints.minimum );
                     o->minimum( p->hints.maximum );
                 }
+                
+                o->precision( 2 );
+                /* a couple of plugins have ridiculously small units */
+                if ( p->hints.maximum < 0.5f )
+                    o->precision( 5 );
 
                 o->textsize( 8 );
                 o->box( FL_NO_BOX );

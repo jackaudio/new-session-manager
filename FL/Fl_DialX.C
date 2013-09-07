@@ -109,11 +109,14 @@ Fl_DialX::draw ( void )
  
     if ( Fl::belowmouse() == this )
     {
-        char s[10];
+        char s[128];
     
-        fl_font( FL_HELVETICA, 10 );
+        fl_font( FL_HELVETICA, 9 );
     
-        snprintf( s, sizeof( s ), "%.1f", value() );
+        char buf[128];
+        format(buf);
+        
+        snprintf( s, sizeof( s ), buf, value()  );
 
         fl_color( FL_FOREGROUND_COLOR );
         fl_draw( s, X, Y, S, S, FL_ALIGN_CENTER );

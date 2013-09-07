@@ -582,7 +582,7 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
     }
     end();
 
-    resize( X,Y,W,H );
+   resize( X,Y,W,H );
 
     update_frequency( 15 );
 
@@ -737,9 +737,9 @@ void Mixer::resize ( int X, int Y, int W, int H )
 {
     Fl_Group::resize( X, Y, W, H );
 
-    mixer_strips->resize( X, Y + 24, W, H - (18*2) - 24 );
-
     scroll->resize( X, Y + 24, W, H - 24 - 18 );
+
+    mixer_strips->resize( X, Y + 24, W, H - (18*2) - 24 );
 
     rows( _rows );
 }
@@ -867,8 +867,6 @@ Mixer::rows ( int ideal_rows )
     {
       sh = (scroll->h() - 18);
       mixer_strips->flow( false );
-
-      actual_rows = 1;
     }
 
     int tw = 0;
@@ -885,12 +883,13 @@ Mixer::rows ( int ideal_rows )
     if ( actual_rows > 1 )
         mixer_strips->size( scroll->w() - 18, mixer_strips->h() );
     else
-        mixer_strips->size( tw, mixer_strips->h() );
+        mixer_strips->size( tw, sh );
 
     _rows = ideal_rows;
     
     if ( _strip_height != sh );
     {
+        mixer_strips->redraw();
         scroll->redraw();
         _strip_height = sh;
     }

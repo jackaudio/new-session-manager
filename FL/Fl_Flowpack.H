@@ -26,9 +26,10 @@ class Fl_Flowpack : public Fl_Group
 {
     int _hspacing;
     int _vspacing;
-    int _max_width;
     bool _flow;
     bool _flowdown;
+    int _initial_height;
+    int _initial_width;
 
 public:
 
@@ -36,7 +37,9 @@ public:
         : Fl_Group( X, Y, W, H, L )
         {
             resizable( 0 );
-            _max_width = _hspacing = _vspacing = 0;
+            _hspacing = _vspacing = 0;
+            _initial_width = W;
+            _initial_height = H;
             _flow = true;
             _flowdown = false;
         }
@@ -45,7 +48,6 @@ public:
         {
         }
 
-    int max_width ( void ) const { return _max_width; }
 
     void vspacing ( int v ) { _vspacing = v; }
     int vspacing ( void ) const { return _vspacing; };
@@ -76,50 +78,52 @@ public:
     void
     resize ( int X, int Y, int W, int H )
         {
-            int NW = W;
-            int NH = H;
+            _initial_width = W;
+            _initial_height = H;
 
-            layout( NW, NH );
+            layout();
 
-            Fl_Group::resize( X, Y, NW, NH );
+            Fl_Group::resize( X, Y, w(), h() );
         }
 
     void
     draw ( void )
         {
-            dolayout();
+            layout();
             Fl_Group::draw();
         }
 
     void dolayout ( void )
         {
-            int H = h();
-            int W = w();
-
-            layout( W, H );
-
-            if ( H != h() || W != w() )
-                size( W, H );
+            layout();
         }
 
     void
-    layout ( int &W, int &H )
+    layout ( void  )
         {
             resizable( 0 );
 
+            int W;
+            int H;
             int X = 0;
             int Y = 0;
-            H = 0;
-            /* int H = 0; */
-
-            _max_width = 0;
-
             int LW = 0;
             int LH = 0;
             int LX = 0;
             int LY = 0;
-
             int RH = 0;
+            int RY = 0;
+
+            if ( _flow )
+            {
+                H = 0;
+                W = 0;
+            }
+            else
+            {
+                H = _initial_height;
+                W = _initial_width;
+            }
 
             for ( int i = 0; i < children(); ++i )
             {
@@ -130,16 +134,25 @@ public:
                 
                 if ( _flow )
                 {
-                    if ( _flowdown && Y + o->h() < RH )
+                    if ( _flowdown )
                     {
-                        /* if it'll fit in this column, put it below the previous widget */
-                        X = LX;
+                        if ( (Y - RY) + o->h() < RH )
+                        {
+                            /* if it'll fit in this column, put it below the previous widget */
+                            X = LX;
+                        }
+                        else
+                            Y = 0;
                     }
-                    else if ( X + o->w() >= W )
+                    else if ( X + o->w() >= _initial_width )
                     {
                         /* maybe wrap to the next row */
                         H += RH + _vspacing;
+                        RY = Y;
                         RH = 0;
+                        if ( X > W )
+                            W = X;
+
                         X = 0;
                     }
                     else
@@ -155,14 +168,8 @@ public:
                 LW = o->w();
                 LH = o->h();
 
-                /* avoid bothering the control with lots of resize() calls */
-
                 LX = X;
                 LY = Y;
-
-                if ( ! ( o->x() == x() + LX &&
-                         o->y() == y() + LY ) )
-                    o->position( x() + LX, y() + LY );
 
                 if ( _flow )
                 {
@@ -178,20 +185,35 @@ public:
                     if ( type() == Fl_Pack::HORIZONTAL )
                     {
                         X += LW + _hspacing;
+                        LH = _initial_height;
+                        W = X;
                     }
                     else
                     {
                         Y += LH + _vspacing;
+                        LW = _initial_width;
+                        H = Y;
                     }
                 }
 
-                if ( X > _max_width )
-                    _max_width = X;
+
+                if ( ! ( o->x() == x() + LX &&
+                         o->y() == y() + LY && 
+                         o->w() == LW &&
+                         o->h() == LH ) )
+                    o->resize( x() + LX, 
+                               y() + LY,
+                               LW,
+                               LH);
             }
 
-            H += RH;
+            if ( _flow )
+            {
+                H += RH;
+                if ( X > W )
+                    W = X;
+            }
 
-            if ( ! _flow )
-                W = X;
+            Fl_Group::resize( x(), y(), W, H );
         }
 };

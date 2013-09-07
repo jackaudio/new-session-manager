@@ -49,13 +49,20 @@ public:
             measure_label( o, W, H );
 
             // set size to contain widget
-            size( W > o->w() ? W : o->w(), o->h() + H );
+            if ( o->align() & ( FL_ALIGN_TOP | FL_ALIGN_BOTTOM ) )
+                size( W > o->w() ? W : o->w(), o->h() + H );
+            if ( o->align() & ( FL_ALIGN_LEFT | FL_ALIGN_RIGHT ) )
+                size( o->w() + W, H > o->h() ? H : o->h() );
 
             // center widget in group
             if ( o->align() & FL_ALIGN_TOP )
                 o->position( x() + w() / 2 - (o->w() / 2 ), y() + H );
             else if ( o->align() & FL_ALIGN_BOTTOM )
                 o->position( x() + w() / 2 - (o->w() / 2 ), y() );
+            else if ( o->align() & FL_ALIGN_RIGHT )
+                o->position( x(), y() );
+            else if ( o->align() & FL_ALIGN_LEFT )
+                o->position( x() + W, y() );
             else
             {
                 /* TODO: other alignments */

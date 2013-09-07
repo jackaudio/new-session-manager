@@ -124,7 +124,12 @@ Transport::Transport ( int X, int Y, int W, int H, const char *L )
     o->color2( fl_color_average( FL_GRAY, FL_BLUE, 0.50 ) );
     o->tooltip( "When active, the next playback will be done in freewheeling mode" );
 
+    type( Fl_Pack::HORIZONTAL );
     flowdown( true );
+    vspacing( 1 );
+    hspacing( 1 );
+             
+    dolayout();
 }
 
 

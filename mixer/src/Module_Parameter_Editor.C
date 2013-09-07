@@ -33,7 +33,7 @@
 #include "FL/Fl_Labelpad_Group.H"
 #include "FL/Fl_Value_SliderX.H"
 #include "FL/Fl_DialX.H"
-
+#include <FL/Fl_Scroll.H>
 #include "Module.H"
 #include "Module_Parameter_Editor.H"
 #include "Controller_Module.H"
@@ -46,7 +46,7 @@
 
 
 
-Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_Window( 800, 600 )
+Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_Window( 900,900 )
 {
     _module = module;
     _resized = false;
@@ -65,52 +65,37 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
 
     copy_label( title );
 
-    fl_font( FL_HELVETICA, 14 );
+//    fl_font( FL_HELVETICA, 14 );
 
     _min_width = 30 + fl_width( module->label() );
-
-    { Fl_Pack *o = main_pack = new Fl_Pack( 0, 0, w(), h() - 10 );
-        o->type( FL_VERTICAL );
+    
+    { Fl_Group *o = new Fl_Group( 0, 0, w(), 25 );
         o->label( module->label() );
         o->labelfont( 2 );
         o->labeltype( FL_SHADOW_LABEL );
         o->labelsize( 14 );
         o->align( FL_ALIGN_TOP | FL_ALIGN_RIGHT | FL_ALIGN_INSIDE );
 
-
-        { Fl_Pack *o = new Fl_Pack( 0, 0, 50, 25 );
-            o->type( FL_HORIZONTAL );
-            o->spacing( 20 );
-
-            { Fl_Menu_Button *o = mode_choice = new Fl_Menu_Button( 0, 0, 25, 25 );
-                o->add( "Knobs" );
-                o->add( "Horizontal Sliders" );
-                o->add( "Vertical Sliders" );
-                o->label( NULL );
-                o->value( 0 );
-                o->when( FL_WHEN_CHANGED );
-                o->callback( cb_mode_handle, this );
-            }
-
-/*             { Fl_Box *o = new Fl_Box( 0, 0, 300, 25 ); */
-/*                 o->box( FL_ROUNDED_BOX ); */
-/*                 o->color( FL_YELLOW ); */
-/*                 o->label( strdup( lab ) ); */
-/*                 o->labeltype( FL_SHADOW_LABEL ); */
-/*                 o->labelsize( 18 ); */
-/*                 o->align( (Fl_Align)(FL_ALIGN_TOP | FL_ALIGN_RIGHT | FL_ALIGN_INSIDE ) ); */
-/* //                Fl_Group::current()->resizable( o ); */
-/*             } */
-            o->end();
+        { Fl_Menu_Button *o = mode_choice = new Fl_Menu_Button( 0, 0, 25, 25 );
+            o->add( "Knobs" );
+            o->add( "Horizontal Sliders" );
+            o->add( "Vertical Sliders" );
+            o->label( NULL );
+            o->value( 0 );
+            o->when( FL_WHEN_CHANGED );
+            o->callback( cb_mode_handle, this );
         }
-        { Fl_Group *o = new Fl_Group( 0, 0, w(), h() );
-            { Fl_Flowpack *o = control_pack = new Fl_Flowpack( 50, 0, w() - 100, h() );
-/*                 o->box( FL_ROUNDED_BOX ); */
-/*                 o->color( FL_GRAY ); */
+        o->resizable(0);
+        o->end();
+    }
+
+    { Fl_Scroll *o = control_scroll = new Fl_Scroll( 0, 40, w(), h() - 40 );
+        { Fl_Group *o = new Fl_Group( 0, 40, w(), h() - 40 );
+            { Fl_Flowpack *o = control_pack = new Fl_Flowpack( 50, 40, w() - 100, h() - 40 );
                 o->type( FL_HORIZONTAL );
                 o->flow( true );
-                o->vspacing( 10 );
-                o->hspacing( 10 );
+                o->vspacing( 5 );
+                o->hspacing( 5 );
                 o->end();
             }
             o->resizable( 0 );
@@ -118,10 +103,9 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
         }
         o->end();
     }
+    resizable(control_scroll);
 
     end();
-
-//    draw();
 
     make_controls();
 }
@@ -154,7 +138,27 @@ Module_Parameter_Editor::make_controls ( void )
     Fl_Color bc = FL_BACKGROUND2_COLOR;
 
     controls_by_port.resize( module->control_input.size() );
-
+    
+    if ( mode_choice->value() == 1 )
+    {
+        control_pack->flow(false);
+        control_pack->type( FL_VERTICAL );
+        control_pack->size( 450, 24 );
+    }
+    else if ( mode_choice->value() == 2 )
+    {
+        control_pack->flow(false);
+        control_pack->type( FL_HORIZONTAL );
+        control_pack->size( 24, 350 );
+    }
+    else if ( mode_choice->value() == 0 )
+    {
+        control_pack->flow(true);
+        control_pack->type( FL_HORIZONTAL );
+        control_pack->size( 700, 50 );
+        
+    }
+        
     for ( unsigned int i = 0; i < module->control_input.size(); ++i )
     {
         Fl_Widget *w;
@@ -165,16 +169,16 @@ Module_Parameter_Editor::make_controls ( void )
         /*     continue; */
 
         if ( !strcasecmp( "Azimuth", p->name() ) &&
-            180.0f == p->hints.maximum &&
-            -180.0f == p->hints.minimum )
+             180.0f == p->hints.maximum &&
+             -180.0f == p->hints.minimum )
         {
             azimuth_port_number = i;
             azimuth_value = p->control_value();
             continue;
         }
         else if ( !strcasecmp( "Elevation", p->name() ) &&
-             90.0f == p->hints.maximum &&
-            -90.0f == p->hints.minimum )
+                  90.0f == p->hints.maximum &&
+                  -90.0f == p->hints.minimum )
         {
             elevation_port_number = i;
             elevation_value = p->control_value();
@@ -194,15 +198,17 @@ Module_Parameter_Editor::make_controls ( void )
             o->selection_color( fc );
             o->type( FL_TOGGLE_BUTTON );
             o->value( p->control_value() );
+            o->align(FL_ALIGN_TOP);
         }
         else if ( p->hints.type == Module::Port::Hints::INTEGER )
         {
 
             Fl_Counter *o = new Fl_Counter(0, 0, 58, 24, p->name() );
             w = o;
-
+            
             o->type(1);
             o->step(1);
+            o->align(FL_ALIGN_TOP);
 
             if ( p->hints.ranged )
             {
@@ -230,6 +236,7 @@ Module_Parameter_Editor::make_controls ( void )
                 o->color( bc );
                 o->selection_color( fc );
                 o->value( p->control_value() );
+                o->align(FL_ALIGN_TOP);
 
                 o->precision( 2 );
                 /* a couple of plugins have ridiculously small units */
@@ -247,7 +254,8 @@ Module_Parameter_Editor::make_controls ( void )
                 {
                     o->type( FL_HORIZONTAL );
 
-                    o->size( 120, 24 );
+                    o->align( FL_ALIGN_RIGHT );
+                    o->size( 300, 24 );
                     if ( p->hints.ranged )
                     {
                         o->minimum( p->hints.minimum );
@@ -257,8 +265,9 @@ Module_Parameter_Editor::make_controls ( void )
                 else
                 {
                     o->type( FL_VERTICAL );
+                    o->align(FL_ALIGN_TOP);
 
-                    o->size( 24, 120 );
+                    o->size( 24, 300 );
                     /* have to reverse the meaning of these to get the
                      * orientation of the slider right */
                     o->maximum( p->hints.minimum );
@@ -279,6 +288,8 @@ Module_Parameter_Editor::make_controls ( void )
             }
 
         }
+//        w->align(FL_ALIGN_TOP);
+        w->labelsize( 10 );
 
         controls_by_port[i] = w;
 
@@ -286,8 +297,6 @@ Module_Parameter_Editor::make_controls ( void )
 
         Fl_Button *bound;
 
-        w->align(FL_ALIGN_TOP);
-        w->labelsize( 10 );
 
         _callback_data.push_back( callback_data( this, i ) );
 
@@ -310,6 +319,7 @@ Module_Parameter_Editor::make_controls ( void )
                     o->callback( cb_bound_handle, &_callback_data.back() );
                 }
 
+//                flg->resizable(w);
                 o->resizable( 0 );
                 o->end();
 
@@ -317,9 +327,19 @@ Module_Parameter_Editor::make_controls ( void )
                 flg->set_visible_focus();
 
                 flg->position( o->x(), o->y() );
-                bound->position( o->x(), flg->y() + flg->h() );
-                o->size( flg->w(), flg->h() + bound->h() );
+
+                if ( mode_choice->value() == 1 )
+                {
+                    bound->position( flg->x() + 450 - bound->w(), o->y() );
+                    o->size( flg->w() + bound->w(), flg->h() );
+                }
+                else
+                {
+                    bound->position( o->x(), flg->y() + flg->h() );
+                    o->size( flg->w(), flg->h() + bound->h() );
+                }
                 o->init_sizes();
+                //  o->resizable(flg);
             }
 
             if (! p->hints.visible )
@@ -367,13 +387,18 @@ Module_Parameter_Editor::make_controls ( void )
 
     update_control_visibility();
 
-    int width = control_pack->max_width() + 100;
-    int height = control_pack->h() + 50;
+    control_pack->dolayout();
+
+    int width = control_pack->w() + 100;
+    int height = control_pack->h() + 60;
 
     if ( width < _min_width )
         width = _min_width;
 
-    main_pack->size( width, height );
+    control_pack->parent()->size( control_pack->w() + 100, control_pack->h() );
+    
+    control_scroll->scroll_to(0, 0 );
+
     size( width, height );
     size_range( width, height, width, height );
 }

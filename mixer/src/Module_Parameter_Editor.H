@@ -26,6 +26,7 @@ class Fl_Flowpack;
 class Module;
 class Fl_Menu_Button;
 class Panner;
+class Fl_Scroll;
 
 #include <vector>
 #include <list>
@@ -75,8 +76,8 @@ class Module_Parameter_Editor : public Fl_Double_Window
     void set_value (int i, float value );
     void bind_control ( int i );
     void make_controls ( void );
-
-    Fl_Pack *main_pack;
+    
+    Fl_Scroll *control_scroll;
     Fl_Flowpack *control_pack;
     Fl_Menu_Button *mode_choice;
     bool _resized;

@@ -21,6 +21,7 @@ New_Project_Dialog.fl
 event_name.C
 menu_popup.C
 test_press.C
+focus_frame.C
 ''',
         includes = '.',
         export_incdirs = [ '.' 'FL' ],

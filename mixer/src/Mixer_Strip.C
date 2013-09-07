@@ -52,13 +52,14 @@
 #include "Controller_Module.H"
 #include "Meter_Indicator_Module.H"
 #include "debug.h"
-
+#include "FL/focus_frame.H"
 #include <FL/Fl_Menu_Button.H>
 #include "FL/test_press.H"
 #include "FL/menu_popup.H"
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Choice.H>
 #include "Group.H"
+#include "FL/focus_frame.H"
 
 extern Mixer *mixer;
 
@@ -498,7 +499,7 @@ Mixer_Strip::update ( void )
 void
 Mixer_Strip::init ( )
 {
-    selection_color( FL_RED );
+    selection_color( FL_MAGENTA );
 
     _mute_controller_mode = 0;
     _gain_controller_mode = 0;
@@ -718,11 +719,13 @@ void
 Mixer_Strip::draw ( void )
 {
      /* don't bother drawing anything else, all we're doing is drawing the focus. */
-    if ( damage() & ~FL_DAMAGE_USER1 )
+//    if ( damage() & ~FL_DAMAGE_USER1 )
         Fl_Group::draw();
-    
-    fl_color(  Fl::focus() == this ? Fl_Group::selection_color() : FL_BLACK ); 
-    fl_rect( x(), y(), w(), h() );
+
+    if ( Fl::focus() == this )
+        draw_focus_frame( x(),y(),w(),h(), Fl_Group::selection_color() );
+    /* else */
+    /*     clear_focus_frame( x(),y(),w(),h(), FL_BACKGROUND_COLOR ); */
 }
 
 /*****************/

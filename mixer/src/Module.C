@@ -36,6 +36,7 @@
 #include "AUX_Module.H"
 #include "Spatializer_Module.H"
 
+#include "FL/focus_frame.H"
 #include <FL/Fl_Menu_Button.H>
 #include "FL/test_press.H"
 #include "FL/menu_popup.H"
@@ -138,7 +139,7 @@ Module::init ( void )
     labeltype( FL_NO_LABEL );
     align( FL_ALIGN_CENTER | FL_ALIGN_INSIDE );
     set_visible_focus();
-    selection_color( FL_RED );
+    selection_color( FL_MAGENTA );
     labelsize(12);
     color( fl_color_average( FL_WHITE, FL_CYAN, 0.40 ) );
     tooltip( "Left click to edit parameters; Ctrl + left click to select; right click or MENU key for menu." );
@@ -648,9 +649,7 @@ Module::draw_box ( int tx, int ty, int tw, int th )
     fl_pop_clip();
 
     if ( this == Fl::focus() )
-    {
-        fl_draw_box( FL_UP_FRAME, tx, ty, tw, th, selection_color() );
-    }
+        draw_focus_frame( tx,ty,tw,th, selection_color() );
 
     fl_pop_clip();
 }

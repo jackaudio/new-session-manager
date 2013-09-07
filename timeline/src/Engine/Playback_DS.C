@@ -183,6 +183,8 @@ done:
     free(buf);
     free(cbuf);
 
+//    flush();
+
     _terminate = false;
 
     _thread.exit();

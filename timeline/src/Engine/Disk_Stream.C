@@ -77,8 +77,6 @@ Disk_Stream::~Disk_Stream ( )
 
 //    timeline->wrlock();
 
-    shutdown();
-
      _track = NULL;
 
     sem_destroy( &_blocks );
@@ -134,7 +132,7 @@ Disk_Stream::shutdown ( void )
         while ( _terminate )
         {
             block_processed();
-            usleep( 1000 );
+            usleep( 10 * 1000 );
         }
         
         _thread.join();

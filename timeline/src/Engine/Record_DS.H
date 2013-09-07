@@ -44,7 +44,7 @@ class Record_DS : public Disk_Stream
     void write_block ( sample_t *buf, nframes_t nframes );
     void disk_thread ( void );
 
-    void flush ( void ) { base_flush( false ); }
+    virtual void flush ( void ) { base_flush( false ); }
 
 public:
 
@@ -59,6 +59,8 @@ public:
             _stop_frame = -1;
             _frames_written = 0;
         }
+
+    virtual ~Record_DS ( ) { shutdown(); }
 
 /*     bool seek_pending ( void ); */
 /*     void seek ( nframes_t frame ); */

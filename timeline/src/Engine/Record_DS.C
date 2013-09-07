@@ -152,6 +152,8 @@ Record_DS::disk_thread ( void )
 
     delete c;
 
+    flush();
+
     _terminate = false;
 
     DMESSAGE( "capture thread gone" );

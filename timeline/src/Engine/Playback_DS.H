@@ -39,6 +39,8 @@ public:
             run();
         }
 
+    virtual ~Playback_DS ( ) { shutdown(); }
+
     bool seek_pending ( void );
     void seek ( nframes_t frame );
     nframes_t process ( nframes_t nframes );

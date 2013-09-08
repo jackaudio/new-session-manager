@@ -46,17 +46,21 @@ buffer_apply_gain ( sample_t * __restrict__ buf, nframes_t nframes, float g )
 {
     sample_t * buf_ = (sample_t*) assume_aligned(buf);
 	
-    if ( g != 1.0f )
-        while ( nframes-- )
-	  *(buf_++) *= g;
+    if ( g == 1.0f )
+        return;
+    
+    for ( nframes_t i = 0; i < nframes; i++ )
+        buf_[i] *= g;
 }
 
 void
 buffer_apply_gain_unaligned ( sample_t * __restrict__ buf, nframes_t nframes, float g )
 {
-    if ( g != 1.0f )
-        while ( nframes-- )
-	  *(buf++) *= g;
+    if ( g == 1.0f )
+        return;
+    
+    for ( nframes_t i = 0; i < nframes; i++ )
+        buf[i] *= g;
 }
 
 void
@@ -65,8 +69,8 @@ buffer_apply_gain_buffer ( sample_t * __restrict__ buf, const sample_t * __restr
     sample_t * buf_ = (sample_t*) assume_aligned(buf);
     const sample_t * gainbuf_ = (const sample_t*) assume_aligned(gainbuf);
 
-    while ( nframes-- )
-        *(buf_++) *= *(gainbuf_++);
+    for ( nframes_t i = 0; i < nframes; i++ )
+        buf_[i] *= gainbuf_[i];
 }
 
 void
@@ -76,8 +80,8 @@ buffer_copy_and_apply_gain_buffer ( sample_t * __restrict__ dst, const sample_t 
     const sample_t * src_ = (const sample_t*) assume_aligned(src);
     const sample_t * gainbuf_ = (const sample_t*) assume_aligned(gainbuf);
     
-	while ( nframes-- )
-        *(dst_++) = *(src_++) * *(gainbuf_++);
+    for ( nframes_t i = 0; i < nframes; i++ )
+        dst_[i] = src_[i] * gainbuf_[i];
 }
 
 void
@@ -86,8 +90,8 @@ buffer_mix ( sample_t * __restrict__ dst, const sample_t * __restrict__ src, nfr
     sample_t * dst_ = (sample_t*) assume_aligned(dst);
     const sample_t * src_ = (const sample_t*) assume_aligned(src);
 
-    while ( nframes-- )
-        *(dst_++) += *(src_++);
+    for ( nframes_t i = 0; i < nframes; i++ )
+        dst_[i] += src_[i];
 }
 
 void
@@ -95,9 +99,9 @@ buffer_mix_with_gain ( sample_t * __restrict__ dst, const sample_t * __restrict_
 {
     sample_t * dst_ = (sample_t*) assume_aligned(dst);
     const sample_t * src_ = (const sample_t*) assume_aligned(src);
-   
-    while ( nframes-- )
-        *(dst_++) += *(src_++) * g;
+
+    for ( nframes_t i = 0; i < nframes; i++ )
+        dst_[i] += src_[i] * g;
 }
 
 void
@@ -181,8 +185,10 @@ buffer_is_digital_black ( sample_t *buf, nframes_t nframes )
 {
     while ( nframes-- )
     {
-        if ( 0 != buf[nframes] )
-            return false;
+        if (! *(buf++) )
+            continue;
+
+        return false;
     }
 
     return true;
@@ -193,15 +199,19 @@ buffer_get_peak ( const sample_t * __restrict__ buf, nframes_t nframes )
 {
     const sample_t * buf_ = (const sample_t*) assume_aligned(buf);
 
-    float p = 0.0f;
-  
-    while ( nframes-- )
+    float pmax = 0.0f;
+    float pmin = 0.0f;
+
+    for ( nframes_t i = 0; i < nframes; i++ )
     {
-	const float s = fabs(*(buf_++));
-        p = s > p ? s : p;
+        pmax = buf_[i] > pmax ? buf_[i] : pmax;
+        pmin = buf_[i] < pmin ? buf_[i] : pmin;
     }
 
-    return p;
+    pmax = fabsf(pmax);
+    pmin = fabsf(pmin);
+    
+    return pmax > pmin ? pmax : pmin;
 }
 
 void
@@ -224,7 +234,7 @@ Value_Smoothing_Filter::sample_rate ( nframes_t n )
     const float FS = n;
     const float T = 0.05f;
    
-    w = _cutoff / (FS * T);  
+    w = _cutoff / (FS * T);
 }
 
 bool

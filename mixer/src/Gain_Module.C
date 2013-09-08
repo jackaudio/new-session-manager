@@ -105,30 +105,38 @@ Gain_Module::handle_sample_rate_change ( nframes_t n )
 void
 Gain_Module::process ( nframes_t nframes )
 {
-    const float gt = DB_CO( control_input[1].control_value() ? -90.f : control_input[0].control_value() );
 
-    sample_t gainbuf[nframes];
-    
-    bool use_gainbuf = smoothing.apply( gainbuf, nframes, gt );
-
-    if ( use_gainbuf )
+    if ( unlikely( bypass() ) )
     {
-        for ( int i = audio_input.size(); i--; )
-        {
-            if ( audio_input[i].connected() && audio_output[i].connected() )
-            {
-                sample_t *out = (sample_t*)audio_input[i].buffer();
-
-                buffer_apply_gain_buffer( out, gainbuf, nframes );
-            }
-        }
+        /* nothing to do */
     }
     else
-        for ( int i = audio_input.size(); i--; )
+    {
+        const float gt = DB_CO( control_input[1].control_value() ? -90.f : control_input[0].control_value() );
+
+        sample_t gainbuf[nframes];
+    
+        bool use_gainbuf = smoothing.apply( gainbuf, nframes, gt );
+        
+        if ( unlikely( use_gainbuf ) )
         {
-            if ( audio_input[i].connected() && audio_output[i].connected() )
+            for ( int i = audio_input.size(); i--; )
             {
-                buffer_apply_gain( (sample_t*)audio_input[i].buffer(), nframes, gt );
+                if ( audio_input[i].connected() && audio_output[i].connected() )
+                {
+                    sample_t *out = (sample_t*)audio_input[i].buffer();
+
+                    buffer_apply_gain_buffer( out, gainbuf, nframes );
+                }
             }
         }
+        else
+            for ( int i = audio_input.size(); i--; )
+            {
+                if ( audio_input[i].connected() && audio_output[i].connected() )
+                {
+                    buffer_apply_gain( (sample_t*)audio_input[i].buffer(), nframes, gt );
+                }
+            }
+    }
 }

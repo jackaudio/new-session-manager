@@ -174,14 +174,11 @@ Meter_Module::process ( nframes_t nframes )
 {
     for ( unsigned int i = 0; i < audio_input.size(); ++i )
     {
-        if ( audio_input[i].connected() )
-        {
 //            float dB = 20 * log10( get_peak_sample( (float*)audio_input[i].buffer(), nframes ) / 2.0f );
-            float dB = 20 * log10( buffer_get_peak( (sample_t*) audio_input[i].buffer(), nframes ) );
+        float dB = 20 * log10( buffer_get_peak( (sample_t*) audio_input[i].buffer(), nframes ) );
 
-            ((float*)control_output[0].buffer())[i] = dB;
-            if (dB > control_value[i])
-                control_value[i] = dB;
-        }
+        ((float*)control_output[0].buffer())[i] = dB;
+        if (dB > control_value[i])
+            control_value[i] = dB;
     }
 }

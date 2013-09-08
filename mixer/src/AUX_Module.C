@@ -108,7 +108,15 @@ AUX_Module::handle_sample_rate_change ( nframes_t n )
 void
 AUX_Module::process ( nframes_t nframes )
 {
-    if ( !bypass() )
+    if ( unlikely( bypass() ) )
+    {
+        for ( unsigned int i = 0; i < audio_input.size(); ++i )
+        {
+            if ( audio_input[i].connected() )
+                buffer_fill_with_silence( (sample_t*)aux_audio_output[i].jack_port()->buffer(nframes), nframes );
+        }
+    }
+    else
     {
         float gt = DB_CO( control_input[0].control_value() );
  
@@ -116,9 +124,8 @@ AUX_Module::process ( nframes_t nframes )
     
         bool use_gainbuf = smoothing.apply( gainbuf, nframes, gt );
 
-        if ( use_gainbuf )
+        if ( unlikely( use_gainbuf ) )
         {
-        
             for ( unsigned int i = 0; i < audio_input.size(); ++i )
             {
                 if ( audio_input[i].connected() )
@@ -133,14 +140,6 @@ AUX_Module::process ( nframes_t nframes )
                 if ( audio_input[i].connected() )
                     buffer_copy_and_apply_gain( (sample_t*)aux_audio_output[i].jack_port()->buffer(nframes), (sample_t*)audio_input[i].buffer(), nframes, gt );
             }
-        }
-    }
-    else
-    {
-        for ( unsigned int i = 0; i < audio_input.size(); ++i )
-        {
-            if ( audio_input[i].connected() )
-                buffer_fill_with_silence( (sample_t*)aux_audio_output[i].jack_port()->buffer(nframes), nframes );
         }
     }
 }

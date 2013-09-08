@@ -80,49 +80,42 @@ Mono_Pan_Module::configure_inputs ( int )
 void
 Mono_Pan_Module::process ( nframes_t nframes )
 {
-
-    if ( audio_input[0].connected() &&
-         audio_output[0].connected() &&
-         audio_output[1].connected() )
+    if ( unlikely( bypass() ) )
     {
-        if ( bypass() )
-        {
-            buffer_copy( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes );
+        buffer_copy( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes );
+    }
+    else
+    {
+        const float gt = (control_input[0].control_value() + 1.0f) * 0.5f;
+
+        sample_t gainbuf[nframes];            
+        bool use_gainbuf = smoothing.apply( gainbuf, nframes, gt );
+        
+        if ( unlikely( use_gainbuf ) )
+        {            
+            /* right channel */
+                
+            buffer_copy_and_apply_gain_buffer( (sample_t*)audio_output[1].buffer(),
+                                               (sample_t*)audio_input[0].buffer(),
+                                               gainbuf,
+                                               nframes );
+                
+            /*  left channel  */
+            for ( nframes_t i = 0; i < nframes; i++ )
+                gainbuf[i] = 1.0f - gainbuf[i];
+                
+            buffer_apply_gain_buffer( (sample_t*)audio_output[0].buffer(), gainbuf, nframes );
         }
         else
         {
-            const float gt = (control_input[0].control_value() + 1.0f) * 0.5f;
-
-            if ( ! smoothing.target_reached( gt ) )
-            {            
-                sample_t gainbuf[nframes];            
-            
-                smoothing.apply( gainbuf, nframes, gt );
+            /* right channel */
+            buffer_copy_and_apply_gain( (sample_t*)audio_output[1].buffer(),
+                                        (sample_t*)audio_input[0].buffer(),
+                                        nframes,
+                                        gt );
                 
-                /* right channel */
-                
-                buffer_copy_and_apply_gain_buffer( (sample_t*)audio_output[1].buffer(),
-                                                   (sample_t*)audio_input[0].buffer(),
-                                                   gainbuf,
-                                                   nframes );
-                
-                /*  left channel  */
-                for ( nframes_t i = 0; i < nframes; i++ )
-                    gainbuf[i] = 1.0f - gainbuf[i];
-                
-                buffer_apply_gain_buffer( (sample_t*)audio_output[0].buffer(), gainbuf, nframes );
-            }
-            else
-            {
-                /* right channel */
-                buffer_copy_and_apply_gain( (sample_t*)audio_output[1].buffer(),
-                                                   (sample_t*)audio_input[0].buffer(),
-                                                   nframes,
-                                                   gt );
-                
-                /*  left channel  */
-                buffer_apply_gain( (sample_t*)audio_output[0].buffer(), nframes, 1.0f - gt);
-            }
+            /*  left channel  */
+            buffer_apply_gain( (sample_t*)audio_output[0].buffer(), nframes, 1.0f - gt);
         }
     }
 }

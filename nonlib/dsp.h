@@ -79,3 +79,10 @@ static inline float interpolate_cubic ( const float fr, const float inm1, const 
 
 #define DEG2RAD       0.01745329251f
 #define ONEOVERSQRT2  0.70710678118f
+
+#ifndef likely
+#define likely(x) __builtin_expect(x,1)
+#endif
+#ifndef unlikely
+#define unlikely(x) __builtin_expect(x,0)
+#endif

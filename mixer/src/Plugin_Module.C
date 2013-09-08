@@ -795,12 +795,7 @@ Plugin_Module::process ( nframes_t nframes )
 {
     handle_port_connection_change();
 
-    if ( !bypass() )
-    {
-        for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
-            _idata->descriptor->run( _idata->handle[i], nframes );
-    }
-    else
+    if ( unlikely( bypass() ) )
     {
         /* If this is a mono to stereo plugin, then duplicate the input channel... */
         /* There's not much we can do to automatically support other configurations. */
@@ -808,9 +803,16 @@ Plugin_Module::process ( nframes_t nframes )
         {
             buffer_copy( (sample_t*)audio_output[1].buffer(), (sample_t*)audio_input[0].buffer(), nframes );
         }
-    }
 
-    _latency = get_plugin_latency();
+        _latency = 0;
+    }
+    else
+    {
+        for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
+            _idata->descriptor->run( _idata->handle[i], nframes );
+
+        _latency = get_plugin_latency();
+    }
 }
 
 

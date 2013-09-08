@@ -19,4 +19,4 @@
 
 void
 draw_focus_frame ( int x, int y, int w, int h, Fl_Color c );
-
+bool focused_r ( Fl_Widget *w );

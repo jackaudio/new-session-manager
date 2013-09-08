@@ -518,8 +518,7 @@ Mixer_Strip::update ( void )
 void
 Mixer_Strip::init ( )
 {
-    selection_color( FL_MAGENTA );
-
+    selection_color( FL_YELLOW );
     _manual_connection = 0;
     _auto_input = 0;
     _mute_controller_mode = 0;
@@ -754,7 +753,7 @@ Mixer_Strip::draw ( void )
 //    if ( damage() & ~FL_DAMAGE_USER1 )
     Fl_Group::draw();
 
-    if ( Fl::focus() == this )
+    if ( focused_r( this ) )
         draw_focus_frame( x(),y(),w(),h(), Fl_Group::selection_color() );
     /* else */
     /*     clear_focus_frame( x(),y(),w(),h(), FL_BACKGROUND_COLOR ); */

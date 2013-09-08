@@ -139,9 +139,10 @@ Module::init ( void )
     labeltype( FL_NO_LABEL );
     align( FL_ALIGN_CENTER | FL_ALIGN_INSIDE );
     set_visible_focus();
-    selection_color( FL_MAGENTA );
+    selection_color( FL_YELLOW );
+
     labelsize(12);
-    color( fl_color_average( FL_WHITE, FL_CYAN, 0.40 ) );
+    color( fl_rgb_color( 122,190,200 ) );
     tooltip( "Left click to edit parameters; Ctrl + left click to select; right click or MENU key for menu." );
 }
 
@@ -616,8 +617,6 @@ Module::draw_box ( int tx, int ty, int tw, int th )
 
     Fl_Color c = color();
 
-    c = active() && ! bypass() ? c : FL_GRAY;
-
     if ( ! active_r() )
         c = fl_inactive( c );
 
@@ -648,7 +647,7 @@ Module::draw_box ( int tx, int ty, int tw, int th )
 
     fl_pop_clip();
 
-    if ( this == Fl::focus() )
+    if ( focused_r( this ) )
         draw_focus_frame( tx,ty,tw,th, selection_color() );
 
     fl_pop_clip();
@@ -664,9 +663,9 @@ Module::draw_label ( int tx, int ty, int tw, int th )
 
     char *lab = strdup( label() );
 
-    Fl_Color c = fl_contrast( FL_FOREGROUND_COLOR, bypass() ? FL_BLACK : color() );
+    Fl_Color c = fl_contrast( FL_FOREGROUND_COLOR, color() );
 
-    fl_color( active_r() ? c : fl_inactive(c) );
+    fl_color( active_r() && ! bypass() ? c : fl_inactive(c) );
 
     fl_font( FL_HELVETICA, labelsize() );
 
@@ -717,6 +716,15 @@ Module::draw_label ( int tx, int ty, int tw, int th )
     }
 
     fl_draw( s ? s : lab, tx, ty, tw, th, align() | FL_ALIGN_CLIP );
+    
+    if ( bypass() )
+    {
+        fl_color( fl_color_add_alpha( fl_color(), 127 )  );
+        fl_line_style( FL_SOLID, 2 );
+        fl_line( tx, ty + th * 0.5, tx + tw, ty + th * 0.5 );
+        fl_line_style( FL_SOLID, 0 );
+    }
+
 
     free(lab);
 

@@ -585,13 +585,14 @@ Mixer_Strip::init ( )
 
                 o->end();
             } // Fl_Group* o
-            { Fl_Progress* o = dsp_load_progress = new Fl_Progress(61, 183, 45, 10, "group dsp");
-                o->box(FL_FLAT_BOX);
+            { Fl_Progress* o = dsp_load_progress = new Fl_Progress(61, 183, 45, 14, "group dsp");
+                o->box(FL_BORDER_BOX);
                 o->type(FL_HORIZONTAL);
                 o->labelsize( 9 );
                 o->minimum( 0 );
 //                o->maximum( 0.25f );
                 o->maximum( 1 );
+               o->color(fl_rgb_color( 10,10,10 ) );
                 o->color2(FL_CYAN);
             }
             { Fl_Choice* o = group_choice = new Fl_Choice(61, 183, 45, 22);

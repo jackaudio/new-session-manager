@@ -67,7 +67,8 @@ public:
             {
                 /* TODO: other alignments */
             }
-
+                                               
+            init_sizes();
         }
 
     virtual ~Fl_Labelpad_Group ( )

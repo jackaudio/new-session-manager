@@ -377,6 +377,7 @@ Module_Parameter_Editor::make_controls ( void )
 
         Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( o );
 
+        flg->resizable(o);
         control_pack->add( flg );
 
         controls_by_port[azimuth_port_number] = o;

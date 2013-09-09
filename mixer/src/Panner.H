@@ -33,7 +33,9 @@ class Panner : public Fl_Group
     Fl_Choice *_range_choice;
     Fl_Choice *_projection_choice;
 
-    Fl_Image *_bg_image[2]; 
+    Fl_Image *_bg_image;
+    bool _bg_image_scaled;
+
     void draw_grid( int,int,int,int);
     void draw_the_box( int, int, int, int );
     

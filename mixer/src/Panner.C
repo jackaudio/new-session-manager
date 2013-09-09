@@ -38,6 +38,8 @@ int Panner::_projection_mode = 0;
 Panner::Panner ( int X, int Y, int W, int H, const char *L ) :
     Fl_Group( X, Y, W, H, L )
 {
+    _bg_image = 0;
+    _bg_image_scaled = 0;
     _range = 15.0f;
 //    _projection = POLAR;
     _points.push_back( Point( 1, 0 ) );
@@ -70,16 +72,17 @@ Panner::Panner ( int X, int Y, int W, int H, const char *L ) :
     }
                   
     end();
-    
-    _bg_image[0] = _bg_image[1] = 0;
 }
 
 Panner::~Panner (  )
 {
-    if ( _bg_image[0] )
-        ((Fl_Shared_Image*)_bg_image[0])->release();
-    if ( _bg_image[1] )
-        ((Fl_Shared_Image*)_bg_image[1])->release();
+    if ( _bg_image )
+    {
+        if ( _bg_image_scaled )
+            delete _bg_image;
+        else
+            ((Fl_Shared_Image*)_bg_image)->release();
+    }
 }
 
 static int find_numeric_menu_item( const Fl_Menu_Item *menu, int n )
@@ -131,7 +134,7 @@ Panner::point_bbox ( const Point *p, int *X, int *Y, int *W, int *H ) const
        
     if ( projection() == POLAR )
     {
-    project_polar( p, &px, &py, &s );
+        project_polar( p, &px, &py, &s );
     }
     else
     {
@@ -186,49 +189,53 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
 
     Fl_Image *i = 0;
 
-    if ( ! ( _bg_image[0] && _bg_image[1] ))
+    if ( _bg_image && _bg_image->h() != th )
     {
-        Fl_Image *i = NULL;
-    
-        switch ( tw )
-        {
-            case 802:
-                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-sphere-802x802.png" );
-                break;
-            case 92:
-                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-sphere-92x92.png" );
-                break;
-            case 502: 
-                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-sphere-502x502.png" );
-                break;
-        }
-    
-        _bg_image[0] = i;
+        if ( _bg_image_scaled )
+            delete _bg_image;
+        else
+            ((Fl_Shared_Image*)_bg_image)->release();
 
-	i = NULL;
-
-        switch ( tw )
-        {
-            case 802:
-                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-plane-802x802.png" );
-                break;
-            case 92:
-                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-plane-92x92.png" );
-                break;
-            case 502: 
-                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-plane-502x502.png" );
-                break;
-        }
-    
-        _bg_image[1] = i;
+        _bg_image = 0;
     }
-    if ( projection() == POLAR )
-        i = _bg_image[0];
-    else
-        i = _bg_image[1];
 
-    if ( i )
-        i->draw( tx, ty );
+    if ( ! _bg_image )
+    {
+        if ( projection() == POLAR )
+        {
+            if ( th <= 92 )
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-sphere-92x92.png" );
+            else if ( th <= 502 )
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-sphere-502x502.png" );
+            else if ( th <= 802 )
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-sphere-802x802.png" );
+        }
+        else
+        {
+            if ( th <= 92 )
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-plane-92x92.png" );
+            else if ( th <= 502 )
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-plane-502x502.png" );
+            else if ( th <= 802 )
+                i = Fl_Shared_Image::get( PIXMAP_PATH "/non-mixer/panner-plane-802x802.png" );
+        }
+
+        if ( i && i->h() != th )
+        {
+            Fl_Image *scaled = i->copy( th, th );
+
+            _bg_image = scaled;
+            _bg_image_scaled = true;
+        }
+        else
+        {
+            _bg_image = i;
+            _bg_image_scaled = false;
+        }
+    }
+
+    if ( _bg_image )
+        _bg_image->draw( tx, ty );
 }
 
 /** translate angle /a/ into x/y coords and place the result in /X/ and /Y/ */
@@ -392,10 +399,10 @@ Panner::draw ( void )
             if ( projection() == POLAR )
             {
            
-            fl_color( fl_color_average( fl_rgb_color( 127,127,127 ), p->color, 0.50 ) );
-            fl_begin_loop();
-            fl_circle( tx + tw/2, ty + th/2, tw/2.0f * ( ( p->radius() / range() )));
-            fl_end_loop();
+                fl_color( fl_color_average( fl_rgb_color( 127,127,127 ), p->color, 0.50 ) );
+                fl_begin_loop();
+                fl_circle( tx + tw/2, ty + th/2, tw/2.0f * ( ( p->radius() / range() )));
+                fl_end_loop();
             }
 
         }
@@ -517,8 +524,12 @@ Panner::handle ( int m )
             {
                 if ( POLAR == projection() )
                     set_polar( drag,X,Y );
-                else 
-                    set_ortho( drag, X,Y );
+                else
+                {
+                    if ( fabsf( X ) < 0.5f &&
+                         fabsf( Y ) < 0.5f ) 
+                        set_ortho( drag, X,Y );
+                }
             }
             else
                 set_polar_radius( drag,X,Y );

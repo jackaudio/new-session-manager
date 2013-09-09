@@ -354,6 +354,10 @@ void Mixer::cb_menu(Fl_Widget* o) {
     {
         fl_theme_chooser();
     }
+    else if ( ! strcmp( picked, "&Mixer/Swap &Fader//Signal View" ) )
+    {
+        command_toggle_fader_view();
+    }
     else if ( ! strcmp( picked, "&Help/&About" ) )
     {
         About_Dialog ab( PIXMAP_PATH "/non-mixer/icon-256x256.png" );
@@ -523,6 +527,8 @@ Mixer::Mixer ( int X, int Y, int W, int H, const char *L ) :
             o->add( "&Mixer/&Import Strip" );
             o->add( "&Mixer/Paste", FL_CTRL + 'v', 0, 0 );
             o->add( "&Mixer/&Spatialization Console", FL_F + 8, 0, 0, FL_MENU_TOGGLE );
+            o->add( "&Mixer/Swap &Fader//Signal View", FL_ALT + 'f', 0, 0, FL_MENU_TOGGLE );
+//            o->add( "&Mixer/&Signal View", FL_ALT + 's', 0, 0, FL_MENU_TOGGLE );
             o->add( "&Remote Control/Start Learning", FL_F + 9, 0, 0 );
             o->add( "&Remote Control/Stop Learning", FL_F + 10, 0, 0 );
             o->add( "&Remote Control/Send State" );
@@ -1188,6 +1194,16 @@ Mixer::maybe_auto_connect_output ( Module::Port *p )
 /* Commands */
 /************/
 
+void
+Mixer::command_toggle_fader_view ( void )
+{
+   for ( int i = 0; i < mixer_strips->children(); i++ )
+    {
+        Mixer_Strip *s = ((Mixer_Strip*)mixer_strips->child(i));
+        s->command_toggle_fader_view();
+    }
+}
+                                 
 void
 Mixer::command_clear_mappings ( void )
 {

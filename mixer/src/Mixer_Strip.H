@@ -177,6 +177,7 @@ public:
     int number ( void ) const;
     static bool import_strip ( const char *filename );
 
+    void command_toggle_fader_view ( void );
     void command_move_left ( void );
     void command_move_right ( void );
     void command_close ( void );

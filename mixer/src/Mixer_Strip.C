@@ -595,6 +595,7 @@ Mixer_Strip::init ( )
                 o->color2(FL_CYAN);
             }
             { Fl_Choice* o = group_choice = new Fl_Choice(61, 183, 45, 22);
+                o->tooltip( "Create or assign group" );
                 o->labeltype(FL_NO_LABEL);
                 o->labelsize(10);
                 o->textsize(10);
@@ -602,15 +603,20 @@ Mixer_Strip::init ( )
                 o->value(0);
                 o->callback( ((Fl_Callback*)cb_handle), this );
             }
-            { Fl_Flip_Button* o = tab_button = new Fl_Flip_Button(61, 183, 45, 22, "fader/signal");
-                o->type(1);
-                o->labelsize( 14 );
-                o->callback( ((Fl_Callback*)cb_handle), this );
-                o->when(FL_WHEN_RELEASE);
-            }
-            { Controller_Module *o = mute_controller = new Controller_Module( true );
-                o->pad( false );
-                o->size( 45, 22 );
+            { Fl_Scalepack *o = new Fl_Scalepack( 0,0, 45, 22 );
+                o->type( FL_HORIZONTAL );
+                { Fl_Flip_Button* o = tab_button = new Fl_Flip_Button(61, 183, 45, 22, "Fadr/Signl");
+                    o->tooltip( "Switch between fader and signal views" );
+                    o->type(1);
+                    o->labelsize( 10 );
+                    o->callback( ((Fl_Callback*)cb_handle), this );
+                    o->when(FL_WHEN_RELEASE);
+                }
+                { Controller_Module *o = mute_controller = new Controller_Module( true );
+                    o->pad( false );
+                    o->size( 45, 22 );
+                }
+                o->end();
             }
             o->end();
         }
@@ -1196,6 +1202,13 @@ Mixer_Strip::number ( void ) const
 /************/
 /* Commands */
 /************/
+
+void
+Mixer_Strip::command_toggle_fader_view ( void )
+{
+    tab_button->value( ! tab_button->value() );
+    tab_button->do_callback();
+}
 
 void
 Mixer_Strip::command_move_left ( void )

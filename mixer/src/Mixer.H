@@ -161,7 +161,7 @@ public:
 
 public:
     
-    void edit_translations ( void );
+    void command_toggle_fader_view ( void );
     void command_clear_mappings ( void );
     void command_new ( void );
     bool command_save ( void );

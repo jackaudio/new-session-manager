@@ -40,6 +40,7 @@ Panner::Panner ( int X, int Y, int W, int H, const char *L ) :
 {
     _bg_image = 0;
     _bg_image_scaled = 0;
+    _bg_image_projection = 0;
     _range = 15.0f;
 //    _projection = POLAR;
     _points.push_back( Point( 1, 0 ) );
@@ -189,7 +190,7 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
 
     Fl_Image *i = 0;
 
-    if ( _bg_image && _bg_image->h() != th )
+    if ( _bg_image && ( _bg_image->h() != th || projection() != _bg_image_projection ) )
     {
         if ( _bg_image_scaled )
             delete _bg_image;
@@ -233,6 +234,8 @@ Panner::draw_the_box ( int tx, int ty, int tw, int th )
             _bg_image_scaled = false;
         }
     }
+    
+    _bg_image_projection = projection();
 
     if ( _bg_image )
         _bg_image->draw( tx, ty );

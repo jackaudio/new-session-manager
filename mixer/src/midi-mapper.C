@@ -401,7 +401,7 @@ int signal_handler ( float value, void *user_data )
     {
         jack_midi_event_t ev;
         
-        m->event.msb( value * 128.0f );
+        m->event.msb( value * 127.0f );
         ev.size = m->event.size();
         m->event.raw( (byte_t*)&ev, m->event.size() );
         
@@ -736,7 +736,7 @@ main ( int argc, char **argv )
                     
                     if ( is_nrpn )
                     {
-                        asprintf( &midi_event, "NRPN %d %d", e.channel(), st->control_msb * 128 + st->control_lsb );
+                        asprintf( &midi_event, "NRPN %d %d", e.channel(), get_14bit( st->control_msb, st->control_lsb ));
                     }
                     else if ( e.opcode() == MIDI::midievent::CONTROL_CHANGE )
                         asprintf( &midi_event, "CC %d %d", e.channel(), e.lsb() );
@@ -784,12 +784,13 @@ main ( int argc, char **argv )
 
                     if ( is_nrpn )
                     {
-                        val = ( st->value_msb * 128 + st->value_lsb ) / ( MAX_NRPN );
+                        val = get_14bit( st->value_msb, st->value_lsb ) / MAX_NRPN;
+
                     }
                     else if ( e.opcode() == MIDI::midievent::CONTROL_CHANGE )
-                        val = e.msb() / 128.0f;
+                        val = e.msb() / 127.0f;
                     else if ( e.opcode() == MIDI::midievent::PITCH_WHEEL )
-                        val = e.pitch() / ( MAX_NRPN );
+                        val = e.pitch() / MAX_NRPN;
 
 //                    MESSAGE( "sending signal for %s = %f", s, val );
                 

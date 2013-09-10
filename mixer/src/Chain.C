@@ -803,12 +803,24 @@ Chain::get_output_ports ( std::list<std::string> &sl)
             char *s;
 
             asprintf( &s, "%s/%s", 
-                      strip()->group()->single() ? "*" : strip()->group()->name(), 
+                      "*", 
                       m->aux_audio_output[j].jack_port()->name() );
 
             sl.push_back( s );
 
             free(s);
+
+            if ( ! strip()->group()->single() )
+            {
+                asprintf( &s, "%s/%s", 
+                          strip()->group()->name(), 
+                          m->aux_audio_output[j].jack_port()->name() );
+
+                
+                sl.push_back( s );
+                
+                free(s);
+            }
         }
     }
 }

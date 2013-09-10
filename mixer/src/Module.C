@@ -423,7 +423,13 @@ Module::Port::osc_control_change_exact ( float v, void *user_data )
             f = p->hints.maximum;
         else if ( f < p->hints.minimum )
             f = p->hints.minimum;
+
+        if ( Hints::BOOLEAN == p->hints.type )
+            f = f > (p->hints.maximum - (p->hints.maximum - p->hints.minimum)) * 0.5f ?
+                p->hints.maximum : 
+                p->hints.minimum;
     }
+
 
     p->control_value( f );
 
@@ -451,8 +457,11 @@ Module::Port::osc_control_change_cv ( float v, void *user_data )
 
     if ( p->hints.ranged )
     {
+        if ( Hints::BOOLEAN == p->hints.type )
+            f = f > 0.5f ? p->hints.maximum : p->hints.minimum;
+
         // scale value to range.
-        
+
         float scale = p->hints.maximum - p->hints.minimum;
         float offset = p->hints.minimum;
         

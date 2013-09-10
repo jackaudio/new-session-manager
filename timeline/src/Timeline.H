@@ -155,6 +155,7 @@ public:
     static bool snap_magnetic;
     static bool follow_playhead;
     static bool center_playhead;
+    static bool playback_latency_compensation;
 
     Tempo_Sequence *tempo_track;
     Time_Sequence  *time_track;

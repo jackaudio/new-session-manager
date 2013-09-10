@@ -253,8 +253,8 @@ public:
     nframes_t process_input ( nframes_t nframes );
     nframes_t process_output ( nframes_t nframes );
     void seek ( nframes_t frame );
-    void delay ( nframes_t frames );
-
+    void undelay ( nframes_t frames );
+    void compute_latency_compensation ( void );
     void record ( Capture *c, nframes_t frame );
     void write ( Capture *c, sample_t *buf, nframes_t nframes );
     void finalize ( Capture *c, nframes_t frame );

@@ -66,9 +66,9 @@ Playback_DS::seek ( nframes_t frame )
 /** set the playback delay to /frames/ frames. This be called prior to
 a seek. */
 void
-Playback_DS::delay ( nframes_t frames )
+Playback_DS::undelay ( nframes_t delay )
 {
-    _delay = frames;
+    _undelay = delay;
 }
 
 /** read /nframes/ from the attached track into /buf/ */
@@ -94,13 +94,8 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
     
     if ( sequence() )
     {
-        /* FIXME: how does this work if _delay is not a multiple of bufsize? */
-        
-        if ( _frame >= _delay )
-        {
-            if ( ! sequence()->play( buf, _frame - _delay, nframes, channels() ) )
-                WARNING( "Programming error?" );
-        }
+        if ( ! sequence()->play( buf, _frame + _undelay, nframes, channels() ) )
+            WARNING( "Programming error?" );
         
         _frame += nframes;
     }

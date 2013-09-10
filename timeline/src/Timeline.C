@@ -73,6 +73,7 @@ bool Timeline::snapping_on_hold = false;
 bool Timeline::snap_magnetic = true;
 bool Timeline::follow_playhead = true;
 bool Timeline::center_playhead = true;
+bool Timeline::playback_latency_compensation = false;
 
 const float UPDATE_FREQ = 1.0f / 18.0f;
 

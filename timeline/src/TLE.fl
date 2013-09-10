@@ -325,6 +325,11 @@ pi.run();}
                 label {Capture Format} open
                 xywh {25 25 74 25}
               } {}
+              MenuItem {} {
+                label {Playback Latency Compensation}
+                callback {Timeline::playback_latency_compensation = menu_picked_value( o );} selected
+                xywh {55 55 40 25} type Toggle
+              }
             }
             MenuItem {} {
               label {&New}
@@ -364,9 +369,7 @@ main_window->redraw();}
             }
             MenuItem {} {
               label {&Open}
-              callback {
-
-char *path = read_line( user_config_dir, "default_path" );
+              callback {char *path = read_line( user_config_dir, "default_path" );
 
 const char *name = fl_dir_chooser( "Open Project", path );
 
@@ -1107,7 +1110,7 @@ if ( logo_box->image() )
         code1 {o->label( NULL );}
       }
       Fl_Text_Editor notes_field {
-        label {Notes:} selected
+        label {Notes:}
         private xywh {20 420 480 245} color 47 selection_color 31 textsize 18 textcolor 92
         code0 {o->buffer( new Fl_Text_Buffer() );}
         code1 {o->buffer()->loadfile( "notes" );}

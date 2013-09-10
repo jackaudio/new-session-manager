@@ -234,17 +234,19 @@ Track::seek ( nframes_t frame )
 {
     THREAD_ASSERT( RT );
 
+    compute_latency_compensation();
+
     if ( playback_ds )
         return playback_ds->seek( frame );
 }
 
 void
-Track::delay ( nframes_t frames )
+Track::undelay ( nframes_t nframes )
 {
 //    THREAD_ASSERT( RT );
 
     if ( playback_ds )
-        playback_ds->delay( frames );
+        playback_ds->undelay( nframes );
 }
 
 /* THREAD: RT (non-RT) */
@@ -359,4 +361,22 @@ Track::finalize ( Capture *c, nframes_t frame )
     _capture_offset = 0;
 
     timeline->unlock();
+}
+
+void
+Track::compute_latency_compensation ( void )
+{
+    if ( Timeline::playback_latency_compensation && output.size() )
+    {
+        nframes_t min,max;
+        output[0].get_latency( JACK::Port::Output, &min, &max );
+
+        DMESSAGE( "Track %s, setting undelay to %lu", name(), (unsigned long)min);
+
+        undelay( min );
+    }
+    else
+    {
+        undelay( 0 );
+    }
 }

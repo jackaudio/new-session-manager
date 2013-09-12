@@ -1157,9 +1157,9 @@ Module::auto_disconnect_outputs ( void )
 }
 
 nframes_t
-Module::get_latency ( JACK::Port::direction_e dir ) const
+Module::get_latency ( JACK::Port::direction_e dir, nframes_t *min, nframes_t *max ) const
 {
-    nframes_t tmin = 0;
+    nframes_t tmin = JACK_MAX_FRAMES >> 1;
     nframes_t tmax = 0;
 
     if ( dir == JACK::Port::Input )
@@ -1168,21 +1168,23 @@ Module::get_latency ( JACK::Port::direction_e dir ) const
         {
             for ( unsigned int i = 0; i < aux_audio_input.size(); i++ )
             {
+                /* if ( ! aux_audio_input[i].jack_port()->connected() ) */
+                /*     continue; */
+
                 nframes_t min,max;
 
                 aux_audio_input[i].jack_port()->get_latency( dir, &min, &max );
 
-                tmin += min;
-                tmax += max;
+                if ( min < tmin )
+                    tmin = min;
+                if ( max > tmax )
+                    tmax = max;
             }
-
-            tmin /= aux_audio_input.size();
-            tmax /= aux_audio_input.size();
         }
-
-        return tmin;
-        /* for ( unsigned int i = 0; i < aux_audio_output.size(); i++ ) */
-        /*     aux_audio_output[i].set_latency( dir, tmin, tmax ); */
+        else
+        {
+            tmin = 0;
+        }
     }
     else
     {
@@ -1190,38 +1192,39 @@ Module::get_latency ( JACK::Port::direction_e dir ) const
         {
             for ( unsigned int i = 0; i < aux_audio_output.size(); i++ )
             {
+                /* if ( ! aux_audio_output[i].jack_port()->connected() ) */
+                /*     continue; */
+
                 nframes_t min,max;
 
                 aux_audio_output[i].jack_port()->get_latency( dir, &min, &max );
                 
-                tmin += min;
-                tmax += max;
+                if ( min < tmin )
+                    tmin = min;
+                if ( max > tmax )
+                    tmax = max;
             }
-            
-            tmin /= aux_audio_output.size();
-            tmax /= aux_audio_output.size();
         }
-        
-        return tmin;
-
-
-        /* for ( unsigned int i = 0; i < aux_audio_output.size(); i++ ) */
-        /*     aux_audio_output[i].set_latency( dir, tmin, tmax ); */
     }
+    
+    *min = tmin;
+    *max = tmax;
+
+    return 0;
 }
 
 void
-Module::set_latency ( JACK::Port::direction_e dir, nframes_t latency )
+Module::set_latency ( JACK::Port::direction_e dir, nframes_t min, nframes_t max )
 {
-    if ( dir == JACK::Port::Input )
+    if ( dir == JACK::Port::Output )
     {
-        for ( unsigned int i = 0; i < aux_audio_output.size(); i++ )
-            aux_audio_output[i].jack_port()->set_latency( dir, latency, latency );
+        for ( unsigned int i = 0; i < aux_audio_input.size(); i++ )
+            aux_audio_input[i].jack_port()->set_latency( dir, min, max );
     }
     else
     {
-        for ( unsigned int i = 0; i < aux_audio_input.size(); i++ )
-            aux_audio_input[i].jack_port()->set_latency( dir, latency, latency );
+        for ( unsigned int i = 0; i < aux_audio_output.size(); i++ )
+            aux_audio_output[i].jack_port()->set_latency( dir, min, max );
     }
 }
 

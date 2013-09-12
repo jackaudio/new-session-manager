@@ -399,24 +399,57 @@ Chain::configure_ports ( void )
 void
 Chain::set_latency ( JACK::Port::direction_e dir )
 {
-    nframes_t total_latency = 0;
+    nframes_t tmax = 0;
+    nframes_t tmin = 0;
+    nframes_t added = 0;
 
     if ( dir == JACK::Port::Input )
     {
         for ( int i = 0; i < modules(); ++i )
         {
             Module *m = module( i );
-            total_latency += m->get_latency( dir );
-            m->set_latency( dir, total_latency );
+            nframes_t min,max;
+
+            /* added = m->get_latency( JACK::Port::Input, &min, &max ); */
+            added += m->get_latency( JACK::Port::Input, &min, &max );
+
+            min += added;
+            max += added;
+
+            if ( min > tmin )
+                tmin = min;
+            if ( max > tmax )
+                tmax = max;
+
+            m->set_latency( dir, tmin, tmax );
         }
     }
     else
     {
+        tmin = JACK_MAX_FRAMES >> 1;
+
         for ( int i = modules(); i--; )
         {
             Module *m = module( i );
-            total_latency += m->get_latency( dir );
-            m->set_latency( dir, total_latency );
+
+            nframes_t min,max;
+
+            added += m->get_latency( JACK::Port::Output, &min, &max );
+
+            min += added;
+            max += added;
+
+            if ( min < tmin )
+                tmin = min;
+            if ( max > tmax )
+                tmax = max;
+
+            DMESSAGE( "Chain %s/%s: setting %s latency minimum to %lu", name(), 
+                      m->name(), 
+                      dir == JACK::Port::Input ? "Capture" : "Playback",
+                      (unsigned long)tmin);
+
+            m->set_latency( dir, tmin, tmax );
         }
     }
 }

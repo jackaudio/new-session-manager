@@ -312,18 +312,20 @@ Track::record ( Capture *c, nframes_t frame )
     {
         /* in freewheeling mode, assume we're bouncing and only
          * compensate for capture latency */
-        _capture_offset = min;
+        _capture_offset = max;
     }
     else
     {
         /* not freewheeling, so assume we're overdubbing and need to
          * compensate for both capture and playback latency */
-        _capture_offset = min;
+        _capture_offset = max;
         
         /* since the track output might not be connected to
          * anything, just get the playback latency */
-        
-        _capture_offset += engine->playback_latency();
+        /* When playback latency compensation is enabled, this will
+         * have already been done. */
+        if ( ! Timeline::playback_latency_compensation ) 
+            _capture_offset += engine->playback_latency();
     }
 }
 
@@ -371,9 +373,13 @@ Track::compute_latency_compensation ( void )
         nframes_t min,max;
         output[0].get_latency( JACK::Port::Output, &min, &max );
 
-        DMESSAGE( "Track %s, setting undelay to %lu", name(), (unsigned long)min);
+        DMESSAGE( "Track %s, setting undelay to %lu", name(), (unsigned long)max);
+        char s[256];
+        snprintf( s, sizeof(s), "Latency Comp: -%lu", (unsigned long)max);
+        
+        copy_tooltip(s);
 
-        undelay( min );
+        undelay( max );
     }
     else
     {

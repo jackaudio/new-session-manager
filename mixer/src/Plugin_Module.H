@@ -67,7 +67,7 @@ private:
 
     volatile nframes_t _latency;
     nframes_t _last_latency;
-
+    
     nframes_t get_plugin_latency ( void ) const;
 
     void init ( void );
@@ -112,7 +112,7 @@ private:
 public:
 
     virtual void update ( void );
-    virtual nframes_t get_latency ( JACK::Port::direction_e dir ) const;
+    virtual nframes_t get_latency ( JACK::Port::direction_e dir, nframes_t *min, nframes_t *max ) const;
 
     static std::list<Plugin_Info> get_all_plugins ( void );
 

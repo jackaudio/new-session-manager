@@ -72,8 +72,8 @@ protected:
 
 public:
 
-    virtual nframes_t get_latency ( JACK::Port::direction_e dir ) const;
-    virtual void set_latency ( JACK::Port::direction_e dir, nframes_t latency );
+    virtual nframes_t get_latency ( JACK::Port::direction_e dir, nframes_t *min, nframes_t *max ) const;
+    virtual void set_latency ( JACK::Port::direction_e dir, nframes_t min, nframes_t max );
 
     /* true if this module was added by default and not under normal user control */
     bool is_default ( void ) const { return _is_default; }

@@ -420,15 +420,12 @@ Plugin_Module::get_plugin_latency ( void ) const
     return 0;
 }
 
-
 nframes_t
-Plugin_Module::get_latency ( JACK::Port::direction_e dir ) const
+Plugin_Module::get_latency ( JACK::Port::direction_e dir, nframes_t *min, nframes_t *max ) const
 {
-    nframes_t latency = Module::get_latency( dir );
+    Module::get_latency( dir, min, max );
     
-    latency += get_plugin_latency();
-
-    return latency;
+    return get_plugin_latency();
 }
 
 bool

@@ -31,8 +31,10 @@ test_press ( unsigned long e )
     if ( Fl::event_text()[0] )
         ((char *)Fl::event_text())[0] = '\0';
 
-    if ( ! ( e & FL_SHIFT ) )
-        return Fl::test_shortcut( e ) && ! Fl::event_shift();
+    const int mod_mask = FL_SHIFT | FL_ALT | FL_CTRL;
+
+    if ( ( e & mod_mask ) != ( Fl::event_state() & mod_mask ) )
+        return false;
     else
         return Fl::test_shortcut( e );
 }

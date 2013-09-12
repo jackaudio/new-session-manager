@@ -197,7 +197,7 @@ Meter_Indicator_Module::handle ( int m )
             if ( Fl::event_button3() && _disable_context_menu )
                 return 0;
 
-            if ( Fl::event_button1() )
+            if ( test_press( FL_BUTTON1 ) )
             {
                 /* don't let Module::handle eat our click */
                 return Fl_Group::handle( m );

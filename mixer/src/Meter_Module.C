@@ -150,12 +150,13 @@ Meter_Module::handle ( int m )
     {
         case FL_PUSH:
         {
+            int r = 0;
             if ( test_press( FL_BUTTON1 ) )
             {
                 /* don't let Module::handle eat our click */
-                return Fl_Group::handle( m );
+                r = Fl_Group::handle( m );
             }
-            return Module::handle( m );
+            return Module::handle( m ) || r;
         }
     }
 

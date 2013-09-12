@@ -80,6 +80,7 @@ const int marks [] = { -70, -50, -40, -30, -20, -10, -3, 0, 4 };
 void
 DPM::draw_label ( void )
 {
+
     /* dirty hack */
     if ( parent()->child( 0 ) == this )
     {
@@ -107,7 +108,7 @@ DPM::draw_label ( void )
 
                 int v = h() *  deflection( (float)marks[ i ] );
 
-                fl_draw( pat, x() - 20, (y() + h() - 8) - v, 19, 8, (Fl_Align) (FL_ALIGN_RIGHT | FL_ALIGN_TOP) );
+                fl_draw( pat, x() - 20, (y() + h() - 4) - v, 19, 8, (Fl_Align) (FL_ALIGN_RIGHT | FL_ALIGN_TOP) );
             }
         }
     }
@@ -117,16 +118,27 @@ void
 DPM::resize ( int X, int Y, int W, int H )
 {
     int old_segments = _segments;
+  
+    Fl_Widget::resize( X, Y, W, H );
+    
+    int tx,ty,tw,th;
+    bbox(tx,ty,tw,th);
 
     if ( type() == FL_HORIZONTAL )
-        _segments = floor( W / (double)_pixels_per_segment );
+        _segments = floor( tw / (double)_pixels_per_segment );
     else
-        _segments = floor( H / (double)_pixels_per_segment );
+        _segments = floor( th / (double)_pixels_per_segment );
     
     if ( old_segments != _segments )
         _last_drawn_hi_segment = 0;
-    
-    Fl_Widget::resize( X, Y, W, H );
+}
+
+void DPM::bbox ( int &X, int &Y, int &W, int &H )
+{
+    X = x() + 2;
+    Y = y() + 2;
+    W = w() - 4;
+    H = h() - 4;
 }
 
 void
@@ -135,18 +147,18 @@ DPM::draw ( void )
     snprintf( peak_string, sizeof( peak_string ), "%.1f", peak() );
     tooltip( peak_string );
 
-    int X = x() + 2;
-    int Y = y() + 2;
-    int W = w() - 4;
-    int H = h() - 4;
+    int X,Y,W,H;
+    bbox(X,Y,W,H);
 
     int v = pos( value() );
     int pv = pos( peak() );
-
+    
     int clipv = pos( 0 );
 
-    int bh = h() / _segments;
-    int bw = w() / _segments;
+    int bh = H / _segments;
+    /*  int bh = _pixels_per_segment; */
+    /* int bw = _pixels_per_segment; */
+    int bw = W / _segments;
 
     if ( damage() & FL_DAMAGE_ALL )
     {
@@ -160,7 +172,7 @@ DPM::draw ( void )
     const int active = active_r();
 
     int hi, lo;
-
+ 
     /* only draw as many segments as necessary */
     if ( damage() == FL_DAMAGE_USER1 )
     {
@@ -186,13 +198,18 @@ DPM::draw ( void )
     for ( int p = lo; p <= hi; p++ )
     {
         Fl_Color c;
-        
-        if ( p > v && p != pv )
-            c = dim_div_color( p );
-        else if ( p != clipv )
+
+        if ( p <= v )
+        {
+            if (  p == clipv )
+                c = fl_color_average( FL_YELLOW, div_color( p ), 0.40 );
+            else
+                c = div_color( p );
+        }
+        else if ( p == pv )
             c = div_color( p );
         else
-            c = fl_color_average( FL_YELLOW, div_color( p ), 0.40 );
+            c = dim_div_color( p );
         
         if ( ! active )
             c = fl_inactive( c );
@@ -207,11 +224,11 @@ DPM::draw ( void )
         }
         else
         {
-            yy = Y + H - ((p + 1) * bh);
+            yy = Y + H - ((p+1) * bh);
             fl_rectf( X, yy, W, bh, c );
         }
         
-        if ( _pixels_per_segment > 3 )
+        if ( _pixels_per_segment >= 3 )
         {
             fl_color( FL_DARK1 );
 

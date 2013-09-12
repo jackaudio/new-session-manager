@@ -35,7 +35,9 @@ class DPM : public Meter
 
     int pos ( float v )
         {
-            return deflection( v ) * _segments;
+            float pv = deflection( v ) * ( _segments - 1 );
+            
+            return pv;
         }
 
     static float _dim;
@@ -60,6 +62,8 @@ protected:
     virtual void draw_label ( void );
     virtual void draw ( void );
     virtual void resize ( int, int, int, int );
+
+    void bbox ( int &X, int &Y, int &W, int &H );
 
 public:
 
@@ -97,7 +101,7 @@ public:
                     _gradient[ j ] = fl_color_average( c[i+1], c[i], ( k ) / (float)(b[i+1] - b[i] ));
             }
 
-            for ( int i = 0; i < 127; i++ )
+            for ( int i = 0; i < 128; i++ )
                 _dim_gradient[ i ] = fl_color_average( FL_BLACK, _gradient[ i ], _dim );
         }
 };

@@ -769,10 +769,7 @@ LADSPAInfo::CheckPlugin(const LADSPA_Descriptor *desc)
 			"WARNING: Plugin cannot use in place processing");
 	test(desc->PortCount, "WARNING: Plugin has no ports");
         test(desc->Name, "WARNING: Plugin has no name" );
-        
-        test( !( LADSPA_IS_INPLACE_BROKEN( desc->Properties ) ), "WARNING: plugin inplace processing is broken" );
-
-        test ( LADSPA_IS_HARD_RT_CAPABLE( desc->Properties ), "WARNING: Plugin is not RT incapable" );
+        test(LADSPA_IS_HARD_RT_CAPABLE( desc->Properties ), "WARNING: Plugin is not RT capable" );
 
 	return true;
 }

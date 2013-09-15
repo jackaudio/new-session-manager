@@ -46,7 +46,6 @@ class Module : public Fl_Group, public Loggable {
     nframes_t _nframes;
     Chain *_chain;
     bool _is_default;
-//    nframes_t _latency;
 
     static nframes_t _sample_rate;
     static Module *_copied_module_empty;
@@ -72,7 +71,9 @@ protected:
 
 public:
 
-    virtual nframes_t get_latency ( JACK::Port::direction_e dir, nframes_t *min, nframes_t *max ) const;
+    virtual nframes_t get_module_latency ( void ) const { return 0; }
+
+    virtual void get_latency ( JACK::Port::direction_e dir, nframes_t *min, nframes_t *max ) const;
     virtual void set_latency ( JACK::Port::direction_e dir, nframes_t min, nframes_t max );
 
     /* true if this module was added by default and not under normal user control */
@@ -80,6 +81,8 @@ public:
     void is_default ( bool v ) { _is_default = v; }
     
     virtual void update ( void ) {}
+
+    virtual void update_tooltip ( void );
 
     class Port
     {

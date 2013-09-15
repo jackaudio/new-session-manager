@@ -151,6 +151,8 @@ Plugin_Module::update ( void )
     }
 
     _last_latency = _latency;
+
+    update_tooltip();
 }
 
 int
@@ -407,7 +409,7 @@ Plugin_Module::bypass ( bool v )
 }
 
 nframes_t
-Plugin_Module::get_plugin_latency ( void ) const
+Plugin_Module::get_module_latency ( void ) const
 {
     for ( unsigned int i = ncontrol_outputs(); i--; )
     {
@@ -418,14 +420,6 @@ Plugin_Module::get_plugin_latency ( void ) const
     } 
     
     return 0;
-}
-
-nframes_t
-Plugin_Module::get_latency ( JACK::Port::direction_e dir, nframes_t *min, nframes_t *max ) const
-{
-    Module::get_latency( dir, min, max );
-    
-    return get_plugin_latency();
 }
 
 bool
@@ -808,7 +802,7 @@ Plugin_Module::process ( nframes_t nframes )
         for ( unsigned int i = 0; i < _idata->handle.size(); ++i )
             _idata->descriptor->run( _idata->handle[i], nframes );
 
-        _latency = get_plugin_latency();
+        _latency = get_module_latency();
     }
 }
 

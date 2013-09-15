@@ -125,6 +125,7 @@ Module::~Module ( )
 
 
 
+
 void
 Module::init ( void )
 {
@@ -143,9 +144,18 @@ Module::init ( void )
 
     labelsize(12);
     color( fl_rgb_color( 122,190,200 ) );
-    tooltip( "Left click to edit parameters; Ctrl + left click to select; right click or MENU key for menu." );
+    tooltip();
 }
 
+void
+Module::update_tooltip ( void )
+{
+    char *s;
+    asprintf( &s, "Left click to edit parameters; Ctrl + left click to select; right click or MENU key for menu. (info: latency: %lu)", (unsigned long) get_module_latency() );
+
+    copy_tooltip(s);
+    free(s);
+}
 
 void
 Module::get ( Log_Entry &e ) const
@@ -1156,61 +1166,43 @@ Module::auto_disconnect_outputs ( void )
     }
 }
 
-nframes_t
+void
 Module::get_latency ( JACK::Port::direction_e dir, nframes_t *min, nframes_t *max ) const
 {
     nframes_t tmin = JACK_MAX_FRAMES >> 1;
     nframes_t tmax = 0;
 
+    const std::vector<Port> *ports;
+
     if ( dir == JACK::Port::Input )
+        ports = &aux_audio_input;
+    else
+        ports = &aux_audio_output;
+
+    if ( ports->size() )
     {
-        if ( aux_audio_input.size() )
+        for ( unsigned int i = 0; i < ports->size(); i++ )
         {
-            for ( unsigned int i = 0; i < aux_audio_input.size(); i++ )
-            {
-                /* if ( ! aux_audio_input[i].jack_port()->connected() ) */
-                /*     continue; */
+            /* if ( ! ports->[i].jack_port()->connected() ) */
+            /*     continue; */
 
-                nframes_t min,max;
-
-                aux_audio_input[i].jack_port()->get_latency( dir, &min, &max );
-
-                if ( min < tmin )
-                    tmin = min;
-                if ( max > tmax )
-                    tmax = max;
-            }
-        }
-        else
-        {
-            tmin = 0;
+            nframes_t min,max;
+            
+            (*ports)[i].jack_port()->get_latency( dir, &min, &max );
+            
+            if ( min < tmin )
+                tmin = min;
+            if ( max > tmax )
+                tmax = max;
         }
     }
     else
     {
-        if ( aux_audio_output.size() )
-        {
-            for ( unsigned int i = 0; i < aux_audio_output.size(); i++ )
-            {
-                /* if ( ! aux_audio_output[i].jack_port()->connected() ) */
-                /*     continue; */
-
-                nframes_t min,max;
-
-                aux_audio_output[i].jack_port()->get_latency( dir, &min, &max );
-                
-                if ( min < tmin )
-                    tmin = min;
-                if ( max > tmax )
-                    tmax = max;
-            }
-        }
+        tmin = 0;
     }
     
     *min = tmin;
     *max = tmax;
-
-    return 0;
 }
 
 void

@@ -401,56 +401,41 @@ Chain::set_latency ( JACK::Port::direction_e dir )
 {
     nframes_t tmax = 0;
     nframes_t tmin = 0;
-    nframes_t added = 0;
+    nframes_t added_min = 0;
+    nframes_t added_max = 0;
 
-    if ( dir == JACK::Port::Input )
+    for ( int i = 0; i < modules(); i++ )
     {
-        for ( int i = 0; i < modules(); ++i )
+        Module *m;
+
+        if ( dir == JACK::Port::Input )
+            m = module( i );
+        else
+            m = module( (modules() - 1) - i );
+        
+        nframes_t min,max;
+        min = max = 0;
+        
+        nframes_t a = m->get_module_latency();
+        
+        added_min += a;
+        added_max += a;
+        
+        if ( dir == JACK::Port::Input ? m->aux_audio_input.size() : m->aux_audio_output.size() )
         {
-            Module *m = module( i );
-            nframes_t min,max;
-
-            /* added = m->get_latency( JACK::Port::Input, &min, &max ); */
-            added += m->get_latency( JACK::Port::Input, &min, &max );
-
-            min += added;
-            max += added;
-
-            if ( min > tmin )
-                tmin = min;
-            if ( max > tmax )
-                tmax = max;
-
-            m->set_latency( dir, tmin, tmax );
+            m->get_latency( dir, &min, &max );
+            
+            tmin = 0;
+            added_min = 0;
         }
-    }
-    else
-    {
-        tmin = JACK_MAX_FRAMES >> 1;
-
-        for ( int i = modules(); i--; )
-        {
-            Module *m = module( i );
-
-            nframes_t min,max;
-
-            added += m->get_latency( JACK::Port::Output, &min, &max );
-
-            min += added;
-            max += added;
-
-            if ( min < tmin )
-                tmin = min;
-            if ( max > tmax )
-                tmax = max;
-
-            DMESSAGE( "Chain %s/%s: setting %s latency minimum to %lu", name(), 
-                      m->name(), 
-                      dir == JACK::Port::Input ? "Capture" : "Playback",
-                      (unsigned long)tmin);
-
-            m->set_latency( dir, tmin, tmax );
-        }
+        
+        if ( min > tmin )
+            tmin = min;
+        if ( max > tmax )
+            tmax = max;
+        
+        m->set_latency( dir, tmin + added_min, tmax + added_max );
+        
     }
 }
 

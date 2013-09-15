@@ -370,16 +370,29 @@ Track::compute_latency_compensation ( void )
 {
     if ( Timeline::playback_latency_compensation && output.size() )
     {
-        nframes_t min,max;
-        output[0].get_latency( JACK::Port::Output, &min, &max );
+        nframes_t tmin,tmax;
+        
+        tmin = JACK_MAX_FRAMES >> 1;
+        tmax = 0;
 
-        DMESSAGE( "Track %s, setting undelay to %lu", name(), (unsigned long)max);
+        for ( unsigned int i = 0; i < output.size(); i++ )
+        {
+            nframes_t min,max;
+            output[i].get_latency( JACK::Port::Output, &min, &max );
+            
+            if ( max > tmax )
+                tmax = max;
+            if ( min < tmin )
+                tmin = min;
+        }
+
+        DMESSAGE( "Track %s, setting undelay to %lu", name(), (unsigned long)tmax);
         char s[256];
-        snprintf( s, sizeof(s), "Latency Comp: -%lu", (unsigned long)max);
+        snprintf( s, sizeof(s), "Latency Comp: -%lu", (unsigned long)tmax);
         
         copy_tooltip(s);
 
-        undelay( max );
+        undelay( tmax );
     }
     else
     {

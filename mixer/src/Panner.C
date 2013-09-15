@@ -41,7 +41,6 @@ Panner::Panner ( int X, int Y, int W, int H, const char *L ) :
     _bg_image = 0;
     _bg_image_scaled = 0;
     _bg_image_projection = 0;
-    _range = 15.0f;
 //    _projection = POLAR;
     _points.push_back( Point( 1, 0 ) );
     

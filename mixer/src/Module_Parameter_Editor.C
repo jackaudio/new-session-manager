@@ -39,14 +39,15 @@
 #include "Controller_Module.H"
 #include "Chain.H"
 #include "Panner.H"
-
+#include <FL/fl_ask.H>
 #include "debug.h"
+#include <FL/Fl_Menu_Button.H>
 
-
-
+#include "FL/test_press.H"
+#include "FL/menu_popup.H"
 
 
-Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_Window( 900,900 )
+Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_Window( 900,240)
 {
     _module = module;
     _resized = false;
@@ -81,7 +82,7 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
             o->add( "Horizontal Sliders" );
             o->add( "Vertical Sliders" );
             o->label( NULL );
-            o->value( 0 );
+            o->value( 1 );
             o->when( FL_WHEN_CHANGED );
             o->callback( cb_mode_handle, this );
         }
@@ -141,19 +142,23 @@ Module_Parameter_Editor::make_controls ( void )
     
     if ( mode_choice->value() == 1 )
     {
-        control_pack->flow(false);
-        control_pack->type( FL_VERTICAL );
-        control_pack->size( 450, 24 );
+        control_pack->flow(true);
+        control_pack->flowdown(true);
+        control_pack->vspacing(0);
+        control_pack->type( FL_HORIZONTAL );
+        control_pack->size( 900, 240 );
     }
     else if ( mode_choice->value() == 2 )
     {
-        control_pack->flow(false);
+        control_pack->flow(true);
+        control_pack->flowdown(false);
         control_pack->type( FL_HORIZONTAL );
-        control_pack->size( 24, 350 );
+        control_pack->size( 900, 350 );
     }
     else if ( mode_choice->value() == 0 )
     {
         control_pack->flow(true);
+        control_pack->flowdown(false);
         control_pack->type( FL_HORIZONTAL );
         control_pack->size( 700, 50 );
         
@@ -193,7 +198,7 @@ Module_Parameter_Editor::make_controls ( void )
 
         if ( p->hints.type == Module::Port::Hints::BOOLEAN )
         {
-            Fl_Button *o = new Fl_Button( 0, 0, 30, 30, p->name() );
+            Fl_Button *o = new Fl_Button( 0, 0, 24, 24, p->name() );
             w = o;
             o->selection_color( fc );
             o->type( FL_TOGGLE_BUTTON );
@@ -255,7 +260,7 @@ Module_Parameter_Editor::make_controls ( void )
                     o->type( FL_HORIZONTAL );
 
                     o->align( FL_ALIGN_RIGHT );
-                    o->size( 300, 24 );
+                    o->size( 200, 24 );
                     if ( p->hints.ranged )
                     {
                         o->minimum( p->hints.minimum );
@@ -267,7 +272,7 @@ Module_Parameter_Editor::make_controls ( void )
                     o->type( FL_VERTICAL );
                     o->align(FL_ALIGN_TOP);
 
-                    o->size( 24, 300 );
+                    o->size( 24, 200 );
                     /* have to reverse the meaning of these to get the
                      * orientation of the slider right */
                     o->maximum( p->hints.minimum );
@@ -295,8 +300,6 @@ Module_Parameter_Editor::make_controls ( void )
 
         w->tooltip( p->osc_path() );
 
-        Fl_Button *bound;
-
 
         _callback_data.push_back( callback_data( this, i ) );
 
@@ -305,47 +308,12 @@ Module_Parameter_Editor::make_controls ( void )
         else
             w->callback( cb_value_handle, &_callback_data.back() );
 
-        { Fl_Group *o = new Fl_Group( 0, 0, 50, 75 );
-            {
-                Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( w );
+        {
+            Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( w );
 
-                { Fl_Button *o = bound = new Fl_Button( 0, 50, 14, 14 );
-                    o->selection_color( FL_YELLOW );
-                    o->type( 0 );
-                    o->labelsize( 8 );
+            flg->set_visible_focus();
 
-                    o->value( p->connected() );
-
-                    o->callback( cb_bound_handle, &_callback_data.back() );
-                }
-
-//                flg->resizable(w);
-                o->resizable( 0 );
-                o->end();
-
-                o->set_visible_focus();
-                flg->set_visible_focus();
-
-                flg->position( o->x(), o->y() );
-
-                if ( mode_choice->value() == 1 )
-                {
-                    bound->position( flg->x() + 450 - bound->w(), o->y() );
-                    o->size( flg->w() + bound->w(), flg->h() );
-                }
-                else
-                {
-                    bound->position( o->x(), flg->y() + flg->h() );
-                    o->size( flg->w(), flg->h() + bound->h() );
-                }
-                o->init_sizes();
-                //  o->resizable(flg);
-            }
-
-            if (! p->hints.visible )
-                o->hide();
-
-            control_pack->add( o );
+            control_pack->add( flg );
         }
 
     }
@@ -412,9 +380,9 @@ Module_Parameter_Editor::update_control_visibility ( void )
         const Module::Port *p = &_module->control_input[i];
 
         if ( p->hints.visible )
-            controls_by_port[i]->parent()->parent()->show();
+            controls_by_port[i]->parent()->show();
         else
-            controls_by_port[i]->parent()->parent()->hide();
+            controls_by_port[i]->parent()->hide();
     }
 }
 
@@ -450,18 +418,6 @@ void
 Module_Parameter_Editor::cb_mode_handle ( Fl_Widget *, void *v )
 {
     ((Module_Parameter_Editor*)v)->make_controls();
-}
-
-void
-Module_Parameter_Editor::cb_bound_handle ( Fl_Widget *w, void *v )
-{
-    callback_data *cd = (callback_data*)v;
-
-    Fl_Button *fv = (Fl_Button*)w;
-
-   fv->value( 1 );
-
-   cd->base_widget->bind_control( cd->port_number[0] );
 }
 
 void
@@ -524,6 +480,7 @@ Module_Parameter_Editor::handle_control_changed ( Module::Port *p )
     }
 }
 
+
 void
 Module_Parameter_Editor::reload ( void )
 {
@@ -542,4 +499,74 @@ Module_Parameter_Editor::set_value (int i, float value )
             _module->control_input[i].connected_port()->module()->handle_control_changed( _module->control_input[i].connected_port() );
     }
 //    _module->handle_control_changed( &_module->control_input[i] );
+}
+
+void
+Module_Parameter_Editor::menu_cb ( Fl_Widget *w, void *v )
+{
+    ((Module_Parameter_Editor*)v)->menu_cb((Fl_Menu_*)w);
+}
+
+void
+Module_Parameter_Editor::menu_cb ( Fl_Menu_* m )
+{
+ char picked[256];
+
+    if ( ! m->mvalue() || m->mvalue()->flags & FL_SUBMENU_POINTER || m->mvalue()->flags & FL_SUBMENU )
+        return;
+
+    strncpy( picked, m->mvalue()->label(), sizeof( picked ) );
+
+//    m->item_pathname( picked, sizeof( picked ) );
+
+    DMESSAGE( "%s", picked );
+
+    if ( ! strcmp( picked, "Bind" ) )
+    {
+        bind_control( _selected_control );
+    }
+}
+
+Fl_Menu_Button &
+Module_Parameter_Editor::menu ( void ) const
+{
+    static Fl_Menu_Button m( 0, 0, 0, 0, "Control" );
+
+    m.clear();
+
+    m.add( "Bind", 0, 0, 0, FL_MENU_RADIO | (_module->control_input[_selected_control].connected() ? FL_MENU_VALUE : 0 ));
+//    m.add( "Unbind", 0, &Module::menu_cb, this, 0, FL_MENU_RADIO );
+
+   m.callback( menu_cb, (void*)this );
+
+    return m;
+}
+
+int
+Module_Parameter_Editor::handle ( int m )
+{
+    switch ( m )
+    {
+        case FL_PUSH:
+            if ( test_press( FL_BUTTON3 ) )
+            {
+                for ( unsigned int i = 0; i < controls_by_port.size(); i++ )
+                {
+                    if ( Fl::event_inside( controls_by_port[i] ) )
+                    {
+                        _selected_control = i;
+
+                        Fl_Menu_Button &m = menu();
+                        
+                        menu_popup(&m,Fl::event_x(), Fl::event_y());
+                
+                        return 1;
+                    }
+                }
+                return 0;
+            }
+    
+    }
+    
+    return Fl_Group::handle(m);
 }

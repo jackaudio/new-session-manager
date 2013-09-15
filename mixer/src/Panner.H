@@ -136,10 +136,7 @@ public:
     };
 
 private:
-    
-    float _range;
-
-    
+  
     vector <Point> _points;
 
     static int _configs[][12];

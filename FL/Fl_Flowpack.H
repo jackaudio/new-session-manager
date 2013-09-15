@@ -112,7 +112,8 @@ public:
             int LX = 0;
             int LY = 0;
             int RH = 0;
-            int RY = 0;
+//            int RY = 0;
+            int CW = 0;
 
             if ( _flow )
             {
@@ -136,34 +137,44 @@ public:
                 {
                     if ( _flowdown )
                     {
-                        if ( (Y - RY) + o->h() < RH )
+                        if ( Y + o->h() <= _initial_height )
                         {
                             /* if it'll fit in this column, put it below the previous widget */
                             X = LX;
                         }
                         else
-                            Y = 0;
-                    }
-                    else if ( X + o->w() >= _initial_width )
-                    {
-                        /* maybe wrap to the next row */
-                        H += RH + _vspacing;
-                        RY = Y;
-                        RH = 0;
-                        if ( X > W )
-                            W = X;
+                        {
+                            Y = H;
+                            CW = 0;
+                        }
 
-                        X = 0;
+                        CW = o->w() > CW ? o->w() : CW;
+                        RH = Y + o->h() > RH ? Y + o->h() : RH;
                     }
                     else
                     {
-                        /* otherwise, put it in the next column */
-                        Y = H;
-                    }                   
+                        if ( X + o->w() >= _initial_width )
+                        {
+                            /* maybe wrap to the next row */
+                            H += RH + _vspacing;
+//                        RY = Y;
+                            RH = 0;
+                            if ( X > W )
+                                W = X;
 
+                            X = 0;
+                        }
+                        else
+                        {
+                            /* otherwise, put it in the next column */
+                            Y = H;
+
+                        }                   
+
+                        RH = o->h() > RH ? o->h() : RH;
+
+                    }
                 }
-
-                RH = o->h() > RH ? o->h() : RH;
 
                 LW = o->w();
                 LH = o->h();
@@ -174,11 +185,15 @@ public:
                 if ( _flow )
                 {
                     if ( _flowdown )
+                    {
                         Y += LH + _vspacing;
+                        X += CW + _hspacing;
+                    }
                     else
+                    {
                         Y += RH + _vspacing;
-
-                    X += LW + _hspacing;
+                        X += LW + _hspacing;
+                    }
                 }
                 else
                 {
@@ -212,8 +227,11 @@ public:
                 H += RH;
                 if ( X > W )
                     W = X;
-            }
 
+                /* if ( _flowdown ) */
+                /*     H = _initial_height; */
+            }
+            
             Fl_Group::resize( x(), y(), W, H );
         }
 };

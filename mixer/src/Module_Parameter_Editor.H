@@ -77,11 +77,15 @@ class Module_Parameter_Editor : public Fl_Double_Window
     void bind_control ( int i );
     void make_controls ( void );
     
+    static void menu_cb ( Fl_Widget *w, void *v );
+    void menu_cb ( Fl_Menu_ *m );
+    
     Fl_Scroll *control_scroll;
     Fl_Flowpack *control_pack;
     Fl_Menu_Button *mode_choice;
     bool _resized;
     int _min_width;
+    int _selected_control;
 
     int azimuth_port_number;
     int elevation_port_number;
@@ -90,11 +94,14 @@ class Module_Parameter_Editor : public Fl_Double_Window
     std::list<callback_data> _callback_data;
     std::vector<Fl_Widget*> controls_by_port;  
 
+    Fl_Menu_Button &menu ( void ) const;
+
 public:
 
     void reload ( void );
     void handle_control_changed ( Module::Port *p );
 
+    int handle ( int m );
     Module_Parameter_Editor ( Module *module );
     virtual ~Module_Parameter_Editor ( );
 };

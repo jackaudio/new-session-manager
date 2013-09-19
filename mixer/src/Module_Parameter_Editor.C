@@ -142,14 +142,17 @@ Module_Parameter_Editor::make_controls ( void )
     
     if ( mode_choice->value() == 1 )
     {
+        control_pack->vspacing( 1 );
+        control_pack->hspacing( 10 );
         control_pack->flow(true);
         control_pack->flowdown(true);
-        control_pack->vspacing(0);
         control_pack->type( FL_HORIZONTAL );
         control_pack->size( 900, 240 );
     }
     else if ( mode_choice->value() == 2 )
     {
+        control_pack->vspacing( 10 );
+        control_pack->hspacing( 10 );
         control_pack->flow(true);
         control_pack->flowdown(false);
         control_pack->type( FL_HORIZONTAL );
@@ -157,6 +160,8 @@ Module_Parameter_Editor::make_controls ( void )
     }
     else if ( mode_choice->value() == 0 )
     {
+        control_pack->vspacing( 10 );
+        control_pack->hspacing( 10 );
         control_pack->flow(true);
         control_pack->flowdown(false);
         control_pack->type( FL_HORIZONTAL );
@@ -242,6 +247,7 @@ Module_Parameter_Editor::make_controls ( void )
                 o->selection_color( fc );
                 o->value( p->control_value() );
                 o->align(FL_ALIGN_TOP);
+                o->box( FL_DOWN_BOX );
 
                 o->precision( 2 );
                 /* a couple of plugins have ridiculously small units */
@@ -285,7 +291,7 @@ Module_Parameter_Editor::make_controls ( void )
                     o->precision( 5 );
 
                 o->textsize( 8 );
-                o->box( FL_NO_BOX );
+//                o->box( FL_NO_BOX );
                 o->slider( FL_UP_BOX );
                 o->color( bc );
                 o->selection_color( fc );

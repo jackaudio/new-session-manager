@@ -249,12 +249,22 @@ Module_Parameter_Editor::make_controls ( void )
                 o->align(FL_ALIGN_TOP);
                 o->box( FL_DOWN_BOX );
 
-                o->precision( 2 );
                 /* a couple of plugins have ridiculously small units */
-                if ( p->hints.maximum < 0.5f )
-                    o->precision( 5 );
+                float r =  fabs( p->hints.maximum - p->hints.minimum );
 
-//                o->step( fabs( ( o->maximum() - o->minimum() ) ) / 32.0f );
+                if ( r  <= 0.01f )
+                    o->precision( 4 );
+                else if ( r <= 0.1f )
+                    o->precision( 3 );
+                else if ( r <= 100.0f )
+                    o->precision( 2 );
+                else if ( r <= 5000.0f )
+                    o->precision( 1 );
+                /* else if ( r <= 10000.0f ) */
+                /*     o->precision( 1 ); */
+                else
+                    o->precision( 0 );
+
             }
             else
             {
@@ -285,10 +295,21 @@ Module_Parameter_Editor::make_controls ( void )
                     o->minimum( p->hints.maximum );
                 }
                 
-                o->precision( 2 );
                 /* a couple of plugins have ridiculously small units */
-                if ( p->hints.maximum < 0.5f )
-                    o->precision( 5 );
+                float r =  fabs( p->hints.maximum - p->hints.minimum );
+              
+                if ( r  <= 0.01f )
+                    o->precision( 4 );
+                else if ( r <= 0.1f )
+                    o->precision( 3 );
+                else if ( r <= 100.0f )
+                    o->precision( 2 );
+                else if ( r <= 5000.0f )
+                    o->precision( 1 );
+                /* else if ( r <= 10000.0f ) */
+                /*     o->precision( 1 ); */
+                else
+                    o->precision( 0 );
 
                 o->textsize( 8 );
 //                o->box( FL_NO_BOX );

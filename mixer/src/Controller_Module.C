@@ -467,6 +467,8 @@ Controller_Module::connect_to ( Port *p )
             }
         }
 
+        o->precision(2);
+
         o->value( p->control_value() );
 
         _type = SLIDER;
@@ -813,9 +815,8 @@ Controller_Module::menu ( void )
 void
 Controller_Module::draw ( void )
 {
-    draw_box(x(),y(),w(),h());
     Fl_Group::draw();
-    
+    draw_box(x(),y(),w(),h());
 
     if ( learn_mode() )
     {

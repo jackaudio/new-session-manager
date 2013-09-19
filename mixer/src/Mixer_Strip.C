@@ -649,6 +649,7 @@ Mixer_Strip::init ( )
                     o->spacing( 20 );
                     o->type( Fl_Scalepack::HORIZONTAL );
                     { Controller_Module *o = gain_controller = new Controller_Module( true );
+                        o->horizontal(false);
                         o->pad( false );
                         o->size( 33, 100 );
                     }

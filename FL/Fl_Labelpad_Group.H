@@ -67,7 +67,8 @@ public:
             {
                 /* TODO: other alignments */
             }
-                                               
+                         
+            resizable(o);
             init_sizes();
         }
 

@@ -432,7 +432,7 @@ Module_Parameter_Editor::bind_control ( int i )
     Controller_Module *o = new Controller_Module();
     o->label( p->name() );
     o->chain( _module->chain() );
-
+    o->horizontal( true );
     o->connect_to( p );
 
     _module->chain()->add_control( o );

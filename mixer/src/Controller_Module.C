@@ -57,6 +57,7 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
 //    label( "" );
     box( FL_NO_BOX );
 
+    _horizontal = true;
     _pad = true;
     control = 0;
     control_value =0.0f;
@@ -426,50 +427,70 @@ Controller_Module::connect_to ( Port *p )
 
         o->value( p->control_value() );
     }
-    else if ( p->hints.type == Module::Port::Hints::LOGARITHMIC )
+    //  else if ( p->hints.type == Module::Port::Hints::LOGARITHMIC )
+    else
     {
         Fl_Value_SliderX *o = new Fl_Value_SliderX(0, 0, 30, 250, p->name() );
         control = o;
         w = o;
 
-        o->type(4);
+        if ( ! _horizontal )
+        {
+            o->size( 30, 250 );
+            o->type(FL_VERT_NICE_SLIDER);
+        }
+        else
+        {
+            o->size(250,20);
+            o->type(FL_HOR_NICE_SLIDER);
+        }
+
+//        o->type(4);
         o->color( FL_BACKGROUND2_COLOR );
         o->selection_color( fl_color_average( FL_GRAY, FL_CYAN, 0.5 ) );
         o->minimum(1.5);
         o->maximum(0);
         o->value(1);
-        o->textsize(9);
+//        o->textsize(9);
 
         if ( p->hints.ranged )
         {
-            o->minimum( p->hints.maximum );
-            o->maximum( p->hints.minimum );
+            if ( ! _horizontal )
+            {
+                o->minimum( p->hints.maximum );
+                o->maximum( p->hints.minimum );
+            }
+            else
+            {
+                o->minimum( p->hints.minimum );
+                o->maximum( p->hints.maximum );
+            }
         }
 
         o->value( p->control_value() );
 
         _type = SLIDER;
     }
-    else
-    {
-        { Fl_DialX *o = new Fl_DialX( 0, 0, 50, 50, p->name() );
-            w = o;
-            control = o;
+    /* else */
+    /* { */
+    /*     { Fl_DialX *o = new Fl_DialX( 0, 0, 50, 50, p->name() ); */
+    /*         w = o; */
+    /*         control = o; */
 
-            if ( p->hints.ranged )
-            {
-                DMESSAGE( "Min: %f, max: %f", p->hints.minimum, p->hints.maximum );
-                o->minimum( p->hints.minimum );
-                o->maximum( p->hints.maximum );
-            }
+    /*         if ( p->hints.ranged ) */
+    /*         { */
+    /*             DMESSAGE( "Min: %f, max: %f", p->hints.minimum, p->hints.maximum ); */
+    /*             o->minimum( p->hints.minimum ); */
+    /*             o->maximum( p->hints.maximum ); */
+    /*         } */
             
-            o->color( fl_darker( FL_GRAY ) );
-            o->selection_color( FL_WHITE );
-            o->value( p->control_value() );
-        }
+    /*         o->color( fl_darker( FL_GRAY ) ); */
+    /*         o->selection_color( FL_WHITE ); */
+    /*         o->value( p->control_value() ); */
+    /*     } */
 
-        _type = KNOB;
-    }
+    /*     _type = KNOB; */
+    /* } */
 
     control_value = p->control_value();
 
@@ -485,6 +506,8 @@ Controller_Module::connect_to ( Port *p )
         size( flg->w(), flg->h() );
         flg->position( x(), y() );
         add( flg );
+        resizable(flg);
+//        init_sizes();
     }
     else
     {
@@ -500,7 +523,7 @@ Controller_Module::connect_to ( Port *p )
         w->resize( x(), y(), this->w(), h() );
         add( w );
         resizable( w );
-//       init_sizes();
+        init_sizes();
     }
 }
 

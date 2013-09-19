@@ -38,7 +38,7 @@ class Controller_Module;
 class Chain : public Fl_Group, public Loggable {
 
     Fl_Flip_Button *tab_button;
-    Fl_Flowpack *controls_pack;
+    Fl_Pack *controls_pack;
     Fl_Group *chain_tab;
     Fl_Group *control_tab;
     Fl_Pack *modules_pack;

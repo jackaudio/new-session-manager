@@ -144,11 +144,9 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
             o->color( FL_BACKGROUND_COLOR );
             o->box( FL_NO_BOX );
             o->type( Fl_Scroll::VERTICAL );
-            { Fl_Flowpack *o = controls_pack = new Fl_Flowpack( X, Y, W, H );
-                o->type( FL_VERTICAL );
-                o->hspacing( 10 );
-                o->vspacing( 10 );
-                o->box( FL_NO_BOX );
+            { Fl_Pack *o = controls_pack = new Fl_Pack( X, Y, W, H );
+                o->type( Fl_Pack::VERTICAL );
+                o->spacing( 5 );
 //            o->color( FL_RED );
                 o->end();
                 Fl_Group::current()->resizable( o );

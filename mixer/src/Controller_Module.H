@@ -33,6 +33,7 @@ class Controller_Module : public Module
 {
 
     bool _pad;
+    bool _horizontal;
 
     volatile float control_value;
 
@@ -65,6 +66,7 @@ public:
     Mode mode ( void ) const { return _mode; }
     void mode ( Mode v );
 
+    void horizontal ( bool v ) { _horizontal = v; }
     Type type ( void ) const { return _type; }
 
     Controller_Module ( bool is_default = false );

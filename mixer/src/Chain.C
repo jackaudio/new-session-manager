@@ -86,7 +86,8 @@ extern char *instance_name;
 Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
 
 {
-    _deleting = false;
+    /* not really deleting here, but reusing this variable */
+    _deleting = true;
 
     int X = 0;
     int Y = 0;
@@ -161,6 +162,8 @@ Chain::Chain ( ) : Fl_Group( 0, 0, 100, 100, "")
     end();
 
     log_create();
+
+    _deleting = false;
 }
 
 Chain::~Chain ( )

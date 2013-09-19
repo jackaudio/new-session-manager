@@ -325,8 +325,7 @@ Module_Parameter_Editor::make_controls ( void )
 
         controls_by_port[i] = w;
 
-        w->tooltip( p->osc_path() );
-
+        w->copy_tooltip( p->osc_path() );
 
         _callback_data.push_back( callback_data( this, i ) );
 

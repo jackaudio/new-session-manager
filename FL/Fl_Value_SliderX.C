@@ -42,6 +42,17 @@ void Fl_Value_SliderX::input_cb(Fl_Widget*, void* v) {
         {
             t.value_damage();
             t.do_callback();
+
+//            Fl::focus(NULL);
+            for ( Fl_Widget *p = t.parent(); p; p = p->parent() )
+            {
+                if ( p->visible_focus() )
+                {
+                    p->take_focus();
+                    break;
+                }
+            }
+
         }
     }
 }
@@ -75,9 +86,9 @@ Fl_Value_SliderX::Fl_Value_SliderX(int X, int Y, int W, int H, const char*l)
     input.parent((Fl_Group *)this); // kludge!
     input.callback(input_cb, this);
     input.when(FL_WHEN_ENTER_KEY);
-    box(input.box());
-    color(input.color());
-    selection_color(input.selection_color());
+    /* box(input.box()); */
+    /* color(input.color()); */
+    /* selection_color(input.selection_color()); */
     align(FL_ALIGN_LEFT);
     value_damage();
     textsize(9);

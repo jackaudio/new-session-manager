@@ -105,6 +105,7 @@ public:
 
     int handle ( int m );
 
+    void take_focus ( void );
 //    void set_control_value ( float f ) { control_value = f; }
 
 protected:

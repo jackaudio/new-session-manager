@@ -52,6 +52,20 @@ bool Controller_Module::learn_by_number = false;
 bool Controller_Module::_learn_mode = false;
 
 
+void
+Controller_Module::take_focus ( void )
+{
+    bool v = visible_focus();
+
+    if ( ! v ) 
+        set_visible_focus();
+
+    Fl_Widget::take_focus();
+    
+    if ( ! v )
+        clear_visible_focus();
+}
+
 Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 50, 100, name() )
 {
 //    label( "" );
@@ -72,6 +86,7 @@ Controller_Module::Controller_Module ( bool is_default ) : Module( is_default, 5
 
     end();
 
+//    clear_visible_focus();
     log_create();
 }
 
@@ -310,6 +325,7 @@ Controller_Module::maybe_create_panner ( void )
         }
         else
         {
+//            o->clear_visible_focus();
             o->resize( x(), y(), w(), h() );
             add( o );
             resizable( o );
@@ -496,7 +512,7 @@ Controller_Module::connect_to ( Port *p )
 
     control_value = p->control_value();
 
-    w->set_visible_focus();
+    w->clear_visible_focus();
     w->align(FL_ALIGN_TOP);
     w->labelsize( 10 );
     w->callback( cb_handle, this );

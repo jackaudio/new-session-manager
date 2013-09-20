@@ -650,6 +650,7 @@ Mixer_Strip::init ( )
                     o->type( Fl_Scalepack::HORIZONTAL );
                     { Controller_Module *o = gain_controller = new Controller_Module( true );
                         o->horizontal(false);
+                        o->clear_visible_focus();
                         o->pad( false );
                         o->size( 33, 100 );
                     }
@@ -872,6 +873,16 @@ Mixer_Strip::menu_cb ( const Fl_Menu_ *m )
         if ( Fl::event_shift() || 1 == fl_choice( "Are you sure you want to remove this strip?\n\n(this action cannot be undone)", "Cancel", "Remove", NULL ) )
             command_close();
     }
+    else if ( ! strcmp( picked, "/Gain" ) )
+    {
+        gain_controller->take_focus();
+    }
+    else if ( ! strcmp( picked, "/Mute" ) )
+    {
+        ((Fl_Button*)mute_controller->child(0))->value( !
+                                                        ((Fl_Button*)mute_controller->child(0))->value());
+
+    }
     else if ( ! strcmp( picked, "Auto Output/On" ) )
     {
         manual_connection( false );
@@ -1079,6 +1090,9 @@ Mixer_Strip::menu ( void ) const
     m.add( "Width/Wide", 'w', 0, 0, FL_MENU_RADIO | ( width_button->value() ? FL_MENU_VALUE : 0 ) );
     m.add( "View/Fader",          'f', 0, 0, FL_MENU_RADIO | ( 0 == tab_button->value() ? FL_MENU_VALUE : 0 ) );
     m.add( "View/Signal",      's', 0, 0, FL_MENU_RADIO | ( 1 == tab_button->value() ? FL_MENU_VALUE : 0 ) );
+    m.add( "Mute",      'm', 0, 0, 0 );
+// ( 1 == mute_controller->control_output[0].connected_port()->control_value() ? FL_MENU_VALUE : 0 ) );
+    m.add( "Gain",      'g', 0, 0  );
     m.add( "Move Left",      '[', 0, 0  );
     m.add( "Move Right",     ']', 0, 0 );
     m.add( "Color",           0, 0, 0 );

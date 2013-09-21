@@ -34,6 +34,7 @@
 #include "Transport.H"
 #include "const.h"
 #include "debug.h"
+#include <FL/focus_frame.H>
 
 #include <algorithm>
 using std::min;
@@ -50,7 +51,7 @@ extern Transport *transport;
 bool Audio_Region::inherit_track_color = true;
 bool Audio_Region::show_box = true;
 
-Fl_Boxtype Audio_Region::_box = FL_FLAT_BOX;
+Fl_Boxtype Audio_Region::_box = FL_BORDER_BOX;
 
 Fl_Color Audio_Region::_selection_color = FL_MAGENTA;
 
@@ -436,7 +437,7 @@ Audio_Region::actual_box_color ( void ) const
 void
 Audio_Region::draw_box( void )
 {
-    fl_push_clip( x(), y(), w(), h() );
+//    fl_push_clip( x(), y(), w(), h() );
 
     Fl_Color selection_color = _selection_color;
 
@@ -455,7 +456,7 @@ Audio_Region::draw_box( void )
     }
 
     Fl_Boxtype b;
-    Fl_Color c = selected() ? selection_color : color;
+    Fl_Color c = selected() ? fl_color_average( color, fl_rgb_color(10,10,10), 0.4f ) : color;
 
     if ( Audio_Region::show_box )
     {
@@ -466,9 +467,10 @@ Audio_Region::draw_box( void )
         b = FL_DOWN_FRAME;
     }
 
-    fl_draw_box( b, x(), y(), w(), h(), c );
+    fl_draw_box( b, line_x(), y(), abs_w(), h(), c );
+ 
 
-    fl_pop_clip();
+//    fl_pop_clip();
 }
 
 void
@@ -687,6 +689,13 @@ Audio_Region::draw ( void )
         
         fl_line_style( FL_SOLID, 0 );
     }
+
+    if ( selected() )
+        draw_selection_frame( line_x() + Fl::box_dx(box()),
+                              y() + Fl::box_dy(box()),
+                              abs_w() - Fl::box_dw(box()),
+                              h() - Fl::box_dh(box()),
+                              selection_color() );
 
 /*     if ( current() ) */
 /*     { */

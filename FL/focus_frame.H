@@ -17,6 +17,6 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-void
-draw_focus_frame ( int x, int y, int w, int h, Fl_Color c );
+void draw_focus_frame ( int x, int y, int w, int h, Fl_Color c );
+void draw_selection_frame ( int x, int y, int w, int h, Fl_Color c );
 bool focused_r ( Fl_Widget *w );

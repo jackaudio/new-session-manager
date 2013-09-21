@@ -337,7 +337,7 @@ public:
             
             align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
             color( fl_darker( FL_RED ) );
-            box( FL_BORDER_BOX );
+            box( FL_UP_FRAME );
             
             int yy = Y + H * 0.25;
             int hh = H * 0.50;
@@ -414,7 +414,7 @@ public:
                     o->labelsize( 9 );
                     o->box( FL_UP_BOX );
                     o->type(0);
-                    o->color( FL_RED );
+//                    o->color( FL_RED );
                     o->value( 0 );
                     o->tooltip( "Stop" );
                     o->callback( cb_button, this );
@@ -427,7 +427,7 @@ public:
                 
                     o->box( FL_UP_BOX );
                     o->type(0);
-                    o->color( FL_GREEN );
+//                    o->color( FL_GREEN );
                     o->value( 0 );
                     o->label( "@>" );
                     o->tooltip( "Resume" );
@@ -442,7 +442,7 @@ public:
                 
                     o->box( FL_UP_BOX );
                     o->type(0);
-                    o->color( FL_RED );
+//                    o->color( FL_RED );
                     o->value( 0 );
                     o->label( "X" );
                     o->tooltip( "Remove" );
@@ -899,7 +899,7 @@ public:
                 }
                 { Fl_Button *o = abort_button = new Fl_Button( 0, 0, 80, 50, "Abort" );
                     o->box( FL_UP_BOX );
-                    o->color( FL_RED );
+                    o->color( fl_color_average( FL_RED, fl_rgb_color(10,10,10), 0.5f ) );
                     o->callback( cb_handle, (void*)this );
                 }
                 { Fl_Button *o = save_button = new Fl_Button( 0, 0, 80, 50, "&Save" );
@@ -939,6 +939,7 @@ public:
                         o->sortorder( FL_TREE_SORT_ASCENDING );
                         o->showroot( 0 );
                         o->selection_color( fl_darker( FL_GREEN ) );
+                        o->selectbox( FL_UP_FRAME );
                         o->box( FL_FLAT_BOX );
                         /* o->label( "Sessions" ); */
                         o->end();
@@ -970,7 +971,7 @@ public:
                         {
                             Fl_Pack *o = clients_pack = new Fl_Pack( 0, 0, 100, 100 );
                             o->align( FL_ALIGN_TOP );
-                            o->spacing( 2 );
+                            o->spacing( 4 );
                             o->type( Fl_Pack::VERTICAL );
                             o->end();
                         }

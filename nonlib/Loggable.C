@@ -177,10 +177,13 @@ Loggable::load_unjournaled_state ( void )
     }
 
     unsigned int id;
-    char buf[BUFSIZ];
+    char *buf;
 
-    while ( fscanf( fp, "%X set %[^\n]\n", &id, buf ) == 2 )
+    while ( fscanf( fp, "%X set %a[^\n]\n", &id, &buf ) == 2 )
+    {
         _loggables[ id ].unjournaled_state = new Log_Entry( buf );
+        free(buf);
+    }
 
     fclose( fp );
 
@@ -210,8 +213,7 @@ Loggable::replay ( const char *file )
 bool
 Loggable::replay ( FILE *fp )
 {
-    /* FIXME: bogus */
-    char buf[BUFSIZ];
+    char *buf = NULL;
 
     struct stat st;
     fstat( fileno( fp ), &st );
@@ -222,7 +224,7 @@ Loggable::replay ( FILE *fp )
     if ( _progress_callback )
         _progress_callback( 0, _progress_callback_arg );
 
-    while ( fscanf( fp, "%[^\n]\n", buf ) == 1 )
+    while ( fscanf( fp, "%a[^\n]\n", &buf ) == 1 )
     {
         if ( ! ( ! strcmp( buf, "{" ) || ! strcmp( buf, "}" ) ) )
         {
@@ -231,6 +233,8 @@ Loggable::replay ( FILE *fp )
             else
                 do_this( buf, false );
         }
+
+        free(buf);
 
         current = ftell( fp );
 
@@ -480,8 +484,7 @@ Loggable::do_this ( const char *s, bool reverse )
 void
 Loggable::undo ( void )
 {
-    const int bufsiz = 1024;
-    char buf[bufsiz];
+    char *buf;
 
     block_start();
 
@@ -489,34 +492,49 @@ Loggable::undo ( void )
 
     fseek( _fp, _undo_offset, SEEK_SET );
 
-    backwards_fgets( buf, bufsiz, _fp );
-
-    if ( ! strcmp( buf, "}\n" ) )
+    if ( ( buf = backwards_afgets( _fp ) ) )
     {
-        DMESSAGE( "undoing block" );
-        for ( ;; )
+        if ( ! strcmp( buf, "}\n" ) )
         {
-            backwards_fgets( buf, bufsiz, _fp );
+            free( buf );
+                
+            DMESSAGE( "undoing block" );
+            for ( ;; )
+            {
+                if ( ( buf = backwards_afgets( _fp ) ) )
+                {
+                    char *s = buf;
+                    if ( *s != '\t' )
+                    {
+                        DMESSAGE( "done with block", s );
 
-            char *s = buf;
-            if ( *s != '\t' )
-                break;
-            else
-                ++s;
+                        break;
+                    }
+                    else
+                        ++s;
+                    
+                    do_this( s, true );
 
-            do_this( s, true );
+                    free( buf );
+                }
+            }
+        }
+        else
+        {
+            do_this( buf, true );
+
+            free( buf );
         }
     }
-    else
-        do_this( buf, true );
 
     off_t uo = ftell( _fp );
 
     ASSERT( _undo_offset <= here, "WTF?" );
-
+    
     block_end();
 
     _undo_offset = uo;
+    
 }
 
 /** write a snapshot of the current state of all loggable objects to

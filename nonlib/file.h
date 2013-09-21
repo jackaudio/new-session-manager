@@ -27,7 +27,7 @@ int exists ( const char *name );
 bool acquire_lock ( int *lockfd, const char *filename );
 void release_lock ( int *lockfd, const char *filename );
 int backwards_fgetc ( FILE *fp );
-char * backwards_fgets ( char *s, int size, FILE *fp );
+char * backwards_afgets ( FILE *fp );
 void touch ( int fd );
 void write_line ( const char *dir, const char *name, const char *value );
 char * read_line ( const char *dir, const char *name );

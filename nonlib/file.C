@@ -107,25 +107,46 @@ backwards_fgetc ( FILE *fp )
 }
 
 char *
-backwards_fgets ( char *s, int size, FILE *fp )
+backwards_afgets ( FILE *fp )
 {
-    if ( fseek( fp, -1, SEEK_CUR ) != 0 )
-        return NULL;
+    size_t size = 0;
 
+    char *s = NULL;
+    size_t i = 0;
     int c;
     while ( ( c = backwards_fgetc( fp ) ) >= 0 )
-        if ( '\n' == c )
+    {
+        if ( i > 0 && '\n' == c )
             break;
 
-    long here = ftell( fp );
+        if ( i >= size )
+        {
+            size += 256;
+            s = (char*)realloc( s, size );
+        }
+
+        s[i++] = c;
+
+    }
+    
+    if ( s )
+    {
+        s[i] = 0;
+        
+        int len = strlen(s) ;
+        int c, i, j;
+
+        for (i = 0, j = len - 1; i < j; i++, j--)
+        {
+            c = s[i];
+            s[i] = s[j];
+            s[j] = c;
+        }
+    }
 
     fseek( fp, 1, SEEK_CUR );
 
-    char *r = fgets( s, size, fp );
-
-    fseek( fp, here, SEEK_SET );
-
-    return r;
+    return s;
 }
 
 

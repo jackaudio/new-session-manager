@@ -355,12 +355,13 @@ Track::finalize ( Capture *c, nframes_t frame )
 
     timeline->wrlock();
 
-    c->region->finalize( frame );
-
     DMESSAGE( "Adjusting capture by %lu frames.", (unsigned long)_capture_offset );
 
     c->region->offset( _capture_offset );
     _capture_offset = 0;
+
+    /* have to do this last, as it logs the create */
+    c->region->finalize( frame );
 
     timeline->unlock();
 }

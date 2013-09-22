@@ -399,28 +399,16 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
     fl_vertex( fx, dy + height );
 
     {
-        nframes_t tsx = timeline->x_to_ts( 1 );
+        const float ti = 1.0f / (float)width;
+        float ts = 0.0f;
+        
+        const int xi = dir == Fade::In ? 1 : -1;
 
-        if ( dir == Fade::In )
-        {
-            nframes_t ts = 0;
-
-            for ( int i = 0; i < width; ++i, ts += tsx )
-                fl_vertex( fx + i, dy + height - ( height * fade.gain( ts / (double)fade.length ) ));
-        }
-        else
-        {
-            nframes_t ts = tsx * width;
-
-            for ( int i = 0; i < width; ++i, ts -= tsx )
-                fl_vertex( fx - i, dy + ( height * fade.gain( ts / (double)fade.length ) ));
-        }
+        for ( int i = 0; i < width; i++, ts += ti, fx += xi )
+            fl_vertex( fx, dy + height - ( height * fade.gain( ts )));
     }
     
-    if ( dir == Fade::In )
-        fl_vertex( fx + width, dy );
-    else
-        fl_vertex( fx - width, dy );
+    fl_vertex( fx, dy );
 
     if ( line )
         fl_end_line();

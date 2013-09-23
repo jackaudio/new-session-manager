@@ -99,7 +99,7 @@ private:
 
     Audio_File *_clip;                                          /* clip this region represents */
 
-    bool _adjusting_gain;
+    float _adjusting_gain;
     float _scale;                                               /* amplitude adjustment */
 
     Fade _fade_in;

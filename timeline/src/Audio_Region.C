@@ -153,7 +153,7 @@ Audio_Region::Audio_Region ( const Audio_Region & rhs ) : Sequence_Region( rhs )
     _box_color = rhs._box_color;
     _color = rhs._color;
     
-    _adjusting_gain = false;
+    _adjusting_gain = 0.0f;
 
     log_create();
 }
@@ -661,7 +661,7 @@ Audio_Region::draw ( void )
 
     
 
-    if ( _adjusting_gain  )
+    if ( _adjusting_gain > 0.0f )
     {
         fl_color( fl_color_add_alpha( FL_DARK1, 127 ) );
 
@@ -744,7 +744,7 @@ Audio_Region::handle ( int m )
 
     int X = Fl::event_x();
     int Y = Fl::event_y();
-
+    
     Logger _log( this );
 
     switch ( m )
@@ -753,29 +753,40 @@ Audio_Region::handle ( int m )
         case FL_UNFOCUS:
             return 1;
         case FL_KEYUP:
-            if ( Fl::event_key() == 'g' )
+            if ( _adjusting_gain > 0 )
             {
-                _adjusting_gain = false;
+                _adjusting_gain = 0;
                 redraw();
                 return 1;
             }
             break;
         case FL_KEYBOARD:
-            if ( Fl::event_key() == 'g' )
+            if ( Fl::event_key() == 'g' )  
             {
-                _adjusting_gain = true;
-                redraw();
+                if ( _adjusting_gain <= 0 )
+                {
+                    _adjusting_gain = _scale;
+                    redraw();
+                }
                 return 1;
             }
             return menu().test_shortcut() != 0;
         case FL_ENTER:
             return Sequence_Region::handle( m );
         case FL_LEAVE:
+            if ( _adjusting_gain > 0 )
+            {
+                _adjusting_gain = 0;
+                redraw();
+            }
             return Sequence_Region::handle( m );
         case FL_PUSH:
         {
-            if ( Fl::event_key() == 'g' )
+            if ( _adjusting_gain > 0.0f )
+            {
+                _adjusting_gain = _scale;
                 return 1;
+            }
 
             /* splitting  */
             if ( test_press( FL_BUTTON2 | FL_SHIFT ) )
@@ -832,15 +843,18 @@ Audio_Region::handle ( int m )
 
             if ( ! _drag )
             {
-                begin_drag( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
+                begin_drag( Drag( X, Y, x_to_offset( X ) ) );
                 _log.hold();
             }
 
-            if ( Fl::event_key() == 'g' )
+            if ( _adjusting_gain )
             {
-                float d = (float)h() / ( y() - Fl::event_y() );
+                int d = _drag->y - Y;
+                
+                _scale = _adjusting_gain + ( 0.01f * d );
 
-                _scale = -0.5f * d;
+                if ( _scale < 0.01f )
+                    _scale = 0.01f;
 
                 redraw();
                 return 1;

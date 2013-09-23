@@ -154,12 +154,12 @@ Sequence_Region::handle ( int m )
                 {
                     case 1:
                         trim( trimming = LEFT, X );
-                        begin_drag( Drag( x() - X, y() - Y ) );
+                        begin_drag( Drag( X, Y ) );
                         _log.hold();
                         break;
                     case 3:
                         trim( trimming = RIGHT, X );
-                        begin_drag( Drag( x() - X, y() - Y ) );
+                        begin_drag( Drag( X, Y) );
                         _log.hold();
                         break;
                     default:
@@ -207,7 +207,7 @@ Sequence_Region::handle ( int m )
         {
             if ( ! _drag )
             {
-                begin_drag( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
+                begin_drag( Drag( X, Y, x_to_offset( X ) ) );
                 _log.hold();
             }
 

@@ -442,7 +442,7 @@ Sequence_Widget::handle ( int m )
 
             if ( ! _drag )
             {
-                begin_drag ( Drag( x() - X, y() - Y, start() - x_to_offset( X ) ) );
+                begin_drag ( Drag(  Y, x_to_offset( X ) ) );
                 _log.hold();
             }
 

@@ -70,41 +70,34 @@ Sequence_Region::set ( Log_Entry &e )
 void
 Sequence_Region::trim_left ( nframes_t where )
 {
-    int64_t td = (int64_t)where - _r->start;
-
-    /* beyond the beginning */
-    if ( td < 0 && _r->offset < (nframes_t)( 0 - td ) )
-        td = (int64_t)0 - _r->offset;
-
-    if ( td > 0 && (nframes_t)td >= _r->length )
-        td = (int64_t)_r->length - timeline->x_to_ts( 1 );
-
-    _r->trim_left( 0 - td );
-
-    nframes_t f = _r->start;
-
+    nframes_t f = where;
+ 
     /* snap to beat/bar lines */
     if ( timeline->nearest_line( &f ) )
-        _r->set_left( f );
+        where = f;
 
+    if ( where > _r->start + _r->length )
+        where = _r->start + _r->length;
+
+    if ( where < _r->start && _r->offset < _r->start - where )
+        where = _r->start - _r->offset;
+
+    _r->set_left( where );
 }
 
 void
 Sequence_Region::trim_right ( nframes_t where )
 {
-    int64_t td = (int64_t)(  _r->start + _r->length ) - where;
-
-    if ( td >= 0 && _r->length < (nframes_t)td )
-        td = _r->length - timeline->x_to_ts( 1 );
-
-    _r->trim_right( 0 - td );
-
-    nframes_t f = _r->start + _r->length;
+    nframes_t f = where;
 
     /* snap to beat/bar lines */
     if ( timeline->nearest_line( &f ) )
-        _r->set_right( f );
+        where = f;
 
+    if ( where < _r->start )
+        where = _r->start;
+
+    _r->set_right( where );
 }
 
 void

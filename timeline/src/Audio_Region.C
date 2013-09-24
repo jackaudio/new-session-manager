@@ -514,13 +514,14 @@ Audio_Region::draw ( void )
 
     /* calculate waveform offset due to scrolling */
     /* offset is the number of frames into the waveform the value of X translates to */
-    nframes_t x_frame = timeline->xoffset + timeline->x_to_ts( X - _sequence->drawable_x() );
+
+    /* this is the timestamp at where we'll actually be drawing. */
+    nframes_t x_frame = timeline->x_to_ts(
+        timeline->ts_to_x( timeline->xoffset ) + ( X - _sequence->drawable_x() ) );
+
     nframes_t offset = 0;
 
-    if ( x_frame < start() )
-        /* sometimes X is one pixel too soon... */
-        offset = 0;
-    else
+    if ( x_frame > start() )
         offset = x_frame - start();
 
     nframes_t fo = 0;                                           
@@ -543,37 +544,34 @@ Audio_Region::draw ( void )
     int peaks = 0;
     Peak *pbuf = NULL;  
 
+
+    Fl_Color fg_color = FL_FOREGROUND_COLOR;
+    Fl_Color bg_color = FL_BACKGROUND_COLOR;
+
+    if ( !active_r() )
+    {
+        fg_color = fl_inactive(fg_color);
+        bg_color = fl_inactive(bg_color);
+    }
+    
     do {
-        nframes_t start = _r->offset;
 
         nframes_t loop_frames_needed = _loop ? _loop : total_frames_needed;
         int loop_peaks_needed = timeline->ts_to_x( loop_frames_needed );
-        
-        Fl_Color fg_color = FL_FOREGROUND_COLOR;
-        Fl_Color bg_color = FL_BACKGROUND_COLOR;
 
-        if ( !active_r() )
-        {
-            fg_color = fl_inactive(fg_color);
-            bg_color = fl_inactive(bg_color);
-        }
+        nframes_t start = _r->offset;
         
         if ( ! fo )                                             /* first loop... */
         {
             if ( _loop )
-                start += offset % _loop;
-            else
-                start += offset;
-
-/*             DMESSAGE( "offset = %lu", (unsigned long) offset ); */
-/*             DMESSAGE( "loop peaks needed = %d", loop_peaks_needed ); */
-
-            if ( _loop )
             {
+//                start += offset;
+                start += offset % _loop;
                 loop_frames_needed -= offset % loop_frames_needed;
                 loop_peaks_needed = timeline->ts_to_x( loop_frames_needed );
             }
-/*             DMESSAGE( "loop peaks needed = %d", loop_peaks_needed ); */
+            else
+                start += offset;
 
             assert( loop_peaks_needed >= 0 );
         }
@@ -594,9 +592,9 @@ Audio_Region::draw ( void )
             _clip->peaks()->peakfile_ready();
 
             if ( _clip->read_peaks( timeline->fpp(),
-                                                 start,
-                                                 end,
-                                        &peaks, &pbuf, &channels ) )
+                                    start,
+                                    end,
+                                    &peaks, &pbuf, &channels ) )
             {
                 Waveform::scale( pbuf, peaks * channels, _scale );
                     
@@ -606,9 +604,9 @@ Audio_Region::draw ( void )
                         
             if ( _clip->peaks()->needs_more_peaks() && ! transport->rolling )
             {
-                    /* maybe create a thread to make the peaks */
-                    /* this function will just return if there's nothing to do. */
-                    _clip->peaks()->make_peaks_asynchronously( Audio_Region::peaks_ready_callback, this );
+                /* maybe create a thread to make the peaks */
+                /* this function will just return if there's nothing to do. */
+                _clip->peaks()->make_peaks_asynchronously( Audio_Region::peaks_ready_callback, this );
             }
         }
         else
@@ -634,6 +632,22 @@ Audio_Region::draw ( void )
         else
             ;
 //            WARNING( "Pbuf == %p, peaks = %lu", pbuf, (unsigned long)peaks );
+
+
+        
+        if ( _loop )
+        {
+            const int lx = sequence()->drawable_x() + timeline->ts_to_x( ( this->start() + _loop ) - timeline->xoffset );
+            
+            if ( lx < X + W )
+            {
+                fl_color( fl_darker( FL_CYAN ) );
+                fl_line( lx, y(), lx, y() + h() );
+                fl_line( lx - 3, y(), lx + 3, y() );
+                fl_line( lx - 3, y() + h() - 1, lx + 3, y() + h() - 1 );
+               
+            }
+        }
         
         if ( peaks < loop_peaks_needed )
         {
@@ -641,22 +655,11 @@ Audio_Region::draw ( void )
         }
 
         fo += loop_frames_needed;
+ 
     }
     while ( _loop && fo < total_frames_needed );
 
     
-    if ( _loop && offset < _loop )
-    {
-        const int lx = get_x( start() + _loop );
-
-        if ( lx < X + W )
-        {
-            fl_color( FL_RED );
-            fl_line_style( FL_DASH, 0 );
-            fl_line( lx, y(), lx, y() + h() );
-            fl_line_style( FL_SOLID, 0 );
-        }
-    }
 
     if ( _adjusting_gain  )
     {

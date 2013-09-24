@@ -37,9 +37,10 @@ struct Drag
     int y;
     int state;
 
-    nframes_t start;
+//    nframes_t start;
+    int64_t offset;
 
-    Drag( int X, int Y, nframes_t start=0 ) : x( X ), y( Y ), start( start ) { state = 0; }
+    Drag( int X, int Y, uint64_t offset=0 ) : x( X ), y( Y ), offset( offset ) { state = 0; }
 };
 
 /* most common position description. /offset/ is only used by Regions,
@@ -49,20 +50,6 @@ struct Range
     nframes_t start;                       /* where on the timeline */
     nframes_t offset;                      /* first sample from clip */
     nframes_t length;                      /* total number of samples */
-
-    void
-    trim_left ( long n )
-        {
-            start -= n;
-            offset -= n;
-            length += n;
-        }
-
-    void
-    trim_right ( long n )
-        {
-            length += n;
-        }
 
     void
     set_left ( nframes_t f )
@@ -221,11 +208,17 @@ public:
 
     virtual int w ( void ) const
         {
-            int tx = timeline->ts_to_x( _r->start );
+//            int tx = timeline->ts_to_x( _r->start );
 
             int rw;
-            if ( tx < scroll_x() )
-                rw = abs_w() - (scroll_x() - tx);
+
+            if ( _r->start < timeline->xoffset )
+            {
+                if ( _r->start + _r->length < timeline->xoffset )
+                    rw = 0;
+                else
+                    rw = timeline->ts_to_x( ( _r->start + _r->length ) - timeline->xoffset );
+            }
             else
                 rw = abs_w();
 

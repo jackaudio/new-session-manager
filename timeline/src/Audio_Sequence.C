@@ -233,15 +233,18 @@ Audio_Sequence::draw ( void )
                              (o->x() + o->w()) - (*r)->x(),
                              o->h() );
 
-                cairo_t *cc = Fl::cairo_cc();
+                if ( b.w > 0 )
+                {
+                    cairo_t *cc = Fl::cairo_cc();
                 
-                cairo_set_operator( cc, CAIRO_OPERATOR_HSL_COLOR ); 
-                cairo_set_source_rgba( cc, 1, 1, 0, 0.80 );
-                cairo_rectangle( cc, b.x, b.y, b.w, b.h );
+                    cairo_set_operator( cc, CAIRO_OPERATOR_HSL_COLOR ); 
+                    cairo_set_source_rgba( cc, 1, 1, 0, 0.80 );
+                    cairo_rectangle( cc, b.x, b.y, b.w, b.h );
                 
-                cairo_fill( cc );
+                    cairo_fill( cc );
 
-                cairo_set_operator( cc, CAIRO_OPERATOR_OVER );
+                    cairo_set_operator( cc, CAIRO_OPERATOR_OVER );
+                }
             }
         }
 

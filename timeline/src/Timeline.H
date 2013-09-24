@@ -199,8 +199,8 @@ public:
     nframes_t length ( void ) const;
     void sample_rate ( nframes_t r ) { _sample_rate = r; }
     nframes_t sample_rate ( void ) const { return _sample_rate; }
-    int ts_to_x( nframes_t ts ) const { return  ts >> _fpp; }
-    nframes_t x_to_ts ( int x ) const { return x << _fpp; }
+    int ts_to_x( nframes_t ts ) const { return ts >> _fpp; }
+    nframes_t x_to_ts ( int x ) const { return (nframes_t)x << _fpp; }
     nframes_t x_to_offset ( int x ) const;
     int offset_to_x ( nframes_t frame ) const;
 

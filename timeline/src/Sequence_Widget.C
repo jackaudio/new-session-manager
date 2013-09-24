@@ -442,7 +442,7 @@ Sequence_Widget::handle ( int m )
 
             if ( ! _drag )
             {
-                begin_drag ( Drag( x() - X, y() - Y, x_to_offset( X ) ) );
+                begin_drag ( Drag( x() - X, y() - Y, start() - x_to_offset( X ) ) );
                 _log.hold();
             }
 
@@ -462,11 +462,13 @@ Sequence_Widget::handle ( int m )
 
                 const nframes_t of = timeline->x_to_offset( X );
 
-                if ( of >= _drag->start )
-                    start( of - _drag->start );
-                else
-                    start( 0 );
+                int64_t s = (int64_t)of - _drag->offset;
+                
+                if ( s < 0 )
+                    s = 0;
 
+                start(s);
+                
                 if ( Sequence_Widget::_current == this )
                     sequence()->snap( this );
 

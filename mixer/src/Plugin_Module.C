@@ -454,11 +454,12 @@ Plugin_Module::load ( unsigned long id )
             WARNING( "Cannot use this plugin because it is incapable of processing audio in-place" );
             return false;
         }
-        else if ( ! LADSPA_IS_HARD_RT_CAPABLE( _idata->descriptor->Properties ) )
-        {
-            WARNING( "Cannot use this plugin because it is incapable of hard real-time operation" );
-            return false;
-        }
+       
+        /* else if ( ! LADSPA_IS_HARD_RT_CAPABLE( _idata->descriptor->Properties ) ) */
+        /* { */
+        /*     WARNING( "Cannot use this plugin because it is incapable of hard real-time operation" ); */
+        /*     return false; */
+        /* } */
 
         MESSAGE( "Name: %s", _idata->descriptor->Name );
 

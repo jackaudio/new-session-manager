@@ -769,7 +769,16 @@ LADSPAInfo::CheckPlugin(const LADSPA_Descriptor *desc)
 			"WARNING: Plugin cannot use in place processing");
 	test(desc->PortCount, "WARNING: Plugin has no ports");
         test(desc->Name, "WARNING: Plugin has no name" );
-        test(LADSPA_IS_HARD_RT_CAPABLE( desc->Properties ), "WARNING: Plugin is not RT capable" );
+
+        if ( strcmp( desc->Maker, "Tom Szilagyi" ) )
+        {
+            /* The author of the TAP plugins has a very narrow
+             * interpretation of the HARD RT hint which differs from
+             * most everyone else, so we are left in the unfortunate
+             * position of having to ignore the hint for TAP plugins
+             * and consider them all RT safe */
+            test(LADSPA_IS_HARD_RT_CAPABLE( desc->Properties ), "WARNING: Plugin is not RT capable" );
+        }
 
 	return true;
 }

@@ -691,7 +691,7 @@ Module::draw_label ( int tx, int ty, int tw, int th )
     char *di = strstr( lab, " -" );
     
     if ( ! di )
-        strstr( lab, "  " );
+        di = strstr( lab, "  " );
 
     if ( di )
         *di = '\0';

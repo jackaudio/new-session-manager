@@ -31,13 +31,14 @@ class Plugin_Module : public Module {
 
 public:
 
-    struct Plugin_Info
+    class Plugin_Info
     {
+    public:
         const char *path;
         unsigned long id;
-        const char *name;
-        const char *author;
-        const char *category;
+        std::string name;
+        std::string author;
+        std::string category;
         int audio_inputs;
         int audio_outputs;
         const char *type;
@@ -47,17 +48,16 @@ public:
             {
                 path = 0;
                 id = 0;
-                name = 0;
-                author = 0;
-                category = 0;
+               
                 audio_inputs = 0;
                 audio_outputs = 0;
                 type = "LADSPA";
                 favorite = 0;
             }
 
+        
         bool operator< ( const Plugin_Info &rhs ) {
-            return strcmp( name, rhs.name ) < 1;
+            return strcmp( name.c_str(), rhs.name.c_str() ) < 1;
         }
     };
 

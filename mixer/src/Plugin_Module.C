@@ -306,8 +306,8 @@ Plugin_Module::get_all_plugins ( void )
         //   pi[j].path = i->Name.c_str();
         pi.path = NULL;
         pi.id = i->UniqueID;
-        pi.author = i->Maker.c_str();
-        pi.name = i->Name.c_str();
+        pi.author = i->Maker;
+        pi.name = i->Name;
         pi.audio_inputs = i->AudioInputs;
         pi.audio_outputs = i->AudioOutputs;
         pi.category = "Unclassified";
@@ -325,7 +325,7 @@ Plugin_Module::get_all_plugins ( void )
         {
             if ( j->id == i->UniqueID )
             {
-                j->category = i->Category.c_str();
+                j->category = i->Category;
             }
         }
     }

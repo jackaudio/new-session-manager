@@ -62,8 +62,8 @@ Plugin_Chooser::search ( const char *name, const char *author, const char *categ
     {
         Plugin_Module::Plugin_Info *p = &(*i);
 
-        if ( strcasestr( p->name, name ) &&
-             strcasestr( p->author, author ) )
+        if ( strcasestr( p->name.c_str(), name ) &&
+             strcasestr( p->author.c_str(), author ) )
         {
             if ( !
                  ((( ( ninputs == 0 || ninputs == p->audio_inputs || ( ninputs == 1 && p->audio_inputs == 2 ) ) ) &&
@@ -80,10 +80,10 @@ Plugin_Chooser::search ( const char *name, const char *author, const char *categ
                 
                 if ( strcmp( category, "Any" ) )
                 {
-                    if ( !p->category && strcmp( category, "Unclassified" ))
+                    if ( !p->category.c_str() && strcmp( category, "Unclassified" ))
                         continue;
                     
-                    if (strncmp( p->category, category, strlen( category )))
+                    if (strncmp( p->category.c_str(), category, strlen( category )))
                         continue;
                 }
 
@@ -178,11 +178,11 @@ void Plugin_Table::draw_cell(TableContext context,
                     break;
                 case 1:
                     a = FL_ALIGN_LEFT;
-                    s2 = _plugin_rows[R]->name;
+                    s2 = _plugin_rows[R]->name.c_str();
                     break;
                 case 2:
                     a = FL_ALIGN_LEFT;
-                    s2 = _plugin_rows[R]->author;
+                    s2 = _plugin_rows[R]->author.c_str();
                     break;
                 case 3:
                     s2 = _plugin_rows[R]->type;
@@ -340,7 +340,7 @@ Plugin_Chooser::load_categories ( void )
           i != _plugins.end();
           i++ )
     {
-        if ( i->category )
+        if ( i->category.c_str() )
         {
             categories.push_back(i->category);
         }

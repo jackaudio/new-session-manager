@@ -912,9 +912,19 @@ Audio_Region::normalize ( void )
 
     const nframes_t npeaks = _loop ? _loop : length();
 
+
     if ( _clip->read_peaks( npeaks, offset(), offset() + npeaks, &peaks, &pbuf, &channels ) &&
          peaks )
-        _scale = pbuf->normalization_factor();
+    {
+        _scale = 1000.0f;
+
+        for ( int i = 0; i < channels; i++ )
+        {
+            float f = (pbuf + i)->normalization_factor();
+            if ( f < _scale )
+                _scale = f;
+        }
+    }
 
     /* FIXME: wrong place for this? */
     sequence()->handle_widget_change( start(), length() );

@@ -151,6 +151,7 @@ int Fl_Value_SliderX::handle(int event) {
             goto DEFAULT;
             break;
         case FL_DRAG:
+        {
             if ( ! drag )
                 goto DEFAULT;
 
@@ -165,19 +166,20 @@ int Fl_Value_SliderX::handle(int event) {
             else if (delta < -5) delta += 5;
             else delta = 0;
 
+            float S =  fabs( maximum() - minimum() );
+
             switch (drag) {
-                case 3: v = increment(previous_value(), delta*100); break;
-                case 2: v = increment(previous_value(), delta*10); break;
-                default:v = increment(previous_value(), delta); break;
+                case 3: v = previous_value() + ( S * delta * 0.0100f); break;
+                case 2: v = previous_value() + ( S * delta * 0.0010f); break;
+                default:v = previous_value() + ( S * delta * 0.0005f); break;
             }
-            
-//            v = previous_value() + delta * ( fabs( maximum() - minimum() ) * 0.001 );
 
             v = round(v);
             v = soft()?softclamp(v):clamp(v);
             handle_drag(v);
             value_damage();
             return 1;
+        }
         case FL_RELEASE:
 
             if ( ! drag )

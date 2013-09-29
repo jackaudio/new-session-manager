@@ -158,6 +158,9 @@ int Fl_Value_SliderX::handle(int event) {
                 
 //            if (!step()) goto DEFAULT;
             delta = mx-ix;
+            if (!horizontal())
+                delta = -delta;
+
             if (delta > 5) delta -= 5;
             else if (delta < -5) delta += 5;
             else delta = 0;

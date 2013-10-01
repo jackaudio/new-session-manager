@@ -440,7 +440,9 @@ public:
 
     char *get_parameters ( void ) const;
     void set_parameters ( const char * );
-    
+
+    bool show_analysis_window ( void );
+
     void send_feedback ( void );
     virtual bool initialize ( void ) { return true; }
 
@@ -468,6 +470,13 @@ public:
 
     virtual void handle_port_connection_change () {}
 
+    /* module should create a new context, run against this impulse,
+     * and return true if there's anything worth reporting */
+    virtual bool get_impulse_response ( sample_t *buf, nframes_t nframes )
+        {
+            return false;
+        }
+
 #define MODULE_CLONE_FUNC(class)                                \
     virtual Module *clone_empty ( void ) const                  \
         {                                                       \
@@ -479,8 +488,6 @@ public:
     Module *clone ( void ) const;
 
 protected:
-
-    nframes_t sample_rate ( void ) const { return Module::_sample_rate; }
 
     void draw_connections ( void );
     void draw_label ( int X, int Y, int W, int H );
@@ -495,6 +502,8 @@ protected:
     bool add_aux_port ( bool input, const char *prefix, int n );
 
 public:
+    nframes_t sample_rate ( void ) const { return Module::_sample_rate; }
+
 
     void auto_connect_outputs();
     void auto_disconnect_outputs();

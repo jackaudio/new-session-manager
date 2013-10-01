@@ -47,6 +47,8 @@
 #include "FL/menu_popup.H"
 
 
+#include "SpectrumView.H"
+
 Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_Window( 900,240)
 {
     _module = module;
@@ -97,6 +99,7 @@ Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_
                 o->flow( true );
                 o->vspacing( 5 );
                 o->hspacing( 5 );
+                
                 o->end();
             }
             o->resizable( 0 );
@@ -118,11 +121,45 @@ Module_Parameter_Editor::~Module_Parameter_Editor ( )
 
 
 void
+Module_Parameter_Editor::update_spectrum ( void )
+{
+    nframes_t nframes = 4096;
+    float *buf = new float[nframes];
+    SpectrumView *o = spectrum_view;
+
+    o->sample_rate( _module->sample_rate() );
+
+    if ( ! _module->get_impulse_response( buf, nframes ) )
+    {
+        o->data( buf, 1 );
+        /* o->hide(); */
+    }
+    else
+    {
+        o->data( buf, nframes );
+        o->parent()->show();
+    }
+
+    o->redraw();
+}
+
+void
 Module_Parameter_Editor::make_controls ( void )
 {
     Module *module = _module;
 
     control_pack->clear();
+
+    { SpectrumView *o = spectrum_view = new SpectrumView( 25, 40, 300, 240, "Spectrum" );
+        o->labelsize(9);
+        o->align(FL_ALIGN_TOP);
+
+
+        Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( (Fl_Widget*)o );
+        flg->hide();
+        control_pack->add( flg );
+    }
+
 
     controls_by_port.clear();
 
@@ -156,14 +193,14 @@ Module_Parameter_Editor::make_controls ( void )
         control_pack->flow(true);
         control_pack->flowdown(false);
         control_pack->type( FL_HORIZONTAL );
-        control_pack->size( 900, 350 );
+        control_pack->size( 900, 250 );
     }
     else if ( mode_choice->value() == 0 )
     {
         control_pack->vspacing( 10 );
         control_pack->hspacing( 10 );
         control_pack->flow(true);
-        control_pack->flowdown(false);
+        control_pack->flowdown(true);
         control_pack->type( FL_HORIZONTAL );
         control_pack->size( 700, 50 );
         
@@ -381,6 +418,8 @@ Module_Parameter_Editor::make_controls ( void )
     }
 
     update_control_visibility();
+    
+    update_spectrum();
 
     control_pack->dolayout();
 
@@ -504,6 +543,8 @@ Module_Parameter_Editor::handle_control_changed ( Module::Port *p )
     
         v->value( p->control_value() );
     }
+
+    update_spectrum();
 }
 
 
@@ -524,6 +565,8 @@ Module_Parameter_Editor::set_value (int i, float value )
         if ( _module->control_input[i].connected() )
             _module->control_input[i].connected_port()->module()->handle_control_changed( _module->control_input[i].connected_port() );
     }
+
+    update_spectrum();
 //    _module->handle_control_changed( &_module->control_input[i] );
 }
 

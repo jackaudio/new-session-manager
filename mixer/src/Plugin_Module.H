@@ -99,6 +99,8 @@ private:
     void set_control_buffer ( int n, void *buf );
     void activate ( void );
     void deactivate ( void );
+    
+    bool apply ( sample_t *buf, nframes_t nframes );
     void process ( unsigned long nframes );
 
     bool plugin_instances ( unsigned int );
@@ -108,6 +110,8 @@ private:
     bool loaded ( void ) const;
 
 public:
+
+    virtual bool get_impulse_response ( sample_t *buf, nframes_t nframes );
 
     virtual nframes_t get_module_latency ( void ) const;
 

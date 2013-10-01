@@ -66,6 +66,7 @@ src/Plugin_Module.C
 src/Project.C
 src/Group.C
 src/main.C
+src/SpectrumView.C
 src/Spatialization_Console.C
 ''',
               target       = 'non-mixer',

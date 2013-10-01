@@ -672,6 +672,41 @@ Module::draw_box ( int tx, int ty, int tw, int th )
     fl_pop_clip();
 }
 
+#include "SpectrumView.H"
+#include <FL/Fl_Double_Window.H>
+
+
+bool
+Module::show_analysis_window ( void )
+{
+    nframes_t nframes = 4096;
+    float *buf = new float[nframes];
+
+    if ( ! get_impulse_response( buf, nframes ) )
+        return false;
+    
+    Fl_Double_Window *w = new Fl_Double_Window( 1000, 500 );
+
+    {
+        SpectrumView * o = new SpectrumView( 25,25, 1000 - 50, 500 - 50, label() );
+        o->labelsize(10);
+        o->align(FL_ALIGN_RIGHT|FL_ALIGN_TOP);
+        o->sample_rate( sample_rate() );
+        /* o->minimum_frequency( 10 ); */
+        /* o->maximum_frequency( 50000 ); */
+        o->data( buf, nframes );
+    }
+
+    w->end();
+
+    w->show();
+
+    while ( w->shown() )
+        Fl::wait();
+
+    return true;
+}
+
 void
 Module::draw_label ( int tx, int ty, int tw, int th )
 {
@@ -888,6 +923,10 @@ Module::menu_cb ( const Fl_Menu_ *m )
     {
         paste_before();
     }
+    else if ( ! strcmp( picked, "Show Analysis" ) )
+    {
+        show_analysis_window();
+    }
     else if ( ! strcmp( picked, "Remove" ) )
         command_remove();
 }
@@ -924,10 +963,12 @@ Module::menu ( void ) const
     m.add( "Insert", 0, &Module::menu_cb, (void*)this, 0);
     m.add( "Insert", 0, &Module::menu_cb, const_cast< Fl_Menu_Item *>( insert_menu->menu() ), FL_SUBMENU_POINTER );
     m.add( "Edit Parameters", ' ', &Module::menu_cb, (void*)this, 0 );
+    m.add( "Show Analysis", 's', &Module::menu_cb, (void*)this, 0);
     m.add( "Bypass",   'b', &Module::menu_cb, (void*)this, FL_MENU_TOGGLE | ( bypass() ? FL_MENU_VALUE : 0 ) );
     m.add( "Cut", FL_CTRL + 'x', &Module::menu_cb, (void*)this, is_default() ? FL_MENU_INACTIVE : 0 );
     m.add( "Copy", FL_CTRL + 'c', &Module::menu_cb, (void*)this, is_default() ? FL_MENU_INACTIVE : 0 );
     m.add( "Paste", FL_CTRL + 'v', &Module::menu_cb, (void*)this, _copied_module_empty ? 0 : FL_MENU_INACTIVE );
+
     m.add( "Remove",  FL_Delete, &Module::menu_cb, (void*)this );
 
 //    menu_set_callback( menu, &Module::menu_cb, (void*)this );

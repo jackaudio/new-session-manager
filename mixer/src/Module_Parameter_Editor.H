@@ -27,6 +27,7 @@ class Module;
 class Fl_Menu_Button;
 class Panner;
 class Fl_Scroll;
+class SpectrumView;
 
 #include <vector>
 #include <list>
@@ -76,10 +77,12 @@ class Module_Parameter_Editor : public Fl_Double_Window
     void set_value (int i, float value );
     void bind_control ( int i );
     void make_controls ( void );
+    void update_spectrum ( void );
     
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( Fl_Menu_ *m );
-    
+
+    SpectrumView *spectrum_view;
     Fl_Scroll *control_scroll;
     Fl_Flowpack *control_pack;
     Fl_Menu_Button *mode_choice;

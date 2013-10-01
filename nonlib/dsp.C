@@ -181,7 +181,7 @@ buffer_fill_with_silence ( sample_t *buf, nframes_t nframes )
 }
 
 bool
-buffer_is_digital_black ( sample_t *buf, nframes_t nframes )
+buffer_is_digital_black ( const sample_t *buf, nframes_t nframes )
 {
     while ( nframes-- )
     {

@@ -79,6 +79,8 @@ class Module_Parameter_Editor : public Fl_Double_Window
     void make_controls ( void );
     void update_spectrum ( void );
     
+    bool is_probably_eq ( void );
+
     static void menu_cb ( Fl_Widget *w, void *v );
     void menu_cb ( Fl_Menu_ *m );
 

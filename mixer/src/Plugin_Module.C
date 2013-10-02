@@ -781,10 +781,6 @@ Plugin_Module::handle_port_connection_change ( void )
 bool 
 Plugin_Module::get_impulse_response ( sample_t *buf, nframes_t nframes )
 {
-    memset( buf, 0, sizeof( float ) * nframes );
-
-    buf[0] = 1;
-    
     apply( buf, nframes );
     
     if ( buffer_is_digital_black( buf + 1, nframes - 1 ))

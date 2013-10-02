@@ -31,6 +31,7 @@
 
 static std::map<int,float*> _cached_plan;
 
+unsigned int SpectrumView::_nframes = 0;
 float SpectrumView::_fmin = 10;
 float SpectrumView::_fmax = 24000;
 unsigned int SpectrumView::_sample_rate = 48000;
@@ -52,11 +53,28 @@ SpectrumView::data ( float *data, unsigned int nframes )
         delete[] _data;
 
     _data = data;
-    _nframes = nframes;
-
+    _data_frames = nframes;
+    
     clear_bands();
 
+    impulse_frames( nframes );
+
     redraw();
+}
+
+void
+SpectrumView::clear_plans ( void )
+{
+    /* invalidate all plans */
+
+    for ( std::map<int,float*>::iterator i = _cached_plan.begin();
+          i != _cached_plan.end();
+          i++ )
+    {
+        delete[] i->second;
+    }
+
+    _cached_plan.clear();
 }
 
 void
@@ -68,16 +86,18 @@ SpectrumView::sample_rate ( unsigned int sample_rate )
         _fmin = 10;
         _fmax = _sample_rate * 0.5f;
 
-        /* invalidate all plans */
+        clear_plans();
+    }
+}
 
-        for ( std::map<int,float*>::iterator i = _cached_plan.begin();
-              i != _cached_plan.end();
-              i++ )
-        {
-            delete[] i->second;
-        }
+void
+SpectrumView::impulse_frames ( unsigned int nframes )
+{
+    if ( _nframes != nframes )
+    {
+        clear_plans();
 
-        _cached_plan.clear();
+        _nframes = nframes;
     }
 }
 
@@ -127,6 +147,9 @@ qft_plan ( unsigned frames, unsigned samples, float Fs, float Fmin, float Fmax )
 void
 SpectrumView::analyze_data ( unsigned int _plan_size )
 {
+    if ( ! _data )
+        return;
+
     float res[_plan_size * 2];
     memset(res,0,sizeof(float) * _plan_size * 2);
 
@@ -192,7 +215,7 @@ SpectrumView::SpectrumView ( int X, int Y, int W, int H, const char *L )
 {
     _auto_level = 0;
     _data = 0;
-    _nframes = 0;
+    _data_frames = 0;
     _bands = 0;
     _dbmin = -70;
     _dbmax = 30;
@@ -265,6 +288,9 @@ SpectrumView::draw_semilog ( void )
 void
 SpectrumView::draw_curve ( void )
 {
+    if ( !_bands )
+        return;
+
     int W = w() - padding_right;
 
     //Build lines
@@ -283,6 +309,16 @@ SpectrumView::draw ( void )
 
     int W = w() - padding_right;
     int H = h() - padding_bottom;
+
+    if ( _data_frames != _nframes )
+    {
+        /* invalid data */
+        if ( _data )
+            delete[] _data;
+        _data = 0;
+
+        clear_bands();
+    }
     
     if ( !_bands ) {
         analyze_data( W );

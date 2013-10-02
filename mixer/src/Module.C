@@ -682,8 +682,14 @@ Module::show_analysis_window ( void )
     nframes_t nframes = 4096;
     float *buf = new float[nframes];
 
+    memset( buf, 0, sizeof(float) * nframes );
+    
+    buf[0] = 1;
+       
     if ( ! get_impulse_response( buf, nframes ) )
-        return false;
+    {
+        // return false;
+    }
     
     Fl_Double_Window *w = new Fl_Double_Window( 1000, 500 );
 

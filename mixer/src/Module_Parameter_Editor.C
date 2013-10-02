@@ -48,6 +48,18 @@
 
 
 #include "SpectrumView.H"
+#include "string.h"
+
+bool
+Module_Parameter_Editor::is_probably_eq ( void )
+{
+    const char *name = _module->label();
+
+    return strcasestr( name, "eq" ) ||
+        strcasestr( name, "filter" ) ||
+        strcasestr( name, "parametric" ) ||
+        strcasestr( name, "band" );
+}
 
 Module_Parameter_Editor::Module_Parameter_Editor ( Module *module ) : Fl_Double_Window( 900,240)
 {
@@ -125,19 +137,28 @@ Module_Parameter_Editor::update_spectrum ( void )
 {
     nframes_t nframes = 4096;
     float *buf = new float[nframes];
+
+    memset( buf, 0, sizeof(float) * nframes );
+
+    buf[0] = 1;
+
     SpectrumView *o = spectrum_view;
 
     o->sample_rate( _module->sample_rate() );
 
+    bool show = false;
+
     if ( ! _module->get_impulse_response( buf, nframes ) )
-    {
-        o->data( buf, 1 );
-        /* o->hide(); */
-    }
+        show = is_probably_eq();
     else
+        show = true;
+
+    o->data( buf, nframes );
+
+    if ( show && ! o->parent()->visible() )
     {
-        o->data( buf, nframes );
         o->parent()->show();
+        update_control_visibility();
     }
 
     o->redraw();
@@ -156,7 +177,9 @@ Module_Parameter_Editor::make_controls ( void )
 
 
         Fl_Labelpad_Group *flg = new Fl_Labelpad_Group( (Fl_Widget*)o );
+
         flg->hide();
+
         control_pack->add( flg );
     }
 
@@ -417,9 +440,23 @@ Module_Parameter_Editor::make_controls ( void )
             controls_by_port[radius_port_number] = o;
     }
 
-    update_control_visibility();
-    
     update_spectrum();
+
+    update_control_visibility();
+}
+
+void 
+Module_Parameter_Editor::update_control_visibility ( void )
+{
+    for ( unsigned int i = 0; i < _module->control_input.size(); ++i )
+    {
+        const Module::Port *p = &_module->control_input[i];
+
+        if ( p->hints.visible )
+            controls_by_port[i]->parent()->show();
+        else
+            controls_by_port[i]->parent()->hide();
+    }
 
     control_pack->dolayout();
 
@@ -435,20 +472,7 @@ Module_Parameter_Editor::make_controls ( void )
 
     size( width, height );
     size_range( width, height, width, height );
-}
 
-void 
-Module_Parameter_Editor::update_control_visibility ( void )
-{
-    for ( unsigned int i = 0; i < _module->control_input.size(); ++i )
-    {
-        const Module::Port *p = &_module->control_input[i];
-
-        if ( p->hints.visible )
-            controls_by_port[i]->parent()->show();
-        else
-            controls_by_port[i]->parent()->hide();
-    }
 }
 
 void

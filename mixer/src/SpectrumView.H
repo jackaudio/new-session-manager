@@ -25,9 +25,10 @@ class SpectrumView : public Fl_Box
     static unsigned int _sample_rate;
     static float _fmin;
     static float _fmax;
+    static unsigned int _nframes;
 
     float * _data;
-    unsigned int _nframes;
+    unsigned int _data_frames;
     float * _bands;
     float _dbmin;
     float _dbmax;
@@ -37,10 +38,14 @@ class SpectrumView : public Fl_Box
     void draw_semilog ( void );
     void analyze_data ( unsigned int plan_size );
     void clear_bands ( void );
+    static void clear_plans ( void );
 
 public:
     
     static void sample_rate ( unsigned int sample_rate );
+    /* all subsequent calls to data() MUST contain this number of
+     * frames. Changing this value will invalidate all cached plans */
+    static void impulse_frames ( unsigned int nframes );
 
     /* set dB range. If min == max, then auto leveling will be enabled */
     void db_range ( float min, float max )
@@ -50,8 +55,10 @@ public:
             _auto_level = min == max;
         }
 
+    
     /** /data/ must point to allocated memory. It will be freed when new data is set or when the control is destroyed */
-    void data ( float *data, unsigned int nframes );
+
+    void data ( float *data, unsigned int data_frames );
 
     SpectrumView ( int X, int Y, int W, int H, const char *L=0 );
     virtual ~SpectrumView ( );

@@ -187,7 +187,8 @@ Mixer_Strip::set ( Log_Entry &e )
             {
                 Group *t = (Group*)Loggable::find( i );
 
-                assert( t );
+                /* Because of strip copy/paste and import, we can't assure that the group will exist by ID*/
+//                assert( t );
                 
                 group( t );
             }

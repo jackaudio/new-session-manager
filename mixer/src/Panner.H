@@ -188,7 +188,7 @@ public:
 
     Panner ( int X, int Y, int W, int H, const char *L = 0 );
 
-    float range ( void ) const { return *((int*)_range_choice->menu()[_range_mode].user_data()); }
+    float range ( void ) const { return *((float*)_range_choice->menu()[_range_mode].user_data()); }
     void range ( float v );
 
     void clear_points ( void ) { _points.clear(); }

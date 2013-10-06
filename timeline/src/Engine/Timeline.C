@@ -60,14 +60,29 @@ Timeline::record ( void )
     {
         DMESSAGE( "Finding next punch region following frame %lu...", (unsigned long)frame);
 
-        const Sequence_Widget *w = punch_cursor_track->next( frame );
+        const Sequence_Widget *p = punch_cursor_track->prev( frame );
+        const Sequence_Widget *n = punch_cursor_track->next( frame );
         
-        if ( w && w->start() >= frame )
+        if (p || n )
         {
-            frame = w->start();
-            _punch_out_frame = w->start() + w->length();
-
-            DMESSAGE( "Punch enabled... Will punch in at frame %lu.", (unsigned long)frame );
+            if ( p && frame > p->start() && frame < p->start() + p->length() )
+            {
+                /* recording started in the middle of a punch
+                 * cursor... Just start recording and punch out at the
+                 * end of it */
+                _punch_out_frame = p->start() + p->length();
+            }
+            else if ( n && n->start() >= frame )
+            {
+                /* recording started outside of a punch cursor, set
+                 * punch in frame to beginning of next cursor */
+                frame = n->start();
+                _punch_out_frame = n->start() + n->length();
+            }
+                
+            DMESSAGE( "Punch enabled... Range %lu:%lu",
+                      (unsigned long)frame,
+                      (unsigned long)_punch_out_frame);
         }
     }
 

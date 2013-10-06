@@ -60,6 +60,11 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
     if ( ! ( timeline && sequence() ) )
         return;
 
+
+    if ( ! _capture->audio_file )
+        /* create the file */
+        track()->record( _capture, _frame );
+
     track()->write( _capture, buf, nframes );
 
     _frames_written += nframes;
@@ -71,8 +76,6 @@ Record_DS::disk_thread ( void )
     _thread.name( "Capture" );
 
     DMESSAGE( "capture thread running..." );
-
-    track()->record( _capture, _frame );
 
     const nframes_t nframes = _nframes;
 
@@ -148,7 +151,8 @@ Record_DS::disk_thread ( void )
 
     /* now finalize the recording */
 
-    track()->finalize( c, _stop_frame );
+    if ( c->audio_file )
+        track()->finalize( c, _stop_frame );
 
     delete c;
 

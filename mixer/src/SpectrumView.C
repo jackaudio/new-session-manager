@@ -26,16 +26,15 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <string>
 
 #include <assert.h>
 
-static std::map<int,float*> _cached_plan;
+static std::map<std::string,float*> _cached_plan;
 
-unsigned int SpectrumView::_nframes = 0;
-float SpectrumView::_fmin = 10;
-float SpectrumView::_fmax = 24000;
-unsigned int SpectrumView::_sample_rate = 48000;
-
+float SpectrumView::_fmin = 0;
+float SpectrumView::_fmax = 0;
+unsigned int SpectrumView::_sample_rate = 0;
 
 void
 SpectrumView::clear_bands ( void )
@@ -53,11 +52,9 @@ SpectrumView::data ( float *data, unsigned int nframes )
         delete[] _data;
 
     _data = data;
-    _data_frames = nframes;
+    _nframes = nframes;
     
     clear_bands();
-
-    impulse_frames( nframes );
 
     redraw();
 }
@@ -67,7 +64,7 @@ SpectrumView::clear_plans ( void )
 {
     /* invalidate all plans */
 
-    for ( std::map<int,float*>::iterator i = _cached_plan.begin();
+    for ( std::map<std::string,float*>::iterator i = _cached_plan.begin();
           i != _cached_plan.end();
           i++ )
     {
@@ -84,20 +81,11 @@ SpectrumView::sample_rate ( unsigned int sample_rate )
     {
         _sample_rate = sample_rate;
         _fmin = 10;
-        _fmax = _sample_rate * 0.5f;
+        _fmax = 20000;
+        if ( _fmax > _sample_rate * 0.5f )
+            _fmax = _sample_rate * 0.5f;
 
         clear_plans();
-    }
-}
-
-void
-SpectrumView::impulse_frames ( unsigned int nframes )
-{
-    if ( _nframes != nframes )
-    {
-        clear_plans();
-
-        _nframes = nframes;
     }
 }
 
@@ -142,6 +130,14 @@ qft_plan ( unsigned frames, unsigned samples, float Fs, float Fmin, float Fmax )
     return op;
 }
 
+const char *
+plan_key ( unsigned int plan_size, unsigned int nframes )
+{
+    static char s[256];
+    snprintf( s, sizeof(s), "%d:%d", plan_size, nframes );
+    return s;
+}
+
 /** Input should be an impulse response of an EQ. Output will be a
  * buffer of /bands/ floats of dB values for each frequency band */
 void
@@ -153,10 +149,12 @@ SpectrumView::analyze_data ( unsigned int _plan_size )
     float res[_plan_size * 2];
     memset(res,0,sizeof(float) * _plan_size * 2);
 
-    if ( _cached_plan.find( _plan_size ) == _cached_plan.end() )
-        _cached_plan[_plan_size ] = qft_plan( _nframes, _plan_size, _sample_rate, _fmin, _fmax);
+    const char *key = plan_key( _plan_size, _nframes );
 
-    const float *plan = _cached_plan[_plan_size];
+    if ( _cached_plan.find( key ) == _cached_plan.end() )
+        _cached_plan[ key ] = qft_plan( _nframes, _plan_size, _sample_rate, _fmin, _fmax);
+
+    const float *plan = _cached_plan[ key ];
 
     //Evaluate at set frequencies
     for(unsigned i=0; i<_plan_size; ++i) {
@@ -213,9 +211,9 @@ SpectrumView::~SpectrumView ( void )
 SpectrumView::SpectrumView ( int X, int Y, int W, int H, const char *L )
     : Fl_Box(X,Y,W,H,L)
 {
+    _nframes = 0;
     _auto_level = 0;
     _data = 0;
-    _data_frames = 0;
     _bands = 0;
     _dbmin = -70;
     _dbmax = 30;
@@ -226,61 +224,53 @@ SpectrumView::SpectrumView ( int X, int Y, int W, int H, const char *L )
 }
 
 static int padding_right = 0;
-static int padding_bottom = 0;
+static int padding_bottom = 7;
 
 void 
 SpectrumView::draw_semilog ( void )
 {
     int W = w() - padding_right;
     int H = h() - padding_bottom;
+    char label[50];
 
-    /* char dash[] = {5,5 }; */
-    /* fl_line_style(0, 1, dash); */
     fl_line_style(FL_SOLID,0);
+    fl_font( FL_HELVETICA_ITALIC, 7 );
 
     //Db grid is easy, it is just a linear spacing
     for(int i=0; i<8; ++i) {
         int level = y()+H*i/8.0;
         fl_line(x(), level, x()+W, level);
+
+        float value = (1-i/8.0)*(_dbmax-_dbmin) + _dbmin;
+        sprintf(label, "%.1f dB", value);
+        fl_draw(label, x(), level + 3, w(), 7, FL_ALIGN_RIGHT );
     }
 
     //The frequency grid is defined with points at
     //10,11,12,...,18,19,20,30,40,50,60,70,80,90,100,200,400,...
     //Thus we find each scale that we cover and draw the nine lines unique to
     //that scale
-    const int min_base = logf(_fmin)/logf(10);
-    const int max_base = logf(_fmax)/logf(10);
-    const float b = logf(_fmin)/logf(10);
-    const float a = logf(_fmax)/logf(10)-b;
+    float lb = 1.0f / logf( 10 );
+    const int min_base = logf(_fmin)*lb;
+    const int max_base = logf(_fmax)*lb;
+    const float b = logf(_fmin)*lb;
+    const float a = logf(_fmax)*lb-b;
     for(int i=min_base; i<=max_base; ++i) {
         for(int j=1; j<10; ++j) {
             const float freq = pow(10.0, i)*j;
-            const float xloc = (logf(freq)/logf(10)-b)/a;
+            const float xloc = (logf(freq)*lb-b)/a;
             if(xloc<1.0 && xloc > -0.001)
+            {
                 fl_line(xloc*W+x(), y(), xloc*W+x(), y()+H);
-        }
-    }
-
-    fl_end_line();
             
-    fl_font( FL_HELVETICA_ITALIC, 7 );
-    //Place the text labels
-    char label[256];
-    for(int i=0; i<8; ++i) {
-        int level = (y()+H*i/8.0) + 3;
-        float value = (1-i/8.0)*(_dbmax-_dbmin) + _dbmin;
-        sprintf(label, "%.1f dB", value);
-//        fl_draw(label, x()+w() + 3, level);
-        fl_draw(label, x(), level, w(), 7, FL_ALIGN_RIGHT );
-    }
-            
-    for(int i=min_base; i<=max_base; ++i) {
-        {
-            const float freq = pow(10.0, i)*1;
-            const float xloc = (logf(freq)/logf(10)-b)/a;
-            sprintf(label, "%0.f %s", freq < 1000.0 ? freq : freq / 1000.0, freq < 1000.0 ? "Hz" : "KHz" );
-            if(xloc<1.0)
-                fl_draw(label, xloc*W+x()+1, y()+h());
+                if ( j == 1 || j == 2 || j == 5 )
+                {
+                    sprintf(label, "%0.f %s", freq < 1000.0 ? freq : freq / 1000.0, freq < 1000.0 ? "Hz" : "KHz" );
+                    int sx = x() + xloc*W + 1;
+                    if ( sx < x() * W - 20 )
+                        fl_draw(label, sx, y()+h());
+                }
+            }
         }
     }
 }
@@ -294,11 +284,11 @@ SpectrumView::draw_curve ( void )
     int W = w() - padding_right;
 
     //Build lines
-    float inc = 1.0 / (float)W;
+    float inc = 1.0f / (float)W;
 
     float fx = 0;
     for(  int i = 0; i < W; i++, fx += inc )
-        fl_vertex(fx, 1.0 - _bands[i]);
+        fl_vertex(fx, 1.0f - _bands[i]);
 }
 
 void
@@ -310,16 +300,6 @@ SpectrumView::draw ( void )
     int W = w() - padding_right;
     int H = h() - padding_bottom;
 
-    if ( _data_frames != _nframes )
-    {
-        /* invalid data */
-        if ( _data )
-            delete[] _data;
-        _data = 0;
-
-        clear_bands();
-    }
-    
     if ( !_bands ) {
         analyze_data( W );
     }

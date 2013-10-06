@@ -679,7 +679,8 @@ Module::draw_box ( int tx, int ty, int tw, int th )
 bool
 Module::show_analysis_window ( void )
 {
-    nframes_t nframes = 4096;
+    /* use a large window for more accuracy at low frequencies */
+    nframes_t nframes = sample_rate() / 2;
     float *buf = new float[nframes];
 
     memset( buf, 0, sizeof(float) * nframes );
@@ -698,8 +699,6 @@ Module::show_analysis_window ( void )
         o->labelsize(10);
         o->align(FL_ALIGN_RIGHT|FL_ALIGN_TOP);
         o->sample_rate( sample_rate() );
-        /* o->minimum_frequency( 10 ); */
-        /* o->maximum_frequency( 50000 ); */
         o->data( buf, nframes );
     }
 

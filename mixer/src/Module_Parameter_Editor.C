@@ -135,16 +135,19 @@ Module_Parameter_Editor::~Module_Parameter_Editor ( )
 void
 Module_Parameter_Editor::update_spectrum ( void )
 {
-    nframes_t nframes = 4096;
+    nframes_t sample_rate = _module->sample_rate();
+
+    SpectrumView *o = spectrum_view;
+
+    o->sample_rate( sample_rate );
+
+    nframes_t nframes = sample_rate / 10;
+
     float *buf = new float[nframes];
 
     memset( buf, 0, sizeof(float) * nframes );
 
     buf[0] = 1;
-
-    SpectrumView *o = spectrum_view;
-
-    o->sample_rate( _module->sample_rate() );
 
     bool show = false;
 

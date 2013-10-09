@@ -237,13 +237,13 @@ SpectrumView::draw_semilog ( void )
     fl_font( FL_HELVETICA_ITALIC, 7 );
 
     //Db grid is easy, it is just a linear spacing
-    for(int i=0; i<8; ++i) {
-        int level = y()+H*i/8.0;
+    for(int i=0; i<16; ++i) {
+        int level = y()+H*i/16.0;
         fl_line(x(), level, x()+W, level);
 
-        float value = (1-i/8.0)*(_dbmax-_dbmin) + _dbmin;
-        sprintf(label, "%.1f dB", value);
-        fl_draw(label, x(), level + 3, w(), 7, FL_ALIGN_RIGHT );
+        float value = (1-i/16.0)*(_dbmax-_dbmin) + _dbmin;
+        sprintf(label, "%.1f", value);
+        fl_draw(label, x(), level + 3, w() - 2, 7, FL_ALIGN_RIGHT );
     }
 
     //The frequency grid is defined with points at
@@ -265,13 +265,25 @@ SpectrumView::draw_semilog ( void )
             
                 if ( j == 1 || j == 2 || j == 5 )
                 {
-                    sprintf(label, "%0.f %s", freq < 1000.0 ? freq : freq / 1000.0, freq < 1000.0 ? "Hz" : "KHz" );
+                    sprintf(label, "%0.f %s", freq < 1000.0 ? freq : freq / 1000.0, freq < 1000.0 ? "" : "k" );
                     int sx = x() + xloc*W + 1;
                     if ( sx < x() * W - 20 )
                         fl_draw(label, sx, y()+h());
                 }
             }
         }
+    }
+
+    /* draw 0dB line */
+    {
+        fl_line_style(FL_DASH,0);
+        float i = ((_dbmax-_dbmin)+_dbmin) / (_dbmax-_dbmin);
+        
+        int level = y()+H*i;
+                
+        fl_color(fl_color_add_alpha(fl_rgb_color(240,240,240), 60 ));
+        fl_line(x(), level, x()+W, level);
+        fl_line_style(FL_SOLID,0);
     }
 }
 

@@ -81,9 +81,9 @@ SpectrumView::sample_rate ( unsigned int sample_rate )
     {
         _sample_rate = sample_rate;
         _fmin = 10;
-        _fmax = 20000;
-        if ( _fmax > _sample_rate * 0.5f )
-            _fmax = _sample_rate * 0.5f;
+        /* _fmax = 28000; */
+        /* /\* if ( _fmax > _sample_rate * 0.5f ) *\/ */
+        _fmax = _sample_rate * 0.5f;
 
         clear_plans();
     }
@@ -243,7 +243,7 @@ SpectrumView::draw_semilog ( void )
 
         float value = (1-i/16.0)*(_dbmax-_dbmin) + _dbmin;
         sprintf(label, "%.1f", value);
-        fl_draw(label, x(), level + 3, w() - 2, 7, FL_ALIGN_RIGHT );
+        fl_draw(label, x() + 4, level + 3, w() - 8, 7, FL_ALIGN_LEFT );
     }
 
     //The frequency grid is defined with points at
@@ -265,7 +265,7 @@ SpectrumView::draw_semilog ( void )
             
                 if ( j == 1 || j == 2 || j == 5 )
                 {
-                    sprintf(label, "%0.f %s", freq < 1000.0 ? freq : freq / 1000.0, freq < 1000.0 ? "" : "k" );
+                    sprintf(label, "%0.f%s", freq < 1000.0 ? freq : freq / 1000.0, freq < 1000.0 ? "" : "k" );
                     int sx = x() + xloc*W + 1;
                     if ( sx < x() * W - 20 )
                         fl_draw(label, sx, y()+h());

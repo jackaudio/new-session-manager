@@ -709,6 +709,8 @@ Module::show_analysis_window ( void )
     while ( w->shown() )
         Fl::wait();
 
+    delete w;
+
     return true;
 }
 

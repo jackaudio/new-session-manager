@@ -26,88 +26,90 @@
 void
 Fl_SliderX::draw ( int X, int Y, int W, int H)
 {
+    slider_size( horizontal() ? H / (float)W : W / (float)H );
+
     int act = active_r();
 
     if (damage()&FL_DAMAGE_ALL) draw_box();
     
  
-  int ww = (horizontal() ? W : H);
-  int hh = (horizontal() ? H : W);
-  int xx, S;
+    int ww = (horizontal() ? W : H);
+    int hh = (horizontal() ? H : W);
+    int xx, S;
    
-  xx = slider_position( value(), ww );
+    xx = slider_position( value(), ww );
 
-  S = (horizontal() ? H : W );
+    S = (horizontal() ? H : W );
  
-  int xsl, ysl, wsl, hsl;
-  if (horizontal()) {
-    xsl = X+xx;
-    wsl = S;
-    ysl = Y + hh/2;
-    hsl = hh/4;
-  } else {
-    ysl = Y+xx;
-    hsl = S;
-    xsl = X + hh/2;
-    wsl = hh/4;
-  }
+    int xsl, ysl, wsl, hsl;
+    if (horizontal()) {
+        xsl = X+xx;
+        wsl = S;
+        ysl = Y + hh/2;
+        hsl = hh/4;
+    } else {
+        ysl = Y+xx;
+        hsl = S;
+        xsl = X + hh/2;
+        wsl = hh/4;
+    }
 
-  {
-      fl_push_clip(X, Y, W, H);
-      draw_box();
-      fl_pop_clip();
-  }
-  //draw_bg(X, Y, W, H);
+    {
+        fl_push_clip(X, Y, W, H);
+        draw_box();
+        fl_pop_clip();
+    }
+    //draw_bg(X, Y, W, H);
 
-  fl_line_style( FL_SOLID, hh/6 );
+    fl_line_style( FL_SOLID, hh/6 );
   
-  Fl_Color c = fl_darker(color());
+    Fl_Color c = fl_darker(color());
 
-  if ( !act )
-      c = fl_inactive(c);
+    if ( !act )
+        c = fl_inactive(c);
 
-  fl_color(c);
+    fl_color(c);
 
-  if ( horizontal() )
-      fl_line ( X + S/2, Y + hh/2, X + W - S/2, Y + hh/2 );
-  else
-      fl_line ( X + hh/2, Y + S/2, X + hh/2, Y + H - S/2 );
+    if ( horizontal() )
+        fl_line ( X + S/2, Y + hh/2, X + W - S/2, Y + hh/2 );
+    else
+        fl_line ( X + hh/2, Y + S/2, X + hh/2, Y + H - S/2 );
 
-  c = selection_color();
+    c = selection_color();
 
-  if ( !act )
-      c = fl_inactive(c);
+    if ( !act )
+        c = fl_inactive(c);
 
-  fl_color( c );
+    fl_color( c );
 
-  if ( horizontal() )
-      fl_line ( X + S/2, ysl, xsl + S/2, ysl );
-  else
-      fl_line ( X + S/2, Y + H - S/2, xsl, ysl + (S/2) );
+    if ( horizontal() )
+        fl_line ( X + S/2, ysl, xsl + S/2, ysl );
+    else
+        fl_line ( X + S/2, Y + H - S/2, xsl, ysl + (S/2) );
   
-  fl_line_style( FL_SOLID, 0 );
+    fl_line_style( FL_SOLID, 0 );
 
-  if ( act )
-  {
-      fl_push_matrix();
-      if ( horizontal() )
-          fl_translate( xsl + (hh/2), ysl);
-      else
-          fl_translate( xsl, ysl + (hh/2) );
+    if ( act )
+    {
+        fl_push_matrix();
+        if ( horizontal() )
+            fl_translate( xsl + (hh/2), ysl);
+        else
+            fl_translate( xsl, ysl + (hh/2) );
       
-      fl_color( fl_color_add_alpha( FL_WHITE, 127 ));
-      fl_begin_polygon(); fl_circle(0.0,0.0, hh/3); fl_end_polygon();
-      fl_color( FL_WHITE );
-      fl_begin_polygon(); fl_circle(0.0,0.0, hh/6); fl_end_polygon();
+        fl_color( fl_color_add_alpha( FL_WHITE, 127 ));
+        fl_begin_polygon(); fl_circle(0.0,0.0, hh/3); fl_end_polygon();
+        fl_color( FL_WHITE );
+        fl_begin_polygon(); fl_circle(0.0,0.0, hh/6); fl_end_polygon();
       
-      fl_pop_matrix();
-  }
+        fl_pop_matrix();
+    }
   
-  draw_label(xsl, ysl, wsl, hsl);
+    draw_label(xsl, ysl, wsl, hsl);
 
-  if (Fl::focus() == this) {
-      draw_focus();
-  }
+    if (Fl::focus() == this) {
+        draw_focus();
+    }
 
     /* draw(x()+Fl::box_dx(box()), */
     /*      y()+Fl::box_dy(box()), */
@@ -125,7 +127,7 @@ Fl_SliderX::slider_position ( double value, int w )
     if (B == A) return 0;
     bool flip = B < A;
     if (flip) {A = B; B = minimum();}
-    if (!horizontal()) flip = !flip;
+//    if (!horizontal()) flip = !flip;
     // if both are negative, make the range positive:
     if (B <= 0) {flip = !flip; double t = A; A = -B; B = -t; value = -value;}
     double fraction;
@@ -161,7 +163,7 @@ Fl_SliderX::slider_value ( int X, int w )
   double B = maximum();
   bool flip = B < A;
   if (flip) {A = B; B = minimum();}
-  if (!horizontal()) flip = !flip;
+//  if (!horizontal()) flip = !flip;
   if (flip) X = w-X;
   double fraction = double(X)/w;
   if (fraction <= 0) return A;
@@ -223,12 +225,11 @@ int Fl_SliderX::handle(int event, int X, int Y, int W, int H) {
 
       int ww = (horizontal() ? W : H);
 
-
       if ( event == FL_PUSH )
       {
 	  int x = slider_position( value(), ww );
 
-	  offcenter = (Fl::event_x()-X) - x;
+	  offcenter = (horizontal() ? (Fl::event_x()-X) - x : (Fl::event_y()-Y) - x );
       }
 
       try_again:
@@ -236,10 +237,15 @@ int Fl_SliderX::handle(int event, int X, int Y, int W, int H) {
       int mx = (horizontal() ? Fl::event_x()-X : Fl::event_y()-Y) - offcenter;
       double v = slider_value( mx, ww );
 
-      if (event == FL_PUSH && v == value()) {
-	  offcenter = int(slider_size()*ww+0.5)/2;
-	  event = FL_DRAG;
-	  goto try_again;
+      if (event == FL_PUSH ) // && v == value()) {
+      {
+          int os = int(slider_size()*ww+0.5)/2;
+          if ( abs( offcenter ) > os )
+          {
+              offcenter = os;
+              event = FL_DRAG;
+              goto try_again;
+          }
       }
 
       handle_drag(clamp(v));
@@ -332,12 +338,4 @@ int Fl_SliderX::handle(int event) {
 		y()+Fl::box_dy(box()),
 		w()-Fl::box_dw(box()),
 		h()-Fl::box_dh(box()));
-}
-
-void
-Fl_SliderX::resize ( int X, int Y, int W, int H )
-{
-    Fl_Slider::resize(X,Y,W,H);
-
-    slider_size( horizontal() ? H / (float)W : W / (float)H );
 }

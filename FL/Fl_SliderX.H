@@ -47,7 +47,4 @@ public:
 
     virtual int handle(int event, int X, int Y, int W, int H);
     virtual int handle(int event);
-
-    virtual void resize ( int X, int Y, int W, int H );
-
 };

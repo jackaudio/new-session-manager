@@ -21,6 +21,8 @@
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 
+#include <math.h>
+
 void
 Fl_SliderX::draw ( int X, int Y, int W, int H)
 {
@@ -28,33 +30,15 @@ Fl_SliderX::draw ( int X, int Y, int W, int H)
 
     if (damage()&FL_DAMAGE_ALL) draw_box();
     
-    double val;
-
-  if (minimum() == maximum())
-    val = 0.5;
-  else {
-    val = (value()-minimum())/(maximum()-minimum());
-    if (val > 1.0) val = 1.0;
-    else if (val < 0.0) val = 0.0;
-  }
-
+ 
   int ww = (horizontal() ? W : H);
   int hh = (horizontal() ? H : W);
   int xx, S;
    
-  /* S = int(val*ww+.5); */
-  /* if (minimum()>maximum()) {S = ww-S; xx = ww-S;} */
-  /* else xx = 0; */
- 
-  {
-      //S = //int(ww+.5);
-      S = hh;
-      int T = (horizontal() ? H : W)/2+1;
-//      if (type()==FL_VERT_NICE_SLIDER || type()==FL_HOR_NICE_SLIDER) T += 4;
-      if (S < T) S = T;
-      xx = int(val*(ww-S)+.5);
-  }
+  xx = slider_position( value(), ww );
 
+  S = (horizontal() ? H : W );
+ 
   int xsl, ysl, wsl, hsl;
   if (horizontal()) {
     xsl = X+xx;
@@ -130,4 +114,230 @@ Fl_SliderX::draw ( int X, int Y, int W, int H)
     /*      w()-Fl::box_dw(box()), */
     /*      h()-Fl::box_dh(box())); */
 
+}
+
+/** return a value between 0.0 and 1.0 which represents the current slider position. */
+int
+Fl_SliderX::slider_position ( double value, int w )
+{
+    double A = minimum();
+    double B = maximum();
+    if (B == A) return 0;
+    bool flip = B < A;
+    if (flip) {A = B; B = minimum();}
+    if (!horizontal()) flip = !flip;
+    // if both are negative, make the range positive:
+    if (B <= 0) {flip = !flip; double t = A; A = -B; B = -t; value = -value;}
+    double fraction;
+    if (!log()) {
+	// linear slider
+	fraction = (value-A)/(B-A);
+    } else if (A > 0) {
+	// logatithmic slider
+	if (value <= A) fraction = 0;
+	else fraction = (::log(value)-::log(A))/(::log(B)-::log(A));
+    } else if (A == 0) {
+	// squared slider
+	if (value <= 0) fraction = 0;
+	else fraction = sqrt(value/B);
+    } else {
+	// squared signed slider
+	if (value < 0) fraction = (1-sqrt(value/A))*.5;
+	else fraction = (1+sqrt(value/B))*.5;
+    }
+    if (flip) fraction = 1-fraction;
+    
+    w -= int(slider_size()*w+.5); if (w <= 0) return 0;
+    if (fraction >= 1) return w;
+    else if (fraction <= 0) return 0;
+    else return int(fraction*w+.5);
+}
+
+double
+Fl_SliderX::slider_value ( int X, int w )
+{
+    w -= int(slider_size()*w+.5); if (w <= 0) return minimum();
+  double A = minimum();
+  double B = maximum();
+  bool flip = B < A;
+  if (flip) {A = B; B = minimum();}
+  if (!horizontal()) flip = !flip;
+  if (flip) X = w-X;
+  double fraction = double(X)/w;
+  if (fraction <= 0) return A;
+  if (fraction >= 1) return B;
+  // if both are negative, make the range positive:
+  flip = (B <= 0);
+  if (flip) {double t = A; A = -B; B = -t; fraction = 1-fraction;}
+  double value;
+  double derivative;
+  if (!log()) {
+    // linear slider
+    value = fraction*(B-A)+A;
+    derivative = (B-A)/w;
+  } else if (A > 0) {
+    // log slider
+    double d = (::log(B)-::log(A));
+    value = exp(fraction*d+::log(A));
+    derivative = value*d/w;
+  } else if (A == 0) {
+    // squared slider
+    value = fraction*fraction*B;
+    derivative = 2*fraction*B/w;
+  } else {
+    // squared signed slider
+    fraction = 2*fraction - 1;
+    if (fraction < 0) B = A;
+    value = fraction*fraction*B;
+    derivative = 4*fraction*B/w;
+  }
+  // find nicest multiple of 10,5, or 2 of step() that is close to 1 pixel:
+  if (step() && derivative > step()) {
+    double w = log10(derivative);
+    double l = ceil(w);
+    int num = 1;
+    int i; for (i = 0; i < l; i++) num *= 10;
+    int denom = 1;
+    for (i = -1; i >= l; i--) denom *= 10;
+    if (l-w > 0.69897) denom *= 5;
+    else if (l-w > 0.30103) denom *= 2;
+    value = floor(value*denom/num+.5)*num/denom;
+  }
+  if (flip) return -value;
+  return value;
+
+}
+
+int Fl_SliderX::handle(int event, int X, int Y, int W, int H) {
+  // Fl_Widget_Tracker wp(this);
+  switch (event) {
+  case FL_PUSH: {
+    Fl_Widget_Tracker wp(this);
+    if (!Fl::event_inside(X, Y, W, H)) return 0;
+    handle_push();
+    if (wp.deleted()) return 1; }
+    // fall through ...
+  case FL_DRAG: {
+
+      static int offcenter;
+
+      int ww = (horizontal() ? W : H);
+
+
+      if ( event == FL_PUSH )
+      {
+	  int x = slider_position( value(), ww );
+
+	  offcenter = (Fl::event_x()-X) - x;
+      }
+
+      try_again:
+
+      int mx = (horizontal() ? Fl::event_x()-X : Fl::event_y()-Y) - offcenter;
+      double v = slider_value( mx, ww );
+
+      if (event == FL_PUSH && v == value()) {
+	  offcenter = int(slider_size()*ww+0.5)/2;
+	  event = FL_DRAG;
+	  goto try_again;
+      }
+
+      handle_drag(clamp(v));
+    } return 1;
+  case FL_RELEASE:
+    handle_release();
+    return 1;
+  case FL_KEYBOARD:
+    { Fl_Widget_Tracker wp(this);
+      switch (Fl::event_key()) {
+	case FL_Up:
+	  if (horizontal()) return 0;
+	  handle_push();
+	  if (wp.deleted()) return 1;
+	  handle_drag(clamp(increment(value(),-1)));
+	  if (wp.deleted()) return 1;
+	  handle_release();
+	  return 1;
+	case FL_Down:
+	  if (horizontal()) return 0;
+	  handle_push();
+	  if (wp.deleted()) return 1;
+	  handle_drag(clamp(increment(value(),1)));
+	  if (wp.deleted()) return 1;
+	  handle_release();
+	  return 1;
+	case FL_Left:
+	  if (!horizontal()) return 0;
+	  handle_push();
+	  if (wp.deleted()) return 1;
+	  handle_drag(clamp(increment(value(),-1)));
+	  if (wp.deleted()) return 1;
+	  handle_release();
+	  return 1;
+	case FL_Right:
+	  if (!horizontal()) return 0;
+	  handle_push();
+	  if (wp.deleted()) return 1;
+	  handle_drag(clamp(increment(value(),1)));
+	  if (wp.deleted()) return 1;
+	  handle_release();
+	  return 1;
+	default:
+	  return 0;
+      }
+    }
+    // break not required because of switch...
+  case FL_FOCUS :
+  case FL_UNFOCUS :
+    if (Fl::visible_focus()) {
+      redraw();
+      return 1;
+    } else return 0;
+  case FL_ENTER :
+  case FL_LEAVE :
+    return 1;
+  case FL_MOUSEWHEEL :
+  {
+      if ( this != Fl::belowmouse() )
+          return 0;
+      if (Fl::e_dy==0)
+          return 0;
+      
+      const int steps = Fl::event_ctrl() ? 128 : 16;
+      
+      const float step = fabs( maximum() - minimum() ) / (float)steps;
+
+      int dy = Fl::e_dy;
+
+      /* slider is in 'upside down' configuration, invert meaning of mousewheel */
+      if ( minimum() > maximum() )
+          dy = 0 - dy;
+
+      handle_drag(clamp(value() + step * dy));
+      return 1;
+  }
+  default:
+    return 0;
+  }
+}
+
+int Fl_SliderX::handle(int event) {
+  if (event == FL_PUSH && Fl::visible_focus()) {
+    Fl::focus(this);
+    redraw();
+  }
+
+  return handle(event,
+		x()+Fl::box_dx(box()),
+		y()+Fl::box_dy(box()),
+		w()-Fl::box_dw(box()),
+		h()-Fl::box_dh(box()));
+}
+
+void
+Fl_SliderX::resize ( int X, int Y, int W, int H )
+{
+    Fl_Slider::resize(X,Y,W,H);
+
+    slider_size( horizontal() ? H / (float)W : W / (float)H );
 }

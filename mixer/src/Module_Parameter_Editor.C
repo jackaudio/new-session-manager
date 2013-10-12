@@ -357,7 +357,10 @@ Module_Parameter_Editor::make_controls ( void )
                     o->maximum( p->hints.minimum );
                     o->minimum( p->hints.maximum );
                 }
-                
+		if ( p->hints.type & Module::Port::Hints::LOGARITHMIC )
+		    o->log(true);
+
+                o->precision( 2 );
                 /* a couple of plugins have ridiculously small units */
                 float r =  fabs( p->hints.maximum - p->hints.minimum );
               

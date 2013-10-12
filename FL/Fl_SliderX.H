@@ -23,15 +23,31 @@
 
 class Fl_SliderX : public Fl_Slider
 {
+    bool _log;
+
 
 public:
 
+    void log ( bool v ) { _log = v; }
+    bool log ( void ) const { return _log; }
+
     Fl_SliderX( int X, int Y, int W, int H, const char *L=0 ) : Fl_Slider(X,Y,W,H,L)
         {
+	    _log = 0;
         }
 
     virtual ~Fl_SliderX (  ) { };
 
+    virtual int slider_position ( double value, int w );
+    virtual double slider_value ( int X, int w );
+
     virtual void draw ( int X, int Y, int W, int H );
     virtual void draw ( void ) { draw(x(),y(),w(),h()); }
+
+
+    virtual int handle(int event, int X, int Y, int W, int H);
+    virtual int handle(int event);
+
+    virtual void resize ( int X, int Y, int W, int H );
+
 };

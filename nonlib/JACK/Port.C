@@ -335,6 +335,8 @@ namespace JACK
     const char **
     Port::connections ( void )
     {
+        ASSERT( _port, "Attempt to get connections of null port" );
+
         return jack_port_get_connections( _port );
     }
 

@@ -1242,7 +1242,6 @@ Mixer_Strip::command_move_right ( void )
 void
 Mixer_Strip::command_close ( void )
 {
-    mixer->remove( this );
     Fl::delete_widget( this );
 }
 

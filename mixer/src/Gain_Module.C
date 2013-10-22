@@ -32,7 +32,7 @@ Gain_Module::Gain_Module ( )
 
     {
         Port p( this, Port::INPUT, Port::CONTROL, "Gain (dB)" );
-        p.hints.type = Port::Hints::LOGARITHMIC;
+        p.hints.type = Port::Hints::LINEAR;
         p.hints.ranged = true;
         p.hints.minimum = -70.0f;
         p.hints.maximum = 6.0f;

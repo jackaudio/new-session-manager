@@ -84,7 +84,7 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
     if ( !timeline )
         return;
 
-    while ( timeline->tryrdlock() )
+    while ( timeline->sequence_lock.tryrdlock() )
     {
         if ( _terminate )
             return;
@@ -100,7 +100,7 @@ Playback_DS::read_block ( sample_t *buf, nframes_t nframes )
         _frame += nframes;
     }
     
-    timeline->unlock();
+    timeline->sequence_lock.unlock();
 }
 
 void

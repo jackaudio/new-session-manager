@@ -261,13 +261,15 @@ Track::resize_buffers ( nframes_t nframes )
 
 #include <time.h>
 
+static unsigned long uuid_counter = 0;
+
 /** very cheap UUID generator... */
 unsigned long long
 uuid ( void )
 {
     time_t t = time( NULL );
 
-    return (unsigned long long) t;
+    return (unsigned long long) t + uuid_counter++;
 }
 
 /** create capture region and prepare to record */
@@ -294,11 +296,12 @@ Track::record ( Capture *c, nframes_t frame )
 
     /* must acquire a write lock because the Audio_Region constructor
      * will add the region to the specified sequence, which might affect playback */
-    timeline->wrlock();
+
+    timeline->sequence_lock.wrlock();
 
     c->region = new Audio_Region( c->audio_file, sequence(), frame );
 
-    timeline->unlock();
+    timeline->sequence_lock.unlock();
 
 //    Fl::unlock();
 
@@ -313,6 +316,10 @@ Track::record ( Capture *c, nframes_t frame )
         /* in freewheeling mode, assume we're bouncing and only
          * compensate for capture latency */
         _capture_offset = max;
+
+        /* FIXME: hack to compensate for jack 1 period delay when looped back */
+//   _capture_offset += engine->playback_latency() / 2;
+        _capture_offset += engine->nframes();
     }
     else
     {
@@ -353,17 +360,18 @@ Track::finalize ( Capture *c, nframes_t frame )
     DMESSAGE( "finalizing audio file" );
     c->audio_file->finalize();
 
-    timeline->wrlock();
-
     DMESSAGE( "Adjusting capture by %lu frames.", (unsigned long)_capture_offset );
 
+    timeline->sequence_lock.wrlock();
+
     c->region->offset( _capture_offset );
+
+    timeline->sequence_lock.unlock();
+
     _capture_offset = 0;
 
     /* have to do this last, as it logs the create */
     c->region->finalize( frame );
-
-    timeline->unlock();
 }
 
 void

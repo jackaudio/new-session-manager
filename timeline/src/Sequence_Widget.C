@@ -172,7 +172,7 @@ Sequence_Widget::begin_drag ( const Drag &d )
 {
     _drag = new Drag( d );
 
-    timeline->wrlock();
+    timeline->sequence_lock.wrlock();
 
     /* copy current values */
     
@@ -181,7 +181,7 @@ Sequence_Widget::begin_drag ( const Drag &d )
     /* tell display to use temporary */
     _r = &_dragging_range;
 
-    timeline->unlock();
+    timeline->sequence_lock.unlock();
 }
 
 void
@@ -190,7 +190,7 @@ Sequence_Widget::end_drag ( void )
     /* swap in the new value */
     /* go back to playback and display using same values */
     
-    timeline->wrlock();
+    timeline->sequence_lock.wrlock();
 
     _range = _dragging_range;
     _r = &_range;
@@ -201,7 +201,7 @@ Sequence_Widget::end_drag ( void )
     /* this will result in a sort */
     sequence()->handle_widget_change( _r->start, _r->length );
 
-    timeline->unlock();
+    timeline->sequence_lock.unlock();
 }
 
 /** set position of widget on the timeline. */
@@ -449,9 +449,9 @@ Sequence_Widget::handle ( int m )
             if ( test_press( FL_BUTTON1 + FL_CTRL ) && ! _drag->state )
             {
                 /* duplication */
-                timeline->wrlock();
+                timeline->sequence_lock.wrlock();
                 sequence()->add( this->clone() );
-                timeline->unlock();
+                timeline->sequence_lock.unlock();
 
                 _drag->state = 1;
                 return 1;

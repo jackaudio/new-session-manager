@@ -360,7 +360,7 @@ Timeline::add_take_for_armed_tracks ( void )
 {
     THREAD_ASSERT( UI );
 
-    wrlock();
+    track_lock.wrlock();
 
     for ( int i = tracks->children(); i-- ; )
     {
@@ -370,7 +370,7 @@ Timeline::add_take_for_armed_tracks ( void )
             t->sequence( new Audio_Sequence( t ) );
     }
 
-    unlock();
+    track_lock.unlock();
 }
 
 void
@@ -598,9 +598,6 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
     play_cursor_track = NULL;
 
     _created_new_takes = 0;
-    _punched_in = 0;
-    _punch_in_frame = 0;
-    _punch_out_frame = 0;
     osc_thread = 0;
     _sample_rate = 44100;
 
@@ -1271,6 +1268,8 @@ Timeline::draw ( void )
      * another thread must use Fl::lock()/unlock()! */ 
     THREAD_ASSERT( UI );
 
+//    rdlock();
+
     int X, Y, W, H;
 
     int bdx = 0;
@@ -1368,6 +1367,8 @@ Timeline::draw ( void )
 
 done:
 
+//    unlock();
+
     /* panzoomer->redraw(); */
 //    update_child( *panzoomer );
 
@@ -1416,6 +1417,26 @@ Timeline::draw_cursor ( nframes_t frame, Fl_Color color, void (*symbol)(Fl_Color
     fl_pop_clip();
 }
 
+/** set /in/ and /out/ to start and end of next punch region from /frame/  */
+bool
+Timeline::next_punch ( nframes_t frame, nframes_t *in, nframes_t *out ) const
+{
+    if ( !transport->punch_enabled() )
+        return false;
+
+    const Sequence_Widget *w = punch_cursor_track->next( frame );
+    
+    if ( w && w->start() >= frame )
+    {
+        *in = w->start();
+        *out = w->start() + w->length();
+
+        return true;
+    }
+
+    return false;
+}
+
 void
 Timeline::draw_playhead ( void )
 {
@@ -1428,36 +1449,6 @@ Timeline::redraw_playhead ( void )
 {
 //    static nframes_t last_playhead = -1;
     static int last_playhead_x = -1;
-
-    /* FIXME: kind of a hackish way to invoke punch / looping stuff from the UI thread... */
-
-    if ( transport->rolling &&
-         transport->rec_enabled() &&
-         transport->punch_enabled() )
-    {
-        if ( _punched_in &&
-             transport->frame > _punch_in_frame && 
-             transport->frame > _punch_out_frame )
-        {
-            punch_out( _punch_out_frame );
-        }
-        else if ( ! _punched_in )
-        {
-            /* we've passed one or more punch regions... punch in for the next, if available. */
-            const Sequence_Widget *w = punch_cursor_track->next( transport->frame );
-            
-            DMESSAGE( "Delayed punch in" );
-            if ( w && 
-                 w->start() > transport->frame )
-            {
-                _punch_in_frame = w->start();
-                _punch_out_frame = w->start() + w->length();
-
-                punch_in( w->start() );
-            }
-        }            
-    }
-    
 
     if ( transport->rolling )
     {
@@ -1987,36 +1978,36 @@ Timeline::remove_track ( Track *track )
 void
 Timeline::command_move_track_up ( Track *track )
 {
-    wrlock();
+    track_lock.wrlock();
     insert_track( track, find_track( track ) - 1 );
-    unlock();
+    track_lock.unlock();
 }
 
 void
 Timeline::command_move_track_down ( Track *track )
 {
-    wrlock();
+    track_lock.wrlock();
     insert_track( track, find_track( track ) + 2 );
-    unlock();
+    track_lock.unlock();
 }
 
 void
 Timeline::command_remove_track ( Track *track )
 {
-    wrlock();
+    track_lock.wrlock();
     remove_track(track);
-    unlock();
+    track_lock.unlock();
 }
 
 void
 Timeline::command_quit ( void )
 {
-    timeline->wrlock();
+    track_lock.wrlock();
 
     Project::close();
 
-    timeline->unlock();
-  
+    track_lock.unlock();
+
     command_save();
   
     while ( Fl::first_window() ) Fl::first_window()->hide();
@@ -2025,9 +2016,10 @@ Timeline::command_quit ( void )
 void
 Timeline::command_undo ( void )
 {
-    wrlock();
+    /* FIXME: sequence lock too? */
+    track_lock.wrlock();
     Project::undo();
-    unlock();
+    track_lock.unlock();
 }
 
 bool
@@ -2036,9 +2028,9 @@ Timeline::command_load ( const char *name, const char *display_name )
     if ( ! name )
         return false;
   
-    wrlock();
+    track_lock.wrlock();
     int r = Project::open( name );
-    unlock();
+    track_lock.unlock();
 
     if ( r < 0 )
     {

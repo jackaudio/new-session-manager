@@ -60,10 +60,14 @@ Record_DS::write_block ( sample_t *buf, nframes_t nframes )
     if ( ! ( timeline && sequence() ) )
         return;
 
+    if ( ! _capture )
+    {
+        _capture = new Track::Capture;
 
-    if ( ! _capture->audio_file )
+    /* if ( ! _capture->audio_file ) */
         /* create the file */
         track()->record( _capture, _frame );
+    }
 
     track()->write( _capture, buf, nframes );
 
@@ -79,82 +83,161 @@ Record_DS::disk_thread ( void )
 
     const nframes_t nframes = _nframes;
 
+    _disk_io_blocks = 1;
+
     /* buffer to hold the interleaved data returned by the track reader */
     sample_t *buf = buffer_alloc( nframes * channels() * _disk_io_blocks );
     sample_t *cbuf = buffer_alloc( nframes );
 
-    const size_t block_size = nframes * sizeof( sample_t );
+//    const size_t block_size = nframes * sizeof( sample_t );
 
-    nframes_t blocks_read = 0;
+    nframes_t frames_read = 0;
 
+    bool punching_in = false;
+    bool punching_out = false;
+    bool punched_in = false;
+
+    nframes_t bS = 0;
+    nframes_t bE = 0;
+
+again:
+
+    _capture = NULL;
+
+    punched_in = false;
+    punching_out = false;
+
+    nframes_t pS = _frame;
+    nframes_t pE = _stop_frame;
+
+    if ( punching_in )
+    {
+        /* write remainder of buffer */
+        write_block( buf + ((pS - bS) * channels()),
+                         bE - pS );        
+
+        punching_in = false;
+        punched_in = true;
+    }
+    
     while ( wait_for_block() )
     {
         /* pull data from the per-channel ringbuffers and interlace it */
-        for ( int i = channels(); i--; )
+        size_t frames_to_read = nframes;
+        
+        /* we read the entire block if a partial... */
+        for ( int i = 0; i < channels(); i++ )
         {
-            while ( jack_ringbuffer_read_space( _rb[ i ] ) < block_size )
+            while ( jack_ringbuffer_read_space( _rb[ i ] ) < frames_to_read * sizeof( sample_t ) )
                 usleep( 10 * 1000 );
-
-            jack_ringbuffer_read( _rb[ i ], ((char*)cbuf), block_size );
             
-            buffer_interleave_one_channel( buf + ( blocks_read * nframes * channels() ),
+            jack_ringbuffer_read( _rb[ i ], ((char*)cbuf), frames_to_read * sizeof( sample_t ) );
+            
+            buffer_interleave_one_channel( buf,
                                            cbuf, 
                                            i,
                                            channels(),
-                                           nframes );
+                                           frames_to_read);
         }
+       
+        bS = _first_frame + frames_read;
 
-        blocks_read++;
+        frames_read += frames_to_read;
 
-        if ( blocks_read == _disk_io_blocks )
+        bE = _first_frame + frames_read;
+
+        punching_in = ! punched_in && bE > pS;
+        punching_out = punched_in && pE < bE;
+        
+        if ( punching_out )
         {
-            write_block( buf, nframes * _disk_io_blocks );
-            blocks_read = 0;
+            write_block( buf,
+                         pE - bS );
+
+            break;
+        }
+        else
+        if ( punching_in )
+        {
+            write_block( buf + ((pS - bS) * channels()),
+                         bE - pS );
+
+            punching_in = false;
+            punched_in = true;
+        }
+        else if ( punched_in )
+        {
+            write_block( buf, bE - bS );
         }
     }
 
-    DMESSAGE( "capture thread terminating" );
+//    DMESSAGE( "capture thread terminating" );
 
     /* flush what remains in the buffer out to disk */
 
+    /* { */
+    /*     while ( blocks_read-- > 0 || ( ! sem_trywait( &_blocks ) && errno != EAGAIN ) ) */
+    /*     { */
+    /*         for ( int i = channels(); i--; ) */
+    /*         { */
+    /*             jack_ringbuffer_read( _rb[ i ], (char*)cbuf, block_size ); */
+
+    /*             buffer_interleave_one_channel( buf, cbuf, i, channels(), nframes ); */
+    /*         } */
+
+    /*         const nframes_t frames_remaining = (_stop_frame - _frame ) - _frames_written; */
+
+    /*         if ( frames_remaining < nframes ) */
+    /*         { */
+    /*             /\* this is the last block, might be partial  *\/ */
+    /*             write_block( buf, frames_remaining ); */
+    /*             break; */
+    /*         } */
+    /*         else */
+    /*             write_block( buf, nframes ); */
+    /*     } */
+    /* } */
+
+  
+   
+    if ( _capture )
     {
-        while ( blocks_read-- > 0 || ( ! sem_trywait( &_blocks ) && errno != EAGAIN ) )
+        DMESSAGE( "finalzing capture" );
+        Track::Capture *c = _capture;
+        
+        _capture = NULL;
+        
+        /* now finalize the recording */
+        
+//        if ( c->audio_file )
+        track()->finalize( c, _stop_frame );
+
+        delete c;
+    }
+
+    if ( ! _terminate ) 
+    {
+        nframes_t in, out;
+        
+        if ( timeline->next_punch( _stop_frame, &in, &out ) )
         {
-            for ( int i = channels(); i--; )
-            {
-                jack_ringbuffer_read( _rb[ i ], (char*)cbuf, block_size );
+            _frame = in;
+            _stop_frame = out;
+            _frames_written = 0;
 
-                buffer_interleave_one_channel( buf, cbuf, i, channels(), nframes );
-            }
+            punched_in = false;
+            punching_out = false;
+            
+            punching_in = bE > in;
 
-            const nframes_t frames_remaining = (_stop_frame - _frame ) - _frames_written;
+            DMESSAGE( "Next punch: %lu:%lu", (unsigned long)in,(unsigned long)out );
 
-            if ( frames_remaining < nframes )
-            {
-                /* this is the last block, might be partial  */
-                write_block( buf, frames_remaining );
-                break;
-            }
-            else
-                write_block( buf, nframes );
+            goto again;
         }
     }
 
     free(buf);
     free(cbuf);
-
-    DMESSAGE( "finalzing capture" );
-
-    Track::Capture *c = _capture;
-
-    _capture = NULL;
-
-    /* now finalize the recording */
-
-    if ( c->audio_file )
-        track()->finalize( c, _stop_frame );
-
-    delete c;
 
     flush();
 
@@ -168,7 +251,7 @@ Record_DS::disk_thread ( void )
 
 /** begin recording */
 void
-Record_DS::start ( nframes_t frame )
+Record_DS::start ( nframes_t frame, nframes_t start_frame, nframes_t stop_frame )
 {
     THREAD_ASSERT( UI );
 
@@ -183,9 +266,10 @@ Record_DS::start ( nframes_t frame )
 
     DMESSAGE( "recording started at frame %lu", (unsigned long)frame);
 
-    _frame = frame;
+    _frame = start_frame;
+    _stop_frame = stop_frame;
 
-    _capture = new Track::Capture;
+    _first_frame = frame;
 
     run();
 
@@ -227,40 +311,36 @@ Record_DS::process ( nframes_t nframes )
     if ( ! _recording )
         return 0;
 
-     if ( transport->frame < _frame  )
-         return 0;
+     /* if ( transport->frame < _frame  ) */
+     /*     return 0; */
 
 /*    DMESSAGE( "recording actually happening at %lu (start frame %lu)", (unsigned long)transport->frame, (unsigned long)_frame); */
 
     nframes_t offset = 0;
 
-    if ( _frame > transport->frame &&
-         _frame < transport->frame + nframes )
-    {
-        /* The record start frame falls somewhere within the current
-           buffer.  We must discard the unneeded portion and only
-           stuff the part requested into the ringbuffer. */
+/*     if ( _frame > transport->frame && */
+/*          _frame < transport->frame + nframes ) */
+/*     { */
+/*         /\* The record start frame falls somewhere within the current */
+/*            buffer.  We must discard the unneeded portion and only */
+/*            stuff the part requested into the ringbuffer. *\/ */
 
-        offset = _frame - transport->frame;
+/*         offset = _frame - transport->frame; */
 
-/*         DMESSAGE( "offset = %lu", (unsigned long)offset ); */
-    }
+/* /\*         DMESSAGE( "offset = %lu", (unsigned long)offset ); *\/ */
+/*     } */
 
     const size_t offset_size = offset * sizeof( sample_t );
     const size_t block_size = ( nframes * sizeof( sample_t ) ) - offset_size;
 
-    for ( int i = channels(); i--;  )
+    for ( int i = 0; i < channels(); i++ )
     {
         /* read the entire input buffer */
         void *buf = track()->input[ i ].buffer( nframes );
 
-        /* FIXME: this results in a ringbuffer size that is no longer
-         necessarily a multiple of nframes...  how will the other side
-         handle that? */
-
         if ( engine->freewheeling() )
         {
-            while ( jack_ringbuffer_write_space( _rb[i] ) < block_size )
+            while ( transport->recording && jack_ringbuffer_write_space( _rb[i] ) < block_size )
                 usleep( 10 * 1000 );
 
             jack_ringbuffer_write( _rb[ i ], ((char*)buf) + offset_size, block_size );
@@ -271,12 +351,14 @@ Record_DS::process ( nframes_t nframes )
             {
                 memset( buf, 0, block_size );
                 /* FIXME: we need to resync somehow */
+                WARNING( "xrun" );
                 ++_xruns;
             }
-            else
-            {
-                jack_ringbuffer_write( _rb[ i ], ((char*)buf) + offset_size, block_size );
-            }
+
+            jack_ringbuffer_write( _rb[ i ], ((char*)buf) + offset_size, block_size );
+
+//            DMESSAGE( "wrote %lu", (unsigned long) nframes );
+
         }
     }
 

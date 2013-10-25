@@ -737,10 +737,10 @@ void
 Track::command_configure_channels ( int n )
 {
     /* due to locking this should only be invoked by direct user action */
-    timeline->wrlock();
+    timeline->track_lock.wrlock();
     configure_inputs( n );
     configure_outputs( n );
-    timeline->unlock();
+    timeline->track_lock.unlock();
 }
 
 void
@@ -787,9 +787,9 @@ Track::menu_cb ( const Fl_Menu_ *m )
         /* add audio track */
         char *name = get_unique_control_name( "Control" );
 
-        timeline->wrlock();
+        timeline->track_lock.wrlock();
         new Control_Sequence( this, name );
-        timeline->unlock();
+        timeline->track_lock.unlock();
     }
     else if ( ! strcmp( picked, "/Overlay controls" ) )
     {
@@ -868,9 +868,9 @@ Track::menu_cb ( const Fl_Menu_ *m )
     }
     else if ( !strcmp( picked, "Takes/New" ) )
     {
-        timeline->wrlock();
+        timeline->track_lock.wrlock();
         sequence( (Audio_Sequence*)sequence()->clone_empty() );
-        timeline->unlock();
+        timeline->track_lock.unlock();
     }
     else if ( !strcmp( picked, "Takes/Remove" ) )
     {
@@ -878,7 +878,7 @@ Track::menu_cb ( const Fl_Menu_ *m )
             {
                 Loggable::block_start();
 
-                timeline->wrlock();
+                timeline->track_lock.wrlock();
 
                 Audio_Sequence *s = sequence();
 
@@ -886,7 +886,7 @@ Track::menu_cb ( const Fl_Menu_ *m )
 
                 delete s;
 
-                timeline->unlock();
+                timeline->track_lock.unlock();
 
                 Loggable::block_end();
             }
@@ -906,9 +906,9 @@ Track::menu_cb ( const Fl_Menu_ *m )
     {
         Audio_Sequence* s = (Audio_Sequence*)m->mvalue()->user_data();
 
-        timeline->wrlock();
+        timeline->track_lock.wrlock();
         sequence( s );
-        timeline->unlock();
+        timeline->track_lock.unlock();
     }
 }
 

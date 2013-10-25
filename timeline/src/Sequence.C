@@ -327,7 +327,7 @@ Sequence::handle ( int m )
         case FL_SHORTCUT:
             if ( Fl::test_shortcut( FL_CTRL + FL_Right ) )
             {
-                const Sequence_Widget *w = next( transport->frame );
+                const Sequence_Widget *w = next( transport->frame + 1 );
                 
                 if ( w )
                     transport->locate( w->start() );
@@ -399,9 +399,9 @@ Sequence::handle ( int m )
                     {
                         /* accept objects dragged from other sequences of this type */
                         
-                        timeline->wrlock();
+                        timeline->sequence_lock.wrlock();
                         add( Sequence_Widget::pushed() );
-                        timeline->unlock();
+                        timeline->sequence_lock.unlock();
                         
                         damage( FL_DAMAGE_USER1 );
                         
@@ -503,9 +503,9 @@ Sequence::handle ( int m )
                             Sequence_Widget::belowmouse( NULL );
                         }
 
-                        timeline->wrlock();
+                        timeline->sequence_lock.wrlock();
                         delete t;
-                        timeline->unlock();
+                        timeline->sequence_lock.unlock();
                 }
 
                 Loggable::block_end();
@@ -557,8 +557,8 @@ const Sequence_Widget *
         Sequence::next ( nframes_t from ) const
     {
         for ( list <Sequence_Widget*>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
-//            if ( (*i)->start() >= from )
-            if ( (*i)->start() > from )
+            if ( (*i)->start() >= from )
+//            if ( (*i)->start() > from )
                 return *i;
 
         if ( _widgets.size() )

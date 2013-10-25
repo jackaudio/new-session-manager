@@ -340,7 +340,11 @@ Audio_Region::write ( nframes_t nframes )
         }
     }
 
+    timeline->sequence_lock.wrlock();
+
     _range.length += nframes;
+
+    timeline->sequence_lock.unlock();
 
     return nframes;
 }
@@ -354,7 +358,11 @@ Audio_Region::finalize ( nframes_t frame )
 
     DMESSAGE( "finalizing capture region" );
 
+    timeline->sequence_lock.wrlock();
+
     _range.length = frame - _range.start;
+
+    timeline->sequence_lock.unlock();
 
     _clip->close();
     _clip->open();

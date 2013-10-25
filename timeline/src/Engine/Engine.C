@@ -172,40 +172,55 @@ Engine::process ( nframes_t nframes )
 
     transport->poll();
 
-    if ( freewheeling() )
+    if ( !timeline)
+        /* handle chicken/egg problem */
+        return 0;
+    
+    nframes_t n = 0;
+   
+    n += timeline->process_input(nframes);
+    n += timeline->process_output(nframes);
+
+    if ( n != nframes * 2 )
     {
-        if ( timeline )
-        {
-            timeline->rdlock();
-
-            timeline->process( nframes );
-
-            timeline->unlock();
-        }
+        _buffers_dropped++;
+        WARNING("xrun");
     }
-    else
-    {
-        if ( !timeline)
-            /* handle chicken/egg problem */
-            return 0;
+    
+    /* if ( freewheeling() ) */
+    /* { */
+    /*     if ( timeline ) */
+    /*     { */
+    /*         timeline->rdlock(); */
 
-        if ( timeline->tryrdlock() )
-        {
-            /* the data structures we need to access here (tracks and
-             * their ports, but not track contents) may be in an
-             * inconsistent state at the moment. Just punt and drop this
-             * buffer. */
-            ++_buffers_dropped;
-            return 0;
-        }
+    /*         timeline->process( nframes ); */
 
-        /* this will initiate the process() call graph for the various
-         * number and types of tracks, which will in turn send data out
-         * the appropriate ports.  */
-        timeline->process( nframes );
+    /*         timeline->unlock(); */
+    /*     } */
+    /* } */
+    /* else */
+    /* { */
+    /*     if ( !timeline) */
+    /*         /\* handle chicken/egg problem *\/ */
+    /*         return 0; */
+ 
+    /*     if ( timeline->tryrdlock() ) */
+    /*     { */
+    /*         /\* the data structures we need to access here (tracks and */
+    /*          * their ports, but not track contents) may be in an */
+    /*          * inconsistent state at the moment. Just punt and drop this */
+    /*          * buffer. *\/ */
+    /*         ++_buffers_dropped; */
+    /*         return 0; */
+    /*     } */
 
-        timeline->unlock();
-    }
+    /*     /\* this will initiate the process() call graph for the various */
+    /*      * number and types of tracks, which will in turn send data out */
+    /*      * the appropriate ports.  *\/ */
+    /*     timeline->process( nframes ); */
+
+    /*     timeline->unlock(); */
+    /* } */
 
     return 0;
 }

@@ -28,6 +28,8 @@
 #include "Thread.H"
 #include "../Cursor_Sequence.H"
 
+#include "Engine.H"
+
 #include <unistd.h>
 
 /** Initiate recording for all armed tracks */
@@ -48,13 +50,14 @@ Timeline::record ( void )
         _created_new_takes = true;
     }
 
-    transport->recording = true;
-
     deactivate();
 
     Loggable::block_start();
 
     nframes_t frame = transport->frame;
+
+    nframes_t _punch_out_frame = 0;
+//    nframes_t _punch_in_frame = 0;
 
     if ( transport->punch_enabled() )
     {
@@ -65,7 +68,7 @@ Timeline::record ( void )
         
         if (p || n )
         {
-            if ( p && frame > p->start() && frame < p->start() + p->length() )
+            if ( p && frame >= p->start() && frame < p->start() + p->length() )
             {
                 /* recording started in the middle of a punch
                  * cursor... Just start recording and punch out at the
@@ -86,33 +89,23 @@ Timeline::record ( void )
         }
     }
 
-    _punch_in_frame = frame;
+//    _punch_in_frame = frame;
 
-    punch_in( frame );
-
-    return true;
-}
-
-void
-Timeline::punch_in ( nframes_t frame )
-{
-    if ( _punched_in )
-    {
-        WARNING( "Programming error. Attempt to punch in twice" );
-        return;
-    }
-
-    DMESSAGE( "Going to record starting at frame %lu", (unsigned long)frame );
 
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
 
         if ( t->armed() && t->record_ds )
-            t->record_ds->start( frame );
+        {
+            t->record_ds->start( transport->frame, frame, _punch_out_frame );
+        }
     }
 
-    _punched_in = true;
+    transport->recording = true;
+
+
+    return true;
 }
 
 void
@@ -142,10 +135,6 @@ Timeline::punch_out ( nframes_t frame )
     }
     
     DMESSAGE( "All record threads stopped." );
-
-    _punched_in = false;
-    _punch_in_frame = 0;
-    _punch_out_frame = 0;
 }
 
 /** stop recording for all armed tracks. Does not affect transport. */
@@ -156,13 +145,13 @@ Timeline::stop ( void )
 
     nframes_t frame = transport->frame;
 
-    if ( transport->punch_enabled() )
-    {
-        const Sequence_Widget *w = punch_cursor_track->prev( frame );
+    /* if ( transport->punch_enabled() ) */
+    /* { */
+    /*     const Sequence_Widget *w = punch_cursor_track->prev( frame ); */
 
-        if ( w && w->start() + w->length() < frame )
-            frame = w->start() + w->length();
-    }
+    /*     if ( w && w->start() + w->length() < frame ) */
+    /*         frame = w->start() + w->length(); */
+    /* } */
     
     punch_out( frame );
    
@@ -178,20 +167,26 @@ Timeline::stop ( void )
 /* Engine */
 /**********/
 
-/** call process() on each track header */
 nframes_t
-Timeline::process ( nframes_t nframes )
+Timeline::process_input ( nframes_t nframes )
 {
-    /* there is no need to acquire a readlock here because track *
-       addition/removal locks process() and track process() calls deal with
-       ringbuffers instead of reading the sequence data directly.  */
 
-    for ( int i = tracks->children(); i-- ; )
-    {
-        Track *t = (Track*)tracks->child( i );
+    /* if ( engine->freewheeling() ) */
+    /* { */
+    /*     rdlock(); */
+    /* } */
+    /* else */
+    /* { */
+    /*     if ( tryrdlock() ) */
+    /*         return 0; */
+    /* } */
 
-        t->process_output( nframes );
-    }
+    if ( ! transport->recording )
+        return nframes;
+
+    /* we don't lock here in order to avoid deadlocks. we already know
+     * that only the record diskthread will be altering timeline
+     * structures during recording since the GUI is disabled. */
 
     for ( int i = tracks->children(); i-- ; )
     {
@@ -200,8 +195,44 @@ Timeline::process ( nframes_t nframes )
         t->process_input( nframes );
     }
 
-    /* FIXME: BOGUS */
+    /* unlock(); */
+
     return nframes;
+}
+
+nframes_t
+Timeline::process_output ( nframes_t nframes )
+{
+
+    /* if ( engine->freewheeling() ) */
+    /* { */
+    /*    rdlock(); */
+    /* } */
+    /* else */
+    /* { */
+    /*     if ( tryrdlock() ) */
+    /*         return 0; */
+    /* } */
+
+    bool r = transport->recording || engine->freewheeling();
+
+    if ( ! r )
+        if ( track_lock.tryrdlock() )
+            return 0;
+//        rdlock();
+
+    for ( int i = tracks->children(); i-- ; )
+    {
+        Track *t = (Track*)tracks->child( i );
+
+        t->process_output( nframes );
+    }
+
+    if ( ! r )
+        track_lock.unlock();
+
+    return nframes;
+
 }
 
 void

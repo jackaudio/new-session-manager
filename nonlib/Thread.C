@@ -127,6 +127,6 @@ Thread::join ( void )
 void
 Thread::exit ( void *retval )
 {
-    pthread_exit( retval );
     _thread = 0;
+    pthread_exit( retval );
 }

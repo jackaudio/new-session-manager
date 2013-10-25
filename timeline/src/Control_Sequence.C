@@ -783,11 +783,11 @@ Control_Sequence::handle ( int m )
                 test_press( FL_BUTTON1 ) )
             {
                 /* insert new control point */
-                timeline->wrlock();
+                timeline->sequence_lock.wrlock();
 
                 new Control_Point( this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - drawable_x() ), (float)(Fl::event_y() - y()) / h() );
                 
-                timeline->unlock();
+                timeline->sequence_lock.unlock();
 
                 return 1;
             }

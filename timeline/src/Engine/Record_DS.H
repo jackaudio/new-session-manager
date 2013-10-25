@@ -36,7 +36,8 @@ class Record_DS : public Disk_Stream
 
     nframes_t _frames_written;
     volatile nframes_t _stop_frame;
-
+    volatile nframes_t _first_frame;
+    
     volatile bool _recording;
 
     Audio_File_SF *_af;                             /* capture file */
@@ -56,8 +57,9 @@ public:
 
             _capture = NULL;
             _recording = false;
-            _stop_frame = -1;
+            _stop_frame = 0;
             _frames_written = 0;
+            _first_frame = 0;
         }
 
     virtual ~Record_DS ( ) { shutdown(); }
@@ -67,7 +69,7 @@ public:
     const Audio_Region * capture_region ( void ) const;
     Track::Capture * capture ( void );
 
-    void start ( nframes_t frame );
+    void start ( nframes_t frame, nframes_t start_frame, nframes_t stop_frame = 0 );
     void stop ( nframes_t frame );
     nframes_t process ( nframes_t nframes );
 

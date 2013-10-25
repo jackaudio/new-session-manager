@@ -651,7 +651,7 @@ Audio_Region::draw ( void )
         
         if ( peaks < loop_peaks_needed )
         {
-            DMESSAGE( "Peak read came up %lu peaks short", (unsigned long)loop_peaks_needed - peaks );
+//            DMESSAGE( "Peak read came up %lu peaks short", (unsigned long)loop_peaks_needed - peaks );
         }
 
         fo += loop_frames_needed;

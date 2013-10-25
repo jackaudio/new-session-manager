@@ -77,9 +77,8 @@ struct Rectangle
     Rectangle ( int X, int Y, int W, int H ) : x( X ), y( Y ), w( W ), h( H ) {}
 };
 
-class Timeline : public Fl_Group, public RWLock
+class Timeline : public Fl_Group
 {
-
     class Timeline_Panzoomer;
 
     static void draw_clip_rulers ( void * v, int X, int Y, int W, int H );
@@ -125,6 +124,9 @@ class Timeline : public Fl_Group, public RWLock
 
 public:
 
+    RWLock track_lock;                                          /* tracks/sequences */
+    RWLock sequence_lock;                                       /* sequence contents */
+
     void redraw_overlay ( void );
 
     void insert_track ( Track *track, Track *before );
@@ -166,9 +168,6 @@ public:
 
     Fl_Menu_Button *menu;
 
-    int _punched_in;
-    nframes_t _punch_out_frame;
-    nframes_t _punch_in_frame;
     bool _created_new_takes;
 
     nframes_t xoffset;
@@ -257,6 +256,7 @@ public:
     void zoom_out ( void );
     void zoom_fit ( void );
 
+    bool next_punch ( nframes_t frame, nframes_t *in, nframes_t *out ) const;
 
     /* Engine */
     int  total_input_buffer_percent ( void );
@@ -267,7 +267,6 @@ public:
 
     bool record ( void );
     void stop ( void );
-    void punch_in ( nframes_t frame );
     void punch_out ( nframes_t frame );
 
     void wait_for_buffers ( void );
@@ -315,6 +314,7 @@ private:
 
     /* Engine */
     void resize_buffers ( nframes_t nframes );
-    nframes_t process ( nframes_t nframes );
+    nframes_t process_input ( nframes_t nframes );
+    nframes_t process_output ( nframes_t nframes );
     void seek ( nframes_t frame );
 };

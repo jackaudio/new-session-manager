@@ -72,7 +72,7 @@ public:
             _path =_filename = NULL;
             _samplerate = 0;
             _length = _channels = 0;
-            _refs = 0;
+            _refs = 1;
         }
 
     virtual ~Audio_File ( );

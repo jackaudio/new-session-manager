@@ -147,8 +147,6 @@ done:
 
     _open_files[ std::string( filename ) ] = a;
 
-    a->_refs = 1;
-
     return a;
 }
 

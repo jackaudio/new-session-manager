@@ -82,7 +82,10 @@ Disk_Stream::~Disk_Stream ( )
     sem_destroy( &_blocks );
 
     for ( int i = channels(); i--; )
+    {
         jack_ringbuffer_free( _rb[ i ] );
+        _rb[i] = 0;
+    }
 
 //    timeline->unlock();
 }

@@ -89,6 +89,8 @@ Record_DS::disk_thread ( void )
     sample_t *buf = buffer_alloc( nframes * channels() * _disk_io_blocks );
     sample_t *cbuf = buffer_alloc( nframes );
 
+    _recording = true;
+
 //    const size_t block_size = nframes * sizeof( sample_t );
 
     nframes_t frames_read = 0;
@@ -242,6 +244,7 @@ again:
     flush();
 
     _terminate = false;
+    _recording = false;
 
     DMESSAGE( "capture thread gone" );
 
@@ -267,14 +270,11 @@ Record_DS::start ( nframes_t frame, nframes_t start_frame, nframes_t stop_frame 
     DMESSAGE( "recording started at frame %lu", (unsigned long)frame);
 
     _frame = start_frame;
-    _stop_frame = stop_frame;
+    _stop_frame = stop_frame ? stop_frame : JACK_MAX_FRAMES;
 
     _first_frame = frame;
 
     run();
-
-    _recording = true;
-
 }
 
 /** finalize the recording process. */
@@ -289,10 +289,11 @@ Record_DS::stop ( nframes_t frame )
         return;
     }
 
-    _recording = false;
-
     _stop_frame = frame;
+    
+    // _recording = false;
 
+  
 //    detach();
 
     DMESSAGE( "recording finished" );
@@ -308,7 +309,7 @@ Record_DS::process ( nframes_t nframes )
 {
     THREAD_ASSERT( RT );
 
-    if ( ! _recording )
+    if ( ! ( _recording && _thread.running() ) )
         return 0;
 
      /* if ( transport->frame < _frame  ) */
@@ -340,13 +341,19 @@ Record_DS::process ( nframes_t nframes )
 
         if ( engine->freewheeling() )
         {
-            while ( transport->recording && jack_ringbuffer_write_space( _rb[i] ) < block_size )
+            while ( _thread.running() && jack_ringbuffer_write_space( _rb[i] ) < block_size )
                 usleep( 10 * 1000 );
+
+            if ( ! _thread.running() )
+                return 0;
 
             jack_ringbuffer_write( _rb[ i ], ((char*)buf) + offset_size, block_size );
         }
         else
         {
+            if ( ! _thread.running() )
+                return 0;
+
             if ( jack_ringbuffer_write_space( _rb[i] ) < block_size )
             {
                 memset( buf, 0, block_size );

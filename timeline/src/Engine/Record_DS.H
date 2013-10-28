@@ -57,7 +57,7 @@ public:
 
             _capture = NULL;
             _recording = false;
-            _stop_frame = 0;
+            _stop_frame = JACK_MAX_FRAMES;
             _frames_written = 0;
             _first_frame = 0;
         }

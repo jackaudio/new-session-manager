@@ -45,11 +45,14 @@ Spatialization_Console::Spatialization_Console ( void ) : Fl_Double_Window( 850,
   
     label( "Spatialization Console" );
 
-    fl_font( FL_HELVETICA, 14 );
+    labelfont( FL_HELVETICA );
+    labelsize( 14 );
 
     int padding = 48;
     int S = 802;
     
+    if ( fl_display )
+        /* don't open the display in noui mode... */
     {
         int sx, sy, sw, sh;
         
@@ -108,7 +111,12 @@ Spatialization_Console::set ( Log_Entry &e )
         else if ( ! ( strcmp( s, ":shown" ) ) )
         {
             if ( atoi( v ) )
+            {
+                if ( fl_display )
+                {
                 show();
+                }
+            }
             else
                 hide();
         }

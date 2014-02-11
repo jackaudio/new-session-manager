@@ -292,6 +292,13 @@ get_connections_for_ports ( std::vector<Module::Port> ports )
 void
 JACK_Module::update_connection_status ( void )
 {
+    /* do nothing when running in noui mode, as ->add will call some
+     * font measurement stuff which attempts to open the X display. */
+    if ( ! fl_display )
+    {
+        return;
+    }
+
     std::list<std::string> output_names = get_connections_for_ports( aux_audio_output );
     std::list<std::string> input_names = get_connections_for_ports( aux_audio_input );
 

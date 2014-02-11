@@ -131,6 +131,8 @@ main ( int argc, char **argv )
 {
     bool no_ui = false;
 
+    fl_display = 0;
+
     printf( "%s %s %s -- %s\n", APP_TITLE, VERSION, "", COPYRIGHT );
 
     Thread::init();

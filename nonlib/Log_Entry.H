@@ -53,14 +53,14 @@ public:
     void add ( const char *name, type v )                       \
         {                                                       \
             grow();                                             \
-            asprintf( &_sa[ _i ], "%s " format, name, (exp) );  \
+            (void)asprintf( &_sa[ _i ], "%s " format, name, (exp) );  \
             strtok( _sa[ _i++ ], " " );                         \
         }
 
     void add_raw ( const char *name, const char *v )
         {
             grow();
-            asprintf( &_sa[ _i ], "%s %s", name, v );
+            (void)asprintf( &_sa[ _i ], "%s %s", name, v );
             strtok( _sa[ _i++ ], " " );
         }
 

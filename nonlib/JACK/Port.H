@@ -44,7 +44,7 @@ namespace JACK
         bool operator < ( const Port & rhs ) const;
 
         enum direction_e { Output, Input };
-        enum type_e { Audio, MIDI };
+        enum type_e { Audio, MIDI, CV };
 
         static int max_name ( void );
 

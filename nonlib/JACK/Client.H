@@ -21,6 +21,9 @@
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#ifdef HAVE_JACK_METADATA
+#	include <jack/metadata.h>
+#endif
 #include <Mutex.H>
 
 typedef jack_nframes_t nframes_t;

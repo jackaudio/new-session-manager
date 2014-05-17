@@ -71,6 +71,8 @@ namespace JACK
         _type = Audio;
         if ( strstr( type, "MIDI") )
             _type = MIDI;
+        else if ( strstr( type, "CV)") )
+            _type = CV;
 
         _client->port_added( this );
 
@@ -190,9 +192,17 @@ namespace JACK
 
         DMESSAGE( "Activating port name %s", jackname );
         _port = jack_port_register( _client->jack_client(), jackname,
-                                    _type == Audio ? JACK_DEFAULT_AUDIO_TYPE : JACK_DEFAULT_MIDI_TYPE,
+                                    ( _type == Audio ) || ( _type == CV ) ? JACK_DEFAULT_AUDIO_TYPE : JACK_DEFAULT_MIDI_TYPE,
                                     flags,
                                     0 );
+
+#ifdef HAVE_JACK_METADATA
+        if ( _type == CV )
+        {
+                jack_uuid_t uuid = jack_port_uuid( _port );
+                jack_set_property( _client->jack_client(), uuid, "http://jackaudio.org/metadata/signal-type", "CV", "text/plain" );
+        }
+#endif
 
         DMESSAGE( "Port = %p", _port );
 
@@ -266,7 +276,16 @@ namespace JACK
     Port::deactivate ( void )
     {
         if ( _port )
+				{
+#ifdef HAVE_JACK_METADATA
+            if ( _type == CV )
+						{
+                     jack_uuid_t uuid = jack_port_uuid(_port);
+										 jack_remove_property(_client->jack_client(), uuid, "http://jackaudio.org/metadata/signal-type");
+						}
+#endif
             jack_port_unregister( _client->jack_client(), _port );
+				}
 
         _port = 0;
     }

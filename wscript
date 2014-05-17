@@ -61,6 +61,12 @@ def configure(conf):
                   define_name='HAVE_JACK_PORT_GET_LATENCY_RANGE',
                   fragment='#include <jack/jack.h>\nint main (int argc, char**argv) { jack_port_get_latency_range( (jack_port_t*)0, JackCaptureLatency, (jack_latency_range_t *)0 ); }',
                   mandatory=False);
+		
+    conf.check(function_name='jack_get_property',
+               header_name='jack/metadata.h',
+               define_name='HAVE_JACK_METADATA',
+               uselib='JACK',
+               mandatory=False)
 
     conf.check_cfg(package='x11', uselib_store='XLIB',args="--cflags --libs",
                       mandatory=True)

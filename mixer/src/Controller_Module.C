@@ -221,7 +221,7 @@ Controller_Module::mode ( Mode m )
             char prefix[512];
             snprintf( prefix, sizeof(prefix), "CV-%s", p->name() );
             
-            add_aux_audio_input( prefix, 0 );
+            add_aux_cv_input( prefix, 0 );
 
             chain()->client()->unlock();
         }

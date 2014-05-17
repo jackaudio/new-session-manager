@@ -499,7 +499,7 @@ protected:
     virtual void get ( Log_Entry &e ) const;
     virtual void set ( Log_Entry &e );
 
-    bool add_aux_port ( bool input, const char *prefix, int n );
+    bool add_aux_port ( bool input, const char *prefix, int n , JACK::Port::type_e type );
 
 public:
     nframes_t sample_rate ( void ) const { return Module::_sample_rate; }
@@ -513,6 +513,7 @@ public:
 
     bool add_aux_audio_output ( const char *prefix, int n );
     bool add_aux_audio_input ( const char *prefix, int n );
+    bool add_aux_cv_input ( const char *prefix, int n );
 
     static void set_sample_rate ( nframes_t srate ) { _sample_rate = srate; }
 

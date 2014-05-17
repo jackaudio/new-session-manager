@@ -175,7 +175,7 @@ Control_Sequence::update_port_name ( void )
 
     if ( ! _output )
     {
-        _output = new JACK::Port( engine, track()->name(), s, JACK::Port::Output, JACK::Port::Audio );
+        _output = new JACK::Port( engine, track()->name(), s, JACK::Port::Output, JACK::Port::CV );
         _output->terminal( true );
         needs_activation = true;
     }

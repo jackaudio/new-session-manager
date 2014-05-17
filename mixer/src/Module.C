@@ -1270,7 +1270,7 @@ Module::set_latency ( JACK::Port::direction_e dir, nframes_t min, nframes_t max 
 
 
 bool
-Module::add_aux_port ( bool input, const char *prefix, int i )
+Module::add_aux_port ( bool input, const char *prefix, int i, JACK::Port::type_e type )
 {
     const char *trackname = chain()->strip()->group()->single() ? NULL : chain()->name();
 
@@ -1278,7 +1278,7 @@ Module::add_aux_port ( bool input, const char *prefix, int i )
 
     char *portname = generate_port_name( prefix, direction, i );
 
-    JACK::Port *po = new JACK::Port( chain()->client(), trackname, portname, direction, JACK::Port::Audio );
+    JACK::Port *po = new JACK::Port( chain()->client(), trackname, portname, direction, type );
 
     free(portname);
 
@@ -1319,7 +1319,7 @@ Module::add_aux_port ( bool input, const char *prefix, int i )
 bool
 Module::add_aux_audio_output( const char *prefix, int i )
 {
-    bool r = add_aux_port ( false, prefix, i );
+    bool r = add_aux_port ( false, prefix, i , JACK::Port::Audio);
 
     if ( r )
         mixer->maybe_auto_connect_output( &aux_audio_output.back() );
@@ -1330,7 +1330,13 @@ Module::add_aux_audio_output( const char *prefix, int i )
 bool
 Module::add_aux_audio_input( const char *prefix, int i )
 {
-    return add_aux_port ( true, prefix, i );
+    return add_aux_port ( true, prefix, i , JACK::Port::Audio);
+}
+
+bool
+Module::add_aux_cv_input( const char *prefix, int i )
+{
+    return add_aux_port ( true, prefix, i , JACK::Port::CV);
 }
 
 

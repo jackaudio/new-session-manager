@@ -1137,7 +1137,7 @@ Track::handle ( int m )
                 timeline->insert_track( this, timeline->event_inside() );
                 return 1;
             }
-            return 0;
+            return Fl_Group::handle( m );
             break;
         case FL_DND_RELEASE:
             receptive_to_drop = 0;

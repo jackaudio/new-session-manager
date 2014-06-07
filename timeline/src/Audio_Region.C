@@ -841,6 +841,9 @@ Audio_Region::handle ( int m )
         }
         case FL_DRAG:
 
+            if ( Fl::event_is_click() )
+                return 1;
+
             if ( ! _drag )
             {
                 begin_drag( Drag( X, Y, x_to_offset( X ) ) );

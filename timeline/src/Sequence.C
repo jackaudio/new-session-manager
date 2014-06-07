@@ -321,6 +321,10 @@ Sequence::handle ( int m )
 /*     if ( m != FL_NO_EVENT ) */
 /*         DMESSAGE( "%s", event_name( m ) ); */
 
+//            if ( m == FL_RELEASE )
+    if ( ! Fl::pushed() )
+        Sequence_Widget::pushed( NULL );
+
     switch ( m )
     {
         case FL_KEYBOARD:
@@ -398,14 +402,16 @@ Sequence::handle ( int m )
                     if ( Sequence_Widget::pushed()->sequence()->class_name() == class_name() )
                     {
                         /* accept objects dragged from other sequences of this type */
-                        
-                        timeline->sequence_lock.wrlock();
-                        add( Sequence_Widget::pushed() );
-                        timeline->sequence_lock.unlock();
-                        
-                        damage( FL_DAMAGE_USER1 );
-                        
-                        fl_cursor( FL_CURSOR_MOVE );
+                        if ( Sequence_Widget::pushed()->sequence() != this )
+                        {
+                            timeline->sequence_lock.wrlock();
+                            add( Sequence_Widget::pushed() );
+                            timeline->sequence_lock.unlock();
+                            
+                            damage( FL_DAMAGE_USER1 );
+                            
+                            fl_cursor( FL_CURSOR_MOVE );
+                        }
                     }
                     else
                         fl_cursor( FL_CURSOR_DEFAULT );
@@ -446,9 +452,9 @@ Sequence::handle ( int m )
                     if ( r )
                         r->handle( FL_ENTER );
                 }
-                
-                return 1;
             }
+
+            return 1;
         }
         default:
         {
@@ -461,6 +467,9 @@ Sequence::handle ( int m )
 
 /*             if ( this == Fl::focus() ) */
 /*                 DMESSAGE( "Sequence widget = %p", r ); */
+
+            if ( m == FL_RELEASE )
+                Sequence_Widget::pushed( NULL );
 
             if ( r )
             {
@@ -482,8 +491,6 @@ Sequence::handle ( int m )
 
                         r->handle( FL_FOCUS );
                     }
-                    else if ( m == FL_RELEASE )
-                        Sequence_Widget::pushed( NULL );
                 }
 
                 if ( _delete_queue.size() )
@@ -508,7 +515,7 @@ Sequence::handle ( int m )
                         timeline->sequence_lock.unlock();
                 }
 
-                Loggable::block_end();
+                    Loggable::block_end();
                 }
 
                 if ( m == FL_PUSH )

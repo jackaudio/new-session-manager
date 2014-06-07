@@ -296,6 +296,41 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
         _scale = 1.0;
     else if ( ! strcmp( picked, "/Range from" ) )
         timeline->range( start(), length() );
+    else if ( ! strcmp( picked, "/Trim left to playhead" ) )
+    {
+        redraw();
+        trim_left( transport->frame );
+    }
+    else if ( ! strcmp( picked, "/Trim right to playhead" ) )
+    {
+        redraw();
+        trim_right( transport->frame );
+    }
+    else if ( ! strcmp( picked, "/Split at playhead" ) )
+    {
+        redraw();
+        split( transport->frame );
+    }
+    else if ( ! strcmp( picked, "/Loop point at playhead" ) )
+    {
+        nframes_t f = transport->frame;
+
+        _loop = f - _r->start;
+    }
+    else if ( ! strcmp( picked, "/Fade in to playhead" ) )
+    {
+        nframes_t offset = transport->frame - _r->start;
+
+        if ( offset < length() )
+            _fade_in.length = offset;
+    }
+    else if ( ! strcmp( picked, "/Fade out to playhead" ) )
+    {
+        nframes_t offset = _r->start + _r->length - transport->frame;
+        
+        if ( offset > 0 )
+            _fade_out.length = offset;
+    }
     else if ( ! strcmp( picked, "/Remove" ) )
         remove();
     else
@@ -333,16 +368,22 @@ Audio_Region::menu ( void )
             { 0                   },
             { 0 },
             { "Color",        0, 0, 0,  inherit_track_color ? FL_MENU_INACTIVE : 0 },
+	    { "Crop to range", 'c', 0, 0, FL_MENU_DIVIDER },
 	    { "Split at mouse", 's', 0, 0 },
-	    { "Crop to range", 'c', 0, 0 },
             { "Gain with mouse vertical drag", 'g', 0, 0 },
             { "Fade in to mouse", FL_F + 3, 0, 0 },
             { "Fade out to mouse", FL_F + 4, 0, 0 },
             { "Loop point to mouse", 'l', 0, 0 },
-            { "Clear loop point", FL_SHIFT + 'l', 0, 0, 0 == _loop ? FL_MENU_INACTIVE : 0 },
+            { "Clear loop point", 0, 0, 0, 0 == _loop ? FL_MENU_INACTIVE : 0 },
             { "Normalize", 'n', 0, 0 },
             { "Denormalize", FL_SHIFT + 'n', 0, 0, 1.0 == _scale ? FL_MENU_INACTIVE : 0 },
-            { "Range from", FL_CTRL + 'r', 0, 0 },
+            { "Range from", FL_CTRL + 'r', 0, 0, FL_MENU_DIVIDER },
+            { "Trim left to playhead", '{', 0, 0 },
+            { "Trim right to playhead", '}', 0, 0 },
+            { "Split at playhead", FL_SHIFT + 's', 0, 0 },
+            { "Loop point at playhead", FL_SHIFT + 'l', 0, 0 },
+            { "Fade in to playhead", FL_F + 3 + FL_SHIFT, 0, 0 },
+            { "Fade out to playhead", FL_F + 4 + FL_SHIFT, 0, 0 },
             { "Remove", 0, 0, 0 },
             { 0 },
         };

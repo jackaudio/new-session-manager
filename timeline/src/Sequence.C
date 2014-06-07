@@ -331,7 +331,7 @@ Sequence::handle ( int m )
         case FL_SHORTCUT:
             if ( Fl::test_shortcut( FL_CTRL + FL_Right ) )
             {
-                const Sequence_Widget *w = next( transport->frame + 1 );
+                const Sequence_Widget *w = next( transport->frame );
                 
                 if ( w )
                     transport->locate( w->start() );
@@ -564,8 +564,8 @@ const Sequence_Widget *
         Sequence::next ( nframes_t from ) const
     {
         for ( list <Sequence_Widget*>::const_iterator i = _widgets.begin(); i != _widgets.end(); i++ )
-            if ( (*i)->start() >= from )
-//            if ( (*i)->start() > from )
+//            if ( (*i)->start() >= from )
+            if ( (*i)->start() > from )
                 return *i;
 
         if ( _widgets.size() )

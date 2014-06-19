@@ -248,6 +248,9 @@ Module::paste_before ( void )
 const char *
 Module::Port::osc_number_path ( void )
 {
+    if ( ! _scaled_signal )
+        return NULL;
+
     int n = _module->chain()->strip()->number();
     
     if ( _by_number_path && n == _by_number_number )

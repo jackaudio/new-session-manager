@@ -484,6 +484,10 @@ Loggable::do_this ( const char *s, bool reverse )
 void
 Loggable::undo ( void )
 {
+    if ( ! _fp ||                                               /* journal not open */
+         1 == _undo_offset )                                    /* nothing left to undo */
+        return;
+
     char *buf;
 
     block_start();

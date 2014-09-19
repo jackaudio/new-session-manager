@@ -1358,7 +1358,7 @@ main (int argc, char **argv )
                 break;
             }
             case 'h':
-                printf( "Usage: %s [--nsmd-url...] [-- server options ]\n\n", argv[0] );
+                printf( "Usage: %s [--nsm-url...] [-- server options ]\n\n", argv[0] );
                 exit(0);
                 break;
         }

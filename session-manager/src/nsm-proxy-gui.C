@@ -26,6 +26,7 @@
 #define APP_TITLE "NSM Proxy"
 
 #include <FL/Fl_File_Chooser.H>
+#include <FL/Fl_Text_Display.H>
 #include "NSM_Proxy_UI.H"
 #include <lo/lo.h>
 #include <signal.h>
@@ -37,6 +38,8 @@ lo_server losrv;
 lo_address nsmp_addr;
 
 static NSM_Proxy_UI *ui;
+
+static char *client_error;
 
 int
 osc_update ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
@@ -73,6 +76,16 @@ osc_update ( const char *path, const char *types, lo_arg **argv, int argc, lo_me
         else if ( argv[0]->i == SIGHUP )
             ui->stop_signal_choice->value( 2 );
     }
+    if (!strcmp( path, "/nsm/proxy/client_error" ))
+    {
+        if ( client_error != NULL )
+            free(client_error);
+
+        client_error = NULL;
+
+        if ( strlen(&argv[0]->s) > 0 )
+            client_error = strdup(&argv[0]->s);
+    }
 
     Fl::unlock();
 
@@ -101,6 +114,7 @@ init_osc ( const char *osc_port )
     lo_server_thread_add_method( loth, "/nsm/proxy/label", "s", osc_update, NULL );
     lo_server_thread_add_method( loth, "/nsm/proxy/save_signal", "i", osc_update, NULL );
     lo_server_thread_add_method( loth, "/nsm/proxy/stop_signal", "i", osc_update, NULL );
+    lo_server_thread_add_method( loth, "/nsm/proxy/client_error", "s", osc_update, NULL );
 
     lo_server_thread_start( loth );
 }
@@ -202,6 +216,46 @@ connect_ui ( void )
 
 
 
+void cb_dismiss_button ( Fl_Widget *w, void *v )
+{
+    w->window()->hide();
+}
+
+void
+check_error ( void *v )
+{
+    if ( client_error )
+    {
+        {
+            Fl_Double_Window *o = new Fl_Double_Window(600,300+15,"Abnormal Termination");
+            {
+                Fl_Box *o = new Fl_Box(0+15,0+15,600-30,50);
+                o->box(FL_BORDER_BOX);
+                o->color(FL_RED);
+                o->labelcolor(FL_WHITE);
+                o->align(FL_ALIGN_CENTER|FL_ALIGN_WRAP);
+                o->copy_label( client_error );
+            }
+            {
+                Fl_Text_Display *o = new Fl_Text_Display(0+15,50+15,600-30,300-75-30);
+                o->buffer(new Fl_Text_Buffer());
+                o->buffer()->loadfile( "error.log" );
+            }
+            {
+                Fl_Button *o = new Fl_Button(600-75-15,300-25,75,25,"Dismiss");
+                o->callback(cb_dismiss_button,0);
+            }
+
+            o->show();
+        }
+        
+        free(client_error);
+        client_error = NULL;
+    }
+    
+    Fl::repeat_timeout( 0.5f, check_error, v );
+}
+
 int
 main ( int argc, char **argv )
 {
@@ -228,6 +282,8 @@ main ( int argc, char **argv )
     w->show();
 
     Fl::lock();
+
+    Fl::add_timeout( 0.5f, check_error, NULL );
 
     Fl::run();
 

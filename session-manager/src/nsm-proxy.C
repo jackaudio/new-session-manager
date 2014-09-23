@@ -51,6 +51,7 @@ static char *nsm_display_name;
 
 #define CONFIG_FILE_NAME "nsm-proxy.config"
 
+void show_gui ( void );
 
 class NSM_Proxy {
 
@@ -61,8 +62,11 @@ class NSM_Proxy {
     int _save_signal;
     int _stop_signal;
     int _pid;
+    char *_client_error;
 
 public:
+
+    int stop_signal ( void ) {return _stop_signal;}
 
     NSM_Proxy ( )
         {
@@ -70,16 +74,34 @@ public:
             _save_signal = 0;
             _stop_signal = SIGTERM;
             _pid = 0;
+            _client_error = 0;
         }
 
     ~NSM_Proxy ( )
         {
         }
-    
+
+    void handle_client_death ( int status )
+        {
+            printf( "proxied process died unexpectedly... not dying\n" );
+            /* proxied process died unexpectedly */
+
+            if ( _client_error != NULL )
+                free(_client_error);
+
+            asprintf(&_client_error, "The proxied process terminated abnormally during invocation. Exit status: %i.", status );
+
+            show_gui();
+
+            _pid = 0;
+        }
+
     void kill ( void )
         {
             if ( _pid )
+            {
                 ::kill( _pid, _stop_signal );
+            }
         }
 
     bool start ( const char *executable, const char *arguments, const char *config_file )
@@ -130,11 +152,11 @@ public:
                 char *cmd;
 
                 if ( _arguments )
-                    asprintf( &cmd, "exec %s %s", _executable, _arguments );
+                    asprintf( &cmd, "exec %s %s >error.log 2>&1", _executable, _arguments );
                 else
-                    asprintf( &cmd, "exec %s", _executable );
+                    asprintf( &cmd, "exec %s  >error.log 2>&1", _executable );
 
-                char *args[] = { _executable, strdup( "-c" ), cmd, NULL };
+                char *args[] = { strdup("/bin/sh"), strdup( "-c" ), cmd, NULL };
                 
                 setenv( "NSM_CLIENT_ID", nsm_client_id, 1 );
                 setenv( "NSM_SESSION_NAME", nsm_display_name, 1 );
@@ -145,8 +167,7 @@ public:
                 if ( -1 == execvp( "/bin/sh", args ) )
                 {
                     WARNING( "Error starting process: %s", strerror( errno ) );
-                    
-                    exit(-1);
+                    exit(1);
                 }
             }
 
@@ -222,7 +243,6 @@ public:
     bool restore ( const char *path )
         {
             FILE *fp = fopen( path, "r" );
-
             if ( ! fp )
             {
                 WARNING( "Error opening file for restore: %s", strerror( errno ) );
@@ -285,6 +305,9 @@ public:
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/arguments", "s", _arguments ? _arguments : "" );
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/config_file", "s", _config_file ? _config_file : "" );
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/stop_signal", "i",  _stop_signal );
+            lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/client_error", "s",  _client_error ? _client_error : "" );
+
+
         }
 };
 
@@ -400,7 +423,7 @@ show_gui ( void )
         {
             WARNING( "Error starting process: %s", strerror( errno ) );
             
-            exit(-1);
+            exit(1);
         }
     }
     
@@ -649,10 +672,39 @@ void handle_sigchld ( )
             continue;
         }
 
-        /* otherwise, it was our proxied process that died, so we should die too */
-        printf( "proxied process died... nsm-proxy dying too\n" );
+        if ( WIFSIGNALED(status)  )
+        {
+            /* process was killed via signal */
+            if (WTERMSIG(status) == SIGTERM ||
+                WTERMSIG(status) == SIGHUP ||
+                WTERMSIG(status) == SIGINT ||
+                WTERMSIG(status) == SIGKILL )
+            {
+                /* process was killed via an appropriate signal */
+                MESSAGE( "child was killed (maybe by us)\n" );
+                die_now = 1;
+                continue;
+            }
+        }
+        else if ( WIFEXITED(status) )
+        {
+            /* child called exit() or returned from main() */
 
-        die_now = 1;
+            MESSAGE( "child exit status: %i", WEXITSTATUS(status) );
+
+            if ( WEXITSTATUS(status) == 0 )
+            {
+                /* apparently normal termination */
+                MESSAGE( "child exited without error.");
+                die_now = 1;
+                continue;
+            }
+            else
+            {
+                MESSAGE("child exited abnormally.");
+                nsm_proxy->handle_client_death(WEXITSTATUS(status));
+            }
+        }
     }
 }
 

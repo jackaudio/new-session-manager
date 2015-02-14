@@ -124,9 +124,11 @@ Thread::join ( void )
     _thread = 0;
 }
 
+/* never call this unless some other thread will be calling 'join' on
+ * this one, otherwise, running() will return true even though the
+ * thread is dead */
 void
 Thread::exit ( void *retval )
 {
-    _thread = 0;
     pthread_exit( retval );
 }

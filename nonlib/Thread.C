@@ -30,12 +30,14 @@ pthread_key_t Thread::_current = 0;
 Thread::Thread ( )
 {
     _thread = 0;
+    _running = false;
     _name = 0;
 }
 
 Thread::Thread ( const char *name )
 {
     _thread = 0;
+    _running = false;
     _name = name;
 }
 
@@ -57,6 +59,7 @@ Thread::set ( const char *name )
 {
     _thread = pthread_self();
     _name = name;
+    _running = true;
 
     pthread_setspecific( _current, (void*)this );
 }
@@ -82,6 +85,8 @@ Thread::run_thread ( void *arg )
     delete (thread_data*)arg;
 
     pthread_setspecific( _current, td.t );
+
+    ((Thread*)td.t)->_running = true;
 
     return td.entry_point( td.arg );
 }
@@ -130,5 +135,6 @@ Thread::join ( void )
 void
 Thread::exit ( void *retval )
 {
+    _running = false;
     pthread_exit( retval );
 }

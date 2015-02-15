@@ -31,6 +31,8 @@ class Thread
     pthread_t _thread;
     const char * _name;
 
+    volatile bool _running;
+
     static void * run_thread ( void *arg );
 
 public:
@@ -46,7 +48,7 @@ public:
     const char *name ( void ) const { return _name; }
     void name ( const char *name ) { _name = name; }
 
-    bool running ( void ) const { return _thread; }
+    bool running ( void ) const { return _running; }
     void set ( const char *name );
     void set ( void ) { set( _name ); }
     bool clone ( void *(*entry_point)(void *), void *arg );

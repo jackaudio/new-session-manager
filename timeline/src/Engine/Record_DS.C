@@ -247,8 +247,6 @@ again:
     _recording = false;
 
     DMESSAGE( "capture thread gone" );
-
-    _thread.exit();
 }
 
 
@@ -283,20 +281,9 @@ Record_DS::stop ( nframes_t frame )
 {
     THREAD_ASSERT( UI );
 
-    if ( ! _recording )
-    {
-        WARNING( "programming error: attempt to stop recording when no recording is being made" );
-        return;
-    }
-
     _stop_frame = frame;
-    
-    // _recording = false;
 
-  
-//    detach();
-
-    DMESSAGE( "recording finished" );
+    DMESSAGE( "recording stop scheduled" );
 }
 
 

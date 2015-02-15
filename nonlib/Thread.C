@@ -88,7 +88,11 @@ Thread::run_thread ( void *arg )
 
     ((Thread*)td.t)->_running = true;
 
-    return td.entry_point( td.arg );
+    void * r = td.entry_point( td.arg );
+
+    ((Thread*)td.t)->_running = false;
+    
+    return r;
 }
 
 

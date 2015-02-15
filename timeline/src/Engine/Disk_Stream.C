@@ -137,9 +137,14 @@ Disk_Stream::shutdown ( void )
             block_processed();
             usleep( 10 * 1000 );
         }
-        
-        _thread.join();
     }
+
+    /* thread may have terminated on it's own (due to punch out..), in
+     * any case join to clean up */
+    _thread.join();
+
+    DMESSAGE( "diskthread joined." );
+
 }
 
 Track *

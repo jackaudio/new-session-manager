@@ -181,8 +181,6 @@ done:
 //    flush();
 
     _terminate = false;
-
-    _thread.exit();
 }
 
 /** take a single block from the ringbuffers and send it out the

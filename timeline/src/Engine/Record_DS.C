@@ -99,8 +99,8 @@ Record_DS::disk_thread ( void )
     bool punching_out = false;
     bool punched_in = false;
 
-    nframes_t bS = 0;
-    nframes_t bE = 0;
+    nframes_t bS = 0;                                           /* block start */
+    nframes_t bE = 0;                                           /* block end */
 
 again:
 
@@ -109,14 +109,14 @@ again:
     punched_in = false;
     punching_out = false;
 
-    nframes_t pS = _frame;
-    nframes_t pE = _stop_frame;
+    nframes_t pS = _frame;                                      /* punch start */
+    nframes_t pE = _stop_frame;                                 /* punch end */
 
     if ( punching_in )
     {
         /* write remainder of buffer */
         write_block( buf + ((pS - bS) * channels()),
-                         bE - pS );        
+                     bE - pS );        
 
         punching_in = false;
         punched_in = true;
@@ -147,29 +147,48 @@ again:
         frames_read += frames_to_read;
 
         bE = _first_frame + frames_read;
-
-        punching_in = ! punched_in && bE > pS;
-        punching_out = punched_in && pE < bE;
         
-        if ( punching_out )
+        if ( ! punched_in && bS > pS )
         {
-            write_block( buf,
-                         pE - bS );
-
-            break;
+            /* we're supposed to be punching in but don't have data
+               until a later frame... write null data instead.  FIXME:
+               it would probably be better to just have the record
+               threads running all the time so that there would always
+               have some actual data to write here */
+            sample_t  nbuf[bS - pS];
+            memset(nbuf,0,bS - pS);
+            write_block(nbuf, pS - pS);
+            write_block(buf,frames_to_read);
+            punched_in = true;
+            punching_in = false;
         }
         else
-        if ( punching_in )
         {
-            write_block( buf + ((pS - bS) * channels()),
-                         bE - pS );
+            punching_in = ! punched_in && bE > pS;
+            punching_out = punched_in && pE < bE;
 
-            punching_in = false;
-            punched_in = true;
-        }
-        else if ( punched_in )
-        {
-            write_block( buf, bE - bS );
+            if ( punching_out )
+            {
+                write_block( buf,
+                             pE - bS );
+
+                break;
+            }
+            else if ( punching_in )
+            {
+                assert( pS >= bS );
+                assert( bE >= pS );
+
+                write_block( buf + ((pS - bS) * channels()),
+                             bE - pS );
+
+                punching_in = false;
+                punched_in = true;
+            }
+            else if ( punched_in )
+            {
+                write_block( buf, bE - bS );
+            }
         }
     }
 

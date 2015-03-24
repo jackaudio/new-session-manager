@@ -129,7 +129,11 @@ Thread::cancel ( void )
 void
 Thread::join ( void )
 {
-    pthread_join( _thread, NULL );
+    if ( _thread != 0 )
+    {
+        /* not joined yet, go ahead. */
+        pthread_join( _thread, NULL );
+    }
     _thread = 0;
 }
 

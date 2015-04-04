@@ -574,7 +574,7 @@ Track::name ( void ) const
 void
 Track::size ( int v )
 {
-    if ( v < 0 || v > 3 )
+    if ( v < 0 || v > 4 )
         return;
 
     _size = v;
@@ -840,6 +840,10 @@ Track::menu_cb ( const Fl_Menu_ *m )
     {
         size( 3 );
     }
+    else if ( ! strcmp( picked, "Size/Enormous" ) )
+    {
+        size( 4 );
+    }
     else if ( ! strcmp( picked, "/Remove" ) )
     {
         int r = fl_choice( "Are you certain you want to remove track \"%s\"?", "Cancel", NULL, "Remove", name() );
@@ -984,6 +988,7 @@ Track::menu ( void ) const
     _menu.add( "Size/Medium",          FL_ALT + '2', 0, 0, FL_MENU_RADIO | ( s == 1 ? FL_MENU_VALUE : 0 ) );
     _menu.add( "Size/Large",           FL_ALT + '3', 0, 0, FL_MENU_RADIO | ( s == 2 ? FL_MENU_VALUE : 0 ) );
     _menu.add( "Size/Huge",           FL_ALT + '4', 0, 0, FL_MENU_RADIO | ( s == 3 ? FL_MENU_VALUE : 0 ) );
+    _menu.add( "Size/Enormous",           FL_ALT + '5', 0, 0, FL_MENU_RADIO | ( s == 4 ? FL_MENU_VALUE : 0 ) );
     _menu.add( "Flags/Record",         FL_CTRL + 'r', 0, 0, FL_MENU_TOGGLE | ( armed() ? FL_MENU_VALUE : 0 ) );
     _menu.add( "Flags/Mute",            FL_CTRL + 'm', 0, 0, FL_MENU_TOGGLE | ( mute() ? FL_MENU_VALUE : 0 ) );
     _menu.add( "Flags/Solo",           FL_CTRL + 's', 0, 0, FL_MENU_TOGGLE | ( solo() ? FL_MENU_VALUE : 0 ) );

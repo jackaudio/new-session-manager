@@ -321,10 +321,6 @@ Sequence::handle ( int m )
 /*     if ( m != FL_NO_EVENT ) */
 /*         DMESSAGE( "%s", event_name( m ) ); */
 
-//            if ( m == FL_RELEASE )
-    if ( ! Fl::pushed() )
-        Sequence_Widget::pushed( NULL );
-
     switch ( m )
     {
         case FL_KEYBOARD:
@@ -469,7 +465,13 @@ Sequence::handle ( int m )
 /*                 DMESSAGE( "Sequence widget = %p", r ); */
 
             if ( m == FL_RELEASE )
+            {
+                // in the case of track jumping, the sequence widget may not get the FL_RELEASE less we send it here:
+                if ( Sequence_Widget::pushed() )                    
+                    Sequence_Widget::pushed()->handle(FL_RELEASE);
+                
                 Sequence_Widget::pushed( NULL );
+            }
 
             if ( r )
             {

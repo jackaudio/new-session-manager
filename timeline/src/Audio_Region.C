@@ -215,8 +215,6 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
 
     m->item_pathname( picked, sizeof( picked ) );
 
-    Logger log( this );
-
     if ( ! strcmp( picked, "Fade/In/Linear" ) )
         _fade_in.type = Fade::Linear;
     else if ( ! strcmp( picked, "Fade/In/Sigmoid" ) )
@@ -240,12 +238,12 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
 	Loggable::block_start();
 	
 	split( timeline->x_to_offset( Fl::event_x() ) );
-	
-	log_end();
-	
-	Loggable::block_end();
 
-	log_start();
+        log_end();
+        
+        Loggable::block_end();
+        
+        log_start();
     }
     else if ( ! strcmp( picked, "/Crop to range" ) )
     {

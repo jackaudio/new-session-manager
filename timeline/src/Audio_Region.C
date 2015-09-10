@@ -789,6 +789,10 @@ Audio_Region::handle ( int m )
     
     Logger _log( this );
 
+    if ( ! Fl::pushed() )
+        // selecting an item from the context menu can leave this value set.
+        Sequence_Widget::pushed( NULL );
+    
     switch ( m )
     {
         case FL_FOCUS:

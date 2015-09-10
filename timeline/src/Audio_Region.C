@@ -235,15 +235,7 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
         box_color( fl_show_colormap( box_color() ) );
     else if ( ! strcmp( picked, "/Split at mouse" ) )
     {
-	Loggable::block_start();
-	
 	split( timeline->x_to_offset( Fl::event_x() ) );
-
-        log_end();
-        
-        Loggable::block_end();
-        
-        log_start();
     }
     else if ( ! strcmp( picked, "/Crop to range" ) )
     {
@@ -307,6 +299,7 @@ Audio_Region::menu_cb ( const Fl_Menu_ *m )
     else if ( ! strcmp( picked, "/Split at playhead" ) )
     {
         redraw();
+	
         split( transport->frame );
     }
     else if ( ! strcmp( picked, "/Loop point at playhead" ) )
@@ -759,18 +752,28 @@ Audio_Region::draw_label ( void )
 void
 Audio_Region::split ( nframes_t where )
 {
+    block_start();
+    
     nframes_t old_fade_in = _fade_in.length;
 
     _fade_in.length = 256;
 
     Audio_Region *copy = new Audio_Region( *this );
 
-    Logger _log( copy );
+    {
+        Logger _log( copy );
 
-    _fade_in.length = old_fade_in;
-    _fade_out.length = 256;
+        _fade_in.length = old_fade_in;
+        _fade_out.length = 256;
 
-    Sequence_Region::split( copy, where );
+        Sequence_Region::split( copy, where );
+    }
+
+    log_end();
+    
+    block_end();
+
+    log_start();
 }
 
 int
@@ -833,15 +836,7 @@ Audio_Region::handle ( int m )
                 /* split */
                 if ( ! copied )
                 {
-                    Loggable::block_start();
-
                     split( timeline->x_to_offset( X ) );
-
-                    log_end();
-
-                    Loggable::block_end();
-
-                    log_start();
                 }
 
                 return 0;

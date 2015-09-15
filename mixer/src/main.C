@@ -316,8 +316,7 @@ main ( int argc, char **argv )
         DMESSAGE( "Not Running UI..." );
         while ( ! got_sigterm )
         {
-            Fl::check();
-            usleep( 200 * 1000 );
+            Fl::wait(2147483.648);         /* magic number means forever */
         }
     }
 

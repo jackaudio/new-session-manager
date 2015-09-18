@@ -239,7 +239,7 @@ Sequence_Region::draw_box ( void )
 {
     Fl_Color c = selected() ? selection_color() : box_color();
 
-    fl_draw_box( box(), line_x(), y(), abs_w(), h(), fl_color_add_alpha( c, 127 ) );
+    fl_draw_box( box(), x(), y(), w(), h(), fl_color_add_alpha( c, 127 ) );
 }
 
 void

@@ -41,7 +41,7 @@ protected:
 public:
 
     Fl_Align align ( void ) const { return FL_ALIGN_RIGHT; }
-    virtual int abs_w ( void ) const { return 8; }
+    virtual long abs_w ( void ) const { return 8; }
 
 //    virtual int abs_x ( void ) const { return Sequence_Widget::abs_x() - ( abs_w() >> 1 ); }
 //    virtual int x ( void ) const { return Sequence_Widget::line_x() - ( abs_w() >> 1 ); }

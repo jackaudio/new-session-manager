@@ -189,8 +189,9 @@ public:
     int get_x( nframes_t frame ) const
         {
             return  frame < timeline->xoffset ?
-                _sequence->drawable_x() : 
-                min( _sequence->drawable_x() + _sequence->drawable_w(), _sequence->drawable_x() + timeline->ts_to_x( frame - timeline->xoffset ) );
+                _sequence->drawable_x() - 10 : 
+                min( _sequence->drawable_x() + _sequence->drawable_w(),
+                     _sequence->drawable_x() + timeline->ts_to_x( frame - timeline->xoffset ) );
         }
 
     virtual int x ( void ) const
@@ -198,19 +199,27 @@ public:
             return get_x( _r->start );
         }
 
-    /* use this as x() when you need to draw lines between widgets */
+    /* use this as x() when you need to draw lines between widgets. Clamped to -32767-32767 to match max canvas size of FLTK/NTK  */
     int line_x ( void ) const
         {
             return _r->start < timeline->xoffset ? 
                 max( -32767, _sequence->drawable_x() - timeline->ts_to_x( timeline->xoffset - _r->start )) :
-                min( 32767, _sequence->drawable_x() + timeline->ts_to_x( _r->start - timeline->xoffset ) );
+                min( 32767, _sequence->drawable_x() + timeline->ts_to_x( _r->start - timeline->xoffset  ));
+        }
+
+    /* same as above but un-clamped for cairo */
+    long curve_x ( void ) const
+        {
+            return _r->start < timeline->xoffset ? 
+                _sequence->drawable_x() - timeline->ts_to_x( timeline->xoffset - _r->start ) :
+                _sequence->drawable_x() + timeline->ts_to_x( _r->start - timeline->xoffset  );
         }
 
     virtual int w ( void ) const
         {
 //            int tx = timeline->ts_to_x( _r->start );
 
-            int rw;
+            long rw;
 
             if ( _r->start < timeline->xoffset )
             {
@@ -222,11 +231,11 @@ public:
             else
                 rw = abs_w();
 
-            return min( rw, _sequence->drawable_w() );
+            return (int)min( rw, (long)(_sequence->drawable_w() + 20)  );
         }
 
     int abs_x ( void ) const { return timeline->ts_to_x( _r->start ); }
-    virtual int abs_w ( void ) const { return timeline->ts_to_x( _r->length ); }
+    virtual long abs_w ( void ) const { return timeline->ts_to_x( _r->length ); }
 
     Fl_Color color ( void ) const { return _color; }
     void color ( Fl_Color v ) { _color = v; }

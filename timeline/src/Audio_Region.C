@@ -405,7 +405,7 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
                                                 
     if ( dir == Fade::In )
     {
-        fx = line_x();
+        fx = curve_x();
      
         if ( fx + width < X ||
                           fx > X + W )
@@ -414,7 +414,7 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
     }
     else
     {
-        fx = line_x() + abs_w();
+        fx = curve_x() + abs_w();
 
         if ( fx - width > X + W || 
              fx < X )
@@ -431,8 +431,8 @@ Audio_Region::draw_fade ( const Fade &fade, Fade::fade_dir_e dir, bool line, int
     fl_vertex( fx, dy + height );
 
     {
-        const float ti = 1.0f / (float)width;
-        float ts = 0.0f;
+        const double ti = 1.0 / (double)width;
+        double ts = 0.0;
         
         const int xi = dir == Fade::In ? 1 : -1;
 
@@ -487,8 +487,7 @@ Audio_Region::draw_box( void )
         b = FL_DOWN_FRAME;
     }
 
-    fl_draw_box( b, line_x(), y(), abs_w(), h(), c );
- 
+    fl_draw_box( b, x(), y(), w(), h(), c );
 
 //    fl_pop_clip();
 }

@@ -57,7 +57,7 @@ public:
     /* only for playback thread */
     nframes_t when ( void ) const { return _range.start; }
 
-    int abs_w ( void ) const { return 8; }
+    long abs_w ( void ) const { return 8; }
 
     int y ( void ) const { return parent()->y() + ((float)parent()->h() * _y); }
     int h ( void ) const { return 8; }

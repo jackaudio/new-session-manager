@@ -396,7 +396,7 @@ Control_Sequence::draw_curve ( bool filled )
         for ( list <Sequence_Widget *>::const_iterator r = wl.begin(); ; r++ )
         {
             const int ry = (*r)->y();
-            const int rx = (*r)->line_x();
+            const long rx = (*r)->curve_x();
 
             if ( r == wl.begin() )
             {

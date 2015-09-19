@@ -226,12 +226,12 @@ public:
                 if ( _r->start + _r->length < timeline->xoffset )
                     rw = 0;
                 else
-                    rw = timeline->ts_to_x( ( _r->start + _r->length ) - timeline->xoffset );
+                    rw = timeline->ts_to_x( ( _r->start + _r->length ) - timeline->xoffset ) + 10;
             }
             else
                 rw = abs_w();
 
-            return (int)min( rw, (long)(_sequence->drawable_w() + 20)  );
+            return (int)min( rw, (long)(_sequence->drawable_w()) + 20  );
         }
 
     int abs_x ( void ) const { return timeline->ts_to_x( _r->start ); }

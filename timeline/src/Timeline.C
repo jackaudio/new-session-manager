@@ -750,8 +750,11 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
         
             panzoomer = o;
         }
-        
+
+        /* this is used to define the sizing limits of the enclosing Fl_Tile */
         Fl_Box *spacebox = new Fl_Box( 0,0,1,1 );
+        /* doesn't need to be visible */
+        spacebox->hide();
 
         o->end();
         o->resizable( spacebox );

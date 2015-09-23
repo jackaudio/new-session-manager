@@ -720,6 +720,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
         { 
             Fl_Group *o = new Fl_Group( X, rulers->y() + rulers->h(), W, ( H - rulers->h() ) - 50 );
             o->box(FL_FLAT_BOX);
+            o->clip_children(true);
             {
                 _fpp = 8;
                 Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W, 1 );
@@ -1166,22 +1167,24 @@ Timeline::draw_clip_tracks ( void * v, int X, int Y, int W, int H )
 void
 Timeline::resize ( int X, int Y, int W, int H )
 {
+    int old_panzoomer_h = panzoomer->h();
+    
     BASE::resize( X, Y, W, H );
 
     tile->resizable()->resize( X,
                                tile->y() + tile->h() - 150,
                                W, 125 );
     
-    /* why is THIS necessary? */
     panzoomer->resize( X,
-                       tile->y() + tile->h() - 50,
+                       tile->y() + tile->h() - old_panzoomer_h,
                        W,
-                       50 );
+                       old_panzoomer_h );
 
     track_window->resize( X,
                           tile->y(),
                           W,
-                          tile->h() - 50);
+                          tile->h() - panzoomer->h());
+
 
     /* /\* rulers->resize( X, *\/ */
     /* /\*                 rulers->y(), *\/ */
@@ -1272,6 +1275,11 @@ Timeline::draw ( void )
     THREAD_ASSERT( UI );
 
 //    rdlock();
+    
+    /* Parent resizing obliterates the size and position of this widget... just force it.*/
+    tracks->resize(
+        track_window->x(), track_window->y() - (int)panzoomer->y_value(),
+        track_window->w(), pack_visible_height( tracks ));
 
     int X, Y, W, H;
 

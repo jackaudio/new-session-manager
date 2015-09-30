@@ -39,8 +39,9 @@ struct Drag
 
 //    nframes_t start;
     int64_t offset;
+    int64_t mouse_offset;
 
-    Drag( int X, int Y, uint64_t offset=0 ) : x( X ), y( Y ), offset( offset ) { state = 0; }
+    Drag( int X, int Y, uint64_t offset=0, uint64_t mouse_offset = 0 ) : x( X ), y( Y ), offset( offset ), mouse_offset( mouse_offset ) { state = 0; }
 };
 
 /* most common position description. /offset/ is only used by Regions,

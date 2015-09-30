@@ -442,7 +442,7 @@ Sequence_Widget::handle ( int m )
 
             if ( ! _drag )
             {
-                begin_drag ( Drag(  Y, x_to_offset( X ) ) );
+                begin_drag ( Drag( X, Y, x_to_offset( X ), start() ) );
                 _log.hold();
             }
 
@@ -463,7 +463,7 @@ Sequence_Widget::handle ( int m )
                 const nframes_t of = timeline->x_to_offset( X );
 
                 int64_t s = (int64_t)of - _drag->offset;
-                
+                             
                 if ( s < 0 )
                     s = 0;
 
@@ -473,29 +473,25 @@ Sequence_Widget::handle ( int m )
                     sequence()->snap( this );
 
                 if ( X >= sequence()->x() + sequence()->w() ||
-                     X <= sequence()->x() )
+                     X <= sequence()->drawable_x() )
                 {
                     /* this drag needs to scroll */
 
-                    nframes_t pos = timeline->xoffset;
+                    int64_t pos = s - ( _drag->mouse_offset - _drag->offset );
+                    
 
-                    nframes_t d = timeline->x_to_ts( 100 );
+                    if ( X > sequence()->x() + sequence()->w() )
+                        pos -= timeline->x_to_ts( sequence()->drawable_w() );
 
-                    if ( X <= sequence()->x() )
-                    {
+                    if ( s == 0 )
+                        pos = 0;
 
-                        if ( pos > d )
-                            pos -= d;
-                        else
-                            pos = 0;
-                    }
-                    else
-                        pos += d;
+                    if ( pos < 0 )
+                        pos = 0;
 
-                    timeline->xposition( timeline->ts_to_x(  pos ) );
-
-//                    timeline->update_length( start() + length() );
-
+                    timeline->xposition(timeline->ts_to_x(pos));
+                    
+                    /* timeline->redraw();  */
                     sequence()->damage( FL_DAMAGE_USER1 );
                 }
 

@@ -938,7 +938,21 @@ Timeline::prev_line ( nframes_t *frame, bool bar ) const
 nframes_t
 Timeline::x_to_offset ( int x ) const
 {
-    return x_to_ts( max( 0, x - Track::width() ) ) + xoffset;
+    int d = x - Track::width();
+
+    int64_t r;
+    
+    if ( d < 0 )
+        r = (int64_t)xoffset - x_to_ts( 0 - d );
+    else
+        r = (int64_t)xoffset + x_to_ts( d );
+
+    if ( r > JACK_MAX_FRAMES )
+        return JACK_MAX_FRAMES;
+    else if ( r < 0 )
+            return 0;
+    else
+        return r;
 }
 
 int
@@ -1837,7 +1851,7 @@ Timeline::xposition ( int X )
 {
     xoffset = x_to_ts( X );
 
-    int dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
+    long dx = ts_to_x( _old_xposition ) - ts_to_x( xoffset );
 
     if ( dx )
         damage( FL_DAMAGE_SCROLL );

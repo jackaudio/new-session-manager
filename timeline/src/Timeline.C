@@ -721,6 +721,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
             Fl_Group *o = new Fl_Group( X, rulers->y() + rulers->h(), W, ( H - rulers->h() ) - 50 );
             o->box(FL_FLAT_BOX);
             o->clip_children(true);
+            o->resizable(NULL);
             {
                 _fpp = 8;
                 Fl_Pack *o = new Fl_Pack( X, rulers->y() + rulers->h(), W, 1 );
@@ -1185,6 +1186,7 @@ Timeline::resize ( int X, int Y, int W, int H )
                           W,
                           tile->h() - panzoomer->h());
 
+    tracks->resize( tracks->x(), tracks->y(), W, tracks->h() );
 
     /* /\* rulers->resize( X, *\/ */
     /* /\*                 rulers->y(), *\/ */
@@ -1275,11 +1277,6 @@ Timeline::draw ( void )
     THREAD_ASSERT( UI );
 
 //    rdlock();
-    
-    /* Parent resizing obliterates the size and position of this widget... just force it.*/
-    tracks->resize(
-        track_window->x(), track_window->y() - (int)panzoomer->y_value(),
-        track_window->w(), pack_visible_height( tracks ));
 
     int X, Y, W, H;
 

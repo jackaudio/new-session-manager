@@ -454,11 +454,6 @@ Sequence::handle ( int m )
         }
         default:
         {
-            if ( m != FL_DRAG &&
-                 m != FL_RELEASE &&
-                 Fl::event_x() < drawable_x() )
-                return 0;
-
             Sequence_Widget *r = Sequence_Widget::pushed() ? Sequence_Widget::pushed() : event_widget();
 
 /*             if ( this == Fl::focus() ) */

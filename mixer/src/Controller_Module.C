@@ -229,6 +229,8 @@ Controller_Module::mode ( Mode m )
     else if ( mode() == CV && m != CV )
     {
         chain()->client()->lock();
+
+        aux_audio_input.back().jack_port()->shutdown();
         
         delete aux_audio_input.back().jack_port();
 

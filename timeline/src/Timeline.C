@@ -2052,7 +2052,8 @@ Timeline::command_load ( const char *name, const char *display_name )
         return false;
     }
 
-    Project::set_name ( display_name ? display_name : name );
+    if ( display_name )
+        Project::set_name ( display_name );
 
     apply_track_order();
   

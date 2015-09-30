@@ -329,10 +329,12 @@ Project::open ( const char *name )
     if ( created_by )
         free( created_by );
 
-    set_name( name );
 
     *_path = '\0';
+
     fl_filename_absolute( _path, sizeof( _path ), "." );
+
+    set_name( _path );
 
     _is_open = true;
 
@@ -340,7 +342,7 @@ Project::open ( const char *name )
 
     timeline->zoom_fit();
 
-    MESSAGE( "Loaded project \"%s\"", name );
+    MESSAGE( "Loaded project \"%s\"", _path );
 
     return 0;
 }

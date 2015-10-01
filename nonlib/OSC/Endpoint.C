@@ -435,8 +435,16 @@ namespace OSC
         const char *name = &argv[0]->s;
         
         Endpoint *ep = (Endpoint*)user_data;
+
+        Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) );
         
-        Signal *o = ep->find_signal_by_path( name );
+        if ( ! p )
+        {
+            WARNING( "Got signal removed notification from unknown peer." );
+            return 0;
+        }
+
+        Signal *o = ep->find_peer_signal_by_path( p, name );
 
         if ( ! o )
         {
@@ -450,7 +458,7 @@ namespace OSC
         if ( ep->_peer_signal_notification_callback )
             ep->_peer_signal_notification_callback( o, Signal::Removed, ep->_peer_signal_notification_userdata );
         
-        ep->_signals.remove( o );
+        p->_signals.remove(o);
 
         delete o;
 

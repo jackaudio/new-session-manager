@@ -179,6 +179,9 @@ Sequence::widget_at ( nframes_t ts, int Y )
 Sequence_Widget *
 Sequence::event_widget ( void )
 {
+    if ( Fl::event_x() < drawable_x() )
+        return NULL;
+    
     nframes_t ets = timeline->xoffset + timeline->x_to_ts( Fl::event_x() - drawable_x() );
     return widget_at( ets, Fl::event_y() );
 }

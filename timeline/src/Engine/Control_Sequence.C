@@ -85,8 +85,12 @@ Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
             incr = 0.0f;
         
         float v = y1 + start * incr;
+
+        if ( ! n )
+            /* buffer's full, no point in continuing */
+            break;
         
-        for ( nframes_t i = start; i < len && n--; ++i, v += incr )
+        for ( nframes_t i = start; i < len && n && n--; ++i, v += incr )
             *(buf++) = v;
     }
 

@@ -2208,16 +2208,15 @@ Timeline::process_osc ( void )
 {
     THREAD_ASSERT( OSC );
 
-    /* rdlock(); */
+    sequence_lock.rdlock();
 
-    /* reconnect OSC signals */
     for ( int i = tracks->children(); i-- ; )
     {
         Track *t = (Track*)tracks->child( i );
         
         t->process_osc();
     }
-
-    /* unlock(); */
+    
+    sequence_lock.unlock();
 }
 

@@ -93,11 +93,11 @@ namespace OSC
 
         DMESSAGE( "Renaming signal %s to %s", this->path(), new_path );
 
-        if ( _direction == Signal::Input )
-        {
+        /* if ( _direction == Signal::Input ) */
+        /* { */
             lo_server_del_method( _endpoint->_server, _path, NULL );
             lo_server_add_method( _endpoint->_server, new_path, NULL, _endpoint->osc_sig_handler, this );
-        }
+        /* } */
 
         for ( std::list<Peer*>::iterator i = _endpoint->_peers.begin(); 
               i != _endpoint->_peers.end();

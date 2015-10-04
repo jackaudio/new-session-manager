@@ -56,7 +56,7 @@ Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
 {
     //  THREAD_ASSERT( RT );
 
-    Control_Point *p2, *p1 = (Control_Point*)&_widgets.front();
+    Control_Point *p2, *p1 = (Control_Point*)_widgets.front();
 
     nframes_t n = nframes;
 
@@ -64,34 +64,53 @@ Control_Sequence::play ( sample_t *buf, nframes_t frame, nframes_t nframes )
           i != _widgets.end(); ++i, p1 = p2 )
     {
         p2 = (Control_Point*)(*i);
-
-        if ( p2->when() < frame )
-            continue;
-
-        /* do incremental linear interpolation */
-
-        const nframes_t len = p2->when() - p1->when();
         
-        const float y1 = 1.0f - p1->control();
-        const float y2 = 1.0f - p2->control();
-        
-        const nframes_t start = frame - p1->when();
-        
-        float incr;
-        
-        if ( interpolation() != None )
-            incr = ( y2 - y1 ) / (float)len;
-        else
-            incr = 0.0f;
-        
-        float v = y1 + start * incr;
-
         if ( ! n )
             /* buffer's full, no point in continuing */
             break;
+
+        if ( p2->when() < frame )
+        {
+            if ( p2 != _widgets.back() )
+                continue;
+
+            /* no more control points left, fill buffer with last value */
+            const float v = 1.0f - p2->control();
+            
+            while ( n && n-- )
+                *(buf++) = v;
+
+            break;
+        }
+        else
+        {
+            /* do incremental linear interpolation */
+
+            const nframes_t len = p1 != p2 ?
+                p2->when() - p1->when() :
+                p1->when();
+           
+            const float y1 = 1.0f - p1->control();
+            const float y2 = 1.0f - p2->control();
+
+            const nframes_t start = frame > p1->when() ?
+                frame - p1->when() :
+                frame;
         
-        for ( nframes_t i = start; i < len && n && n--; ++i, v += incr )
-            *(buf++) = v;
+            float incr;
+        
+            if ( interpolation() != None )
+                incr = ( y2 - y1 ) / (float)len;
+            else
+                incr = 0.0f;
+        
+            float v = y1 + start * incr;
+        
+            for ( nframes_t i = start;
+                  i < start + len && n && n--;
+                  ++i, v += incr )
+                *(buf++) = v;
+        }
     }
 
     return nframes - n;

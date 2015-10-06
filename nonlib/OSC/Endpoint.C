@@ -1047,7 +1047,7 @@ namespace OSC
     {
 //	DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
 
-        lo_server_del_method( _server, o->path(), "f" );
+        lo_server_del_method( _server, o->path(), NULL );
 
         /* tell our peers about it */
         for ( std::list<Peer*>::iterator i = _peers.begin();

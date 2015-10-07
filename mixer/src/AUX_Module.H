@@ -37,6 +37,8 @@ public:
 
     virtual const char *name ( void ) const { return "AUX"; }
 
+    int can_support_inputs ( int n ) { return n > 0 ? n : -1; }
+
     virtual bool configure_outputs ( int n );
     virtual bool configure_inputs ( int n );
 

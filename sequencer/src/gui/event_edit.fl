@@ -225,7 +225,7 @@ for ( event* e = (*_el)[0]; ( e = e->next() ); i++ )
   }
   Function {value( void )} {return_type {Event_Widget *}
   } {
-    code {for ( int i = _h; i--; )
+    code {for ( int i = 0; i < pack->children(); i++ )
 {
 	Event_Widget *w = (Event_Widget*)pack->child( i );
 	if ( w->selected() )

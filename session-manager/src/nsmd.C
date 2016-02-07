@@ -906,6 +906,8 @@ save_session_file ( )
   
     FILE *fp = fopen( session_file, "w+" );
 
+    free( session_file );
+    
     /* FIXME: handle errors. */
 
     for ( std::list<Client*>::iterator i = client.begin();
@@ -1199,6 +1201,8 @@ load_session_file ( const char * path )
         return ERR_CREATE_FAILED;
     }
 
+    free( session_file );
+    
     session_path = strdup( path );
 
     set_name( path );
@@ -1223,6 +1227,8 @@ load_session_file ( const char * path )
         }
     }
 
+    fclose(fp);
+    
     MESSAGE( "Commanding unneeded and dumb clients to quit" );
     
     std::map<std::string,int> client_map;

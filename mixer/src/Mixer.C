@@ -1148,6 +1148,12 @@ Mixer::get_auto_connect_targets ( void )
 void
 Mixer::auto_connect ( void )
 {
+    if ( Project::is_opening() )
+        /* it's more efficient to do this once at the end rather than as we go. */
+        return;
+    
+    DMESSAGE("Full auto-connect cycle" );
+    
     /* give strips with group affinity the first shot */
     for ( int i = 0; i < mixer_strips->children(); i++ )
     {
@@ -1170,6 +1176,12 @@ Mixer::auto_connect ( void )
 void
 Mixer::maybe_auto_connect_output ( Module::Port *p )
 {
+    if ( Project::is_opening() )
+        /* it's more efficient to do this once at the end rather than as we go. */
+        return;
+
+//    DMESSAGE( "Single output auto connect cycle" );
+    
     /* give strips with group affinity the first shot */
     for ( int i = 0; i < mixer_strips->children(); i++ )
     {

@@ -86,6 +86,18 @@ Module::~Module ( )
         audio_input[i].disconnect();
     for ( unsigned int i = 0; i < audio_output.size(); ++i )
         audio_output[i].disconnect();
+    for ( unsigned int i = 0; i < aux_audio_input.size(); ++i )
+    {
+        aux_audio_input[i].disconnect();
+        aux_audio_input[i].jack_port()->shutdown();
+        delete aux_audio_input[i].jack_port();
+    }    
+    for ( unsigned int i = 0; i < aux_audio_output.size(); ++i )
+    {
+        aux_audio_output[i].disconnect();
+        aux_audio_output[i].jack_port()->shutdown();
+        delete aux_audio_output[i].jack_port();
+    }
     for ( unsigned int i = 0; i < control_input.size(); ++i )
     {
         /* destroy connected Controller_Module */
@@ -129,6 +141,15 @@ Module::~Module ( )
 void
 Module::init ( void )
 {
+
+    /* we use pointers to these vector elements for port auto connection stuff and need to prevent reallocation from invalidating them. */
+    audio_input.reserve(16);
+    audio_output.reserve(16);
+    control_input.reserve(16);
+    control_output.reserve(16);
+    aux_audio_input.reserve(16);
+    aux_audio_output.reserve(16);
+    
 //    _latency = 0;
     _is_default = false;
     _editor = 0;
@@ -244,6 +265,23 @@ Module::paste_before ( void )
 }
 
 
+
+void
+Module::Port::disconnect_from_strip ( Mixer_Strip *o )
+{
+    for ( std::list<Port*>::iterator i = _connected.begin(); i != _connected.end(); i++ )
+    {
+        Port *p = *i;
+
+        if ( p->module()->chain()->strip() == o )
+        {
+            /* iterator about to be invalidated... */
+            i = _connected.erase(i);
+                        
+            disconnect(p);
+        }
+    }               
+}
 
 const char *
 Module::Port::osc_number_path ( void )

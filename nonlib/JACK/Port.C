@@ -380,12 +380,20 @@ namespace JACK
     {
         const char *name = jack_port_name( _port );
 
+        /* jack complains when you attempt to connect an already connected port... */
+        if ( connected_to( to ) )
+            return 0;
+        
         if ( _direction == Output )
         {  
+            DMESSAGE("Connecting jack port %s to %s", name, to );
+
             return jack_connect( _client->jack_client(), name, to );
         }
         else
         {
+            DMESSAGE("Connecting jack port %s to %s", to, name );
+
             return jack_connect( _client->jack_client(), to, name );
         }
     }
@@ -397,11 +405,15 @@ namespace JACK
         const char *name = jack_port_name( _port );
 
         if ( _direction == Output )
-        {  
+        {
+            DMESSAGE("Disconnecting jack port %s from %s", name, from );
+            
             return jack_disconnect( _client->jack_client(), name, from );
         }
         else
         {
+            DMESSAGE("Disconnecting jack port %s from %s", from, name );
+            
             return jack_disconnect( _client->jack_client(), from, name );
         }
     }

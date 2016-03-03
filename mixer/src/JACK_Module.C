@@ -51,6 +51,8 @@ extern char *instance_name;
 
 static JACK_Module *receptive_to_drop = NULL;
 
+const int MAX_PORTS = 16;
+
 JACK_Module::JACK_Module ( bool log )
     : Module ( 25, 25, name() )
 {
@@ -70,8 +72,8 @@ JACK_Module::JACK_Module ( bool log )
         {
             Port p( this, Port::INPUT, Port::CONTROL, "Inputs" );
             p.hints.type = Port::Hints::INTEGER;
-            p.hints.minimum = 0;
-            p.hints.maximum = 16;
+            p.hints.minimum = 1;
+            p.hints.maximum = MAX_PORTS;
             p.hints.ranged = true;
             p.hints.visible = false;
 
@@ -84,8 +86,8 @@ JACK_Module::JACK_Module ( bool log )
         {
             Port p( this, Port::INPUT, Port::CONTROL, "Outputs" );
             p.hints.type = Port::Hints::INTEGER;
-            p.hints.minimum = 0;
-            p.hints.maximum = 16;
+            p.hints.minimum = 1;
+            p.hints.maximum = MAX_PORTS;
             p.hints.ranged = true;
             p.hints.visible = false;
 
@@ -226,8 +228,7 @@ get_connections_for_ports ( std::vector<Module::Port> ports )
                 free( strip_name );
                 strip_name = s;
             }
-            else
-            if ( 2 == sscanf( *c, "Non-Mixer.%a[^:(] (%a[^:)]):", &client_id, &strip_name ) )
+            else if ( 2 == sscanf( *c, "Non-Mixer.%a[^:(] (%a[^:)]):", &client_id, &strip_name ) )
             {
                 free( client_id );
                 char *s = NULL;
@@ -235,8 +236,7 @@ get_connections_for_ports ( std::vector<Module::Port> ports )
                 free( strip_name );
                 strip_name = s;
             }
-            else
-            if ( 2 == sscanf( *c, "Non-Timeline.%a[^:/]:%a[^/]/", &client_id, &strip_name ) )
+            else if ( 2 == sscanf( *c, "Non-Timeline.%a[^:/]:%a[^/]/", &client_id, &strip_name ) )
             {
                 free( client_id );
                 char *s = NULL;
@@ -244,8 +244,7 @@ get_connections_for_ports ( std::vector<Module::Port> ports )
                 free( strip_name );
                 strip_name = s;
             }
-            else
-            if ( 2 == sscanf( *c, "Non-DAW.%a[^:/]:%a[^/]/", &client_id, &strip_name ) )
+            else if  ( 2 == sscanf( *c, "Non-DAW.%a[^:/]:%a[^/]/", &client_id, &strip_name ) )
             {
                 free( client_id );
                 char *s = NULL;
@@ -379,11 +378,11 @@ JACK_Module::configure_inputs ( int n )
 {
     if ( n > 0 )
     {
-        if ( is_default() )
-            control_input[0].hints.minimum = 1;
-
         output_connection_handle->show();
     }
+
+    if ( n < 1 || n > MAX_PORTS )
+        return false;
   
     int on = audio_input.size();
 
@@ -396,6 +395,8 @@ JACK_Module::configure_inputs ( int n )
                 add_port( Port( this, Port::INPUT, Port::AUDIO ) );
             }
         }
+
+       mixer->maybe_auto_connect_output(&aux_audio_output.back());
     }
     else
     {
@@ -403,9 +404,11 @@ JACK_Module::configure_inputs ( int n )
         {
             audio_input.back().disconnect();
             audio_input.pop_back();
+            aux_audio_output.back().disconnect();
             aux_audio_output.back().jack_port()->shutdown();
             delete aux_audio_output.back().jack_port();
             aux_audio_output.pop_back();
+        
         }
     }
 
@@ -422,7 +425,10 @@ bool
 JACK_Module::configure_outputs ( int n )
 {
     int on = audio_output.size();
-   
+
+    if ( n > MAX_PORTS )
+        return false;
+     
     if ( n > 0 )
     {
         input_connection_handle->show();
@@ -437,6 +443,8 @@ JACK_Module::configure_outputs ( int n )
                 add_port( Port( this, Port::OUTPUT, Port::AUDIO ) );
             }
         }
+
+       mixer->auto_connect();
     }
     else
     {
@@ -444,6 +452,7 @@ JACK_Module::configure_outputs ( int n )
         {
             audio_output.back().disconnect();
             audio_output.pop_back();
+            aux_audio_input.back().disconnect();
             aux_audio_input.back().jack_port()->shutdown();
             delete aux_audio_input.back().jack_port();
             aux_audio_input.pop_back();
@@ -458,8 +467,10 @@ JACK_Module::configure_outputs ( int n )
         dec_button->show();
         inc_button->show();
     }
+
     return true;
 }
+
 
 bool
 JACK_Module::initialize ( void )
@@ -703,7 +714,7 @@ JACK_Module::process ( nframes_t nframes )
             buffer_copy( (sample_t*)aux_audio_output[i].jack_port()->buffer(nframes),
                          (sample_t*)audio_input[i].buffer(),
                          nframes );
-         }
+        }
                          
     }
 

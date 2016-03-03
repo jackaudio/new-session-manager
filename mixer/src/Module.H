@@ -31,12 +31,15 @@
 #include "Loggable.H"
 #include "JACK/Port.H"
 #include "OSC/Endpoint.H"
+#include <list>
+#include <algorithm>
 
 class Chain;
 class Module_Parameter_Editor;
 class Fl_Menu_;
 class Fl_Menu_Button;
 class Fl_Button;
+class Mixer_Strip;
 
 class Module : public Fl_Group, public Loggable {
 
@@ -86,6 +89,11 @@ public:
 
     class Port
     {
+
+        /* support multiple connection for audio ports (many to one, one to many, many to many).
+           control ports only support one to one and one to many. */
+
+        
         /* char *type_names[] = { "Audio", "Control" }; */
         /* char *direction_names[] = { "Input", "Output" }; */
 
@@ -139,7 +147,6 @@ public:
                 _type = type;
                 _buf = 0;
                 _nframes = 0;
-                _connected = 0;
                 _module = module;
                 _scaled_signal = 0;
                 _unscaled_signal = 0;
@@ -155,7 +162,6 @@ public:
                 _type = p._type;
                 _buf = p._buf;
                 _nframes = p._nframes;
-                _connected = p._connected;
                 _module = p._module;
                 hints = p.hints;
                 _scaled_signal = p._scaled_signal;
@@ -170,9 +176,6 @@ public:
                 if ( _by_number_path )
                     free( _by_number_path );
                 _by_number_path = NULL;
-
-                //     change_osc_path( NULL );
-                //   disconnect();
             }
 
         const char *name ( void ) const { return _name; }
@@ -242,44 +245,94 @@ public:
                     return 0.0f;
             }
 
-        bool connected ( void ) const { return _connected; }
+        bool connected ( void ) const {
+            if ( _type == Port::AUDIO )
+                /* internal audio ports are considered connected by the buffer setting */
+                return _buf != 0;
+            else
+                /* control and external audio ports belong to a graph */
+                return _connected.size() > 0;
+        }
         bool connected_osc ( void ) const;
 
         Port *connected_port ( void ) const
             {
-                return _connected;
+                ASSERT( _type == Port::CONTROL, "Operation only available for control ports" );                
+                return _connected.size() == 0 ? NULL : _connected.front();                
             }
 
         void connect_to ( Port *to )
             {
-                _buf = to->_buf;
-                to->_connected = this;
-                _connected = to;
+                if ( _type != Port::AUX_AUDIO )
+                {
+                    _buf = to->_buf;
+                }
+
+                if ( jack_port() && to->jack_port() )
+                    jack_port()->connect( to->jack_port()->jack_name() );               
+
+                if ( std::find(_connected.begin(),_connected.end(),to) == _connected.end() )
+                {                   
+                    _connected.push_back(to);
+                    to->_connected.push_back(this);
+                }
             }
 
+
+        /* disconnect this port from any ports of modules belonging to strip /o/ */
+        void disconnect_from_strip ( Mixer_Strip *o );
+        
         void connect_to ( void *buf )
             {
+                ASSERT( _type == Port::CONTROL, "Operation only available for control ports" );                
                 _buf = buf;
                 update_connected_port_buffer();
             }
 
+        void set_buffer ( void *buf )
+            {
+                ASSERT( _type != Port::CONTROL, "Operation only available for audio ports" );                
+                _buf = buf;
+            }
+
         void send_feedback ( void );
 
+        bool connected_to ( Port *p )
+            {
+                return std::find( _connected.begin(), _connected.end(), p ) != _connected.end();
+            }
+        
+        /* disconnect from specified port */
+        void disconnect ( Port *p )
+            {
+                if ( ! connected_to(p) )
+                    return;
+
+                if ( _type == Port::CONTROL && p->_module )
+                    p->_module->handle_control_disconnect( this );
+                    
+                if ( jack_port() && p->jack_port() )
+                    jack_port()->disconnect( p->jack_port()->jack_name() );
+
+                _connected.remove(p);
+                p->_connected.remove(this);
+            }
+        
+        /* disconnect from *all* connected ports */
         void disconnect ( void )
             {
-                if ( _connected && _connected != (void*)0x01 )
+                if ( _connected.size() )
                 {
-                    _connected->_connected = NULL;
+                    for ( std::list<Port*>::iterator i = _connected.begin(); i != _connected.end(); i++ )
+                    {
+                        Port *p = *i;
 
-                    if ( _connected->_module )
-                        _connected->_module->handle_control_disconnect( this );
-
-                    _connected = NULL;
+                        /* iterator about to be invalidated... */
+                        i = _connected.erase(i);
+                        
+                        disconnect(p);
+                    }
                 }
-                else
-                    _connected = NULL;
-
-                /* FIXME: do something! */
             }
 
         void jack_port ( JACK::Port *v ) { _jack_port = v; }
@@ -289,8 +342,8 @@ public:
 
         char *generate_osc_path ( void );
         void change_osc_path ( char *path );
-    
-        Port *_connected;
+
+        std::list <Port*> _connected;
         Type _type;
         Direction _direction;
         const char *_name;

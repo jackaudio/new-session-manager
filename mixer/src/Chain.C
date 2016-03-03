@@ -383,7 +383,7 @@ Chain::configure_ports ( void )
         for ( unsigned int i = 0; i < req_buffers; ++i )
         {
             Module::Port p( NULL, Module::Port::OUTPUT, Module::Port::AUDIO );
-            p.connect_to( buffer_alloc( client()->nframes() ) );
+            p.set_buffer( buffer_alloc( client()->nframes() ) );
             buffer_fill_with_silence( (sample_t*)p.buffer(), client()->nframes() );
             scratch_port.push_back( p );
         }
@@ -749,11 +749,11 @@ Chain::build_process_queue ( void )
         
         for ( unsigned int j = 0; j < m->audio_input.size(); ++j )
         {
-            m->audio_input[j].connect_to( &scratch_port[j] );
+            m->audio_input[j].set_buffer( scratch_port[j].buffer() );
         }
         for ( unsigned int j = 0; j < m->audio_output.size(); ++j )
         {
-            m->audio_output[j].connect_to( &scratch_port[j] );
+            m->audio_output[j].set_buffer( scratch_port[j].buffer() );
         }
 
         m->handle_port_connection_change();

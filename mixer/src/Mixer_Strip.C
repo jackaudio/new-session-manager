@@ -996,7 +996,6 @@ Mixer_Strip::has_group_affinity ( void ) const
     return _auto_input && strncmp( _auto_input, "*/", 2 );
 }
 
-
 bool
 Mixer_Strip::maybe_auto_connect_output ( Module::Port *p )
 {
@@ -1009,25 +1008,16 @@ Mixer_Strip::maybe_auto_connect_output ( Module::Port *p )
 
     if ( ! _auto_input )
     {
-        if ( p->connected_port() && p->connected_port()->module()->chain()->strip() == this )
-        {
-            /* first break previous auto connection */
-            p->connected_port()->jack_port()->disconnect( p->jack_port()->jack_name() );
-            p->disconnect();
-        }
+        /* break any previous connection between this port and this module */
+        p->disconnect_from_strip(this);        
     }
     
     if ( _auto_input && matches_pattern( _auto_input, p ) )
     {
-        DMESSAGE( "Auto connecting port" );
-
-        if ( p->connected_port() )
-        {
-            /* first break previous auto connection */
-            p->connected_port()->jack_port()->disconnect( p->jack_port()->jack_name() );
-            p->disconnect();
-        }
-
+        /* break any prior auto-connection */
+        p->disconnect();
+        
+        // FIXME: Find a better way to get the port index.
         const char* jack_name = p->jack_port()->jack_name();
        
         /* get port number */
@@ -1036,14 +1026,21 @@ Mixer_Strip::maybe_auto_connect_output ( Module::Port *p )
 
         /* FIXME: safe assumption? */
         JACK_Module *m = (JACK_Module*)chain()->module(0);
+
+        if ( !m )
+        {           
+            /* no jack module in the chian... may be in the process of adding the JACK module to the chain... i.e in log replay when loading a project. */
+            return false;
+        }
         
-        if ( n < m->aux_audio_input.size() )
+        if ( n >= m->aux_audio_input.size() )
         {
-            m->aux_audio_input[n].jack_port()->connect( jack_name );
-            /* make a note of the connection so we know to disconnected later */
-            m->aux_audio_input[n].connect_to( p );
+//            DMESSAGE( "No port to connect to at this index");
+            return false;
         }
 
+        m->aux_audio_input[n].connect_to( p );
+        
         if ( p->module()->is_default() )
         {
             /* only do this for mains */

@@ -200,7 +200,7 @@ update_widgets();} {}
     code {int i = 0;
 if ( ! _el->empty() )
 
-for ( event* e = (*_el)[0]; ( e = e->next() ); i++ )
+for ( event* e = (*_el)[0]; e; ( e = e->next() ), i++ )
 {
 	Event_Widget *ew;
 	

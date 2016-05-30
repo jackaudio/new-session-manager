@@ -626,6 +626,13 @@ launch ( const char *executable, const char *client_id )
         char *args[] = { strdup( executable ), NULL };
 
         setenv( "NSM_URL", url, 1 );
+
+        /* Ensure the launched process can receive SIGCHLD */
+        /* Unblocking SIGCHLD here does NOT unblock it for nsmd itself */
+        sigset_t mask;
+        sigemptyset( &mask );
+        sigaddset( &mask, SIGCHLD );
+        sigprocmask(SIG_UNBLOCK, &mask, NULL );
         
         if ( -1 == execvp( executable, args ) )
         {

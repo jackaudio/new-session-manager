@@ -228,7 +228,7 @@ Presently, the server <tt>capabilities</tt> are:
 <strong>Fig. 1.2.</strong> Available Server Capabilities
 </caption>
 <tr><th>Name</th><th>Description</th></tr>
-<tr><td>server_control</td><td>client-to-server control</td></tr>
+<tr><td>server-control</td><td>client-to-server control</td></tr>
 <tr><td>broadcast</td><td>server responds to /nsm/server/broadcast message</td></tr>
 <tr><td>optional-gui</td><td>server responds to optional-gui messages--if this capability is not present then clients with optional-guis MUST always keep them visible</td></tr>
 </table></div></center>
@@ -491,7 +491,7 @@ Clients which have this capability should include <tt>:message:</tt> in their <t
 </table></div></center>
 <h3 id="n:1.2.6.">1.2.6. Client to Server Control</h3>
 <p>
-If the server publishes the <tt>:server_control:</tt> capability, then clients can also initiate action by the server. For example, a client might implement a 'Save All' option which sends a <tt>/nsm/server/save</tt> message to the server, rather than requiring the user to switch to the session management interface to effect the save.
+If the server publishes the <tt>:server-control:</tt> capability, then clients can also initiate action by the server. For example, a client might implement a 'Save All' option which sends a <tt>/nsm/server/save</tt> message to the server, rather than requiring the user to switch to the session management interface to effect the save.
 </p>
 <h3 id="n:1.2.7.">1.2.7. Server Control API</h3>
 <p>

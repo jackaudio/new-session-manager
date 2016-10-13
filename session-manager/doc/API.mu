@@ -213,7 +213,7 @@
 
 // Available Server Capabilities
 [[ Name, Description
-[[ server_control, client-to-server control
+[[ server-control, client-to-server control
 [[ broadcast, server responds to /nsm/server/broadcast message
 [[ optional-gui, server responds to optional-gui messages--if this capability is not present then clients with optional-guis MUST always keep them visible
 
@@ -509,7 +509,7 @@
 
 ::: Client to Server Control
 
-  If the server publishes the `:server\_control:` capability, then
+  If the server publishes the `:server-control:` capability, then
   clients can also initiate action by the server. For example, a
   client might implement a 'Save All' option which sends a
   `\/nsm\/server\/save` message to the server, rather than requiring

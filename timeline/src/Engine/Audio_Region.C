@@ -69,9 +69,15 @@ Audio_Region::Fade::apply_interleaved ( sample_t *buf, Audio_Region::Fade::fade_
     const double inc = increment();
     double fi = start / (double)length;
 
+    if ( n > length - start )
+        /* don't try to apply fade to more samples than specified by the fade length... */
+        n = length - start;
+    
+    /* ASSERT( nframes < length - start, "Attempt to apply fade to more samples than its length" ); */
+            
     if ( dir == Fade::Out )
     {
-        fi = 1.0f - fi;
+        fi = 1.0 - fi;
         for ( ; n--; fi -= inc  )
         {
             const float g = gain(fi);
@@ -102,8 +108,13 @@ Audio_Region::read ( sample_t *buf, bool buf_is_empty, nframes_t pos, nframes_t 
 
     const Range r = _range;
 
-    /* do nothing if we aren't covered by this frame range */
-    if ( pos > r.start + r.length || pos + nframes < r.start )
+    const nframes_t rS = r.start;
+    const nframes_t rE = r.start + r.length;
+    const nframes_t bS = pos;
+    const nframes_t bE = pos + nframes;
+    
+    /* do nothing if region isn't inside buffer */
+    if ( bS > rE || bE < rS )
         return 0;
 
     sample_t *cbuf = NULL;
@@ -122,29 +133,35 @@ Audio_Region::read ( sample_t *buf, bool buf_is_empty, nframes_t pos, nframes_t 
 
     /* calculate offsets into file and sample buffer */
 
-    nframes_t sofs,                                              /* offset into source */
-        ofs,                                                    /* offset into buffer */
+    nframes_t sO,                                              /* offset into source */
+        bO,                                                    /* offset into buffer */
         cnt;                                                    /* number of frames to read  */
 
     cnt = nframes;
 
-    if ( pos < r.start )
+    if ( bS < rS )
     {
-        /* region starts somewhere after the beginning of this buffer */
-        sofs = 0;
-        ofs = r.start - pos;
-        cnt -= ofs;
+        /* beginning of region is inside buffer */
+        sO = 0;
+        bO = rS - bS;
+//        cnt -= bO;
     }
     else
     {
-        /* region started before this buffer */
-        ofs = 0;
-        sofs = pos - r.start;
+        /* beginning of region precedes buffer */
+        bO = 0;
+        sO = bS - rS;        
     }
 
+    /* if region ends within this buffer, don't read beyond end */
+    if ( bE > rE )
+        cnt = nframes - ( bE - rE );
+    
+    if ( bS < rS )
+        cnt = nframes - ( rS - bS );
 
 //    const nframes_t start = ofs + r.start + sofs;
-    const nframes_t start = r.offset + sofs;
+    /* const nframes_t start = r.offset + sO; */
     const nframes_t len = cnt;
 
     /* FIXME: keep the declick defults someplace else */
@@ -153,12 +170,14 @@ Audio_Region::read ( sample_t *buf, bool buf_is_empty, nframes_t pos, nframes_t 
     declick.length = (float)timeline->sample_rate() * 0.01f;
     declick.type   = Fade::Sigmoid;
 
-    if ( ofs >= nframes )
+    /* FIXME: what was this for? */
+    if ( bO >= nframes )
     {
         cnt = 0;
         goto done;
     }
 
+    /* FIXME: what was this for? */
     if ( len == 0 )
     {
         cnt = 0;
@@ -172,29 +191,30 @@ Audio_Region::read ( sample_t *buf, bool buf_is_empty, nframes_t pos, nframes_t 
 
     if ( _loop )
     {
-        nframes_t lofs = sofs % _loop;
+        nframes_t lofs = sO % _loop;
         nframes_t lstart = r.offset + lofs;
 
+        /* FIXME: What if loop size is smaller than nframes? */
+        
         /* read interleaved channels */
         if ( lofs + len > _loop )
         {
             /* this buffer covers a loop boundary */
 
             /* read the first part */
-            cnt = _clip->read( cbuf + ( _clip->channels() * ofs ), -1, lstart, len - ( ( lofs + len ) - _loop ) );
+            cnt = _clip->read( cbuf + ( _clip->channels() * bO ), -1, lstart, len - ( ( lofs + len ) - _loop ) );
             /* read the second part */
-            cnt += _clip->read( cbuf + ( _clip->channels() * ( ofs + cnt ) ), -1, lstart + cnt, len - cnt );
+            cnt += _clip->read( cbuf + ( _clip->channels() * ( bO + cnt ) ), -1, lstart + cnt, len - cnt );
 
             assert( cnt == len );
         }
         else
-            cnt = _clip->read( cbuf + ( channels * ofs ), -1, lstart, len );
+            cnt = _clip->read( cbuf + ( channels * bO ), -1, lstart, len );
 
-        /* this buffer is inside declicking proximity to the loop boundary */
-        
+        /* this buffer is inside declicking proximity to the loop boundary */        
         if ( lofs + cnt + declick.length > _loop /* buffer ends within declick length of the end of loop */
              &&
-             sofs + declick.length < r.length /* not the last loop */
+             sO + declick.length < r.length /* not the last loop */
             )
         {
             /* */
@@ -213,14 +233,14 @@ Audio_Region::read ( sample_t *buf, bool buf_is_empty, nframes_t pos, nframes_t 
 
             const nframes_t fl = cnt - declick_onset_offset;
 
-            declick.apply_interleaved( cbuf + ( _clip->channels() * ( ofs + declick_onset_offset  ) ),
+            declick.apply_interleaved( cbuf + ( _clip->channels() * ( bO + declick_onset_offset  ) ),
                                        Fade::Out,
                                        declick_offset, fl, _clip->channels() );
         }
             
         if ( lofs < declick.length /* buffer begins within declick length of beginning of loop */
              &&
-             sofs > _loop )               /* not the first loop */
+             sO > _loop )               /* not the first loop */
         {
                 
             const nframes_t declick_end = declick.length;
@@ -228,11 +248,14 @@ Audio_Region::read ( sample_t *buf, bool buf_is_empty, nframes_t pos, nframes_t 
             const nframes_t click_len = lofs + cnt > declick_end ? declick_end - lofs : cnt;
 
             /* this is the beginning of the loop next boundary */
-            declick.apply_interleaved( cbuf + ( _clip->channels() * ofs ), Fade::In, lofs, click_len, _clip->channels() );
+            declick.apply_interleaved( cbuf + ( _clip->channels() * bO ), Fade::In, lofs, click_len, _clip->channels() );
         }
     }
     else
-        cnt = _clip->read( cbuf + ( _clip->channels() * ofs ), -1, start, len );
+    {
+//    DMESSAGE("Clip read, rL=%lu, b0=%lu, sO=%lu, r.offset=%lu, len=%lu",r.length,bO,sO,r.offset,len);
+        cnt = _clip->read( cbuf + ( _clip->channels() * bO ), -1, sO + r.offset, len );
+    }
 
     if ( ! cnt )
         goto done;
@@ -244,7 +267,8 @@ Audio_Region::read ( sample_t *buf, bool buf_is_empty, nframes_t pos, nframes_t 
      * anyway */
     buffer_apply_gain( cbuf, nframes * _clip->channels(), _scale );
 
-    /* perform declicking if necessary */
+    /* perform fade/declicking if necessary */
+//    if ( 0 )
     {
         assert( cnt <= nframes );
             
@@ -253,14 +277,45 @@ Audio_Region::read ( sample_t *buf, bool buf_is_empty, nframes_t pos, nframes_t 
         fade = declick < _fade_in ? _fade_in : declick;
         
         /* do fade in if necessary */
-        if ( sofs < fade.length )
-            fade.apply_interleaved( cbuf + ( _clip->channels() * ofs ), Fade::In, sofs, cnt, _clip->channels() );
+        if ( sO < fade.length )
+            fade.apply_interleaved( cbuf + ( _clip->channels() * bO ), Fade::In, sO, cnt, _clip->channels() );
 
         fade = declick < _fade_out ? _fade_out : declick;
+        
+        if ( sO + cnt + fade.length > r.length )
+        {
+            /* offset into fade */
+            nframes_t fsofs;
+            /* fade offset in buffer (on top of ofs) */
+            nframes_t fofs;
+            /* length of required fade segment */
+            nframes_t fcnt;
+            
+            if ( sO + fade.length > r.length )
+            {
+                /* we're already into the fade */
+                /* fades can be longer than their regions... */
+                if ( fade.length > r.length )
+                    fsofs = ( fade.length - r.length ) + sO;
+                else                    
+                    fsofs = bS - ( rE - fade.length );
+                
+                fofs = 0;
+                fcnt = cnt;
+            }
+            else
+            {
+                /* fade starts within this buffer */
+                fofs = ( rE - fade.length ) - bS;
+                fsofs = 0;
+                fcnt = cnt - fofs;
+            }
 
-        /* do fade out if necessary */
-        if ( start + fade.length > r.offset + r.length )
-            fade.apply_interleaved( cbuf, Fade::Out, ( start + fade.length ) - ( r.offset + r.length ), cnt, _clip->channels() );
+//            DMESSAGE( "f.length=%lu, r.length=%lu, fsofs=%lu, fofs=%lu, fcnt=%lu, len=%lu", fade.length,r.length, fsofs, fofs, fcnt, len );
+            fade.apply_interleaved( cbuf + ( _clip->channels() * (bO + fofs ) ),
+                                    Fade::Out, fsofs, fcnt, _clip->channels() );
+        }
+
     }
 
     if ( buf != cbuf )

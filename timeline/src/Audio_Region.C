@@ -131,6 +131,7 @@ Audio_Region::init ( void )
     _color = FL_FOREGROUND_COLOR;
     _box_color = FL_GRAY;
 
+    /* FIXME: shouldn't this be a fraction of the sample rate? */
     _fade_in.length = 256;
     _fade_in.type = Fade::Sigmoid;
 

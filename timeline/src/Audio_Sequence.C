@@ -253,6 +253,95 @@ Audio_Sequence::draw ( void )
     fl_pop_clip();
 }
 
+int
+Audio_Sequence::handle_paste ( const char *text )
+{
+    int X = Fl::event_x();
+    
+    if ( ! strcmp( text, "Audio_Region" ) )
+        return 1;
+    
+    char *file;
+
+    if ( ! sscanf( text, "file://%m[^\r\n]\n", &file ) )
+    {
+        WARNING( "invalid drop \"%s\"\n", text );
+        return 0;
+    }
+
+    unescape_url( file );
+
+    printf( "pasted file \"%s\"\n", file );
+
+    fl_cursor( FL_CURSOR_WAIT );
+    Fl::check();
+
+    char *t = strdup( file );
+
+    char *filebase = strdup( basename( t ) );
+
+    free( t );
+
+    char *s = 0;
+
+    int i = 0;
+
+    for ( ; ; i++ )
+    {
+        if ( i ) 
+        {
+            free( s );
+            asprintf( &s, "sources/%s-%i", filebase, i );
+        }
+        else
+            asprintf( &s, "sources/%s", filebase );
+
+        DMESSAGE( "Symlink %s -> %s", file, s );
+        if ( symlink( file, s ) == 0 )
+            break;
+                
+        if ( errno != EEXIST )
+        {
+            WARNING( "Failed to create symlink: %s", strerror( errno ) );
+            break;
+        }
+    }
+            
+    Audio_File *c = Audio_File::from_file( basename( s ) );
+
+    free( s );
+    free( filebase );
+
+    fl_cursor( FL_CURSOR_DEFAULT );
+    Fl::check();
+
+    if ( ! c || c->dummy() )
+    {
+        fl_alert( "Could not import file \"%s\"", file );
+        free( file );
+
+        if ( c )
+        {
+            delete c;
+            c = NULL;
+        }
+
+        return 0;
+    }
+
+    free( file );
+
+    Audio_Region *r =
+        new Audio_Region( c, this, timeline->xoffset + timeline->x_to_ts( X - drawable_x() ) );
+            
+    r->log_create();
+
+    redraw();
+            
+    return 1;
+
+}
+
 /** event handler that supports DND of audio clips */
 int
 Audio_Sequence::handle ( int m )
@@ -261,91 +350,15 @@ Audio_Sequence::handle ( int m )
     {
         case FL_PASTE:
         {
-            if ( ! Fl::event_inside( this ) )
-                return 0;
-            const char *text = Fl::event_text();
-
-            if ( ! strcmp( text, "Audio_Region" ) )
-                return 1;
-
-            char *file;
-
-            if ( ! sscanf( text, "file://%a[^\r\n]\n", &file ) )
-            {
-                WARNING( "invalid drop \"%s\"\n", text );
-                return 0;
-            }
-
-            unescape_url( file );
-
-            printf( "pasted file \"%s\"\n", file );
-
-            fl_cursor( FL_CURSOR_WAIT );
-            Fl::check();
-
-            char *t = strdup( file );
-
-            char *filebase = strdup( basename( t ) );
-
-            free( t );
-
-            char *s = 0;
-
-            int i = 0;
-
-            for ( ; ; i++ )
-            {
-                if ( i ) 
-                {
-                    free( s );
-                    asprintf( &s, "sources/%s-%i", filebase, i );
-                }
-                else
-                    asprintf( &s, "sources/%s", filebase );
-
-                DMESSAGE( "Symlink %s -> %s", file, s );
-                if ( symlink( file, s ) == 0 )
-                    break;
+            DMESSAGE("Got sequence paste");
                 
-                if ( errno != EEXIST )
-                {
-                    WARNING( "Failed to create symlink: %s", strerror( errno ) );
-                    break;
-                }
-            }
-            
-            Audio_File *c = Audio_File::from_file( basename( s ) );
-
-            free( s );
-            free( filebase );
-
-            fl_cursor( FL_CURSOR_DEFAULT );
-            Fl::check();
-
-            if ( ! c || c->dummy() )
+            if ( ! Fl::event_inside( this ) )
             {
-                fl_alert( "Could not import file \"%s\"", file );
-                free( file );
-
-                if ( c )
-                {
-                    delete c;
-                    c = NULL;
-                }
-
+                DMESSAGE("ignoring");
                 return 0;
             }
 
-            free( file );
-
-            Audio_Region *r =
-                new Audio_Region( c, this, timeline->xoffset + timeline->x_to_ts( Fl::event_x() - drawable_x() ) );
-            
-            r->log_create();
-
-            redraw();
-            
-            return 1;
+            return handle_paste(Fl::event_text());
         }
         default:
             return Sequence::handle( m );

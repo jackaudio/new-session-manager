@@ -30,6 +30,7 @@
 #include <FL/Fl_Menu_Button.H>
 #include <FL/Fl_Panzoomer.H>
 #include <FL/Fl_Tile.H>
+#include <FL/Fl_File_Chooser.H>
 
 #include "Timeline.H"
 #include "Tempo_Sequence.H"
@@ -373,6 +374,9 @@ Timeline::add_take_for_armed_tracks ( void )
     track_lock.unlock();
 }
 
+/* coordinates of mouse at time context menu is brought up. */
+static int menu_event_x = 0;
+static int menu_event_y = 0;
 void
 Timeline::menu_cb ( Fl_Menu_ *m )
 {
@@ -570,6 +574,31 @@ Timeline::menu_cb ( Fl_Menu_ *m )
     {
         redraw();
     }
+    else if ( ! strcmp( picked, "Import source at mouse" ) )
+    {
+        Fl::e_x = menu_event_x;
+        Fl::e_y = menu_event_y;
+
+        Track *t = Timeline::event_inside();
+        
+        if ( t )
+        {
+            const char *name = fl_file_chooser( "Import source", "*", NULL  );
+
+            if ( name )
+            {
+                char *url;
+                asprintf( &url, "file:///%s\n", name );
+
+                Fl::e_x = menu_event_x;
+                Fl::e_y = menu_event_y;
+        
+                t->sequence()->handle_paste(url);
+                
+                free(url);
+            }
+        }
+    }
     else
         WARNING( "programming error: Unknown menu item" );
 }
@@ -630,6 +659,7 @@ Timeline::Timeline ( int X, int Y, int W, int H, const char* L ) : BASE( X, Y, W
     menu->add( "Edit end to playhead", FL_CTRL + ']', 0, 0 );
     menu->add( "Punch from edit", FL_CTRL + FL_SHIFT + 'p', 0, 0 );
     menu->add( "Playback from edit", FL_CTRL + FL_SHIFT + 'l', 0, 0 );
+    menu->add( "Import source at mouse", 0, 0, 0 );
     menu->add( "Redraw", FL_CTRL + 'l', 0, 0 );
 
     menu_set_callback( const_cast<Fl_Menu_Item*>(menu->menu()), &Timeline::menu_cb, (void*)this );
@@ -1730,6 +1760,20 @@ Timeline::handle ( int m )
                     }
                     else if ( test_press( FL_BUTTON3 ) )
                     {
+                        {
+                            menu_event_x = X;
+                            menu_event_y = Y;
+                        
+                            Track *t = Timeline::event_inside();
+
+                            Fl_Menu_Item *mi = (Fl_Menu_Item*)menu->find_item("Import source at mouse");
+                        
+                            if ( t )
+                                mi->activate();
+                            else
+                                mi->deactivate();
+                        }
+                        
                         menu_popup( menu );
                         
                         return 1;
@@ -1738,58 +1782,58 @@ Timeline::handle ( int m )
                 
                 return 0;
             
-            case FL_DRAG:
-            {
-                int ox = X - drag->x;
-                int oy = Y - drag->y;
-
-                if ( ox < 0 )
-                    _selection.x = X;
-                if ( oy < 0 )
-                    _selection.y = Y;
-
-                _selection.w = abs( ox );
-                _selection.h = abs( oy );
-
-                if ( range )
+                case FL_DRAG:
                 {
-                    range_start( x_to_offset( _selection.x ) );
-                    range_end( x_to_offset( _selection.x + _selection.w ) );
-                    redraw();
+                    int ox = X - drag->x;
+                    int oy = Y - drag->y;
+
+                    if ( ox < 0 )
+                        _selection.x = X;
+                    if ( oy < 0 )
+                        _selection.y = Y;
+
+                    _selection.w = abs( ox );
+                    _selection.h = abs( oy );
+
+                    if ( range )
+                    {
+                        range_start( x_to_offset( _selection.x ) );
+                        range_end( x_to_offset( _selection.x + _selection.w ) );
+                        redraw();
+                    }
+
+                    redraw_overlay();
+                    return 1;
+
+                    break;
                 }
-
-                redraw_overlay();
-                return 1;
-
-                break;
-            }
-            case FL_RELEASE:
-            {
-                delete drag;
-                drag = NULL;
-
-                if ( range )
+                case FL_RELEASE:
                 {
-                    range_start( x_to_offset( _selection.x ) );
-                    range_end( x_to_offset( _selection.x + _selection.w ) );
-                    redraw();
+                    delete drag;
+                    drag = NULL;
+
+                    if ( range )
+                    {
+                        range_start( x_to_offset( _selection.x ) );
+                        range_end( x_to_offset( _selection.x + _selection.w ) );
+                        redraw();
+                    }
+                    else
+                        select( _selection );
+
+                    _selection.x = _selection.y =_selection.w = _selection.h = 0;
+
+                    redraw_overlay();
+                    return 1;
                 }
-                else
-                    select( _selection );
-
-                _selection.x = _selection.y =_selection.w = _selection.h = 0;
-
-                redraw_overlay();
-                return 1;
+                default:
+                    return 0;
+                    break;
             }
-            default:
-                return 0;
-                break;
+
+            return 0;
         }
-
-        return 0;
     }
-}
 }
 
 /** retrun a pointer to the track named /name/, or NULL if no track is named /name/ */

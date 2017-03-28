@@ -51,6 +51,8 @@ protected:
 
 public:
 
+    int handle_paste ( const char *text );
+    
     int handle ( int m );
 
     LOG_CREATE_FUNC( Audio_Sequence );

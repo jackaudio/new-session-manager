@@ -609,7 +609,7 @@ Mixer::osc_strip_by_number ( const char *path, const char *types, lo_arg **argv,
 
     OSC::Endpoint *ep = (OSC::Endpoint*)user_data;
     
-    if ( 3 != sscanf( path, "%a[^/]/strip#/%d/%a[^\n]", &client_name, &n, &rem ) )
+    if ( 3 != sscanf( path, "%m[^/]/strip#/%d/%m[^\n]", &client_name, &n, &rem ) )
         return -1;
 
     Mixer_Strip *o = mixer->track_by_number( n );
@@ -647,7 +647,7 @@ Mixer::load_translations ( void )
     char *to;
     char *from;
 
-    while ( 2 == fscanf( fp, "%a[^|> ] |> %a[^ \n]\n", &from, &to ) )
+    while ( 2 == fscanf( fp, "%m[^|> ] |> %m[^ \n]\n", &from, &to ) )
     {
         osc_endpoint->add_translation( from, to );
         free(from);
@@ -1087,7 +1087,7 @@ Mixer::handle ( int m )
 
             char *file;
             
-            if ( ! sscanf( text, "file://%a[^\r\n]\n", &file ) )
+            if ( ! sscanf( text, "file://%m[^\r\n]\n", &file ) )
             {
                 WARNING( "invalid drop \"%s\"\n", text );
                 return 0;

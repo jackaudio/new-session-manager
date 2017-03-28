@@ -301,7 +301,7 @@ Module::Port::osc_number_path ( void )
     char *client_name;
     char *strip_name;
 
-    if ( 3 != sscanf( _scaled_signal->path(), "%a[^/]/strip/%a[^/]/%a[^\n]", &client_name, &strip_name, &rem ) )
+    if ( 3 != sscanf( _scaled_signal->path(), "%m[^/]/strip/%m[^/]/%m[^\n]", &client_name, &strip_name, &rem ) )
         return NULL;
 
     free( strip_name );

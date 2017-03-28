@@ -1194,7 +1194,7 @@ Track::handle ( int m )
 
             char *port_name;
             int end;
-            while (  sscanf( text, "jack.port://%a[^\r\n]\r\n%n", &port_name, &end ) > 0 )
+            while (  sscanf( text, "jack.port://%m[^\r\n]\r\n%n", &port_name, &end ) > 0 )
             {
                 DMESSAGE( "Scanning %s", port_name );
                 port_names.push_back( port_name );

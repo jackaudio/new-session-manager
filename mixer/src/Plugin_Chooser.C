@@ -285,7 +285,7 @@ Plugin_Chooser::load_favorites ( void )
     char *type;
     int favorites = 0;
 
-    while ( 2 == fscanf( fp, "%a[^:]:%lu\n", &type, &id ) )
+    while ( 2 == fscanf( fp, "%m[^:]:%lu\n", &type, &id ) )
     {
         for ( std::list<Plugin_Module::Plugin_Info>::iterator i = _plugins.begin();
               i != _plugins.end();

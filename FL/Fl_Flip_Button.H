@@ -41,7 +41,7 @@ public:
     Fl_Flip_Button ( int X, int Y, int W, int H, const char *L = 0 ) :
         Fl_Button( X, Y, W, H, 0 )
         {
-            sscanf( L, "%a[^/]/%as", &_off, &_on );
+            sscanf( L, "%m[^/]/%ms", &_off, &_on );
 
             type( FL_TOGGLE_BUTTON );
         }

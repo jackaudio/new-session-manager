@@ -1222,7 +1222,7 @@ load_session_file ( const char * path )
         char * client_id = NULL;
         
         // load the client list
-        while ( fscanf( fp, "%a[^:]:%a[^:]:%a[^:\n]\n", &client_name, &client_executable, &client_id ) > 0 )
+        while ( fscanf( fp, "%m[^:]:%m[^:]:%m[^:\n]\n", &client_name, &client_executable, &client_id ) > 0 )
         {
             Client *c = new Client();
             

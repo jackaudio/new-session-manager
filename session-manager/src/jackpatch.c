@@ -152,7 +152,7 @@ process_patch ( const char *patch )
 
     int retval;
 
-    retval = sscanf( patch, " %a[^:]:%a[^|] |%1[<>|] %a[^:]:%a[^\n]",
+    retval = sscanf( patch, " %m[^:]:%m[^|] |%1[<>|] %m[^:]:%m[^\n]",
                      &leftc, &leftp, dir, &rightc, &rightp );
 
     if ( retval == EOF )

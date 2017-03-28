@@ -141,7 +141,7 @@ Project::read_info ( int *version, char **creation_date, char **created_by )
 
     char *name, *value;
 
-    while ( fscanf( fp, "%a[^\n]\n\t%a[^\n]\n", &name, &value ) == 2 )
+    while ( fscanf( fp, "%m[^\n]\n\t%m[^\n]\n", &name, &value ) == 2 )
     {
         MESSAGE( "Info: %s = %s", name, value );
 

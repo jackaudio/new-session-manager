@@ -179,7 +179,7 @@ Loggable::load_unjournaled_state ( void )
     unsigned int id;
     char *buf;
 
-    while ( fscanf( fp, "%X set %a[^\n]\n", &id, &buf ) == 2 )
+    while ( fscanf( fp, "%X set %m[^\n]\n", &id, &buf ) == 2 )
     {
         _loggables[ id ].unjournaled_state = new Log_Entry( buf );
         free(buf);
@@ -224,7 +224,7 @@ Loggable::replay ( FILE *fp )
     if ( _progress_callback )
         _progress_callback( 0, _progress_callback_arg );
 
-    while ( fscanf( fp, "%a[^\n]\n", &buf ) == 1 )
+    while ( fscanf( fp, "%m[^\n]\n", &buf ) == 1 )
     {
         if ( ! ( ! strcmp( buf, "{" ) || ! strcmp( buf, "}" ) ) )
         {
@@ -408,8 +408,8 @@ Loggable::do_this ( const char *s, bool reverse )
 
     if ( reverse )
     {
-//        sscanf( s, "%s %*X %s %*[^\n<]<< %a[^\n]", classname, command, &arguments );
-        sscanf( s, "%s %*X %s%*[^\n<]<< %a[^\n]", classname, command, &arguments );
+//        sscanf( s, "%s %*X %s %*[^\n<]<< %m[^\n]", classname, command, &arguments );
+        sscanf( s, "%s %*X %s%*[^\n<]<< %m[^\n]", classname, command, &arguments );
         create = "destroy";
         destroy = "create";
 
@@ -417,7 +417,7 @@ Loggable::do_this ( const char *s, bool reverse )
     }
     else
     {
-        sscanf( s, "%s %*X %s %a[^\n<]", classname, command, &arguments );
+        sscanf( s, "%s %*X %s %m[^\n<]", classname, command, &arguments );
         create = "create";
         destroy = "destroy";
     }

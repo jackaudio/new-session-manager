@@ -220,7 +220,7 @@ get_connections_for_ports ( std::vector<Module::Port> ports )
             char *strip_name = 0;
             //      char *client_name = 0;
            
-            if ( 2 == sscanf( *c, "Non-Mixer.%a[^:/]/%a[^:]:", &client_id, &strip_name ) )
+            if ( 2 == sscanf( *c, "Non-Mixer.%m[^:/]/%m[^:]:", &client_id, &strip_name ) )
             {
                 free( client_id );
                 char *s = NULL;
@@ -228,7 +228,7 @@ get_connections_for_ports ( std::vector<Module::Port> ports )
                 free( strip_name );
                 strip_name = s;
             }
-            else if ( 2 == sscanf( *c, "Non-Mixer.%a[^:(] (%a[^:)]):", &client_id, &strip_name ) )
+            else if ( 2 == sscanf( *c, "Non-Mixer.%m[^:(] (%m[^:)]):", &client_id, &strip_name ) )
             {
                 free( client_id );
                 char *s = NULL;
@@ -236,7 +236,7 @@ get_connections_for_ports ( std::vector<Module::Port> ports )
                 free( strip_name );
                 strip_name = s;
             }
-            else if ( 2 == sscanf( *c, "Non-Timeline.%a[^:/]:%a[^/]/", &client_id, &strip_name ) )
+            else if ( 2 == sscanf( *c, "Non-Timeline.%m[^:/]:%m[^/]/", &client_id, &strip_name ) )
             {
                 free( client_id );
                 char *s = NULL;
@@ -244,7 +244,7 @@ get_connections_for_ports ( std::vector<Module::Port> ports )
                 free( strip_name );
                 strip_name = s;
             }
-            else if  ( 2 == sscanf( *c, "Non-DAW.%a[^:/]:%a[^/]/", &client_id, &strip_name ) )
+            else if  ( 2 == sscanf( *c, "Non-DAW.%m[^:/]:%m[^/]/", &client_id, &strip_name ) )
             {
                 free( client_id );
                 char *s = NULL;
@@ -252,7 +252,7 @@ get_connections_for_ports ( std::vector<Module::Port> ports )
                 free( strip_name );
                 strip_name = s;
             }
-            else if ( 1 == sscanf( *c, "%a[^:]:", &strip_name ) )
+            else if ( 1 == sscanf( *c, "%m[^:]:", &strip_name ) )
             {   
                 char *s = NULL;
                 asprintf( &s, "@C3%s%s",  is_output ? "@r" : "", strip_name );
@@ -663,7 +663,7 @@ JACK_Module::handle ( int m )
 
             char *port_name;
             int end;
-            while (  sscanf( text, "jack.port://%a[^\r\n]\r\n%n", &port_name, &end ) > 0 )
+            while (  sscanf( text, "jack.port://%m[^\r\n]\r\n%n", &port_name, &end ) > 0 )
             {
                 DMESSAGE( "Scanning %s", port_name );
                 port_names.push_back( port_name );

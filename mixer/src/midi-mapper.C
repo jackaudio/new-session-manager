@@ -313,7 +313,7 @@ public:
             char *opcode;
             int control;
 
-            if ( 3 == sscanf( s, "%as %d %d", &opcode, &channel, &control ) )
+            if ( 3 == sscanf( s, "%ms %d %d", &opcode, &channel, &control ) )
             {
                 event.channel( channel );
                 event.opcode( MIDI::midievent::CONTROL_CHANGE );
@@ -451,7 +451,7 @@ load_settings ( void )
     char *signal_name;
     char *midi_event;
 
-    while ( 2 == fscanf( fp, "[%a[^]]] %a[^\n]\n", &midi_event, &signal_name ) )
+    while ( 2 == fscanf( fp, "[%m[^]]] %m[^\n]\n", &midi_event, &signal_name ) )
     {
         DMESSAGE( "%s, %s", midi_event, signal_name );
 

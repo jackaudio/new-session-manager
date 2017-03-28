@@ -254,7 +254,7 @@ public:
 
             MESSAGE( "Loading file config \"%s\"", path ); 
 
-            while ( 2 == fscanf( fp, "%a[^\n]\n\t%a[^\n]\n", &name, &value ) )
+            while ( 2 == fscanf( fp, "%m[^\n]\n\t%m[^\n]\n", &name, &value ) )
             {
 
                 DMESSAGE( "%s=%s", name, value );

@@ -744,7 +744,7 @@ smf::read_phrase_info ( phrase *p )
 
                 char *s;
 
-                if ( 1 != sscanf( data, "Non: xywh=%a[0-9:]",
+                if ( 1 != sscanf( data, "Non: xywh=%m[0-9:]",
                                   &s ) )
                     WARNING( "Invalid phrase info event" );
                 else
@@ -863,7 +863,7 @@ smf::read_pattern_info ( pattern *p )
                 int ppqn, key, note, mode;
                 char *s;
 
-                if ( 5 != sscanf( data, "Non: xywh=%a[0-9:], ppqn=%d, key=%d, note=%d, mode=%d",
+                if ( 5 != sscanf( data, "Non: xywh=%m[0-9:], ppqn=%d, key=%d, note=%d, mode=%d",
                                   &s, &ppqn, &key, &note, &mode ) )
                     WARNING( "Invalid pattern info event" );
                 else

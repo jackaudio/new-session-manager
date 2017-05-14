@@ -40,9 +40,9 @@ def configure(conf):
     conf.env['LIB_M'] = ['m']
   
     if Options.options.sse:
-	if os.system("grep -q '^flags.*sse' /proc/cpuinfo"):
-	   Options.options.sse = 0
-	   print "Processor lacks sse, disabling..."
+        if os.system("grep -q '^flags.*\<sse2\>' /proc/cpuinfo"):
+            Options.options.sse = 0
+            print( "Processor lacks sse, disabling..." )
 
     # NTK_EXTRA_FLAGS=''
     # if not Options.options.use_system_ntk:

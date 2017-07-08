@@ -215,6 +215,18 @@
   respectively, and `f` and `s` switch between /fader/ and /signal/
   views. The strip's context menu can be invoked without the mouse by
   hitting the `Menu` key (assuming your keyboard has one).
+  
+::: MIDI Controllers
+
+  Usual Midi bindings can be achieved by launching both non-mixer
+  and non-midi-mapper through non-session-manager.
+  non-midi mapper is usually included in non-mixer package.
+  
+  After launching them through non-session-manager connect JACK-Midi
+  output to Non-MIDI-Mapper input.
+  
+  Then you can use 'Start learning', which is accesible through Remote
+  Control menu of the Mixer. Select desirable control and use MIDI device.
 
 ::: Signal Chain
 
@@ -293,6 +305,12 @@
 > /strip/Foo/Gain.1/Gain_(dB)
 
   For the second instance of the Gain module on the strip named 'Foo'.
+
+  There's a possibility to get exact OSC path for module controls.
+  For this you need to switch strip mode to 'Signl', right click a
+  module, for example 'Gain', and open 'Edit parameters' dialog. OSC
+  path will be shown in a statusbar of the main window when you
+  hover a parameter.
 
   Non-DAW accesses these same signals via a more advanced signal
   routing layer on top of OSC. Any module parameter is easily

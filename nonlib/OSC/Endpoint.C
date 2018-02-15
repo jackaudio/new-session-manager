@@ -1085,7 +1085,7 @@ namespace OSC
               i != _translations.end();
               i++ )
         {
-            if ( ! strcmp( i->second.path.c_str(), path ) )
+            if ( path && ! strcmp( i->second.path.c_str(), path ) )
             {
                 /* found it */
                 if ( !i->second.suppress_feedback && i->second.current_value != v )

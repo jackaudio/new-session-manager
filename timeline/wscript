@@ -108,8 +108,8 @@ src/main.C
          ##     use = [ 'fl_widgets', 'nonlib'],
               install_path = '${BINDIR}')
 
-    bld.install_files('${BINDIR}', 'import-ardour-session', chmod=0o0555,
-                      cwd=bld.path.find_dir('bin'), relative_trick=True)
+    bld.install_files('${BINDIR}', 'bin/import-ardour-session', chmod=0o0555,
+                      relative_trick=True)
 
     bld( features = 'subst',
          source = 'non-timeline.desktop.in',

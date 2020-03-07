@@ -2137,6 +2137,8 @@ announce_gui( const char *url, bool is_reply )
     else
         osc_server->send( gui_addr, "/nsm/gui/server_announce", "hi" );
 
+    osc_server->send( gui_addr, "/nsm/gui/session/root", session_root );
+
     for ( std::list<Client*>::iterator i = client.begin();
           i != client.end();
           ++i )

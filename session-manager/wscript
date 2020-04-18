@@ -26,9 +26,6 @@ def configure(conf):
     conf.load('gnu_dirs')
 
     conf.define('VERSION', PACKAGE_VERSION)
-    conf.define('SYSTEM_PATH', '/'.join( [ conf.env.DATADIR, APPNAME ] ) )
-    conf.define('DOCUMENT_PATH', '/'.join( [ conf.env.DATADIR, 'doc' ] ) )
-    conf.define('PIXMAP_PATH', '/'.join( [ conf.env.DATADIR, 'pixmaps' ] ) )
 
     conf.write_config_header('config.h', remove=False)
 
@@ -37,15 +34,6 @@ def configure(conf):
 def build(bld):
 
     libs = '' 
-
-    bld.program( source = '''
-src/session-manager.C
-''',
-              target       = 'non-session-manager',
-              includes     = ['.', 'src', '../nonlib', '..' ],
-              uselib = [  'LIBLO', 'NTK', 'NTK_IMAGES' ],
-              use = [ 'fl_widgets', 'nonlib'],
-              install_path = '${BINDIR}')
 
     bld.program( source = '''
 src/nsmd.C
@@ -57,24 +45,6 @@ src/nsmd.C
               install_path = '${BINDIR}')
 
     bld.program( source = '''
-src/nsm-proxy.C
-''',
-              target       = 'nsm-proxy',
-              includes     = ['.', 'src', '../nonlib', '..' ],
-              uselib = [ 'LIBLO' ],
-              use = [ 'nonlib'],
-              install_path = '${BINDIR}')
-
-    bld.program( source = '''
-src/nsm-proxy-gui.C
-src/NSM_Proxy_UI.fl
-''',
-              target       = 'nsm-proxy-gui',
-              includes     = ['.', 'src'],
-              uselib = [  'LIBLO', 'NTK', 'NTK_IMAGES ' ],
-              install_path = '${BINDIR}')
-
-    bld.program( source = '''
 src/jackpatch.c
 ''',
               target       = 'jackpatch',
@@ -83,29 +53,4 @@ src/jackpatch.c
               install_path = '${BINDIR}')
 
 
-    bld.program( source = '''
-src/send_osc.C
-''',
-              target       = 'send_osc',
-              includes     = ['.', 'src', '../nonlib' ],
-              uselib = [ 'LIBLO' ],
-              use = [ 'nonlib'],
-              install_path = None )
 
-    bld( features = 'subst',
-         source = 'non-session-manager.desktop.in',
-         target = 'non-session-manager.desktop',
-         encoding = 'utf8',
-         install_path = "${DATADIR}" + '/applications',
-         BIN_PATH = bld.env.BINDIR,
-         
- );
-
-    start_dir = bld.path.find_dir( 'icons/hicolor' )
-
-    bld.install_files('${DATADIR}/icons/hicolor', start_dir.ant_glob('**/*.png'),
-                      cwd=start_dir, relative_trick=True)
-
-    bld.install_as('${DATADIR}/pixmaps/' + APPNAME + '/icon-256x256.png', 'icons/hicolor/256x256/apps/' + APPNAME + '.png')
-
-    bld.install_files( '/'.join( [ '${DATADIR}/doc', APPNAME ] ), bld.path.ant_glob( 'doc/*.html doc/*.png' ) )

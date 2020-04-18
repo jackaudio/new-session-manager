@@ -10,8 +10,8 @@ APPNAME = 'non-things'
 top = '.'
 out = 'build'
 
-common = [ 'nonlib', 'FL' ]
-projects = [ 'timeline', 'mixer', 'sequencer', 'session-manager' ]
+common = [ 'nonlib']
+projects = [ 'session-manager' ]
 
 def options(opt):
     # opt.add_option('--use-system-ntk', action='store_true', default=False,
@@ -52,12 +52,14 @@ def configure(conf):
     #     PWD = os.environ.get('PWD','')
     #     os.environ['PATH'] = PWD + '/lib/ntk/build/fluid:' + os.environ.get('PATH','')
 
+    """
     conf.check_cfg(package='ntk', uselib_store='NTK', args='--cflags --libs',
                    atleast_version='1.3.0', mandatory=True)
     conf.check_cfg(package='ntk_images', uselib_store='NTK_IMAGES', args=' --cflags --libs',
                    atleast_version='1.3.0', mandatory=True)
 
     conf.find_program('ntk-fluid', var='NTK_FLUID')
+    """
 
     conf.check_cfg(package='jack', uselib_store='JACK', args="--cflags --libs",
                    atleast_version='0.103.0', mandatory=True)

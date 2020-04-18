@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Non Session Manager
-Comment=Audio session manager from the land of Non
-Comment[fr]=Gestionnaire de session audio pour les terres de Non
-Exec=@BIN_PATH@/non-session-manager
-Terminal=false
-Type=Application
-Icon=non-session-manager
-Categories=AudioVideo;Audio;

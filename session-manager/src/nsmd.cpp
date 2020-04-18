@@ -19,6 +19,7 @@
 
 #define __MODULE__ "nsmd" 
 
+//debug.C has only one function that gets used multiple times by debug.H and for logging and printing
 #include "debug.h"
 
 #ifndef _GNU_SOURCE

@@ -7,23 +7,14 @@ def configure(conf):
     pass
 
 def build(bld):
+    #Thread is needed by OSC/Endpoint
+    #File is for nsmd lockfiles
     bld.stlib(
         source = '''
-JACK/Client.C
-JACK/Port.C
-Log_Entry.C
-Loggable.C
-NSM/Client.C
 OSC/Endpoint.C
 Thread.C
 debug.C
-dsp.C
 file.C
-MIDI/midievent.C
-string_util.C
-MIDI/event_list.C
-MIDI/event.C
-MIDI/midievent.C
 ''',
         includes = '.',
         export_incdirs = [ '.', 'nonlib'],

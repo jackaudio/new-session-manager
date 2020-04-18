@@ -43,39 +43,8 @@ def configure(conf):
             Options.options.sse = 0
             print( "Processor lacks sse, disabling..." )
 
-    # NTK_EXTRA_FLAGS=''
-    # if not Options.options.use_system_ntk:
-    #     print 'Using bundled NTK'
-    #     os.environ['PKG_CONFIG_PATH'] = 'lib/ntk/build/:' + os.environ.get('PKG_CONFIG_PATH','')
-    #    NTK_EXTRA_FLAGS='--static'
-    #     PWD = os.environ.get('PWD','')
-    #     os.environ['PATH'] = PWD + '/lib/ntk/build/fluid:' + os.environ.get('PATH','')
-
-    """
-    conf.check_cfg(package='ntk', uselib_store='NTK', args='--cflags --libs',
-                   atleast_version='1.3.0', mandatory=True)
-    conf.check_cfg(package='ntk_images', uselib_store='NTK_IMAGES', args=' --cflags --libs',
-                   atleast_version='1.3.0', mandatory=True)
-
-    conf.find_program('ntk-fluid', var='NTK_FLUID')
-    """
-
     conf.check_cfg(package='jack', uselib_store='JACK', args="--cflags --libs",
                    atleast_version='0.103.0', mandatory=True)
-
-    conf.check_cc(msg='Checking for jack_port_get_latency_range()',
-                  define_name='HAVE_JACK_PORT_GET_LATENCY_RANGE',
-                  fragment='#include <jack/jack.h>\nint main (int argc, char**argv) { jack_port_get_latency_range( (jack_port_t*)0, JackCaptureLatency, (jack_latency_range_t *)0 ); }',
-                  mandatory=False);
-		
-    conf.check(function_name='jack_get_property',
-               header_name='jack/metadata.h',
-               define_name='HAVE_JACK_METADATA',
-               uselib='JACK',
-               mandatory=False)
-
-    conf.check_cfg(package='x11', uselib_store='XLIB',args="--cflags --libs",
-                      mandatory=True)
 
     conf.check_cfg(package='liblo', uselib_store='LIBLO',args="--cflags --libs",
                       atleast_version='0.26', mandatory=True)

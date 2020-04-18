@@ -17,7 +17,7 @@ def options(opt):
     # opt.add_option('--use-system-ntk', action='store_true', default=False,
     #                dest='use_system_ntk',
     #                help="Link to system-installed shared NTK instead of bundled version")    
-    opt.add_option('--enable-debug', action='store_true', default=True, dest='debug',
+    opt.add_option('--enable-debug', action='store_true', default=False, dest='debug',
                     help='Build for debugging')
     opt.add_option('--disable-sse', action='store_false', default=True, dest='sse',
                     help='Disable SSE optimization')
@@ -79,11 +79,12 @@ def configure(conf):
         print('Building for debugging')
         conf.env.append_value('CFLAGS', debug_flags )
         conf.env.append_value('CXXFLAGS', debug_flags )
+        
     else:
         print('Building for performance')
         conf.env.append_value('CFLAGS', optimization_flags )
         conf.env.append_value('CXXFLAGS', optimization_flags )
-        conf.define( 'NDEBUG', 1 )
+        #conf.define( 'NDEBUG', 1 )
 
     conf.define( "_GNU_SOURCE", 1)
 

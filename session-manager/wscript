@@ -36,7 +36,7 @@ def build(bld):
     libs = '' 
 
     bld.program( source = '''
-src/nsmd.C
+src/nsmd.cpp
 ''',
               target       = 'nsmd',
               includes     = ['.', 'src', '../nonlib'],

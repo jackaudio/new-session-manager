@@ -24,9 +24,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "Endpoint.H"
+#include "Endpoint.hpp"
 
-#include "Thread.H"
+#include "Thread.hpp"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 

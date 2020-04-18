@@ -11,10 +11,10 @@ def build(bld):
     #File is for nsmd lockfiles
     bld.stlib(
         source = '''
-OSC/Endpoint.C
-Thread.C
-debug.C
-file.C
+OSC/Endpoint.cpp
+Thread.cpp
+debug.cpp
+file.cpp
 ''',
         includes = '.',
         export_incdirs = [ '.', 'nonlib'],

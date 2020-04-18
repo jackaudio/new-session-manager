@@ -20,7 +20,7 @@
 #pragma once
 
 #include <lo/lo.h>
-#include "Thread.H"
+#include "Thread.hpp"
 #include <list>
 #include <string>
 #include <stdlib.h>

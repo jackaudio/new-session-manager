@@ -46,7 +46,7 @@
 #include <getopt.h>
 #include <sys/time.h>
 
-#include <OSC/Endpoint.H>
+#include <OSC/Endpoint.hpp>
 /* for locking */
 #include "file.h"
 

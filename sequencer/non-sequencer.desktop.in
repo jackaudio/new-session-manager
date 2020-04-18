@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Non Sequencer
-Comment=Realtime MIDI sequencer for JACK MIDI
-Comment[fr]=Séquenceur MIDI temps-réel pour JACK MIDI
-Exec=@BIN_PATH@/non-sequencer
-Terminal=false
-Type=Application
-Icon=non-sequencer
-Categories=AudioVideo;Audio;Midi;

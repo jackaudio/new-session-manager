@@ -30,8 +30,7 @@ def options(opt):
 def configure(conf):
     conf.load('compiler_c')
     conf.load('compiler_cxx')
-    conf.load('gnu_dirs')
-    conf.load('ntk_fluid',tooldir='tools.waf')
+    conf.load('gnu_dirs')    
     conf.load('gccdeps')
     conf.line_just = 52
 

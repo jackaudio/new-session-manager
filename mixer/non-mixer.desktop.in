@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Non Mixer
-Comment=Modular Digital Audio Workstation - Mixer
-Comment[fr]=Station de travail audio-numérique modulaire - Mixeur
-Exec=@BIN_PATH@/non-mixer
-Terminal=false
-Type=Application
-Icon=non-mixer
-Categories=AudioVideo;Audio;

@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Non Timeline
-Comment=Modular Digital Audio Workstation - Timeline Editor
-Comment[fr]=Station de travail audio-numérique modulaire - Éditeur à ligne temporelle
-Exec=@BIN_PATH@/non-timeline
-Terminal=false
-Type=Application
-Icon=non-timeline
-Categories=AudioVideo;Audio;

@@ -17,7 +17,7 @@ def options(opt):
     # opt.add_option('--use-system-ntk', action='store_true', default=False,
     #                dest='use_system_ntk',
     #                help="Link to system-installed shared NTK instead of bundled version")    
-    opt.add_option('--enable-debug', action='store_true', default=False, dest='debug',
+    opt.add_option('--enable-debug', action='store_true', default=True, dest='debug',
                     help='Build for debugging')
     opt.add_option('--disable-sse', action='store_false', default=True, dest='sse',
                     help='Disable SSE optimization')

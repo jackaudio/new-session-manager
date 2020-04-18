@@ -7,3 +7,5 @@ TAGS
 .waf*
 build
 attic
+.lock-waf_linux_build
+tools.waf/__pycache__/

@@ -30,7 +30,8 @@ The current repository builds the original `nsmd` and `jackpatch`.
 Dependencies are jack2 and liblo, the OSC library.
 The build system is meson.
 
-```meson build --prefix=/usr
+```
+meson build --prefix=/usr
 cd build
 ninja
 sudo ninja install

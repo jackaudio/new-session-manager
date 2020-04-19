@@ -28,8 +28,12 @@ The current repository builds the original `nsmd` and `jackpatch`.
 
 ## Build
 Dependencies are jack2 and liblo, the OSC library.
+The build system is meson.
 
-* `./waf configure`   
-* `./waf`
-* `su -c './waf install'`
+```meson build --prefix=/usr
+cd build
+ninja
+sudo ninja install
+```
+
 

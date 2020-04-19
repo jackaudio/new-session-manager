@@ -4,8 +4,6 @@
 *.[ao]
 TAGS
 .nfs*
-.waf*
 build
-attic
-.lock-waf_linux_build
-tools.waf/__pycache__/
+builddir
+subprojects

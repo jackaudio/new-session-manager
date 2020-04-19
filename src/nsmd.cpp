@@ -17,9 +17,9 @@
 /* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /*******************************************************************************/
 
-#define __MODULE__ "nsmd" 
+#define __MODULE__ "nsmd"
 
-//debug.C has only one function that gets used multiple times by debug.H and for logging and printing
+//debug.c has only one function that gets used multiple times by debug.h and for logging and printing
 #include "debug.h"
 
 #ifndef _GNU_SOURCE
@@ -46,7 +46,7 @@
 #include <getopt.h>
 #include <sys/time.h>
 
-#include <OSC/Endpoint.hpp>
+#include "Endpoint.hpp"
 /* for locking */
 #include "file.h"
 
@@ -81,7 +81,7 @@ static char *session_root;
 #define ERR_SESSION_LOCKED   -11
 #define ERR_OPERATION_PENDING -12
 
-#define APP_TITLE "Non Session Manager"
+#define APP_TITLE "New Session Manager"
 
 enum {
     COMMAND_NONE = 0,

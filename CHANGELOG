@@ -1,2 +1,6 @@
+v1.2.2
+Changed build system to meson
+Simplified file structure
+
 v1.2.1
-Current state of upstream Non Session Manager including unrelease session_root 
+Current state of upstream Non Session Manager including unreleased session_root 

@@ -1,20 +1,21 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/* Copyright (C) 2008-2020 Jonathan Moore Liles (as "Non-Session-Manager")     */
 /*                                                                             */
-/* This program is free software; you can redistribute it and/or modify it     */
-/* under the terms of the GNU General Public License as published by the       */
-/* Free Software Foundation; either version 2 of the License, or (at your      */
-/* option) any later version.                                                  */
+/* This file is part of New-Session-Manager                                    */
 /*                                                                             */
-/* This program is distributed in the hope that it will be useful, but WITHOUT */
-/* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       */
-/* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for   */
-/* more details.                                                               */
+/* New-Session-Manager is free software: you can redistribute it and/or modify */
+/* it under the terms of the GNU General Public License as published by        */
+/* the Free Software Foundation, either version 3 of the License, or           */
+/* (at your option) any later version.                                         */
 /*                                                                             */
-/* You should have received a copy of the GNU General Public License along     */
-/* with This program; see the file COPYING.  If not,write to the Free Software */
-/* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+/* New-Session-Manager is distributed in the hope that it will be useful,      */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of              */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               */
+/* GNU General Public License for more details.                                */
+/*                                                                             */
+/* You should have received a copy of the GNU General Public License           */
+/* along with New-Session-Manager. If not, see <https://www.gnu.org/licenses/>.*/
 /*******************************************************************************/
 
 /* jackpatch.c
@@ -56,13 +57,13 @@ char *project_file;
 
 #undef VERSION
 #define APP_TITLE "JACKPatch"
-#define VERSION	"0.2"
+#define VERSION "0.2"
 
 struct patch_record {
-	struct {
-		char *client;
-		char *port;
-	} src , dst;
+    struct {
+        char *client;
+        char *port;
+    } src , dst;
     int active;                                                 /* true if patch has already been activate (by us) */
     struct patch_record *next;
 };
@@ -91,30 +92,30 @@ static jack_ringbuffer_t *port_ringbuffer = NULL;
 void
 print_patch ( struct patch_record *pr, int mode )
 {
-	printf( "%s from '%s:%s' to '%s:%s'\n", mode ? ">>" : "::",
-			pr->src.client, pr->src.port, pr->dst.client, pr->dst.port );
+    printf( "%s from '%s:%s' to '%s:%s'\n", mode ? ">>" : "::",
+            pr->src.client, pr->src.port, pr->dst.client, pr->dst.port );
 
 }
 
 void
 enqueue ( struct patch_record *p )
 {
-	p->next = patch_list;
-	patch_list = p;
+    p->next = patch_list;
+    patch_list = p;
 }
 
 void
 dequeue ( struct patch_record *pr )
 {
-	if ( !pr )
-		return;
+    if ( !pr )
+        return;
 
-	free( pr->src.port );
-	free( pr->dst.port );
-	free( pr->src.client );
-	free( pr->dst.client );
+    free( pr->src.port );
+    free( pr->dst.port );
+    free( pr->src.client );
+    free( pr->dst.client );
 
-	free( pr );
+    free( pr );
 }
 
 void
@@ -389,7 +390,7 @@ void remove_known_port ( const char *port )
     {
         struct port_record *pr;
         struct port_record *lp = NULL;
-        
+
         for ( pr = known_ports; pr; lp = pr, pr = pr->next )
             if ( !strcmp( port, pr->port ) )
             {
@@ -397,14 +398,14 @@ void remove_known_port ( const char *port )
                     lp->next = pr->next;
                 else
                     known_ports = pr->next;
-                
+
                 free( pr->port );
                 free( pr );
-                
+
                 break;
             }
     }
-    
+
     /* now mark all patches including this port as inactive */
     inactivate_patch ( port );
 }
@@ -428,12 +429,12 @@ register_prexisting_ports ( void )
 
     if ( ! ports )
         return;
-    
+
     for ( port = ports; *port; port++ )
     {
         handle_new_port( *port );
     }
-            
+
     free( ports );
 }
 
@@ -503,7 +504,7 @@ snapshot ( const char *file )
     free( ports );
 
     qsort( table, table_index, sizeof(char*), stringsort );
-    
+
     int i;
     for ( i = 0; i < table_index; i++ )
     {
@@ -544,12 +545,12 @@ die ( void )
 void
 set_traps ( void )
 {
-	signal( SIGHUP, signal_handler );
-	signal( SIGINT, signal_handler );
-//	signal( SIGQUIT, signal_handler );
-//	signal( SIGSEGV, signal_handler );
-//	signal( SIGPIPE, signal_handler );
-	signal( SIGTERM, signal_handler );
+    signal( SIGHUP, signal_handler );
+    signal( SIGINT, signal_handler );
+//  signal( SIGQUIT, signal_handler );
+//  signal( SIGSEGV, signal_handler );
+//  signal( SIGPIPE, signal_handler );
+    signal( SIGTERM, signal_handler );
 }
 
 /****************/
@@ -579,10 +580,10 @@ osc_announce_reply ( const char *path, const char *types, lo_arg **argv, int arg
          return -1;
 
     printf( "Successfully registered. NSM says: %s", &argv[1]->s );
-    
+
     nsm_is_active = 1;
     nsm_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ) );
-    
+
     return 0;
 }
 
@@ -613,7 +614,7 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
 //    const char *display_name = &argv[1]->s;
 
     char *new_filename;
-    
+
     asprintf( &new_filename, "%s.jackpatch", new_path );
 
     struct stat st;
@@ -642,7 +643,7 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
 
     if ( project_file )
         free( project_file );
-    
+
     project_file = new_filename;
 
     lo_send_from( nsm_addr, losrv, LO_TT_IMMEDIATE, "/reply", "ss", path, "OK" );
@@ -696,7 +697,7 @@ dequeue_new_port ( void )
         if ( jack_ringbuffer_read_space( port_ringbuffer ) >= size );
         {
             struct port_notification_record *pr = malloc( size );
-            
+
             jack_ringbuffer_read( port_ringbuffer, (char*)pr, size );
 
             return pr;
@@ -718,7 +719,7 @@ check_for_new_ports ( void )
             handle_new_port( p->port );
         else
             remove_known_port( p->port );
-        
+
         free( p );
     }
 }
@@ -762,13 +763,13 @@ main ( int argc, char **argv )
     {
         fprintf( stderr, "Could not register JACK client\n" );
         exit(1);
-        
+
     }
 
     port_ringbuffer = jack_ringbuffer_create( 1024 * 8 );
 
     set_traps();
-        
+
     if ( argc > 1 )
     {
         maybe_activate_jack_client();

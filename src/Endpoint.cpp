@@ -1,20 +1,21 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2010 Jonathan Moore Liles                                     */
+/* Copyright (C) 2008-2020 Jonathan Moore Liles (as "Non-Session-Manager")     */
 /*                                                                             */
-/* This program is free software; you can redistribute it and/or modify it     */
-/* under the terms of the GNU General Public License as published by the       */
-/* Free Software Foundation; either version 2 of the License, or (at your      */
-/* option) any later version.                                                  */
+/* This file is part of New-Session-Manager                                    */
 /*                                                                             */
-/* This program is distributed in the hope that it will be useful, but WITHOUT */
-/* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       */
-/* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for   */
-/* more details.                                                               */
+/* New-Session-Manager is free software: you can redistribute it and/or modify */
+/* it under the terms of the GNU General Public License as published by        */
+/* the Free Software Foundation, either version 3 of the License, or           */
+/* (at your option) any later version.                                         */
 /*                                                                             */
-/* You should have received a copy of the GNU General Public License along     */
-/* with This program; see the file COPYING.  If not,write to the Free Software */
-/* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+/* New-Session-Manager is distributed in the hope that it will be useful,      */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of              */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               */
+/* GNU General Public License for more details.                                */
+/*                                                                             */
+/* You should have received a copy of the GNU General Public License           */
+/* along with New-Session-Manager. If not, see <https://www.gnu.org/licenses/>.*/
 /*******************************************************************************/
 
 #include <lo/lo.h>
@@ -41,7 +42,7 @@ namespace OSC
     {
         _path = _typespec = _documentation = 0;
     }
-    
+
     Method::~Method ( )
     {
         if ( _path )
@@ -57,7 +58,7 @@ namespace OSC
     /**********/
 
     Signal::Signal ( const char *path, Direction dir )
-    { 
+    {
         _direction = dir;
         _path = NULL;
         if ( path )
@@ -77,7 +78,7 @@ namespace OSC
         {
             _endpoint->del_signal( this );
         }
-                                              
+
         if ( _path )
             free( _path );
         _path = NULL;
@@ -99,7 +100,7 @@ namespace OSC
             lo_server_add_method( _endpoint->_server, new_path, NULL, _endpoint->osc_sig_handler, this );
         /* } */
 
-        for ( std::list<Peer*>::iterator i = _endpoint->_peers.begin(); 
+        for ( std::list<Peer*>::iterator i = _endpoint->_peers.begin();
               i != _endpoint->_peers.end();
               ++i )
         {
@@ -117,21 +118,21 @@ namespace OSC
     {
         if ( f == _value )
             return;
-        
+
         _value = f;
-        
+
         if ( direction() == Output )
         {
-            for ( std::list<Peer*>::iterator i = _endpoint->_peers.begin(); 
+            for ( std::list<Peer*>::iterator i = _endpoint->_peers.begin();
                   i != _endpoint->_peers.end();
                   ++i )
             {
-                _endpoint->send( (*i)->addr, 
+                _endpoint->send( (*i)->addr,
                                  path(),
                                  f );
             }
 
-            // free(s);   
+            // free(s);
         }
         /* else if ( direction() == Input ) */
         /* { */
@@ -185,7 +186,7 @@ namespace OSC
     }
 
     Endpoint::Endpoint ( )
-    {  
+    {
         _learning_path = NULL;
         _peer_signal_notification_callback = 0;
         _peer_signal_notification_userdata = 0;
@@ -206,7 +207,7 @@ namespace OSC
         char *url = lo_server_get_url( _server );
         _addr = lo_address_new_from_url( url );
         free( url );
-        
+
         if ( ! _server )
         {
             WARNING( "Error creating OSC server" );
@@ -230,7 +231,7 @@ namespace OSC
     Endpoint::~Endpoint ( )
     {
 //    lo_server_thread_free( _st );
-        
+
         for ( std::list<Method*>::iterator i = _methods.begin();
               i != _methods.end();
               i++ )
@@ -265,7 +266,7 @@ namespace OSC
 
         return NULL;
     }
-  
+
 
     OSC::Signal *
     Endpoint::find_peer_signal_by_path ( Peer *p, const char *path )
@@ -280,7 +281,7 @@ namespace OSC
 
         return NULL;
     }
-   
+
     OSC::Signal *
     Endpoint::find_signal_by_path ( const char *path )
     {
@@ -305,7 +306,7 @@ namespace OSC
         char *our_url = this->url();
         send( addr, "/signal/hello", name(), our_url );
         free( our_url );
-        
+
         lo_address_free( addr );
     }
 
@@ -314,8 +315,8 @@ namespace OSC
     {
         DMESSAGE( "Got hello from %s", peer_name );
 
-        Peer *p = find_peer_by_name( peer_name ); 
-      
+        Peer *p = find_peer_by_name( peer_name );
+
         if ( ! p )
         {
             scan_peer( peer_name, peer_url );
@@ -323,7 +324,7 @@ namespace OSC
         else
         {
             /* maybe the peer has a new URL */
-        
+
             /* update address */
             lo_address addr = lo_address_new_from_url( peer_url );
 
@@ -332,7 +333,7 @@ namespace OSC
                 free( addr );
                 return;
             }
-            
+
             if ( p->addr )
                 free( p->addr );
 
@@ -340,12 +341,12 @@ namespace OSC
 
             /* scan it while we're at it */
             p->_scanning = true;
-            
+
             DMESSAGE( "Scanning peer %s", peer_name );
 
             send( p->addr, "/signal/list" );
         }
-         
+
         if ( name() )
         {
             hello( peer_url );
@@ -363,7 +364,7 @@ namespace OSC
 
         const char *peer_name = &argv[0]->s;
         const char *peer_url = &argv[1]->s;
-        
+
         ep->handle_hello( peer_name, peer_url );
 
         return 0;
@@ -374,7 +375,7 @@ namespace OSC
     {
         const char *their_name = &argv[0]->s;
         const char *our_name = &argv[1]->s;
-     
+
         Endpoint *ep = (Endpoint*)user_data;
 
         Signal *s = ep->find_signal_by_path( our_name );
@@ -385,7 +386,7 @@ namespace OSC
         if ( s->_direction == Signal::Input )
         {
             DMESSAGE( "Peer %s has disconnected from signal %s", our_name, their_name );
- 
+
             ep->del_translation( their_name );
 
             if ( s->_connection_state_callback )
@@ -402,7 +403,7 @@ namespace OSC
     {
         const char *src_path = &argv[0]->s;
         const char *dst_path = &argv[1]->s;
-     
+
         Endpoint *ep = (Endpoint*)user_data;
 
         Signal *dst_s = ep->find_signal_by_path( dst_path );
@@ -433,11 +434,11 @@ namespace OSC
     Endpoint::osc_sig_removed ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
     {
         const char *name = &argv[0]->s;
-        
+
         Endpoint *ep = (Endpoint*)user_data;
 
         Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) );
-        
+
         if ( ! p )
         {
             WARNING( "Got signal removed notification from unknown peer." );
@@ -457,7 +458,7 @@ namespace OSC
 
         if ( ep->_peer_signal_notification_callback )
             ep->_peer_signal_notification_callback( o, Signal::Removed, ep->_peer_signal_notification_userdata );
-        
+
         p->_signals.remove(o);
 
         delete o;
@@ -469,7 +470,7 @@ namespace OSC
     Endpoint::osc_sig_created ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
     {
         Endpoint *ep = (Endpoint*)user_data;
-        
+
         const char *name = &argv[0]->s;
         const char *direction = &argv[1]->s;
         const float min = argv[2]->f;
@@ -483,27 +484,27 @@ namespace OSC
             WARNING( "Got signal creation notification from unknown peer" );
             return 0;
         }
-       
+
         Signal::Direction dir = Signal::Input;
-        
+
         if ( !strcmp( direction, "in" ) )
             dir = Signal::Input;
         else if ( !strcmp( direction, "out" ) )
             dir = Signal::Output;
-        
+
         Signal *s = new Signal( name, dir );
-        
+
         s->_peer = p;
         s->parameter_limits( min, max, default_value );
-        
+
         p->_signals.push_back( s );
 
-        DMESSAGE( "Peer %s has created signal %s (%s %f %f %f)", p->name, 
+        DMESSAGE( "Peer %s has created signal %s (%s %f %f %f)", p->name,
                   name, direction, min, max, default_value );
-       
+
         if ( ep->_peer_signal_notification_callback )
             ep->_peer_signal_notification_callback( s, Signal::Created, ep->_peer_signal_notification_userdata );
-        
+
         return 0;
     }
 
@@ -518,7 +519,7 @@ namespace OSC
         Endpoint *ep = (Endpoint*)user_data;
 
         Peer *p = ep->find_peer_by_address( lo_message_get_source( msg ) );
-        
+
         if ( ! p )
         {
             WARNING( "Got signal rename notification from unknown peer." );
@@ -534,7 +535,7 @@ namespace OSC
         }
 
         DMESSAGE( "Signal %s was renamed to %s", o->_path, new_name );
-        
+
         ep->rename_translation_source( o->_path, new_name );
 
         free( o->_path );
@@ -571,7 +572,7 @@ namespace OSC
 
         if ( o->_handler )
             o->_handler( f, o->_user_data );
-        
+
         return 1;
     }
 
@@ -591,7 +592,7 @@ namespace OSC
                 conn[j++] = i->first.c_str();
             }
         }
-        
+
         if ( conn )
             conn[j] = 0;
 
@@ -622,7 +623,7 @@ namespace OSC
     void
     Endpoint::rename_translation_destination ( const char *a, const char *b )
     {
-        
+
         for ( std::map<std::string,TranslationDestination>::iterator i = _translations.begin();
               i != _translations.end();
               i++ )
@@ -683,16 +684,16 @@ namespace OSC
             ep->add_translation( path, ep->_learning_path );
 
             DMESSAGE( "Learned translation \"%s\" -> \"%s\"", path, ep->_learning_path );
-            
+
             free(ep->_learning_path);
             ep->_learning_path = NULL;
-            
+
             return 0;
         }
 
         {
             std::map<std::string,TranslationDestination>::iterator i = ep->_translations.find( path );
-            
+
             if ( i != ep->_translations.end() )
             {
                 const char *dpath = i->second.path.c_str();
@@ -737,7 +738,7 @@ namespace OSC
     Endpoint::osc_signal_lister ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
     {
 //        OSC_DMSG();
-        
+
         DMESSAGE( "Listing signals." );
 
         const char *prefix = NULL;
@@ -754,7 +755,7 @@ namespace OSC
             if ( ! prefix || ! strncmp( o->path(), prefix, strlen(prefix) ) )
             {
                 ep->send( lo_message_get_source( msg ),
-                          "/reply", 
+                          "/reply",
                           path,
                           o->path(),
                           o->_direction == Signal::Input ? "in" : "out",
@@ -764,7 +765,7 @@ namespace OSC
                     );
             }
         }
-        
+
         ep->send( lo_message_get_source( msg ), "/reply", path );
 
         return 0;
@@ -780,7 +781,7 @@ namespace OSC
 
         free( purl );
         free( url );
-        
+
         return r;
     }
 
@@ -788,11 +789,11 @@ namespace OSC
     void
     Endpoint::list_peer_signals ( void *v )
     {
-        for ( std::list<Peer*>::iterator i = _peers.begin(); 
+        for ( std::list<Peer*>::iterator i = _peers.begin();
               i != _peers.end();
               ++i )
         {
-            for ( std::list<Signal*>::iterator j = (*i)->_signals.begin(); 
+            for ( std::list<Signal*>::iterator j = (*i)->_signals.begin();
                   j != (*i)->_signals.end();
                   ++j )
             {
@@ -809,7 +810,7 @@ namespace OSC
 
         Peer *p = NULL;
 
-        for ( std::list<Peer*>::iterator i = _peers.begin(); 
+        for ( std::list<Peer*>::iterator i = _peers.begin();
               i != _peers.end();
               ++i )
         {
@@ -832,7 +833,7 @@ namespace OSC
     Peer *
     Endpoint::find_peer_by_name ( const char *name )
     {
-        for ( std::list<Peer*>::iterator i = _peers.begin(); 
+        for ( std::list<Peer*>::iterator i = _peers.begin();
               i != _peers.end();
               ++i )
         {
@@ -850,7 +851,7 @@ namespace OSC
     {
         if ( s->_direction == Signal::Output )
         {
-            for ( std::list<Peer*>::iterator i = _peers.begin(); 
+            for ( std::list<Peer*>::iterator i = _peers.begin();
                   i != _peers.end();
                   ++i )
             {
@@ -858,13 +859,13 @@ namespace OSC
                       s->path(),
                       signal_path);
             }
-                
+
             return true;
         }
 
         return false;
     }
-  
+
     bool
     Endpoint::connect_signal( OSC::Signal *s, const char *signal_path )
     {
@@ -874,19 +875,19 @@ namespace OSC
                   i != _peers.end();
                   i++ )
             {
-            
+
                 send( (*i)->addr, "/signal/connect",
                       s->path(),
                       signal_path );
             }
         }
-        
+
         return true;
     }
 
     int
     Endpoint::osc_reply ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
-        
+
     {
         Endpoint *ep = (Endpoint*)user_data;
 
@@ -924,11 +925,11 @@ namespace OSC
                 else if ( !strcmp( &argv[2]->s, "out" ) )
                     dir = Signal::Output;
 
-                
+
                 s = new Signal( &argv[1]->s, (Signal::Direction)dir );
-                
+
                 s->_peer = p;
-              
+
                 s->parameter_limits( argv[3]->f, argv[4]->f, argv[5]->f );
 
                 p->_signals.push_back( s );
@@ -948,19 +949,19 @@ namespace OSC
     Method *
     Endpoint::add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data, const char *argument_description )
     {
-//	DMESSAGE( "Added OSC method %s (%s)", path, typespec );
- 
+//  DMESSAGE( "Added OSC method %s (%s)", path, typespec );
+
         lo_server_add_method( _server, path, typespec, handler, user_data );
 
         Method *md = new Method;
-        
+
         if ( path )
             md->_path = strdup( path );
         if ( typespec )
             md->_typespec = strdup( typespec );
         if ( argument_description )
             md->_documentation = strdup( argument_description );
-        
+
         _methods.push_back( md );
 
         return md;
@@ -973,7 +974,7 @@ namespace OSC
         asprintf( &s, "%s%s", name() ? name() : "", path );
 
         Signal *o = new Signal( s, dir );
-        
+
         free(s);
 
         o->_handler = handler;
@@ -981,9 +982,9 @@ namespace OSC
         o->_endpoint = this;
 
         o->parameter_limits( min, max, default_value );
-        
+
         _signals.push_back( o );
-        
+
         /* if ( dir == Signal::Input ) */
         /* { */
             lo_server_add_method( _server, o->_path, NULL, osc_sig_handler, o );
@@ -1010,7 +1011,7 @@ namespace OSC
     void
     Endpoint::del_method ( const char *path, const char *typespec )
     {
-//	DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
+//  DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
 
         lo_server_del_method( _server, path, typespec );
 
@@ -1033,7 +1034,7 @@ namespace OSC
     void
     Endpoint::del_method ( Method *meth )
     {
-//	DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
+//  DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
 
         lo_server_del_method( _server, meth->path(), meth->typespec() );
 
@@ -1045,7 +1046,7 @@ namespace OSC
     void
     Endpoint::del_signal ( Signal *o )
     {
-//	DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
+//  DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
 
         lo_server_del_method( _server, o->path(), NULL );
 
@@ -1055,7 +1056,7 @@ namespace OSC
               ++i )
         {
             send( (*i)->addr,
-                  "/signal/removed", 
+                  "/signal/removed",
                   o->path() );
         }
 
@@ -1095,7 +1096,7 @@ namespace OSC
 //                    DMESSAGE( "Sending feedback to \"%s\": %f", spath, v );
 
                     /* send to all peers */
-                    for ( std::list<Peer*>::iterator p = _peers.begin(); 
+                    for ( std::list<Peer*>::iterator p = _peers.begin();
                           p != _peers.end();
                           ++p )
                     {
@@ -1113,7 +1114,7 @@ namespace OSC
         }
     }
 
-    Peer *   
+    Peer *
     Endpoint::add_peer ( const char *name, const char *url )
     {
         Peer *p = new Peer;
@@ -1122,9 +1123,9 @@ namespace OSC
 
         p->name = strdup( name );
         p->addr = lo_address_new_from_url( url );
-    
+
         _peers.push_back( p );
-        
+
         return p;
     }
 
@@ -1154,7 +1155,7 @@ namespace OSC
         _thread.name( "OSC" );
 
         DMESSAGE( "OSC Thread running" );
-        
+
         run();
     }
 
@@ -1386,13 +1387,13 @@ namespace OSC
     {
         return lo_send_from( to, _server, LO_TT_IMMEDIATE, path, "sssifff", v1, v2, v3, v4, v5, v6, v7 );
     }
-  
+
     int
     Endpoint::send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, float v4, float v5, float v6 )
-    { 
+    {
         return lo_send_from( to, _server, LO_TT_IMMEDIATE, path, "sssfff", v1, v2, v3, v4, v5, v6 );
     }
-    
+
     int
     Endpoint::send ( lo_address to, const char *path, const char *v1, int v2, int v3 )
     {

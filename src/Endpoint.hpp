@@ -1,20 +1,21 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2010 Jonathan Moore Liles                                     */
+/* Copyright (C) 2008-2020 Jonathan Moore Liles (as "Non-Session-Manager")     */
 /*                                                                             */
-/* This program is free software; you can redistribute it and/or modify it     */
-/* under the terms of the GNU General Public License as published by the       */
-/* Free Software Foundation; either version 2 of the License, or (at your      */
-/* option) any later version.                                                  */
+/* This file is part of New-Session-Manager                                    */
 /*                                                                             */
-/* This program is distributed in the hope that it will be useful, but WITHOUT */
-/* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       */
-/* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for   */
-/* more details.                                                               */
+/* New-Session-Manager is free software: you can redistribute it and/or modify */
+/* it under the terms of the GNU General Public License as published by        */
+/* the Free Software Foundation, either version 3 of the License, or           */
+/* (at your option) any later version.                                         */
 /*                                                                             */
-/* You should have received a copy of the GNU General Public License along     */
-/* with This program; see the file COPYING.  If not,write to the Free Software */
-/* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+/* New-Session-Manager is distributed in the hope that it will be useful,      */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of              */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               */
+/* GNU General Public License for more details.                                */
+/*                                                                             */
+/* You should have received a copy of the GNU General Public License           */
+/* along with New-Session-Manager. If not, see <https://www.gnu.org/licenses/>.*/
 /*******************************************************************************/
 
 #pragma once
@@ -154,7 +155,7 @@ namespace OSC
 
         char *_path;
         char *_documentation;
-        
+
         float _value;
 
         Direction _direction;
@@ -162,7 +163,7 @@ namespace OSC
         signal_handler _handler;
         void *_user_data;
         Parameter_Limits _parameter_limits;
-        
+
         void (*_connection_state_callback)(OSC::Signal *, void*);
         void *_connection_state_userdata;
 
@@ -186,7 +187,7 @@ namespace OSC
             }
 
 
-        void connection_state_callback ( void(*_cb)(OSC::Signal *, void*), void *userdata) 
+        void connection_state_callback ( void(*_cb)(OSC::Signal *, void*), void *userdata)
             {
                 _connection_state_callback = _cb;
                 _connection_state_userdata = userdata;
@@ -204,7 +205,7 @@ namespace OSC
         float value ( void ) const { return _value; }
 
         bool is_connected_to ( const Signal *s ) const;
-        
+
         friend class Endpoint;
     };
 
@@ -229,13 +230,13 @@ namespace OSC
     class Endpoint
     {
         Thread _thread;
-        
+
         friend class  Signal;
 
 //        lo_server_thread _st;
         lo_server _server;
         lo_address _addr;
-        
+
         std::list<Peer*> _peers;
         std::list<Signal*> _signals;
         std::list<Method*> _methods;
@@ -249,7 +250,7 @@ namespace OSC
             float current_value;
             bool suppress_feedback;
 
-            TranslationDestination ( ) 
+            TranslationDestination ( )
                 {
                     suppress_feedback = false;
                     current_value = -1.0f;
@@ -285,10 +286,10 @@ namespace OSC
 
         static void *osc_thread ( void *arg );
         void osc_thread ( void );
-            
+
         OSC::Signal *find_peer_signal_by_path ( Peer *p, const char *path );
         OSC::Signal *find_signal_by_path ( const char *path );
-        
+
         Peer *find_peer_by_name ( const char *name );
         Peer *find_peer_by_address ( lo_address addr );
         static bool address_matches ( lo_address addr1, lo_address addr2 );
@@ -298,7 +299,7 @@ namespace OSC
         void del_signal ( Signal *signal );
         void send_signal_rename_notifications( Signal *s );
 
-     
+
         void (*_peer_signal_notification_callback)( OSC::Signal *,  OSC::Signal::State, void*);
         void *_peer_signal_notification_userdata;
 
@@ -326,7 +327,7 @@ namespace OSC
                 _peer_signal_notification_callback = cb;
                 _peer_signal_notification_userdata = userdata;
             }
-        
+
         // can be used to point back to owning object.
         void *owner;
 
@@ -337,11 +338,11 @@ namespace OSC
         Endpoint ( );
 
         ~Endpoint ( );
-    
+
         bool disconnect_signal ( OSC::Signal *s, OSC::Signal *d );
-        bool disconnect_signal ( OSC::Signal *s, const char *signal_path );        
+        bool disconnect_signal ( OSC::Signal *s, const char *signal_path );
         bool connect_signal ( OSC::Signal *s, OSC::Signal *d );
-        bool connect_signal ( OSC::Signal *s, const char *peer_name, const char *signal_path );        
+        bool connect_signal ( OSC::Signal *s, const char *peer_name, const char *signal_path );
 //        bool connect_signal ( OSC::Signal *s, const char *peer_name, int signal_id );
         bool connect_signal ( OSC::Signal *s, const char *peer_and_path );
 
@@ -382,7 +383,7 @@ namespace OSC
         int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3 );
         int send ( lo_address to, const char *path, const char *v1, int v2, int v3, int v4 );
         int send ( lo_address to, const char *path, const char *v1, const char *v2, int v3, int v4, int v5 );
-        
+
         int send ( lo_address to, const char *path, const char *v1, int v2 );
         int send ( lo_address to, const char *path, int v1, const char *v2 );
         int send ( lo_address to, const char *path, const char *v1, int v2, int v3, float v4 );
@@ -397,12 +398,12 @@ namespace OSC
         int send ( lo_address to, const char *path, lo_message msg );
 
         int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, float v4, float v5, float v6 );
-  
+
         int send ( lo_address to, const char *path, const char *v1, const char *v2, int v3, float v4, float v5, float v6 );
 
         int send ( lo_address to, const char *path, const char *v1, const char *v2, const char *v3, int v4, float v5, float v6, float v7 );
 
-        void peer_scan_complete_callback ( void(*_cb)(void*), void *userdata) 
+        void peer_scan_complete_callback ( void(*_cb)(void*), void *userdata)
             {
                 _peer_scan_complete_callback = _cb;
                 _peer_scan_complete_userdata = userdata;

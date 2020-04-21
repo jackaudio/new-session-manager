@@ -1,20 +1,22 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2010 Jonathan Moore Liles                                     */
+/* Copyright (C) 2008-2020 Jonathan Moore Liles (as "Non-Session-Manager")     */
+/* Copyright (C) 2020- Nils Hilbricht                                          */
 /*                                                                             */
-/* This program is free software; you can redistribute it and/or modify it     */
-/* under the terms of the GNU General Public License as published by the       */
-/* Free Software Foundation; either version 2 of the License, or (at your      */
-/* option) any later version.                                                  */
+/* This file is part of New-Session-Manager                                    */
 /*                                                                             */
-/* This program is distributed in the hope that it will be useful, but WITHOUT */
-/* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       */
-/* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for   */
-/* more details.                                                               */
+/* New-Session-Manager is free software: you can redistribute it and/or modify */
+/* it under the terms of the GNU General Public License as published by        */
+/* the Free Software Foundation, either version 3 of the License, or           */
+/* (at your option) any later version.                                         */
 /*                                                                             */
-/* You should have received a copy of the GNU General Public License along     */
-/* with This program; see the file COPYING.  If not,write to the Free Software */
-/* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+/* New-Session-Manager is distributed in the hope that it will be useful,      */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of              */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               */
+/* GNU General Public License for more details.                                */
+/*                                                                             */
+/* You should have received a copy of the GNU General Public License           */
+/* along with New-Session-Manager. If not, see <https://www.gnu.org/licenses/>.*/
 /*******************************************************************************/
 
 #define __MODULE__ "nsmd"
@@ -145,20 +147,20 @@ public:
     const char *label ( void ) const { return _label; }
     void label ( const char *l )
         {
-            if ( _label ) 
+            if ( _label )
                 free( _label );
             if ( l )
-                _label = strdup( l ); 
+                _label = strdup( l );
             else
                 _label = NULL;
         }
-        
+
     bool gui_visible ( void ) const
         {
             return _gui_visible;
         }
 
-    void gui_visible ( bool b ) 
+    void gui_visible ( bool b )
         {
             _gui_visible = b;
         }
@@ -205,7 +207,7 @@ public:
             gettimeofday( &_command_sent_time, NULL );
             _pending_command = command;
         }
-    
+
     double milliseconds_since_last_command ( void ) const
         {
             struct timeval now;
@@ -224,7 +226,7 @@ public:
         }
 
 // capability should be enclosed in colons. I.e. ":switch:"
-    bool 
+    bool
     is_capable_of ( const char *capability ) const
         {
             return capabilities &&
@@ -249,7 +251,7 @@ public:
             pre_existing = false;
         }
 
-    ~Client ( ) 
+    ~Client ( )
         {
             if ( name )
                 free(name);
@@ -297,7 +299,7 @@ get_client_by_pid ( int pid )
           ++i )
         if ( (*i)->pid == pid )
             return *i;
-    
+
     return NULL;
 }
 
@@ -319,7 +321,7 @@ void
 handle_client_process_death ( int pid )
 {
     Client *c = get_client_by_pid( (int)pid );
-        
+
     if ( c )
     {
         bool dead_because_we_said = ( c->pending_command() == COMMAND_KILL ||
@@ -347,9 +349,9 @@ handle_client_process_death ( int pid )
             if ( gui_is_active )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
         }
-      
+
         c->pending_command( COMMAND_NONE );
-            
+
         c->active = false;
         c->pid = 0;
      }
@@ -362,9 +364,9 @@ void handle_sigchld ( )
         int status;
         pid_t pid = waitpid(-1, &status, WNOHANG);
 
-        if (pid <= 0) 
+        if (pid <= 0)
             break;
-        
+
         handle_client_process_death( pid );
     }
 }
@@ -408,7 +410,7 @@ mkpath ( const char *path, bool create_final_directory )
 
         *i = '/';
         i++;
-    } 
+    }
 
     if ( create_final_directory )
     {
@@ -418,7 +420,7 @@ mkpath ( const char *path, bool create_final_directory )
             return -1;
         }
     }
-    
+
     free( p );
 
     return 0;
@@ -431,7 +433,7 @@ set_name ( const char *name )
         free( session_name );
 
     char *s = strdup( name );
-    
+
     session_name = strdup( basename( s ) );
 
     free( s );
@@ -453,7 +455,7 @@ address_matches ( lo_address addr1, lo_address addr2 )
 
     return r;
 }
- 
+
 Client *
 get_client_by_id ( std::list<Client*> *cl, const char *id )
 {
@@ -473,7 +475,7 @@ get_client_by_name_and_id ( std::list<Client*> *cl, const char *name, const char
     for ( std::list<Client*>::const_iterator i = cl->begin();
           i != cl->end();
           ++i )
-        if ( !strcmp( (*i)->client_id, id ) && 
+        if ( !strcmp( (*i)->client_id, id ) &&
              ! strcmp( (*i)->name, name ) )
             return *i;
 
@@ -494,7 +496,7 @@ get_client_by_address ( lo_address addr )
 
 
 char *
-generate_client_id ( Client *c ) 
+generate_client_id ( Client *c )
 {
     char id_str[6];
 
@@ -539,7 +541,7 @@ wait_for_announce ( void )
     GUIMSG( "Waiting for announce messages from clients" );
 
     int n = 5 * 1000;
-    
+
     long unsigned int active;
 
     while ( n > 0 )
@@ -547,7 +549,7 @@ wait_for_announce ( void )
         n -= 100;
 
         wait(100);
-        
+
         active = number_of_active_clients();
 
         if ( client.size() == active )
@@ -559,7 +561,7 @@ wait_for_announce ( void )
 
 void
 wait_for_replies ( void )
-{    
+{
 
     GUIMSG( "Waiting for clients to reply to commands" );
 
@@ -570,7 +572,7 @@ wait_for_replies ( void )
         n -= 100;
 
         wait(100);
-        
+
         if ( ! replies_still_pending() )
             break;
     }
@@ -580,7 +582,7 @@ wait_for_replies ( void )
 }
 
 
-char * 
+char *
 get_client_project_path  ( const char *session_path, Client *c )
 {
     char *client_project_path;
@@ -603,12 +605,12 @@ launch ( const char *executable, const char *client_id )
 
         {
             char *s = strdup( c->executable_path );
-        
+
             c->name = strdup( basename( s ) );
-        
+
             free( s );
         }
-    
+
         if ( client_id )
             c->client_id = strdup( client_id );
         else
@@ -634,7 +636,7 @@ launch ( const char *executable, const char *client_id )
         sigemptyset( &mask );
         sigaddset( &mask, SIGCHLD );
         sigprocmask(SIG_UNBLOCK, &mask, NULL );
-        
+
         if ( -1 == execvp( executable, args ) )
         {
             WARNING( "Error starting process: %s", strerror( errno ) );
@@ -664,7 +666,7 @@ command_client_to_save ( Client *c )
     {
         MESSAGE( "Telling %s to save", c->name );
         osc_server->send( c->addr, "/nsm/client/save" );
-        
+
         c->pending_command( COMMAND_SAVE );
 
         if ( gui_is_active )
@@ -672,7 +674,7 @@ command_client_to_save ( Client *c )
     }
     else if ( c->is_dumb_client() && c->pid )
     {
-        // this is a dumb client... 
+        // this is a dumb client...
         if ( gui_is_active )
             osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "noop" );
     }
@@ -683,19 +685,19 @@ void command_client_to_switch ( Client *c, const char *new_client_id )
     char *old_client_id = c->client_id;
 
     c->client_id = strdup( new_client_id );
- 
-    char *client_project_path = get_client_project_path( session_path, c ); 
-    
+
+    char *client_project_path = get_client_project_path( session_path, c );
+
     MESSAGE( "Commanding %s to switch \"%s\"", c->name, client_project_path );
-                
+
     char *full_client_id;
     asprintf( &full_client_id, "%s.%s", c->name, c->client_id );
 
     osc_server->send( c->addr, "/nsm/client/open", client_project_path, session_name, full_client_id );
-    
+
     free( full_client_id );
     free( client_project_path );
-    
+
     c->pending_command( COMMAND_OPEN );
 
     if ( gui_is_active )
@@ -770,7 +772,7 @@ OSC_HANDLER( add )
         osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "Cannot add to session because no session is loaded." );
-                          
+
 
         return 0;
     }
@@ -779,7 +781,7 @@ OSC_HANDLER( add )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_LAUNCH_FAILED,
-                          "Absolute paths are not permitted. Clients must be in $PATH" );        
+                          "Absolute paths are not permitted. Clients must be in $PATH" );
         return 0;
     }
 
@@ -795,7 +797,7 @@ OSC_HANDLER( add )
                           ERR_OK,
                           "Launched." );
     }
- 
+
     return 0;
 }
 
@@ -836,8 +838,8 @@ OSC_HANDLER( announce )
             c = *i;
             break;
         }
-    } 
-    
+    }
+
     if ( ! c )
     {
         c = new Client();
@@ -846,10 +848,10 @@ OSC_HANDLER( announce )
     }
     else
         expected_client = true;
-   
+
     if ( major > NSM_API_VERSION_MAJOR )
     {
-        MESSAGE( "Client is using incompatible and more recent API version %i.%i", major, minor ); 
+        MESSAGE( "Client is using incompatible and more recent API version %i.%i", major, minor );
 
         osc_server->send( lo_message_get_source( msg ), "/error",
                           path,
@@ -866,7 +868,7 @@ OSC_HANDLER( announce )
     c->active = true;
 
     MESSAGE( "Process has pid: %i", pid );
-    
+
     if ( ! expected_client )
         client.push_back( c );
 
@@ -874,7 +876,7 @@ OSC_HANDLER( announce )
 
     osc_server->send( lo_message_get_source( msg ), "/reply",
                       path,
-                      expected_client ? 
+                      expected_client ?
                       "Howdy, what took you so long?" :
                       "Well hello, stranger. Welcome to the party.",
                       APP_TITLE,
@@ -892,11 +894,11 @@ OSC_HANDLER( announce )
     {
         char *full_client_id;
         asprintf( &full_client_id, "%s.%s", c->name, c->client_id );
-        
+
         char *client_project_path = get_client_project_path( session_path, c );
-        
+
         osc_server->send( lo_message_get_source( msg ), "/nsm/client/open", client_project_path, session_name, full_client_id );
-        
+
         c->pending_command( COMMAND_OPEN );
 
         free( full_client_id );
@@ -911,11 +913,11 @@ save_session_file ( )
 {
     char *session_file = NULL;
     asprintf( &session_file, "%s/session.nsm", session_path );
-  
+
     FILE *fp = fopen( session_file, "w+" );
 
     free( session_file );
-    
+
     /* FIXME: handle errors. */
 
     for ( std::list<Client*>::iterator i = client.begin();
@@ -923,7 +925,7 @@ save_session_file ( )
           ++i )
     {
         fprintf( fp, "%s:%s:%s\n", (*i)->name, (*i)->executable_path, (*i)->client_id );
-    } 
+    }
 
     fclose( fp );
 }
@@ -947,7 +949,7 @@ bool
 dumb_clients_are_alive ( )
 {
     std::list<Client*> *cl = &client;
-    
+
     for ( std::list<Client*>::iterator i = cl->begin();
           i != cl->end();
           ++i )
@@ -963,27 +965,27 @@ void
 wait_for_dumb_clients_to_die ( )
 {
     struct signalfd_siginfo fdsi;
-    
+
     GUIMSG( "Waiting for any dumb clients to die." );
-    
+
     for ( int i = 0; i < 6; i++ )
     {
         MESSAGE( "Loop %i", i );
 
         if ( ! dumb_clients_are_alive() )
             break;
-        
+
         ssize_t s = read(signal_fd, &fdsi, sizeof(struct signalfd_siginfo));
-        
+
         if (s == sizeof(struct signalfd_siginfo))
         {
             if (fdsi.ssi_signo == SIGCHLD)
                 handle_sigchld();
         }
-        
+
         usleep( 50000 );
     }
-    
+
     GUIMSG( "Done waiting" );
 
     /* FIXME: give up on remaining clients and purge them */
@@ -994,7 +996,7 @@ bool
 killed_clients_are_alive ( )
 {
     std::list<Client*> *cl = &client;
-    
+
     for ( std::list<Client*>::iterator i = cl->begin();
           i != cl->end();
           ++i )
@@ -1012,24 +1014,24 @@ void
 wait_for_killed_clients_to_die ( )
 {
     struct signalfd_siginfo fdsi;
-    
+
     MESSAGE( "Waiting for killed clients to die." );
-    
+
     for ( int i = 0; i < 60; i++ )
     {
         MESSAGE( "Loop %i", i );
 
         if ( ! killed_clients_are_alive() )
             goto done;
-        
+
         ssize_t s = read(signal_fd, &fdsi, sizeof(struct signalfd_siginfo));
-        
+
         if (s == sizeof(struct signalfd_siginfo))
         {
             if (fdsi.ssi_signo == SIGCHLD)
                 handle_sigchld();
         }
-        
+
         purge_dead_clients();
 
         /* check OSC so we can get /progress messages. */
@@ -1039,7 +1041,7 @@ wait_for_killed_clients_to_die ( )
     }
 
     WARNING( "Killed clients are still alive" );
-    
+
     return;
 
 done:
@@ -1054,16 +1056,16 @@ command_all_clients_to_save ( )
     if ( session_path )
     {
         GUIMSG( "Commanding attached clients to save." );
-        
+
         for ( std::list<Client*>::iterator i = client.begin();
               i != client.end();
               ++i )
         {
             command_client_to_save( *i );
         }
-    
+
         wait_for_replies();
-    
+
         save_session_file();
     }
 }
@@ -1088,7 +1090,7 @@ void
 command_client_to_quit ( Client *c )
 {
     MESSAGE( "Commanding %s to quit", c->name );
-    
+
     if ( c->active )
     {
         c->pending_command( COMMAND_QUIT );
@@ -1104,10 +1106,10 @@ command_client_to_quit ( Client *c )
         {
             if ( gui_is_active )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "quit" );
-            
+
             /* should be kill? */
             c->pending_command( COMMAND_QUIT );
-    
+
             // this is a dumb client... try and kill it
             kill( c->pid, SIGTERM );
         }
@@ -1135,7 +1137,7 @@ close_session ( )
     wait_for_killed_clients_to_die();
 
     purge_inactive_clients();
-    
+
     clear_clients();
 
     if ( session_path )
@@ -1190,7 +1192,7 @@ load_session_file ( const char * path )
     asprintf( &session_file, "%s/session.nsm", path );
     char *session_lock = NULL;
     asprintf( &session_lock, "%s/.lock", path );
-    
+
     if ( ! acquire_lock( &session_lock_fd, session_lock ) )
     {
         free( session_file );
@@ -1210,7 +1212,7 @@ load_session_file ( const char * path )
     }
 
     free( session_file );
-    
+
     session_path = strdup( path );
 
     set_name( path );
@@ -1221,24 +1223,24 @@ load_session_file ( const char * path )
         char * client_name = NULL;
         char * client_executable = NULL;
         char * client_id = NULL;
-        
+
         // load the client list
         while ( fscanf( fp, "%m[^:]:%m[^:]:%m[^:\n]\n", &client_name, &client_executable, &client_id ) > 0 )
         {
             Client *c = new Client();
-            
+
             c->name = client_name;
             c->executable_path = client_executable;
             c->client_id =  client_id;
-            
+
             new_clients.push_back( c );
         }
     }
 
     fclose(fp);
-    
+
     MESSAGE( "Commanding unneeded and dumb clients to quit" );
-    
+
     std::map<std::string,int> client_map;
 
     /* count how many instances of each client are needed in the new session */
@@ -1268,7 +1270,7 @@ load_session_file ( const char * path )
                 /* nope,, we already have as many as we need, stop this one */
                 command_client_to_quit( *i );
         }
-        
+
     }
 
 //    wait_for_replies();
@@ -1284,7 +1286,7 @@ load_session_file ( const char * path )
           ++i )
     {
         (*i)->pre_existing = true;
-    }    
+    }
 
     MESSAGE( "Commanding smart clients to switch" );
 
@@ -1293,15 +1295,15 @@ load_session_file ( const char * path )
           ++i )
     {
         Client *c = NULL;
-            
+
         /* in a duplicated session, clients will have the same
          * IDs, so be sure to pick the right one to avoid race
          * conditions in JACK name registration. */
         c = get_client_by_name_and_id( &client, (*i)->name, (*i)->client_id );
-        
+
         if ( ! c )
             c = client_by_name( (*i)->name, &client );
-        
+
         if ( c && c->pre_existing && !c->reply_pending() )
         {
             // since we already shutdown clients not capable of 'switch', we can assume that these are.
@@ -1343,7 +1345,7 @@ load_session_file ( const char * path )
     {
         osc_server->send( gui_addr, "/nsm/gui/session/name", session_name, session_path + strlen( session_root ));
     }
-    
+
     return ERR_OK;
 }
 
@@ -1359,13 +1361,13 @@ OSC_HANDLER( save )
 
     if ( ! session_path )
     {
-        osc_server->send( lo_message_get_source( msg ), "/error", path, 
+        osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "No session to save.");
-                          
+
         goto done;
     }
-    
+
     command_all_clients_to_save();
 
     MESSAGE( "Done." );
@@ -1393,7 +1395,7 @@ OSC_HANDLER( duplicate )
 
     if ( ! session_path )
     {
-        osc_server->send( lo_message_get_source( msg ), "/error", path, 
+        osc_server->send( lo_message_get_source( msg ), "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "No session to duplicate.");
         goto done;
@@ -1406,10 +1408,10 @@ OSC_HANDLER( duplicate )
                           "Invalid session name." );
 
         goto done;
-    }     
+    }
 
     command_all_clients_to_save();
-    
+
     if ( clients_have_errors() )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path,
@@ -1456,7 +1458,7 @@ OSC_HANDLER( duplicate )
     }
 
     free( spath );
- 
+
     MESSAGE( "Done" );
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path, "Duplicated." );
@@ -1489,12 +1491,12 @@ OSC_HANDLER( new )
         pending_operation = COMMAND_NONE;
 
         return 0;
-    }     
+    }
 
     if ( session_path )
     {
         command_all_clients_to_save();
-        
+
         close_session();
     }
 
@@ -1502,7 +1504,7 @@ OSC_HANDLER( new )
 
     char *spath;
     asprintf( &spath, "%s/%s", session_root, &argv[0]->s );
-   
+
     if ( mkpath( spath, true ) )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path,
@@ -1517,7 +1519,7 @@ OSC_HANDLER( new )
     }
 
     session_path = strdup( spath );
-    
+
     set_name( session_path );
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path, "Created." );
@@ -1537,7 +1539,7 @@ OSC_HANDLER( new )
                               "Session created" );
 
     pending_operation = COMMAND_NONE;
-        
+
     return 0;
 }
 
@@ -1576,7 +1578,7 @@ OSC_HANDLER( list )
     GUIMSG( "Listing sessions" );
 
     list_response_address = lo_message_get_source( msg );
-    
+
     ftw( session_root, list_file, 20 );
 
     osc_server->send( lo_message_get_source( msg ), path,
@@ -1588,7 +1590,7 @@ OSC_HANDLER( list )
 OSC_HANDLER( open )
 {
     GUIMSG( "Opening session %s", &argv[0]->s );
-    
+
     if ( pending_operation != COMMAND_NONE )
     {
             osc_server->send( lo_message_get_source( msg ), "/error", path,
@@ -1604,7 +1606,7 @@ OSC_HANDLER( open )
     {
 
         command_all_clients_to_save();
-        
+
         if ( clients_have_errors() )
         {
             osc_server->send( lo_message_get_source( msg ), "/error", path,
@@ -1614,7 +1616,7 @@ OSC_HANDLER( open )
             pending_operation = COMMAND_NONE;
             return 0;
         }
-        
+
 //        save_session_file();
     }
 
@@ -1625,7 +1627,7 @@ OSC_HANDLER( open )
     MESSAGE( "Attempting to open %s", spath );
 
     int err = load_session_file( spath );
-        
+
     if ( ! err )
     {
         MESSAGE( "Loaded" );
@@ -1658,7 +1660,7 @@ OSC_HANDLER( open )
     }
 
     free( spath );
- 
+
     MESSAGE( "Done" );
 
     pending_operation = COMMAND_NONE;
@@ -1685,7 +1687,7 @@ OSC_HANDLER( abort )
                               "An operation pending." );
             return 0;
     }
-  
+
   pending_operation = COMMAND_CLOSE;
 
 
@@ -1704,7 +1706,7 @@ OSC_HANDLER( abort )
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path,
                       "Aborted." );
-                      
+
     MESSAGE( "Done" );
 
 done:
@@ -1742,7 +1744,7 @@ OSC_HANDLER( close )
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path,
                       "Closed." );
-                      
+
     MESSAGE( "Done" );
 
 done:
@@ -1802,19 +1804,19 @@ OSC_HANDLER( broadcast )
      * propagated to another NSMD instance */
     if ( gui_is_active )
     {
-        
+
         char *u1 = lo_address_get_url( gui_addr );
-     
+
         if ( strcmp( u1, sender_url ) )
         {
             new_args.push_front( OSC::OSC_String( to_path ) );
-            
+
             osc_server->send( gui_addr, path, new_args );
         }
-        
+
         free(u1);
     }
-    
+
     free( sender_url );
 
     return 0;
@@ -1850,7 +1852,7 @@ OSC_HANDLER( is_dirty )
     MESSAGE( "Client sends dirty" );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
-    
+
     if ( ! c )
         return 0;
 
@@ -1935,7 +1937,7 @@ OSC_HANDLER( label )
 
     if ( strcmp( types, "s" ) )
         return -1;
-    
+
     c->label( &argv[0]->s );
 
     if ( gui_is_active )
@@ -1962,14 +1964,14 @@ OSC_HANDLER( error )
 //    const char *rpath = &argv[0]->s;
 
     int err_code = argv[1]->i;
-    
+
     const char *message = &argv[2]->s;
 
     c->set_reply( err_code, message );
 
-    MESSAGE( "Client \"%s\" replied with error: %s (%i) in %fms", c->name, message, err_code, c->milliseconds_since_last_command() ); 
+    MESSAGE( "Client \"%s\" replied with error: %s (%i) in %fms", c->name, message, err_code, c->milliseconds_since_last_command() );
     c->pending_command( COMMAND_NONE );
-    
+
     if ( gui_is_active )
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "error" );
 
@@ -1983,15 +1985,15 @@ OSC_HANDLER( reply )
 
 //    const char *rpath = &argv[0]->s;
     const char *message = &argv[1]->s;
-    
+
     if ( c )
     {
         c->set_reply( ERR_OK, message );
 
-        MESSAGE( "Client \"%s\" replied with: %s in %fms", c->name, message, c->milliseconds_since_last_command() ); 
-        
+        MESSAGE( "Client \"%s\" replied with: %s in %fms", c->name, message, c->milliseconds_since_last_command() );
+
         c->pending_command( COMMAND_NONE );
-        
+
         if ( gui_is_active )
             osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "ready" );
     }
@@ -2015,7 +2017,7 @@ OSC_HANDLER( stop )
     if ( c )
     {
         command_client_to_stop( c );
-        
+
         if ( gui_is_active )
             osc_server->send( gui_addr, "/reply", "Client stopped." );
     }
@@ -2025,7 +2027,7 @@ OSC_HANDLER( stop )
             osc_server->send( gui_addr, "/error", -10, "No such client." );
     }
 
-   
+
     return 0;
 }
 
@@ -2039,9 +2041,9 @@ OSC_HANDLER( remove )
              ! c->active )
         {
             osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
-            
+
             client.remove( c );
-            
+
             delete c;
 
             if ( gui_is_active )
@@ -2054,14 +2056,14 @@ OSC_HANDLER( remove )
             osc_server->send( gui_addr, "/error", -10, "No such client." );
     }
 
-   
+
     return 0;
 }
 
 OSC_HANDLER( resume )
 {
     Client *c = get_client_by_id( &client, &argv[0]->s );
-    
+
     /* FIXME: return error if no such client? */
     if ( c )
     {
@@ -2070,11 +2072,11 @@ OSC_HANDLER( resume )
         {
             if ( ! launch( c->executable_path, c->client_id ) )
             {
-                
+
             }
         }
     }
-    
+
     return 0;
 }
 
@@ -2146,7 +2148,7 @@ announce_gui( const char *url, bool is_reply )
     {
         Client *c = *i;
 
-        osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );        
+        osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
 
     }
@@ -2184,17 +2186,17 @@ static void
 wait ( long timeout )
 {
     struct signalfd_siginfo fdsi;
-    
+
     ssize_t s = read(signal_fd, &fdsi, sizeof(struct signalfd_siginfo));
-    
+
     if (s == sizeof(struct signalfd_siginfo))
     {
         if (fdsi.ssi_signo == SIGCHLD)
                 handle_sigchld();
     }
-    
+
     osc_server->wait( timeout );
-    
+
     purge_dead_clients();
 }
 
@@ -2210,7 +2212,7 @@ int main(int argc, char *argv[])
     {
         time_t seconds;
         time(&seconds);
-        
+
         srand( (unsigned int) seconds );
     }
 
@@ -2218,7 +2220,7 @@ int main(int argc, char *argv[])
     char *osc_port = NULL;
     const char *gui_url = NULL;
 
-    static struct option long_options[] = 
+    static struct option long_options[] =
     {
         { "detach", no_argument, 0, 'd' },
         { "session-root", required_argument, 0, 's' },
@@ -2254,7 +2256,7 @@ int main(int argc, char *argv[])
                 DMESSAGE( "Using OSC port %s", optarg );
                 osc_port = optarg;
                 break;
-            case 'g':                
+            case 'g':
                 DMESSAGE( "Going to connect to GUI at: %s", optarg );
                 gui_url = optarg;
                 break;
@@ -2267,7 +2269,7 @@ int main(int argc, char *argv[])
 
     if ( !session_root )
         asprintf( &session_root, "%s/%s", getenv( "HOME" ), "NSM Sessions" );
-  
+
     struct stat st;
 
     if ( stat( session_root, &st ) )
@@ -2300,7 +2302,7 @@ int main(int argc, char *argv[])
     /* response handlers */
     osc_server->add_method( "/reply", "ss", OSC_NAME( reply ), NULL, "err_code,msg" );
     osc_server->add_method( "/error", "sis", OSC_NAME( error ), NULL, "err_code,msg" );
-  
+
     osc_server->add_method( "/nsm/client/progress", "f", OSC_NAME( progress ), NULL, "progress" );
     osc_server->add_method( "/nsm/client/is_dirty", "", OSC_NAME( is_dirty ), NULL, "dirtiness" );
     osc_server->add_method( "/nsm/client/is_clean", "", OSC_NAME( is_clean ), NULL, "dirtiness" );
@@ -2308,7 +2310,7 @@ int main(int argc, char *argv[])
     osc_server->add_method( "/nsm/client/gui_is_hidden", "", OSC_NAME( gui_is_hidden ), NULL, "message" );
     osc_server->add_method( "/nsm/client/gui_is_shown", "", OSC_NAME( gui_is_shown ), NULL, "message" );
     osc_server->add_method( "/nsm/client/label", "s", OSC_NAME( label ), NULL, "message" );
-    
+
     /*  */
     osc_server->add_method( "/nsm/gui/gui_announce", "", OSC_NAME( gui_announce ), NULL, "" );
     osc_server->add_method( "/nsm/gui/client/stop", "s", OSC_NAME( stop ), NULL, "client_id" );
@@ -2338,7 +2340,7 @@ int main(int argc, char *argv[])
         MESSAGE( "Detaching from console" );
         if ( fork() )
         {
-            exit( 0 );            
+            exit( 0 );
         }
         else
         {
@@ -2353,7 +2355,7 @@ int main(int argc, char *argv[])
     {
         wait( 1000 );
     }
-    
+
 //    osc_server->run();
 
     return 0;

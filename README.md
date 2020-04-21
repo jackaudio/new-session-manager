@@ -15,18 +15,19 @@ This repository contains no user interface. Recommendations for a good one might
 
 ## Fork and License
 This is a fork of non-session-manager, by Jonathan Moore Liles <male@tuxfamily.net> http://non.tuxfamily.org/
-under the GNU GENERAL PUBLIC LICENSE  Version 2, June 1991.
+which was released the GNU GENERAL PUBLIC LICENSE  Version 2, June 1991.
 
-All files, except nsm.h kept in this repository are GPL "version 2 of the License, or (at your
+All files, except nsm.h kept in this fork were GPL "version 2 of the License, or (at your
 option) any later version."
 
 `nsm.h` is licenced under the ISCL.
 
-Build files and FLTK definitions have no license header and will be removed.
-
-The current repository builds the original `nsmd` and `jackpatch`.
+New-Session-Manager changed the license to GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007.
+See file COPYING
 
 ## Build
+The current repository builds the original `nsmd` and `jackpatch`.
+
 Dependencies are jack2 and liblo, the OSC library.
 The build system is meson.
 

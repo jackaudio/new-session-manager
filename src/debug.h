@@ -1,20 +1,21 @@
 
 /*******************************************************************************/
-/* Copyright (C) 2008 Jonathan Moore Liles                                     */
+/* Copyright (C) 2008-2020 Jonathan Moore Liles (as "Non-Session-Manager")     */
 /*                                                                             */
-/* This program is free software; you can redistribute it and/or modify it     */
-/* under the terms of the GNU General Public License as published by the       */
-/* Free Software Foundation; either version 2 of the License, or (at your      */
-/* option) any later version.                                                  */
+/* This file is part of New-Session-Manager                                    */
 /*                                                                             */
-/* This program is distributed in the hope that it will be useful, but WITHOUT */
-/* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       */
-/* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for   */
-/* more details.                                                               */
+/* New-Session-Manager is free software: you can redistribute it and/or modify */
+/* it under the terms of the GNU General Public License as published by        */
+/* the Free Software Foundation, either version 3 of the License, or           */
+/* (at your option) any later version.                                         */
 /*                                                                             */
-/* You should have received a copy of the GNU General Public License along     */
-/* with This program; see the file COPYING.  If not,write to the Free Software */
-/* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+/* New-Session-Manager is distributed in the hope that it will be useful,      */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of              */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               */
+/* GNU General Public License for more details.                                */
+/*                                                                             */
+/* You should have received a copy of the GNU General Public License           */
+/* along with New-Session-Manager. If not, see <https://www.gnu.org/licenses/>.*/
 /*******************************************************************************/
 
 /* debug.h
@@ -27,16 +28,16 @@
  *
  * The following macros sould be defined as string literals
  *
- * 	name			value
+ *  name            value
  *
- * 	__MODULE__		Name of module. eg. "libfoo"
+ *  __MODULE__      Name of module. eg. "libfoo"
  *
- * 	__FILE__		Name of file. eg. "foo.c"
+ *  __FILE__        Name of file. eg. "foo.c"
  *
- *	__FUNCTION__		Name of enclosing function. eg. "bar"
+ *  __FUNCTION__        Name of enclosing function. eg. "bar"
  *
- * 	(inteter literal)
- * 	__LINE__		Number of enclosing line.
+ *  (inteter literal)
+ *  __LINE__        Number of enclosing line.
  *
  *
  * __FILE__, and __LINE__ are automatically defined by standard CPP
@@ -78,19 +79,19 @@
 #endif
 
 #ifndef __GNUC__
-	#define __FUNCTION__ NULL
+    #define __FUNCTION__ NULL
 #endif
 
 typedef enum {
-	W_MESSAGE = 0,
-	W_WARNING,
-	W_FATAL
+    W_MESSAGE = 0,
+    W_WARNING,
+    W_FATAL
 } warning_t;
 
 void
 warnf ( warning_t level,
-	   const char *module,
-	   const char *file,
+       const char *module,
+       const char *file,
         const char *function, int line, const char *fmt, ... );
 
 

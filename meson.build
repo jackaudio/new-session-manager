@@ -23,11 +23,10 @@ liblodep = dependency('liblo') #and not 'lo'
 threaddep = dependency('threads')
 jackdep = dependency('jack') #and not 'libjack'
 
-executable('nsmd',
-    sources: ['src/nsmd.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/file.cpp', 'src/Thread.cpp'],
-    dependencies: [liblodep, threaddep],
-    install: true,
-    )
+cc = meson.get_compiler('c')
+fluid = find_program('fluid')
+fltkdep = cc.find_library('fltk', required: true)
+fltkimagesdep = cc.find_library('fltk_images', required: true)
 
 executable('jackpatch',
     'src/jackpatch.c',
@@ -35,5 +34,40 @@ executable('jackpatch',
     install: true,
     )
 
+executable('non-session-manager',
+    sources: ['src/session-manager.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
+    dependencies: [fltkimagesdep, fltkdep, liblodep, threaddep],
+    install: true,
+    )
 
+executable('nsm-proxy',
+    sources: ['src/nsm-proxy.cpp', 'src/debug.cpp'],
+    dependencies: [liblodep, threaddep],
+    install: true,
+    )
 
+NSM_Proxy_UI_cpp = custom_target(
+    'NSM_Proxy_UI.cpp',
+    output : 'NSM_Proxy_UI.cpp',
+    input : 'src/NSM_Proxy_UI.fl',
+    command : [fluid, '-c', '-o', '@OUTPUT@', '@INPUT@'],
+)
+
+NSM_Proxy_UI_h = custom_target(
+    'NSM_Proxy_UI.h',
+    output : 'NSM_Proxy_UI.h',
+    input : 'src/NSM_Proxy_UI.fl',
+    command : [fluid, '-c', '-h', '@OUTPUT@', '@INPUT@'],
+)
+
+executable('nsm-proxy-gui',
+    sources: ['src/nsm-proxy-gui.cpp', [NSM_Proxy_UI_cpp, NSM_Proxy_UI_h]],
+    dependencies: [fltkdep, liblodep, threaddep],
+    install: true,
+    )
+
+executable('nsmd',
+    sources: ['src/nsmd.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/file.cpp', 'src/Thread.cpp'],
+    dependencies: [liblodep, threaddep],
+    install: true,
+    )

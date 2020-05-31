@@ -26,7 +26,6 @@ jackdep = dependency('jack') #and not 'libjack'
 cc = meson.get_compiler('c')
 fluid = find_program('fluid')
 fltkdep = cc.find_library('fltk', required: true)
-fltkimagesdep = cc.find_library('fltk_images', required: true)
 
 executable('jackpatch',
     'src/jackpatch.c',
@@ -36,7 +35,7 @@ executable('jackpatch',
 
 executable('non-session-manager',
     sources: ['src/session-manager.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
-    dependencies: [fltkimagesdep, fltkdep, liblodep, threaddep],
+    dependencies: [fltkdep, liblodep, threaddep],
     install: true,
     )
 

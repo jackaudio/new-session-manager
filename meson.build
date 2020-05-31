@@ -47,14 +47,14 @@ executable('nsm-proxy',
 
 NSM_Proxy_UI_cpp = custom_target(
     'NSM_Proxy_UI.cpp',
-    output : 'NSM_Proxy_UI.cpp',
+    output : 'NSM_Proxy_UI.C',
     input : 'src/NSM_Proxy_UI.fl',
     command : [fluid, '-c', '-o', '@OUTPUT@', '@INPUT@'],
 )
 
 NSM_Proxy_UI_h = custom_target(
     'NSM_Proxy_UI.h',
-    output : 'NSM_Proxy_UI.h',
+    output : 'NSM_Proxy_UI.H',
     input : 'src/NSM_Proxy_UI.fl',
     command : [fluid, '-c', '-h', '@OUTPUT@', '@INPUT@'],
 )

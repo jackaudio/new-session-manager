@@ -11,7 +11,13 @@
 * The goal is to become the de-facto standard session manager for Linux distributions
 
 ## User Interface
-This repository contains no user interface. Recommendations for a good one might be added in the future.
+It is highly recommended to use Argodejo ( https://www.laborejo.org/argodejo/ ) as graphical
+user interface. In fact, if you install Argodejo in you distribution it will install NSM as
+dependency and you don't need to do anything yourself with this software package.
+
+This repository also contains the legacy FLTK interface simply called `new-session-manager`,
+symlinked to `non-session-mnanager` for backwards compatibility. (e.g. autostart scripts etc.)
+
 
 ## Fork and License
 This is a fork of non-session-manager, by Jonathan Moore Liles <male@tuxfamily.net> http://non.tuxfamily.org/
@@ -26,16 +32,20 @@ New-Session-Manager changed the license to GNU GENERAL PUBLIC LICENSE, Version 3
 See file COPYING
 
 ## Build
-The current repository builds the original `nsmd` and `jackpatch`.
-
-Dependencies are jack2 and liblo, the OSC library.
 The build system is meson.
+
+This repository builds `nsmd` and `jackpatch`. Dependencies are jack2 and liblo, the OSC library.
+If your system has FLTK installed (detected by the first step below) meson will enable building
+of `nsm-proxy` and legacy GUI `new-session-manager` as well.
 
 ```
 meson build --prefix=/usr
-cd build
-ninja
+cd build && ninja
 sudo ninja install
 ```
 
-
+## Names of Executable Files and Symlinks Some distributions (and possibly local laws) prevent a
+forked software project from creating executable files under the same name, if the name itself is
+an original work subject to copyright, which it arguably is for the "NON-"-suite. Therefore New
+Session Manager renamed `non-session-manager` to `new-session-manager`. Install will also create a
+symlink to `non-session-mnanager` for backwards compatibility. (e.g. autostart scripts etc.).

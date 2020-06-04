@@ -50,8 +50,8 @@
 #include <time.h>
 #include <getopt.h>
 
-#define APP_NAME "Non-Session-Manager"
-#define APP_TITLE "Non Session Manager"
+#define APP_NAME "New-Session-Manager"
+#define APP_TITLE "New Session Manager"
 
 // static lo_address nsm_addr = NULL;
 static time_t last_ping_response;

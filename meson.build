@@ -60,7 +60,7 @@ if fluid.found() and fltkdep.found()
         command : [fluid, '-c', '-h', '@OUTPUT@', '@INPUT@'],
     )
 
-    executable('non-session-manager',
+    executable('new-session-manager',
         sources: ['src/session-manager.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
         dependencies: [fltkdep, liblodep, threaddep],
         install: true,

@@ -44,8 +44,10 @@ cd build && ninja
 sudo ninja install
 ```
 
-## Names of Executable Files and Symlinks Some distributions (and possibly local laws) prevent a
-forked software project from creating executable files under the same name, if the name itself is
-an original work subject to copyright, which it arguably is for the "NON-"-suite. Therefore New
-Session Manager renamed `non-session-manager` to `new-session-manager`. Install will also create a
-symlink to `non-session-mnanager` for backwards compatibility. (e.g. autostart scripts etc.).
+## Names of Executable Files and Symlinks
+
+Some distributions (and possibly local laws) prevent a forked software project from creating
+executable files under the same name, if the name itself is an original work subject to copyright,
+which it arguably is for the "NON-"-suite. Therefore New Session Manager renamed
+`non-session-manager` to `new-session-manager`. Install will also create a symlink to
+`non-session-mnanager` for backwards compatibility. (e.g. autostart scripts etc.).

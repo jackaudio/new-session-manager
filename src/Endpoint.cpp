@@ -30,6 +30,7 @@
 #include "Thread.hpp"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-result"
 
 namespace OSC
 {

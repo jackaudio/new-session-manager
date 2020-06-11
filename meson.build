@@ -67,7 +67,8 @@ if fluid.found() and fltkdep.found()
         )
 
     meson.add_install_script('sh', '-c',
-        'ln -sf new-session-manager @0@/@1@/non-session-manager'.format(get_option('prefix'), get_option('bindir')))
+        'ln -sf new-session-manager ${DESTDIR}@0@/@1@/non-session-manager'.format(
+            get_option('prefix'), get_option('bindir')))
 
     executable('nsm-proxy-gui',
         sources: ['src/nsm-proxy-gui.cpp', [NSM_Proxy_UI_cpp, NSM_Proxy_UI_h]],

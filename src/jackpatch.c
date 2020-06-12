@@ -25,6 +25,10 @@
  */
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-result"
+
+/* needed for asprintf */
+#define _GNU_SOURCE
 
 #include <string.h>
 #include <sys/stat.h>
@@ -694,7 +698,7 @@ dequeue_new_port ( void )
 
     if ( sizeof( int ) == jack_ringbuffer_peek( port_ringbuffer, (char*)&size, sizeof( int ) ) )
     {
-        if ( jack_ringbuffer_read_space( port_ringbuffer ) >= size );
+        if ( jack_ringbuffer_read_space( port_ringbuffer ) >= size )
         {
             struct port_notification_record *pr = malloc( size );
 

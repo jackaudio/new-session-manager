@@ -57,6 +57,7 @@
 #include <algorithm>
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-result"
 
 static OSC::Endpoint *osc_server;
 static lo_address gui_addr;

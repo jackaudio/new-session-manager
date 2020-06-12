@@ -180,7 +180,7 @@ write_line ( const char *dir, const char *name, const char *value )
     fclose( fp );
 }
 
-/** write a single string to a file */
+/** read a single string from a file */
 char *
 read_line ( const char *dir, const char *name  )
 {
@@ -195,9 +195,8 @@ read_line ( const char *dir, const char *name  )
 
     char *value = (char*)malloc( 512 );
 
-    value[0] = 0;
-
-    fgets( value, 512, fp );
+    if ( ! fgets( value, 512, fp ) )
+        value[0] = 0;
 
     fclose( fp );
 

@@ -19,6 +19,7 @@
 /*******************************************************************************/
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-result"
 
 #define _MODULE_ "nsm-proxy"
 #define APP_NAME "NSM Proxy"

@@ -53,6 +53,8 @@
 #define APP_NAME "New-Session-Manager"
 #define APP_TITLE "New Session Manager"
 
+#pragma GCC diagnostic ignored "-Wunused-result"
+
 // static lo_address nsm_addr = NULL;
 static time_t last_ping_response;
 

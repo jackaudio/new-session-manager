@@ -48,7 +48,7 @@ Documentation and tutorials for software-developers will be added at a later dat
 
 ## Fork and License
 This is a fork of non-session-manager, by Jonathan Moore Liles <male@tuxfamily.net> http://non.tuxfamily.org/
-which was released the GNU GENERAL PUBLIC LICENSE  Version 2, June 1991.
+which was released under the GNU GENERAL PUBLIC LICENSE  Version 2, June 1991.
 
 All files, except nsm.h kept in this fork were GPL "version 2 of the License, or (at your
 option) any later version."
@@ -61,9 +61,9 @@ See file COPYING
 ## Build
 The build system is meson.
 
-This repository builds `nsmd` and `jackpatch`. Dependencies are jack2 and liblo, the OSC library.
-If your system has FLTK installed (detected by the first step below) meson will enable building
-of `nsm-proxy` and legacy GUI `new-session-manager` as well.
+This repository builds `nsmd` and `jackpatch`. Dependencies are `JACK Audio Connection Kit` and
+`liblo`, the OSC library. If your system has `FLTK` installed (detected by the first step below)
+meson will enable building of `nsm-proxy` and legacy GUI `new-session-manager` as well.
 
 ```
 meson build --prefix=/usr

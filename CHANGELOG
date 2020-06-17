@@ -1,4 +1,4 @@
-v1.2.2
+v1.3
 Rebranding to "new session manager"
 Upstream GUI tools "non-session-manager" and "nsm-proxy" converted to standard FLTK instead of a custom toolkit
 New message /nsm/gui/session/root raises NSM_API_VERSION_MINOR from 0 to 1 (1.0 -> 1.1)

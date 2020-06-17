@@ -66,7 +66,7 @@ if fluid.found() and fltkdep.found()
         install: true,        
         )
 
-    install_data('src/new-session-manager.desktop', install_dir : get_option('datadir') / 'applications')
+    install_data('src/org.linuxaudio.new-session-manager.desktop', install_dir : get_option('datadir') / 'applications')
 
     meson.add_install_script('sh', '-c',
         'ln -sf new-session-manager ${DESTDIR}@0@/@1@/non-session-manager'.format(

@@ -1,6 +1,25 @@
 # New Session Manager
 
-## Mission Statement
+## Introduction
+
+New Session Manager (NSM) is a computer program to help handling other music production programs.
+It is intended for Linux and other Free and Open Source operating systems.
+
+You can create a session, or project, add programs to it and then use commands to save, start/stop,
+hide/show all programs at once, or individually. At a later date you can then re-open the session
+and continue where you left off.
+
+All files belonging to the session will be saved in the same directory.
+
+If you are a user (and not a programmer or packager) everything you need is to install NSM
+through your distributions package manager and, highly recommended, Argodejo as a GUI (see below).
+
+To learn NSM you don't need to know the background information from our documention, which
+is aimed at developers that want to implement NSM support in their programs. Learn the GUI,
+not the server and protocol.
+
+
+## Bullet Points
 * Drop-In replacement for the non-session-manager daemon nsmd and tools (e.g. jackpatch)
 * Simple and hassle-free build system to make packaging easy
 * Possibility to react to sensible bug fixes that would not have been integrated original nsmd
@@ -18,6 +37,11 @@ dependency and you don't need to do anything yourself with this software package
 This repository also contains the legacy FLTK interface simply called `new-session-manager`,
 symlinked to `non-session-mnanager` for backwards compatibility. (e.g. autostart scripts etc.)
 
+## Supported Clients
+
+While NSM can start and stop any program it only becomes convenient if clients specifically
+implement support. This enables saving and hiding the GUI, amongst other features.
+Documentation and tutorials for software-developers will be added at a later date.
 
 ## Fork and License
 This is a fork of non-session-manager, by Jonathan Moore Liles <male@tuxfamily.net> http://non.tuxfamily.org/
@@ -49,5 +73,5 @@ sudo ninja install
 Some distributions (and possibly local laws) prevent a forked software project from creating
 executable files under the same name, if the name itself is an original work subject to copyright,
 which it arguably is for the "NON-"-suite. Therefore New Session Manager renamed
-`non-session-manager` to `new-session-manager`. Install will also create a symlink to
+`non-session-manager` to `new-session-manager`. Installing will also create a symlink to
 `non-session-mnanager` for backwards compatibility. (e.g. autostart scripts etc.).

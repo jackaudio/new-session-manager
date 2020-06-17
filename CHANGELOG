@@ -1,6 +1,11 @@
 v1.2.2
+Rebranding to "new session manager"
+Upstream GUI tools "non-session-manager" and "nsm-proxy" converted to standard FLTK instead of a custom toolkit
+New message /nsm/gui/session/root raises NSM_API_VERSION_MINOR from 0 to 1 (1.0 -> 1.1)
 Changed build system to meson
+License upgraded to GPLv3
 Simplified file structure
+Fix compiler warnings.
 
 v1.2.1
-Current state of upstream Non Session Manager including unreleased session_root 
+Current state of upstream Non Session Manager including unreleased /nsm/gui/session/root

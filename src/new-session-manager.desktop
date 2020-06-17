@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=New Session Manager Legacy GUI
+Comment=Legacy FLTK GUI to manage sessions with NSM.
+Exec=new-session-manager
+Terminal=false
+StartupNotify=false
+Version=1.0
+Categories=AudioVideo;Audio;

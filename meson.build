@@ -63,8 +63,10 @@ if fluid.found() and fltkdep.found()
     executable('new-session-manager',
         sources: ['src/session-manager.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
         dependencies: [fltkdep, liblodep, threaddep],
-        install: true,
+        install: true,        
         )
+
+    install_data('src/new-session-manager.desktop', install_dir : get_option('datadir') / 'applications')
 
     meson.add_install_script('sh', '-c',
         'ln -sf new-session-manager ${DESTDIR}@0@/@1@/non-session-manager'.format(

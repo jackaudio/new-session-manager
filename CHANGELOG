@@ -1,5 +1,6 @@
 v1.3.1
 Add header copyright even to unchanged files to adhere to stricter packaging requirements.
+Meson can now switch off individual executables and will stop/error when trying to build without dependencies.
 
 v1.3
 Rebranding to "new session manager"

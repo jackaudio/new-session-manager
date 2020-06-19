@@ -1,0 +1,6 @@
+option('new-session-manager', type : 'boolean', value : true, description : 'Build new-session-manager GUI')
+option('jackpatch', type : 'boolean', value : true, description : 'Build jackpatch client')
+option('nsm-proxy', type : 'boolean', value : true, description : 'Build nsm-proxy client with GUI.')
+
+
+

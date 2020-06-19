@@ -17,27 +17,24 @@
 # along with New-Session-Manager. If not, see <https://www.gnu.org/licenses/>.
 ##############################################################################
 
-project('new-session-manager', 'c', 'cpp', version : '1.3.0', license : 'GPLv3')
+project('new-session-manager', 'c', 'cpp', version : '1.3.1', license : 'GPLv3')
+
+##############
+#Dependencies
+##############
 
 liblodep = dependency('liblo') #and not 'lo'
 threaddep = dependency('threads')
-jackdep = dependency('jack') #and not 'libjack'
+jackdep = dependency('jack', required: get_option('jackpatch')) #and not 'libjack'
 
 cc = meson.get_compiler('c')
-fluid = find_program('fluid', required: false)
-fltkdep = cc.find_library('fltk', required: false)
+fltkdep = cc.find_library('fltk', required: get_option('new-session-manager') or get_option('nsm-proxy'))
+fluid = find_program('fluid', required: get_option('nsm-proxy'))
 
-executable('jackpatch',
-    'src/jackpatch.c',
-    dependencies: [liblodep, jackdep],
-    install: true,
-    )
 
-executable('nsm-proxy',
-    sources: ['src/nsm-proxy.cpp', 'src/debug.cpp'],
-    dependencies: [liblodep, threaddep],
-    install: true,
-    )
+##############
+#Build Targets
+##############
 
 executable('nsmd',
     sources: ['src/nsmd.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/file.cpp', 'src/Thread.cpp'],
@@ -45,7 +42,22 @@ executable('nsmd',
     install: true,
     )
 
-if fluid.found() and fltkdep.found()
+
+#For options see meson_options.txt
+#All get_options are default=true
+
+if get_option('jackpatch')
+
+    executable('jackpatch',
+        'src/jackpatch.c',
+        dependencies: [liblodep, jackdep],
+        install: true,
+        )
+endif
+
+
+if get_option('nsm-proxy')
+
     NSM_Proxy_UI_cpp = custom_target(
         'NSM_Proxy_UI.cpp',
         output : 'NSM_Proxy_UI.C',
@@ -60,10 +72,26 @@ if fluid.found() and fltkdep.found()
         command : [fluid, '-c', '-h', '@OUTPUT@', '@INPUT@'],
     )
 
+
+    executable('nsm-proxy',
+        sources: ['src/nsm-proxy.cpp', 'src/debug.cpp'],
+        dependencies: [liblodep, threaddep],
+        install: true,
+    )
+
+    executable('nsm-proxy-gui',
+        sources: ['src/nsm-proxy-gui.cpp', [NSM_Proxy_UI_cpp, NSM_Proxy_UI_h]],
+        dependencies: [fltkdep, liblodep, threaddep],
+        install: true,
+    )
+endif
+
+if get_option('new-session-manager')
+
     executable('new-session-manager',
         sources: ['src/session-manager.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
         dependencies: [fltkdep, liblodep, threaddep],
-        install: true,        
+        install: true,
         )
 
     install_data('src/org.linuxaudio.new-session-manager.desktop', install_dir : get_option('datadir') / 'applications')
@@ -72,9 +100,4 @@ if fluid.found() and fltkdep.found()
         'ln -sf new-session-manager ${DESTDIR}@0@/@1@/non-session-manager'.format(
             get_option('prefix'), get_option('bindir')))
 
-    executable('nsm-proxy-gui',
-        sources: ['src/nsm-proxy-gui.cpp', [NSM_Proxy_UI_cpp, NSM_Proxy_UI_h]],
-        dependencies: [fltkdep, liblodep, threaddep],
-        install: true,
-        )
 endif

@@ -61,15 +61,33 @@ See file COPYING
 ## Build
 The build system is meson.
 
-This repository builds `nsmd` and `jackpatch`. Dependencies are `JACK Audio Connection Kit` and
-`liblo`, the OSC library. If your system has `FLTK` installed (detected by the first step below)
-meson will enable building of `nsm-proxy` and legacy GUI `new-session-manager` as well.
+This is a software package that will compile and install multiple executables:
+* `nsmd`, the daemon or server itself. It is mandatory.
+  * It has no GUI.
+  * Dependencies are `JACK Audio Connection Kit` and liblo`, the OSC library.
+* `jackpatch`, NSM client to save and remember JACK connections.
+  * It has no GUI.
+  * Dependencies are `JACK Audio Connection Kit` and `liblo`, the OSC library.
+  * Can be deactivated (see below) `-Djackpatch=false`
+* `new-session-manager`, Legacy GUI for the user
+  * Dependencies are `FLTK` and `liblo`, the OSC library.
+  * Can be deactivated (see below) `-Dnew-session-manager=false`
+* `nsm-proxy`, NSM GUI Client to run any program without direct NSM support
+  * Dependencies are `FLTK`, `fluid` (FLTK Editor/compiler, maybe in the same package as FLTK, maybe not) and `liblo`, the OSC library.
+  * Can be deactivated (see below) `-Dnsm-proxy=false`
+
 
 ```
 meson build --prefix=/usr
+#or disable individual build targets:
+#meson build --prefix=/usr -Dnew-session-manager=false -Dnsm-proxy=false -Djackpatch=false
 cd build && ninja
 sudo ninja install
 ```
+
+Optionally you can skip `sudo ninja install` and run all executables from the build-dir.
+In this case you need to add the build-dir to your PATH environment variable so that the tools
+can find each other.
 
 ## Names of Executable Files and Symlinks
 

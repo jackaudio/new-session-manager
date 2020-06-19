@@ -1,3 +1,6 @@
+v1.3.1
+Add header copyright even to unchanged files to adhere to stricter packaging requirements.
+
 v1.3
 Rebranding to "new session manager"
 Upstream GUI tools "non-session-manager" and "nsm-proxy" converted to standard FLTK instead of a custom toolkit

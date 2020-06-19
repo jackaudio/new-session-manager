@@ -1,6 +1,7 @@
 
 /*******************************************************************************/
 /* Copyright (C) 2008-2020 Jonathan Moore Liles (as "Non-Session-Manager")     */
+/* Copyright (C) 2020- Nils Hilbricht                                          */
 /*                                                                             */
 /* This file is part of New-Session-Manager                                    */
 /*                                                                             */

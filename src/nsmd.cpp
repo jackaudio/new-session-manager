@@ -557,7 +557,8 @@ wait_for_announce ( void )
             break;
     }
 
-    GUIMSG( "Done. %lu out of %lu clients announced within the initialization grace period", active, client.size() );
+    GUIMSG( "Done. %lu out of %lu clients announced within the initialization grace period",
+            active, (long unsigned)client.size() );
 }
 
 void

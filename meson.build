@@ -24,8 +24,6 @@ threaddep = dependency('threads')
 jackdep = dependency('jack') #and not 'libjack'
 
 cc = meson.get_compiler('c')
-fluid = find_program('fluid', required: false)
-fltkdep = cc.find_library('fltk', required: false)
 
 executable('jackpatch',
     'src/jackpatch.c',
@@ -45,7 +43,24 @@ executable('nsmd',
     install: true,
     )
 
-if fluid.found() and fltkdep.found()
+if get_option('new-session-manager')
+    fltkdep = cc.find_library('fltk')
+    executable('new-session-manager',
+        sources: ['src/session-manager.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
+        dependencies: [fltkdep, liblodep, threaddep],
+        install: true,
+        )
+
+    install_data('src/org.linuxaudio.new-session-manager.desktop', install_dir : get_option('datadir') / 'applications')
+
+    meson.add_install_script('sh', '-c',
+        'ln -sf new-session-manager ${DESTDIR}@0@/@1@/non-session-manager'.format(
+            get_option('prefix'), get_option('bindir')))
+endif
+
+if get_option('nsm-proxy-gui')
+    fluid = find_program('fluid')
+    fltkdep = cc.find_library('fltk')
     NSM_Proxy_UI_cpp = custom_target(
         'NSM_Proxy_UI.cpp',
         output : 'NSM_Proxy_UI.C',
@@ -59,18 +74,6 @@ if fluid.found() and fltkdep.found()
         input : 'src/NSM_Proxy_UI.fl',
         command : [fluid, '-c', '-h', '@OUTPUT@', '@INPUT@'],
     )
-
-    executable('new-session-manager',
-        sources: ['src/session-manager.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
-        dependencies: [fltkdep, liblodep, threaddep],
-        install: true,        
-        )
-
-    install_data('src/org.linuxaudio.new-session-manager.desktop', install_dir : get_option('datadir') / 'applications')
-
-    meson.add_install_script('sh', '-c',
-        'ln -sf new-session-manager ${DESTDIR}@0@/@1@/non-session-manager'.format(
-            get_option('prefix'), get_option('bindir')))
 
     executable('nsm-proxy-gui',
         sources: ['src/nsm-proxy-gui.cpp', [NSM_Proxy_UI_cpp, NSM_Proxy_UI_h]],

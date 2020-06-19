@@ -1,0 +1,2 @@
+option('new-session-manager', type : 'boolean', value : true, description : 'Build new-session-manager GUI')
+option('nsm-proxy-gui', type : 'boolean', value : true, description : 'Build nsm-proxy')

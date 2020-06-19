@@ -64,7 +64,7 @@ The build system is meson.
 This is a software package that will compile and install multiple executables:
 * `nsmd`, the daemon or server itself. It is mandatory.
   * It has no GUI.
-  * Dependencies are `JACK Audio Connection Kit` and liblo`, the OSC library.
+  * Dependency is liblo`, the OSC library.
 * `jackpatch`, NSM client to save and remember JACK connections.
   * It has no GUI.
   * Dependencies are `JACK Audio Connection Kit` and `liblo`, the OSC library.

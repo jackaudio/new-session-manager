@@ -51,8 +51,8 @@
 #include <time.h>
 #include <getopt.h>
 
-#define APP_NAME "New-Session-Manager"
-#define APP_TITLE "New Session Manager"
+#define APP_NAME "NSM Legacy GUI"
+#define APP_TITLE "NSM Legacy GUI"
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 

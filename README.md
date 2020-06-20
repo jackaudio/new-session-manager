@@ -37,7 +37,7 @@ It is highly recommended to use Argodejo ( https://www.laborejo.org/argodejo/ ) 
 user interface. In fact, if you install Argodejo in you distribution it will install NSM as
 dependency and you don't need to do anything yourself with this software package.
 
-This repository also contains the legacy FLTK interface simply called `new-session-manager`,
+This repository also contains the legacy FLTK interface simply called `nsm-legacy-gui`,
 symlinked to `non-session-manager` for backwards compatibility. (e.g. autostart scripts etc.)
 
 ## Supported Clients
@@ -69,9 +69,10 @@ This is a software package that will compile and install multiple executables:
   * It has no GUI.
   * Dependencies are `JACK Audio Connection Kit` and `liblo`, the OSC library.
   * Can be deactivated (see below) `-Djackpatch=false`
-* `new-session-manager`, Legacy GUI for the user
+* `nsm-legacy-gui`, Legacy GUI for the user
+  * Formerly known as "non-session-manager"
   * Dependencies are `FLTK` and `liblo`, the OSC library.
-  * Can be deactivated (see below) `-Dnew-session-manager=false`
+  * Can be deactivated (see below) `-Dlegacy-gui=false`
 * `nsm-proxy`, NSM GUI Client to run any program without direct NSM support
   * Dependencies are `FLTK`, `fluid` (FLTK Editor/compiler, maybe in the same package as FLTK, maybe not) and `liblo`, the OSC library.
   * Can be deactivated (see below) `-Dnsm-proxy=false`
@@ -80,7 +81,7 @@ This is a software package that will compile and install multiple executables:
 ```
 meson build --prefix=/usr
 #or disable individual build targets:
-#meson build --prefix=/usr -Dnew-session-manager=false -Dnsm-proxy=false -Djackpatch=false
+#meson build --prefix=/usr -Dlegacy-gui=false -Dnsm-proxy=false -Djackpatch=false
 cd build && ninja
 sudo ninja install
 ```
@@ -94,5 +95,5 @@ can find each other.
 Some distributions (and possibly local laws) prevent a forked software project from creating
 executable files under the same name, if the name itself is an original work subject to copyright,
 which it arguably is for the "NON-"-suite. Therefore New Session Manager renamed
-`non-session-manager` to `new-session-manager`. Installing will also create a symlink to
+`non-session-manager` to `nsm-legacy-gui`. Installing will also create a symlink to
 `non-session-manager` for backwards compatibility. (e.g. autostart scripts etc.).

@@ -1,4 +1,4 @@
-option('new-session-manager', type : 'boolean', value : true, description : 'Build new-session-manager GUI')
+option('nsm-legacy-gui', type : 'boolean', value : true, description : 'Build nsm-legacy-gui, symlinked as non-session-manager')
 option('jackpatch', type : 'boolean', value : true, description : 'Build jackpatch client')
 option('nsm-proxy', type : 'boolean', value : true, description : 'Build nsm-proxy client with GUI.')
 

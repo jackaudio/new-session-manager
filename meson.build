@@ -28,7 +28,7 @@ threaddep = dependency('threads')
 jackdep = dependency('jack', required: get_option('jackpatch')) #and not 'libjack'
 
 cc = meson.get_compiler('c')
-fltkdep = cc.find_library('fltk', required: get_option('new-session-manager') or get_option('nsm-proxy'))
+fltkdep = cc.find_library('fltk', required: get_option('nsm-legacy-gui') or get_option('nsm-proxy'))
 fluid = find_program('fluid', required: get_option('nsm-proxy'))
 
 
@@ -86,18 +86,18 @@ if get_option('nsm-proxy')
     )
 endif
 
-if get_option('new-session-manager')
+if get_option('nsm-legacy-gui')
 
-    executable('new-session-manager',
-        sources: ['src/session-manager.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
+    executable('nsm-legacy-gui',
+        sources: ['src/legacy-gui.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
         dependencies: [fltkdep, liblodep, threaddep],
         install: true,
         )
 
-    install_data('src/org.linuxaudio.new-session-manager.desktop', install_dir : get_option('datadir') / 'applications')
+    install_data('src/org.linuxaudio.nsm-legacy-gui.desktop', install_dir : get_option('datadir') / 'applications')
 
     meson.add_install_script('sh', '-c',
-        'ln -sf new-session-manager ${DESTDIR}@0@/@1@/non-session-manager'.format(
+        'ln -sf nsm-legacy-gui ${DESTDIR}@0@/@1@/non-session-manager'.format(
             get_option('prefix'), get_option('bindir')))
 
 endif

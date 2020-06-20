@@ -1,3 +1,6 @@
+v.1.3.2
+Rename new-session-manager executable to nsm-legacy-gui to prevent future confusion.
+
 v1.3.1
 Add header copyright even to unchanged files to adhere to stricter packaging requirements.
 Meson can now switch off individual executables and will stop/error when trying to build without dependencies.

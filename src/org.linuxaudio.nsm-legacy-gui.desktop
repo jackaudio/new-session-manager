@@ -2,9 +2,9 @@
 Type=Application
 Name=New Session Manager (Legacy GUI)
 Comment=Audio session manager (Legacy GUI)
+Comment[de]=Verwaltet Audiositzungen (Alte Oberfläche)
 Comment[fr]=Gestionnaire de session audio (Ancienne GUI)
 Comment[pt]=Gestor de sessões audio (Antiga GUI)
-Comment[de]=Verwaltet Audiositzungen (Alte Oberfläche)
 Exec=nsm-legacy-gui
 Terminal=false
 StartupNotify=false

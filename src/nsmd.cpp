@@ -795,9 +795,7 @@ OSC_HANDLER( add )
     }
     else
     {
-        osc_server->send( lo_message_get_source( msg ), "/reply", path,
-                          ERR_OK,
-                          "Launched." );
+        osc_server->send( lo_message_get_source( msg ), "/reply", path, "Launched." );
     }
 
     return 0;
@@ -1353,9 +1351,12 @@ load_session_file ( const char * path )
 
 OSC_HANDLER( save )
 {
+    lo_address sender_addr;
+    sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
+
     if ( pending_operation != COMMAND_NONE )
     {
-            osc_server->send( lo_message_get_source( msg ), "/error", path,
+            osc_server->send( sender_addr, "/error", path,
                               ERR_OPERATION_PENDING,
                               "An operation pending." );
             return 0;
@@ -1363,7 +1364,7 @@ OSC_HANDLER( save )
 
     if ( ! session_path )
     {
-        osc_server->send( lo_message_get_source( msg ), "/error", path,
+        osc_server->send( sender_addr, "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "No session to save.");
 
@@ -1374,7 +1375,7 @@ OSC_HANDLER( save )
 
     MESSAGE( "Done." );
 
-    osc_server->send( lo_message_get_source( msg ), "/reply", path, "Saved." );
+    osc_server->send( sender_addr, "/reply", path, "Saved." );
 
 done:
 
@@ -1385,9 +1386,12 @@ done:
 
 OSC_HANDLER( duplicate )
 {
+    lo_address sender_addr;
+    sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
+
     if ( pending_operation != COMMAND_NONE )
     {
-            osc_server->send( lo_message_get_source( msg ), "/error", path,
+            osc_server->send( sender_addr, "/error", path,
                               ERR_OPERATION_PENDING,
                               "An operation pending." );
             return 0;
@@ -1397,7 +1401,7 @@ OSC_HANDLER( duplicate )
 
     if ( ! session_path )
     {
-        osc_server->send( lo_message_get_source( msg ), "/error", path,
+        osc_server->send( sender_addr, "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "No session to duplicate.");
         goto done;
@@ -1405,7 +1409,7 @@ OSC_HANDLER( duplicate )
 
     if ( ! path_is_valid( &argv[0]->s ) )
     {
-        osc_server->send( lo_message_get_source( msg ), "/error", path,
+        osc_server->send( sender_addr, "/error", path,
                           ERR_CREATE_FAILED,
                           "Invalid session name." );
 
@@ -1416,7 +1420,7 @@ OSC_HANDLER( duplicate )
 
     if ( clients_have_errors() )
     {
-        osc_server->send( lo_message_get_source( msg ), "/error", path,
+        osc_server->send( sender_addr, "/error", path,
                           ERR_GENERAL_ERROR,
                           "Some clients could not save" );
 
@@ -1446,13 +1450,13 @@ OSC_HANDLER( duplicate )
     if ( !load_session_file( spath ) )
     {
         MESSAGE( "Loaded" );
-        osc_server->send( lo_message_get_source( msg ), "/reply", path,
+        osc_server->send( sender_addr, "/reply", path,
                           "Loaded." );
     }
     else
     {
         MESSAGE( "Failed" );
-        osc_server->send( lo_message_get_source( msg ), "/error", path,
+        osc_server->send( sender_addr, "/error", path,
                           ERR_NO_SUCH_FILE,
                           "No such file." );
         free(spath);
@@ -1463,7 +1467,7 @@ OSC_HANDLER( duplicate )
 
     MESSAGE( "Done" );
 
-    osc_server->send( lo_message_get_source( msg ), "/reply", path, "Duplicated." );
+    osc_server->send( sender_addr, "/reply", path, "Duplicated." );
 
 done:
 
@@ -1474,9 +1478,12 @@ done:
 
 OSC_HANDLER( new )
 {
+    lo_address sender_addr;
+    sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
+
     if ( pending_operation != COMMAND_NONE )
     {
-            osc_server->send( lo_message_get_source( msg ), "/error", path,
+            osc_server->send( sender_addr, "/error", path,
                               ERR_OPERATION_PENDING,
                               "An operation pending." );
             return 0;
@@ -1486,7 +1493,7 @@ OSC_HANDLER( new )
 
     if ( ! path_is_valid( &argv[0]->s ) )
     {
-        osc_server->send( lo_message_get_source( msg ), "/error", path,
+        osc_server->send( sender_addr, "/error", path,
                           ERR_CREATE_FAILED,
                           "Invalid session name." );
 
@@ -1509,7 +1516,7 @@ OSC_HANDLER( new )
 
     if ( mkpath( spath, true ) )
     {
-        osc_server->send( lo_message_get_source( msg ), "/error", path,
+        osc_server->send( sender_addr, "/error", path,
                           ERR_CREATE_FAILED,
                           "Could not create the session directory" );
 
@@ -1524,7 +1531,7 @@ OSC_HANDLER( new )
 
     set_name( session_path );
 
-    osc_server->send( lo_message_get_source( msg ), "/reply", path, "Created." );
+    osc_server->send( sender_addr, "/reply", path, "Created." );
 
     if ( gui_is_active )
     {
@@ -1537,8 +1544,7 @@ OSC_HANDLER( new )
 
     free( spath );
 
-    osc_server->send( lo_message_get_source( msg ), "/reply", path,
-                              "Session created" );
+    osc_server->send( sender_addr, "/reply", path, "Session created" );
 
     pending_operation = COMMAND_NONE;
 
@@ -1591,18 +1597,20 @@ OSC_HANDLER( list )
 
 OSC_HANDLER( open )
 {
+    lo_address sender_addr;
+    sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
+
     GUIMSG( "Opening session %s", &argv[0]->s );
 
     if ( pending_operation != COMMAND_NONE )
     {
-            osc_server->send( lo_message_get_source( msg ), "/error", path,
+            osc_server->send( sender_addr, "/error", path,
                               ERR_OPERATION_PENDING,
                               "An operation pending." );
             return 0;
     }
 
     pending_operation = COMMAND_OPEN;
-
 
     if ( session_path )
     {
@@ -1611,7 +1619,7 @@ OSC_HANDLER( open )
 
         if ( clients_have_errors() )
         {
-            osc_server->send( lo_message_get_source( msg ), "/error", path,
+            osc_server->send( sender_addr, "/error", path,
                               ERR_GENERAL_ERROR,
                               "Some clients could not save" );
 
@@ -1633,7 +1641,7 @@ OSC_HANDLER( open )
     if ( ! err )
     {
         MESSAGE( "Loaded" );
-        osc_server->send( lo_message_get_source( msg ), "/reply", path,
+        osc_server->send( sender_addr, "/reply", path,
                           "Loaded." );
     }
     else
@@ -1656,7 +1664,7 @@ OSC_HANDLER( open )
         }
 
 
-        osc_server->send( lo_message_get_source( msg ), "/error", path,
+        osc_server->send( sender_addr, "/error", path,
                           err,
                           m );
     }
@@ -1682,20 +1690,23 @@ OSC_HANDLER( quit )
 
 OSC_HANDLER( abort )
 {
-  if ( pending_operation != COMMAND_NONE )
-    {
-            osc_server->send( lo_message_get_source( msg ), "/error", path,
-                              ERR_OPERATION_PENDING,
-                              "An operation pending." );
-            return 0;
-    }
+    lo_address sender_addr;
+    sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
 
-  pending_operation = COMMAND_CLOSE;
+    if ( pending_operation != COMMAND_NONE )
+        {
+                osc_server->send( sender_addr, "/error", path,
+                                ERR_OPERATION_PENDING,
+                                "An operation pending." );
+                return 0;
+        }
+
+    pending_operation = COMMAND_CLOSE;
 
 
     if ( ! session_path )
     {
-        osc_server->send( lo_message_get_source( msg ), "/error", path,
+        osc_server->send( sender_addr, "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "No session to abort." );
 
@@ -1706,7 +1717,7 @@ OSC_HANDLER( abort )
 
     close_session();
 
-    osc_server->send( lo_message_get_source( msg ), "/reply", path,
+    osc_server->send( sender_addr, "/reply", path,
                       "Aborted." );
 
     MESSAGE( "Done" );
@@ -1720,9 +1731,12 @@ done:
 
 OSC_HANDLER( close )
 {
+    lo_address sender_addr;
+    sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
+
     if ( pending_operation != COMMAND_NONE )
     {
-            osc_server->send( lo_message_get_source( msg ), "/error", path,
+            osc_server->send( sender_addr, "/error", path,
                               ERR_OPERATION_PENDING,
                               "An operation pending." );
             return 0;
@@ -1732,7 +1746,7 @@ OSC_HANDLER( close )
 
     if ( ! session_path )
     {
-        osc_server->send( lo_message_get_source( msg ), "/error", path,
+        osc_server->send( sender_addr, "/error", path,
                           ERR_NO_SESSION_OPEN,
                           "No session to close." );
 
@@ -1744,8 +1758,7 @@ OSC_HANDLER( close )
 
     close_session();
 
-    osc_server->send( lo_message_get_source( msg ), "/reply", path,
-                      "Closed." );
+    osc_server->send( sender_addr, "/reply", path, "Closed." );
 
     MESSAGE( "Done" );
 

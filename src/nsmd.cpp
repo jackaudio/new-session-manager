@@ -68,7 +68,7 @@ static int session_lock_fd = 0;
 static char *session_root;
 
 #define NSM_API_VERSION_MAJOR 1
-#define NSM_API_VERSION_MINOR 1
+#define NSM_API_VERSION_MINOR 2
 
 #define ERR_OK 0
 #define ERR_GENERAL_ERROR    -1
@@ -1589,9 +1589,11 @@ OSC_HANDLER( list )
 
     ftw( session_root, list_file, 20 );
 
-    osc_server->send( lo_message_get_source( msg ), path,
-                      ERR_OK,
-                      "Done." );
+    // osc_server->send( lo_message_get_source( msg ), path,  ERR_OK, "Done." );
+
+    // As marker that all sessions were sent reply with an empty string, which is impossible to conflict with a session name
+    osc_server->send( list_response_address, "/reply", "/nsm/server/list", "" );    
+                      
     return 0;
 }
 

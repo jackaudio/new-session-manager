@@ -1343,6 +1343,9 @@ load_session_file ( const char * path )
 
     if ( gui_is_active )
     {
+        //Send two parameters to signal that the session was loaded. First is the direct session name,
+        //second is the full filepath.
+        //See function announce_gui for a full description where /nsm/gui/session/name is also send from
         osc_server->send( gui_addr, "/nsm/gui/session/name", session_name, session_path + strlen( session_root ));
     }
 
@@ -1592,8 +1595,8 @@ OSC_HANDLER( list )
     // osc_server->send( lo_message_get_source( msg ), path,  ERR_OK, "Done." );
 
     // As marker that all sessions were sent reply with an empty string, which is impossible to conflict with a session name
-    osc_server->send( list_response_address, "/reply", "/nsm/server/list", "" );    
-                      
+    osc_server->send( list_response_address, "/reply", "/nsm/server/list", "" );
+
     return 0;
 }
 
@@ -2149,16 +2152,23 @@ OSC_HANDLER( client_hide_optional_gui )
 void
 announce_gui( const char *url, bool is_reply )
 {
+    // This is send for a new and empty nsmd as well as already running, headless, ones.
+    // If a GUI connects to an existing server with a running session this will trigger a list of
+    // clients send to the new GUI.
+
     gui_addr = lo_address_new_from_url( url );
-    gui_is_active = true;
+    gui_is_active = true; //global state
 
     if ( is_reply )
+        // the default case. A GUI starts its own nsmd or connects to a running one
         osc_server->send( gui_addr, "/nsm/gui/gui_announce", "hi" );
     else
+        //The server was started directly and instructed to connect to a running GUI.
         osc_server->send( gui_addr, "/nsm/gui/server_announce", "hi" );
 
     osc_server->send( gui_addr, "/nsm/gui/session/root", session_root );
 
+    // Send a list of clients to the newly registered GUI in case there was already a session open
     for ( std::list<Client*>::iterator i = client.begin();
           i != client.end();
           ++i )
@@ -2167,9 +2177,12 @@ announce_gui( const char *url, bool is_reply )
 
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
-
     }
 
+    //Send two parameters. The first one is the short session name, which is the directory name.
+    //The second parameter is the full file path.
+    //If both are empty it signals that no session is currently open, which is the default state if
+    //a GUI started nsmd.
     osc_server->send( gui_addr, "/nsm/gui/session/name", session_name ? session_name : "", session_path ? session_path : "" );
 
     DMESSAGE( "Registered with GUI" );
@@ -2310,6 +2323,7 @@ int main(int argc, char *argv[])
 
     if ( gui_url )
     {
+        //The server was started directly and instructed to connect to a running GUI.
         announce_gui( gui_url, false );
     }
 

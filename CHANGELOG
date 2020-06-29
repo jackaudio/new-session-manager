@@ -1,7 +1,8 @@
 v1.4
 Fixed reply for listing sessions from a plain "Done." to proper reply path with empty string as terminal symbol  "/reply", "/nsm/server/list", ""  
     /nsm/server/list ""  raises NSM_API_VERSION_MINOR from 1 to 2 (1.1 -> 1.2)
-Fix operation reply to last treated client instead to reply to sender (houston/mathieu picot)
+Fix operation reply to last treated client instead to reply to sender (Picot, Mathieu  / houston)
+Optional-gui support to nsm.h, for other applications to include and use. (Meyer, Hermann / brummer ) 
 
 v1.3.2
 Rename new-session-manager executable to nsm-legacy-gui to prevent future confusion.

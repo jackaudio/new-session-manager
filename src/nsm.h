@@ -26,6 +26,9 @@
 /*                                                           */
 /* #include "nsm.h"                                          */
 /*                                                           */
+/* static nsm_client_t *nsm = 0;                             */
+/* static int wait_nsm = 1;                                  */
+/*                                                           */
 /* int                                                       */
 /* cb_nsm_open ( const char *name,                           */
 /*               const char *display_name,                   */
@@ -34,6 +37,7 @@
 /*               void *userdata )                            */
 /* {                                                         */
 /*         do_open_stuff();                                  */
+/*         wait_nsm = 0;                                     */
 /*         return ERR_OK;                                    */
 /* }                                                         */
 /*                                                           */
@@ -45,7 +49,30 @@
 /*     return ERR_OK;                                        */
 /* }                                                         */
 /*                                                           */
-/* static nsm_client_t *nsm = 0                              */
+/* void                                                      */
+/* cb_nsm_show ( void *userdata )                            */
+/* {                                                         */
+/*     do_show_ui();                                         */
+/*     nsm_send_is_shown ( nsm );                            */
+/* }                                                         */
+/*                                                           */
+/* void                                                      */
+/* cb_nsm_hide ( void *userdata )                            */
+/* {                                                         */
+/*     do_hide_ui();                                         */
+/*     nsm_send_is_hidden ( nsm );                           */
+/* }                                                         */
+/*                                                           */
+/* gboolean                                                  */
+/* poll_nsm()                                                */
+/* {                                                         */
+/*     if ( nsm )                                            */
+/*     {                                                     */
+/*         nsm_check_nowait( nsm );                          */
+/*         return true;                                      */
+/*     }                                                     */
+/*     return false;                                         */
+/* }                                                         */
 /*                                                           */
 /* int main( int argc, char **argv )                         */
 /* {                                                         */
@@ -57,10 +84,31 @@
 /*                                                           */
 /*         nsm_set_open_callback( nsm, cb_nsm_open, 0 );     */
 /*         nsm_set_save_callback( nsm, cb_nsm_save, 0 );     */
+/*         nsm_set_show_callback( nsm, cb_nsm_show, 0 );     */
+/*         nsm_set_hide_callback( nsm, cb_nsm_hide, 0 );     */
 /*                                                           */
 /*         if ( 0 == nsm_init( nsm, nsm_url ) )              */
 /*         {                                                 */
 /*             nsm_send_announce( nsm, "FOO", "", argv[0] ); */
+/*                                                           */
+/* ********************************************************* */
+/*        This will block for at most 100 sec and            */
+/*        waiting for the NSM server open callback.          */
+/*        DISCLAIMER: YOU MAY NOT NEED TO DO THAT.           */
+/* ********************************************************* */
+/*                                                           */
+/*             int timeout = 0;                              */
+/*             while ( wait_nsm )                            */
+/*             {                                             */
+/*                 nsm_check_wait( nsm, 500 );               */
+/*                 timeout += 1;                             */
+/*                 if ( timeout > 200 )                      */
+/*                     exit ( 1 );                           */
+/*             }                                             */
+/*                                                           */
+/* ********************************************************* */
+/*                                                           */
+/*             do_timeout_add( 200, poll_nsm, Null );        */
 /*         }                                                 */
 /*         else                                              */
 /*         {                                                 */
@@ -87,6 +135,8 @@
 typedef void * nsm_client_t;
 typedef int (nsm_open_callback)( const char *name, const char *display_name, const char *client_id, char **out_msg, void *userdata );
 typedef int (nsm_save_callback)( char **out_msg, void *userdata );
+typedef void (nsm_show_gui_callback)( void *userdata );
+typedef void (nsm_hide_gui_callback)( void *userdata );
 typedef void (nsm_active_callback)( int b, void *userdata );
 typedef void (nsm_session_is_loaded_callback)( void *userdata );
 typedef int (nsm_broadcast_callback)( const char *, lo_message m, void *userdata );
@@ -113,6 +163,12 @@ struct _nsm_client_t
 
     nsm_save_callback *save;
     void *save_userdata;
+
+    nsm_show_gui_callback *show;
+    void *show_userdata;
+
+    nsm_hide_gui_callback *hide;
+    void *hide_userdata;
 
     nsm_active_callback *active;
     void *active_userdata;
@@ -169,6 +225,8 @@ nsm_new ( void )
 
     nsm->open = 0;
     nsm->save = 0;
+    nsm->show = 0;
+    nsm->hide = 0;
     nsm->active = 0;
     nsm->session_is_loaded = 0;
     nsm->broadcast = 0;
@@ -194,6 +252,22 @@ nsm_send_is_clean ( nsm_client_t *nsm )
 {
     if ( _NSM()->nsm_is_active )
         lo_send_from( _NSM()->nsm_addr, _NSM()->_server, LO_TT_IMMEDIATE, "/nsm/client/is_clean", "" );
+}
+
+NSM_EXPORT
+void
+nsm_send_is_shown ( nsm_client_t *nsm )
+{
+    if ( _NSM()->nsm_is_active )
+        lo_send_from( _NSM()->nsm_addr, _NSM()->_server, LO_TT_IMMEDIATE, "/nsm/client/gui_is_shown", "" );
+}
+
+NSM_EXPORT
+void
+nsm_send_is_hidden ( nsm_client_t *nsm )
+{
+    if ( _NSM()->nsm_is_active )
+        lo_send_from( _NSM()->nsm_addr, _NSM()->_server, LO_TT_IMMEDIATE, "/nsm/client/gui_is_hidden", "" );
 }
 
 NSM_EXPORT
@@ -311,6 +385,22 @@ nsm_set_save_callback( nsm_client_t *nsm, nsm_save_callback *save_callback, void
     _NSM()->save = save_callback;
     _NSM()->save_userdata = userdata;
 
+}
+
+NSM_EXPORT
+void
+nsm_set_show_callback( nsm_client_t *nsm, nsm_show_gui_callback *show_callback, void *userdata )
+{
+    _NSM()->show = show_callback;
+    _NSM()->show_userdata = userdata;
+}
+
+NSM_EXPORT
+void
+nsm_set_hide_callback( nsm_client_t *nsm, nsm_hide_gui_callback *hide_callback, void *userdata )
+{
+    _NSM()->hide = hide_callback;
+    _NSM()->hide_userdata = userdata;
 }
 
 NSM_EXPORT
@@ -470,6 +560,32 @@ NSM_EXPORT int _nsm_osc_session_is_loaded ( const char *path, const char *types,
     return 0;
 }
 
+NSM_EXPORT int _nsm_osc_show ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+{
+
+    struct _nsm_client_t *nsm = (struct _nsm_client_t*)user_data;
+
+    if ( ! nsm->show )
+        return 0;
+
+    nsm->show( nsm->show_userdata );
+
+    return 0;
+}
+
+NSM_EXPORT int _nsm_osc_hide ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
+{
+
+    struct _nsm_client_t *nsm = (struct _nsm_client_t*)user_data;
+
+    if ( ! nsm->hide )
+        return 0;
+
+    nsm->hide( nsm->hide_userdata );
+
+    return 0;
+}
+
 NSM_EXPORT int _nsm_osc_broadcast ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
     (void) types;
@@ -506,6 +622,8 @@ nsm_init ( nsm_client_t *nsm, const char *nsm_url )
     lo_server_add_method( _NSM()->_server, "/nsm/client/open", "sss", _nsm_osc_open, _NSM() );
     lo_server_add_method( _NSM()->_server, "/nsm/client/save", "", _nsm_osc_save, _NSM() );
     lo_server_add_method( _NSM()->_server, "/nsm/client/session_is_loaded", "", _nsm_osc_session_is_loaded, _NSM() );
+    lo_server_add_method( _NSM()->_server, "/nsm/client/show_optional_gui", "", _nsm_osc_show, _NSM() );
+    lo_server_add_method( _NSM()->_server, "/nsm/client/hide_optional_gui", "", _nsm_osc_hide, _NSM() );
     lo_server_add_method( _NSM()->_server, NULL, NULL, _nsm_osc_broadcast, _NSM() );
 
     return 0;
@@ -533,6 +651,8 @@ nsm_init_thread ( nsm_client_t *nsm, const char *nsm_url )
     lo_server_thread_add_method( _NSM()->_st, "/nsm/client/open", "sss", _nsm_osc_open, _NSM() );
     lo_server_thread_add_method( _NSM()->_st, "/nsm/client/save", "", _nsm_osc_save, _NSM() );
     lo_server_thread_add_method( _NSM()->_st, "/nsm/client/session_is_loaded", "", _nsm_osc_session_is_loaded, _NSM() );
+    lo_server_thread_add_method( _NSM()->_st, "/nsm/client/show_optional_gui", "", _nsm_osc_show, _NSM() );
+    lo_server_thread_add_method( _NSM()->_st, "/nsm/client/hide_optional_gui", "", _nsm_osc_hide, _NSM() );
     lo_server_thread_add_method( _NSM()->_st, NULL, NULL, _nsm_osc_broadcast, _NSM() );
 
     return 0;

@@ -26,7 +26,8 @@
 /*                                                           */
 /* #include "nsm.h"                                          */
 /*                                                           */
-/* static nsm_client_t *nsm = 0                              */
+/* static nsm_client_t *nsm = 0;                             */
+/* static int wait_nsm = 1;                                  */
 /*                                                           */
 /* int                                                       */
 /* cb_nsm_open ( const char *name,                           */
@@ -36,6 +37,7 @@
 /*               void *userdata )                            */
 /* {                                                         */
 /*         do_open_stuff();                                  */
+/*         wait_nsm = 0;                                     */
 /*         return ERR_OK;                                    */
 /* }                                                         */
 /*                                                           */
@@ -64,9 +66,9 @@
 /* gboolean                                                  */
 /* poll_nsm()                                                */
 /* {                                                         */
-/*     if (nsm)                                              */
+/*     if ( nsm )                                            */
 /*     {                                                     */
-/*         nsm_check_nowait(nsm);                            */
+/*         nsm_check_nowait( nsm );                          */
 /*         return true;                                      */
 /*     }                                                     */
 /*     return false;                                         */
@@ -88,8 +90,25 @@
 /*         if ( 0 == nsm_init( nsm, nsm_url ) )              */
 /*         {                                                 */
 /*             nsm_send_announce( nsm, "FOO", "", argv[0] ); */
-/*             nsm_check_wait(nsm, 200);                     */
-/*             do_timeout_add(200, poll_nsm, Null);          */
+/*                                                           */
+/* ********************************************************* */
+/*        This will block for at most 100 sec and            */
+/*        waiting for the NSM server open callback.          */
+/*        DISCLAIMER: YOU MAY NOT NEED TO DO THAT.           */
+/* ********************************************************* */
+/*                                                           */
+/*             int timeout = 0;                              */
+/*             while ( wait_nsm )                            */
+/*             {                                             */
+/*                 nsm_check_wait( nsm, 500 );               */
+/*                 timeout += 1;                             */
+/*                 if ( timeout > 200 )                      */
+/*                     exit ( 1 );                           */
+/*             }                                             */
+/*                                                           */
+/* ********************************************************* */
+/*                                                           */
+/*             do_timeout_add( 200, poll_nsm, Null );        */
 /*         }                                                 */
 /*         else                                              */
 /*         {                                                 */

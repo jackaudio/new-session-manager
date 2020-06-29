@@ -325,24 +325,29 @@ handle_client_process_death ( int pid )
 
     if ( c )
     {
+        //There is a difference if a client quit on its own, e.g. via a menu or window manager,
+        //or if the server send SIGTERM as quit signal. Both cases are equally valid.
+        //We only check the case to print a different log message
         bool dead_because_we_said = ( c->pending_command() == COMMAND_KILL ||
                                       c->pending_command() == COMMAND_QUIT );
 
         if ( dead_because_we_said )
         {
-            GUIMSG( "Client %s terminated because we told it to.", c->name );
+            GUIMSG( "Client %s terminated by server instruction.", c->name );
         }
         else
         {
-            GUIMSG( "Client %s died unexpectedly.", c->name );
+            GUIMSG( "Client %s terminated itself.", c->name );
         }
 
+
+        //Decide if the client terminated or if removed from the session
         if ( c->pending_command() == COMMAND_QUIT )
         {
             if ( gui_is_active )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
 
-            client.remove(c);
+            client.remove(c); //This will not remove the clients save data
             delete c;
         }
         else

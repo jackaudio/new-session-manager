@@ -374,7 +374,7 @@ public:
             
             { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 75, H * 0.50, NULL );
                 o->box( FL_FLAT_BOX );
-                o->color( FL_BLACK );
+                o->color( FL_DARK1, FL_LIGHT1 );
                 o->copy_label( "launch" );
                 o->labelsize( 12 );
                 o->minimum( 0.0f );
@@ -881,43 +881,45 @@ public:
             { Fl_Pack *o = buttons_pack = new Fl_Pack( X, Y, W, 30 );
                 o->type( Fl_Pack::HORIZONTAL );
                 o->box( FL_NO_BOX );
-                { Fl_Button *o = quit_button = new Fl_Button( 0, 0, 80, 50, "&Quit" );
+                { Fl_Button *o = quit_button = new Fl_Button( 0, 0, 50, 50, "&Quit" );
                     o->shortcut( FL_CTRL | 'q' );
                     o->box( FL_UP_BOX );
                     o->callback( cb_handle, (void*)this );
                 }
-                { Fl_Button *o = refresh_button = new Fl_Button( 0, 0, 80, 50, "&Refresh" );
+                { Fl_Button *o = refresh_button = new Fl_Button( 0, 0, 70, 50, "&Refresh" );
                     o->shortcut( FL_CTRL | 'r' );
                     o->box( FL_UP_BOX );
                     o->callback( cb_handle, (void*)this );
                 }
-                { Fl_Button *o = open_button = new Fl_Button( 0, 0, 80, 50, "&Open" );
-                    o->shortcut( FL_CTRL | 'o' );
-                    o->box( FL_UP_BOX );
-                    o->callback( cb_handle, (void*)this );
-                }
-                { Fl_Button *o = close_button = new Fl_Button( 0, 0, 80, 50, "Close" );
-                    o->shortcut( FL_CTRL | 'q' );
-                    o->box( FL_UP_BOX );
-                    o->callback( cb_handle, (void*)this );
-                }
-                { Fl_Button *o = abort_button = new Fl_Button( 0, 0, 80, 50, "Abort" );
-                    o->box( FL_UP_BOX );
-                    o->color( fl_color_average( FL_RED, fl_rgb_color(10,10,10), 0.5f ) );
-                    o->callback( cb_handle, (void*)this );
-                }
-                { Fl_Button *o = save_button = new Fl_Button( 0, 0, 80, 50, "&Save" );
-                    o->shortcut( FL_CTRL | 's' );
-                    o->box( FL_UP_BOX );
-                    o->callback( cb_handle, (void*)this );
-                }
-                { Fl_Button *o = new_button = new Fl_Button( 0, 0, 80, 50, "&New" );
+                { Fl_Button *o = new_button = new Fl_Button( 0, 0, 100, 50, "&New Session" );
                     o->shortcut( FL_CTRL | 'n' );
                     o->box( FL_UP_BOX );
                     o->callback( cb_handle, (void*)this );
                 }
-                { Fl_Button *o = duplicate_button = new Fl_Button( 0, 0, 100, 50, "Duplicate" );
+                { Fl_Button *o = save_button = new Fl_Button( 0, 0, 105, 50, "&Save" );
+                    o->shortcut( FL_CTRL | 's' );
                     o->box( FL_UP_BOX );
+                    o->callback( cb_handle, (void*)this );
+                }
+                { Fl_Button *o = close_button = new Fl_Button( 0, 0, 105, 50, "Save && Close" );
+                    o->shortcut( FL_CTRL | 'e' ); // is this a good key?
+                    o->box( FL_UP_BOX );
+                    o->callback( cb_handle, (void*)this );
+                }
+                { Fl_Button *o = duplicate_button = new Fl_Button( 0, 0, 105, 50, "Save && &Dupl." );
+                    o->shortcut( FL_CTRL | 'd' );
+                    o->box( FL_UP_BOX );
+                    o->callback( cb_handle, (void*)this );
+                }
+                { Fl_Button *o = open_button = new Fl_Button( 0, 0, 105, 50, "Save && &Open" );
+                    o->shortcut( FL_CTRL | 'o' );
+                    o->box( FL_UP_BOX );
+                    o->callback( cb_handle, (void*)this );
+                }
+                { Fl_Button *o = abort_button = new Fl_Button( 0, 0, 160, 50, "Close &without Saving" );
+                    o->shortcut( FL_CTRL | 'w' );
+                    o->box( FL_UP_BOX );
+                    o->color( fl_color_average( FL_RED, fl_rgb_color(10,10,10), 0.5f ) );
                     o->callback( cb_handle, (void*)this );
                 }
                

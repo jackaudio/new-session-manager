@@ -29,6 +29,7 @@ jackdep = dependency('jack', required: get_option('jackpatch')) #and not 'libjac
 
 cc = meson.get_compiler('c')
 fltkdep = cc.find_library('fltk', required: get_option('nsm-legacy-gui') or get_option('nsm-proxy'))
+fltkimagesdep = cc.find_library('fltk_images', required: get_option('nsm-legacy-gui'))
 fluid = find_program('fluid', required: get_option('nsm-proxy'))
 
 
@@ -90,7 +91,7 @@ if get_option('nsm-legacy-gui')
 
     executable('nsm-legacy-gui',
         sources: ['src/legacy-gui.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
-        dependencies: [fltkdep, liblodep, threaddep],
+        dependencies: [fltkimagesdep, fltkdep, liblodep, threaddep],
         install: true,
         )
 

@@ -1313,6 +1313,8 @@ cb_main ( Fl_Widget *, void * )
 int
 main (int argc, char **argv )
 {
+    fl_register_images();
+
     Fl::lock();
     
     Fl_Double_Window *main_window;

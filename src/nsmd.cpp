@@ -631,6 +631,7 @@ launch ( const char *executable, const char *client_id )
     int pid;
     if ( ! (pid = fork()) )
     {
+        //This is code of the child process. It will be executed after launch() has finished        
         GUIMSG( "Launching %s", executable );
 
         char *args[] = { strdup( executable ), NULL };
@@ -642,7 +643,7 @@ launch ( const char *executable, const char *client_id )
         sigset_t mask;
         sigemptyset( &mask );
         sigaddset( &mask, SIGCHLD );
-        sigprocmask(SIG_UNBLOCK, &mask, NULL );
+        sigprocmask(SIG_UNBLOCK, &mask, NULL );        
 
         if ( -1 == execvp( executable, args ) )
         {
@@ -655,10 +656,12 @@ launch ( const char *executable, const char *client_id )
     c->pending_command( COMMAND_START );
     c->pid = pid;
 
-    MESSAGE( "Process has pid: %i", pid );
+    MESSAGE( "Process %s has pid: %i", executable, pid );
 
     if ( gui_is_active )
     {
+        //At this point we do not know if launched program will start or fail
+        //And we do not know if it has nsm-support or not. This will be decided if it announces.
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "launch" );
     }
@@ -871,8 +874,8 @@ OSC_HANDLER( announce )
     c->addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
     c->name = strdup( client_name );
     c->active = true;
-
-    MESSAGE( "Process has pid: %i", pid );
+    
+    MESSAGE( "Process %s has pid: %i", c->name, pid );
 
     if ( ! expected_client )
         client.push_back( c );

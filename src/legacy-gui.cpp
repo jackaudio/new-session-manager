@@ -699,7 +699,7 @@ public:
 
                     const char *n = fl_input( "Enter executable name" );
                     
-                    if ( !n )
+                    if ( !n || !*n )
                         return;
                     
                     char *name = strdup( n );
@@ -722,7 +722,7 @@ public:
                 {
                     const char *n = fl_input( "Enter executable name" );
                     
-                    if ( !n )
+                    if ( !n || !*n )
                         return;
                     
                     char *name = strdup( n );

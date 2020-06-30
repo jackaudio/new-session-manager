@@ -560,7 +560,7 @@ public:
         {
             if ( w == abort_button )
             {
-                if ( 0 == fl_choice( "Are you sure you want to abort this session? Unsaved changes will be lost.", "Abort", "Cancel", NULL ) )
+                if ( 0 == fl_choice( "Are you sure you want to close this session? Unsaved changes will be lost.", "Close anyway", "Cancel", NULL ) )
                 {
                     MESSAGE( "Sending abort." );
 

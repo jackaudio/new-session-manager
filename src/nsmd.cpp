@@ -325,7 +325,7 @@ handle_client_process_death ( int pid )
 {
     Client *c = get_client_by_pid( (int)pid );
 
-    if ( c )
+    if ( c != NULL)
     {
         //There is a difference if a client quit on its own, e.g. via a menu or window manager,
         //or if the server send SIGTERM as quit signal. Both cases are equally valid.
@@ -387,16 +387,26 @@ void handle_sigchld ( )
         pid_t pid = waitpid(-1, &status, WNOHANG); //-1 meaning wait for any child process. pid_t is signed integer
 
         if (pid <= 0)
+        {
             break; // no child process has ended this loop. Check again.
+        }
+        else
+        {
+            //One child process has stopped. Find which and figure out the stop-conditions
+            Client *c;
+            c = get_client_by_pid( pid );
+            if ( c != NULL )
+            {
+                //The following will not trigger with normal crashes, e.g. segfaults or python tracebacks
+                if ( WIFEXITED( status ) ) // returns true if the child terminated normally
+                    if ( WEXITSTATUS(status) == 255 ) // as given by exit(-1) in launch()
+                        c->launch_error = true;
+            }
 
-        //One child process has stopped. Find which and figure out the stop-conditions
-        Client *c;
-        c = get_client_by_pid( pid );
-        if ( WIFEXITED( status ) ) // returns true if the child terminated normally
-            if ( WEXITSTATUS(status) == 255 ) // as given by exit(-1) in launch()
-                c->launch_error = true;
-
-        handle_client_process_death( pid );
+            // Call even if Client was already null. This will check itself again and was expected
+            // to be called for the majority of nsmds development
+            handle_client_process_death( pid );
+        }
     }
 }
 

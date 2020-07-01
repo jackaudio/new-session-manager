@@ -2317,6 +2317,7 @@ int main(int argc, char *argv[])
         { "osc-port", required_argument, 0, 'p' },
         { "gui-url", required_argument, 0, 'g' },
         { "help", no_argument, 0, 'h' },
+        { "version", no_argument, 0, 'v' },
         { "load-session", required_argument, 0, 'l'},
         { 0, 0, 0, 0 }
     };
@@ -2355,8 +2356,29 @@ int main(int argc, char *argv[])
                 DMESSAGE( "Loading existing session file %s", optarg);
                 load_session = optarg;
                 break;
+            case 'v':
+                printf( "%s 1.4\n", argv[0] );
+                exit(0);
+                break;
             case 'h':
-                printf( "Usage: %s [--osc-port portnum] [--session-root path]  [--load-session session-name]\n\n", argv[0] );
+                //Print usage message according to POSIX.1-2017
+                const char *usage =
+                "%s\n\n"
+                "Usage:\n"
+                "  %s\n"
+                "  %s --help\n"
+                "  %s --version\n"
+                "\n"
+                "Options:\n"
+                "  --help                Show this screen\n"
+                "  --version             Show version\n"
+                "  --osc-port portnum    OSC port number [Default: provided by system].\n"
+                "  --session-root path   Base path for sessions [Default: ~/NSM Sessions].\n"
+                "  --load-session name   Load existing session [Example: \"My Song\"].\n"
+                "  --gui-url url         Connect to running legacy-gui [Example: osc.udp://mycomputer.localdomain:38356/].\n"
+                "  --detach              Detach from console.\n"
+                "";
+                printf ( usage, argv[0], argv[0], argv[0], argv[0] );
                 exit(0);
                 break;
         }

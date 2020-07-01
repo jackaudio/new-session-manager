@@ -572,15 +572,15 @@ number_of_reponsive_clients ( void )
      * that this program will never announce (or rather nsm-proxy announces normally).
      */
 
-    int active = 0;
+    int responsive = 0;
     for ( std::list<Client*>::const_iterator i = client.begin(); i != client.end(); i++ )
     {
         //Optimisation: Clients that never launched (e.g. file not found) will be checked many times/seconds here. We skip them by counting them
         if ( (*i)->active || (*i)->launch_error )
-            active++;
+            responsive++;
     }
 
-    return active;
+    return responsive;
 }
 
 void

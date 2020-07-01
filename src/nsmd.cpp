@@ -399,7 +399,7 @@ void handle_sigchld ( )
             {
                 //The following will not trigger with normal crashes, e.g. segfaults or python tracebacks
                 if ( WIFEXITED( status ) ) // returns true if the child terminated normally
-                    if ( WEXITSTATUS(status) == 255 ) // as given by exit(-1) in launch()
+                    if ( WEXITSTATUS( status ) == 255 ) // as given by exit(-1) in launch()
                         c->launch_error = true;
             }
             // Call even if Client was already null. This will check itself again and was expected

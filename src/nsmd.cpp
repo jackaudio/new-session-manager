@@ -123,7 +123,7 @@ private:
     int _reply_errcode;
     char *_reply_message;
 
-    int _pending_command;                /*  */
+    int _pending_command;
     struct timeval _command_sent_time;
 
     bool _gui_visible;
@@ -137,13 +137,14 @@ public:
     char *executable_path;             /* path to client executable */
     int pid;                           /* PID of client process */
     float progress;                    /*  */
-    bool active;              /* client has registered via announce */
-//    bool stopped; /* the client quit, but not because we told it to--user still has to decide to remove it from the session */
-    char *client_id;                                            /* short part of client ID */
-    char *capabilities;                                         /* client capabilities... will be null for dumb clients */
-    bool dirty;                                                 /* flag for client self-reported dirtiness */
+    bool active;                       /* NSM capable: client has registered via announce */
+    //bool stopped;                    /* the client quit, but not because we told it to--user still has to decide to remove it from the session */
+    char *client_id;                   /* short part of client ID */
+    char *capabilities;                /* client capabilities... will be null for dumb clients */
+    bool dirty;                        /* flag for client self-reported dirtiness */
     bool pre_existing;
     const char *status;
+    int launch_error;                   /* APIv1.2, leads to status for executable not found, permission denied etc. */
 
     const char *label ( void ) const { return _label; }
     void label ( const char *l )
@@ -250,6 +251,7 @@ public:
             name = 0;
             executable_path = 0;
             pre_existing = false;
+            launch_error = 0;
         }
 
     ~Client ( )
@@ -353,7 +355,20 @@ handle_client_process_death ( int pid )
         else
         {
             if ( gui_is_active )
+            {
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
+                if ( c->launch_error )
+                {
+                    /* NSM API treats the stopped status as switch. You can only remove stopped.
+                     * Furthermore the GUI will change its client-buttons.
+                     * In consequence we cannot add an arbitrary "launch-error" status.
+                     * Compatible compromise is to use the label field to relay info the user,
+                     * which was the goal. There is nothing we can do about a failed launch anyway.
+                     */
+                    GUIMSG("Client %s had a launch error.", c->name);
+                    osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, "launch error!" ); //do not set the client objects label.
+                }
+            }
         }
 
         c->pending_command( COMMAND_NONE );
@@ -365,15 +380,32 @@ handle_client_process_death ( int pid )
 
 void handle_sigchld ( )
 {
+    // compare waitpid(2)
     for ( ;; )
     {
-        int status;
-        pid_t pid = waitpid(-1, &status, WNOHANG);
+        int status = 1; // make it not NULL to enable information storage in status
+        pid_t pid = waitpid(-1, &status, WNOHANG); //-1 meaning wait for any child process. pid_t is signed integer
 
         if (pid <= 0)
-            break;
-
-        handle_client_process_death( pid );
+        {
+            break; // no child process has ended this loop. Check again.
+        }
+        else
+        {
+            //One child process has stopped. Find which and figure out the stop-conditions
+            Client *c;
+            c = get_client_by_pid( pid );
+            if ( c )
+            {
+                //The following will not trigger with normal crashes, e.g. segfaults or python tracebacks
+                if ( WIFEXITED( status ) ) // returns true if the child terminated normally
+                    if ( WEXITSTATUS( status ) == 255 ) // as given by exit(-1) in launch()
+                        c->launch_error = true;
+            }
+            // Call even if Client was already null. This will check itself again and was expected
+            // to be called for the majority of nsmds development
+            handle_client_process_death( pid );
+        }
     }
 }
 
@@ -631,6 +663,7 @@ launch ( const char *executable, const char *client_id )
     int pid;
     if ( ! (pid = fork()) )
     {
+        //This is code of the child process. It will be executed after launch() has finished
         GUIMSG( "Launching %s", executable );
 
         char *args[] = { strdup( executable ), NULL };
@@ -646,20 +679,31 @@ launch ( const char *executable, const char *client_id )
 
         if ( -1 == execvp( executable, args ) )
         {
-            WARNING( "Error starting process: %s", strerror( errno ) );
+            /* The program was not started. Causes: not installed on the current system, and the
+             * session was transferred from another system, or permission denied (no executable flag)
+             * Since we are running in a forked child process Client c does exist, but points to
+             * a memory copy, not the real client. So we can't set any error code or status in the
+             * client object. Instead we check the exit return code in handle_sigchld() and set the
+            *  bool client->launch_error to true.
+            */
 
-            exit(-1);
+            WARNING( "Error starting process %s: %s", executable, strerror( errno ) );
+            exit(-1); //-1 later parsed as 255
         }
     }
 
+    //This is code of the parent process. It is executed right at this point, before the child.
     c->pending_command( COMMAND_START );
     c->pid = pid;
 
-    MESSAGE( "Process has pid: %i", pid );
+    MESSAGE( "Process %s has pid: %i", executable, pid );
 
     if ( gui_is_active )
     {
+        //At this point we do not know if launched program will start or fail
+        //And we do not know if it has nsm-support or not. This will be decided if it announces.
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
+        osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, "" ); //clear label from potential previous-and-fixed launch error
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "launch" );
     }
 
@@ -872,7 +916,7 @@ OSC_HANDLER( announce )
     c->name = strdup( client_name );
     c->active = true;
 
-    MESSAGE( "Process has pid: %i", pid );
+    MESSAGE( "Process %s has pid: %i", c->name, pid );
 
     if ( ! expected_client )
         client.push_back( c );

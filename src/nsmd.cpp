@@ -561,12 +561,22 @@ replies_still_pending ( void )
 }
 
 int
-number_of_active_clients ( void )
+number_of_reponsive_clients ( void )
 {
+    /* This was renamed from number_of_active_clients in version 1.4 to reflect
+     * that not only active==true clients are in a state where waiting has ended, but also clients
+     * that never started. It is used in wait_for_announce only, which added a 5000ms delay to startup
+     *
+     * We are sadly unable to distinguish between a client that has a slow announce and a client
+     * without NSM-support. However, this is mitgated by nsm-proxy which is a reliable indicator
+     * that this program will never announce (or rather nsm-proxy announces normally).
+     */
+
     int active = 0;
     for ( std::list<Client*>::const_iterator i = client.begin(); i != client.end(); i++ )
     {
-        if ( (*i)->active )
+        //Optimisation: Clients that never launched (e.g. file not found) will be checked many times/seconds here. We skip them by counting them
+        if ( (*i)->active || (*i)->launch_error )
             active++;
     }
 
@@ -588,13 +598,13 @@ wait_for_announce ( void )
 
         wait(100);
 
-        active = number_of_active_clients();
+        active = number_of_reponsive_clients();
 
         if ( client.size() == active )
             break;
     }
 
-    GUIMSG( "Done. %lu out of %lu clients announced within the initialization grace period",
+    GUIMSG( "Done. %lu out of %lu clients announced (or failed to launch) within the initialization grace period",
             active, (long unsigned)client.size() );
 }
 

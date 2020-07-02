@@ -144,7 +144,8 @@ public:
     bool dirty;                        /* flag for client self-reported dirtiness */
     bool pre_existing;
     const char *status;
-    int launch_error;                   /* APIv1.2, leads to status for executable not found, permission denied etc. */
+    int launch_error;                   /* v1.4, leads to status for executable not found, permission denied etc. */
+    char *name_with_id;                  /* v1.4, client.nABC */
 
     const char *label ( void ) const { return _label; }
     void label ( const char *l )
@@ -235,14 +236,6 @@ public:
                 strstr( capabilities, capability );
         }
 
-    const char * name_with_id ( void ) const
-        {
-            char *full_client_id;
-            asprintf( &full_client_id, "%s.%s", name, client_id );
-            return full_client_id;
-        }
-
-
     Client ( )
         {
             _label = 0;
@@ -261,6 +254,7 @@ public:
             launch_error = 0;
             dirty = NULL;
             status = "";
+            name_with_id = 0;
 
         }
 
@@ -345,11 +339,11 @@ handle_client_process_death ( int pid )
 
         if ( dead_because_we_said )
         {
-            GUIMSG( "Client %s terminated by server instruction.", c->name_with_id() );
+            GUIMSG( "Client %s terminated by server instruction.", c->name_with_id );
         }
         else
         {
-            GUIMSG( "Client %s terminated itself.", c->name_with_id() );
+            GUIMSG( "Client %s terminated itself.", c->name_with_id );
         }
 
 
@@ -375,7 +369,7 @@ handle_client_process_death ( int pid )
                      * Compatible compromise is to use the label field to relay info the user,
                      * which was the goal. There is nothing we can do about a failed launch anyway.
                      */
-                    GUIMSG("Client %s had a launch error.", c->name_with_id());
+                    GUIMSG("Client %s had a launch error.", c->name_with_id);
                     osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, "launch error!" ); //do not set the client objects label.
                 }
             }
@@ -690,6 +684,8 @@ launch ( const char *executable, const char *client_id )
         else
             c->client_id = generate_client_id();
 
+        asprintf( &c->name_with_id, "%s.%s", c->name, c->client_id );
+
         client.push_back( c );
     }
 
@@ -750,7 +746,7 @@ command_client_to_save ( Client *c )
 {
     if ( c->active )
     {
-        MESSAGE( "Telling %s to save", c->name_with_id() );
+        MESSAGE( "Telling %s to save", c->name_with_id );
         osc_server->send( c->addr, "/nsm/client/save" );
 
         c->pending_command( COMMAND_SAVE );
@@ -774,7 +770,7 @@ void command_client_to_switch ( Client *c, const char *new_client_id )
 
     char *client_project_path = get_client_project_path( session_path, c );
 
-    MESSAGE( "Commanding %s to switch \"%s\"", c->name_with_id(), client_project_path );
+    MESSAGE( "Commanding %s to switch \"%s\"", c->name_with_id, client_project_path );
 
     char *full_client_id;
     asprintf( &full_client_id, "%s.%s", c->name, c->client_id );
@@ -935,7 +931,7 @@ OSC_HANDLER( announce )
 
     if ( major > NSM_API_VERSION_MAJOR )
     {
-        MESSAGE( "Client %s is using incompatible and more recent API version %i.%i", c->name_with_id(), major, minor );
+        MESSAGE( "Client %s is using incompatible and more recent API version %i.%i", c->name_with_id, major, minor );
 
         osc_server->send( lo_message_get_source( msg ), "/error",
                           path,
@@ -951,7 +947,10 @@ OSC_HANDLER( announce )
     c->name = strdup( client_name );
     c->active = true;
 
-    MESSAGE( "Process %s has pid: %i", c->name_with_id(), pid );
+    asprintf( &c->name_with_id, "%s.%s", c->name, c->client_id );
+
+
+    MESSAGE( "Process %s has pid: %i", c->name_with_id, pid );
 
     if ( ! expected_client )
         client.push_back( c );
@@ -1040,7 +1039,7 @@ dumb_clients_are_alive ( )
     {
         if ( (*i)->is_dumb_client() && (*i)->pid > 0 )
              {
-                MESSAGE( "Waiting for %s", (*i)->name_with_id() ); //This replaced the Loop 1, Loop 2 ... 60 message from wait_for_dumb_clients_to_die where you couldn't see which client actually was hanging
+                MESSAGE( "Waiting for %s", (*i)->name_with_id ); //This replaced the Loop 1, Loop 2 ... 60 message from wait_for_dumb_clients_to_die where you couldn't see which client actually was hanging
                 return true;
               }
     }
@@ -1090,7 +1089,7 @@ killed_clients_are_alive ( )
                (*i)->pending_command() == COMMAND_KILL ) &&
              (*i)->pid > 0 )
              {
-                MESSAGE( "Waiting for %s", (*i)->name_with_id() ); //This replaced the Loop 1, Loop 2 ... 60 message from wait_for_killed_clients_to_die where you couldn't see which client actually was hanging
+                MESSAGE( "Waiting for %s", (*i)->name_with_id ); //This replaced the Loop 1, Loop 2 ... 60 message from wait_for_killed_clients_to_die where you couldn't see which client actually was hanging
                 return true;
               }
     }
@@ -1159,7 +1158,7 @@ command_all_clients_to_save ( )
 void
 command_client_to_stop ( Client *c )
 {
-    GUIMSG( "Stopping client %s", c->name_with_id() );
+    GUIMSG( "Stopping client %s", c->name_with_id );
 
     if ( c->pid > 0 )
     {
@@ -1175,7 +1174,7 @@ command_client_to_stop ( Client *c )
 void
 command_client_to_quit ( Client *c )
 {
-    MESSAGE( "Commanding %s to quit", c->name_with_id() );
+    MESSAGE( "Commanding %s to quit", c->name_with_id );
 
     if ( c->active )
     {
@@ -1253,7 +1252,7 @@ tell_client_session_is_loaded( Client *c )
     if ( c->active )
 //!c->is_dumb_client() )
     {
-        MESSAGE( "Telling client %s that session is loaded.", c->name_with_id() );
+        MESSAGE( "Telling client %s that session is loaded.", c->name_with_id );
         osc_server->send( c->addr, "/nsm/client/session_is_loaded" );
     }
 }
@@ -1318,6 +1317,8 @@ load_session_file ( const char * path )
             c->name = client_name;
             c->executable_path = client_executable;
             c->client_id =  client_id;
+
+            asprintf( &c->name_with_id, "%s.%s", c->name, c->client_id );
 
             new_clients.push_back( c );
         }
@@ -2074,7 +2075,7 @@ OSC_HANDLER( error )
 
     c->set_reply( err_code, message );
 
-    MESSAGE( "Client \"%s\" replied with error: %s (%i) in %fms", c->name_with_id(), message, err_code, c->milliseconds_since_last_command() );
+    MESSAGE( "Client \"%s\" replied with error: %s (%i) in %fms", c->name_with_id, message, err_code, c->milliseconds_since_last_command() );
     c->pending_command( COMMAND_NONE );
 
     if ( gui_is_active )
@@ -2095,7 +2096,7 @@ OSC_HANDLER( reply )
     {
         c->set_reply( ERR_OK, message );
 
-        MESSAGE( "Client \"%s\" replied with: %s in %fms", c->name_with_id(), message, c->milliseconds_since_last_command() );
+        MESSAGE( "Client \"%s\" replied with: %s in %fms", c->name_with_id, message, c->milliseconds_since_last_command() );
 
         c->pending_command( COMMAND_NONE );
 

@@ -1,4 +1,5 @@
 v1.4
+ClientId generation now prevent collision with existing IDs.
 nsmd command line option --load-session to directly load one (Berkelder, Rik)
 Better detection of clients that failed to launch leads to faster session startup (by 5 seconds)
 Users get informed by label if an executable is not present on the system or permission denied

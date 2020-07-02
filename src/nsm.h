@@ -385,9 +385,11 @@ nsm_free ( nsm_client_t *nsm )
     else
         lo_server_free( _NSM()->_server );
 
-    free(_NSM()->nsm_client_id);
-    free(_NSM()->_session_manager_name);
-    free(_NSM()->_session_manager_features);
+    lo_address_free( _NSM()->nsm_addr );
+
+    free( _NSM()->nsm_client_id );
+    free( _NSM()->_session_manager_name );
+    free( _NSM()->_session_manager_features );
 
     free( _NSM() );
 }

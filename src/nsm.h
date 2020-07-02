@@ -19,105 +19,118 @@
 /*************************************************************************/
 
 
-/*************************************************************/
-/* A simple, callback based C API for NSM clients.           */
-/*                                                           */
-/* Simplified Example:                                       */
-/*                                                           */
-/* #include "nsm.h"                                          */
-/*                                                           */
-/* static nsm_client_t *nsm = 0;                             */
-/* static int wait_nsm = 1;                                  */
-/*                                                           */
-/* int                                                       */
-/* cb_nsm_open ( const char *name,                           */
-/*               const char *display_name,                   */
-/*               const char *client_id,                      */
-/*               char **out_msg,                             */
-/*               void *userdata )                            */
-/* {                                                         */
-/*         do_open_stuff();                                  */
-/*         wait_nsm = 0;                                     */
-/*         return ERR_OK;                                    */
-/* }                                                         */
-/*                                                           */
-/* int                                                       */
-/* cb_nsm_save ( char **out_msg,                             */
-/*               void *userdata )                            */
-/* {                                                         */
-/*     do_save_stuff();                                      */
-/*     return ERR_OK;                                        */
-/* }                                                         */
-/*                                                           */
-/* void                                                      */
-/* cb_nsm_show ( void *userdata )                            */
-/* {                                                         */
-/*     do_show_ui();                                         */
-/*     nsm_send_is_shown ( nsm );                            */
-/* }                                                         */
-/*                                                           */
-/* void                                                      */
-/* cb_nsm_hide ( void *userdata )                            */
-/* {                                                         */
-/*     do_hide_ui();                                         */
-/*     nsm_send_is_hidden ( nsm );                           */
-/* }                                                         */
-/*                                                           */
-/* gboolean                                                  */
-/* poll_nsm()                                                */
-/* {                                                         */
-/*     if ( nsm )                                            */
-/*     {                                                     */
-/*         nsm_check_nowait( nsm );                          */
-/*         return true;                                      */
-/*     }                                                     */
-/*     return false;                                         */
-/* }                                                         */
-/*                                                           */
-/* int main( int argc, char **argv )                         */
-/* {                                                         */
-/*     const char *nsm_url = getenv( "NSM_URL" );            */
-/*                                                           */
-/*     if ( nsm_url )                                        */
-/*     {                                                     */
-/*         nsm = nsm_new();                                  */
-/*                                                           */
-/*         nsm_set_open_callback( nsm, cb_nsm_open, 0 );     */
-/*         nsm_set_save_callback( nsm, cb_nsm_save, 0 );     */
-/*         nsm_set_show_callback( nsm, cb_nsm_show, 0 );     */
-/*         nsm_set_hide_callback( nsm, cb_nsm_hide, 0 );     */
-/*                                                           */
-/*         if ( 0 == nsm_init( nsm, nsm_url ) )              */
-/*         {                                                 */
-/*             nsm_send_announce( nsm, "FOO", "", argv[0] ); */
-/*                                                           */
-/* ********************************************************* */
-/*        This will block for at most 100 sec and            */
-/*        waiting for the NSM server open callback.          */
-/*        DISCLAIMER: YOU MAY NOT NEED TO DO THAT.           */
-/* ********************************************************* */
-/*                                                           */
-/*             int timeout = 0;                              */
-/*             while ( wait_nsm )                            */
-/*             {                                             */
-/*                 nsm_check_wait( nsm, 500 );               */
-/*                 timeout += 1;                             */
-/*                 if ( timeout > 200 )                      */
-/*                     exit ( 1 );                           */
-/*             }                                             */
-/*                                                           */
-/* ********************************************************* */
-/*                                                           */
-/*             do_timeout_add( 200, poll_nsm, Null );        */
-/*         }                                                 */
-/*         else                                              */
-/*         {                                                 */
-/*             nsm_free( nsm );                              */
-/*             nsm = 0;                                      */
-/*         }                                                 */
-/*     }                                                     */
-/* }                                                         */
-/*************************************************************/
+/*************************************************************************/
+/* A simple, callback based C API for NSM clients.                        */
+/*                                                                        */
+/* Simplified Example:                                                    */
+/*                                                                        */
+/* #include "nsm.h"                                                       */
+/*                                                                        */
+/* static nsm_client_t *nsm = 0;                                          */
+/* static int wait_nsm = 1;                                               */
+/*                                                                        */
+/* int                                                                    */
+/* cb_nsm_open ( const char *name,                                        */
+/*               const char *display_name,                                */
+/*               const char *client_id,                                   */
+/*               char **out_msg,                                          */
+/*               void *userdata )                                         */
+/* {                                                                      */
+/*         do_open_stuff();                                               */
+/*         wait_nsm = 0;                                                  */
+/*         return ERR_OK;                                                 */
+/* }                                                                      */
+/*                                                                        */
+/* int                                                                    */
+/* cb_nsm_save ( char **out_msg,                                          */
+/*               void *userdata )                                         */
+/* {                                                                      */
+/*     do_save_stuff();                                                   */
+/*     return ERR_OK;                                                     */
+/* }                                                                      */
+/*                                                                        */
+/* void                                                                   */
+/* cb_nsm_show ( void *userdata )                                         */
+/* {                                                                      */
+/*     do_show_ui();                                                      */
+/*     nsm_send_is_shown ( nsm );                                         */
+/* }                                                                      */
+/*                                                                        */
+/* void                                                                   */
+/* cb_nsm_hide ( void *userdata )                                         */
+/* {                                                                      */
+/*     do_hide_ui();                                                      */
+/*     nsm_send_is_hidden ( nsm );                                        */
+/* }                                                                      */
+/*                                                                        */
+/* gboolean                                                               */
+/* poll_nsm()                                                             */
+/* {                                                                      */
+/*     if ( nsm )                                                         */
+/*     {                                                                  */
+/*         nsm_check_nowait( nsm );                                       */
+/*         return true;                                                   */
+/*     }                                                                  */
+/*     return false;                                                      */
+/* }                                                                      */
+/*                                                                        */
+/* int main( int argc, char **argv )                                      */
+/* {                                                                      */
+/*     const char *nsm_url = getenv( "NSM_URL" );                         */
+/*                                                                        */
+/*     if ( nsm_url )                                                     */
+/*     {                                                                  */
+/*         nsm = nsm_new();                                               */
+/*                                                                        */
+/*         nsm_set_open_callback( nsm, cb_nsm_open, 0 );                  */
+/*         nsm_set_save_callback( nsm, cb_nsm_save, 0 );                  */
+/*                                                                        */
+/*         if ( 0 == nsm_init( nsm, nsm_url ) )                           */
+/*         {                                                              */
+/*             nsm_send_announce( nsm, "FOO", ":optional-gui:", argv[0] );*/
+/*                                                                        */
+/* ********************************************************************** */
+/*        This will block for at most 100 sec and                         */
+/*        waiting for the NSM server open callback.                       */
+/*        DISCLAIMER: YOU MAY NOT NEED TO DO THAT.                        */
+/* ********************************************************************** */
+/*                                                                        */
+/*             int timeout = 0;                                           */
+/*             while ( wait_nsm )                                         */
+/*             {                                                          */
+/*                 nsm_check_wait( nsm, 500 );                            */
+/*                 timeout += 1;                                          */
+/*                 if ( timeout > 200 )                                   */
+/*                     exit ( 1 );                                        */
+/*             }                                                          */
+/*                                                                        */
+/* ********************************************************************** */
+/*        This will check if the server support optional-gui              */
+/*        and connect the callbacks when support is found.                */
+/*        If you don't use the above blocking block                       */
+/*        this could be done in cb_nsm_open() as well.                    */
+/*        DISCLAIMER: YOU MAY NOT NEED TO DO THAT.                        */
+/* ********************************************************************** */
+/*                                                                        */
+/*             if ( strstr( nsm_get_session_manager_features ( nsm ),     */
+/*                  ":optional-gui:" ) )                                  */
+/*             {                                                          */
+/*                 nsm_set_show_callback( nsm, cb_nsm_show, 0 );          */
+/*                 nsm_set_hide_callback( nsm, cb_nsm_hide, 0 );          */
+/*             }                                                          */
+/*                                                                        */
+/* ********************************************************************** */
+/*                                                                        */
+/*             do_timeout_add( 200, poll_nsm, Null );                     */
+/*         }                                                              */
+/*         else                                                           */
+/*         {                                                              */
+/*             nsm_free( nsm );                                           */
+/*             nsm = 0;                                                   */
+/*         }                                                              */
+/*     }                                                                  */
+/* }                                                                      */
+/**************************************************************************/
 
 #ifndef _NSM_H
 #define _NSM_H
@@ -157,6 +170,7 @@ struct _nsm_client_t
     int nsm_is_active;
     char *nsm_client_id;
     char *_session_manager_name;
+    char *_session_manager_features;
 
     nsm_open_callback *open;
     void *open_userdata;
@@ -208,6 +222,13 @@ nsm_get_session_manager_name ( nsm_client_t *nsm )
 }
 
 NSM_EXPORT
+const char *
+nsm_get_session_manager_features ( nsm_client_t *nsm )
+{
+    return _NSM()->_session_manager_features;
+}
+
+NSM_EXPORT
 nsm_client_t *
 nsm_new ( void )
 {
@@ -222,6 +243,7 @@ nsm_new ( void )
     nsm->_st = 0;
     nsm->nsm_addr = 0;
     nsm->_session_manager_name = 0;
+    nsm->_session_manager_features = 0;
 
     nsm->open = 0;
     nsm->save = 0;
@@ -362,6 +384,10 @@ nsm_free ( nsm_client_t *nsm )
         lo_server_thread_free( _NSM()->_st );
     else
         lo_server_free( _NSM()->_server );
+
+    free(_NSM()->nsm_client_id);
+    free(_NSM()->_session_manager_name);
+    free(_NSM()->_session_manager_features);
 
     free( _NSM() );
 }
@@ -512,6 +538,7 @@ NSM_EXPORT int _nsm_osc_announce_reply ( const char *path, const char *types, lo
 
     nsm->nsm_is_active = 1;
     nsm->_session_manager_name = strdup( &argv[2]->s );
+    nsm->_session_manager_features = strdup( &argv[3]->s );
     nsm->nsm_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
 
     if ( nsm->active )

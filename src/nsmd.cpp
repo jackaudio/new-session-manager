@@ -542,15 +542,30 @@ get_client_by_address ( lo_address addr )
 
 
 char *
-generate_client_id ( Client *c )
+generate_client_id ( void )
 {
+    /* Before v1.4 this returned "n" + 4 random upper-case letters, which could lead to collisions.    
+    We changed behaviour to still generate 4 letters, but check for collision with existing IDs.
+
+    Loaded client IDs are not checked, just copied from session.nsm because loading happens before
+    any generation of new clients. Loaded clients are part of further checks of course.
+
+    There is a theoretical limit when all 26^4 IDs are in use which will lead to an infinite loop
+    of generation. We risk to leave this unhandled. */
+
     char id_str[6];
 
     id_str[0] = 'n';
     id_str[5] = 0;
 
-    for ( int i = 1; i < 5; i++)
-        id_str[i] = 'A' + (rand() % 25);
+    while ( true )
+    {
+        for ( int i = 1; i < 5; i++ )
+            id_str[i] = 'A' + (rand() % 25);
+
+        if ( get_client_by_id(&client, id_str )==NULL ) // found a free id
+            break;
+    }
 
     return strdup(id_str);
 }
@@ -671,7 +686,7 @@ launch ( const char *executable, const char *client_id )
         if ( client_id )
             c->client_id = strdup( client_id );
         else
-            c->client_id = generate_client_id( c );
+            c->client_id = generate_client_id();
 
         client.push_back( c );
     }
@@ -911,7 +926,7 @@ OSC_HANDLER( announce )
     {
         c = new Client();
         c->executable_path = strdup( executable_path );
-        c->client_id = generate_client_id( c );
+        c->client_id = generate_client_id();
     }
     else
         expected_client = true;

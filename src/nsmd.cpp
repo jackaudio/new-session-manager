@@ -253,7 +253,7 @@ public:
             pre_existing = false;
             launch_error = 0;
             dirty = NULL;
-            status = "";
+            status = NULL;
             name_with_id = 0;
 
         }

@@ -1645,10 +1645,9 @@ static lo_address list_response_address;
 int
 list_file ( const char *fpath, const struct stat *sb, int tflag )
 {
-    char *s;
-
     if ( tflag == FTW_F )
     {
+        char *s;
         s = strdup( fpath );
         if ( ! strcmp( "session.nsm", basename( s ) ) )
         {

@@ -132,7 +132,7 @@ private:
 
 public:
 
-    lo_address addr;                   /*  */
+    lo_address addr=0;                 /*  */
     char *name;                        /* client application name */
     char *executable_path;             /* path to client executable */
     int pid;                           /* PID of client process */
@@ -247,7 +247,6 @@ public:
         {
             _label = 0;
             _gui_visible = true;
-            addr = 0;
             _reply_errcode = 0;
             _reply_message = 0;
             pid = 0;
@@ -262,6 +261,7 @@ public:
             launch_error = 0;
             dirty = NULL;
             status = "";
+
         }
 
     ~Client ( )

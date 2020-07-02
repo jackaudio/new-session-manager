@@ -123,7 +123,7 @@ private:
     int _reply_errcode;
     char *_reply_message;
 
-    int _pending_command;                /*  */
+    int _pending_command;
     struct timeval _command_sent_time;
 
     bool _gui_visible;
@@ -137,13 +137,14 @@ public:
     char *executable_path;             /* path to client executable */
     int pid;                           /* PID of client process */
     float progress;                    /*  */
-    bool active;              /* client has registered via announce */
-//    bool stopped; /* the client quit, but not because we told it to--user still has to decide to remove it from the session */
-    char *client_id;                                            /* short part of client ID */
-    char *capabilities;                                         /* client capabilities... will be null for dumb clients */
-    bool dirty;                                                 /* flag for client self-reported dirtiness */
+    bool active;                       /* NSM capable: client has registered via announce */
+    //bool stopped;                    /* the client quit, but not because we told it to--user still has to decide to remove it from the session */
+    char *client_id;                   /* short part of client ID */
+    char *capabilities;                /* client capabilities... will be null for dumb clients */
+    bool dirty;                        /* flag for client self-reported dirtiness */
     bool pre_existing;
     const char *status;
+    int launch_error;                   /* APIv1.2, leads to status for executable not found, permission denied etc. */
 
     const char *label ( void ) const { return _label; }
     void label ( const char *l )
@@ -234,6 +235,14 @@ public:
                 strstr( capabilities, capability );
         }
 
+    const char * name_with_id ( void ) const
+        {
+            char *full_client_id;
+            asprintf( &full_client_id, "%s.%s", name, client_id );
+            return full_client_id;
+        }
+
+
     Client ( )
         {
             _label = 0;
@@ -250,6 +259,7 @@ public:
             name = 0;
             executable_path = 0;
             pre_existing = false;
+            launch_error = 0;
         }
 
     ~Client ( )
@@ -325,30 +335,48 @@ handle_client_process_death ( int pid )
 
     if ( c )
     {
+        //There is a difference if a client quit on its own, e.g. via a menu or window manager,
+        //or if the server send SIGTERM as quit signal. Both cases are equally valid.
+        //We only check the case to print a different log message
         bool dead_because_we_said = ( c->pending_command() == COMMAND_KILL ||
                                       c->pending_command() == COMMAND_QUIT );
 
         if ( dead_because_we_said )
         {
-            GUIMSG( "Client %s terminated because we told it to.", c->name );
+            GUIMSG( "Client %s terminated by server instruction.", c->name_with_id() );
         }
         else
         {
-            GUIMSG( "Client %s died unexpectedly.", c->name );
+            GUIMSG( "Client %s terminated itself.", c->name_with_id() );
         }
 
+
+        //Decide if the client terminated or if removed from the session
         if ( c->pending_command() == COMMAND_QUIT )
         {
             if ( gui_is_active )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
 
-            client.remove(c);
+            client.remove(c); //This will not remove the clients save data
             delete c;
         }
         else
         {
             if ( gui_is_active )
+            {
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
+                if ( c->launch_error )
+                {
+                    /* NSM API treats the stopped status as switch. You can only remove stopped.
+                     * Furthermore the GUI will change its client-buttons.
+                     * In consequence we cannot add an arbitrary "launch-error" status.
+                     * Compatible compromise is to use the label field to relay info the user,
+                     * which was the goal. There is nothing we can do about a failed launch anyway.
+                     */
+                    GUIMSG("Client %s had a launch error.", c->name_with_id());
+                    osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, "launch error!" ); //do not set the client objects label.
+                }
+            }
         }
 
         c->pending_command( COMMAND_NONE );
@@ -360,15 +388,32 @@ handle_client_process_death ( int pid )
 
 void handle_sigchld ( )
 {
+    // compare waitpid(2)
     for ( ;; )
     {
-        int status;
-        pid_t pid = waitpid(-1, &status, WNOHANG);
+        int status = 1; // make it not NULL to enable information storage in status
+        pid_t pid = waitpid(-1, &status, WNOHANG); //-1 meaning wait for any child process. pid_t is signed integer
 
         if (pid <= 0)
-            break;
-
-        handle_client_process_death( pid );
+        {
+            break; // no child process has ended this loop. Check again.
+        }
+        else
+        {
+            //One child process has stopped. Find which and figure out the stop-conditions
+            Client *c;
+            c = get_client_by_pid( pid );
+            if ( c )
+            {
+                //The following will not trigger with normal crashes, e.g. segfaults or python tracebacks
+                if ( WIFEXITED( status ) ) // returns true if the child terminated normally
+                    if ( WEXITSTATUS( status ) == 255 ) // as given by exit(-1) in launch()
+                        c->launch_error = true;
+            }
+            // Call even if Client was already null. This will check itself again and was expected
+            // to be called for the majority of nsmds development
+            handle_client_process_death( pid );
+        }
     }
 }
 
@@ -524,16 +569,26 @@ replies_still_pending ( void )
 }
 
 int
-number_of_active_clients ( void )
+number_of_reponsive_clients ( void )
 {
-    int active = 0;
+    /* This was renamed from number_of_active_clients in version 1.4 to reflect
+     * that not only active==true clients are in a state where waiting has ended, but also clients
+     * that never started. It is used in wait_for_announce only, which added a 5000ms delay to startup
+     *
+     * We are sadly unable to distinguish between a client that has a slow announce and a client
+     * without NSM-support. However, this is mitgated by nsm-proxy which is a reliable indicator
+     * that this program will never announce (or rather nsm-proxy announces normally).
+     */
+
+    int responsive = 0;
     for ( std::list<Client*>::const_iterator i = client.begin(); i != client.end(); i++ )
     {
-        if ( (*i)->active )
-            active++;
+        //Optimisation: Clients that never launched (e.g. file not found) will be checked many times/seconds here. We skip them by counting them
+        if ( (*i)->active || (*i)->launch_error )
+            responsive++;
     }
 
-    return active;
+    return responsive;
 }
 
 void
@@ -551,13 +606,13 @@ wait_for_announce ( void )
 
         wait(100);
 
-        active = number_of_active_clients();
+        active = number_of_reponsive_clients();
 
         if ( client.size() == active )
             break;
     }
 
-    GUIMSG( "Done. %lu out of %lu clients announced within the initialization grace period",
+    GUIMSG( "Done. %lu out of %lu clients announced (or failed to launch) within the initialization grace period",
             active, (long unsigned)client.size() );
 }
 
@@ -626,6 +681,7 @@ launch ( const char *executable, const char *client_id )
     int pid;
     if ( ! (pid = fork()) )
     {
+        //This is code of the child process. It will be executed after launch() has finished
         GUIMSG( "Launching %s", executable );
 
         char *args[] = { strdup( executable ), NULL };
@@ -641,20 +697,31 @@ launch ( const char *executable, const char *client_id )
 
         if ( -1 == execvp( executable, args ) )
         {
-            WARNING( "Error starting process: %s", strerror( errno ) );
+            /* The program was not started. Causes: not installed on the current system, and the
+             * session was transferred from another system, or permission denied (no executable flag)
+             * Since we are running in a forked child process Client c does exist, but points to
+             * a memory copy, not the real client. So we can't set any error code or status in the
+             * client object. Instead we check the exit return code in handle_sigchld() and set the
+            *  bool client->launch_error to true.
+            */
 
-            exit(-1);
+            WARNING( "Error starting process %s: %s", executable, strerror( errno ) );
+            exit(-1); //-1 later parsed as 255
         }
     }
 
+    //This is code of the parent process. It is executed right at this point, before the child.
     c->pending_command( COMMAND_START );
     c->pid = pid;
 
-    MESSAGE( "Process has pid: %i", pid );
+    MESSAGE( "Process %s has pid: %i", executable, pid ); //We do not have a name yet, use executable
 
     if ( gui_is_active )
     {
+        //At this point we do not know if launched program will start or fail
+        //And we do not know if it has nsm-support or not. This will be decided if it announces.
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
+        osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, "" ); //clear label from potential previous-and-fixed launch error
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "launch" );
     }
 
@@ -666,7 +733,7 @@ command_client_to_save ( Client *c )
 {
     if ( c->active )
     {
-        MESSAGE( "Telling %s to save", c->name );
+        MESSAGE( "Telling %s to save", c->name_with_id() );
         osc_server->send( c->addr, "/nsm/client/save" );
 
         c->pending_command( COMMAND_SAVE );
@@ -690,7 +757,7 @@ void command_client_to_switch ( Client *c, const char *new_client_id )
 
     char *client_project_path = get_client_project_path( session_path, c );
 
-    MESSAGE( "Commanding %s to switch \"%s\"", c->name, client_project_path );
+    MESSAGE( "Commanding %s to switch \"%s\"", c->name_with_id(), client_project_path );
 
     char *full_client_id;
     asprintf( &full_client_id, "%s.%s", c->name, c->client_id );
@@ -834,7 +901,7 @@ OSC_HANDLER( announce )
              (*i)->pending_command() == COMMAND_START )
         {
             // I think we've found the slot we were looking for.
-            MESSAGE( "Client was expected." );
+            MESSAGE( "Client %s was expected.", (*i)->name );
             c = *i;
             break;
         }
@@ -851,7 +918,7 @@ OSC_HANDLER( announce )
 
     if ( major > NSM_API_VERSION_MAJOR )
     {
-        MESSAGE( "Client is using incompatible and more recent API version %i.%i", major, minor );
+        MESSAGE( "Client %s is using incompatible and more recent API version %i.%i", c->name_with_id(), major, minor );
 
         osc_server->send( lo_message_get_source( msg ), "/error",
                           path,
@@ -867,7 +934,7 @@ OSC_HANDLER( announce )
     c->name = strdup( client_name );
     c->active = true;
 
-    MESSAGE( "Process has pid: %i", pid );
+    MESSAGE( "Process %s has pid: %i", c->name_with_id(), pid );
 
     if ( ! expected_client )
         client.push_back( c );
@@ -955,7 +1022,10 @@ dumb_clients_are_alive ( )
           ++i )
     {
         if ( (*i)->is_dumb_client() && (*i)->pid > 0 )
-            return true;
+             {
+                MESSAGE( "Waiting for %s", (*i)->name_with_id() ); //This replaced the Loop 1, Loop 2 ... 60 message from wait_for_dumb_clients_to_die where you couldn't see which client actually was hanging
+                return true;
+              }
     }
 
     return false;
@@ -970,8 +1040,6 @@ wait_for_dumb_clients_to_die ( )
 
     for ( int i = 0; i < 6; i++ )
     {
-        MESSAGE( "Loop %i", i );
-
         if ( ! dumb_clients_are_alive() )
             break;
 
@@ -1004,7 +1072,10 @@ killed_clients_are_alive ( )
         if ( ( (*i)->pending_command() == COMMAND_QUIT ||
                (*i)->pending_command() == COMMAND_KILL ) &&
              (*i)->pid > 0 )
-            return true;
+             {
+                MESSAGE( "Waiting for %s", (*i)->name_with_id() ); //This replaced the Loop 1, Loop 2 ... 60 message from wait_for_killed_clients_to_die where you couldn't see which client actually was hanging
+                return true;
+              }
     }
 
     return false;
@@ -1019,8 +1090,6 @@ wait_for_killed_clients_to_die ( )
 
     for ( int i = 0; i < 60; i++ )
     {
-        MESSAGE( "Loop %i", i );
-
         if ( ! killed_clients_are_alive() )
             goto done;
 
@@ -1073,7 +1142,7 @@ command_all_clients_to_save ( )
 void
 command_client_to_stop ( Client *c )
 {
-    GUIMSG( "Stopping client %s", c->name );
+    GUIMSG( "Stopping client %s", c->name_with_id() );
 
     if ( c->pid > 0 )
     {
@@ -1089,7 +1158,7 @@ command_client_to_stop ( Client *c )
 void
 command_client_to_quit ( Client *c )
 {
-    MESSAGE( "Commanding %s to quit", c->name );
+    MESSAGE( "Commanding %s to quit", c->name_with_id() );
 
     if ( c->active )
     {
@@ -1167,7 +1236,7 @@ tell_client_session_is_loaded( Client *c )
     if ( c->active )
 //!c->is_dumb_client() )
     {
-        MESSAGE( "Telling client %s that session is loaded.", c->name );
+        MESSAGE( "Telling client %s that session is loaded.", c->name_with_id() );
         osc_server->send( c->addr, "/nsm/client/session_is_loaded" );
     }
 }
@@ -1989,7 +2058,7 @@ OSC_HANDLER( error )
 
     c->set_reply( err_code, message );
 
-    MESSAGE( "Client \"%s\" replied with error: %s (%i) in %fms", c->name, message, err_code, c->milliseconds_since_last_command() );
+    MESSAGE( "Client \"%s\" replied with error: %s (%i) in %fms", c->name_with_id(), message, err_code, c->milliseconds_since_last_command() );
     c->pending_command( COMMAND_NONE );
 
     if ( gui_is_active )
@@ -2010,7 +2079,7 @@ OSC_HANDLER( reply )
     {
         c->set_reply( ERR_OK, message );
 
-        MESSAGE( "Client \"%s\" replied with: %s in %fms", c->name, message, c->milliseconds_since_last_command() );
+        MESSAGE( "Client \"%s\" replied with: %s in %fms", c->name_with_id(), message, c->milliseconds_since_last_command() );
 
         c->pending_command( COMMAND_NONE );
 
@@ -2246,9 +2315,10 @@ int main(int argc, char *argv[])
         srand( (unsigned int) seconds );
     }
 
-//    char *osc_port = "6666";
+    //Command line parameters
     char *osc_port = NULL;
     const char *gui_url = NULL;
+    const char *load_session = NULL;
 
     static struct option long_options[] =
     {
@@ -2257,6 +2327,8 @@ int main(int argc, char *argv[])
         { "osc-port", required_argument, 0, 'p' },
         { "gui-url", required_argument, 0, 'g' },
         { "help", no_argument, 0, 'h' },
+        { "version", no_argument, 0, 'v' },
+        { "load-session", required_argument, 0, 'l'},
         { 0, 0, 0, 0 }
     };
 
@@ -2290,8 +2362,33 @@ int main(int argc, char *argv[])
                 DMESSAGE( "Going to connect to GUI at: %s", optarg );
                 gui_url = optarg;
                 break;
+            case 'l':
+                DMESSAGE( "Loading existing session file %s", optarg);
+                load_session = optarg;
+                break;
+            case 'v':
+                printf( "%s 1.4\n", argv[0] );
+                exit(0);
+                break;
             case 'h':
-                printf( "Usage: %s [--osc-port portnum] [--session-root path]\n\n", argv[0] );
+                //Print usage message according to POSIX.1-2017
+                const char *usage =
+                "%s\n\n"
+                "Usage:\n"
+                "  %s\n"
+                "  %s --help\n"
+                "  %s --version\n"
+                "\n"
+                "Options:\n"
+                "  --help                Show this screen\n"
+                "  --version             Show version\n"
+                "  --osc-port portnum    OSC port number [Default: provided by system].\n"
+                "  --session-root path   Base path for sessions [Default: ~/NSM Sessions].\n"
+                "  --load-session name   Load existing session [Example: \"My Song\"].\n"
+                "  --gui-url url         Connect to running legacy-gui [Example: osc.udp://mycomputer.localdomain:38356/].\n"
+                "  --detach              Detach from console.\n"
+                "";
+                printf ( usage, argv[0], argv[0], argv[0], argv[0] );
                 exit(0);
                 break;
         }
@@ -2365,6 +2462,14 @@ int main(int argc, char *argv[])
     osc_server->add_method( "/nsm/server/quit", "", OSC_NAME( quit ), NULL, "" );
 
     osc_server->add_method( NULL, NULL, OSC_NAME( null ),NULL, "" );
+
+   if ( load_session )
+   {
+        char *spath;
+        asprintf( &spath, "%s/%s", session_root, load_session); // Build the session path. --load-session works with --session-root
+        MESSAGE( "LOAD SESSION %s", spath);
+        load_session_file( spath );
+    }
 
     if ( detach )
     {

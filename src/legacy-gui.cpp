@@ -90,6 +90,7 @@ get_program_icon ( const char *name )
         "/usr/local/share/pixmaps/%s.png",
         "/usr/local/share/pixmaps/%s.xpm",
         "/usr/share/icons/hicolor/32x32/apps/%s.png",
+        "/usr/share/icons/hicolor/128x128/apps/%s.png",
         "/usr/share/pixmaps/%s.png",
         "/usr/share/pixmaps/%s.xpm",
     };
@@ -100,7 +101,7 @@ get_program_icon ( const char *name )
         
         asprintf( &icon_p, tries[i], name );
         
-        Fl_Image *img = Fl_Shared_Image::get( icon_p );
+        Fl_Image *img = Fl_Shared_Image::get( icon_p, 32, 32 );
     
         free( icon_p );
 
@@ -374,7 +375,7 @@ public:
             
             { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 75, H * 0.50, NULL );
                 o->box( FL_FLAT_BOX );
-                o->color( FL_BLACK );
+                o->color( FL_DARK1, FL_LIGHT1 );
                 o->copy_label( "launch" );
                 o->labelsize( 12 );
                 o->minimum( 0.0f );
@@ -559,7 +560,7 @@ public:
         {
             if ( w == abort_button )
             {
-                if ( 0 == fl_choice( "Are you sure you want to abort this session? Unsaved changes will be lost.", "Abort", "Cancel", NULL ) )
+                if ( 0 == fl_choice( "Are you sure you want to close this session? Unsaved changes will be lost.", "Close anyway", "Cancel", NULL ) )
                 {
                     MESSAGE( "Sending abort." );
 
@@ -698,7 +699,7 @@ public:
 
                     const char *n = fl_input( "Enter executable name" );
                     
-                    if ( !n )
+                    if ( !n || !*n )
                         return;
                     
                     char *name = strdup( n );
@@ -721,7 +722,7 @@ public:
                 {
                     const char *n = fl_input( "Enter executable name" );
                     
-                    if ( !n )
+                    if ( !n || !*n )
                         return;
                     
                     char *name = strdup( n );
@@ -881,43 +882,45 @@ public:
             { Fl_Pack *o = buttons_pack = new Fl_Pack( X, Y, W, 30 );
                 o->type( Fl_Pack::HORIZONTAL );
                 o->box( FL_NO_BOX );
-                { Fl_Button *o = quit_button = new Fl_Button( 0, 0, 80, 50, "&Quit" );
+                { Fl_Button *o = quit_button = new Fl_Button( 0, 0, 50, 50, "&Quit" );
                     o->shortcut( FL_CTRL | 'q' );
                     o->box( FL_UP_BOX );
                     o->callback( cb_handle, (void*)this );
                 }
-                { Fl_Button *o = refresh_button = new Fl_Button( 0, 0, 80, 50, "&Refresh" );
+                { Fl_Button *o = refresh_button = new Fl_Button( 0, 0, 70, 50, "&Refresh" );
                     o->shortcut( FL_CTRL | 'r' );
                     o->box( FL_UP_BOX );
                     o->callback( cb_handle, (void*)this );
                 }
-                { Fl_Button *o = open_button = new Fl_Button( 0, 0, 80, 50, "&Open" );
-                    o->shortcut( FL_CTRL | 'o' );
-                    o->box( FL_UP_BOX );
-                    o->callback( cb_handle, (void*)this );
-                }
-                { Fl_Button *o = close_button = new Fl_Button( 0, 0, 80, 50, "Close" );
-                    o->shortcut( FL_CTRL | 'q' );
-                    o->box( FL_UP_BOX );
-                    o->callback( cb_handle, (void*)this );
-                }
-                { Fl_Button *o = abort_button = new Fl_Button( 0, 0, 80, 50, "Abort" );
-                    o->box( FL_UP_BOX );
-                    o->color( fl_color_average( FL_RED, fl_rgb_color(10,10,10), 0.5f ) );
-                    o->callback( cb_handle, (void*)this );
-                }
-                { Fl_Button *o = save_button = new Fl_Button( 0, 0, 80, 50, "&Save" );
-                    o->shortcut( FL_CTRL | 's' );
-                    o->box( FL_UP_BOX );
-                    o->callback( cb_handle, (void*)this );
-                }
-                { Fl_Button *o = new_button = new Fl_Button( 0, 0, 80, 50, "&New" );
+                { Fl_Button *o = new_button = new Fl_Button( 0, 0, 100, 50, "&New Session" );
                     o->shortcut( FL_CTRL | 'n' );
                     o->box( FL_UP_BOX );
                     o->callback( cb_handle, (void*)this );
                 }
-                { Fl_Button *o = duplicate_button = new Fl_Button( 0, 0, 100, 50, "Duplicate" );
+                { Fl_Button *o = save_button = new Fl_Button( 0, 0, 105, 50, "&Save" );
+                    o->shortcut( FL_CTRL | 's' );
                     o->box( FL_UP_BOX );
+                    o->callback( cb_handle, (void*)this );
+                }
+                { Fl_Button *o = close_button = new Fl_Button( 0, 0, 105, 50, "Save && Close" );
+                    o->shortcut( FL_CTRL | 'e' ); // is this a good key?
+                    o->box( FL_UP_BOX );
+                    o->callback( cb_handle, (void*)this );
+                }
+                { Fl_Button *o = duplicate_button = new Fl_Button( 0, 0, 105, 50, "Save && &Dupl." );
+                    o->shortcut( FL_CTRL | 'd' );
+                    o->box( FL_UP_BOX );
+                    o->callback( cb_handle, (void*)this );
+                }
+                { Fl_Button *o = open_button = new Fl_Button( 0, 0, 105, 50, "Save && &Open" );
+                    o->shortcut( FL_CTRL | 'o' );
+                    o->box( FL_UP_BOX );
+                    o->callback( cb_handle, (void*)this );
+                }
+                { Fl_Button *o = abort_button = new Fl_Button( 0, 0, 160, 50, "Close &without Saving" );
+                    o->shortcut( FL_CTRL | 'w' );
+                    o->box( FL_UP_BOX );
+                    o->color( fl_color_average( FL_RED, fl_rgb_color(10,10,10), 0.5f ) );
                     o->callback( cb_handle, (void*)this );
                 }
                
@@ -1311,6 +1314,8 @@ cb_main ( Fl_Widget *, void * )
 int
 main (int argc, char **argv )
 {
+    fl_register_images();
+
     Fl::lock();
     
     Fl_Double_Window *main_window;

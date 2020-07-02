@@ -243,6 +243,7 @@ nsm_new ( void )
     nsm->_st = 0;
     nsm->nsm_addr = 0;
     nsm->_session_manager_name = 0;
+    nsm->_session_manager_features = 0;
 
     nsm->open = 0;
     nsm->save = 0;
@@ -383,6 +384,10 @@ nsm_free ( nsm_client_t *nsm )
         lo_server_thread_free( _NSM()->_st );
     else
         lo_server_free( _NSM()->_server );
+
+    free(_NSM()->nsm_client_id);
+    free(_NSM()->_session_manager_name);
+    free(_NSM()->_session_manager_features);
 
     free( _NSM() );
 }

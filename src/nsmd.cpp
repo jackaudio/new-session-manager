@@ -268,8 +268,11 @@ public:
                 free(client_id);
             if (capabilities)
                 free(capabilities);
+            if (name_with_id)
+                free(name_with_id);
 
-            name = executable_path = client_id = capabilities = NULL;
+
+            name = executable_path = client_id = capabilities = name_with_id = NULL;
         }
 };
 
@@ -2486,6 +2489,7 @@ int main(int argc, char *argv[])
         asprintf( &spath, "%s/%s", session_root, load_session); // Build the session path. --load-session works with --session-root
         MESSAGE( "LOAD SESSION %s", spath);
         load_session_file( spath );
+        free ( spath );
     }
 
     if ( detach )

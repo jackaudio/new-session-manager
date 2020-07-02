@@ -260,6 +260,8 @@ public:
             executable_path = 0;
             pre_existing = false;
             launch_error = 0;
+            dirty = NULL;
+            status = "";
         }
 
     ~Client ( )
@@ -544,7 +546,7 @@ get_client_by_address ( lo_address addr )
 char *
 generate_client_id ( void )
 {
-    /* Before v1.4 this returned "n" + 4 random upper-case letters, which could lead to collisions.    
+    /* Before v1.4 this returned "n" + 4 random upper-case letters, which could lead to collisions.
     We changed behaviour to still generate 4 letters, but check for collision with existing IDs.
 
     Loaded client IDs are not checked, just copied from session.nsm because loading happens before

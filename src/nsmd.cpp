@@ -2278,7 +2278,7 @@ announce_gui( const char *url, bool is_reply )
     osc_server->send( gui_addr, "/nsm/gui/session/root", session_root );
 
     // Send a list of clients to the newly registered GUI in case there was already a session open
-    DMESSAGE ( "Informing GUI about %li already running clients", client.size() );
+    MESSAGE ( "Informing GUI about %li already running clients", client.size() );
     for ( std::list<Client*>::iterator i = client.begin();
           i != client.end();
           ++i )
@@ -2300,7 +2300,7 @@ announce_gui( const char *url, bool is_reply )
     DMESSAGE( "Informing GUI about potentially running session name: %s", session_name );
     osc_server->send( gui_addr, "/nsm/gui/session/name", session_name ? session_name : "", session_path ? session_path : "" );
 
-    DMESSAGE( "Registration with GUI complete" );
+    DMESSAGE( "Registration with GUI complete\n" );
 }
 
 

@@ -1,12 +1,13 @@
 v1.4
+Repair nsmd to correctly send client data when running headless and a GUI announces later.
 ClientId generation now prevent collision with existing IDs.
 nsmd command line option --load-session to directly load one (Berkelder, Rik)
 Better detection of clients that failed to launch leads to faster session startup (by 5 seconds)
 Users get informed by label if an executable is not present on the system or permission denied
-Fixed reply for listing sessions from a plain "Done." to proper reply path with empty string as terminal symbol  "/reply", "/nsm/server/list", ""  
+Fixed reply for listing sessions from a plain "Done." to proper reply path with empty string as terminal symbol  "/reply", "/nsm/server/list", ""
 /nsm/server/list ""  raises NSM_API_VERSION_MINOR from 1 to 2 (1.1 -> 1.2)
 Fix operation reply to last treated client instead to reply to sender (Picot, Mathieu  / houston)
-Optional-gui support to nsm.h, for other applications to include and use. (Meyer, Hermann / brummer ) 
+Optional-gui support to nsm.h, for other applications to include and use. (Meyer, Hermann / brummer )
 Legacy-GUI: Rewrite labels and buttons with better descriptions.
 Legacy-GUI: Prevent "Add New Client"->empty string from adding a broken client entry.
 Legacy-GUI: Scale icons, support more icon formats.

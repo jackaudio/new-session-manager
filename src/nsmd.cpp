@@ -2289,7 +2289,8 @@ announce_gui( const char *url, bool is_reply )
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
         if ( c->is_capable_of( ":optional-gui:" ) )
             osc_server->send( gui_addr, "/nsm/gui/client/has_optional_gui", c->client_id );
-        osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, c->label() );
+        if ( c->label() ) // could be NULL
+            osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, c->label() );
 
     }
 

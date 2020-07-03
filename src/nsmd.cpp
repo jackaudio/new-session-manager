@@ -362,21 +362,23 @@ handle_client_process_death ( int pid )
         }
         else
         {
+            if ( c->launch_error )
+               /* NSM API treats the stopped status as switch. You can only remove stopped.
+                * Furthermore the GUI will change its client-buttons.
+                * In consequence we cannot add an arbitrary "launch-error" status.
+                * Compatible compromise is to use the label field to relay info the user,
+                * which was the goal. There is nothing we can do about a failed launch anyway.
+                */
+                c->label( "launch error!" );
+            else
+                c->label( "" );
+
             c->status = "stopped";
+
             if ( gui_is_active )
             {
+                osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, c->label() );
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
-                if ( c->launch_error )
-                {
-                    /* NSM API treats the stopped status as switch. You can only remove stopped.
-                     * Furthermore the GUI will change its client-buttons.
-                     * In consequence we cannot add an arbitrary "launch-error" status.
-                     * Compatible compromise is to use the label field to relay info the user,
-                     * which was the goal. There is nothing we can do about a failed launch anyway.
-                     */
-                    GUIMSG("Client %s had a launch error.", c->name_with_id);
-                    osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, "launch error!" ); //do not set the client objects label.
-                }
             }
         }
 
@@ -740,7 +742,6 @@ launch ( const char *executable, const char *client_id )
         //At this point we do not know if launched program will start or fail
         //And we do not know if it has nsm-support or not. This will be decided if it announces.
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
-        osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, "" ); //clear label from potential previous-and-fixed launch error
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
     }
 
@@ -2061,9 +2062,8 @@ OSC_HANDLER( label )
         return -1;
 
     c->label( &argv[0]->s );
-
     if ( gui_is_active )
-        osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, &argv[0]->s );
+        osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, c->label() );
 
     return 0;
 }
@@ -2289,6 +2289,7 @@ announce_gui( const char *url, bool is_reply )
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
         if ( c->is_capable_of( ":optional-gui:" ) )
             osc_server->send( gui_addr, "/nsm/gui/client/has_optional_gui", c->client_id );
+        osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, c->label() );
 
     }
 

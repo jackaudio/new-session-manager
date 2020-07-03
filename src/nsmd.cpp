@@ -352,7 +352,6 @@ handle_client_process_death ( int pid )
         //Decide if the client terminated or if removed from the session
         if ( c->pending_command() == COMMAND_QUIT )
         {
-
             c->status = "removed";
             if ( gui_is_active )
                 osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
@@ -736,6 +735,9 @@ launch ( const char *executable, const char *client_id )
 
     MESSAGE( "Process %s has pid: %i", executable, pid ); //We do not have a name yet, use executable
 
+    //Normal launch. Setting launch_error to false is not redundant:
+    //A previous launch-error fixed by the user, and then resume, needs this reset.
+    c->launch_error = false;
     c->status = "launch";
     if ( gui_is_active )
     {
@@ -743,6 +745,7 @@ launch ( const char *executable, const char *client_id )
         //And we do not know if it has nsm-support or not. This will be decided if it announces.
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
+        osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, "" );
     }
 
     return true;
@@ -2292,7 +2295,6 @@ announce_gui( const char *url, bool is_reply )
             osc_server->send( gui_addr, "/nsm/gui/client/has_optional_gui", c->client_id );
         if ( c->label() ) // could be NULL
             osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, c->label() );
-
     }
 
     //Send two parameters. The first one is the short session name, which is the directory name.

@@ -2287,6 +2287,9 @@ announce_gui( const char *url, bool is_reply )
 
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
+        if ( c->is_capable_of( ":optional-gui:" ) )
+            osc_server->send( gui_addr, "/nsm/gui/client/has_optional_gui", c->client_id );
+
     }
 
     //Send two parameters. The first one is the short session name, which is the directory name.

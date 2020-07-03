@@ -133,8 +133,8 @@ private:
 public:
 
     lo_address addr=0;                 /*  */
-    char *name;                        /* client application name */
-    char *executable_path;             /* path to client executable */
+    char *name;                        /* First this is the basename of client executable, later it becomes the client-reported name which must be treated as if unrelated. */
+    char *executable_path;             /* Contrary to the name this is basename(executable) */
     int pid;                           /* PID of client process */
     float progress;                    /*  */
     bool active;                       /* NSM capable: client has registered via announce */
@@ -897,6 +897,18 @@ OSC_HANDLER( add )
 
 OSC_HANDLER( announce )
 {
+    /* A client announces itself which identifies it as real nsm-capable client, internally represented by the c->active bool.
+
+    If nsmd started the client itself (e.g. through a GUI) at this point the program is already
+    part of the session and registered with c->name=basename(executable). For these clients a
+    second client/new message is sent, indicating an upgrade of the formerly dumb client. Through
+    this c->name changes from executable to the self-reported client name from this announce
+    message.
+
+    For clients that announce themselves (started with NSM URL ENV present) the first client/new
+    never happens.
+    */
+
     const char *client_name = &argv[0]->s;
     const char *capabilities = &argv[1]->s;
     const char *executable_path = &argv[2]->s;
@@ -958,7 +970,7 @@ OSC_HANDLER( announce )
     c->pid = pid;
     c->capabilities = strdup( capabilities );
     c->addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
-    c->name = strdup( client_name );
+    c->name = strdup( client_name ); //replace executable with clients self-reported pretty name
     c->active = true;
 
     asprintf( &c->name_with_id, "%s.%s", c->name, c->client_id );
@@ -2287,7 +2299,6 @@ announce_gui( const char *url, bool is_reply )
           ++i )
     {
         Client *c = *i;
-
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
         if ( c->status )
             osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );

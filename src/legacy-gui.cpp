@@ -59,7 +59,7 @@
 // static lo_address nsm_addr = NULL;
 static time_t last_ping_response;
 
-static OSC::Endpoint *osc; 
+static OSC::Endpoint *osc;
 
 
 struct Daemon
@@ -94,15 +94,15 @@ get_program_icon ( const char *name )
         "/usr/share/pixmaps/%s.png",
         "/usr/share/pixmaps/%s.xpm",
     };
-    
+
     for ( unsigned int i = 0; i < 6; i++ )
     {
         char *icon_p;
-        
+
         asprintf( &icon_p, tries[i], name );
-        
+
         Fl_Image *img = Fl_Shared_Image::get( icon_p, 32, 32 );
-    
+
         free( icon_p );
 
         if ( img )
@@ -117,7 +117,7 @@ class NSM_Client : public Fl_Group
     char *_client_id;
     char *_client_label;
     char *_client_name;
-    
+
     Fl_Box *client_name;
     Fl_Box *icon_box;
     Fl_Progress *_progress;
@@ -132,7 +132,7 @@ class NSM_Client : public Fl_Group
         {
             char *l;
 
-            if ( _client_label )
+            if ( _client_label && _client_label[0] != '\0' )
                 asprintf( &l, "%s (%s)", _client_name, _client_label );
             else
                 l = strdup( _client_name );
@@ -140,7 +140,7 @@ class NSM_Client : public Fl_Group
             if ( ! icon_box->image() )
             {
                 Fl_Image *img = get_program_icon( _client_name );
-                
+
                 if ( img )
                 {
                     icon_box->image( img );
@@ -148,7 +148,7 @@ class NSM_Client : public Fl_Group
             }
 
             client_name->copy_label( l );
-            
+
             free(l);
 
             redraw();
@@ -172,18 +172,18 @@ public:
         {
             if ( _client_label )
                 free( _client_label );
-            
+
             _client_label = strdup( s );
 
             set_label();
         }
-    
+
     void
     client_id ( const char *v )
         {
-            if ( _client_id ) 
+            if ( _client_id )
                 free( _client_id );
-            
+
             _client_id = strdup( v );
         }
 
@@ -248,7 +248,7 @@ public:
             _progress->copy_label( command );
 
             stopped( 0 );
-                
+
             if ( ! strcmp( command, "ready" ) )
             {
                 color( fl_color_average( FL_BLACK, FL_GREEN, 0.50 ) );
@@ -326,7 +326,7 @@ public:
                 }
             }
         }
-             
+
 
     const char *
     client_id ( void )
@@ -339,11 +339,11 @@ public:
             _client_id = NULL;
             _client_name = NULL;
             _client_label = NULL;
-            
+
             align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
             color( fl_darker( FL_RED ) );
             box( FL_UP_FRAME );
-            
+
             int yy = Y + H * 0.25;
             int hh = H * 0.50;
             int xx = X + W - ( 75 + Fl::box_dw( box() ) );
@@ -354,13 +354,13 @@ public:
             /*     o->end(); */
             /*     resizable( o ); */
             /* } */
-    
+
             { Fl_Pack *o = new Fl_Pack( X + 15, Y, 300 - 5, H );
                 o->type( FL_HORIZONTAL );
                 o->spacing( 10 );
                 {  icon_box = new Fl_Box( 0, 0, 32, 32 );
                 }
-                
+
                 { Fl_Box *o = client_name = new Fl_Box( 0, 0, 300, 48 );
                     /* o->color( FL_BLUE ); */
                     o->align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT );
@@ -368,11 +368,11 @@ public:
                 }
                 o->end();
             }
-           
+
             { Fl_Box *o = new Fl_Box( X + 300, Y, 100, h() );
                 Fl_Group::current()->resizable(o);
                 }
-            
+
             { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 75, H * 0.50, NULL );
                 o->box( FL_FLAT_BOX );
                 o->color( FL_DARK1, FL_LIGHT1 );
@@ -385,9 +385,9 @@ public:
             { Fl_Group *o = new Fl_Group( X + W - 400, Y, 400, H );
 
                 xx -= 50 + ss;
-                
+
                 { Fl_Light_Button *o = _dirty = new Fl_Light_Button( xx, yy, 50, hh, "SAVE" );
-                                
+
                     o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
                     o->labelsize( 9 );
                     o->box( FL_UP_BOX );
@@ -399,7 +399,7 @@ public:
                 }
 
                 xx -= 40 + ss;
-            
+
                 { Fl_Light_Button *o = _gui = new Fl_Light_Button( xx, yy, 40, hh, "GUI" );
 
                     o->align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
@@ -428,8 +428,8 @@ public:
                 xx -= 25 + ss;
 
                 { Fl_Button *o = _restart_button = new Fl_Button( xx, yy, 25, hh );
-                    
-                
+
+
                     o->box( FL_UP_BOX );
                     o->type(0);
 //                    o->color( FL_GREEN );
@@ -444,7 +444,7 @@ public:
 
                 { Fl_Button *o = _remove_button = new Fl_Button( xx, yy, 25, hh );
 
-                
+
                     o->box( FL_UP_BOX );
                     o->type(0);
 //                    o->color( FL_RED );
@@ -489,7 +489,7 @@ public:
         }
 };
 
-static 
+static
 void
 fl_awake_alert( void *v )
 {
@@ -508,7 +508,7 @@ browser_callback ( Fl_Widget *w, void * )
 
 class NSM_Controller : public Fl_Group
 {
-   
+
     Fl_Text_Display *status_display;
 
 public:
@@ -527,7 +527,7 @@ public:
     Fl_Box *session_name_box;
 
     Fl_Tree *session_browser;
- 
+
     int status_lines;
 
     static void cb_handle ( Fl_Widget *w, void *v )
@@ -543,13 +543,13 @@ public:
             now = time( NULL );
 
             struct tm * tm =  localtime( &now );
-            
+
             char *ts;
             asprintf( &ts, "%02i:%02i:%02i ", tm->tm_hour, tm->tm_min, tm->tm_sec );
-            
+
             status_display->buffer()->append( ts );
             free( ts );
-           
+
             status_display->buffer()->append( s );
             status_display->scroll( ++status_lines, 0 );
             status_display->buffer()->append( "\n" );
@@ -589,10 +589,10 @@ public:
             else if ( w == open_button )
             {
                 const char *name = fl_input( "Open Session", NULL );
-                
+
                 if ( ! name )
                     return;
-                
+
                 Fl_Tree_Item *item = session_browser->find_item( name );
 
                 if ( item )
@@ -601,7 +601,7 @@ public:
             else if ( w == duplicate_button )
             {
                 const char *name = fl_input( "New Session", NULL );
-                
+
                 if ( ! name )
                     return;
 
@@ -652,7 +652,7 @@ public:
 
                 if ( !name )
                     return;
-                
+
                 MESSAGE( "Sending new for: %s", name );
                 foreach_daemon ( d )
                 {
@@ -669,7 +669,7 @@ public:
                     {
                         {
                             Fl_Box *o = new Fl_Box( 0,0, 300, 100 );
-                    
+
                             o->label( "Connected to multiple NSM servers, please select which one to add a client to." );
                             o->align( FL_ALIGN_CENTER | FL_ALIGN_INSIDE | FL_ALIGN_WRAP );
                         }
@@ -698,12 +698,12 @@ public:
                         return;
 
                     const char *n = fl_input( "Enter executable name" );
-                    
+
                     if ( !n || !*n )
                         return;
-                    
+
                     char *name = strdup( n );
-                    
+
                     if ( index( name, ' ' ) )
                     {
                         free( name );
@@ -715,18 +715,18 @@ public:
                     osc->send( nsm_addr, "/nsm/server/add", name );
 
                     free( name );
-                    
+
                     delete win;
                 }
                 else
                 {
                     const char *n = fl_input( "Enter executable name" );
-                    
+
                     if ( !n || !*n )
                         return;
-                    
+
                     char *name = strdup( n );
-                    
+
                     if ( index( name, ' ' ) )
                     {
                         free( name );
@@ -746,8 +746,8 @@ public:
             }
         }
 
-    
-    NSM_Client * 
+
+    NSM_Client *
     client_by_id ( const char *id )
         {
             for ( int i = clients_pack->children(); i--; )
@@ -761,7 +761,7 @@ public:
             }
             return NULL;
         }
-    
+
 
     const char *session_name ( void ) const
         {
@@ -772,7 +772,7 @@ public:
     session_name ( const char *name )
         {
             session_name_box->copy_label( name );
-            
+
             if ( strlen( name ) )
             {
                 save_button->activate();
@@ -793,11 +793,11 @@ public:
             redraw();
         }
 
-    void 
+    void
     client_stopped ( const char *client_id )
         {
             NSM_Client *c = client_by_id( client_id );
-            
+
             if ( c )
             {
                 c->stopped( 1 );
@@ -808,7 +808,7 @@ public:
     client_quit ( const char *client_id )
         {
             NSM_Client *c = client_by_id( client_id );
-            
+
             if ( c )
             {
                 clients_pack->remove( c );
@@ -822,7 +822,7 @@ public:
 
             parent()->redraw();
         }
-    
+
     void
     client_new ( const char *client_id, const char *client_name )
         {
@@ -856,7 +856,7 @@ public:
                 {
                     clients_pack->remove( c );
                     delete c;
-                    
+
                     parent()->redraw();
                 }
                 else
@@ -878,7 +878,7 @@ public:
             status_lines = 0;
 
             align( FL_ALIGN_RIGHT | FL_ALIGN_CENTER | FL_ALIGN_INSIDE );
-            
+
             { Fl_Pack *o = buttons_pack = new Fl_Pack( X, Y, W, 30 );
                 o->type( Fl_Pack::HORIZONTAL );
                 o->box( FL_NO_BOX );
@@ -923,21 +923,21 @@ public:
                     o->color( fl_color_average( FL_RED, fl_rgb_color(10,10,10), 0.5f ) );
                     o->callback( cb_handle, (void*)this );
                 }
-               
+
                 o->end();
             }
-            
+
             int SH = 14;
 
             { Fl_Tile *o = new Fl_Tile( X, Y + 30, W, H - 30 );
                 { Fl_Scalepack *o = new Fl_Scalepack( X, Y + 30, 300, H - ( 30 +  SH ) );
                     o->type( FL_VERTICAL );
                     o->spacing( 2 );
-                    
+
                     { new Fl_Box( 0,0,100, 24, "Sessions" );
                     }
 
-                    { 
+                    {
                         Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - ( 50 + SH ) );
                         o->callback( cb_handle, (void *)this );
                         o->color( FL_DARK1 );
@@ -954,14 +954,14 @@ public:
                     } // Fl_Tree
                     o->end();
                 }
-                
+
                 Fl_Scalepack *scalepack;
                 { Fl_Scalepack *o = scalepack = new Fl_Scalepack( X + 300, Y + 30, W - 300, H - ( 30 + SH ) );
                     o->type( FL_VERTICAL );
                     o->spacing( 2 );
-                             
+
                     {  session_name_box = new Fl_Box( 0, 0, 100, 25, "" );
-                            
+
                     }
 
                     { Fl_Button *o = add_button = new Fl_Button( 0, 0, 100, 25, "&Add Client to Session" );
@@ -970,7 +970,7 @@ public:
                         o->align( FL_ALIGN_CLIP );
                         o->callback( cb_handle, (void*)this );
                     }
-                                   
+
                     {
                         Fl_Packscroller *o = new Fl_Packscroller( 0, 0, 100, H - ( 30 + SH ) );
                         o->align( FL_ALIGN_TOP );
@@ -1005,7 +1005,7 @@ public:
 
                 o->end();
                 resizable( o );
-                        
+
             } // Fl_tile
 
             end();
@@ -1048,17 +1048,17 @@ public:
                 }
             }
         }
-        
+
 
     int init_osc ( void )
         {
             osc = new OSC::Endpoint();
-        
+
             if ( int r = osc->init( LO_UDP ) )
                 return r;
-        
+
             osc->owner = this;
-            
+
             osc->add_method( "/error", "sis", osc_handler, osc, "msg" );
             osc->add_method( "/reply", "ss", osc_handler, osc, "msg" );
             osc->add_method( "/reply", "s", osc_handler, osc, "" );
@@ -1093,7 +1093,7 @@ public:
 //            d->is_child = true;
 
             /* daemon_list.push_back( d ); */
-            
+
             osc->send( nsm_addr, "/nsm/gui/gui_announce" );
         }
 
@@ -1116,7 +1116,7 @@ private:
                 {
                     osc->send( (*d)->addr, path, msg );
                 }
-                
+
                 free( u1 );
                 free( u2 );
             }
@@ -1127,9 +1127,9 @@ private:
     static int osc_handler ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
         {
 //            OSC_DMSG();
-            
+
             NSM_Controller *controller = (NSM_Controller*)((OSC::Endpoint*)user_data)->owner;
-            
+
             Fl::lock();
 
             if ( !strcmp( path, "/nsm/gui/server/message" ) && !strcmp( types, "s" ) )
@@ -1145,7 +1145,7 @@ private:
             {
                 /* pre-existing server is replying to our announce message */
                 controller->activate();
-                
+
                 lo_address nsm_addr = lo_message_get_source( msg );
 
                 osc->send( nsm_addr, "/nsm/server/list" );
@@ -1155,7 +1155,7 @@ private:
                 /* must be a server we launched */
 
                 controller->activate();
-                
+
                 Daemon *d = new Daemon;
 
                 d->url = lo_address_get_url( lo_message_get_source( msg ) );
@@ -1170,7 +1170,7 @@ private:
                       !strcmp( types, "ss" ))
             {
                 controller->session_name( &argv[0]->s );
-                
+
                 if ( !strcmp( &argv[0]->s, "" ) )
                 {
                     controller->session_browser->deselect_all();
@@ -1225,7 +1225,7 @@ private:
                 else
                 {
                     NSM_Client *c = controller->client_by_id( &argv[0]->s );
-                
+
                     if ( c )
                     {
                         if ( !strcmp( path, "/nsm/gui/client/status" ) &&
@@ -1234,7 +1234,7 @@ private:
                             controller->client_pending_command( c, &argv[1]->s );
                         }
                         else if ( !strcmp( path, "/nsm/gui/client/progress" ) &&
-                                  !strcmp( types, "sf" )) 
+                                  !strcmp( types, "sf" ))
                         {
                             c->progress( argv[1]->f );
                         }
@@ -1258,7 +1258,7 @@ private:
                         {
                             c->has_optional_gui();
                         }
-                        else if ( !strcmp( path, "/nsm/gui/client/switch" ) && 
+                        else if ( !strcmp( path, "/nsm/gui/client/switch" ) &&
                                   !strcmp( types, "ss" ))
                         {
                             c->client_id( &argv[1]->s );
@@ -1297,7 +1297,7 @@ cb_main ( Fl_Widget *, void * )
             if ( (*d)->is_child )
                 ++children;
         }
-          
+
         if ( children )
         {
             if ( strlen( controller->session_name() ) )
@@ -1306,7 +1306,7 @@ cb_main ( Fl_Widget *, void * )
                 return;
             }
         }
-        
+
         while ( Fl::first_window() ) Fl::first_window()->hide();
     }
 }
@@ -1317,7 +1317,7 @@ main (int argc, char **argv )
     fl_register_images();
 
     Fl::lock();
-    
+
     Fl_Double_Window *main_window;
 
     {
@@ -1338,8 +1338,8 @@ main (int argc, char **argv )
 
         o->show( 0, NULL );
     }
-    
-    static struct option long_options[] = 
+
+    static struct option long_options[] =
         {
             { "nsm-url", required_argument, 0, 'n' },
             { "help", no_argument, 0, 'h' },
@@ -1357,7 +1357,7 @@ main (int argc, char **argv )
             {
                 DMESSAGE( "Adding %s to daemon list", optarg );
                 Daemon *d = new Daemon;
-                
+
                 d->url = optarg;
                 d->addr = lo_address_new_from_url( optarg );
 
@@ -1387,7 +1387,7 @@ main (int argc, char **argv )
 
     if ( controller->init_osc() )
         FATAL( "Could not create OSC server" );
-   
+
     if ( daemon_list.size() )
     {
         foreach_daemon ( d )
@@ -1412,7 +1412,7 @@ main (int argc, char **argv )
             args[i++] = strdup("nsmd");
             args[i++] = strdup("--gui-url");
             args[i++] = url;
-            
+
             for ( ; optind < argc; i++, optind++ )
             {
                 DMESSAGE( "Passing argument: %s", argv[optind] );

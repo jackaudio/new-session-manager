@@ -252,8 +252,8 @@ public:
             executable_path = 0;
             pre_existing = false;
             launch_error = 0;
-            dirty = NULL;
-            status = NULL;
+            dirty = 0;
+            status = 0;
             name_with_id = 0;
 
         }
@@ -270,7 +270,6 @@ public:
                 free(capabilities);
             if (name_with_id)
                 free(name_with_id);
-
 
             name = executable_path = client_id = capabilities = name_with_id = NULL;
         }
@@ -353,17 +352,20 @@ handle_client_process_death ( int pid )
         //Decide if the client terminated or if removed from the session
         if ( c->pending_command() == COMMAND_QUIT )
         {
+
+            c->status = "removed";
             if ( gui_is_active )
-                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
 
             client.remove(c); //This will not remove the clients save data
             delete c;
         }
         else
         {
+            c->status = "stopped";
             if ( gui_is_active )
             {
-                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
                 if ( c->launch_error )
                 {
                     /* NSM API treats the stopped status as switch. You can only remove stopped.
@@ -732,13 +734,14 @@ launch ( const char *executable, const char *client_id )
 
     MESSAGE( "Process %s has pid: %i", executable, pid ); //We do not have a name yet, use executable
 
+    c->status = "launch";
     if ( gui_is_active )
     {
         //At this point we do not know if launched program will start or fail
         //And we do not know if it has nsm-support or not. This will be decided if it announces.
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
         osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, "" ); //clear label from potential previous-and-fixed launch error
-        osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "launch" );
+        osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
     }
 
     return true;
@@ -754,14 +757,16 @@ command_client_to_save ( Client *c )
 
         c->pending_command( COMMAND_SAVE );
 
+        c->status = "save";
         if ( gui_is_active )
-            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "save" );
+            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id,  c->status );
     }
     else if ( c->is_dumb_client() && c->pid )
     {
         // this is a dumb client...
+        c->status = "noop";
         if ( gui_is_active )
-            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "noop" );
+            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
     }
 }
 
@@ -785,9 +790,10 @@ void command_client_to_switch ( Client *c, const char *new_client_id )
 
     c->pending_command( COMMAND_OPEN );
 
+    c->status = "switch";
     if ( gui_is_active )
     {
-        osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "switch" );
+        osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
         osc_server->send( gui_addr, "/nsm/gui/client/switch", old_client_id, c->client_id );
     }
 
@@ -803,8 +809,9 @@ purge_inactive_clients ( )
     {
         if ( ! (*i)->active )
         {
+            (*i)->status = "removed";
             if ( gui_is_active )
-                osc_server->send( gui_addr, "/nsm/gui/client/status", (*i)->client_id, (*i)->status = "removed" );
+                osc_server->send( gui_addr, "/nsm/gui/client/status", (*i)->client_id, (*i)->status );
 
             delete *i;
 
@@ -968,10 +975,11 @@ OSC_HANDLER( announce )
                       APP_TITLE,
                       ":server-control:broadcast:optional-gui:" );
 
+    c->status = "open";
     if ( gui_is_active )
     {
         osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
-        osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "open" );
+        osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
 
         if ( c->is_capable_of( ":optional-gui:" ) )
             osc_server->send( gui_addr, "/nsm/gui/client/has_optional_gui", c->client_id );
@@ -1169,8 +1177,9 @@ command_client_to_stop ( Client *c )
 
         kill( c->pid, SIGTERM );
 
+        c->status = "stopped";
         if ( gui_is_active )
-            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "stopped" );
+            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
     }
 }
 
@@ -1185,15 +1194,17 @@ command_client_to_quit ( Client *c )
 
         kill( c->pid, SIGTERM );
 
+        c->status = "quit";
         if ( gui_is_active )
-            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "quit" );
+            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
     }
     else if ( c->is_dumb_client() )
     {
         if ( c->pid > 0 )
         {
+            c->status = "quit";
             if ( gui_is_active )
-                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "quit" );
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
 
             /* should be kill? */
             c->pending_command( COMMAND_QUIT );
@@ -1203,8 +1214,9 @@ command_client_to_quit ( Client *c )
         }
         else
         {
+            c->status = "removed";
             if ( gui_is_active )
-                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
         }
     }
 }
@@ -1432,7 +1444,8 @@ load_session_file ( const char * path )
     new_clients.clear();
 
     if ( gui_is_active )
-    {
+    {   //This is not the case when --load-session was used. GUI announce will come later.
+
         //Send two parameters to signal that the session was loaded. First is the direct session name,
         //second is the full filepath.
         //See function announce_gui for a full description where /nsm/gui/session/name is also send from
@@ -2081,8 +2094,9 @@ OSC_HANDLER( error )
     MESSAGE( "Client \"%s\" replied with error: %s (%i) in %fms", c->name_with_id, message, err_code, c->milliseconds_since_last_command() );
     c->pending_command( COMMAND_NONE );
 
+    c->status = "error";
     if ( gui_is_active )
-        osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "error" );
+        osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
 
     return 0;
 }
@@ -2103,8 +2117,9 @@ OSC_HANDLER( reply )
 
         c->pending_command( COMMAND_NONE );
 
+        c->status = "ready";
         if ( gui_is_active )
-            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "ready" );
+            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
     }
     else
         MESSAGE( "Reply from unknown client" );
@@ -2149,7 +2164,10 @@ OSC_HANDLER( remove )
         if ( c->pid == 0 &&
              ! c->active )
         {
-            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status = "removed" );
+
+            c->status = "removed";
+            if ( gui_is_active )
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
 
             client.remove( c );
 
@@ -2245,6 +2263,8 @@ announce_gui( const char *url, bool is_reply )
     // If a GUI connects to an existing server with a running session this will trigger a list of
     // clients send to the new GUI.
 
+    MESSAGE ( "A GUI announced to us from the URL %s", url );
+
     gui_addr = lo_address_new_from_url( url );
     gui_is_active = true; //global state
 
@@ -2258,6 +2278,7 @@ announce_gui( const char *url, bool is_reply )
     osc_server->send( gui_addr, "/nsm/gui/session/root", session_root );
 
     // Send a list of clients to the newly registered GUI in case there was already a session open
+    DMESSAGE ( "Informing GUI about %li already running clients", client.size() );
     for ( std::list<Client*>::iterator i = client.begin();
           i != client.end();
           ++i )
@@ -2272,9 +2293,10 @@ announce_gui( const char *url, bool is_reply )
     //The second parameter is the full file path.
     //If both are empty it signals that no session is currently open, which is the default state if
     //a GUI started nsmd.
+    DMESSAGE( "Informing GUI about potentially running session name: %s", session_name );
     osc_server->send( gui_addr, "/nsm/gui/session/name", session_name ? session_name : "", session_path ? session_path : "" );
 
-    DMESSAGE( "Registered with GUI" );
+    DMESSAGE( "Registration with GUI complete" );
 }
 
 

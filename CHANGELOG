@@ -11,6 +11,7 @@ Optional-gui support to nsm.h, for other applications to include and use. (Meyer
 Legacy-GUI: Rewrite labels and buttons with better descriptions.
 Legacy-GUI: Prevent "Add New Client"->empty string from adding a broken client entry.
 Legacy-GUI: Scale icons, support more icon formats.
+Legacy-GUI: Show all icons and buttons when attaching to a running nsmd session
 
 v1.3.2
 Rename new-session-manager executable to nsm-legacy-gui to prevent future confusion.
@@ -29,4 +30,4 @@ Simplified file structure
 Fix compiler warnings.
 
 v1.2.1
-Current state of upstream Non Session Manager including unreleased /nsm/gui/session/root
+Current state of upstream Non Session Manager v1.2 including unreleased /nsm/gui/session/root

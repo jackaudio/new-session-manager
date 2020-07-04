@@ -743,7 +743,7 @@ launch ( const char *executable, const char *client_id )
     {
         //At this point we do not know if launched program will start or fail
         //And we do not know if it has nsm-support or not. This will be decided if it announces.
-        osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
+        osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->executable_path ); // a second message may get send with c->name, if the client sends announce()
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
         osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, "" );
     }
@@ -905,8 +905,10 @@ OSC_HANDLER( announce )
     this c->name changes from executable to the self-reported client name from this announce
     message.
 
-    For clients that announce themselves (started with NSM URL ENV present) the first client/new
-    never happens.
+    Before v1.4 clients that announce themselves (started with NSM URL ENV present) never triggered
+    the first client/new which sends an executable. This created a problem with attaching GUIs to a
+    running nsmd never were able to infer any data from executables, like icons. Changed so that
+    every new client scenario sends basename(executable) first.
     */
 
     const char *client_name = &argv[0]->s;
@@ -994,7 +996,7 @@ OSC_HANDLER( announce )
     c->status = "open";
     if ( gui_is_active )
     {
-        osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
+        osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name ); //pretty-name. not exectuable
         osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
 
         if ( c->is_capable_of( ":optional-gui:" ) )
@@ -2299,13 +2301,15 @@ announce_gui( const char *url, bool is_reply )
           ++i )
     {
         Client *c = *i;
-        osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name );
+        osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->executable_path ); // we send new twice. see announce() comment
         if ( c->status )
             osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
         if ( c->is_capable_of( ":optional-gui:" ) )
             osc_server->send( gui_addr, "/nsm/gui/client/has_optional_gui", c->client_id );
         if ( c->label() ) // could be NULL
             osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, c->label() );
+        if ( c->active )
+            osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name ); // upgrade to pretty-name
     }
 
     //Send two parameters. The first one is the short session name, which is the directory name.

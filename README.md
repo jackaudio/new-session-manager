@@ -71,10 +71,10 @@ This is a software package that will compile and install multiple executables:
   * Can be deactivated (see below) `-Djackpatch=false`
 * `nsm-legacy-gui`, Legacy GUI for the user
   * Formerly known as "non-session-manager"
-  * Dependencies are `FLTK` and `liblo`, the OSC library.
+  * Dependencies are `FLTK`>=v1.3.0 and `liblo`, the OSC library.
   * Can be deactivated (see below) `-Dlegacy-gui=false`
 * `nsm-proxy`, NSM GUI Client to run any program without direct NSM support
-  * Dependencies are `FLTK`, `fluid` (FLTK Editor/compiler, maybe in the same package as FLTK, maybe not) and `liblo`, the OSC library.
+  * Dependencies are `FLTK`>=v1.3.0, `fluid` (FLTK Editor/compiler, maybe in the same package as FLTK, maybe not) and `liblo`, the OSC library.
   * Can be deactivated (see below) `-Dnsm-proxy=false`
 
 

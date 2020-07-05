@@ -1314,6 +1314,8 @@ cb_main ( Fl_Widget *, void * )
 int
 main (int argc, char **argv )
 {
+    Fl::scheme("gtk+");  //Fl::scheme("gleam");
+
     fl_register_images();
 
     Fl::lock();

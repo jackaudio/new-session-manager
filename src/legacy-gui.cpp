@@ -590,7 +590,7 @@ public:
             {
                 const char *name = fl_input( "Open Session", NULL );
 
-                if ( ! name )
+                if ( ! name || name[0] == '\0' )
                     return;
 
                 Fl_Tree_Item *item = session_browser->find_item( name );
@@ -602,7 +602,7 @@ public:
             {
                 const char *name = fl_input( "New Session", NULL );
 
-                if ( ! name )
+                if ( ! name || name[0] == '\0' )
                     return;
 
                 MESSAGE( "Sending duplicate for: %s", name );
@@ -650,7 +650,7 @@ public:
             {
                 const char *name = fl_input( "New Session", NULL );
 
-                if ( !name )
+                if ( ! name || name[0] == '\0' )
                     return;
 
                 MESSAGE( "Sending new for: %s", name );
@@ -699,7 +699,7 @@ public:
 
                     const char *n = fl_input( "Enter executable name" );
 
-                    if ( !n || !*n )
+                    if ( !n || !*n || n[0] == '\0' )
                         return;
 
                     char *name = strdup( n );
@@ -722,7 +722,7 @@ public:
                 {
                     const char *n = fl_input( "Enter executable name" );
 
-                    if ( !n || !*n )
+                    if ( !n || !*n || n[0] == '\0' )
                         return;
 
                     char *name = strdup( n );

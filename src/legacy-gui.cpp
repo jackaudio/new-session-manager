@@ -23,6 +23,7 @@
 
 #include "Endpoint.hpp"
 
+
 #include <FL/Fl.H>
 
 #include <FL/Fl_Window.H>
@@ -60,7 +61,6 @@
 static time_t last_ping_response;
 
 static OSC::Endpoint *osc;
-
 
 struct Daemon
 {
@@ -226,7 +226,6 @@ public:
                 _kill_button->hide();
                 _gui->deactivate();
                 _dirty->deactivate();
-                color( fl_color_average( FL_BLACK, FL_RED, 0.50 ) );
                 redraw();
             }
             else
@@ -249,27 +248,20 @@ public:
 
             stopped( 0 );
 
-            // The following colors are a thin borders around client entries.
-            // Even without a color there will still be a rounded border from the label itself, which looks fine.
-
             if ( ! strcmp( command, "ready" ) )
             {
-                color( FL_BACKGROUND_COLOR );
                 _progress->value( 0.0f );
             }
             else if ( ! strcmp( command, "quit" ) ||
                       ! strcmp( command, "kill" ) ||
                       ! strcmp( command, "error" ) )
             {
+                //Set a border color to indicate warning
                 color( fl_color_average( FL_BLACK, FL_RED, 0.50 ) );
             }
             else if ( ! strcmp( command, "stopped" ) )
             {
                 stopped( 1 );
-            }
-            else
-            {
-                color( FL_BACKGROUND_COLOR );
             }
 
             redraw();
@@ -344,7 +336,6 @@ public:
             _client_label = NULL;
 
             align( FL_ALIGN_LEFT | FL_ALIGN_INSIDE );
-            color( fl_darker( FL_RED ) );
             box( FL_UP_FRAME );
 
             int yy = Y + H * 0.25;
@@ -365,7 +356,6 @@ public:
                 }
 
                 { Fl_Box *o = client_name = new Fl_Box( 0, 0, 300, 48 );
-                    /* o->color( FL_BLUE ); */
                     o->align( FL_ALIGN_INSIDE | FL_ALIGN_LEFT );
                     o->labeltype( FL_NORMAL_LABEL );
                 }
@@ -378,7 +368,6 @@ public:
 
             { Fl_Progress *o = _progress = new Fl_Progress( xx, Y + H * 0.25, 75, H * 0.50, NULL );
                 o->box( FL_FLAT_BOX );
-                o->color( FL_DARK1, FL_LIGHT1 );
                 o->copy_label( "launch" );
                 o->labelsize( 12 );
                 o->minimum( 0.0f );
@@ -395,8 +384,6 @@ public:
                     o->labelsize( 9 );
                     o->box( FL_UP_BOX );
                     o->type(0);
-                    o->color();
-                    o->selection_color( FL_YELLOW );
                     o->value( 0 );
                     o->callback( cb_button, this );
                 }
@@ -409,8 +396,6 @@ public:
                     o->labelsize( 9 );
                     o->box( FL_UP_BOX );
                     o->type(0);
-                    o->color();
-                    o->selection_color( FL_YELLOW );
                     o->value( 0 );
                     o->hide();
                     o->callback( cb_button, this );
@@ -422,7 +407,6 @@ public:
                     o->labelsize( 9 );
                     o->box( FL_UP_BOX );
                     o->type(0);
-//                    o->color( FL_RED );
                     o->value( 0 );
                     o->tooltip( "Stop" );
                     o->callback( cb_button, this );
@@ -435,7 +419,6 @@ public:
 
                     o->box( FL_UP_BOX );
                     o->type(0);
-//                    o->color( FL_GREEN );
                     o->value( 0 );
                     o->label( "@>" );
                     o->tooltip( "Resume" );
@@ -450,7 +433,6 @@ public:
 
                     o->box( FL_UP_BOX );
                     o->type(0);
-//                    o->color( FL_RED );
                     o->value( 0 );
                     o->label( "X" );
                     o->tooltip( "Remove" );
@@ -635,7 +617,8 @@ public:
 
                 Fl_Tree_Item *item = session_browser->callback_item();
 
-                //   session_browser->deselect( item, 0 );
+                if ( item )
+                    session_browser->deselect( item, 0 ); //Deselect on program start, otherwise it looks like the first session is already loaded.
 
                 if ( item->children() )
                     return;
@@ -679,7 +662,6 @@ public:
                         {
                             Fl_Select_Browser *o = browser = new Fl_Select_Browser( 0, 100, 300, 300 );
                             o->box( FL_ROUNDED_BOX );
-                            o->color( FL_BLACK );
                             o->callback( browser_callback, win );
                             foreach_daemon( d )
                             {
@@ -911,7 +893,6 @@ public:
                 { Fl_Button *o = abort_button = new Fl_Button( 0, 0, 160, 50, "Close &without Saving" );
                     o->shortcut( FL_CTRL | 'w' );
                     o->box( FL_UP_BOX );
-                    o->color( fl_color_average( FL_RED, fl_rgb_color(10,10,10), 0.5f ) );
                     o->callback( cb_handle, (void*)this );
                 }
 
@@ -931,12 +912,8 @@ public:
                     {
                         Fl_Tree *o = session_browser = new Fl_Tree( X, Y + 50, W / 3, H - ( 50 + SH ) );
                         o->callback( cb_handle, (void *)this );
-                        o->color( FL_DARK1 );
-                        o->item_labelbgcolor( o->color() );
-                        o->item_labelfgcolor( FL_FOREGROUND_COLOR );
                         o->sortorder( FL_TREE_SORT_ASCENDING );
                         o->showroot( 0 );
-                        o->selection_color( fl_darker( FL_GREEN ) );
                         o->selectbox( FL_UP_FRAME );
                         o->box( FL_FLAT_BOX );
                         /* o->label( "Sessions" ); */
@@ -951,8 +928,9 @@ public:
                     o->type( FL_VERTICAL );
                     o->spacing( 2 );
 
-                    {  session_name_box = new Fl_Box( 0, 0, 100, 25, "" );
-
+                    {
+                        session_name_box = new Fl_Box( 0, 0, 100, 25, "" );
+                        session_name_box->labelsize( 20 );
                     }
 
                     { Fl_Button *o = add_button = new Fl_Button( 0, 0, 100, 25, "&Add Client to Session" );
@@ -985,12 +963,10 @@ public:
                 }
 
                 { Fl_Text_Display *o = status_display = new Fl_Text_Display( X, Y + H - SH, W, SH );
-                    o->color( FL_DARK1 );
-                    o->textcolor( FL_FOREGROUND_COLOR );
                     o->box( FL_UP_BOX );
-                    o->textfont( FL_COURIER );
-                    o->textsize( 10 );
                     Fl_Text_Buffer *b = new Fl_Text_Buffer();
+                    o->textfont( FL_COURIER ); // Create the "technical log" look&feel
+                    o->textsize( 12 );
                     o->buffer(b);
                 }
 
@@ -1305,7 +1281,9 @@ cb_main ( Fl_Widget *, void * )
 int
 main (int argc, char **argv )
 {
-    Fl::scheme("gtk+");  //Fl::scheme("gleam");
+    Fl::scheme( "gtk+" );
+
+    Fl::visual(FL_DOUBLE|FL_INDEX); // FLKT Double_Window: "higly recommended […] put before the first show() of any window in your program"
 
     fl_register_images();
 
@@ -1331,6 +1309,18 @@ main (int argc, char **argv )
 
         o->show( 0, NULL );
     }
+
+    //Setting colors only after main window creation.
+    //We keep them all in once place instead of setting them in the widgets
+    Fl::set_color( FL_BACKGROUND_COLOR, 37, 40, 45 ); //These are the colors used as backgrounds by almost all widgets and used to draw the edges of all the boxtypes.
+    Fl::set_color( FL_BACKGROUND2_COLOR, 55, 61, 69 ); //This color is used as a background by Fl_Input and other text widgets.
+    Fl::set_color( FL_FOREGROUND_COLOR, 223, 237, 255 );
+    Fl::set_color( FL_INACTIVE_COLOR, 255, 0, 0 ); // Not used
+    Fl::set_color( FL_SELECTION_COLOR, 80, 84, 92 ); // e.g. the currently selected session
+    Fl::reload_scheme();
+    controller->session_browser->item_labelfgcolor( fl_rgb_color (213, 227, 245 ) ); // a bit darker than foreground
+
+
 
     static struct option long_options[] =
         {

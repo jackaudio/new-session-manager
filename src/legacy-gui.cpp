@@ -249,9 +249,12 @@ public:
 
             stopped( 0 );
 
+            // The following colors are a thin borders around client entries.
+            // Even without a color there will still be a rounded border from the label itself, which looks fine.
+
             if ( ! strcmp( command, "ready" ) )
             {
-                color( fl_color_average( FL_BLACK, FL_GREEN, 0.50 ) );
+                color( FL_BACKGROUND_COLOR );
                 _progress->value( 0.0f );
             }
             else if ( ! strcmp( command, "quit" ) ||
@@ -266,7 +269,7 @@ public:
             }
             else
             {
-                color( fl_color_average( FL_BLACK, FL_YELLOW, 0.50 ) );
+                color( FL_BACKGROUND_COLOR );
             }
 
             redraw();

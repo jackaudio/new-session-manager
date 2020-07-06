@@ -1,0 +1,13 @@
+This is an internal reminder what to check and change before a release.
+
+/documentation/API/api.adoc
+    :revnumber:
+    :revdate:
+
+Version number in /meson.build (one occurence)
+Version number and changes in /CHANGELOG
+Regenerate API and Website html to update the date in their footer
+
+We do not change the copyright date in file license-headers. That is not required by law and only
+exist to mark to year of the fork. In the future it might be removed completely.
+

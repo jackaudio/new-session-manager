@@ -17,7 +17,7 @@
 # along with New-Session-Manager. If not, see <https://www.gnu.org/licenses/>.
 ##############################################################################
 
-project('new-session-manager', 'c', 'cpp', version : '1.3.1', license : 'GPLv3')
+project('new-session-manager', 'c', 'cpp', version : '1.4', license : 'GPLv3')
 
 ##############
 #Dependencies

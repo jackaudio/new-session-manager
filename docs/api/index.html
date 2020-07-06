@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.10">
 <meta name="author" content="Jonathan Moore Liles">
-<title>Non Session Manager API</title>
+<title>Non Session Manager - API</title>
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
 /* Uncomment @import statement to use as custom stylesheet */
@@ -438,17 +438,87 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article">
 <div id="header">
-<h1>Non Session Manager API</h1>
+<h1>Non Session Manager - API</h1>
 <div class="details">
 <span id="author" class="author">Jonathan Moore Liles</span><br>
 <span id="email" class="email">&lt;<a href="mailto:male@tuxfamily.org">male@tuxfamily.org</a>&gt;</span><br>
 <span id="revnumber">version 1.2,</span>
 <span id="revdate">2013-04-06</span>
 </div>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_client_behavior_under_session_management">1. Client Behavior Under Session Management</a>
+<ul class="sectlevel2">
+<li><a href="#_file_menu">1.1. File Menu</a>
+<ul class="sectlevel3">
+<li><a href="#_new">1.1.1. New</a></li>
+<li><a href="#_open">1.1.2. Open</a></li>
+<li><a href="#_save">1.1.3. Save</a></li>
+<li><a href="#_save_as">1.1.4. Save As</a></li>
+<li><a href="#_close_as_distinguished_from_quit_or_exit">1.1.5. Close (as distinguished from Quit or Exit)</a></li>
+<li><a href="#_quit_or_exit">1.1.6. Quit or Exit</a></li>
+</ul>
+</li>
+<li><a href="#_data_storage">1.2. Data Storage</a>
+<ul class="sectlevel3">
+<li><a href="#_internal_files">1.2.1. Internal Files</a></li>
+<li><a href="#_external_files">1.2.2. External Files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_nsm_osc_protocol">2. NSM OSC Protocol</a>
+<ul class="sectlevel2">
+<li><a href="#_establishing_a_connection">2.1. Establishing a Connection</a>
+<ul class="sectlevel3">
+<li><a href="#_announce">2.1.1. Announce</a></li>
+<li><a href="#_response">2.1.2. Response</a></li>
+</ul>
+</li>
+<li><a href="#_server_to_client_control_messages">2.2. Server to Client Control Messages</a>
+<ul class="sectlevel3">
+<li><a href="#_quit">2.2.1. Quit</a></li>
+<li><a href="#_open_2">2.2.2. Open</a>
+<ul class="sectlevel4">
+<li><a href="#_response_2">2.2.2.1. Response</a></li>
+</ul>
+</li>
+<li><a href="#_save_2">2.2.3. Save</a>
+<ul class="sectlevel4">
+<li><a href="#_response_3">2.2.3.1. Response</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_server_to_client_informational_messages">2.3. Server to Client Informational Messages</a>
+<ul class="sectlevel3">
+<li><a href="#_session_is_loaded">2.3.1. Session is Loaded</a></li>
+<li><a href="#_show_optional_gui">2.3.2. Show Optional Gui</a></li>
+</ul>
+</li>
+<li><a href="#_client_to_server_informational_messages">2.4. Client to Server Informational Messages</a>
+<ul class="sectlevel3">
+<li><a href="#_optional_gui">2.4.1. Optional GUI</a></li>
+<li><a href="#_progress">2.4.2. Progress</a></li>
+<li><a href="#_dirtiness">2.4.3. Dirtiness</a></li>
+<li><a href="#_status_messsages">2.4.4. Status Messsages</a></li>
+</ul>
+</li>
+<li><a href="#_error_code_definitions">2.5. Error Code Definitions</a></li>
+<li><a href="#_client_to_server_control">2.6. Client to Server Control</a></li>
+<li><a href="#_server_control_api">2.7. Server Control API</a>
+<ul class="sectlevel3">
+<li><a href="#_client_to_client_communication">2.7.1. Client to Client Communication</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
 </div>
 <div id="content">
-<div class="sect1">
-<h2 id="_non_session_management_api">1. Non Session Management API</h2>
+<div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
 <p>The Non Session Management API is used by the various components of the Non audio production suite
@@ -480,8 +550,11 @@ these rules are meant to be followed and are non-negotiable. If an application d
 this specification it should be considered broken. Consistency across applications under session
 management is very important for a good user experience.</p>
 </div>
-<div class="sect2">
-<h3 id="_client_behavior_under_session_management">1.1. Client Behavior Under Session Management</h3>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_client_behavior_under_session_management">1. Client Behavior Under Session Management</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Most graphical applications make available to the user a common set of file operations, typically
 presented under a File or Project menu.</p>
@@ -496,17 +569,17 @@ an NSM session. These rules only apply when session management is active (that i
 consistent and predictable user experience, it is critically important for applications to adhere
 to these guidelines.</p>
 </div>
+<div class="sect2">
+<h3 id="_file_menu">1.1. File Menu</h3>
 <div class="sect3">
-<h4 id="_file_menu">1.1.1. File Menu</h4>
-<div class="sect4">
-<h5 id="_new">1.1.1.1. New</h5>
+<h4 id="_new">1.1.1. New</h4>
 <div class="paragraph">
 <p>This option may empty/reset the current file or project (possibly after user confirmation). UNDER
 NO CIRCUMSTANCES should it allow the user to create a new project/file in another location.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_open">1.1.1.2. Open</h5>
+<div class="sect3">
+<h4 id="_open">1.1.2. Open</h4>
 <div class="paragraph">
 <p>This option MUST be disabled.</p>
 </div>
@@ -515,8 +588,8 @@ NO CIRCUMSTANCES should it allow the user to create a new project/file in anothe
 copy of a file/project which is then saved at the session path provided by NSM.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_save">1.1.1.3. Save</h5>
+<div class="sect3">
+<h4 id="_save">1.1.3. Save</h4>
 <div class="paragraph">
 <p>This option should behave as normal, saving the current file/project as established by the NSM
 <code>open</code> message.</p>
@@ -525,8 +598,8 @@ copy of a file/project which is then saved at the session path provided by NSM.<
 <p>UNDER NO CIRCUMSTANCES should this option present the user with a choice of where to save the file.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_save_as">1.1.1.4. Save As</h5>
+<div class="sect3">
+<h4 id="_save_as">1.1.4. Save As</h4>
 <div class="paragraph">
 <p>This option MUST be disabled.</p>
 </div>
@@ -536,24 +609,24 @@ creates a copy of the current file/project which is then saved in a user-specifi
 of the session path provided by NSM.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_close_as_distinguished_from_quit_or_exit">1.1.1.5. Close (as distinguished from Quit or Exit)</h5>
+<div class="sect3">
+<h4 id="_close_as_distinguished_from_quit_or_exit">1.1.5. Close (as distinguished from Quit or Exit)</h4>
 <div class="paragraph">
 <p>This option MUST be disabled unless its meaning is to disconnect the application from session
 management.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_quit_or_exit">1.1.1.6. Quit or Exit</h5>
+<div class="sect3">
+<h4 id="_quit_or_exit">1.1.6. Quit or Exit</h4>
 <div class="paragraph">
 <p>This option may behave as normal (possibly asking the user to confirm exiting).</p>
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_data_storage">1.2. Data Storage</h3>
 <div class="sect3">
-<h4 id="_data_storage">1.1.2. Data Storage</h4>
-<div class="sect4">
-<h5 id="_internal_files">1.1.2.1. Internal Files</h5>
+<h4 id="_internal_files">1.2.1. Internal Files</h4>
 <div class="paragraph">
 <p>All project specific data created by a client MUST be stored in the per-client storage area
 provided by NSM. This includes all recorded audio and MIDI files, snapshots, etc. Only global
@@ -561,8 +634,8 @@ configuration items, exports, and renders of the project may be stored elsewhere
 specifies).</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_external_files">1.1.2.2. External Files</h5>
+<div class="sect3">
+<h4 id="_external_files">1.2.2. External Files</h4>
 <div class="paragraph">
 <p>Files required by the project but external to it (typically read-only data such as audio samples)
 SHOULD be referenced by creating a symbolic link within the assigned session area, and then
@@ -574,8 +647,10 @@ to (some unique component may be required to prevent collisions)</p>
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_nsm_osc_protocol">1.2. NSM OSC Protocol</h3>
+</div>
+<div class="sect1">
+<h2 id="_nsm_osc_protocol">2. NSM OSC Protocol</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>All message parameters are REQUIRED. All messages MUST be sent from the same socket as the <code>announce</code>
 message, using the <code>lo_send_from</code> method of liblo or its equivalent, as the server uses the return
@@ -585,10 +660,10 @@ addresses to distinguish between clients.</p>
 <p>Clients MUST create thier OSC servers using the same protocol (UDP,TCP) as found in <code>NSM_URL</code>. liblo
 is lacking a robust TCP implementation at the time of writing, but in the future it may be useful.</p>
 </div>
+<div class="sect2">
+<h3 id="_establishing_a_connection">2.1. Establishing a Connection</h3>
 <div class="sect3">
-<h4 id="_establishing_a_connection">1.2.1. Establishing a Connection</h4>
-<div class="sect4">
-<h5 id="_announce">1.2.1.1. Announce</h5>
+<h4 id="_announce">2.1.1. Announce</h4>
 <div class="paragraph">
 <p>At launch, the client MUST check the environment for the value of <code>NSM_URL</code>. If present, the client
 MUST send the following message to the provided address as soon as it is ready to respond to the
@@ -663,8 +738,8 @@ like Python can be more challenging.</p>
 </tbody>
 </table>
 </div>
-<div class="sect4">
-<h5 id="_response">1.2.1.2. Response</h5>
+<div class="sect3">
+<h4 id="_response">2.1.2. Response</h4>
 <div class="paragraph">
 <p>The server will respond to the client&#8217;s announce message with the following message:</p>
 </div>
@@ -757,8 +832,8 @@ For example, the Non applications activate their "SM" blinkers at this time.</p>
 </table>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_server_to_client_control_messages">1.2.2. Server to Client Control Messages</h4>
+<div class="sect2">
+<h3 id="_server_to_client_control_messages">2.2. Server to Client Control Messages</h3>
 <div class="paragraph">
 <p>Compliant clients MUST accept the client control messages described in this section. All client
 control messages REQUIRE a response. Responses MUST be delivered back to the sender (NSM) from the
@@ -785,8 +860,8 @@ replied to (e.g. "nsm/client/save":</p>
 <pre class="highlight nowrap"><code class="language-OSC" data-lang="OSC">/error s:path i:error_code s:message</code></pre>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_quit">1.2.2.1. Quit</h5>
+<div class="sect3">
+<h4 id="_quit">2.2.1. Quit</h4>
 <div class="paragraph">
 <p>There is no message for this. Clients will receive the Unix SIGTERM signal and MUST close cleanly
 IMMEDIATELY, without displaying any kind of dialog to the user and regardless of whether or not
@@ -794,8 +869,8 @@ unsaved changes would be lost. When a session is closed the application will rec
 soon after having responded to a <code>save</code> message.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_open_2">1.2.2.2. Open</h5>
+<div class="sect3">
+<h4 id="_open_2">2.2.2. Open</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-OSC" data-lang="OSC">/nsm/client/open s:path_to_instance_specific_project s:display_name s:client_id</code></pre>
@@ -862,8 +937,8 @@ renaming existing clients, although this is a sorely needed addition.</p>
 <p>A response is REQUIRED as soon as the open operation has been completed. Ongoing progress may be
 indicated by sending messages to <code>/nsm/client/progress</code>.</p>
 </div>
-<div class="sect5">
-<h6 id="_response_2">Response</h6>
+<div class="sect4">
+<h5 id="_response_2">2.2.2.1. Response</h5>
 <div class="paragraph">
 <p>The client MUST respond to the 'open' message with:</p>
 </div>
@@ -917,8 +992,8 @@ indicated by sending messages to <code>/nsm/client/progress</code>.</p>
 </table>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_save_2">1.2.2.3. Save</h5>
+<div class="sect3">
+<h4 id="_save_2">2.2.3. Save</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-OSC" data-lang="OSC">/nsm/client/save</code></pre>
@@ -928,8 +1003,8 @@ indicated by sending messages to <code>/nsm/client/progress</code>.</p>
 <p>This message will only be delivered after a previous <code>open</code> message, and may be sent any number of
 times within the course of a session (including zero, if the user aborts the session).</p>
 </div>
-<div class="sect5">
-<h6 id="_response_3">Response</h6>
+<div class="sect4">
+<h5 id="_response_3">2.2.3.1. Response</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-OSC" data-lang="OSC">/reply "/nsm/client/save" s:message</code></pre>
@@ -973,10 +1048,10 @@ times within the course of a session (including zero, if the user aborts the ses
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_server_to_client_informational_messages">2.3. Server to Client Informational Messages</h3>
 <div class="sect3">
-<h4 id="_server_to_client_informational_messages">1.2.3. Server to Client Informational Messages</h4>
-<div class="sect4">
-<h5 id="_session_is_loaded">1.2.3.1. Session is Loaded</h5>
+<h4 id="_session_is_loaded">2.3.1. Session is Loaded</h4>
 <div class="paragraph">
 <p>Accepting this message is optional. The intent is to signal to clients which may have some
 interdependence (say, peer to peer OSC connections) that the session is fully loaded and all their
@@ -993,8 +1068,8 @@ on this message MUST not do so by delaying initialization waiting for it.</p>
 <p>This message does not require a response.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_show_optional_gui">1.2.3.2. Show Optional Gui</h5>
+<div class="sect3">
+<h4 id="_show_optional_gui">2.3.2. Show Optional Gui</h4>
 <div class="paragraph">
 <p>If the client has specified the <code>optional-gui</code> capability, then it may receive this message from the
 server when the user wishes to change the visibility state of the GUI. It doesn&#8217;t matter if the
@@ -1017,10 +1092,10 @@ separate program, it should be killed.</p>
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_client_to_server_informational_messages">2.4. Client to Server Informational Messages</h3>
 <div class="sect3">
-<h4 id="_client_to_server_informational_messages">1.2.4. Client to Server Informational Messages</h4>
-<div class="sect4">
-<h5 id="_optional_gui">1.2.4.1. Optional GUI</h5>
+<h4 id="_optional_gui">2.4.1. Optional GUI</h4>
 <div class="paragraph">
 <p>If the client has specified the <code>optional-gui</code> capability, then it MUST send this message whenever
 the state of visibility of the optional GUI has changed. It also MUST send this message after it&#8217;s
@@ -1044,8 +1119,8 @@ loads.</p>
 <p>No response will be delivered.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_progress">1.2.4.2. Progress</h5>
+<div class="sect3">
+<h4 id="_progress">2.4.2. Progress</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-OSC" data-lang="OSC">/nsm/client/progress f:progress</code></pre>
@@ -1068,8 +1143,8 @@ message is still REQUIRED.</p>
 capability string.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_dirtiness">1.2.4.3. Dirtiness</h5>
+<div class="sect3">
+<h4 id="_dirtiness">2.4.3. Dirtiness</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-OSC" data-lang="OSC">/nsm/client/is_dirty</code></pre>
@@ -1088,8 +1163,8 @@ may optionally send <code>is_dirty</code> and <code>is_clean</code> messages.</p
 <p>Clients which have this capability should include <code>:dirty:</code> in their <code>announce</code> capability string.</p>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_status_messsages">1.2.4.4. Status Messsages</h5>
+<div class="sect3">
+<h4 id="_status_messsages">2.4.4. Status Messsages</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-OSC" data-lang="OSC">/nsm/client/message i:priority s:message</code></pre>
@@ -1106,8 +1181,8 @@ string.</p>
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_error_code_definitions">1.2.5. Error Code Definitions</h4>
+<div class="sect2">
+<h3 id="_error_code_definitions">2.5. Error Code Definitions</h3>
 <table class="tableblock frame-all grid-all stripes-even stretch">
 <caption class="title">Table 6. Error Code Definitions</caption>
 <colgroup>
@@ -1164,8 +1239,8 @@ string.</p>
 </tbody>
 </table>
 </div>
-<div class="sect3">
-<h4 id="_client_to_server_control">1.2.6. Client to Server Control</h4>
+<div class="sect2">
+<h3 id="_client_to_server_control">2.6. Client to Server Control</h3>
 <div class="paragraph">
 <p>If the server publishes the <code>:server_control:</code> capability, then clients can also initiate action by
 the server. For example, a client might implement a 'Save All' option which sends a
@@ -1173,8 +1248,8 @@ the server. For example, a client might implement a 'Save All' option which send
 management interface to effect the save.</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_server_control_api">1.2.7. Server Control API</h4>
+<div class="sect2">
+<h3 id="_server_control_api">2.7. Server Control API</h3>
 <div class="paragraph">
 <p>The session manager not only manages clients via OSC, but it is itself controlled via OSC messages.
 The server responds to the following messages.</p>
@@ -1330,8 +1405,8 @@ error.</p>
 </li>
 </ul>
 </div>
-<div class="sect4">
-<h5 id="_client_to_client_communication">1.2.7.1. Client to Client Communication</h5>
+<div class="sect3">
+<h4 id="_client_to_client_communication">2.7.1. Client to Client Communication</h4>
 <div class="paragraph">
 <p>If the server includes <code>:broadcast:</code> in its capability string, then clients may send broadcast
 messages to each other through the NSM server. Clients may send messages to the server at the path
@@ -1375,11 +1450,10 @@ of which might respond to the message by updating their own tempo maps.</p>
 </div>
 </div>
 </div>
-</div>
 <div id="footer">
 <div id="footer-text">
 Version 1.2<br>
-Last updated 2020-07-06 18:12:58 +0200
+Last updated 2020-07-06 22:15:39 +0200
 </div>
 </div>
 </body>

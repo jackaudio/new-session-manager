@@ -1,7 +1,8 @@
 ////
-This is not an "asciidoctor", not plain "asciidoc" document.
+This is "asciidoctor", not plain "asciidoc".
 https://asciidoctor.org/docs/user-manual/
 ////
+
 
 ////
 This documentation is licensed under the Creative Commons Attribution-ShareAlike 2.5 International License.
@@ -14,7 +15,6 @@ A copy of the license has been provided in the file documentation/API/LICENSE.
 :authors: Jonathan Moore Liles
 :email: <male@tuxfamily.org>
 :revnumber: 1.2
-:revdate: 2013-04-06
 
 :iconfont-remote!:
 :!webfonts:
@@ -22,15 +22,12 @@ A copy of the license has been provided in the file documentation/API/LICENSE.
 :sectnums:
 :sectnumlevels: 4
 
-:toc: preamble
+:toc:
 :toc-title: Table of Contents
 :toclevels: 4
 
 
-= Non Session Manager API
-
-
-== Non Session Management API
+= Non Session Manager - API
 
 The Non Session Management API is used by the various components of the Non audio production suite
 to allow any number of independent programs to be managed together as part of a logical session
@@ -58,7 +55,7 @@ this specification it should be considered broken. Consistency across applicatio
 management is very important for a good user experience.
 
 
-=== Client Behavior Under Session Management
+== Client Behavior Under Session Management
 
 Most graphical applications make available to the user a common set of file operations, typically
 presented under a File or Project menu.
@@ -72,16 +69,16 @@ consistent and predictable user experience, it is critically important for appli
 to these guidelines.
 
 
-==== File Menu
+=== File Menu
 
 
-===== New
+==== New
 
 This option may empty/reset the current file or project (possibly after user confirmation). UNDER
 NO CIRCUMSTANCES should it allow the user to create a new project/file in another location.
 
 
-===== Open
+==== Open
 
 This option MUST be disabled.
 
@@ -89,7 +86,7 @@ The application may, however, elect to implement an option called 'Import into S
 copy of a file/project which is then saved at the session path provided by NSM.
 
 
-===== Save
+==== Save
 
 This option should behave as normal, saving the current file/project as established by the NSM
 `open` message.
@@ -97,7 +94,7 @@ This option should behave as normal, saving the current file/project as establis
 UNDER NO CIRCUMSTANCES should this option present the user with a choice of where to save the file.
 
 
-===== Save As
+==== Save As
 
 This option MUST be disabled.
 
@@ -106,21 +103,21 @@ creates a copy of the current file/project which is then saved in a user-specifi
 of the session path provided by NSM.
 
 
-===== Close (as distinguished from Quit or Exit)
+==== Close (as distinguished from Quit or Exit)
 
 This option MUST be disabled unless its meaning is to disconnect the application from session
 management.
 
 
-=====  Quit or Exit
+====  Quit or Exit
 
 This option may behave as normal (possibly asking the user to confirm exiting).
 
 
-====  Data Storage
+===  Data Storage
 
 
-===== Internal Files
+==== Internal Files
 
 All project specific data created by a client MUST be stored in the per-client storage area
 provided by NSM. This includes all recorded audio and MIDI files, snapshots, etc. Only global
@@ -128,7 +125,7 @@ configuration items, exports, and renders of the project may be stored elsewhere
 specifies).
 
 
-===== External Files
+==== External Files
 
 Files required by the project but external to it (typically read-only data such as audio samples)
 SHOULD be referenced by creating a symbolic link within the assigned session area, and then
@@ -139,7 +136,7 @@ to (some unique component may be required to prevent collisions)
 
 
 
-=== NSM OSC Protocol
+== NSM OSC Protocol
 
 All message parameters are REQUIRED. All messages MUST be sent from the same socket as the `announce`
 message, using the `lo_send_from` method of liblo or its equivalent, as the server uses the return
@@ -150,9 +147,9 @@ Clients MUST create thier OSC servers using the same protocol (UDP,TCP) as found
 is lacking a robust TCP implementation at the time of writing, but in the future it may be useful.
 
 
-==== Establishing a Connection
+=== Establishing a Connection
 
-===== Announce
+==== Announce
 
 At launch, the client MUST check the environment for the value of `NSM_URL`. If present, the client
 MUST send the following message to the provided address as soon as it is ready to respond to the
@@ -201,7 +198,7 @@ like Python can be more challenging.
 |===
 
 
-===== Response
+==== Response
 
 The server will respond to the client's announce message with the following message:
 
@@ -257,7 +254,7 @@ The following table defines possible values of `error_code`:
 |===
 
 
-==== Server to Client Control Messages
+=== Server to Client Control Messages
 
 Compliant clients MUST accept the client control messages described in this section. All client
 control messages REQUIRE a response. Responses MUST be delivered back to the sender (NSM) from the
@@ -283,7 +280,7 @@ replied to (e.g. "nsm/client/save":
 ----
 
 
-===== Quit
+==== Quit
 
 There is no message for this. Clients will receive the Unix SIGTERM signal and MUST close cleanly
 IMMEDIATELY, without displaying any kind of dialog to the user and regardless of whether or not
@@ -291,7 +288,7 @@ unsaved changes would be lost. When a session is closed the application will rec
 soon after having responded to a `save` message.
 
 
-===== Open
+==== Open
 
 [source%nowrap,OSC]
 ----
@@ -349,7 +346,7 @@ A response is REQUIRED as soon as the open operation has been completed. Ongoing
 indicated by sending messages to `/nsm/client/progress`.
 
 
-====== Response
+===== Response
 
 The client MUST respond to the 'open' message with:
 
@@ -381,7 +378,7 @@ Or
 |===
 
 
-===== Save
+==== Save
 
 [source%nowrap,OSC]
 ----
@@ -391,7 +388,7 @@ Or
 This message will only be delivered after a previous `open` message, and may be sent any number of
 times within the course of a session (including zero, if the user aborts the session).
 
-====== Response
+===== Response
 
 [source%nowrap,OSC]
 ----
@@ -419,9 +416,9 @@ Or
 |===
 
 
-==== Server to Client Informational Messages
+=== Server to Client Informational Messages
 
-===== Session is Loaded
+==== Session is Loaded
 
 Accepting this message is optional. The intent is to signal to clients which may have some
 interdependence (say, peer to peer OSC connections) that the session is fully loaded and all their
@@ -437,7 +434,7 @@ on this message MUST not do so by delaying initialization waiting for it.
 This message does not require a response.
 
 
-===== Show Optional Gui
+==== Show Optional Gui
 
 If the client has specified the `optional-gui` capability, then it may receive this message from the
 server when the user wishes to change the visibility state of the GUI. It doesn't matter if the
@@ -459,9 +456,9 @@ No response is message is required.
 
 
 
-==== Client to Server Informational Messages
+=== Client to Server Informational Messages
 
-===== Optional GUI
+==== Optional GUI
 
 If the client has specified the `optional-gui` capability, then it MUST send this message whenever
 the state of visibility of the optional GUI has changed. It also MUST send this message after it's
@@ -483,7 +480,7 @@ loads.
 No response will be delivered.
 
 
-===== Progress
+==== Progress
 
 [source%nowrap,OSC]
 ----
@@ -503,7 +500,7 @@ Clients which intend to send progress messages should include `:progress:` in th
 capability string.
 
 
-===== Dirtiness
+==== Dirtiness
 
 [source%nowrap,OSC]
 ----
@@ -520,7 +517,7 @@ may optionally send `is_dirty` and `is_clean` messages.
 
 Clients which have this capability should include `:dirty:` in their `announce` capability string.
 
-===== Status Messsages
+==== Status Messsages
 
 [source%nowrap,OSC]
 ----
@@ -535,7 +532,7 @@ Clients which have this capability should include `:message:` in their `announce
 string.
 
 
-==== Error Code Definitions
+=== Error Code Definitions
 
 .Error Code Definitions
 [options="header", stripes=even]
@@ -556,7 +553,7 @@ string.
 
 |===
 
-==== Client to Server Control
+=== Client to Server Control
 
 If the server publishes the `:server_control:` capability, then clients can also initiate action by
 the server. For example, a client might implement a 'Save All' option which sends a
@@ -564,7 +561,7 @@ the server. For example, a client might implement a 'Save All' option which send
 management interface to effect the save.
 
 
-==== Server Control API
+=== Server Control API
 
 The session manager not only manages clients via OSC, but it is itself controlled via OSC messages.
 The server responds to the following messages.
@@ -632,7 +629,7 @@ The possible errors are:
 
 
 
-===== Client to Client Communication
+==== Client to Client Communication
 
 If the server includes `:broadcast:` in its capability string, then clients may send broadcast
 messages to each other through the NSM server. Clients may send messages to the server at the path

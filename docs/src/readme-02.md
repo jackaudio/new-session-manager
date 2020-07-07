@@ -1,8 +1,14 @@
 
 ## Documentation and Manual
-See the generated website installed in your systems SHARE dir or docs/out/index.html from this
-repository. Alternatively you can read the online version on our github page. All are the same
-files. We also provide a set of manpages for each executable (see below).
+
+Our documentation contains the API specification for the NSM protocol, which is the central document
+if you want to add NSM support to your own application.
+
+You can find html documentation installed to your systems SHARE dir or docs/out/index.html in this
+repository.
+There is also an online version https://linuxaudio.github.io/new-session-manager/
+
+We also provide a set of manpages for each executable (see Build).
 
 
 ## Fork and License

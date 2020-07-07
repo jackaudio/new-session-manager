@@ -12,10 +12,9 @@ A copy of the license has been provided in the file documentation/API/LICENSE.
 ////
 
 
-:authors: Jonathan Moore Liles
-:email: <male@tuxfamily.org>
-:revnumber: 1.2
-
+:authors: Jonathan Moore Liles, Nils Hilbricht
+:revnumber: API 1.1.0
+:revremark: License CC-By-SA v2.5
 :iconfont-remote!:
 :!webfonts:
 
@@ -27,32 +26,47 @@ A copy of the license has been provided in the file documentation/API/LICENSE.
 :toclevels: 4
 
 
-= Non Session Manager - API
+= New Session Manager - API
 
-The Non Session Management API is used by the various components of the Non audio production suite
+IMPORTANT: "New Session Manager" is community version of the
+link:http://non.tuxfamily.org/nsm/API.html["Non Session Manager" by Jonathan Moore Liles], who also
+wrote the majority of this API document, especially the API itself. *The API is the same*. Any
+technical changes or differences in behaviour are described in <<API Versions and Behaviour Changes>>.
+All other changes to this document can be reviewed by accessing the git log. This document is
+licensed under CC-By-Sa v2.5. See link:https://github.com/linuxaudio/new-session-manager/tree/master/docs/src/api[LICENSE]
+
+
+IMPORTANT: The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD
+NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to be interpreted as
+described in link:https://tools.ietf.org/html/rfc2119[RFC 2119].
+
+
+The "New Session Manager"-API is used by many music and audio programs in Linux distributions
 to allow any number of independent programs to be managed together as part of a logical session
 (i.e. a song). Thus, operations such as loading and saving are synchronized.
 
 The API comprises a simple Open Sound Control (OSC) based protocol, along with some behavioral
 guidelines, which can easily be implemented by various applications.
 
-The Non project contains an program called `nsmd` which is an implementation of the server side of
-the NSM API. `nsmd` is controlled by the `non-session-manager` GUI. However, the same server-side
-API can also be implemented by other session managers (such as LADISH), although consistency and
-robustness will likely suffer if non-NSM compliant clients are allowed to participate in a session.
-The only dependency for client implementations `liblo` (the OSC library), which several Linux audio
-applications already link to or plan to link to in the future.b
+This project contains a program called `nsmd` which is an implementation of the server side of
+the NSM API. `nsmd` can be controlled by direct OSC messages, or (more commone) a GUI:
+Included in this package is the `nsm-legacy-gui`, which gets symlinked to "non-session-manager`.
+Another GUI is "Argodejo".
 
-The aim of this project is to thoroughly define the behavior required of clients. This is an area
-where other attempts at session management (LASH and JACK-Session) have failed. Often the
-difficulty with these systems has been not in implementing support for them, but in attempting to
-interpret the confusing, ambiguous, or ill-conceived API documentation. For these reasons and more
-all previous attempts at Linux audio session management protocols are considered harmful.
+However, the same server-side API can also be implemented by other programs (such as Carla),
+although consistency and robustness will likely suffer if non-NSM compliant clients are allowed to
+participate in a session. There is no direct dependency for client implementations, as long as they
+can send and receive OSC. Some clients use `liblo` (the OSC library), which becomes a dependency if
+you choose to implement NSM-support with the provided header file `nsm.h`.
 
-You WILL see some unambiguous and emphatic language in this document. For the good of the user,
-these rules are meant to be followed and are non-negotiable. If an application does not conform to
-this specification it should be considered broken. Consistency across applications under session
-management is very important for a good user experience.
+The aim of this project is to thoroughly define the behavior required of clients. Often the
+difficulty with other session-management approaches has been not in implementing code-support for
+them, but in not defining rules and behaviour clearly enough.
+
+As written above unambiguous rules are created by using RFC 2119 in this document. For the good of
+the user, these rules are meant to be followed and are non-negotiable. If an application does not
+conform to this specification it should be considered broken. Consistency across applications under
+session management is very important for a good user experience.
 
 
 == Client Behavior Under Session Management
@@ -63,7 +77,7 @@ presented under a File or Project menu.
 These are: New, Open, Save, Save As, Close and Quit or Exit.
 
 The following sub-sections describe how these options should behave when the application is part of
-an NSM session. These rules only apply when session management is active (that is, after the
+an NSM session. These rules only apply when session management is active, that is, after the
 `announce` handshake described in the <<NSM OSC Protocol>> section. In order to provide a
 consistent and predictable user experience, it is critically important for applications to adhere
 to these guidelines.
@@ -74,15 +88,15 @@ to these guidelines.
 
 ==== New
 
-This option may empty/reset the current file or project (possibly after user confirmation). UNDER
-NO CIRCUMSTANCES should it allow the user to create a new project/file in another location.
+This option MAY empty/reset the current file or project (possibly after user confirmation).
+It MUST NOT allow the user to create a new project/file in another location.
 
 
 ==== Open
 
 This option MUST be disabled.
 
-The application may, however, elect to implement an option called 'Import into Session', creates a
+The application MAY elect to implement an option called 'Import into Session', creates a
 copy of a file/project which is then saved at the session path provided by NSM.
 
 
@@ -91,14 +105,14 @@ copy of a file/project which is then saved at the session path provided by NSM.
 This option should behave as normal, saving the current file/project as established by the NSM
 `open` message.
 
-UNDER NO CIRCUMSTANCES should this option present the user with a choice of where to save the file.
+This option MUST NOT present the user with a choice of where to save the file.
 
 
 ==== Save As
 
 This option MUST be disabled.
 
-The application may, however, elect to implement an option called 'Export from Session', which
+The application MAY elect to implement an option called 'Export from Session', which
 creates a copy of the current file/project which is then saved in a user-specified location outside
 of the session path provided by NSM.
 
@@ -111,7 +125,10 @@ management.
 
 ====  Quit or Exit
 
-This option may behave as normal (possibly asking the user to confirm exiting).
+This option MAY behave as normal (possibly asking the user to confirm exiting), or MAY do nothing
+to only allow quit from the session-manager control.
+When the client supports :optional-gui: this option SHOULD be replaced with hiding the clients GUI
+so a quit by window manager hides.
 
 
 ===  Data Storage
@@ -143,8 +160,9 @@ message, using the `lo_send_from` method of liblo or its equivalent, as the serv
 addresses to distinguish between clients.
 
 
-Clients MUST create thier OSC servers using the same protocol (UDP,TCP) as found in `NSM_URL`. liblo
-is lacking a robust TCP implementation at the time of writing, but in the future it may be useful.
+Clients MUST create thier OSC servers using the same protocol (UDP,TCP) as found in `NSM_URL`.
+`nsmd` itself is using UDP only.
+
 
 
 === Establishing a Connection
@@ -209,8 +227,9 @@ The server will respond to the client's announce message with the following mess
 
 `message` is a welcome message.
 
-The value of `name_of_session_manager` will depend on the implementation of the NSM server. It might
-say "Non Session Manager", or it might say "LADISH". This is for display to the user.
+The value of `name_of_session_manager` will depend on the implementation of the NSM server. It
+might say "New Session Manager", or it might say "Non Session Manager" etc. This is for display to
+the user.
 
 `capabilities` will be a string containing a colon separated list of special server capabilities.
 
@@ -222,9 +241,9 @@ Presently, the server `capabilities` are:
 
 |Name | Description
 
-|server_control	| client-to-server control
+|server-control	| client-to-server control
 |broadcast	    | server responds to /nsm/server/broadcast message
-|optional-gui   | server responds to optional-gui messages--if this capability is not present then clients with optional-guis MUST always keep them visible
+|optional-gui   | server responds to optional-gui messages. If this capability is not present then clients with optional-guis MUST always keep them visible
 
 |===
 
@@ -257,7 +276,7 @@ The following table defines possible values of `error_code`:
 === Server to Client Control Messages
 
 Compliant clients MUST accept the client control messages described in this section. All client
-control messages REQUIRE a response. Responses MUST be delivered back to the sender (NSM) from the
+control messages REQUIRE a response. Responses MUST be delivered back to the sender (`nsmd`) from the
 same socket used by the client in its `announce` message (by using `lo_send_from`) AFTER the action has
 been completed or if an error is encountered. The required response is described in the subsection
 for each message.
@@ -288,6 +307,7 @@ unsaved changes would be lost. When a session is closed the application will rec
 soon after having responded to a `save` message.
 
 
+[#server-to-client-control-messages-open]
 ==== Open
 
 [source%nowrap,OSC]
@@ -295,13 +315,18 @@ soon after having responded to a `save` message.
 /nsm/client/open s:path_to_instance_specific_project s:display_name s:client_id
 ----
 
-`path_to_instance_specific_project` is a path name assigned to the client for storing its project
-data.
+`path_to_instance_specific_project` is a path name in the form client_name.ID, assigned to the
+client for storing its project data. The client MUST choose one of the four strategies below to
+save, so that every file in the session can be traced back to a client and, vice versa, a client
+name.ID can be used to look up all its files. (For example to clean up the session dir)
 
-The client may append to the path, creating a sub-directory, e.g. '/song.foo' or simply append the
-client's native file extension (e.g. '.non' or '.XML'). The same transformation MUST be applied to
-the name when opening an existing project, as NSM will only provide the instance specific part of
-the path.
+* The client has no state and does not save at all
+  * and it MUST NOT misuse e.g. ~/.config to save session specific information e.g. synth-instrument settings
+* The client may use the path client_name.ID directly, resulting in a file client_name.ID in the session directory
+* The client may append its native file extension (e.g. `.json`) to the path client_name.ID
+* The client may use the path as directory, creating arbitrary files below, for example recorded .wav.
+ * and it MUST NOT not use the client ID below this point. This way the data stays transferable by hand to another client instance (in another session).
+ * best case practice is to always use the same file names, for example `client_name.ID/savefile.json`
 
 If a project exists at the path, the client MUST immediately open it.
 
@@ -321,28 +346,33 @@ specified project or create a new one if it doesn't exist.
 Clients which are incapable of switching projects or are prone to crashing upon switching MUST NOT
 include `:switch:` in their capability string.
 
-If the user the is allowed to run two or more instances of the application simultaneously (that is
-to say, there is no technical limitation preventing them from doing so, even if it doesn't make
-sense to the author), then such an application MUST PRE-PEND the provided `client_id` string to any
+If the user the is allowed to run two or more instances of the application simultaneously
+then such an application MUST PRE-PEND the provided `client_id` string, followed by "/", to any
 names it registers with common subsystems (e.g. JACK client names). This ensures that multiple
 instances of the same application can be restored in any order without scrambling the JACK
-connections or causing other conflicts. The provided `client_id` will be a concatenation of the value
-of `application_name` sent by the client in its `announce` message and a unique identifier. Therefore,
-applications which create single JACK clients can use the value of `client_id` directly as their JACK
-client name. Applications which register multiple JACK clients (e.g. Non-Mixer) MUST PRE-PEND
-`client_id` value to the client names they register with JACK and the application determined part
-MUST be unique for that (JACK) client.
+connections or causing other conflicts.
 
-For example, a suitable JACK client name would be:  `$CLIENT_ID/track-1`
+The provided `client_id` will be a concatenation of the value of `application_name` sent by the
+client in its `announce` message and a unique identifier.
 
+Therefore, applications which create single JACK clients can use the value of `client_id` directly
+as their JACK client name.
+
+Applications which register multiple JACK clients (e.g. Carla or Non-Mixer) MUST PRE-PEND
+`client_id` value, followed by "/", to the client names they register with JACK and the application
+determined part MUST be unique for that (JACK) client.
+
+For example, Carla is a plugin-host that loads each plugin as JACK client.
+Suitable JACK client names are: `carla-jack-multi.nBAF/ZynAddSubFx` or `carla-jack-multi.nBAF/Helm`
+Please note that ZynAddSubFx and Helm are *not ports* but clients. Each of them can have any number
+of audio and midi ports below them.
 
 Note that this means that the application MUST NOT register with JACK (or any
 other subsystem requiring unique names) until it receives an `open` message from NSM. Likewise,
 applications with the `:switch:` capability should close their JACK clients and re-create them with
-using the new `client_id`. Re-registering is necessary because the JACK API does currently support
-renaming existing clients, although this is a sorely needed addition.
+using the new `client_id` (renaming JACK-clients is not possible, only ports).
 
-A response is REQUIRED as soon as the open operation has been completed. Ongoing progress may be
+A response is REQUIRED as soon as the open operation has been completed. Ongoing progress MAY be
 indicated by sending messages to `/nsm/client/progress`.
 
 
@@ -423,8 +453,8 @@ Or
 Accepting this message is optional. The intent is to signal to clients which may have some
 interdependence (say, peer to peer OSC connections) that the session is fully loaded and all their
 peers are available. Most clients will not need to act on this message. This message has no meaning
-when a session is being built or run--only when it is initially loaded. Clients who intend to act
-on this message MUST not do so by delaying initialization waiting for it.
+when a session is being built or run; only when it is initially loaded. Clients who intend to act
+on this message MUST NOT do so by delaying initialization waiting for it.
 
 [source%nowrap,OSC]
 ----
@@ -464,6 +494,9 @@ If the client has specified the `optional-gui` capability, then it MUST send thi
 the state of visibility of the optional GUI has changed. It also MUST send this message after it's
 announce message to indicate the initial visibility state of the optional GUI.
 
+The client SHOULD always start hidden, if not saved as visible. That implies the first load, after
+adding to the session, SHOULD always be hidden.
+
 It is the responsibility of the client to remember the visibility state of its GUI across session
 loads.
 
@@ -496,7 +529,7 @@ The server will not send a response to these messages, but will relay the inform
 Note that even when using the `progress` feature, the final response to the `save` or `open`
 message is still REQUIRED.
 
-Clients which intend to send progress messages should include `:progress:` in their `announce`
+Clients which intend to send progress messages MUST include `:progress:` in their `announce`
 capability string.
 
 
@@ -515,7 +548,7 @@ capability string.
 Some clients may be able to inform the server when they have unsaved changes pending. Such clients
 may optionally send `is_dirty` and `is_clean` messages.
 
-Clients which have this capability should include `:dirty:` in their `announce` capability string.
+Clients which have and use this capability MUST include `:dirty:` in their `announce` capability string.
 
 ==== Status Messsages
 
@@ -525,10 +558,10 @@ Clients which have this capability should include `:dirty:` in their `announce` 
 ----
 
 Clients may send miscellaneous status updates to the server for possible display to the user. This
-may simply be chatter that is normally written to the console. `priority` should be a number from 0
+may simply be chatter that is normally written to the console. `priority` MUST be a number from 0
 to 3, 3 being the most important.
 
-Clients which have this capability should include `:message:` in their `announce` capability
+Clients which have and use this capability MUST include `:message:` in their `announce` capability
 string.
 
 
@@ -626,7 +659,7 @@ The possible errors are:
 
 * `/nsm/server/list`
   ** Lists available projects. One `/reply` message will be sent for each existing project.
-
+  ** Afer listing the last session one final `/reply` with `/nsm/server/list, ""` will be send. That is an empty string.
 
 
 ==== Client to Client Communication
@@ -664,3 +697,102 @@ of which might respond to the message by updating their own tempo maps.
 
 The Non programs use this feature to establish peer to peer OSC communication by symbolic names
 (client IDs) without having to remember the OSC URLs of peers across sessions.
+
+
+== API Versions and Behaviour Changes
+
+Here we will document all technical changes or differences in behaviour together with their API and
+project version numbers. The term "original" refers to Non Session Manager and "new" refers to New
+Session Manager.
+
+Version numbers follow link:https://semver.org/spec/v2.0.0.html[Semantic Versioning 2.0.0]
+
+.Semantic Versioning Scheme
+```
+Given a version number MAJOR.MINOR.PATCH, increment the:
+
+MAJOR version when you make incompatible API changes,
+MINOR version when you add functionality in a backwards compatible manner, and
+PATCH version when you make backwards compatible bug fixes.
+```
+
+
+.NSM Version Numbers
+[options="header", stripes=even]
+|===
+
+|Subject	 | Version
+
+|Non Session Manager at moment of fork	        | 1.2 (June 2020)
+|Non Session Manager API	| 1.0 link:https://github.com/original-male/non/blob/master/session-manager/src/nsmd.C[NON nsmd.C]
+|Original API Document	    | 1.0 link:http://non.tuxfamily.org/nsm/API.html[non.tuxfamily.org/nsm/API.html]
+|New Session Manager	    | 1.4.0
+|New Session Manager API    | 1.1.0 link:https://github.com/linuxaudio/new-session-manager/blob/master/src/nsmd.cpp[NEW nsmd.cpp]
+|New API Document	| 1.4.0 link:#[Here]
+
+|===
+
+
+=== Guidelines
+
+The most important factor in decision making is to keep client compatibility at 100%.
+No client will ever receive an unrequested OSC message except those in API 1.0.0.
+
+Messages that drastically change existing `/nsm/client/` or `/nsm/server` behaviour require an
+inrecement to `API_VERSION_MAJOR`, which we want to avoid.
+
+`nsmd` checks if the clients `API_VERSION_MAJOR` is greater than its own and refuses the client
+with `ERR_INCOMPATIBLE_API`.
+
+All changes (that concern client/server behaviour) that increment `API_VERSION_MINOR` will be gated
+by new capabilities (e.g. `:optional-gui:`). `nsmd` will not send any messages if a capability was
+not sent by the client in <<Announce,`announce`>>. This includes mostly optional features about
+requesting extra information.
+
+New actions for server-control, for example a hypothetical `/nsm/server/save_as`, which would be
+triggered by the client and would only be *answered* by the server ("no unrequested message") will
+increment `API_VERSION_MINOR`.
+
+All changes that increment `API_VERSION_PATCH` will not have any effect on behaviour, except to
+fix clear problems, where "problem" is defined by having a different effect than described in this
+document, which includes technical problems such as crashes.
+
+All messages regarding GUI-communication that start with `/nsm/gui/...` were undocumented in API
+1.0.0 and only used by `non-session-manager` / `nsm-legacy-gui`. Until properly documented in this
+document this part of the API is considered unstable and may change at any time without notice.
+However, when changing already existing messages and behaviour it MAY increment `API_VERSION_MINOR`
+or `API_VERSION_PATCH`. In that case it will appear in the list below.
+
+Last factor of compatibility is that any unknown message sent to `nsmd` will just print a warning
+message to stdout, but will otherwise be ignored. This secures a stable server, even when a client
+misbehaves and sends too-new messages outside of announced :capabilites:
+
+=== Changes in API Version 1.1.0
+
+Rewritten API document without code changes to adapt to existing code or existing client behaviour:
+
+* Changed versioning scheme to Semantic Versioning with three positions Major.Minor.Patch
+* <<Quit or Exit>> SHOULD hide instead or exiting when :optional-gui: is supported and MAY not
+    act on the quit through menu otherwise.
+* <<#server-to-client-control-messages-open,Open>>: Make clear that there are only certain
+    possibilities for save paths. We added MUST because the rule was just implied before.
+* <<#server-to-client-control-messages-open,Open>>: Make clear that the delimiter for
+    multi-jack clients is "/".
+* <<Optional GUI>> SHOULD start hidden, always after a fresh add to the session, after that saving
+    the visibility state may override it for next time.
+* <<Progress>> MUST be announced in :capabilities: . Before there was a lower case "should",
+    which means nothing. Parallel-examples in the specs cleary say that supporting optional features must be announced first.
+  ** Same for <<Dirtiness>> and <<Status Messsages>>.
+* <<Status Messsages>> have priority numbers between 0 and 3, so they MUST send that.
+    It was never an arbitrary value.
+
+Code changes:
+
+* <<Server Control API>>: `/nsm/server/list` chain of single OSC messages, one for each session,
+    is now finalized with sending and empty string "" as session name. Previously this was just
+    a symbolically irrelevant console message `"Done."`
+* unstable `/nsm/gui` protocol: Send client status after a GUI attaches to running server. This
+    was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone would only require API_VERSION_PATCH increment, but we are already incrementing minor.
+* unstable `/nsm/gui` protocol: Send label "launch error!" when a program is added (or loaded) that does not exist in $PATH. This requires no adaptation of any client, server or GUI because labels are arbitrary already and this is not meant for automatic parsing, but as user information.
+* Replies to `/nsm/server/save` etc. will now be sent back to the sender and not falsely to the last client who replied to `/nsm/client/save`.  This alone would only require API_VERSION_PATCH increment, but we are already incrementing minor.
+* <<Server Control API>>: `/nsm/server/add` was replying with an undocumented error code on success. Instead, as this document already stated, it now sends `"/reply", path, "Launched."`. Again, this would have been just API_VERSION_PATCH on its own.

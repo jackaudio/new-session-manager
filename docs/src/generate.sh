@@ -32,7 +32,8 @@ VERSION="${VERSION#\"}"  #Remove "
 
 _MAJORAPI=$(grep "define NSM_API_VERSION_MAJOR" "src/nsmd.cpp" | cut -d ' ' -f 3)
 _MINORAPI=$(grep "define NSM_API_VERSION_MINOR" "src/nsmd.cpp" | cut -d ' ' -f 3)
-APIVERSION=$_MAJORAPI"."$_MINORAPI
+_PATCHAPI=$(grep "define NSM_API_VERSION_PATCH" "src/nsmd.cpp" | cut -d ' ' -f 3)
+APIVERSION=$_MAJORAPI"."$_MINORAPI"."$_PATCHAPI
 
 #Present data to confirm write-action
 echo "Root: $ROOT"
@@ -59,7 +60,7 @@ sed -i '/^\:revnumber.*/c\:revnumber: '$VERSION index.adoc #Find the revnumber l
 
 echo "Update API document to API version number"
 cd "$ROOT/docs/src/api"
-sed -i '/^\:revnumber.*/c\:revnumber: '$APIVERSION index.adoc #Find the revnumber line and replace with entire new line
+sed -i '/^\:revnumber.*/c\:revnumber: API '$APIVERSION index.adoc #Find the revnumber line and replace with entire new line
 
 
 echo "Generate README from snippets"

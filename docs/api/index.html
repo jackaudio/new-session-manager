@@ -5,8 +5,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.10">
-<meta name="author" content="Jonathan Moore Liles">
-<title>Non Session Manager - API</title>
+<meta name="author" content="Jonathan Moore Liles, Nils Hilbricht">
+<title>New Session Manager - API</title>
 <style>
 /* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
 /* Uncomment @import statement to use as custom stylesheet */
@@ -438,11 +438,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="article">
 <div id="header">
-<h1>Non Session Manager - API</h1>
+<h1>New Session Manager - API</h1>
 <div class="details">
-<span id="author" class="author">Jonathan Moore Liles</span><br>
-<span id="email" class="email">&lt;<a href="mailto:male@tuxfamily.org">male@tuxfamily.org</a>&gt;</span><br>
-<span id="revnumber">version 1.2</span>
+<span id="author" class="author">Jonathan Moore Liles, Nils Hilbricht</span><br>
+<span id="revnumber">version API 1.1.0</span>
+<br><span id="revremark">License CC-By-SA v2.5</span>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
@@ -478,7 +478,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_server_to_client_control_messages">2.2. Server to Client Control Messages</a>
 <ul class="sectlevel3">
 <li><a href="#_quit">2.2.1. Quit</a></li>
-<li><a href="#_open_2">2.2.2. Open</a>
+<li><a href="#server-to-client-control-messages-open">2.2.2. Open</a>
 <ul class="sectlevel4">
 <li><a href="#_response_2">2.2.2.1. Response</a></li>
 </ul>
@@ -513,14 +513,51 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 </ul>
 </li>
+<li><a href="#_api_versions_and_behaviour_changes">3. API Versions and Behaviour Changes</a>
+<ul class="sectlevel2">
+<li><a href="#_guidelines">3.1. Guidelines</a></li>
+<li><a href="#_changes_in_api_version_1_1_0">3.2. Changes in API Version 1.1.0</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+"New Session Manager" is community version of the
+<a href="http://non.tuxfamily.org/nsm/API.html">"Non Session Manager" by Jonathan Moore Liles</a>, who also
+wrote the majority of this API document, especially the API itself. <strong>The API is the same</strong>. Any
+technical changes or differences in behaviour are described in <a href="#_api_versions_and_behaviour_changes">API Versions and Behaviour Changes</a>.
+All other changes to this document can be reviewed by accessing the git log. This document is
+licensed under CC-By-Sa v2.5. See <a href="https://github.com/linuxaudio/new-session-manager/tree/master/docs/src/api">LICENSE</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD
+NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to be interpreted as
+described in <a href="https://tools.ietf.org/html/rfc2119">RFC 2119</a>.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
-<p>The Non Session Management API is used by the various components of the Non audio production suite
+<p>The "New Session Manager"-API is used by many music and audio programs in Linux distributions
 to allow any number of independent programs to be managed together as part of a logical session
 (i.e. a song). Thus, operations such as loading and saving are synchronized.</p>
 </div>
@@ -529,25 +566,28 @@ to allow any number of independent programs to be managed together as part of a 
 guidelines, which can easily be implemented by various applications.</p>
 </div>
 <div class="paragraph">
-<p>The Non project contains an program called <code>nsmd</code> which is an implementation of the server side of
-the NSM API. <code>nsmd</code> is controlled by the <code>non-session-manager</code> GUI. However, the same server-side
-API can also be implemented by other session managers (such as LADISH), although consistency and
-robustness will likely suffer if non-NSM compliant clients are allowed to participate in a session.
-The only dependency for client implementations <code>liblo</code> (the OSC library), which several Linux audio
-applications already link to or plan to link to in the future.b</p>
+<p>This project contains a program called <code>nsmd</code> which is an implementation of the server side of
+the NSM API. <code>nsmd</code> can be controlled by direct OSC messages, or (more commone) a GUI:
+Included in this package is the <code>nsm-legacy-gui</code>, which gets symlinked to "non-session-manager`.
+Another GUI is "Argodejo".</p>
 </div>
 <div class="paragraph">
-<p>The aim of this project is to thoroughly define the behavior required of clients. This is an area
-where other attempts at session management (LASH and JACK-Session) have failed. Often the
-difficulty with these systems has been not in implementing support for them, but in attempting to
-interpret the confusing, ambiguous, or ill-conceived API documentation. For these reasons and more
-all previous attempts at Linux audio session management protocols are considered harmful.</p>
+<p>However, the same server-side API can also be implemented by other programs (such as Carla),
+although consistency and robustness will likely suffer if non-NSM compliant clients are allowed to
+participate in a session. There is no direct dependency for client implementations, as long as they
+can send and receive OSC. Some clients use <code>liblo</code> (the OSC library), which becomes a dependency if
+you choose to implement NSM-support with the provided header file <code>nsm.h</code>.</p>
 </div>
 <div class="paragraph">
-<p>You WILL see some unambiguous and emphatic language in this document. For the good of the user,
-these rules are meant to be followed and are non-negotiable. If an application does not conform to
-this specification it should be considered broken. Consistency across applications under session
-management is very important for a good user experience.</p>
+<p>The aim of this project is to thoroughly define the behavior required of clients. Often the
+difficulty with other session-management approaches has been not in implementing code-support for
+them, but in not defining rules and behaviour clearly enough.</p>
+</div>
+<div class="paragraph">
+<p>As written above unambiguous rules are created by using RFC 2119 in this document. For the good of
+the user, these rules are meant to be followed and are non-negotiable. If an application does not
+conform to this specification it should be considered broken. Consistency across applications under
+session management is very important for a good user experience.</p>
 </div>
 </div>
 </div>
@@ -563,7 +603,7 @@ presented under a File or Project menu.</p>
 </div>
 <div class="paragraph">
 <p>The following sub-sections describe how these options should behave when the application is part of
-an NSM session. These rules only apply when session management is active (that is, after the
+an NSM session. These rules only apply when session management is active, that is, after the
 <code>announce</code> handshake described in the <a href="#_nsm_osc_protocol">NSM OSC Protocol</a> section. In order to provide a
 consistent and predictable user experience, it is critically important for applications to adhere
 to these guidelines.</p>
@@ -573,8 +613,8 @@ to these guidelines.</p>
 <div class="sect3">
 <h4 id="_new">1.1.1. New</h4>
 <div class="paragraph">
-<p>This option may empty/reset the current file or project (possibly after user confirmation). UNDER
-NO CIRCUMSTANCES should it allow the user to create a new project/file in another location.</p>
+<p>This option MAY empty/reset the current file or project (possibly after user confirmation).
+It MUST NOT allow the user to create a new project/file in another location.</p>
 </div>
 </div>
 <div class="sect3">
@@ -583,7 +623,7 @@ NO CIRCUMSTANCES should it allow the user to create a new project/file in anothe
 <p>This option MUST be disabled.</p>
 </div>
 <div class="paragraph">
-<p>The application may, however, elect to implement an option called 'Import into Session', creates a
+<p>The application MAY elect to implement an option called 'Import into Session', creates a
 copy of a file/project which is then saved at the session path provided by NSM.</p>
 </div>
 </div>
@@ -594,7 +634,7 @@ copy of a file/project which is then saved at the session path provided by NSM.<
 <code>open</code> message.</p>
 </div>
 <div class="paragraph">
-<p>UNDER NO CIRCUMSTANCES should this option present the user with a choice of where to save the file.</p>
+<p>This option MUST NOT present the user with a choice of where to save the file.</p>
 </div>
 </div>
 <div class="sect3">
@@ -603,7 +643,7 @@ copy of a file/project which is then saved at the session path provided by NSM.<
 <p>This option MUST be disabled.</p>
 </div>
 <div class="paragraph">
-<p>The application may, however, elect to implement an option called 'Export from Session', which
+<p>The application MAY elect to implement an option called 'Export from Session', which
 creates a copy of the current file/project which is then saved in a user-specified location outside
 of the session path provided by NSM.</p>
 </div>
@@ -618,7 +658,10 @@ management.</p>
 <div class="sect3">
 <h4 id="_quit_or_exit">1.1.6. Quit or Exit</h4>
 <div class="paragraph">
-<p>This option may behave as normal (possibly asking the user to confirm exiting).</p>
+<p>This option MAY behave as normal (possibly asking the user to confirm exiting), or MAY do nothing
+to only allow quit from the session-manager control.
+When the client supports :optional-gui: this option SHOULD be replaced with hiding the clients GUI
+so a quit by window manager hides.</p>
 </div>
 </div>
 </div>
@@ -656,8 +699,8 @@ message, using the <code>lo_send_from</code> method of liblo or its equivalent, 
 addresses to distinguish between clients.</p>
 </div>
 <div class="paragraph">
-<p>Clients MUST create thier OSC servers using the same protocol (UDP,TCP) as found in <code>NSM_URL</code>. liblo
-is lacking a robust TCP implementation at the time of writing, but in the future it may be useful.</p>
+<p>Clients MUST create thier OSC servers using the same protocol (UDP,TCP) as found in <code>NSM_URL</code>.
+<code>nsmd</code> itself is using UDP only.</p>
 </div>
 <div class="sect2">
 <h3 id="_establishing_a_connection">2.1. Establishing a Connection</h3>
@@ -751,8 +794,9 @@ like Python can be more challenging.</p>
 <p><code>message</code> is a welcome message.</p>
 </div>
 <div class="paragraph">
-<p>The value of <code>name_of_session_manager</code> will depend on the implementation of the NSM server. It might
-say "Non Session Manager", or it might say "LADISH". This is for display to the user.</p>
+<p>The value of <code>name_of_session_manager</code> will depend on the implementation of the NSM server. It
+might say "New Session Manager", or it might say "Non Session Manager" etc. This is for display to
+the user.</p>
 </div>
 <div class="paragraph">
 <p><code>capabilities</code> will be a string containing a colon separated list of special server capabilities.</p>
@@ -774,7 +818,7 @@ say "Non Session Manager", or it might say "LADISH". This is for display to the 
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">server_control</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">server-control</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">client-to-server control</p></td>
 </tr>
 <tr>
@@ -783,7 +827,7 @@ say "Non Session Manager", or it might say "LADISH". This is for display to the 
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">optional-gui</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">server responds to optional-gui messages&#8212;&#8203;if this capability is not present then clients with optional-guis MUST always keep them visible</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">server responds to optional-gui messages. If this capability is not present then clients with optional-guis MUST always keep them visible</p></td>
 </tr>
 </tbody>
 </table>
@@ -835,7 +879,7 @@ For example, the Non applications activate their "SM" blinkers at this time.</p>
 <h3 id="_server_to_client_control_messages">2.2. Server to Client Control Messages</h3>
 <div class="paragraph">
 <p>Compliant clients MUST accept the client control messages described in this section. All client
-control messages REQUIRE a response. Responses MUST be delivered back to the sender (NSM) from the
+control messages REQUIRE a response. Responses MUST be delivered back to the sender (<code>nsmd</code>) from the
 same socket used by the client in its <code>announce</code> message (by using <code>lo_send_from</code>) AFTER the action has
 been completed or if an error is encountered. The required response is described in the subsection
 for each message.</p>
@@ -869,21 +913,42 @@ soon after having responded to a <code>save</code> message.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_open_2">2.2.2. Open</h4>
+<h4 id="server-to-client-control-messages-open">2.2.2. Open</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-OSC" data-lang="OSC">/nsm/client/open s:path_to_instance_specific_project s:display_name s:client_id</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>path_to_instance_specific_project</code> is a path name assigned to the client for storing its project
-data.</p>
+<p><code>path_to_instance_specific_project</code> is a path name in the form client_name.ID, assigned to the
+client for storing its project data. The client MUST choose one of the four strategies below to
+save, so that every file in the session can be traced back to a client and, vice versa, a client
+name.ID can be used to look up all its files. (For example to clean up the session dir)</p>
 </div>
-<div class="paragraph">
-<p>The client may append to the path, creating a sub-directory, e.g. '/song.foo' or simply append the
-client&#8217;s native file extension (e.g. '.non' or '.XML'). The same transformation MUST be applied to
-the name when opening an existing project, as NSM will only provide the instance specific part of
-the path.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The client has no state and does not save at all</p>
+</li>
+<li>
+<p>and it MUST NOT misuse e.g. ~/.config to save session specific information e.g. synth-instrument settings</p>
+</li>
+<li>
+<p>The client may use the path client_name.ID directly, resulting in a file client_name.ID in the session directory</p>
+</li>
+<li>
+<p>The client may append its native file extension (e.g. <code>.json</code>) to the path client_name.ID</p>
+</li>
+<li>
+<p>The client may use the path as directory, creating arbitrary files below, for example recorded .wav.</p>
+</li>
+<li>
+<p>and it MUST NOT not use the client ID below this point. This way the data stays transferable by hand to another client instance (in another session).</p>
+</li>
+<li>
+<p>best case practice is to always use the same file names, for example <code>client_name.ID/savefile.json</code></p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>If a project exists at the path, the client MUST immediately open it.</p>
@@ -910,30 +975,39 @@ specified project or create a new one if it doesn&#8217;t exist.</p>
 include <code>:switch:</code> in their capability string.</p>
 </div>
 <div class="paragraph">
-<p>If the user the is allowed to run two or more instances of the application simultaneously (that is
-to say, there is no technical limitation preventing them from doing so, even if it doesn&#8217;t make
-sense to the author), then such an application MUST PRE-PEND the provided <code>client_id</code> string to any
+<p>If the user the is allowed to run two or more instances of the application simultaneously
+then such an application MUST PRE-PEND the provided <code>client_id</code> string, followed by "/", to any
 names it registers with common subsystems (e.g. JACK client names). This ensures that multiple
 instances of the same application can be restored in any order without scrambling the JACK
-connections or causing other conflicts. The provided <code>client_id</code> will be a concatenation of the value
-of <code>application_name</code> sent by the client in its <code>announce</code> message and a unique identifier. Therefore,
-applications which create single JACK clients can use the value of <code>client_id</code> directly as their JACK
-client name. Applications which register multiple JACK clients (e.g. Non-Mixer) MUST PRE-PEND
-<code>client_id</code> value to the client names they register with JACK and the application determined part
-MUST be unique for that (JACK) client.</p>
+connections or causing other conflicts.</p>
 </div>
 <div class="paragraph">
-<p>For example, a suitable JACK client name would be:  <code>$CLIENT_ID/track-1</code></p>
+<p>The provided <code>client_id</code> will be a concatenation of the value of <code>application_name</code> sent by the
+client in its <code>announce</code> message and a unique identifier.</p>
+</div>
+<div class="paragraph">
+<p>Therefore, applications which create single JACK clients can use the value of <code>client_id</code> directly
+as their JACK client name.</p>
+</div>
+<div class="paragraph">
+<p>Applications which register multiple JACK clients (e.g. Carla or Non-Mixer) MUST PRE-PEND
+<code>client_id</code> value, followed by "/", to the client names they register with JACK and the application
+determined part MUST be unique for that (JACK) client.</p>
+</div>
+<div class="paragraph">
+<p>For example, Carla is a plugin-host that loads each plugin as JACK client.
+Suitable JACK client names are: <code>carla-jack-multi.nBAF/ZynAddSubFx</code> or <code>carla-jack-multi.nBAF/Helm</code>
+Please note that ZynAddSubFx and Helm are <strong>not ports</strong> but clients. Each of them can have any number
+of audio and midi ports below them.</p>
 </div>
 <div class="paragraph">
 <p>Note that this means that the application MUST NOT register with JACK (or any
 other subsystem requiring unique names) until it receives an <code>open</code> message from NSM. Likewise,
 applications with the <code>:switch:</code> capability should close their JACK clients and re-create them with
-using the new <code>client_id</code>. Re-registering is necessary because the JACK API does currently support
-renaming existing clients, although this is a sorely needed addition.</p>
+using the new <code>client_id</code> (renaming JACK-clients is not possible, only ports).</p>
 </div>
 <div class="paragraph">
-<p>A response is REQUIRED as soon as the open operation has been completed. Ongoing progress may be
+<p>A response is REQUIRED as soon as the open operation has been completed. Ongoing progress MAY be
 indicated by sending messages to <code>/nsm/client/progress</code>.</p>
 </div>
 <div class="sect4">
@@ -1055,8 +1129,8 @@ times within the course of a session (including zero, if the user aborts the ses
 <p>Accepting this message is optional. The intent is to signal to clients which may have some
 interdependence (say, peer to peer OSC connections) that the session is fully loaded and all their
 peers are available. Most clients will not need to act on this message. This message has no meaning
-when a session is being built or run&#8212;&#8203;only when it is initially loaded. Clients who intend to act
-on this message MUST not do so by delaying initialization waiting for it.</p>
+when a session is being built or run; only when it is initially loaded. Clients who intend to act
+on this message MUST NOT do so by delaying initialization waiting for it.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1101,6 +1175,10 @@ the state of visibility of the optional GUI has changed. It also MUST send this 
 announce message to indicate the initial visibility state of the optional GUI.</p>
 </div>
 <div class="paragraph">
+<p>The client SHOULD always start hidden, if not saved as visible. That implies the first load, after
+adding to the session, SHOULD always be hidden.</p>
+</div>
+<div class="paragraph">
 <p>It is the responsibility of the client to remember the visibility state of its GUI across session
 loads.</p>
 </div>
@@ -1138,7 +1216,7 @@ indicating completion, to the NSM server.</p>
 message is still REQUIRED.</p>
 </div>
 <div class="paragraph">
-<p>Clients which intend to send progress messages should include <code>:progress:</code> in their <code>announce</code>
+<p>Clients which intend to send progress messages MUST include <code>:progress:</code> in their <code>announce</code>
 capability string.</p>
 </div>
 </div>
@@ -1159,7 +1237,7 @@ capability string.</p>
 may optionally send <code>is_dirty</code> and <code>is_clean</code> messages.</p>
 </div>
 <div class="paragraph">
-<p>Clients which have this capability should include <code>:dirty:</code> in their <code>announce</code> capability string.</p>
+<p>Clients which have and use this capability MUST include <code>:dirty:</code> in their <code>announce</code> capability string.</p>
 </div>
 </div>
 <div class="sect3">
@@ -1171,11 +1249,11 @@ may optionally send <code>is_dirty</code> and <code>is_clean</code> messages.</p
 </div>
 <div class="paragraph">
 <p>Clients may send miscellaneous status updates to the server for possible display to the user. This
-may simply be chatter that is normally written to the console. <code>priority</code> should be a number from 0
+may simply be chatter that is normally written to the console. <code>priority</code> MUST be a number from 0
 to 3, 3 being the most important.</p>
 </div>
 <div class="paragraph">
-<p>Clients which have this capability should include <code>:message:</code> in their <code>announce</code> capability
+<p>Clients which have and use this capability MUST include <code>:message:</code> in their <code>announce</code> capability
 string.</p>
 </div>
 </div>
@@ -1399,6 +1477,9 @@ error.</p>
 <li>
 <p>Lists available projects. One <code>/reply</code> message will be sent for each existing project.</p>
 </li>
+<li>
+<p>Afer listing the last session one final <code>/reply</code> with <code>/nsm/server/list, ""</code> will be send. That is an empty string.</p>
+</li>
 </ul>
 </div>
 </li>
@@ -1448,11 +1529,185 @@ of which might respond to the message by updating their own tempo maps.</p>
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_api_versions_and_behaviour_changes">3. API Versions and Behaviour Changes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Here we will document all technical changes or differences in behaviour together with their API and
+project version numbers. The term "original" refers to Non Session Manager and "new" refers to New
+Session Manager.</p>
+</div>
+<div class="paragraph">
+<p>Version numbers follow <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning 2.0.0</a></p>
+</div>
+<div class="listingblock">
+<div class="title">Semantic Versioning Scheme</div>
+<div class="content">
+<pre class="highlight"><code>Given a version number MAJOR.MINOR.PATCH, increment the:
+
+MAJOR version when you make incompatible API changes,
+MINOR version when you add functionality in a backwards compatible manner, and
+PATCH version when you make backwards compatible bug fixes.</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stripes-even stretch">
+<caption class="title">Table 8. NSM Version Numbers</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Subject</th>
+<th class="tableblock halign-left valign-top">Version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Non Session Manager at moment of fork</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.2 (June 2020)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Non Session Manager API</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.0 <a href="https://github.com/original-male/non/blob/master/session-manager/src/nsmd.C">NON nsmd.C</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Original API Document</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.0 <a href="http://non.tuxfamily.org/nsm/API.html">non.tuxfamily.org/nsm/API.html</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">New Session Manager</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.4.0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">New Session Manager API</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.1.0 <a href="https://github.com/linuxaudio/new-session-manager/blob/master/src/nsmd.cpp">NEW nsmd.cpp</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">New API Document</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.4.0 <a href="#">Here</a></p></td>
+</tr>
+</tbody>
+</table>
+<div class="sect2">
+<h3 id="_guidelines">3.1. Guidelines</h3>
+<div class="paragraph">
+<p>The most important factor in decision making is to keep client compatibility at 100%.
+No client will ever receive an unrequested OSC message except those in API 1.0.0.</p>
+</div>
+<div class="paragraph">
+<p>Messages that drastically change existing <code>/nsm/client/</code> or <code>/nsm/server</code> behaviour require an
+inrecement to <code>API_VERSION_MAJOR</code>, which we want to avoid.</p>
+</div>
+<div class="paragraph">
+<p><code>nsmd</code> checks if the clients <code>API_VERSION_MAJOR</code> is greater than its own and refuses the client
+with <code>ERR_INCOMPATIBLE_API</code>.</p>
+</div>
+<div class="paragraph">
+<p>All changes (that concern client/server behaviour) that increment <code>API_VERSION_MINOR</code> will be gated
+by new capabilities (e.g. <code>:optional-gui:</code>). <code>nsmd</code> will not send any messages if a capability was
+not sent by the client in <a href="#_announce"><code>announce</code></a>. This includes mostly optional features about
+requesting extra information.</p>
+</div>
+<div class="paragraph">
+<p>New actions for server-control, for example a hypothetical <code>/nsm/server/save_as</code>, which would be
+triggered by the client and would only be <strong>answered</strong> by the server ("no unrequested message") will
+increment <code>API_VERSION_MINOR</code>.</p>
+</div>
+<div class="paragraph">
+<p>All changes that increment <code>API_VERSION_PATCH</code> will not have any effect on behaviour, except to
+fix clear problems, where "problem" is defined by having a different effect than described in this
+document, which includes technical problems such as crashes.</p>
+</div>
+<div class="paragraph">
+<p>All messages regarding GUI-communication that start with <code>/nsm/gui/&#8230;&#8203;</code> were undocumented in API
+1.0.0 and only used by <code>non-session-manager</code> / <code>nsm-legacy-gui</code>. Until properly documented in this
+document this part of the API is considered unstable and may change at any time without notice.
+However, when changing already existing messages and behaviour it MAY increment <code>API_VERSION_MINOR</code>
+or <code>API_VERSION_PATCH</code>. In that case it will appear in the list below.</p>
+</div>
+<div class="paragraph">
+<p>Last factor of compatibility is that any unknown message sent to <code>nsmd</code> will just print a warning
+message to stdout, but will otherwise be ignored. This secures a stable server, even when a client
+misbehaves and sends too-new messages outside of announced :capabilites:</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_changes_in_api_version_1_1_0">3.2. Changes in API Version 1.1.0</h3>
+<div class="paragraph">
+<p>Rewritten API document without code changes to adapt to existing code or existing client behaviour:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Changed versioning scheme to Semantic Versioning with three positions Major.Minor.Patch</p>
+</li>
+<li>
+<p><a href="#_quit_or_exit">Quit or Exit</a> SHOULD hide instead or exiting when :optional-gui: is supported and MAY not
+act on the quit through menu otherwise.</p>
+</li>
+<li>
+<p><a href="#server-to-client-control-messages-open">Open</a>: Make clear that there are only certain
+possibilities for save paths. We added MUST because the rule was just implied before.</p>
+</li>
+<li>
+<p><a href="#server-to-client-control-messages-open">Open</a>: Make clear that the delimiter for
+multi-jack clients is "/".</p>
+</li>
+<li>
+<p><a href="#_optional_gui">Optional GUI</a> SHOULD start hidden, always after a fresh add to the session, after that saving
+the visibility state may override it for next time.</p>
+</li>
+<li>
+<p><a href="#_progress">Progress</a> MUST be announced in :capabilities: . Before there was a lower case "should",
+which means nothing. Parallel-examples in the specs cleary say that supporting optional features must be announced first.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Same for <a href="#_dirtiness">Dirtiness</a> and <a href="#_status_messsages">Status Messsages</a>.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#_status_messsages">Status Messsages</a> have priority numbers between 0 and 3, so they MUST send that.
+It was never an arbitrary value.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Code changes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#_server_control_api">Server Control API</a>: <code>/nsm/server/list</code> chain of single OSC messages, one for each session,
+is now finalized with sending and empty string "" as session name. Previously this was just
+a symbolically irrelevant console message <code>"Done."</code></p>
+</li>
+<li>
+<p>unstable <code>/nsm/gui</code> protocol: Send client status after a GUI attaches to running server. This
+was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone would only require API_VERSION_PATCH increment, but we are already incrementing minor.</p>
+</li>
+<li>
+<p>unstable <code>/nsm/gui</code> protocol: Send label "launch error!" when a program is added (or loaded) that does not exist in $PATH. This requires no adaptation of any client, server or GUI because labels are arbitrary already and this is not meant for automatic parsing, but as user information.</p>
+</li>
+<li>
+<p>Replies to <code>/nsm/server/save</code> etc. will now be sent back to the sender and not falsely to the last client who replied to <code>/nsm/client/save</code>.  This alone would only require API_VERSION_PATCH increment, but we are already incrementing minor.</p>
+</li>
+<li>
+<p><a href="#_server_control_api">Server Control API</a>: <code>/nsm/server/add</code> was replying with an undocumented error code on success. Instead, as this document already stated, it now sends <code>"/reply", path, "Launched."</code>. Again, this would have been just API_VERSION_PATCH on its own.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.2<br>
-Last updated 2020-07-07 12:43:32 +0200
+Version API 1.1.0<br>
+Last updated 2020-07-07 22:08:48 +0200
 </div>
 </div>
 </body>

@@ -1,19 +1,27 @@
 1.4
-Repair nsmd to correctly send client data when running headless and a GUI announces later.
-ClientId generation now prevent collision with existing IDs.
-nsmd command line option --load-session to directly load one (Berkelder, Rik)
-Better detection of clients that failed to launch leads to faster session startup (by 5 seconds)
-Users get informed by client-label if an executable is not present on the system or permission denied
-Fixed reply for listing sessions from a plain "Done." to proper reply path with empty string as terminal symbol  "/reply", "/nsm/server/list", ""
-/nsm/server/list ""  raises NSM_API_VERSION_MINOR from 1 to 2 (1.1 -> 1.2)
-Fix operation reply to last treated client instead to reply to sender (Picot, Mathieu  / houston)
-Optional-gui support to nsm.h, for other applications to include and use. (Meyer, Hermann / brummer )
-Legacy-GUI: Overhaul look and feel.
-Legacy-GUI: Rewrite labels and buttons with better descriptions.
-Legacy-GUI: Protect text-input dialog windows from empty strings, like "Add New Client" or "New Session"
-Legacy-GUI: Scale icons, support more icon formats.
-Legacy-GUI: Show all icons and buttons when attaching to a running nsmd session
-Legacy-GUI: Various small fixes.
+Add documentation and manpages.
+
+Legacy-GUI:
+ Overhaul look and feel.
+ Rewrite labels and buttons with unambiguous descriptions.
+ Protect text-input dialog windows from empty strings, like "Add New Client" or "New Session"
+ Scale icons, support more icon formats.
+ Show all icons and buttons when attaching to a running nsmd session
+ Various small fixes.
+
+nsmd:
+ NSM_API_VERSION_MINOR from 0 to 1 (1.0 -> 1.1)
+ Repair nsmd to correctly send client data when running headless and a GUI announces later.
+ ClientId generation now prevent collision with existing IDs.
+ nsmd command line option --load-session to directly load one (Berkelder, Rik)
+ Better detection of clients that failed to launch leads to faster session startup (by 5 seconds)
+ Users get informed by client-label if an executable is not present on the system or permission denied
+ Fixed reply for listing sessions from a plain "Done." to proper reply path with empty string as terminal symbol  "/reply", "/nsm/server/list", ""
+ Fix operation reply to last treated client instead to reply to sender (Picot, Mathieu  / houston)
+
+nsm.h
+ :optional-gui: support to nsm.h, for other applications to include and use. (Meyer, Hermann / brummer )
+
 
 1.3.2
 Rename new-session-manager executable to nsm-legacy-gui to prevent future confusion.
@@ -25,7 +33,6 @@ Meson can now switch off individual executables and will stop/error when trying 
 1.3
 Rebranding to "new session manager"
 Upstream GUI tools "non-session-manager" and "nsm-proxy" converted to standard FLTK instead of a custom toolkit
-New message /nsm/gui/session/root raises NSM_API_VERSION_MINOR from 0 to 1 (1.0 -> 1.1)
 Changed build system to meson
 License upgraded to GPLv3
 Simplified file structure

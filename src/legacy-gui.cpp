@@ -1360,7 +1360,7 @@ main (int argc, char **argv )
                 "  --nsm-url url         Connect to a running nsmd [Example: osc.udp://mycomputer.localdomain:38356/].\n"
                 "  --                    Everything after -- will be given to nsmd as server options. See nsmd --help .\n"
                 "\n"
-                "For backwards compatibility this executable also exist as symlink 'non-session_manager\n"
+                "For backwards compatibility this executable also exist as symlink 'non-session-manager'\n"
                 "\n"
                 "";
                 printf ( usage );

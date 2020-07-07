@@ -80,6 +80,7 @@ cd "$ROOT/docs/src" #We tested earlier that a build-dir exists
 
 help2man ../../build/nsmd --version-string="nsmd Version $VERSION" --no-info --include manpage-common.h2m > nsmd.1
 help2man ../../build/nsm-legacy-gui --version-string="nsm-legacy-gui Version $VERSION" --no-info --include manpage-common.h2m > nsm-legacy-gui.1
+help2man ../../build/nsm-legacy-gui --version-string="nsm-legacy-gui Version $VERSION" --no-info --include manpage-common.h2m > non-session-manager.1
 help2man ../../build/nsm-proxy  --version-string="nsm-proxy Version $VERSION" --no-info --include manpage-common.h2m > nsm-proxy.1
 help2man ../../build/nsm-proxy-gui  --version-string="nsm-proxy-gui Version $VERSION" --no-info --include manpage-common.h2m > nsm-proxy-gui.1
 help2man ../../build/jackpatch  --version-string="jackpatch Version $VERSION" --no-info --include manpage-common.h2m > jackpatch.1

@@ -52,6 +52,11 @@ executable('nsmd',
     install: true,
     )
 
+install_man(['docs/src/nsmd.1'])
+install_data('docs/index.html', install_dir : get_option('datadir') / 'doc/new-session-manager')
+install_data('docs/api/index.html', install_dir : get_option('datadir') / 'doc/new-session-manager/api')
+install_data('CHANGELOG', install_dir : get_option('datadir') / 'doc/new-session-manager')
+install_data('README.md', install_dir : get_option('datadir') / 'doc/new-session-manager')
 
 #For options see meson_options.txt
 #All get_options are default=true
@@ -63,6 +68,8 @@ if get_option('jackpatch')
         dependencies: [liblodep, jackdep],
         install: true,
         )
+
+    install_man(['docs/src/jackpatch.1', ])
 endif
 
 
@@ -94,6 +101,9 @@ if get_option('nsm-proxy')
         dependencies: [fltkdep, liblodep, threaddep],
         install: true,
     )
+
+    install_man(['docs/src/nsm-proxy.1', 'docs/src/nsm-proxy-gui.1'])
+
 endif
 
 if get_option('nsm-legacy-gui')
@@ -105,12 +115,9 @@ if get_option('nsm-legacy-gui')
         )
 
     install_data('src/org.linuxaudio.nsm-legacy-gui.desktop', install_dir : get_option('datadir') / 'applications')
-    install_data('docs/index.html', install_dir : get_option('datadir') / 'doc/new-session-manager')
-    install_data('docs/api/index.html', install_dir : get_option('datadir') / 'doc/new-session-manager/api')
-    install_data('CHANGELOG', install_dir : get_option('datadir') / 'doc/new-session-manager')
-    install_data('README.md', install_dir : get_option('datadir') / 'doc/new-session-manager')
-    install_man(['docs/src/nsmd.1', 'docs/src/nsm-proxy.1', 'docs/src/nsm-proxy-gui.1', 'docs/src/nsm-legacy-gui.1', 'docs/src/jackpatch.1', ])
+    install_man(['docs/src/nsm-legacy-gui.1', 'docs/src/non-session-manager.1'])
 
+    #Symlinking is a one-way operation and can't be uninstalled, we rely on distribution packages for that
     meson.add_install_script('sh', '-c',
         'ln -sf nsm-legacy-gui ${DESTDIR}@0@/@1@/non-session-manager'.format(
             get_option('prefix'), get_option('bindir')))

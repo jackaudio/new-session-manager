@@ -45,6 +45,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <jack/jack.h>
+#include <getopt.h>
 
 #include <lo/lo.h>
 
@@ -756,7 +757,40 @@ port_registration_callback( jack_port_id_t id, int reg, void *arg )
 int
 main ( int argc, char **argv )
 {
-    /* get_args( argc, argv ); */
+
+
+    //Command line parameters
+    static struct option long_options[] =
+    {
+        { "help", no_argument, 0, 'h' },
+        { 0, 0, 0, 0 }
+    };
+    int option_index = 0;
+    int c = 0;
+    while ( ( c = getopt_long_only( argc, argv, "", long_options, &option_index  ) ) != -1 )
+    {
+        switch ( c )
+        {
+            case 'h':
+                {
+                const char *usage =
+                "jackpatch - Remember the JACK Audio Connection Kit Graph in NSM\n\n"
+                "It is a module for the 'New Session Manager' and only communicates\n"
+                "over OSC in an NSM-Session and has no standalone functionality.\n"
+                "\n"
+                "Usage:\n"
+                "  jackpatch --help\n"
+                "\n"
+                "Options:\n"
+                "  --help                Show this screen\n"
+                "";
+                printf ( usage );
+                exit(0);
+                break;
+                }
+        }
+    }
+
 
     jack_status_t status;
 

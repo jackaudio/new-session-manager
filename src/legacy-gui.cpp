@@ -1348,7 +1348,22 @@ main (int argc, char **argv )
                 break;
             }
             case 'h':
-                printf( "Usage: %s [--nsm-url...] [-- server options ]\n\n", argv[0] );
+                //Print usage message according to POSIX.1-2017
+                const char *usage =
+                "legacy-gui - FLTK GUI for the 'New Session Manager'\n\n"
+                "Usage:\n"
+                "  legacy-gui\n"
+                "  legacy-gui --help\n"
+                "\n"
+                "Options:\n"
+                "  --help                Show this screen\n"
+                "  --nsm-url url         Connect to a running nsmd [Example: osc.udp://mycomputer.localdomain:38356/].\n"
+                "  --                    Everything after -- will be given to nsmd as server options. See nsmd --help .\n"
+                "\n"
+                "For backwards compatibility this executable also exist as symlink 'non-session_manager\n"
+                "\n"
+                "";
+                printf ( usage );
                 exit(0);
                 break;
         }

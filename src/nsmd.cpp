@@ -69,6 +69,7 @@ static char *session_root;
 
 #define NSM_API_VERSION_MAJOR 1
 #define NSM_API_VERSION_MINOR 2
+#define VERSION_STRING "1.4"
 
 #define ERR_OK 0
 #define ERR_GENERAL_ERROR    -1
@@ -2432,17 +2433,17 @@ int main(int argc, char *argv[])
                 load_session = optarg;
                 break;
             case 'v':
-                printf( "%s 1.4\n", argv[0] );
+                printf( "%s " VERSION_STRING "\n", argv[0] );
                 exit(0);
                 break;
             case 'h':
                 //Print usage message according to POSIX.1-2017
                 const char *usage =
-                "%s\n\n"
+                "nsmd - Daemon and server for the 'New Session Manager'\n\n"
                 "Usage:\n"
-                "  %s\n"
-                "  %s --help\n"
-                "  %s --version\n"
+                "  nsmd\n"
+                "  nsmd --help\n"
+                "  nsmd --version\n"
                 "\n"
                 "Options:\n"
                 "  --help                Show this screen\n"
@@ -2452,8 +2453,11 @@ int main(int argc, char *argv[])
                 "  --load-session name   Load existing session [Example: \"My Song\"].\n"
                 "  --gui-url url         Connect to running legacy-gui [Example: osc.udp://mycomputer.localdomain:38356/].\n"
                 "  --detach              Detach from console.\n"
+                "\n\n"
+                "nsmd can be run headless with existing sessions. To create new ones it is recommended to use a GUI\n"
+                "such as nsm-legacy-gui (included) or Argodejo (separate package)\n"
                 "";
-                printf ( usage, argv[0], argv[0], argv[0], argv[0] );
+                printf ( usage );
                 exit(0);
                 break;
         }

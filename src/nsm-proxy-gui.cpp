@@ -35,6 +35,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
+
 
 lo_server losrv;
 lo_address nsmp_addr;
@@ -171,9 +173,9 @@ void
 handle_save_signal ( Fl_Widget *o, void *v )
 {
     int sig = 0;
-    
+
     const char* picked = ui->save_signal_choice->mvalue()->label();
-    
+
     if ( !strcmp( picked, "SIGUSR1" ) )
         sig = SIGUSR1;
     else if ( !strcmp( picked, "SIGUSR2" ) )
@@ -189,9 +191,9 @@ void
 handle_stop_signal ( Fl_Widget *o, void *v )
 {
     int sig = SIGTERM;
-    
+
     const char* picked = ui->stop_signal_choice->mvalue()->label();
-    
+
     if ( !strcmp( picked, "SIGTERM" ) )
         sig = SIGTERM;
     else if ( !strcmp( picked, "SIGINT" ) )
@@ -250,28 +252,71 @@ check_error ( void *v )
 
             o->show();
         }
-        
+
         free(client_error);
         client_error = NULL;
     }
-    
+
     Fl::repeat_timeout( 0.5f, check_error, v );
 }
 
 int
 main ( int argc, char **argv )
 {
-    if ( argc != 3 )
+
+    //Command line parameters
+    const char * gui_url = NULL;
+    static struct option long_options[] =
     {
-        fprintf( stderr, "Usage: %s --connect-to url\n", argv[0] );
-        return 1;
+        { "connect-to", required_argument, 0, 'u' },
+        { "help", no_argument, 0, 'h' },
+        { 0, 0, 0, 0 }
+    };
+    int option_index = 0;
+    int c = 0;
+    while ( ( c = getopt_long_only( argc, argv, "", long_options, &option_index  ) ) != -1 )
+    {
+        switch ( c )
+        {
+            case 'u':
+            {
+                gui_url = optarg;
+                break;
+            }
+
+            case 'h':
+            {
+                const char *usage =
+                "nsm-proxy-gui - GUI for nsm-proxy, a wrapper for executables without direct NSM-Support.\n\n"
+                "Usage:\n"
+                "  nsm-proxy-gui --help\n"
+                "  nsm-proxy-gui --connect-to\n"
+                "\n"
+                "Options:\n"
+                "  --help                Show this screen\n"
+                "  --connect-to          Connect to running nsm-proxy\n"
+                "\n\n"
+                "nsmd-proxy-gui is usually not called by the user directly,\n"
+                "but autostarted when nsm-proxy is added to a session (through a GUI).\n"
+                "";
+                printf ( usage );
+                exit(0);
+                break;
+            }
+        }
     }
+
+    if ( gui_url == NULL )
+        exit(1);
 
     init_osc( NULL );
 
-    nsmp_addr = lo_address_new_from_url( argv[2] );
+    nsmp_addr = lo_address_new_from_url( gui_url );
 
-    printf( "Connecting to nsm-proxy at: %s\n", argv[2] );
+    if  ( ! nsmp_addr )
+        exit(1);
+
+    printf( "Connecting to nsm-proxy at: %s\n", gui_url );
 
     ui = new NSM_Proxy_UI;
 
@@ -280,7 +325,7 @@ main ( int argc, char **argv )
     connect_ui();
 
     lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/update", "" );
-    
+
     w->show();
 
     Fl::lock();

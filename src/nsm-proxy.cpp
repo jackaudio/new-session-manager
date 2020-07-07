@@ -40,6 +40,7 @@
 #include <sys/signalfd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <getopt.h>
 
 static lo_server losrv;
 static lo_address nsm_addr;
@@ -149,7 +150,7 @@ public:
             if ( ! (pid = fork()) )
             {
                 MESSAGE( "Launching %s\n", _executable );
-                
+
 //                char *args[] = { strdup( executable ), NULL };
 
                 char *cmd;
@@ -160,13 +161,13 @@ public:
                     asprintf( &cmd, "exec %s  >error.log 2>&1", _executable );
 
                 char *args[] = { strdup("/bin/sh"), strdup( "-c" ), cmd, NULL };
-                
+
                 setenv( "NSM_CLIENT_ID", nsm_client_id, 1 );
                 setenv( "NSM_SESSION_NAME", nsm_display_name, 1 );
                 if ( _config_file )
                     setenv( "CONFIG_FILE", _config_file, 1 );
                 unsetenv( "NSM_URL" );
-        
+
                 if ( -1 == execvp( "/bin/sh", args ) )
                 {
                     WARNING( "Error starting process: %s", strerror( errno ) );
@@ -188,7 +189,7 @@ public:
         {
             _stop_signal = s;
         }
-    
+
     void label ( const char *s )
         {
             if ( _label )
@@ -208,14 +209,14 @@ public:
 
 
     bool dump ( const char *path )
-        {  
+        {
             char *fname;
             asprintf( &fname, "%s/%s", path, CONFIG_FILE_NAME );
-            
+
             FILE *fp = fopen( fname, "w" );
 
             free( fname );
-            
+
             if ( !fp )
             {
                 WARNING( "Error opening file for saving: %s", strerror( errno ) );
@@ -234,7 +235,7 @@ public:
             fprintf( fp, "save signal\n\t%i\n", _save_signal );
 
             fprintf( fp, "stop signal\n\t%i\n", _stop_signal );
-            
+
             if ( _label && strlen(_label) )
                 fprintf( fp, "label\n\t%s\n", _label );
 
@@ -255,13 +256,13 @@ public:
             char *name;
             char *value;
 
-            MESSAGE( "Loading file config \"%s\"", path ); 
+            MESSAGE( "Loading file config \"%s\"", path );
 
             while ( 2 == fscanf( fp, "%m[^\n]\n\t%m[^\n]\n", &name, &value ) )
             {
 
                 DMESSAGE( "%s=%s", name, value );
-                
+
                 if ( !strcmp( name, "executable" ) )
                     _executable = value;
                 else if (!strcmp( name, "arguments" ) )
@@ -383,10 +384,10 @@ osc_announce_reply ( const char *path, const char *types, lo_arg **argv, int arg
          return -1;
 
     printf( "Successfully registered. NSM says: %s", &argv[1]->s );
-    
+
     nsm_is_active = 1;
     nsm_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ) );
-    
+
     return 0;
 }
 
@@ -417,19 +418,19 @@ show_gui ( void )
         char executable[] = "nsm-proxy-gui";
 
         MESSAGE( "Launching %s\n", executable );
-        
+
         char *url = lo_server_get_url( losrv );
 
         char *args[] = { executable, strdup( "--connect-to" ), url, NULL };
-        
+
         if ( -1 == execvp( executable, args ) )
         {
             WARNING( "Error starting process: %s", strerror( errno ) );
-            
+
             exit(1);
         }
     }
-    
+
     gui_pid = pid;
 
     lo_send_from( nsm_addr, losrv, LO_TT_IMMEDIATE, "/nsm/client/gui_is_shown", "" );
@@ -492,7 +493,7 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
     mkdir( new_path, 0777 );
 
     chdir( new_path );
-    
+
     asprintf( &new_filename, "%s/%s", new_path, CONFIG_FILE_NAME );
 
     struct stat st;
@@ -517,7 +518,7 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
 
     if ( project_file )
         free( project_file );
-    
+
     project_file = strdup( new_path );
 
 // new_filename;
@@ -546,7 +547,7 @@ int
 osc_save_signal ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
     nsm_proxy->save_signal( argv[0]->i );
-    
+
     return 0;
 }
 
@@ -554,7 +555,7 @@ int
 osc_stop_signal ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
     nsm_proxy->stop_signal( argv[0]->i );
-    
+
     return 0;
 }
 
@@ -567,7 +568,7 @@ osc_start ( const char *path, const char *types, lo_arg **argv, int argc, lo_mes
     {
         hide_gui();
     }
-    
+
     return 0;
 }
 
@@ -575,7 +576,7 @@ int
 osc_kill ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
     nsm_proxy->kill();
-    
+
     return 0;
 }
 
@@ -662,9 +663,9 @@ void handle_sigchld ( )
         int status;
         pid_t pid = waitpid(-1, &status, WNOHANG);
 
-        if (pid <= 0) 
+        if (pid <= 0)
             break;
-        
+
         if ( pid == gui_pid )
         {
             lo_send_from( nsm_addr, losrv, LO_TT_IMMEDIATE, "/nsm/client/gui_is_hidden", "" );
@@ -725,6 +726,40 @@ main ( int argc, char **argv )
 
     signal_fd = signalfd( -1, &mask, SFD_NONBLOCK );
 
+    //Command line parameters
+    static struct option long_options[] =
+    {
+        { "help", no_argument, 0, 'h' },
+        { 0, 0, 0, 0 }
+    };
+    int option_index = 0;
+    int c = 0;
+    while ( ( c = getopt_long_only( argc, argv, "", long_options, &option_index  ) ) != -1 )
+    {
+        switch ( c )
+        {
+            case 'h':
+                {
+                const char *usage =
+                "nsm-proxy - Wrapper for executables without direct NSM-Support.\n\n"
+                "It is a module for the 'New Session Manager' and only communicates\n"
+                "over OSC in an NSM-Session and has no standalone functionality.\n"
+                "\n"
+                "Usage:\n"
+                "  nsm-proxy --help\n"
+                "\n"
+                "Options:\n"
+                "  --help                Show this screen\n"
+                "";
+                printf ( usage );
+                exit(0);
+                break;
+                }
+        }
+    }
+
+
+
     nsm_proxy = new NSM_Proxy();
 
     init_osc( NULL );
@@ -748,16 +783,16 @@ main ( int argc, char **argv )
     for ( ;; )
     {
         ssize_t s = read(signal_fd, &fdsi, sizeof(struct signalfd_siginfo));
-        
+
         if (s == sizeof(struct signalfd_siginfo))
         {
             if (fdsi.ssi_signo == SIGCHLD)
                 handle_sigchld();
         }
-        
+
         lo_server_recv_noblock( losrv, 500 );
 
         if ( die_now )
             die();
     }
-} 
+}

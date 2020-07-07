@@ -17,7 +17,16 @@
 # along with New-Session-Manager. If not, see <https://www.gnu.org/licenses/>.
 ##############################################################################
 
-project('new-session-manager', 'c', 'cpp', version : '1.4', license : 'GPLv3')
+
+#Please keep the version number in a separate line so we can automatically update it.
+#Also keep it at the beginning of the line and leave spaces around the colon.
+#It's source is in src/nsmd.cpp #DEFINE VERSION_STRING
+project(
+'new-session-manager',
+'c', 'cpp',
+version : '1.4',
+license : 'GPLv3',
+)
 
 ##############
 #Dependencies
@@ -96,6 +105,11 @@ if get_option('nsm-legacy-gui')
         )
 
     install_data('src/org.linuxaudio.nsm-legacy-gui.desktop', install_dir : get_option('datadir') / 'applications')
+    install_data('docs/index.html', install_dir : get_option('datadir') / 'doc/new-session-manager')
+    install_data('docs/api/index.html', install_dir : get_option('datadir') / 'doc/new-session-manager/api')
+    install_data('CHANGELOG', install_dir : get_option('datadir') / 'doc/new-session-manager')
+    install_data('README.md', install_dir : get_option('datadir') / 'doc/new-session-manager')
+    install_man(['docs/src/nsmd.1', 'docs/src/nsm-proxy.1', 'docs/src/nsm-proxy-gui.1', 'docs/src/nsm-legacy-gui.1', 'docs/src/jackpatch.1', ])
 
     meson.add_install_script('sh', '-c',
         'ln -sf nsm-legacy-gui ${DESTDIR}@0@/@1@/non-session-manager'.format(

@@ -1,4 +1,10 @@
 
+## Documentation and Manual
+See the generated website installed in your systems SHARE dir or docs/out/index.html from this
+repository. Alternatively you can read the online version on our github page. All are the same
+files. We also provide a set of manpages for each executable (see below).
+
+
 ## Fork and License
 This is a fork of non-session-manager, by Jonathan Moore Liles <male@tuxfamily.net> http://non.tuxfamily.org/
 which was released under the GNU GENERAL PUBLIC LICENSE  Version 2, June 1991.
@@ -6,10 +12,19 @@ which was released under the GNU GENERAL PUBLIC LICENSE  Version 2, June 1991.
 All files, except nsm.h kept in this fork were GPL "version 2 of the License, or (at your
 option) any later version."
 
-`nsm.h` is licensed under the ISCL.
+`nsm.h` is licensed under the ISC License.
 
 New-Session-Manager changed the license to GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007.
 See file COPYING
+
+Documentation in docs/ is licensed Creative Commons CC-By-Sa.
+It consist of mostly generated files and snippet files which do not have a license header for
+technical reasons.
+All original documentation source files are CC-By-Sa Version v4.0 (see file docs/src/LICENSE),
+the source file docs/src/api/index.adoc is a derived work from NON-Session-Managers API file which
+is licensed CC-By-Sa v2.5. Therefore our derived API document is also CC-By-Sa v2.5
+(see files docs/src/api/readme.txt and docs/src/api/LICENSE)
+
 
 ## Build
 The build system is meson.

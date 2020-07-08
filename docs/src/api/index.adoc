@@ -28,7 +28,7 @@ A copy of the license has been provided in the file documentation/API/LICENSE.
 
 = New Session Manager - API
 
-IMPORTANT: "New Session Manager" is community version of the
+IMPORTANT: "New Session Manager" is a community version of the
 link:http://non.tuxfamily.org/nsm/API.html["Non Session Manager" by Jonathan Moore Liles], who also
 wrote the majority of this API document, especially the API itself. *The API is the same*. Any
 technical changes or differences in behaviour are described in <<API Versions and Behaviour Changes>>.
@@ -49,9 +49,11 @@ The API comprises a simple Open Sound Control (OSC) based protocol, along with s
 guidelines, which can easily be implemented by various applications.
 
 This project contains a program called `nsmd` which is an implementation of the server side of
-the NSM API. `nsmd` can be controlled by direct OSC messages, or (more commone) a GUI:
+the NSM API. `nsmd` can be controlled by direct OSC messages, or (more commonly) a GUI:
 Included in this package is the `nsm-legacy-gui`, which gets symlinked to "non-session-manager`.
-Another GUI is "Argodejo".
+Another GUI is "Argodejo". Other applications exist that (partially) support the NSM API and are able
+to load clients, but they do not use the New-Session-Manager (or Non-Session-Manager) implementation
+and are therefore out of scope for this document.
 
 However, the same server-side API can also be implemented by other programs (such as Carla),
 although consistency and robustness will likely suffer if non-NSM compliant clients are allowed to
@@ -772,7 +774,7 @@ misbehaves and sends too-new messages outside of announced :capabilites:
 Rewritten API document without code changes to adapt to existing code or existing client behaviour:
 
 * Changed versioning scheme to Semantic Versioning with three positions Major.Minor.Patch
-* <<Quit or Exit>> SHOULD hide instead or exiting when :optional-gui: is supported and MAY not
+* <<Quit or Exit>> SHOULD hide instead of exiting when :optional-gui: is supported and MAY not
     act on the quit through menu otherwise.
 * <<#server-to-client-control-messages-open,Open>>: Make clear that there are only certain
     possibilities for save paths. We added MUST because the rule was just implied before.
@@ -792,7 +794,14 @@ Code changes:
     is now finalized with sending and empty string "" as session name. Previously this was just
     a symbolically irrelevant console message `"Done."`
 * unstable `/nsm/gui` protocol: Send client status after a GUI attaches to running server. This
-    was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone would only require API_VERSION_PATCH increment, but we are already incrementing minor.
-* unstable `/nsm/gui` protocol: Send label "launch error!" when a program is added (or loaded) that does not exist in $PATH. This requires no adaptation of any client, server or GUI because labels are arbitrary already and this is not meant for automatic parsing, but as user information.
-* Replies to `/nsm/server/save` etc. will now be sent back to the sender and not falsely to the last client who replied to `/nsm/client/save`.  This alone would only require API_VERSION_PATCH increment, but we are already incrementing minor.
-* <<Server Control API>>: `/nsm/server/add` was replying with an undocumented error code on success. Instead, as this document already stated, it now sends `"/reply", path, "Launched."`. Again, this would have been just API_VERSION_PATCH on its own.
+    was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone
+    would only require API_VERSION_PATCH increment, but we are already incrementing minor.
+* unstable `/nsm/gui` protocol: Send label "launch error!" when a program is added (or loaded) that
+    does not exist in $PATH. This requires no adaptation of any client, server or GUI because labels
+    are arbitrary already and this is not meant for automatic parsing, but as user information.
+* Replies to `/nsm/server/save` etc. will now be sent back to the sender and not falsely to the last
+   client who replied to `/nsm/client/save`.  This alone would only require API_VERSION_PATCH
+   increment, but we are already incrementing minor.
+* <<Server Control API>>: `/nsm/server/add` was replying with an undocumented error code on success.
+   Instead, as this document always specificed, it now sends `"/reply", path, "Launched."`.
+   Again, this would have been just API_VERSION_PATCH on its own.

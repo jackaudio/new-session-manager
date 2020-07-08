@@ -532,7 +532,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="title">Important</div>
 </td>
 <td class="content">
-"New Session Manager" is community version of the
+"New Session Manager" is a community version of the
 <a href="http://non.tuxfamily.org/nsm/API.html">"Non Session Manager" by Jonathan Moore Liles</a>, who also
 wrote the majority of this API document, especially the API itself. <strong>The API is the same</strong>. Any
 technical changes or differences in behaviour are described in <a href="#_api_versions_and_behaviour_changes">API Versions and Behaviour Changes</a>.
@@ -567,9 +567,11 @@ guidelines, which can easily be implemented by various applications.</p>
 </div>
 <div class="paragraph">
 <p>This project contains a program called <code>nsmd</code> which is an implementation of the server side of
-the NSM API. <code>nsmd</code> can be controlled by direct OSC messages, or (more commone) a GUI:
+the NSM API. <code>nsmd</code> can be controlled by direct OSC messages, or (more commonly) a GUI:
 Included in this package is the <code>nsm-legacy-gui</code>, which gets symlinked to "non-session-manager`.
-Another GUI is "Argodejo".</p>
+Another GUI is "Argodejo". Other applications exist that (partially) support the NSM API and are able
+to load clients, but they do not use the New-Session-Manager (or Non-Session-Manager) implementation
+and are therefore out of scope for this document.</p>
 </div>
 <div class="paragraph">
 <p>However, the same server-side API can also be implemented by other programs (such as Carla),
@@ -623,7 +625,7 @@ It MUST NOT allow the user to create a new project/file in another location.</p>
 <p>This option MUST be disabled.</p>
 </div>
 <div class="paragraph">
-<p>The application MAY elect to implement an option called 'Import into Session', creates a
+<p>The application MAY elect to implement an option called "Import into Session", which creates a
 copy of a file/project which is then saved at the session path provided by NSM.</p>
 </div>
 </div>
@@ -660,7 +662,7 @@ management.</p>
 <div class="paragraph">
 <p>This option MAY behave as normal (possibly asking the user to confirm exiting), or MAY do nothing
 to only allow quit from the session-manager control.
-When the client supports :optional-gui: this option SHOULD be replaced with hiding the clients GUI
+When the client supports :optional-gui: this option SHOULD be replaced with hiding the client&#8217;s GUI
 so a quit by window manager hides.</p>
 </div>
 </div>
@@ -684,7 +686,7 @@ SHOULD be referenced by creating a symbolic link within the assigned session are
 referring to the symlink. This allows sessions to be archived and transported simply (e.g. with
 "tar -h") by tools that have no knowledge of the project formats of the various clients in the
 session. The symlinks thus created should, at the very least, be named after the files they refer
-to (some unique component may be required to prevent collisions)</p>
+to. Some unique component may be required to prevent collisions.</p>
 </div>
 </div>
 </div>
@@ -731,7 +733,7 @@ the name that would normally be passed to <code>jack_client_open</code>. For exa
 receiving an <code>open</code> message; the <code>open</code> message will provide a unique client name prefix suitable for
 passing to JACK. This is probably the most complex requirement of the NSM API, but it isn&#8217;t
 difficult to implement, especially if the application simply wishes to delay its initialization
-process breifly while awaiting the <code>announce</code> reply and subsequent <code>open</code> message.</p>
+process briefly while awaiting the <code>announce</code> reply and subsequent <code>open</code> message.</p>
 </div>
 <div class="paragraph">
 <p><code>capabilities</code> MUST be a string containing a colon separated list of the special capabilities the
@@ -929,9 +931,13 @@ name.ID can be used to look up all its files. (For example to clean up the sessi
 <ul>
 <li>
 <p>The client has no state and does not save at all</p>
-</li>
+<div class="ulist">
+<ul>
 <li>
 <p>and it MUST NOT misuse e.g. ~/.config to save session specific information e.g. synth-instrument settings</p>
+</li>
+</ul>
+</div>
 </li>
 <li>
 <p>The client may use the path client_name.ID directly, resulting in a file client_name.ID in the session directory</p>
@@ -941,12 +947,16 @@ name.ID can be used to look up all its files. (For example to clean up the sessi
 </li>
 <li>
 <p>The client may use the path as directory, creating arbitrary files below, for example recorded .wav.</p>
-</li>
+<div class="ulist">
+<ul>
 <li>
-<p>and it MUST NOT not use the client ID below this point. This way the data stays transferable by hand to another client instance (in another session).</p>
+<p>and it MUST NOT use the client ID below this point. This way the data stays transferable by hand to another client instance (in another session).</p>
 </li>
 <li>
 <p>best case practice is to always use the same file names, for example <code>client_name.ID/savefile.json</code></p>
+</li>
+</ul>
+</div>
 </li>
 </ul>
 </div>
@@ -1161,7 +1171,7 @@ separate program, it should be killed.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>No response is message is required.</p>
+<p>This message does not require a response.</p>
 </div>
 </div>
 </div>
@@ -1171,7 +1181,7 @@ separate program, it should be killed.</p>
 <h4 id="_optional_gui">2.4.1. Optional GUI</h4>
 <div class="paragraph">
 <p>If the client has specified the <code>optional-gui</code> capability, then it MUST send this message whenever
-the state of visibility of the optional GUI has changed. It also MUST send this message after it&#8217;s
+the state of visibility of the optional GUI has changed. It also MUST send this message after its
 announce message to indicate the initial visibility state of the optional GUI.</p>
 </div>
 <div class="paragraph">
@@ -1643,7 +1653,7 @@ misbehaves and sends too-new messages outside of announced :capabilites:</p>
 <p>Changed versioning scheme to Semantic Versioning with three positions Major.Minor.Patch</p>
 </li>
 <li>
-<p><a href="#_quit_or_exit">Quit or Exit</a> SHOULD hide instead or exiting when :optional-gui: is supported and MAY not
+<p><a href="#_quit_or_exit">Quit or Exit</a> SHOULD hide instead of exiting when :optional-gui: is supported and MAY not
 act on the quit through menu otherwise.</p>
 </li>
 <li>
@@ -1655,7 +1665,7 @@ possibilities for save paths. We added MUST because the rule was just implied be
 multi-jack clients is "/".</p>
 </li>
 <li>
-<p><a href="#_optional_gui">Optional GUI</a> SHOULD start hidden, always after a fresh add to the session, after that saving
+<p><a href="#_optional_gui">Optional GUI</a> SHOULD start hidden, always after a fresh add to the session. After that saving
 the visibility state may override it for next time.</p>
 </li>
 <li>
@@ -1687,16 +1697,23 @@ a symbolically irrelevant console message <code>"Done."</code></p>
 </li>
 <li>
 <p>unstable <code>/nsm/gui</code> protocol: Send client status after a GUI attaches to running server. This
-was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone would only require API_VERSION_PATCH increment, but we are already incrementing minor.</p>
+was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone
+would only require API_VERSION_PATCH increment, but we are already incrementing minor.</p>
 </li>
 <li>
-<p>unstable <code>/nsm/gui</code> protocol: Send label "launch error!" when a program is added (or loaded) that does not exist in $PATH. This requires no adaptation of any client, server or GUI because labels are arbitrary already and this is not meant for automatic parsing, but as user information.</p>
+<p>unstable <code>/nsm/gui</code> protocol: Send label "launch error!" when a program is added (or loaded) that
+does not exist in $PATH. This requires no adaptation of any client, server or GUI because labels
+are arbitrary already and this is not meant for automatic parsing, but as user information.</p>
 </li>
 <li>
-<p>Replies to <code>/nsm/server/save</code> etc. will now be sent back to the sender and not falsely to the last client who replied to <code>/nsm/client/save</code>.  This alone would only require API_VERSION_PATCH increment, but we are already incrementing minor.</p>
+<p>Replies to <code>/nsm/server/save</code> etc. will now be sent back to the sender and not falsely to the last
+client who replied to <code>/nsm/client/save</code>.  This alone would only require API_VERSION_PATCH
+increment, but we are already incrementing minor.</p>
 </li>
 <li>
-<p><a href="#_server_control_api">Server Control API</a>: <code>/nsm/server/add</code> was replying with an undocumented error code on success. Instead, as this document already stated, it now sends <code>"/reply", path, "Launched."</code>. Again, this would have been just API_VERSION_PATCH on its own.</p>
+<p><a href="#_server_control_api">Server Control API</a>: <code>/nsm/server/add</code> was replying with an undocumented error code on success.
+Instead, as this document always specificed, it now sends <code>"/reply", path, "Launched."</code>.
+Again, this would have been just API_VERSION_PATCH on its own.</p>
 </li>
 </ul>
 </div>
@@ -1707,7 +1724,7 @@ was not happening before, but it was the intention. It was just broken in nsmd.c
 <div id="footer">
 <div id="footer-text">
 Version API 1.1.0<br>
-Last updated 2020-07-07 22:08:48 +0200
+Last updated 2020-07-08 20:25:19 +0200
 </div>
 </div>
 </body>

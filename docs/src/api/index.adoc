@@ -590,7 +590,7 @@ string.
 
 === Client to Server Control
 
-If the server publishes the `:server_control:` capability, then clients can also initiate action by
+If the server publishes the `:server-control:` capability, then clients can also initiate action by
 the server. For example, a client might implement a 'Save All' option which sends a
 `/nsm/server/save` message to the server, rather than requiring the user to switch to the session
 management interface to effect the save.

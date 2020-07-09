@@ -45,6 +45,6 @@ Fix compiler warnings.
 Current state of upstream Non Session Manager v1.2 including unreleased /nsm/gui/session/root
 
 
-1.1.0 / 2012-03-03
+1.2.0 / 2017-07-08
 Last release of Non-Session-Manager.
-https://non.tuxfamily.org/wiki/2012-03-03%20Release%20Announcement%20v1.1.0
+Commit 1904aba516341287ac297cefbbcd185f643e5538 

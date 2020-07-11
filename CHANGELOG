@@ -8,6 +8,7 @@ Legacy-GUI:
  Scale icons, support more icon formats.
  Show all icons and buttons when attaching to a running nsmd session
  Various small fixes.
+ Always show correct session name, no matter how the session was loaded or how the GUI was started
 
 nsmd:
  NSM_API_VERSION_MINOR from 0 to 1 (1.0 -> 1.1)
@@ -18,6 +19,7 @@ nsmd:
  Users get informed by client-label if an executable is not present on the system or permission denied
  Fixed reply for listing sessions from a plain "Done." to proper reply path with empty string as terminal symbol  "/reply", "/nsm/server/list", ""
  Fix operation reply to last treated client instead to reply to sender (Picot, Mathieu  / houston)
+ /nsm/gui/session/name send consistent session name/relative-path pair to the annouced GUI, no matter how the session was loaded.
 
 nsm.h
  :optional-gui: support to nsm.h, for other applications to include and use. (Meyer, Hermann / brummer )
@@ -47,7 +49,7 @@ Current state of upstream Non Session Manager v1.2 including unreleased /nsm/gui
 
 1.2.0 / 2017-07-08
 Last release of Non-Session-Manager.
-Commit 1904aba516341287ac297cefbbcd185f643e5538 
+Commit 1904aba516341287ac297cefbbcd185f643e5538
 
 
 1.1.0 / 2012-03-03

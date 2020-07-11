@@ -746,10 +746,10 @@ inrecement to `API_VERSION_MAJOR`, which we want to avoid.
 `nsmd` checks if the clients `API_VERSION_MAJOR` is greater than its own and refuses the client
 with `ERR_INCOMPATIBLE_API`.
 
-All changes (that concern client/server behaviour) that increment `API_VERSION_MINOR` will be gated
-by new capabilities (e.g. `:optional-gui:`). `nsmd` will not send any messages if a capability was
-not sent by the client in <<Announce,`announce`>>. This includes mostly optional features about
-requesting extra information.
+All changes (that concern client/server behaviour) that increment `API_VERSION_MINOR` will be
+request-only or gated by new capabilities (e.g. `:optional-gui:`). `nsmd` will not send any
+messages if a capability was not sent by the client in <<Announce,`announce`>>. This includes
+mostly optional features about requesting extra information.
 
 New actions for server-control, for example a hypothetical `/nsm/server/save_as`, which would be
 triggered by the client and would only be *answered* by the server ("no unrequested message") will
@@ -789,19 +789,25 @@ Rewritten API document without code changes to adapt to existing code or existin
     It was never an arbitrary value.
 
 Code changes:
-
 * <<Server Control API>>: `/nsm/server/list` chain of single OSC messages, one for each session,
     is now finalized with sending and empty string "" as session name. Previously this was just
     a symbolically irrelevant console message `"Done."`
-* unstable `/nsm/gui` protocol: Send client status after a GUI attaches to running server. This
-    was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone
-    would only require API_VERSION_PATCH increment, but we are already incrementing minor.
-* unstable `/nsm/gui` protocol: Send label "launch error!" when a program is added (or loaded) that
-    does not exist in $PATH. This requires no adaptation of any client, server or GUI because labels
-    are arbitrary already and this is not meant for automatic parsing, but as user information.
 * Replies to `/nsm/server/save` etc. will now be sent back to the sender and not falsely to the last
    client who replied to `/nsm/client/save`.  This alone would only require API_VERSION_PATCH
    increment, but we are already incrementing minor.
 * <<Server Control API>>: `/nsm/server/add` was replying with an undocumented error code on success.
    Instead, as this document always specificed, it now sends `"/reply", path, "Launched."`.
    Again, this would have been just API_VERSION_PATCH on its own.
+
+Unstable `/nsm/gui` protocol
+* Send client status after a GUI attaches to running server. This
+    was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone
+    would only require API_VERSION_PATCH increment, but we are already incrementing minor.
+* Send label "launch error!" when a program is added (or loaded) that
+    does not exist in $PATH. This requires no adaptation of any client, server or GUI because labels
+    are arbitrary already and this is not meant for automatic parsing, but as user information.
+* `/nsm/gui/session/name` will now always send the same parameter format, regardless of how the session was opened:
+   simple-session-name, relative session path with subdirs below session-root.
+* When a GUI announces itself to nsmd it will receive the absolute path to the session directory
+    through the message `/nsm/gui/session/root`. This is not a new addition but was already in
+    non-session-manager git.

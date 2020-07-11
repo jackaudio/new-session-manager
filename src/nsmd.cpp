@@ -1277,7 +1277,7 @@ close_session ( )
 
     if ( gui_is_active )
     {
-        osc_server->send( gui_addr, "/nsm/gui/session/name", "", "" );
+        osc_server->send( gui_addr, "/nsm/gui/session/name", "", "" ); //Empty string = no current session
     }
 }
 
@@ -1466,9 +1466,8 @@ load_session_file ( const char * path )
     if ( gui_is_active )
     {   //This is not the case when --load-session was used. GUI announce will come later.
 
-        //Send two parameters to signal that the session was loaded. First is the direct session name,
-        //second is the full filepath.
-        //See function announce_gui for a full description where /nsm/gui/session/name is also send from
+        //Send two parameters to signal that the session was loaded: simple session-name, relative session path below session root
+        DMESSAGE( "Informing GUI about running session name: %s with relative path %s", session_name, session_path + strlen( session_root ) );
         osc_server->send( gui_addr, "/nsm/gui/session/name", session_name, session_path + strlen( session_root ));
     }
 
@@ -1663,7 +1662,9 @@ OSC_HANDLER( new )
     {
         osc_server->send( gui_addr,  "/nsm/gui/session/session", &argv[0]->s  );
 
-        osc_server->send( gui_addr, "/nsm/gui/session/name", &argv[0]->s, &argv[0]->s );
+        //Send two parameters to signal that the session was loaded: simple session-name, relative session path below session root
+        DMESSAGE( "Informing GUI about running session name: %s with relative path %s", session_name, session_path + strlen( session_root ) );
+        osc_server->send( gui_addr, "/nsm/gui/session/name", session_name, session_path + strlen( session_root ));
     }
 
     save_session_file();
@@ -2294,32 +2295,45 @@ announce_gui( const char *url, bool is_reply )
         //The server was started directly and instructed to connect to a running GUI.
         osc_server->send( gui_addr, "/nsm/gui/server_announce", "hi" );
 
+    //The session root is not inluced in /nsm/gui/session/name
+    //For the general information we need to send this message:
     osc_server->send( gui_addr, "/nsm/gui/session/root", session_root );
 
-    // Send a list of clients to the newly registered GUI in case there was already a session open
-    MESSAGE ( "Informing GUI about %li already running clients", client.size() );
-    for ( std::list<Client*>::iterator i = client.begin();
-          i != client.end();
-          ++i )
-    {
-        Client *c = *i;
-        osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->executable_path ); // we send new twice. see announce() comment
-        if ( c->status )
-            osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
-        if ( c->is_capable_of( ":optional-gui:" ) )
-            osc_server->send( gui_addr, "/nsm/gui/client/has_optional_gui", c->client_id );
-        if ( c->label() ) // could be NULL
-            osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, c->label() );
-        if ( c->active )
-            osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name ); // upgrade to pretty-name
-    }
 
-    //Send two parameters. The first one is the short session name, which is the directory name.
-    //The second parameter is the full file path.
-    //If both are empty it signals that no session is currently open, which is the default state if
-    //a GUI started nsmd.
-    DMESSAGE( "Informing GUI about potentially running session name: %s", session_name );
-    osc_server->send( gui_addr, "/nsm/gui/session/name", session_name ? session_name : "", session_path ? session_path : "" );
+
+    //Send session name and relative path. If both are empty it signals that no session is currently open,
+    //which is the default state if a GUI started nsmd.
+    //No session_path without session_name. We only need to test for session_name.
+    if ( !session_name || session_name[0]  == '\0' )
+    {
+        DMESSAGE( "Informing GUI that no session is running by sending two empty strings" );
+        osc_server->send( gui_addr, "/nsm/gui/session/name", "", "" ); //Empty string = no current session
+    }
+    else
+    {
+        // Send a list of clients to the newly registered GUI in case there was already a session open
+        // First clients, then session name was original nsmd order.
+        // We keep it that way, the only change is that we made even the attempt dependent on a running session.
+        MESSAGE ( "Informing GUI about %li already running clients", client.size() );
+        for ( std::list<Client*>::iterator i = client.begin();
+              i != client.end();
+              ++i )
+        {
+            Client *c = *i;
+            osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->executable_path ); // we send new twice. see announce() comment
+            if ( c->status )
+                osc_server->send( gui_addr, "/nsm/gui/client/status", c->client_id, c->status );
+            if ( c->is_capable_of( ":optional-gui:" ) )
+                osc_server->send( gui_addr, "/nsm/gui/client/has_optional_gui", c->client_id );
+            if ( c->label() ) // could be NULL
+                osc_server->send( gui_addr, "/nsm/gui/client/label", c->client_id, c->label() );
+            if ( c->active )
+                osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name ); // upgrade to pretty-name
+        }
+
+        DMESSAGE( "Informing GUI about running session name: %s with relative path %s", session_name, session_path + strlen( session_root ) );
+        osc_server->send( gui_addr, "/nsm/gui/session/name", session_name, session_path + strlen( session_root ));
+    }
 
     DMESSAGE( "Registration with GUI complete\n" );
 }

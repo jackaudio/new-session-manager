@@ -29,7 +29,7 @@ not the server and protocol.
 * Conservative and hesitant in regards to new features and behaviour-changes, but possible in principle
 * Keep the session-manager separate from the other NON* tools Mixer, Sequencer and Timeline.
 * Protect nsmd from vanishing from the internet one day.
-* The goal is to become the de-facto standard session manager for Linux distributions
+* The goal is to become the de-facto standard music session manager for Linux distributions
 
 ## User Interface
 It is highly recommended to use Argodejo ( https://www.laborejo.org/argodejo/ ) as graphical

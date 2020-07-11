@@ -789,6 +789,7 @@ Rewritten API document without code changes to adapt to existing code or existin
     It was never an arbitrary value.
 
 Code changes:
+
 * <<Server Control API>>: `/nsm/server/list` chain of single OSC messages, one for each session,
     is now finalized with sending and empty string "" as session name. Previously this was just
     a symbolically irrelevant console message `"Done."`
@@ -799,7 +800,8 @@ Code changes:
    Instead, as this document always specificed, it now sends `"/reply", path, "Launched."`.
    Again, this would have been just API_VERSION_PATCH on its own.
 
-Unstable `/nsm/gui` protocol
+Undocumented (Unstable) `/nsm/gui` protocol
+
 * Send client status after a GUI attaches to running server. This
     was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone
     would only require API_VERSION_PATCH increment, but we are already incrementing minor.

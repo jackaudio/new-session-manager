@@ -1686,30 +1686,52 @@ It was never an arbitrary value.</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>Code changes:
-* <a href="#_server_control_api">Server Control API</a>: <code>/nsm/server/list</code> chain of single OSC messages, one for each session,
-    is now finalized with sending and empty string "" as session name. Previously this was just
-    a symbolically irrelevant console message <code>"Done."</code>
-* Replies to <code>/nsm/server/save</code> etc. will now be sent back to the sender and not falsely to the last
-   client who replied to <code>/nsm/client/save</code>.  This alone would only require API_VERSION_PATCH
-   increment, but we are already incrementing minor.
-* <a href="#_server_control_api">Server Control API</a>: <code>/nsm/server/add</code> was replying with an undocumented error code on success.
-   Instead, as this document always specificed, it now sends <code>"/reply", path, "Launched."</code>.
-   Again, this would have been just API_VERSION_PATCH on its own.</p>
+<p>Code changes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#_server_control_api">Server Control API</a>: <code>/nsm/server/list</code> chain of single OSC messages, one for each session,
+is now finalized with sending and empty string "" as session name. Previously this was just
+a symbolically irrelevant console message <code>"Done."</code></p>
+</li>
+<li>
+<p>Replies to <code>/nsm/server/save</code> etc. will now be sent back to the sender and not falsely to the last
+client who replied to <code>/nsm/client/save</code>.  This alone would only require API_VERSION_PATCH
+increment, but we are already incrementing minor.</p>
+</li>
+<li>
+<p><a href="#_server_control_api">Server Control API</a>: <code>/nsm/server/add</code> was replying with an undocumented error code on success.
+Instead, as this document always specificed, it now sends <code>"/reply", path, "Launched."</code>.
+Again, this would have been just API_VERSION_PATCH on its own.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>Unstable <code>/nsm/gui</code> protocol
-* Send client status after a GUI attaches to running server. This
-    was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone
-    would only require API_VERSION_PATCH increment, but we are already incrementing minor.
-* Send label "launch error!" when a program is added (or loaded) that
-    does not exist in $PATH. This requires no adaptation of any client, server or GUI because labels
-    are arbitrary already and this is not meant for automatic parsing, but as user information.
-* <code>/nsm/gui/session/name</code> will now always send the same parameter format, regardless of how the session was opened:
-   simple-session-name, relative session path with subdirs below session-root.
-* When a GUI announces itself to nsmd it will receive the absolute path to the session directory
-    through the message <code>/nsm/gui/session/root</code>. This is not a new addition but was already in
-    non-session-manager git.</p>
+<p>Undocumented (Unstable) <code>/nsm/gui</code> protocol</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Send client status after a GUI attaches to running server. This
+was not happening before, but it was the intention. It was just broken in nsmd.cpp. This alone
+would only require API_VERSION_PATCH increment, but we are already incrementing minor.</p>
+</li>
+<li>
+<p>Send label "launch error!" when a program is added (or loaded) that
+does not exist in $PATH. This requires no adaptation of any client, server or GUI because labels
+are arbitrary already and this is not meant for automatic parsing, but as user information.</p>
+</li>
+<li>
+<p><code>/nsm/gui/session/name</code> will now always send the same parameter format, regardless of how the session was opened:
+simple-session-name, relative session path with subdirs below session-root.</p>
+</li>
+<li>
+<p>When a GUI announces itself to nsmd it will receive the absolute path to the session directory
+through the message <code>/nsm/gui/session/root</code>. This is not a new addition but was already in
+non-session-manager git.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -1718,7 +1740,7 @@ It was never an arbitrary value.</p>
 <div id="footer">
 <div id="footer-text">
 Version API 1.1.0<br>
-Last updated 2020-07-12 00:55:08 +0200
+Last updated 2020-07-12 01:07:49 +0200
 </div>
 </div>
 </body>

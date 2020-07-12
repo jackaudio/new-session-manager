@@ -7,6 +7,7 @@ Comment[fr]=Gestionnaire de session audio (ancienne interface)
 Comment[it]=Gestore di sessioni audio (Vecchia GUI)
 Comment[pt]=Gestor de sessões audio (Antiga GUI)
 Exec=nsm-legacy-gui
+Icon=nsm-legacy-gui
 Terminal=false
 StartupNotify=false
 Version=1.0

@@ -69,6 +69,7 @@ if get_option('jackpatch')
         install: true,
         )
 
+    install_data('src/jackpatch.svg', install_dir : get_option('datadir') / 'icons/hicolor/scalable/apps')
     install_man(['docs/src/jackpatch.1', ])
 endif
 
@@ -102,6 +103,7 @@ if get_option('nsm-proxy')
         install: true,
     )
 
+    install_data('src/nsm-proxy.svg', install_dir : get_option('datadir') / 'icons/hicolor/scalable/apps')
     install_man(['docs/src/nsm-proxy.1', 'docs/src/nsm-proxy-gui.1'])
 
 endif
@@ -115,6 +117,7 @@ if get_option('nsm-legacy-gui')
         )
 
     install_data('src/org.linuxaudio.nsm-legacy-gui.desktop', install_dir : get_option('datadir') / 'applications')
+    install_data('src/nsm-legacy-gui.svg', install_dir : get_option('datadir') / 'icons/hicolor/scalable/apps')
     install_man(['docs/src/nsm-legacy-gui.1', 'docs/src/non-session-manager.1'])
 
     #Symlinking is a one-way operation and can't be uninstalled, we rely on distribution packages for that

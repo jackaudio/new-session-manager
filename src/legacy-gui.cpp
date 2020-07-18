@@ -1363,7 +1363,7 @@ main (int argc, char **argv )
                 "For backwards compatibility this executable also exist as symlink 'non-session-manager'\n"
                 "\n"
                 "";
-                printf ( usage );
+                puts ( usage );
                 exit(0);
                 break;
         }

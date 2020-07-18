@@ -299,7 +299,7 @@ main ( int argc, char **argv )
                 "nsmd-proxy-gui is usually not called by the user directly,\n"
                 "but autostarted when nsm-proxy is added to a session (through a GUI).\n"
                 "";
-                printf ( usage );
+                puts ( usage );
                 exit(0);
                 break;
             }

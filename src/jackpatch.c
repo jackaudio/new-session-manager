@@ -784,7 +784,7 @@ main ( int argc, char **argv )
                 "Options:\n"
                 "  --help                Show this screen\n"
                 "";
-                printf ( usage );
+                puts ( usage );
                 exit(0);
                 break;
                 }

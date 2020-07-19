@@ -2577,6 +2577,7 @@ int main(int argc, char *argv[])
         wait( 1000 );
     }
 
+    free(session_root);
 //    osc_server->run();
 
     return 0;

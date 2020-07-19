@@ -56,8 +56,6 @@
 #include <string>
 #include <algorithm>
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-result"
 
 static OSC::Endpoint *osc_server;
 static lo_address gui_addr;
@@ -865,6 +863,10 @@ purge_dead_clients ( )
 
 OSC_HANDLER( add )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) types;
+
     if ( ! session_path )
     {
         osc_server->send( lo_message_get_source( msg ), "/error", path,
@@ -912,6 +914,10 @@ OSC_HANDLER( announce )
     running nsmd never were able to infer any data from executables, like icons. Changed so that
     every new client scenario sends basename(executable) first.
     */
+
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) types;
 
     const char *client_name = &argv[0]->s;
     const char *capabilities = &argv[1]->s;
@@ -1476,6 +1482,11 @@ load_session_file ( const char * path )
 
 OSC_HANDLER( save )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
 
@@ -1511,6 +1522,10 @@ done:
 
 OSC_HANDLER( duplicate )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) types;
+
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
 
@@ -1603,6 +1618,10 @@ done:
 
 OSC_HANDLER( new )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) types;
+
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
 
@@ -1683,6 +1702,8 @@ static lo_address list_response_address;
 int
 list_file ( const char *fpath, const struct stat *sb, int tflag )
 {
+    ( void ) sb;
+
     if ( tflag == FTW_F )
     {
         char *s;
@@ -1709,6 +1730,12 @@ list_file ( const char *fpath, const struct stat *sb, int tflag )
 
 OSC_HANDLER( list )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+    ( void ) path;
+
     GUIMSG( "Listing sessions" );
 
     list_response_address = lo_message_get_source( msg );
@@ -1725,6 +1752,10 @@ OSC_HANDLER( list )
 
 OSC_HANDLER( open )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) types;
+
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
 
@@ -1809,6 +1840,13 @@ OSC_HANDLER( open )
 
 OSC_HANDLER( quit )
 {
+    ( void ) user_data;
+    ( void ) msg;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+    ( void ) path;
+
     close_session();
 
     exit(0);
@@ -1818,6 +1856,11 @@ OSC_HANDLER( quit )
 
 OSC_HANDLER( abort )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
 
@@ -1859,6 +1902,11 @@ done:
 
 OSC_HANDLER( close )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
 
@@ -1900,6 +1948,10 @@ done:
 
 OSC_HANDLER( broadcast )
 {
+    ( void ) user_data;
+    ( void ) types;
+    ( void ) path;
+
     const char *to_path = &argv[0]->s;
 
     /* don't allow clients to broadcast NSM commands */
@@ -1973,6 +2025,11 @@ OSC_HANDLER( broadcast )
 
 OSC_HANDLER( progress )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
     if ( c )
@@ -1992,6 +2049,12 @@ OSC_HANDLER( progress )
 
 OSC_HANDLER( is_dirty )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+    ( void ) path;
+
     MESSAGE( "Client sends dirty" );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
@@ -2009,6 +2072,12 @@ OSC_HANDLER( is_dirty )
 
 OSC_HANDLER( is_clean )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+    ( void ) path;
+
     MESSAGE( "Client sends clean" );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
@@ -2026,6 +2095,12 @@ OSC_HANDLER( is_clean )
 
 OSC_HANDLER( gui_is_hidden )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+    ( void ) path;
+
     MESSAGE( "Client sends gui hidden" );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
@@ -2043,6 +2118,12 @@ OSC_HANDLER( gui_is_hidden )
 
 OSC_HANDLER( gui_is_shown )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+    ( void ) path;
+
     MESSAGE( "Client sends gui shown" );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
@@ -2060,6 +2141,11 @@ OSC_HANDLER( gui_is_shown )
 
 OSC_HANDLER( message )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
     if ( ! c )
@@ -2073,6 +2159,11 @@ OSC_HANDLER( message )
 
 OSC_HANDLER( label )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
     if ( ! c )
@@ -2095,6 +2186,11 @@ OSC_HANDLER( label )
 
 OSC_HANDLER( error )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
     if ( ! c )
@@ -2124,6 +2220,11 @@ OSC_HANDLER( error )
 
 OSC_HANDLER( reply )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
 //    const char *rpath = &argv[0]->s;
@@ -2156,6 +2257,12 @@ OSC_HANDLER( reply )
 
 OSC_HANDLER( stop )
 {
+    ( void ) user_data;
+    ( void ) msg;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
     if ( c )
@@ -2177,6 +2284,12 @@ OSC_HANDLER( stop )
 
 OSC_HANDLER( remove )
 {
+    ( void ) user_data;
+    ( void ) msg;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
     if ( c )
@@ -2209,6 +2322,12 @@ OSC_HANDLER( remove )
 
 OSC_HANDLER( resume )
 {
+    ( void ) user_data;
+    ( void ) msg;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
     /* FIXME: return error if no such client? */
@@ -2230,6 +2349,12 @@ OSC_HANDLER( resume )
 
 OSC_HANDLER( client_save )
 {
+    ( void ) user_data;
+    ( void ) msg;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
     /* FIXME: return error if no such client? */
@@ -2246,6 +2371,12 @@ OSC_HANDLER( client_save )
 
 OSC_HANDLER( client_show_optional_gui )
 {
+    ( void ) user_data;
+    ( void ) msg;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
     /* FIXME: return error if no such client? */
@@ -2262,6 +2393,12 @@ OSC_HANDLER( client_show_optional_gui )
 
 OSC_HANDLER( client_hide_optional_gui )
 {
+    ( void ) user_data;
+    ( void ) msg;
+    ( void ) argc;
+    ( void ) types;
+    ( void ) path;
+
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
     /* FIXME: return error if no such client? */
@@ -2341,6 +2478,12 @@ announce_gui( const char *url, bool is_reply )
 
 OSC_HANDLER( gui_announce )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+    ( void ) path;
+
     announce_gui( lo_address_get_url( lo_message_get_source( msg ) ), true );
 
     return 0;
@@ -2348,6 +2491,11 @@ OSC_HANDLER( gui_announce )
 
 OSC_HANDLER( ping )
 {
+    ( void ) user_data;
+    ( void ) argc;
+    ( void ) argv;
+    ( void ) types;
+
     osc_server->send( lo_message_get_source( msg ), "/reply", path );
 
     return 0;
@@ -2355,6 +2503,11 @@ OSC_HANDLER( ping )
 
 OSC_HANDLER( null )
 {
+    ( void ) user_data;
+    ( void ) msg;
+    ( void ) argc;
+    ( void ) argv;
+
     WARNING( "Unrecognized message with type signature \"%s\" at path \"%s\"", types, path );
 
     return 0;

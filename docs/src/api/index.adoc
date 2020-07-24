@@ -51,7 +51,7 @@ guidelines, which can easily be implemented by various applications.
 This project contains a program called `nsmd` which is an implementation of the server side of
 the NSM API. `nsmd` can be controlled by direct OSC messages, or (more commonly) a GUI:
 Included in this package is the `nsm-legacy-gui`, which gets symlinked to "non-session-manager`.
-Another GUI is "Argodejo". Other applications exist that (partially) support the NSM API and are able
+Another GUI is "Agordejo". Other applications exist that (partially) support the NSM API and are able
 to load clients, but they do not use the New-Session-Manager (or Non-Session-Manager) implementation
 and are therefore out of scope for this document.
 

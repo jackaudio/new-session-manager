@@ -2470,7 +2470,7 @@ int main(int argc, char *argv[])
                 "  --detach              Detach from console.\n"
                 "\n\n"
                 "nsmd can be run headless with existing sessions. To create new ones it is recommended to use a GUI\n"
-                "such as nsm-legacy-gui (included) or Argodejo (separate package)\n"
+                "such as nsm-legacy-gui (included) or Agordejo (separate package)\n"
                 "";
                 puts ( usage );
                 exit(0);

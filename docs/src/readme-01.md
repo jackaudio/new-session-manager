@@ -14,7 +14,7 @@ and continue where you left off.
 All files belonging to the session will be saved in the same directory.
 
 If you are a user (and not a programmer or packager) everything you need is to install NSM
-through your distributions package manager and, highly recommended, Argodejo as a GUI (see below).
+through your distributions package manager and, highly recommended, Agordejo as a GUI (see below).
 
 To learn NSM you don't need to know the background information from our documentation, which
 is aimed at developers that want to implement NSM support in their programs. Learn the GUI,
@@ -32,8 +32,8 @@ not the server and protocol.
 * The goal is to become the de-facto standard music session manager for Linux distributions
 
 ## User Interface
-It is highly recommended to use Argodejo ( https://www.laborejo.org/argodejo/ ) as graphical
-user interface. In fact, if you install Argodejo in you distribution it will install NSM as
+It is highly recommended to use Agordejo ( https://www.laborejo.org/agordejo/ ) as graphical
+user interface. In fact, if you install Agordejo in you distribution it will install NSM as
 dependency and you don't need to do anything yourself with this software package.
 
 This repository also contains the legacy FLTK interface simply called `nsm-legacy-gui`,

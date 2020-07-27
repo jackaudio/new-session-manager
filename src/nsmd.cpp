@@ -56,7 +56,6 @@
 #include <string>
 #include <algorithm>
 
-
 static OSC::Endpoint *osc_server;
 static lo_address gui_addr;
 static bool gui_is_active = false;
@@ -85,6 +84,8 @@ static char *session_root;
 #define ERR_OPERATION_PENDING -12
 
 #define APP_TITLE "New Session Manager"
+
+#define UNUSED(...) [__VA_ARGS__](){};
 
 enum {
     COMMAND_NONE = 0,
@@ -863,9 +864,7 @@ purge_dead_clients ( )
 
 OSC_HANDLER( add )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) types;
+    UNUSED( user_data, argc, types);
 
     if ( ! session_path )
     {
@@ -915,9 +914,7 @@ OSC_HANDLER( announce )
     every new client scenario sends basename(executable) first.
     */
 
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) types;
+    UNUSED( user_data, argc, types );
 
     const char *client_name = &argv[0]->s;
     const char *capabilities = &argv[1]->s;
@@ -1482,10 +1479,7 @@ load_session_file ( const char * path )
 
 OSC_HANDLER( save )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
+    UNUSED( user_data, argc, argv, types );
 
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
@@ -1522,9 +1516,7 @@ done:
 
 OSC_HANDLER( duplicate )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) types;
+    UNUSED( user_data, argc, types );
 
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
@@ -1618,9 +1610,7 @@ done:
 
 OSC_HANDLER( new )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) types;
+    UNUSED( user_data, argc, types );
 
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
@@ -1702,7 +1692,7 @@ static lo_address list_response_address;
 int
 list_file ( const char *fpath, const struct stat *sb, int tflag )
 {
-    ( void ) sb;
+    UNUSED( sb );
 
     if ( tflag == FTW_F )
     {
@@ -1730,11 +1720,7 @@ list_file ( const char *fpath, const struct stat *sb, int tflag )
 
 OSC_HANDLER( list )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, argv, types, path );
 
     GUIMSG( "Listing sessions" );
 
@@ -1752,9 +1738,7 @@ OSC_HANDLER( list )
 
 OSC_HANDLER( open )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) types;
+    UNUSED( user_data, argc, types );
 
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
@@ -1840,12 +1824,7 @@ OSC_HANDLER( open )
 
 OSC_HANDLER( quit )
 {
-    ( void ) user_data;
-    ( void ) msg;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, msg, argc, argv, types, path );
 
     close_session();
 
@@ -1856,10 +1835,7 @@ OSC_HANDLER( quit )
 
 OSC_HANDLER( abort )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
+    UNUSED( user_data, argc, argv, types );
 
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
@@ -1902,10 +1878,7 @@ done:
 
 OSC_HANDLER( close )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
+    UNUSED( user_data, argc, argv, types );
 
     lo_address sender_addr;
     sender_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ));
@@ -1948,9 +1921,7 @@ done:
 
 OSC_HANDLER( broadcast )
 {
-    ( void ) user_data;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, types, path );
 
     const char *to_path = &argv[0]->s;
 
@@ -2025,10 +1996,7 @@ OSC_HANDLER( broadcast )
 
 OSC_HANDLER( progress )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, types, path );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
@@ -2049,11 +2017,7 @@ OSC_HANDLER( progress )
 
 OSC_HANDLER( is_dirty )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, argv, types, path );
 
     MESSAGE( "Client sends dirty" );
 
@@ -2072,11 +2036,7 @@ OSC_HANDLER( is_dirty )
 
 OSC_HANDLER( is_clean )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, argv, types, path );
 
     MESSAGE( "Client sends clean" );
 
@@ -2095,11 +2055,7 @@ OSC_HANDLER( is_clean )
 
 OSC_HANDLER( gui_is_hidden )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, argv, types, path );
 
     MESSAGE( "Client sends gui hidden" );
 
@@ -2118,11 +2074,7 @@ OSC_HANDLER( gui_is_hidden )
 
 OSC_HANDLER( gui_is_shown )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, argv, types, path );
 
     MESSAGE( "Client sends gui shown" );
 
@@ -2141,10 +2093,7 @@ OSC_HANDLER( gui_is_shown )
 
 OSC_HANDLER( message )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, types, path );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
@@ -2159,10 +2108,7 @@ OSC_HANDLER( message )
 
 OSC_HANDLER( label )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, types, path );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
@@ -2186,10 +2132,7 @@ OSC_HANDLER( label )
 
 OSC_HANDLER( error )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, types, path );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
@@ -2220,10 +2163,7 @@ OSC_HANDLER( error )
 
 OSC_HANDLER( reply )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, types, path );
 
     Client *c = get_client_by_address( lo_message_get_source( msg ) );
 
@@ -2257,11 +2197,7 @@ OSC_HANDLER( reply )
 
 OSC_HANDLER( stop )
 {
-    ( void ) user_data;
-    ( void ) msg;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, msg, argc, types, path );
 
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
@@ -2284,11 +2220,7 @@ OSC_HANDLER( stop )
 
 OSC_HANDLER( remove )
 {
-    ( void ) user_data;
-    ( void ) msg;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, msg, argc, types, path );
 
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
@@ -2322,11 +2254,7 @@ OSC_HANDLER( remove )
 
 OSC_HANDLER( resume )
 {
-    ( void ) user_data;
-    ( void ) msg;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, msg, argc, types, path );
 
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
@@ -2349,11 +2277,7 @@ OSC_HANDLER( resume )
 
 OSC_HANDLER( client_save )
 {
-    ( void ) user_data;
-    ( void ) msg;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, msg, argc, types, path );
 
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
@@ -2371,11 +2295,7 @@ OSC_HANDLER( client_save )
 
 OSC_HANDLER( client_show_optional_gui )
 {
-    ( void ) user_data;
-    ( void ) msg;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, msg, argc, types, path );
 
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
@@ -2393,11 +2313,7 @@ OSC_HANDLER( client_show_optional_gui )
 
 OSC_HANDLER( client_hide_optional_gui )
 {
-    ( void ) user_data;
-    ( void ) msg;
-    ( void ) argc;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, msg, argc, types, path );
 
     Client *c = get_client_by_id( &client, &argv[0]->s );
 
@@ -2478,11 +2394,7 @@ announce_gui( const char *url, bool is_reply )
 
 OSC_HANDLER( gui_announce )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
-    ( void ) path;
+    UNUSED( user_data, argc, argv, types, path );
 
     announce_gui( lo_address_get_url( lo_message_get_source( msg ) ), true );
 
@@ -2491,10 +2403,7 @@ OSC_HANDLER( gui_announce )
 
 OSC_HANDLER( ping )
 {
-    ( void ) user_data;
-    ( void ) argc;
-    ( void ) argv;
-    ( void ) types;
+    UNUSED( user_data, argc, argv, types );
 
     osc_server->send( lo_message_get_source( msg ), "/reply", path );
 
@@ -2503,10 +2412,7 @@ OSC_HANDLER( ping )
 
 OSC_HANDLER( null )
 {
-    ( void ) user_data;
-    ( void ) msg;
-    ( void ) argc;
-    ( void ) argv;
+    UNUSED( user_data, msg, argc, argv );
 
     WARNING( "Unrecognized message with type signature \"%s\" at path \"%s\"", types, path );
 

@@ -30,13 +30,13 @@
 /* static int wait_nsm = 1;                                               */
 /*                                                                        */
 /* int                                                                    */
-/* cb_nsm_open ( const char *name,                                        */
-/*               const char *display_name,                                */
-/*               const char *client_id,                                   */
+/* cb_nsm_open ( const char *save_file_path,  //See API Docs 2.2.2        */
+/*               const char *display_name,  //Not useful                  */
+/*               const char *client_id,    //Use as JACK Client Name      */
 /*               char **out_msg,                                          */
 /*               void *userdata )                                         */
 /* {                                                                      */
-/*         do_open_stuff();                                               */
+/*         do_open_stuff(); //Your own function                           */
 /*         wait_nsm = 0;                                                  */
 /*         return ERR_OK;                                                 */
 /* }                                                                      */
@@ -45,21 +45,21 @@
 /* cb_nsm_save ( char **out_msg,                                          */
 /*               void *userdata )                                         */
 /* {                                                                      */
-/*     do_save_stuff();                                                   */
+/*     do_save_stuff(); //Your own function                               */
 /*     return ERR_OK;                                                     */
 /* }                                                                      */
 /*                                                                        */
 /* void                                                                   */
 /* cb_nsm_show ( void *userdata )                                         */
 /* {                                                                      */
-/*     do_show_ui();                                                      */
+/*     do_show_ui();  //Your own function                                 */
 /*     nsm_send_is_shown ( nsm );                                         */
 /* }                                                                      */
 /*                                                                        */
 /* void                                                                   */
 /* cb_nsm_hide ( void *userdata )                                         */
 /* {                                                                      */
-/*     do_hide_ui();                                                      */
+/*     do_hide_ui(); //Your own function                                  */
 /*     nsm_send_is_hidden ( nsm );                                        */
 /* }                                                                      */
 /*                                                                        */
@@ -121,7 +121,7 @@
 /*                                                                        */
 /* ********************************************************************** */
 /*                                                                        */
-/*             do_timeout_add( 200, poll_nsm, Null );                     */
+/*             do_timeout_add( 200, poll_nsm, Null ); //Your own function */
 /*         }                                                              */
 /*         else                                                           */
 /*         {                                                              */

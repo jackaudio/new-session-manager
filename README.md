@@ -1,5 +1,7 @@
 # New Session Manager
 
+[Quick-link to the API](https://linuxaudio.github.io/new-session-manager/api/index.html)
+
 ## Introduction
 
 New Session Manager (NSM) is a tool to assist music production by grouping standalone programs into sessions.
@@ -48,8 +50,8 @@ Documentation and tutorials for software-developers will be added at a later dat
 
 ## Documentation and Manual
 
-Our documentation contains the API specification for the NSM protocol, which is the central document
-if you want to add NSM support to your own application.
+Our documentation contains the [API specification](https://linuxaudio.github.io/new-session-manager/api/index.html)
+for the NSM protocol, which is the central document if you want to add NSM support to your own application.
 
 You can find html documentation installed to your systems SHARE dir or docs/out/index.html in this
 repository.

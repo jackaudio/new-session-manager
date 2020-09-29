@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=New Session Manager (Legacy GUI)
+Name[fr]=New Session Manager (ancienne interface)
 Comment=Audio session manager (Legacy GUI)
 Comment[de]=Verwaltet Audiositzungen (Alte Oberfläche)
 Comment[fr]=Gestionnaire de session audio (ancienne interface)

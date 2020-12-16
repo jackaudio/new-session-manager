@@ -958,8 +958,7 @@ public:
                     /* Fl_Group::current()->resizable( o ); */
                 } // Fl_Scalepack
 
-                { Fl_Box *o = new Fl_Box( X + 300, Y + 30, 100, H - ( 30 + SH ));
-                    Fl_Group::current()->resizable(o);
+                { new Fl_Box( X + 1000, Y + 30, 100, H - ( 30 + SH ));
                 }
 
                 { Fl_Text_Display *o = status_display = new Fl_Text_Display( X, Y + H - SH, W, SH );

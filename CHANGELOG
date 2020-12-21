@@ -1,3 +1,8 @@
+1.4.1 / 2021-01-15
+Legacy-GUI:
+ Fix manpage description and usage with the correct executable name
+ Fix resizing to very small and back. ( / TheGreatWhiteShark )
+
 1.4 / 2020-07-15
 Add documentation and manpages.
 

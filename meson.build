@@ -111,7 +111,7 @@ endif
 if get_option('nsm-legacy-gui')
 
     executable('nsm-legacy-gui',
-        sources: ['src/legacy-gui.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
+        sources: ['src/nsm-legacy-gui.cpp', 'src/debug.cpp', 'src/Endpoint.cpp', 'src/Thread.cpp', 'src/FL/Fl_Scalepack.C'],
         dependencies: [fltkimagesdep, fltkdep, liblodep, threaddep],
         install: true,
         )

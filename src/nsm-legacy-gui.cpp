@@ -1349,10 +1349,10 @@ main (int argc, char **argv )
             case 'h':
                 //Print usage message according to POSIX.1-2017
                 const char *usage =
-                "legacy-gui - FLTK GUI for the 'New Session Manager'\n\n"
+                "nsm-legacy-gui - FLTK GUI for the 'New Session Manager'\n\n"
                 "Usage:\n"
-                "  legacy-gui\n"
-                "  legacy-gui --help\n"
+                "  nsm-legacy-gui\n"
+                "  nsm-legacy-gui --help\n"
                 "\n"
                 "Options:\n"
                 "  --help                Show this screen\n"

@@ -28,6 +28,8 @@
 
 extern char * program_invocation_short_name;
 
+bool quietMessages = false;
+
 void
 warnf ( warning_t level,
        const char *module,

@@ -94,7 +94,7 @@ namespace OSC
         char *new_path;
         asprintf( &new_path, "%s%s", _endpoint->name() ? _endpoint->name() : "", path );
 
-        DMESSAGE( "Renaming signal %s to %s", this->path(), new_path );
+        MESSAGE( "Renaming signal %s to %s", this->path(), new_path );
 
         /* if ( _direction == Signal::Input ) */
         /* { */
@@ -138,12 +138,12 @@ namespace OSC
         }
         /* else if ( direction() == Input ) */
         /* { */
-        /*     DMESSAGE( "Sending value feedback for signal %s...", path() ); */
+        /*     MESSAGE( "Sending value feedback for signal %s...", path() ); */
         /*     for ( std::list<Signal*>::iterator i = _incoming.begin(); */
         /*           i != _incoming.end(); */
         /*           ++i ) */
         /*     { */
-        /*         DMESSAGE( "Sending value feedback to %s %s %f", lo_address_get_url( (*i)->_peer->addr), (*i)->path() , f); */
+        /*         MESSAGE( "Sending value feedback to %s %s %f", lo_address_get_url( (*i)->_peer->addr), (*i)->path() , f); */
         /*         _endpoint->send( (*i)->_peer->addr,  */
         /*                          (*i)->path(), */
         /*                          f ); */
@@ -202,7 +202,7 @@ namespace OSC
     int
     Endpoint::init ( int proto, const char *port )
     {
-        DMESSAGE( "Creating OSC server" );
+        MESSAGE( "Creating OSC server" );
 
         _server = lo_server_new_with_proto( port, proto, error_handler );
 
@@ -315,7 +315,7 @@ namespace OSC
     void
     Endpoint::handle_hello ( const char *peer_name, const char *peer_url )
     {
-        DMESSAGE( "Got hello from %s", peer_name );
+        MESSAGE( "Got hello from %s", peer_name );
 
         Peer *p = find_peer_by_name( peer_name );
 
@@ -344,7 +344,7 @@ namespace OSC
             /* scan it while we're at it */
             p->_scanning = true;
 
-            DMESSAGE( "Scanning peer %s", peer_name );
+            MESSAGE( "Scanning peer %s", peer_name );
 
             send( p->addr, "/signal/list" );
         }
@@ -355,7 +355,7 @@ namespace OSC
         }
         else
         {
-            DMESSAGE( "Not sending hello because we don't have a name yet!" );
+            MESSAGE( "Not sending hello because we don't have a name yet!" );
         }
     }
 
@@ -387,7 +387,7 @@ namespace OSC
 
         if ( s->_direction == Signal::Input )
         {
-            DMESSAGE( "Peer %s has disconnected from signal %s", our_name, their_name );
+            MESSAGE( "Peer %s has disconnected from signal %s", our_name, their_name );
 
             ep->del_translation( their_name );
 
@@ -422,7 +422,7 @@ namespace OSC
             return 0;
         }
 
-        DMESSAGE( "Has requested signal connection %s |> %s", src_path, dst_s->path() );
+        MESSAGE( "Has requested signal connection %s |> %s", src_path, dst_s->path() );
 
         ep->add_translation( src_path, dst_s->path() );
 
@@ -455,7 +455,7 @@ namespace OSC
             return 0;
         }
 
-        DMESSAGE( "Signal %s:%s was removed", o->_peer->name, o->path() );
+        MESSAGE( "Signal %s:%s was removed", o->_peer->name, o->path() );
 
 
         if ( ep->_peer_signal_notification_callback )
@@ -501,7 +501,7 @@ namespace OSC
 
         p->_signals.push_back( s );
 
-        DMESSAGE( "Peer %s has created signal %s (%s %f %f %f)", p->name,
+        MESSAGE( "Peer %s has created signal %s (%s %f %f %f)", p->name,
                   name, direction, min, max, default_value );
 
         if ( ep->_peer_signal_notification_callback )
@@ -513,7 +513,7 @@ namespace OSC
     int
     Endpoint::osc_sig_renamed ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
     {
-        DMESSAGE( "Got renamed message." );
+        MESSAGE( "Got renamed message." );
 
         const char *old_name = &argv[0]->s;
         const char *new_name = &argv[1]->s;
@@ -536,7 +536,7 @@ namespace OSC
             return 0;
         }
 
-        DMESSAGE( "Signal %s was renamed to %s", o->_path, new_name );
+        MESSAGE( "Signal %s was renamed to %s", o->_path, new_name );
 
         ep->rename_translation_source( o->_path, new_name );
 
@@ -685,7 +685,7 @@ namespace OSC
         {
             ep->add_translation( path, ep->_learning_path );
 
-            DMESSAGE( "Learned translation \"%s\" -> \"%s\"", path, ep->_learning_path );
+            MESSAGE( "Learned translation \"%s\" -> \"%s\"", path, ep->_learning_path );
 
             free(ep->_learning_path);
             ep->_learning_path = NULL;
@@ -700,11 +700,11 @@ namespace OSC
             {
                 const char *dpath = i->second.path.c_str();
 
-//                DMESSAGE( "Translating message \"%s\" to \"%s\"", path, dpath );
+//                MESSAGE( "Translating message \"%s\" to \"%s\"", path, dpath );
 
                 if ( !strcmp(types, "f" ))
                 {
-//                    DMESSAGE( "recording value %f", argv[0]->f );
+//                    MESSAGE( "recording value %f", argv[0]->f );
                     i->second.current_value = argv[0]->f;
                 }
 
@@ -741,7 +741,7 @@ namespace OSC
     {
 //        OSC_DMSG();
 
-        DMESSAGE( "Listing signals." );
+        MESSAGE( "Listing signals." );
 
         const char *prefix = NULL;
 
@@ -906,7 +906,7 @@ namespace OSC
             if ( argc == 1 )
             {
                 p->_scanning = false;
-                DMESSAGE( "Done scanning %s", p->name );
+                MESSAGE( "Done scanning %s", p->name );
 
                 if ( ep->_peer_scan_complete_callback )
                     ep->_peer_scan_complete_callback(ep->_peer_scan_complete_userdata);
@@ -918,7 +918,7 @@ namespace OSC
                 if ( s )
                     return 0;
 
-                DMESSAGE( "Peer %s has signal %s (%s)", p->name, &argv[1]->s, &argv[2]->s );
+                MESSAGE( "Peer %s has signal %s (%s)", p->name, &argv[1]->s, &argv[2]->s );
 
                 int dir = 0;
 
@@ -951,7 +951,7 @@ namespace OSC
     Method *
     Endpoint::add_method ( const char *path, const char *typespec, lo_method_handler handler, void *user_data, const char *argument_description )
     {
-//  DMESSAGE( "Added OSC method %s (%s)", path, typespec );
+//  MESSAGE( "Added OSC method %s (%s)", path, typespec );
 
         lo_server_add_method( _server, path, typespec, handler, user_data );
 
@@ -1013,7 +1013,7 @@ namespace OSC
     void
     Endpoint::del_method ( const char *path, const char *typespec )
     {
-//  DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
+//  MESSAGE( "Deleted OSC method %s (%s)", path, typespec );
 
         lo_server_del_method( _server, path, typespec );
 
@@ -1036,7 +1036,7 @@ namespace OSC
     void
     Endpoint::del_method ( Method *meth )
     {
-//  DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
+//  MESSAGE( "Deleted OSC method %s (%s)", path, typespec );
 
         lo_server_del_method( _server, meth->path(), meth->typespec() );
 
@@ -1048,7 +1048,7 @@ namespace OSC
     void
     Endpoint::del_signal ( Signal *o )
     {
-//  DMESSAGE( "Deleted OSC method %s (%s)", path, typespec );
+//  MESSAGE( "Deleted OSC method %s (%s)", path, typespec );
 
         lo_server_del_method( _server, o->path(), NULL );
 
@@ -1095,7 +1095,7 @@ namespace OSC
                 {
                     const char *spath = i->first.c_str();
 
-//                    DMESSAGE( "Sending feedback to \"%s\": %f", spath, v );
+//                    MESSAGE( "Sending feedback to \"%s\": %f", spath, v );
 
                     /* send to all peers */
                     for ( std::list<Peer*>::iterator p = _peers.begin();
@@ -1121,7 +1121,7 @@ namespace OSC
     {
         Peer *p = new Peer;
 
-        DMESSAGE( "Adding peer %s @ %s...", name, url );
+        MESSAGE( "Adding peer %s @ %s...", name, url );
 
         p->name = strdup( name );
         p->addr = lo_address_new_from_url( url );
@@ -1138,7 +1138,7 @@ namespace OSC
 
         p->_scanning = true;
 
-        DMESSAGE( "Scanning peer %s", name );
+        MESSAGE( "Scanning peer %s", name );
 
         send( p->addr, "/signal/list" );
     }
@@ -1156,7 +1156,7 @@ namespace OSC
     {
         _thread.name( "OSC" );
 
-        DMESSAGE( "OSC Thread running" );
+        MESSAGE( "OSC Thread running" );
 
         run();
     }
@@ -1231,15 +1231,15 @@ namespace OSC
             switch ( ov->type() )
             {
                 case 'f':
-//                    DMESSAGE( "Adding float %f", ((OSC_Float*)ov)->value() );
+//                    MESSAGE( "Adding float %f", ((OSC_Float*)ov)->value() );
                     lo_message_add_float( m, ((OSC_Float*)ov)->value() );
                     break;
                 case 'i':
-//                    DMESSAGE( "Adding int %i", ((OSC_Int*)ov)->value() );
+//                    MESSAGE( "Adding int %i", ((OSC_Int*)ov)->value() );
                     lo_message_add_int32( m, ((OSC_Int*)ov)->value() );
                     break;
                 case 's':
-//                    DMESSAGE( "Adding string %s", ((OSC_String*)ov)->value() );
+//                    MESSAGE( "Adding string %s", ((OSC_String*)ov)->value() );
                     lo_message_add_string( m, ((OSC_String*)ov)->value() );
                     break;
                 default:
@@ -1248,7 +1248,7 @@ namespace OSC
             }
         }
 
-//        DMESSAGE( "Path: %s", path );
+//        MESSAGE( "Path: %s", path );
 
         lo_bundle b = lo_bundle_new( LO_TT_IMMEDIATE );
 

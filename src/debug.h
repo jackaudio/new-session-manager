@@ -68,6 +68,8 @@
  */
 
 
+
+
 #ifndef _DEBUG_H
 #define _DEBUG_H
 
@@ -83,6 +85,8 @@
     #define __FUNCTION__ NULL
 #endif
 
+extern bool quietMessages;
+
 typedef enum {
     W_MESSAGE = 0,
     W_WARNING,
@@ -95,20 +99,13 @@ warnf ( warning_t level,
        const char *file,
         const char *function, int line, const char *fmt, ... );
 
+//We do not use NDEBUG anymore. Messages are a command line switch.
+//Warnings, asserts and errors are always important.
 
-#ifndef NDEBUG
-#define DMESSAGE( fmt, args... ) warnf( W_MESSAGE, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args )
-#define DWARNING( fmt, args... ) warnf( W_WARNING, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args )
-#define ASSERT( pred, fmt, args... ) do { if ( ! (pred) ) { warnf( W_FATAL, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args ); abort(); } } while ( 0 )
-#else
-#define DMESSAGE( fmt, args... )
-#define DWARNING( fmt, args... )
-#define ASSERT( pred, fmt, args... ) (void)(pred)
-#endif
-
-/* these are always defined */
-#define MESSAGE( fmt, args... ) warnf( W_MESSAGE, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args )
+// #define MESSAGE( fmt, args... ) warnf( W_MESSAGE, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args )
+#define MESSAGE( fmt, args... ) do { if ( ! (quietMessages) ) { warnf( W_MESSAGE, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args ); } } while ( 0 )
 #define WARNING( fmt, args... ) warnf( W_WARNING, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args )
 #define FATAL( fmt, args... ) ( warnf( W_FATAL, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args ), abort() )
+#define ASSERT( pred, fmt, args... ) do { if ( ! (pred) ) { warnf( W_FATAL, __MODULE__, __FILE__, __FUNCTION__, __LINE__, fmt, ## args ); abort(); } } while ( 0 )
 
 #endif

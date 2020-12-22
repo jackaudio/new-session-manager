@@ -282,7 +282,6 @@ static std::list< Client* > client;
 
 /* helper macros for defining OSC handlers */
 #define OSC_NAME( name ) osc_ ## name
-// #define OSCDMSG() DMESSAGE( "Got OSC message: %s", path );
 #define OSC_HANDLER( name ) static int OSC_NAME( name ) ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 
 static char *session_path = NULL;
@@ -1467,7 +1466,7 @@ load_session_file ( const char * path )
     {   //This is not the case when --load-session was used. GUI announce will come later.
 
         //Send two parameters to signal that the session was loaded: simple session-name, relative session path below session root
-        DMESSAGE( "Informing GUI about running session name: %s with relative path %s", session_name, session_path + strlen( session_root ) );
+        MESSAGE( "Informing GUI about running session name: %s with relative path %s", session_name, session_path + strlen( session_root ) );
         osc_server->send( gui_addr, "/nsm/gui/session/name", session_name, session_path + strlen( session_root ));
     }
 
@@ -1663,7 +1662,7 @@ OSC_HANDLER( new )
         osc_server->send( gui_addr,  "/nsm/gui/session/session", &argv[0]->s  );
 
         //Send two parameters to signal that the session was loaded: simple session-name, relative session path below session root
-        DMESSAGE( "Informing GUI about running session name: %s with relative path %s", session_name, session_path + strlen( session_root ) );
+        MESSAGE( "Informing GUI about running session name: %s with relative path %s", session_name, session_path + strlen( session_root ) );
         osc_server->send( gui_addr, "/nsm/gui/session/name", session_name, session_path + strlen( session_root ));
     }
 
@@ -2306,7 +2305,7 @@ announce_gui( const char *url, bool is_reply )
     //No session_path without session_name. We only need to test for session_name.
     if ( !session_name || session_name[0]  == '\0' )
     {
-        DMESSAGE( "Informing GUI that no session is running by sending two empty strings" );
+        MESSAGE( "Informing GUI that no session is running by sending two empty strings" );
         osc_server->send( gui_addr, "/nsm/gui/session/name", "", "" ); //Empty string = no current session
     }
     else
@@ -2331,11 +2330,11 @@ announce_gui( const char *url, bool is_reply )
                 osc_server->send( gui_addr, "/nsm/gui/client/new", c->client_id, c->name ); // upgrade to pretty-name
         }
 
-        DMESSAGE( "Informing GUI about running session name: %s with relative path %s", session_name, session_path + strlen( session_root ) );
+        MESSAGE( "Informing GUI about running session name: %s with relative path %s", session_name, session_path + strlen( session_root ) );
         osc_server->send( gui_addr, "/nsm/gui/session/name", session_name, session_path + strlen( session_root ));
     }
 
-    DMESSAGE( "Registration with GUI complete\n" );
+    MESSAGE( "Registration with GUI complete\n" );
 }
 
 
@@ -2410,6 +2409,7 @@ int main(int argc, char *argv[])
         { "help", no_argument, 0, 'h' },
         { "version", no_argument, 0, 'v' },
         { "load-session", required_argument, 0, 'l'},
+        { "quiet", no_argument, 0, 'q'},  //supresses all normal MESSAGE except WARNING and FATAL
         { 0, 0, 0, 0 }
     };
 
@@ -2436,20 +2436,23 @@ int main(int argc, char *argv[])
                 break;
             }
             case 'p':
-                DMESSAGE( "Using OSC port %s", optarg );
+                MESSAGE( "Using OSC port %s", optarg );
                 osc_port = optarg;
                 break;
             case 'g':
-                DMESSAGE( "Going to connect to GUI at: %s", optarg );
+                MESSAGE( "Going to connect to GUI at: %s", optarg );
                 gui_url = optarg;
                 break;
             case 'l':
-                DMESSAGE( "Loading existing session file %s", optarg);
+                MESSAGE( "Loading existing session file %s", optarg);
                 load_session = optarg;
                 break;
             case 'v':
                 printf( "%s " VERSION_STRING "\n", argv[0] );
                 exit(0);
+                break;
+            case 'q':
+                quietMessages = true; //from debug.h
                 break;
             case 'h':
                 //Print usage message according to POSIX.1-2017
@@ -2468,6 +2471,7 @@ int main(int argc, char *argv[])
                 "  --load-session name   Load existing session [Example: \"My Song\"].\n"
                 "  --gui-url url         Connect to running legacy-gui [Example: osc.udp://mycomputer.localdomain:38356/].\n"
                 "  --detach              Detach from console.\n"
+                "  --quiet               Suppress messages except warnings and errors.\n"
                 "\n\n"
                 "nsmd can be run headless with existing sessions. To create new ones it is recommended to use a GUI\n"
                 "such as nsm-legacy-gui (included) or Agordejo (separate package)\n"

@@ -419,7 +419,7 @@ namespace OSC
 
 /* helper macros for defining OSC handlers */
 /* #define OSC_NAME( name ) osc_ ## name */
-#define OSC_DMSG() DMESSAGE( "Got OSC message: %s", path );
+#define OSC_DMSG() MESSAGE( "Got OSC message: %s", path );
 // #define OSC_HANDLER( name ) static int OSC_NAME( name ) ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 
 

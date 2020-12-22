@@ -202,7 +202,7 @@ public:
 
     void save ( void )
         {
-            DMESSAGE( "Sending process save signal" );
+            MESSAGE( "Sending process save signal" );
             if ( _pid )
                 ::kill( _pid, _save_signal );
         }
@@ -261,7 +261,7 @@ public:
             while ( 2 == fscanf( fp, "%m[^\n]\n\t%m[^\n]\n", &name, &value ) )
             {
 
-                DMESSAGE( "%s=%s", name, value );
+                MESSAGE( "%s=%s", name, value );
 
                 if ( !strcmp( name, "executable" ) )
                     _executable = value;
@@ -301,7 +301,7 @@ public:
 
     void update ( lo_address to )
         {
-            DMESSAGE( "Sending update" );
+            MESSAGE( "Sending update" );
 
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/save_signal", "i",  _save_signal );
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/label", "s", _label ? _label : "" );
@@ -603,12 +603,12 @@ signal_handler ( int x )
 void
 set_traps ( void )
 {
-	signal( SIGHUP, signal_handler );
-	signal( SIGINT, signal_handler );
-//	signal( SIGQUIT, signal_handler );
-//	signal( SIGSEGV, signal_handler );
-//	signal( SIGPIPE, signal_handler );
-	signal( SIGTERM, signal_handler );
+    signal( SIGHUP, signal_handler );
+    signal( SIGINT, signal_handler );
+//  signal( SIGQUIT, signal_handler );
+//  signal( SIGSEGV, signal_handler );
+//  signal( SIGPIPE, signal_handler );
+    signal( SIGTERM, signal_handler );
 }
 
 
@@ -645,7 +645,7 @@ die ( void )
 {
     if ( gui_pid )
     {
-        DMESSAGE( "Killing GUI" );
+        MESSAGE( "Killing GUI" );
 
         kill( gui_pid, SIGTERM );
     }

@@ -1071,7 +1071,7 @@ private:
                 /* need at least one argument... */
                 return 0;
 
-            DMESSAGE( "Relaying broadcast" );
+            MESSAGE( "Relaying broadcast" );
 
             foreach_daemon( d )
             {
@@ -1337,7 +1337,7 @@ main (int argc, char **argv )
         {
             case 'n':
             {
-                DMESSAGE( "Adding %s to daemon list", optarg );
+                MESSAGE( "Adding %s to daemon list", optarg );
                 Daemon *d = new Daemon;
 
                 d->url = optarg;
@@ -1412,7 +1412,7 @@ main (int argc, char **argv )
 
             for ( ; optind < argc; i++, optind++ )
             {
-                DMESSAGE( "Passing argument: %s", argv[optind] );
+                MESSAGE( "Passing argument: %s", argv[optind] );
                 args[i] = argv[optind];
             }
 

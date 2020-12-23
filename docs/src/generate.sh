@@ -12,6 +12,8 @@
 # generate manpages
 # convert all .adoc files to html in /docs/  (This enables github to directly present this dir as website)
 #
+# WARNING: You still need to manually edit the date and version in /CHANGELOG
+#
 #We do _not_ change the copyright date in files license-headers.
 #They only exist to mark to year of the fork. In the future dates might be removed completely.
 
@@ -87,4 +89,5 @@ help2man ../../build/nsm-proxy-gui  --version-string="nsm-proxy-gui Version $VER
 help2man ../../build/jackpatch  --version-string="jackpatch Version $VERSION" --no-info --include manpage-common.h2m > jackpatch.1
 
 echo
-echo "Finished. You need to commit your changes to git manually"
+echo "Don't forget to adjust the version and date in CHANGELOG manually."
+echo "Finished. You need to commit your changes to git manually."

@@ -5,10 +5,10 @@ Two empty lines before the next entry.
 Contributors notice after the change (LastName, FirstName / nick)
 
 
-## 2021-01-15 1.4.1
-WARNING: Next scheduled release (2021-04-15) will switch the default session dir to XDG Data Path.
-Prepare to either
-1) Move old Session to the new root directory
+## 2021-01-15 1.5.0
+WARNING: Next scheduled release (2021-04-15) will switch the default session dir to an XDG Path.
+With the next release prepare to either
+1) Move old sessions to the new root directory (preferred)
 2) Symlink "~/NSM Sessions" to the new root directory
 3) use the nsmd --session-root commandline argument.
 

@@ -1,4 +1,7 @@
 1.4.1 / 2021-01-15
+nsmd:
+ Command line option --quiet: Suppress messages except warnings and errors
+
 Legacy-GUI:
  Fix manpage description and usage with the correct executable name
  Fix resizing to very small and back. ( / TheGreatWhiteShark )

@@ -15,6 +15,7 @@ With the next release prepare to either
 nsmd:
  Command line option --quiet: Suppress messages except warnings and errors
  Protect against orphaned clients or daemons when the server, or even a GUI, crashes.
+ Replace cowboy-slang in info-level OSC with descriptive, technical messages.
 
 Legacy-GUI:
  Fix manpage description and usage with the correct executable name

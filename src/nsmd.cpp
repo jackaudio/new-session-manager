@@ -2379,8 +2379,25 @@ wait ( long timeout )
     purge_dead_clients();
 }
 
+
+void
+handle_signal_clean_exit ( int signal )
+{
+    MESSAGE( "Caught SIGNAL %i. Stopping nsmd.", signal);
+    // We want a clean exit even when things go wrong.
+    close_session();
+    free(session_root);
+    exit(0);
+}
+
+
 int main(int argc, char *argv[])
 {
+     signal(SIGINT, handle_signal_clean_exit);
+     signal(SIGTERM, handle_signal_clean_exit);
+     signal(SIGSEGV, handle_signal_clean_exit);
+
+
     sigset_t mask;
     sigemptyset( &mask );
     sigaddset( &mask, SIGCHLD );
@@ -2576,13 +2593,24 @@ int main(int argc, char *argv[])
     }
 
     /* listen for sigchld signals and process OSC messages forever */
+    int start_pid = getppid(); //get parent pid
     for ( ;; )
     {
-        wait( 1000 );
+        wait( 1000 ); //1000 ms
+        //This still has some corner cases, like a race condition on startup that never gets the real PID, but
+        //we cover the majority of cases at least:
+        if ( start_pid != getppid() ) {
+            WARNING ( "Our parent PID changed from %d to %d, which indicates a possible GUI crash. The user has no control over the session anymore. Trying to shut down cleanly.", start_pid, getppid());
+            handle_signal_clean_exit ( 0 );
+        }
     }
 
-    free(session_root);
-//    osc_server->run();
+    //Code after here will not be executed if nsmd is stopped with any abort-signal like SIGINT.
+    //Without a signal handler clients will remain active ("zombies") without nsmd as parent.
+    //MESSAGE ( "End of Program");
+
+    //free(session_root);// This was not executed if nsmd received a stop signal. It is now handled by doExit()
+    //osc_server->run();
 
     return 0;
 }

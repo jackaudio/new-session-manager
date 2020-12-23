@@ -989,8 +989,8 @@ OSC_HANDLER( announce )
     osc_server->send( lo_message_get_source( msg ), "/reply",
                       path,
                       expected_client ?
-                      "Howdy, what took you so long?" :
-                      "Well hello, stranger. Welcome to the party.",
+                      "Acknowledged as full NSM client (started ourselves)." :
+                      "Acknowledged as full NSM client (registered itself from the outside).",
                       APP_TITLE,
                       ":server-control:broadcast:optional-gui:" );
 

@@ -65,7 +65,7 @@ which was released under the GNU GENERAL PUBLIC LICENSE  Version 2, June 1991.
 All files, except nsm.h kept in this fork were GPL "version 2 of the License, or (at your
 option) any later version."
 
-`nsm.h` is licensed under the ISC License.
+`extras/nsm.h/nsm.h` is licensed under the ISC License.
 
 New-Session-Manager changed the license to GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007.
 See file COPYING

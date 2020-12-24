@@ -57,9 +57,15 @@ and are therefore out of scope for this document.
 
 However, the same server-side API can also be implemented by other programs (such as Carla),
 although consistency and robustness will likely suffer if non-NSM compliant clients are allowed to
-participate in a session. There is no direct dependency for client implementations, as long as they
-can send and receive OSC. Some clients use `liblo` (the OSC library), which becomes a dependency if
-you choose to implement NSM-support with the provided header file `nsm.h`.
+participate in a session.
+
+There is no direct dependency for client implementations, as long as they
+can send and receive OSC.
+Some clients use `liblo` (the OSC library), which becomes a dependency if you choose to implement
+NSM-support with the provided header file `nsm.h` (`extras/nsm.h/nsm.h` in the git repository).
+Some clients use the provided single-file python library `pynsm` (`extras/pynsm/nsmclient.py` in the git repository)
+which has no dependencies outside the Python3 standard library.
+
 
 The aim of this project is to thoroughly define the behavior required of clients. Often the
 difficulty with other session-management approaches has been not in implementing code-support for
@@ -209,8 +215,8 @@ like Python can be more challenging.
 
 |Name | Description
 
-|switch	        | client is capable of responding to multiple `open` messages without restarting
-|dirty	        | client knows when it has unsaved changes
+|switch         | client is capable of responding to multiple `open` messages without restarting
+|dirty          | client knows when it has unsaved changes
 |progress       | client can send progress updates during time-consuming operations
 |message        | client can send textual status updates
 |optional-gui   | client has an optional GUI
@@ -243,8 +249,8 @@ Presently, the server `capabilities` are:
 
 |Name | Description
 
-|server-control	| client-to-server control
-|broadcast	    | server responds to /nsm/server/broadcast message
+|server-control | client-to-server control
+|broadcast      | server responds to /nsm/server/broadcast message
 |optional-gui   | server responds to optional-gui messages. If this capability is not present then clients with optional-guis MUST always keep them visible
 
 |===
@@ -268,7 +274,7 @@ The following table defines possible values of `error_code`:
 
 |Code | Meaning
 
-|ERR_GENERAL	        | General Error
+|ERR_GENERAL            | General Error
 |ERR_INCOMPATIBLE_API   | Incompatible API version
 |ERR_BLACKLISTED        | Client has been blacklisted.
 
@@ -401,7 +407,7 @@ Or
 
 |Code | Meaning
 
-|ERR	              | General Error
+|ERR                  | General Error
 |ERR_BAD_PROJECT      | An existing project file was found to be corrupt
 |ERR_CREATE_FAILED    | A new project could not be created
 |ERR_UNSAVED_CHANGES  | Unsaved changes would be lost
@@ -441,7 +447,7 @@ Or
 
 |Code | Meaning
 
-|ERR	             | General Error
+|ERR                 | General Error
 |ERR_SAVE_FAILED     | Project could not be saved
 |ERR_NOT_NOW         | Operation cannot be completed at this time
 
@@ -573,18 +579,18 @@ string.
 [options="header", stripes=even]
 |===
 
-|Symbolic Name	 | Integer Value
+|Symbolic Name   | Integer Value
 
-|ERR_GENERAL	        | -1
-|ERR_INCOMPATIBLE_API	| -2
-|ERR_BLACKLISTED	    | -3
-|ERR_LAUNCH_FAILED	    | -4
-|ERR_NO_SUCH_FILE	    | -5
-|ERR_NO_SESSION_OPEN	| -6
-|ERR_UNSAVED_CHANGES	| -7
-|ERR_NOT_NOW	        | -8
-|ERR_BAD_PROJECT	    | -9
-|ERR_CREATE_FAILED	    | -10
+|ERR_GENERAL            | -1
+|ERR_INCOMPATIBLE_API   | -2
+|ERR_BLACKLISTED        | -3
+|ERR_LAUNCH_FAILED      | -4
+|ERR_NO_SUCH_FILE       | -5
+|ERR_NO_SESSION_OPEN    | -6
+|ERR_UNSAVED_CHANGES    | -7
+|ERR_NOT_NOW            | -8
+|ERR_BAD_PROJECT        | -9
+|ERR_CREATE_FAILED      | -10
 
 |===
 
@@ -624,12 +630,12 @@ The possible errors are:
 [options="header", stripes=even]
 |===
 
-|Code	|Meaning
+|Code   |Meaning
 
-|ERR_GENERAL	     | General Error
-|ERR_LAUNCH_FAILED	 | Launch failed
-|ERR_NO_SUCH_FILE	 | No such file
-|ERR_NO_SESSION	     | No session is open
+|ERR_GENERAL         | General Error
+|ERR_LAUNCH_FAILED   | Launch failed
+|ERR_NO_SUCH_FILE    | No such file
+|ERR_NO_SESSION      | No session is open
 |ERR_UNSAVED_CHANGES | Unsaved changes would be lost
 
 |===
@@ -723,14 +729,14 @@ PATCH version when you make backwards compatible bug fixes.
 [options="header", stripes=even]
 |===
 
-|Subject	 | Version
+|Subject     | Version
 
-|Non Session Manager at moment of fork	        | 1.2 (June 2020)
-|Non Session Manager API	| 1.0 link:https://github.com/original-male/non/blob/master/session-manager/src/nsmd.C[NON nsmd.C]
-|Original API Document	    | 1.0 link:http://non.tuxfamily.org/nsm/API.html[non.tuxfamily.org/nsm/API.html]
-|New Session Manager	    | 1.4.0
+|Non Session Manager at moment of fork          | 1.2 (June 2020)
+|Non Session Manager API    | 1.0 link:https://github.com/original-male/non/blob/master/session-manager/src/nsmd.C[NON nsmd.C]
+|Original API Document      | 1.0 link:http://non.tuxfamily.org/nsm/API.html[non.tuxfamily.org/nsm/API.html]
+|New Session Manager        | 1.4.0
 |New Session Manager API    | 1.1.0 link:https://github.com/linuxaudio/new-session-manager/blob/master/src/nsmd.cpp[NEW nsmd.cpp]
-|New API Document	| 1.4.0 link:#[Here]
+|New API Document   | 1.4.0 link:#[Here]
 
 |===
 

@@ -6,7 +6,8 @@ Contributors notice after the change (LastName, FirstName / nick)
 
 
 ## 2021-01-15 1.5.0
-WARNING: Next scheduled release (2021-04-15) will switch the default session dir to an XDG Path.
+WARNING: Next scheduled release (2021-04-15) will switch the default session root
+to $XDG_DATA_HOME ( default on most distributions: ~/.local/share/nsm/ )
 With the next release prepare to either
 1) Move old sessions to the new root directory (preferred)
 2) Symlink "~/NSM Sessions" to the new root directory
@@ -21,6 +22,14 @@ Legacy-GUI:
  Fix manpage description and usage with the correct executable name
  Fix resizing to very small and back. ( / TheGreatWhiteShark )
 
+Extras:
+ This repository now contains extras (libraries, programs, documentation etc.)
+ Extras are technically not connected to the main programs of this repository.
+ There is no dependency to any "extra" nor any license implications.
+ Please read extras/README.md.
+
+ nsm.h was moved to extras/nsm.h
+ "extras/pynsm" is now a part of NEW-SM. It was a standalone git repo until now.
 
 ## 2020-07-15 1.4.0
 Add documentation and manpages.

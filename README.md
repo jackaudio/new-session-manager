@@ -1,5 +1,11 @@
 # New Session Manager
 
+Quick Links:
+* API Specifications
+ * https://linuxaudio.github.io/new-session-manager/api/index.html
+* WIKI with supported clients and information how to build NSM-capability into your own program
+ * https://github.com/linuxaudio/new-session-manager/wiki
+
 ## Introduction
 
 New Session Manager (NSM) is a tool to assist music production by grouping standalone programs into sessions.

@@ -2,9 +2,9 @@
 
 Quick Links:
 * API Specifications
- * https://linuxaudio.github.io/new-session-manager/api/index.html
+  * https://linuxaudio.github.io/new-session-manager/api/index.html
 * WIKI with supported clients and information how to build NSM-capability into your own program
- * https://github.com/linuxaudio/new-session-manager/wiki
+  * https://github.com/linuxaudio/new-session-manager/wiki
 
 ## Introduction
 

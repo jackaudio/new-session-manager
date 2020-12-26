@@ -251,7 +251,7 @@ Presently, the server `capabilities` are:
 
 |server-control | client-to-server control
 |broadcast      | server responds to /nsm/server/broadcast message
-|optional-gui   | server responds to optional-gui messages. If this capability is not present then clients with optional-guis MUST always keep them visible
+|optional-gui   | server responds to optional-gui messages. This capability is always present and MUST be supported by any server implementation.
 
 |===
 
@@ -819,3 +819,14 @@ Undocumented (Unstable) `/nsm/gui` protocol
 * When a GUI announces itself to nsmd it will receive the absolute path to the session directory
     through the message `/nsm/gui/session/root`. This is not a new addition but was already in
     non-session-manager git.
+
+=== Changes in API Version 1.1.1
+
+* Server-capability :optional-gui: is now mandatory for SERVER implementations. Reasoning:
+This is an  important core feature of NSM and thus will be treated as such by guaranteeing it to exist.
+After looking at all currently known clients and server-implementations it turns out that all servers
+support :optional-gui: and the vast majority of clients not only support it, but actually assume it
+and do _not_ test for the server capability, as it was written in this document.
+There are now two choices: Adjust this document to the (good) reality or consider all clients broken.
+Summary: We consider this API document wrong and therefore fix it, thus increasing API version
+patch-level from 1.1.0 to 1.1.1

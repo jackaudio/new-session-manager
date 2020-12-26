@@ -39,14 +39,12 @@
 #include <sys/signalfd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <unistd.h>
 #include <time.h>
 #include <libgen.h>
-#include <dirent.h>
-#include <ftw.h>
 #include <list>
 #include <getopt.h>
 #include <sys/time.h>
+#include <fts.h>
 
 #include "Endpoint.hpp"
 /* for locking */
@@ -1677,50 +1675,140 @@ OSC_HANDLER( new )
     return 0;
 }
 
-static lo_address list_response_address;
-
 int
-list_file ( const char *fpath, const struct stat *sb, int tflag )
+fts_comparer_to_process_files_before_dirs( const FTSENT ** first, const FTSENT ** second )
 {
-    if ( tflag == FTW_F )
-    {
-        char *s;
-        s = strdup( fpath );
-        if ( ! strcmp( "session.nsm", basename( s ) ) )
-        {
-            free( s );
-            s = strdup( fpath );
+    /*
+       The argument compar() specifies a user-defined function which may
+       be used to order the traversal of the hierarchy.  It takes two
+       pointers to pointers to FTSENT structures as arguments and should
+       return a negative value, zero, or a positive value to indicate if
+       the file referenced by its first argument comes before, in any
+       order with respect to, or after, the file referenced by its
+       second argument.  The fts_accpath, fts_path, and fts_pathlen
+       fields of the FTSENT structures may never be used in this
+       comparison.  If the fts_info field is set to FTS_NS or FTS_NSOK,
+       the fts_statp field may not either.  If the compar() argument is
+       NULL, the directory traversal order is in the order listed in
+       path_argv for the root paths, and in the order listed in the
+       directory for everything else.
+    */
 
-            s = dirname( s );
-
-            memmove( s, s + strlen( session_root ) + 1, (strlen( s ) - strlen( session_root )) + 1);
-
-            osc_server->send( list_response_address, "/reply", "/nsm/server/list", s  );
-
-            free( s );
-        }
-        else
-            free( s );
-    }
-
-    return 0;
+    if ( (*first)->fts_info & FTS_F )
+        return (-1); //first
+    else if ( (*second)->fts_info & FTS_F )
+        return (1); //last
+    else
+        return strcmp((*first)->fts_name, (*second)->fts_name);
+        //return (0); //doesn't matter
 }
+
+
+static lo_address list_response_address;
 
 OSC_HANDLER( list )
 {
-    GUIMSG( "Listing sessions" );
+    //Parse the session_root recursively for session.nsm files and send names with /nsm/server/list
+    //Sessions can be structured with sub-directories.
+    //The file session.nsm marks a real session and is a 'leaf' of the session tree.
+    //No other sessions are allowed below a dir containing session.nsm .
 
+    GUIMSG( "Listing sessions" );
     list_response_address = lo_message_get_source( msg );
 
-    ftw( session_root, list_file, 20 );
+    //Use fts to walk the session_root
+    /* An array of paths to traverse. Each path must be null
+     * terminated and the list must end with a NULL pointer. */
+    char *paths[] = { session_root, NULL };
 
-    // osc_server->send( lo_message_get_source( msg ), path,  ERR_OK, "Done." );
+    /* 2nd parameter: An options parameter. Must include either
+       FTS_PHYSICAL or FTS_LOGICAL---they change how symbolic links
+       are handled.
+
+       Last parameter is a comparator which you can optionally provide
+       to change the traversal of the filesystem hierarchy.
+
+       Our comparator processes files before directories, so we can depend on that
+       to remember if we are already in a session-dir.
+    */
+
+    FTS *ftsp = fts_open(paths, FTS_LOGICAL, fts_comparer_to_process_files_before_dirs);
+    if(ftsp == NULL)
+    {
+        FATAL( "fts_open" );
+        exit(EXIT_FAILURE);
+    }
+
+    FTSENT * currentSession = NULL;
+    while( 1 ) // call fts_read() enough times to get each file
+    {
+        FTSENT *ent = fts_read(ftsp); // get next entry (could be file or directory).
+        if( ent == NULL )
+        {
+            if( errno == 0 )
+                break; // No more items, bail out of while loop
+            else
+            {
+                // fts_read() had an error.
+                FATAL( "fts_read" );
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        // Handle Types of Files
+
+        // Given a "entry", determine if it is a file or directory
+        if( ent->fts_info & FTS_D )   // We are entering into a directory
+            {
+                //printf( "Enter dir: %s\n", ent->fts_path );
+                if ( currentSession != NULL )
+                {
+                    //printf( "already found current session.nsm: %s  . Waiting to leave dir. Ignoring %s\n", currentSession->fts_name, ent->fts_path );
+
+                    // Setup that no descendants of this file are visited.
+                    int err = fts_set( ftsp, ent, FTS_SKIP );
+                    if ( err != 0 )
+                    {
+                        FATAL( "fts_set" );
+                        exit(EXIT_FAILURE);
+                    }
+                }
+            }
+        else if( ent->fts_info & FTS_DP ) // We are exiting a directory
+            {
+                //printf( "Exit dir: %s\n", ent->fts_path );
+                if ( ent == currentSession )
+                {
+                    //printf( "Exit current session dir: %s\n", ent->fts_path );
+                    currentSession = NULL;
+                }
+            }
+        else if( ent->fts_info & FTS_F ) // The entry is a file.
+        {
+            //printf( "File: %s\n", ent->fts_path );
+            if ( ! strcmp( "session.nsm", basename( ent->fts_path ) ) )
+            {
+                //Convert path to session name:
+                char *s;
+                s = strdup( ent->fts_path );
+                s = dirname( s );
+                memmove( s, s + strlen( session_root ) + 1, (strlen( s ) - strlen( session_root )) + 1);
+                osc_server->send( list_response_address, "/reply", "/nsm/server/list", s  );
+                free( s );
+                currentSession = ent->fts_parent; //save the directory entry. not the session.nsm entry.
+            }
+        }
+    }
+
+    // close fts and check for error closing.
+    if(fts_close(ftsp) == -1)
+        FATAL( "fts_close" );
 
     // As marker that all sessions were sent reply with an empty string, which is impossible to conflict with a session name
     osc_server->send( list_response_address, "/reply", "/nsm/server/list", "" );
-
     return 0;
 }
+
 
 OSC_HANDLER( open )
 {

@@ -159,6 +159,23 @@ referring to the symlink. This allows sessions to be archived and transported si
 session. The symlinks thus created should, at the very least, be named after the files they refer
 to. Some unique component may be required to prevent collisions.
 
+==== Session Root and Session Directories
+
+===== Subdirectories / Hierarchical Structure
+
+Subdirectories MAY be made to organize sessions into meaningful structures, such as album/track or
+composer/genre/piece. For example: `Johann Sebastian Bach/Kantaten/Wie schön leuchtet der Morgenstern`.
+Which results in the same directory structure on disk. Session names can contain any characters that
+are supported by the underlying file system, usually UTF-8.
+
+Subdirectories are created by either `nsmd` itself or by the users themselves, through their file
+manager or a GUI (while the session is not open).
+
+The project_name from `/nsm/server/new s:project_name` accepts the format `a/b/c/d`.
+
+Any session itself MUST be a "leaf" in this directory tree. A session MUST NOT contain further
+session subdirectories: any directory that contains a file `session.nsm` is the final
+element in the hierarchy.
 
 
 == NSM OSC Protocol
@@ -830,3 +847,7 @@ and do _not_ test for the server capability, as it was written in this document.
 There are now two choices: Adjust this document to the (good) reality or consider all clients broken.
 Summary: We consider this API document wrong and therefore fix it, thus increasing API version
 patch-level from 1.1.0 to 1.1.1
+
+* Add API-section "Subdirectories / Hierarchical Structure" that explains the session directory.
+This behaviour was already the case for nsm-legacy-gui and nsmd 1.5.0 was patched to adhere to this
+behaviour more strictly as well, removing false session entries in 3rd party clients such as Agordejo.

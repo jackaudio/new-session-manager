@@ -13,7 +13,7 @@ A copy of the license has been provided in the file documentation/API/LICENSE.
 
 
 :authors: Jonathan Moore Liles, Nils Hilbricht
-:revnumber: API 1.1.0
+:revnumber: API 1.1.1
 :revremark: License CC-By-SA v2.5
 :iconfont-remote!:
 :!webfonts:
@@ -751,9 +751,9 @@ PATCH version when you make backwards compatible bug fixes.
 |Non Session Manager at moment of fork          | 1.2 (June 2020)
 |Non Session Manager API    | 1.0 link:https://github.com/original-male/non/blob/master/session-manager/src/nsmd.C[NON nsmd.C]
 |Original API Document      | 1.0 link:http://non.tuxfamily.org/nsm/API.html[non.tuxfamily.org/nsm/API.html]
-|New Session Manager        | 1.4.0
-|New Session Manager API    | 1.1.0 link:https://github.com/linuxaudio/new-session-manager/blob/master/src/nsmd.cpp[NEW nsmd.cpp]
-|New API Document   | 1.4.0 link:#[Here]
+|New Session Manager        | 1.5.0
+|New Session Manager API    | 1.1.1 link:https://github.com/linuxaudio/new-session-manager/blob/master/src/nsmd.cpp[NEW nsmd.cpp]
+|New API Document   | 1.5.0 link:#[Here]
 
 |===
 

@@ -1,11 +1,5 @@
 # New Session Manager
 
-Quick Links:
-* API Specifications
-  * https://linuxaudio.github.io/new-session-manager/api/index.html
-* WIKI with supported clients and information how to build NSM-capability into your own program
-  * https://github.com/linuxaudio/new-session-manager/wiki
-
 ## Introduction
 
 New Session Manager (NSM) is a tool to assist music production by grouping standalone programs into sessions.
@@ -71,7 +65,7 @@ which was released under the GNU GENERAL PUBLIC LICENSE  Version 2, June 1991.
 All files, except nsm.h kept in this fork were GPL "version 2 of the License, or (at your
 option) any later version."
 
-`extras/nsm.h/nsm.h` is licensed under the ISC License.
+`nsm.h` is licensed under the ISC License.
 
 New-Session-Manager changed the license to GNU GENERAL PUBLIC LICENSE, Version 3, 29 June 2007.
 See file COPYING

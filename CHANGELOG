@@ -14,6 +14,7 @@ With the next release prepare to either
 3) use the nsmd --session-root commandline argument.
 
 nsmd:
+ Fix session discovery to not report nested sessions anymore. Also more robust file system error handling.
  Command line option --quiet: Suppress messages except warnings and errors
  Protect against orphaned clients or daemons when the server, or even a GUI, crashes.
  Replace cowboy-slang in info-level OSC with descriptive, technical messages.
@@ -21,6 +22,10 @@ nsmd:
 Legacy-GUI:
  Fix manpage description and usage with the correct executable name
  Fix resizing to very small and back. ( / TheGreatWhiteShark )
+
+API:
+ NSM_API_VERSION_PATCH from 0 to 1 (1.1.0 -> 1.1.1)
+ Please see API document chapter "Changes in API Version 1.1.1"
 
 Extras:
  This repository now contains extras (libraries, programs, documentation etc.)

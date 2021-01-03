@@ -165,7 +165,11 @@ handle_label ( Fl_Widget *o, void *v )
 void
 handle_executable ( Fl_Widget *o, void *v )
 {
+    //Autofill the label field when the executable name is edited
     ui->label_input->value( ui->executable_input->value() );
+    //This does not trigger handle_label so we call it manually
+    lo_send_from( nsmp_addr, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/label", "s",
+                  ui->label_input->value() );
 }
 
 

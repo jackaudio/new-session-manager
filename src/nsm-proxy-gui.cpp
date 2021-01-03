@@ -351,7 +351,9 @@ main ( int argc, char **argv )
 
     lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/update", "" );
 
-
+    //The config file option allows the user to choose a different config file for the proxy settings.
+    //This does more harm than good, so we hide the gui field.
+    ui->config_file_input->hide()
 
     w->show();
 

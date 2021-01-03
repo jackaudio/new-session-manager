@@ -264,6 +264,8 @@ int
 main ( int argc, char **argv )
 {
 
+
+
     //Command line parameters
     const char * gui_url = NULL;
     static struct option long_options[] =
@@ -320,6 +322,9 @@ main ( int argc, char **argv )
 
     ui = new NSM_Proxy_UI;
 
+    Fl::scheme( "gtk+" );
+    Fl::visual(FL_DOUBLE|FL_INDEX); // FLKT Double_Window: "higly recommended […] put before the first show() of any window in your program"
+
     Fl_Double_Window *w = ui->make_window();
 
     connect_ui();
@@ -329,6 +334,23 @@ main ( int argc, char **argv )
     w->show();
 
     Fl::lock();
+
+    //Setting colors only after main window creation.
+    //We keep them all in once place instead of setting them in the widgets
+    //Colors are the same as nsm-legacy-gui.cpp . If one changes you need to change the other by hand.
+
+
+    Fl::set_color( 55, 223, 237, 255 ); //Override FLUID palette with RGB Value. 55 is label text. Same as FL_FOREGROUND_COLOR
+    Fl::set_color( 41, 55, 61, 69 ); //Override FLUID palette with RGB Value. 41 is label background
+
+    Fl::set_color( FL_DARK1, 37, 40, 45 ); //Main window background
+    Fl::set_color( FL_BACKGROUND_COLOR, 37, 40, 45 ); //These are the colors used as backgrounds by almost all widgets and used to draw the edges of all the boxtypes.
+    Fl::set_color( FL_BACKGROUND2_COLOR, 55, 61, 69 ); //This color is used as a background by Fl_Input and other text widgets.
+    Fl::set_color( FL_FOREGROUND_COLOR, 223, 237, 255 );
+    Fl::set_color( FL_INACTIVE_COLOR, 255, 0, 0 ); // Not used
+    Fl::set_color( FL_SELECTION_COLOR, 80, 84, 92 ); // e.g. the currently selected session
+    Fl::reload_scheme();
+
 
     Fl::add_timeout( 0.5f, check_error, NULL );
 

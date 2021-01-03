@@ -2,7 +2,7 @@
 Format: Double ## for a version number followed by a space, ISO-Date, Semantic Versioning:
 ## YYYY-MM-DD major.minor.patch
 Two empty lines before the next entry.
-Contributors notice after the change (LastName, FirstName / nick)
+External contributors notice at the end of the line: (LastName, FirstName / nick)
 
 
 ## 2021-01-15 1.5.0

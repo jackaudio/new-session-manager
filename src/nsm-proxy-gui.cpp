@@ -48,6 +48,8 @@ static char *client_error;
 int
 osc_update ( const char *path, const char *types, lo_arg **argv, int argc, lo_message msg, void *user_data )
 {
+    //Updates are arriving one OSC message at a time.
+
     printf( "Got update for %s\n", path );
 
     Fl::lock();
@@ -56,8 +58,16 @@ osc_update ( const char *path, const char *types, lo_arg **argv, int argc, lo_me
         ui->label_input->value( &argv[0]->s );
     else if (!strcmp( path, "/nsm/proxy/arguments" ))
         ui->arguments_input->value( &argv[0]->s );
-    else if (!strcmp( path, "/nsm/proxy/executable" ))
+    else if (!strcmp( path, "/nsm/proxy/executable" )) {
         ui->executable_input->value( &argv[0]->s );
+        if ( strcmp( &argv[0]->s , "") ) {
+            //We want to avoid that the button is always labeled 'Start', creating the
+            //false impression that a new sub-client instance is started each time you press it.
+            //If the string is empty there is no program running at the moment.
+            //This does not cover all cases but gets us there 90%, which is good enough for something cosmetic.
+            ui->start_button->label("Ok");
+        }
+    }
     else if (!strcmp( path, "/nsm/proxy/config_file" ))
         ui->config_file_input->value( &argv[0]->s );
     else if (!strcmp( path, "/nsm/proxy/save_signal" ))
@@ -136,6 +146,9 @@ handle_kill ( Fl_Widget *o, void *v )
 void
 handle_start ( Fl_Widget *o, void *v )
 {
+    //Executed when Start Button is clicked.
+    //"/nsm/proxy/start" for the sub-client is always sent, no matter if the software already runs.
+    //nsm-proxy.cpp handles the redundancy.
     lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/start", "sss",
                   ui->executable_input->value(),
                   ui->arguments_input->value(),
@@ -232,6 +245,7 @@ check_error ( void *v )
     {
         {
             Fl_Double_Window *o = new Fl_Double_Window(600,300+15,"Abnormal Termination");
+            //Create a new floating Window that shows an error message.
             {
                 Fl_Box *o = new Fl_Box(0+15,0+15,600-30,50);
                 o->box(FL_BORDER_BOX);
@@ -263,7 +277,9 @@ check_error ( void *v )
 int
 main ( int argc, char **argv )
 {
-
+    //The NSM-Proxy GUI is a client that communicates with another binary, nsm-proxy via OSC.
+    //This GUI executable is actually closed and restarted each time you show/hide the GUI.
+    //In other words: it is not a persistent GUI state.
 
 
     //Command line parameters
@@ -330,6 +346,8 @@ main ( int argc, char **argv )
     connect_ui();
 
     lo_send_from( nsmp_addr, losrv,  LO_TT_IMMEDIATE, "/nsm/proxy/update", "" );
+
+
 
     w->show();
 

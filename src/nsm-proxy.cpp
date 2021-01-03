@@ -210,6 +210,7 @@ public:
 
     bool dump ( const char *path )
         {
+            //Dump current config to file. This happens quite often.
             char *fname;
             asprintf( &fname, "%s/%s", path, CONFIG_FILE_NAME );
 
@@ -301,6 +302,7 @@ public:
 
     void update ( lo_address to )
         {
+            //Each send triggers one osc_update in the Proxy-GUI.
             MESSAGE( "Sending update" );
 
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/save_signal", "i",  _save_signal );
@@ -310,8 +312,6 @@ public:
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/config_file", "s", _config_file ? _config_file : "" );
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/stop_signal", "i",  _stop_signal );
             lo_send_from( to, losrv, LO_TT_IMMEDIATE, "/nsm/proxy/client_error", "s",  _client_error ? _client_error : "" );
-
-
         }
 };
 

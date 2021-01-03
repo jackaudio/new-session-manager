@@ -7,95 +7,109 @@ class NSM_Proxy_UI {open
   Function {make_window()} {open
   } {
     Fl_Window {} {
-      label {NSM Proxy} open selected
-      xywh {1041 284 645 830} type Double color 47 labelcolor 55 xclass {NSM-Proxy} visible
+      label {NSM Proxy} open
+      xywh {720 472 675 505} type Double color 47 labelcolor 55 xclass {NSM-Proxy} visible
     } {
-      Fl_Box {} {
-        label {NSM-Proxy handles clients without direct NSM support. It cannot be used to start real NSM clients
+      Fl_Return_Button start_button {
+        label Start
+        xywh {285 460 88 25}
+      }
+      Fl_Button kill_button {
+        label Kill
+        xywh {150 460 80 25} color 72 hide
+      }
+      Fl_Tabs {} {open
+        xywh {0 0 678 445}
+      } {
+        Fl_Group {} {
+          label Run open
+          xywh {25 46 635 359}
+        } {
+          Fl_Box {} {
+            label {NSM-Proxy handles clients without direct NSM support. It cannot be used to start real NSM clients
 
 Command-line options MUST go in the "Arguments" field. 
 
  The program will be started with its current directory being a uniquely named directory under the current session directory. It is recommended that you only refer to files as arguments in this directory to guarantee a transportable and archivable session.
-}
-        xywh {15 11 610 139} box BORDER_BOX color 41 labelfont 8 labelsize 12 labelcolor 55 align 128
-      }
-      Fl_Input arguments_input {
-        label {Arguments:}
-        xywh {150 187 340 28}
-      }
-      Fl_Input label_input {
-        label {NSM GUI Label:}
-        xywh {150 217 340 28}
-      }
-      Fl_Return_Button start_button {
-        label Start
-        xywh {525 760 88 30}
-      }
-      Fl_Button kill_button {
-        label Kill
-        xywh {295 625 80 25} color 72 hide
-      }
-      Fl_Choice save_signal_choice {
-        label {Save Signal:} open
-        xywh {145 630 170 25} down_box BORDER_BOX
-      } {
-        MenuItem {} {
-          label None
-          xywh {0 0 40 24}
+} selected
+            xywh {28 87 612 150} box BORDER_BOX color 41 labelfont 8 labelsize 12 labelcolor 55 align 128
+          }
+          Fl_Input arguments_input {
+            label {Arguments:}
+            tooltip {Command line parameter like --verbose} xywh {170 285 345 25}
+          }
+          Fl_Input label_input {
+            label {NSM GUI Label:}
+            tooltip {Will show in your NSM GUI, useful if you have multiple NSM-Proxy clients in one session} xywh {170 324 345 26}
+          }
+          Fl_Input executable_input {
+            label {Executable Name:}
+            tooltip {The pure name of the executable. Just xterm not /usr/bin/xterm} xywh {170 249 345 26}
+          }
         }
-        MenuItem {} {
-          label SIGUSR1
-          xywh {10 10 40 24}
+        Fl_Group {} {
+          label Advanced open
+          xywh {12 31 663 414} hide
+        } {
+          Fl_Choice save_signal_choice {
+            label {Save Signal:} open
+            xywh {246 400 170 25} down_box BORDER_BOX
+          } {
+            MenuItem {} {
+              label None
+              xywh {10 10 40 24}
+            }
+            MenuItem {} {
+              label SIGUSR1
+              xywh {20 20 40 24}
+            }
+            MenuItem {} {
+              label SIGUSR2
+              xywh {30 30 40 24}
+            }
+            MenuItem {} {
+              label SIGINT
+              xywh {40 40 40 24}
+            }
+          }
+          Fl_Box {} {
+            label {The environment variables $NSM_CLIENT_ID and $NSM_SESSION_NAME will contain the unique client ID (suitable for use as e.g. a JACK client name) and the display name for the session, respectively. The variable $CONFIG_FILE will contain the name of the config file selected above.}
+            xywh {26 46 610 84} box BORDER_BOX color 41 labelfont 8 labelsize 12 labelcolor 55 align 128
+          }
+          Fl_Box {} {
+            label {Very few programs may respond to a specific Unix signal by somehow saving their state. If 'Save Signal' is set to something other than 'None', then NSM Proxy will deliver the specified signal to the proxied process upon an NSM 'Save' event. Most programs will treat these signals just like SIGTERM and die. NSM-Proxy cannot force a program to save in our session directory.  }
+            xywh {26 306 610 79} box BORDER_BOX color 41 labelfont 8 labelsize 12 labelcolor 55 align 128
+          }
+          Fl_Choice stop_signal_choice {
+            label {Stop Signal:} open
+            xywh {246 255 170 25} down_box BORDER_BOX
+          } {
+            MenuItem {} {
+              label SIGTERM
+              xywh {20 20 40 24}
+            }
+            MenuItem {} {
+              label SIGINT
+              xywh {50 50 40 24}
+            }
+            MenuItem {} {
+              label SIGHUP
+              xywh {60 60 40 24}
+            }
+          }
+          Fl_Box {} {
+            label {Most programs will shutdown gracefully when sent a SIGTERM or SIGINT signal. It's impossible to know which signal a specific program will respond to. A unhandled signal will simply kill the process, and may cause problems with the audio subsystem (e.g. JACK). Check the program's documentation or source code to determine which signal to use to stop it gracefully.}
+            xywh {26 166 610 79} box BORDER_BOX color 41 labelfont 8 labelsize 12 labelcolor 55 align 128
+          }
+          Fl_File_Input config_file_input {
+            label {(Hidden!) Config File:}
+            xywh {158 409 406 31} hide
+          }
+          Fl_Button config_file_browse_button {
+            label Browse
+            xywh {573 410 85 25} hide
+          }
         }
-        MenuItem {} {
-          label SIGUSR2
-          xywh {20 20 40 24}
-        }
-        MenuItem {} {
-          label SIGINT
-          xywh {30 30 40 24}
-        }
-      }
-      Fl_Box {} {
-        label {For advanced users: The environment variables $NSM_CLIENT_ID and $NSM_SESSION_NAME will contain the unique client ID (suitable for use as e.g. a JACK client name) and the display name for the session, respectively. The variable $CONFIG_FILE will contain the name of the config file selected above.}
-        xywh {15 306 610 69} box BORDER_BOX color 41 labelfont 8 labelsize 12 labelcolor 55 align 128
-      }
-      Fl_Box {} {
-        label {For advanced users: Very few programs may respond to a specific Unix signal by somehow saving their state. If 'Save Signal' is set to something other than 'None', then NSM Proxy will deliver the specified signal to the proxied process upon an NSM 'Save' event. Most programs will treat these signals just like SIGTERM and die. NSM-Proxy cannot force a program to save in our session directory.  }
-        xywh {10 546 610 79} box BORDER_BOX color 41 labelfont 8 labelsize 12 labelcolor 55 align 128
-      }
-      Fl_Choice stop_signal_choice {
-        label {Stop Signal:} open
-        xywh {145 485 170 25} down_box BORDER_BOX
-      } {
-        MenuItem {} {
-          label SIGTERM
-          xywh {10 10 40 24}
-        }
-        MenuItem {} {
-          label SIGINT
-          xywh {40 40 40 24}
-        }
-        MenuItem {} {
-          label SIGHUP
-          xywh {50 50 40 24}
-        }
-      }
-      Fl_Box {} {
-        label {For advanced users: Most programs will shutdown gracefully when sent a SIGTERM or SIGINT signal. It's impossible to know which signal a specific program will respond to. A unhandled signal will simply kill the process, and may cause problems with the audio subsystem (e.g. JACK). Check the program's documentation or source code to determine which signal to use to stop it gracefully.}
-        xywh {15 396 610 79} box BORDER_BOX color 41 labelfont 8 labelsize 12 labelcolor 55 align 128
-      }
-      Fl_File_Input config_file_input {
-        label {Config File:}
-        xywh {95 684 406 31}
-      }
-      Fl_Button config_file_browse_button {
-        label Browse
-        xywh {511 684 85 25}
-      }
-      Fl_Input executable_input {
-        label {Executable Name:}
-        xywh {150 160 340 25}
       }
     }
   }

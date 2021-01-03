@@ -23,6 +23,9 @@ Legacy-GUI:
  Fix manpage description and usage with the correct executable name
  Fix resizing to very small and back. ( / TheGreatWhiteShark )
 
+NSM-Proxy:
+  Multiple layout and style fixes. Better texts for beginners.
+
 API:
  NSM_API_VERSION_PATCH from 0 to 1 (1.1.0 -> 1.1.1)
  Please see API document chapter "Changes in API Version 1.1.1"

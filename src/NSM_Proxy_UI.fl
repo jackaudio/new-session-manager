@@ -26,11 +26,12 @@ class NSM_Proxy_UI {open
           xywh {25 46 635 359}
         } {
           Fl_Box {} {
-            label {NSM-Proxy handles clients without direct NSM support. It cannot be used to start real NSM clients
+            label {NSM-Proxy handles clients without direct NSM support.
+            It should not be used to start real NSM clients.
 
-Command-line options MUST go in the "Arguments" field. 
+Command-line options MUST go in the "Arguments" field.
 
- The program will be started with its current directory being a uniquely named directory under the current session directory. It is recommended that you only refer to files as arguments in this directory to guarantee a transportable and archivable session.
+ The program will be started with its current working directory being a uniquely named directory under the current session directory. It is recommended that you only refer to files as arguments in this directory to guarantee a transportable and archivable session.
 } selected
             xywh {28 87 612 150} box BORDER_BOX color 41 labelfont 8 labelsize 12 labelcolor 55 align 128
           }
@@ -73,7 +74,7 @@ Command-line options MUST go in the "Arguments" field.
             }
           }
           Fl_Box {} {
-            label {The environment variables $NSM_CLIENT_ID and $NSM_SESSION_NAME will contain the unique client ID (suitable for use as e.g. a JACK client name) and the display name for the session, respectively. The variable $CONFIG_FILE will contain the name of the config file selected above.}
+            label {The environment variables $NSM_CLIENT_ID and $NSM_SESSION_NAME will contain the unique client ID (suitable for use as e.g. a JACK client name) and the display name for the session, respectively. The variable $CONFIG_FILE will contain the name of the nsm-proxy config file.}
             xywh {26 46 610 84} box BORDER_BOX color 41 labelfont 8 labelsize 12 labelcolor 55 align 128
           }
           Fl_Box {} {

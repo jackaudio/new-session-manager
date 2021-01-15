@@ -9,9 +9,9 @@ External contributors notice at the end of the line: (LastName, FirstName / nick
 WARNING: Next scheduled release (2021-04-15) will switch the default session root
 to $XDG_DATA_HOME ( default on most distributions: ~/.local/share/nsm/ )
 With the next release prepare to do one of the following:
-1) Move old sessions to the new root directory (preferred)
-2) Symlink "~/NSM Sessions" to the new root directory
-3) use the nsmd --session-root commandline argument.
+*  Move old sessions to the new root directory (preferred)
+*  Symlink "~/NSM Sessions" to the new root directory
+*  use the nsmd --session-root commandline argument.
 
 nsmd:
  Fix session discovery to not report nested sessions anymore. Also more robust file system error handling.

@@ -8,7 +8,7 @@ External contributors notice at the end of the line: (LastName, FirstName / nick
 ## 2021-01-15 1.5.0
 WARNING: Next scheduled release (2021-04-15) will switch the default session root
 to $XDG_DATA_HOME ( default on most distributions: ~/.local/share/nsm/ )
-With the next release prepare to either
+With the next release prepare to do one of the following:
 1) Move old sessions to the new root directory (preferred)
 2) Symlink "~/NSM Sessions" to the new root directory
 3) use the nsmd --session-root commandline argument.

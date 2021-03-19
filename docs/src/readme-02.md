@@ -6,7 +6,7 @@ if you want to add NSM support to your own application.
 
 You can find html documentation installed to your systems SHARE dir or docs/out/index.html in this
 repository.
-There is also an online version https://linuxaudio.github.io/new-session-manager/
+There is also an online version https://jackaudio.github.io/new-session-manager/
 
 We also provide a set of manpages for each executable (see Build).
 

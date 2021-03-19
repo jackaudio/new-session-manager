@@ -1,10 +1,12 @@
 
 ## Introduction
 
-New Session Manager (NSM) is a tool to assist music production by grouping standalone programs into sessions.
-Your workflow becomes easy to manage, robust and fast by leveraging the full potential of cooperative applications.
+New Session Manager (NSM) is a tool to assist music production by grouping standalone programs into
+sessions. Your workflow becomes easy to manage, robust and fast by leveraging the full potential of
+cooperative applications.
 
-NSM is free in every sense of the word free of cost, free to share and use, free of spyware or ads, free-and-open-source.
+NSM continues to be free in every sense of the word: free of cost, free to share and use, free of
+spyware or ads, free-and-open-source.
 
 You can create a session, or project, add programs to it and then use commands to save, start/stop,
 hide/show all programs at once, or individually. At a later date you can then re-open the session

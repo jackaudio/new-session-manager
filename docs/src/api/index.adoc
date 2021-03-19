@@ -33,7 +33,7 @@ link:http://non.tuxfamily.org/nsm/API.html["Non Session Manager" by Jonathan Moo
 wrote the majority of this API document, especially the API itself. *The API is the same*. Any
 technical changes or differences in behaviour are described in <<API Versions and Behaviour Changes>>.
 All other changes to this document can be reviewed by accessing the git log. This document is
-licensed under CC-By-Sa v2.5. See link:https://github.com/linuxaudio/new-session-manager/tree/master/docs/src/api[LICENSE]
+licensed under CC-By-Sa v2.5. See link:https://github.com/jackaudio/new-session-manager/tree/master/docs/src/api[LICENSE]
 
 
 IMPORTANT: The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD
@@ -752,7 +752,7 @@ PATCH version when you make backwards compatible bug fixes.
 |Non Session Manager API    | 1.0 link:https://github.com/original-male/non/blob/master/session-manager/src/nsmd.C[NON nsmd.C]
 |Original API Document      | 1.0 link:http://non.tuxfamily.org/nsm/API.html[non.tuxfamily.org/nsm/API.html]
 |New Session Manager        | 1.5.0
-|New Session Manager API    | 1.1.1 link:https://github.com/linuxaudio/new-session-manager/blob/master/src/nsmd.cpp[NEW nsmd.cpp]
+|New Session Manager API    | 1.1.1 link:https://github.com/jackaudio/new-session-manager/blob/master/src/nsmd.cpp[NEW nsmd.cpp]
 |New API Document   | 1.5.0 link:#[Here]
 
 |===

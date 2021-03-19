@@ -11,17 +11,17 @@ letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 A copy of the license has been provided in the file documentation/LICENSE.
 ////
 
-:Author: LinuxAudio.org
+:Author: Nils Hilbricht
 :iconfont-remote!:
 :!webfonts:
 :revnumber: 1.5.0
 
 = New Session Manager Documentation
 
-* link:https://github.com/linuxaudio/new-session-manager[Sourcecode]
-* link:https://github.com/linuxaudio/new-session-manager/issues[Bug and Issue Tracker]
+* link:https://github.com/jackaudio/new-session-manager[Sourcecode]
+* link:https://github.com/jackaudio/new-session-manager/issues[Bug and Issue Tracker]
 * link:api/index.html[API] document that describes all OSC Messages
-* link:http://non.tuxfamily.org/session-manager/doc/MANUAL.html[Legacy-GUI Manual]. The original Non-Session-Manager manual is still valid.
+* link:http://non.tuxfamily.org/session-manager/doc/MANUAL.html[Legacy-GUI Manual]. The original Non-Session-Manager GUI manual is still valid.
 
 
 include::readme-01.md[]

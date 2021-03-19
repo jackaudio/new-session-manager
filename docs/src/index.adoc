@@ -14,7 +14,7 @@ A copy of the license has been provided in the file documentation/LICENSE.
 :Author: Nils Hilbricht
 :iconfont-remote!:
 :!webfonts:
-:revnumber: 1.5.0
+:revnumber: 1.5.1
 
 = New Session Manager Documentation
 

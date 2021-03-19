@@ -1,17 +1,17 @@
 
 [Reporting bugs]
-https://github.com/linuxaudio/new-session-manager/issues
+https://github.com/jackaudio/new-session-manager/issues
 
 [copyright]
 up to 2020:
 Jonathan Moore Liles https://non.tuxfamily.org/
 
 from 2020:
-Nils Hilbricht et al. https://github.com/linuxaudio/new-session-manager
+Nils Hilbricht et al. https://new-session-manager.jackaudio.org
 
 [see also]
 The  full  documentation for NSM is maintained as html site in your systems doc-dir.
 For example:
     xdg-open file:///usr/share/doc/new-session-manager/index.html
 
-The documentation can also be found online https://github.com/linuxaudio/new-session-manager
+The documentation can also be found online https://new-session-manager.jackaudio.org

@@ -24,7 +24,7 @@
 project(
 'new-session-manager',
 'c', 'cpp',
-version : '1.5.0',
+version : '1.5.1',
 license : 'GPLv3',
 )
 
@@ -116,7 +116,7 @@ if get_option('nsm-legacy-gui')
         install: true,
         )
 
-    install_data('src/org.linuxaudio.nsm-legacy-gui.desktop', install_dir : get_option('datadir') / 'applications')
+    install_data('src/org.jackaudio.nsm-legacy-gui.desktop', install_dir : get_option('datadir') / 'applications')
     install_data('src/nsm-legacy-gui.svg', install_dir : get_option('datadir') / 'icons/hicolor/scalable/apps')
     install_man(['docs/src/nsm-legacy-gui.1', 'docs/src/non-session-manager.1'])
 

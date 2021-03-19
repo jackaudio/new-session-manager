@@ -68,7 +68,7 @@ static char *session_root;
 #define NSM_API_VERSION_MAJOR 1
 #define NSM_API_VERSION_MINOR 1
 #define NSM_API_VERSION_PATCH 1
-#define VERSION_STRING "1.5.0"
+#define VERSION_STRING "1.5.1"
 
 #define ERR_OK 0
 #define ERR_GENERAL_ERROR    -1

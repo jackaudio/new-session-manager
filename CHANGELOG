@@ -4,6 +4,10 @@ Format: Double ## for a version number followed by a space, ISO-Date, Semantic V
 Two empty lines before the next entry.
 External contributors notice at the end of the line: (LastName, FirstName / nick)
 
+## 2021-03-19 1.5.1
+Web-URLs changed to https://new-session-manager.jackaudio.org and https://github.com/jackaudio/new-session-manager
+No codechanges.
+
 
 ## 2021-01-15 1.5.0
 WARNING: Next scheduled release (2021-04-15) will switch the default session root

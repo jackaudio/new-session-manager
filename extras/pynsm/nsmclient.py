@@ -387,7 +387,8 @@ class NSMClient(object):
         else:
             #osc.udp://hostname:portnumber/
             o = urlparse(nsmOSCUrl)
-            return o.hostname, o.port
+            #return o.hostname, o.port #this always make the hostname lowercase. usually it does not matter, but we got crash reports. Alternative:
+            return o.netloc.split(":")[0], o.port
 
     def getExecutableName(self):
         """Finding the actual executable name can be a bit hard

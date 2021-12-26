@@ -38,15 +38,15 @@ warnf ( warning_t level,
 {
     va_list args;
     static const char *level_tab[] = {
-        "message", "\033[1;32m",
-        "warning", "\033[1;33m",
-        "assertion", "\033[1;31m"
+        "message", "",
+        "warning", "",
+        "assertion", ""
     };
 
         module = program_invocation_short_name;
 
     if ( module )
-        fprintf( stderr, "[\033[1;30m%s\033[0m] ", module );
+        fprintf( stderr, "[%s] ", module );
 #ifndef NDEBUG
     if ( file )
         fprintf( stderr, "%s", file );
@@ -69,5 +69,5 @@ warnf ( warning_t level,
         va_end( args );
     }
 
-    fprintf( stderr, "\033[0m\n" );
+    fprintf( stderr, "\n" );
 }

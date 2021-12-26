@@ -4,8 +4,13 @@ Format: Double ## for a version number followed by a space, ISO-Date, Semantic V
 Two empty lines before the next entry.
 External contributors notice at the end of the line: (LastName, FirstName / nick)
 
+## 2022-01-15 1.5.3
+Remove hardcoded ANSI colors from terminal log output
+
+
 ## 2021-07-15 1.5.2
 pynsm2 library: Fixed a rare crash, where the hostname must be case sensitive but Pythons urlparse forced lower-case.
+
 
 ## 2021-03-19 1.5.1
 Web-URLs changed to https://new-session-manager.jackaudio.org and https://github.com/jackaudio/new-session-manager
@@ -45,6 +50,7 @@ Extras:
 
  nsm.h was moved to extras/nsm.h
  "extras/pynsm" is now a part of NEW-SM. It was a standalone git repo until now.
+
 
 ## 2020-07-15 1.4.0
 Add documentation and manpages.

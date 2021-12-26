@@ -98,7 +98,7 @@ static jack_ringbuffer_t *port_ringbuffer = NULL;
 void
 print_patch ( struct patch_record *pr, int mode )
 {
-    printf( "%s from '%s:%s' to '%s:%s'\n", mode ? ">>" : "::",
+    printf( "[jackpatch] %s from '%s:%s' to '%s:%s'\n", mode ? ">>" : "::",
             pr->src.client, pr->src.port, pr->dst.client, pr->dst.port );
 
 }
@@ -222,7 +222,7 @@ process_patch ( const char *patch )
             enqueue( pr );
             break;
         default:
-//            fprintf( stderr, "Invalid token '|%s' at line %i of %s!",  dir, i, file );
+//            fprintf( stderr, "[jackpatch]  Invalid token '|%s' at line %i of %s!",  dir, i, file );
             free( pr );
             return 0;
     }
@@ -293,7 +293,7 @@ read_config ( const char *file )
 
         if ( retval == 0 )
         {
-            printf( "bad line %i.\n", i );
+            printf( "[jackpatch]  bad line %i.\n", i );
             continue;
         }
     }
@@ -328,11 +328,11 @@ connect_path ( struct patch_record *pr )
     {
         /* one of the ports doesn't exist yet... don't attempt
          * connection, jack will just complain. */
-        printf( "Not attempting connection because one of the ports is missing.\n" );
+        printf( "[jackpatch]  Not attempting connection because one of the ports is missing.\n" );
         return;
     }
 
-    printf( "Connecting %s |> %s\n", srcport, dstport );
+    printf( "[jackpatch]  Connecting %s |> %s\n", srcport, dstport );
 
     r = jack_connect( client, srcport, dstport );
 
@@ -346,7 +346,7 @@ connect_path ( struct patch_record *pr )
     else
     {
         pr->active = 0;
-        printf( "Error is %i\n", r );
+        printf( "[jackpatch]  Error is %i\n", r );
         return;
     }
 }
@@ -422,7 +422,7 @@ handle_new_port ( const char *portname )
 {
     enqueue_known_port( portname );
 
-    printf( "New endpoint '%s' registered.\n", portname );
+    printf( "[jackpatch]  New endpoint '%s' registered.\n", portname );
     /* this is a new port */
     activate_patch( portname );
 }
@@ -462,7 +462,7 @@ snapshot ( const char *file )
 
     if ( NULL == ( fp = fopen( file, "w" ) ) )
     {
-        fprintf( stderr, "Error opening snapshot file for writing" );
+        fprintf( stderr, "[jackpatch]  Error opening snapshot file for writing" );
         return;
     }
 
@@ -501,7 +501,7 @@ snapshot ( const char *file )
             table[table_index++] = s;
 
             process_patch( s );
-            printf( "++ %s |> %s\n", *port, *connection );
+            printf( "[jackpatch]  ++ %s |> %s\n", *port, *connection );
         }
 
         free( connections );
@@ -537,7 +537,7 @@ die ( void )
     if ( client_active )
         jack_deactivate( client );
 
-    printf( "JACKPATCH: Closing jack client\n" );
+    printf( "[jackpatch] Closing jack client\n" );
 
     jack_client_close( client );
     client = NULL;
@@ -572,7 +572,7 @@ osc_announce_error ( const char *path, const char *types, lo_arg **argv, int arg
     if ( strcmp( "/nsm/server/announce", &argv[0]->s ) )
          return -1;
 
-    printf( "Failed to register with NSM: %s\n", &argv[2]->s );
+    printf( "[jackpatch] Failed to register with NSM: %s\n", &argv[2]->s );
     nsm_is_active = 0;
 
     return 0;
@@ -585,7 +585,7 @@ osc_announce_reply ( const char *path, const char *types, lo_arg **argv, int arg
     if ( strcmp( "/nsm/server/announce", &argv[0]->s ) )
          return -1;
 
-    printf( "Successfully registered. NSM says: %s", &argv[1]->s );
+    printf( "[jackpatch] Successfully registered. NSM says: %s", &argv[1]->s );
 
     nsm_is_active = 1;
     nsm_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ) );
@@ -627,7 +627,7 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
 
     if ( 0 == stat( new_filename, &st ) )
     {
-        printf( "Reading patch definitions from: %s\n", new_filename );
+        printf( "[jackpatch]  Reading patch definitions from: %s\n", new_filename );
         if ( read_config( new_filename ) )
         {
             /* wipe_ports(); */
@@ -660,7 +660,7 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
 void
 announce ( const char *nsm_url, const char *client_name, const char *process_name )
 {
-    printf( "Announcing to NSM\n" );
+    printf( "[jackpatch]  Announcing to NSM\n" );
 
     lo_address to = lo_address_new_from_url( nsm_url );
 
@@ -684,7 +684,7 @@ init_osc ( const char *osc_port )
 //error_handler );
 
     char *url = lo_server_get_url(losrv);
-    printf("OSC: %s\n",url);
+    printf("[jackpatch]  OSC: %s\n",url);
     free(url);
 
     lo_server_add_method( losrv, "/nsm/client/save", "", osc_save, NULL );
@@ -746,7 +746,7 @@ port_registration_callback( jack_port_id_t id, int reg, void *arg )
 
     if ( size != jack_ringbuffer_write( port_ringbuffer, (const char *)pr, size ) )
     {
-        fprintf( stderr, "ERROR: port notification buffer overrun" );
+        fprintf( stderr, "[jackpatch] ERROR: port notification buffer overrun" );
     }
 
 //    enqueue_new_port( port, reg );
@@ -800,7 +800,7 @@ main ( int argc, char **argv )
 
     if ( ! client )
     {
-        fprintf( stderr, "Could not register JACK client\n" );
+        fprintf( stderr, "[jackpatch] Could not register JACK client\n" );
         exit(1);
 
     }
@@ -816,7 +816,7 @@ main ( int argc, char **argv )
         {
             if ( argc > 2 )
             {
-                printf( "Saving current graph to: %s\n", argv[2] );
+                printf( "[jackpatch] Saving current graph to: %s\n", argv[2] );
                 snapshot( argv[2] );
                 die();
             }
@@ -824,7 +824,7 @@ main ( int argc, char **argv )
         else
         {
             read_config( argv[1] );
-            printf( "Monitoring...\n" );
+            printf( "[jackpatch] Monitoring...\n" );
             for ( ;; )
             {
                 usleep( 50000 );
@@ -843,7 +843,7 @@ main ( int argc, char **argv )
     }
     else
     {
-        fprintf( stderr, "Could not register as NSM client.\n" );
+        fprintf( stderr, "[jackpatch] Could not register as NSM client.\n" );
         exit(1);
     }
 

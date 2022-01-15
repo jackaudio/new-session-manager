@@ -4,6 +4,7 @@ Format: Double ## for a version number followed by a space, ISO-Date, Semantic V
 Two empty lines before the next entry.
 External contributors notice at the end of the line: (LastName, FirstName / nick)
 
+
 ## 2022-01-15 1.5.3
 Remove hardcoded ANSI colors from terminal log output
 

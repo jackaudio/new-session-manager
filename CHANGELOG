@@ -6,6 +6,7 @@ External contributors notice at the end of the line: (LastName, FirstName / nick
 
 
 ## 2022-01-15 1.5.3
+Add [jackpatch] to terminal log output of jackpatch.
 Remove hardcoded ANSI colors from terminal log output
 
 

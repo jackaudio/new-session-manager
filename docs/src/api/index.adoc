@@ -221,12 +221,14 @@ The lockfile contains, on separate lines:
 
 * The absolute path to the session, including the root-dir, which could be overriden by `nsmd --session-root`, allowing two sessions of the same basic name in different roots.
 * the OSC URL of the server that runs this session, the same as `$NSM_URL`.
+* the PID of `nsmd`
 
 Example:
 ```
 /home/johann/.local/share/nsm/cantatas/easter1751
 osc.udp://myuser.localdomain:11287/
-
+3022
+```
 
 == NSM OSC Protocol
 

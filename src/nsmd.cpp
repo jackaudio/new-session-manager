@@ -434,6 +434,23 @@ path_is_valid ( const char *path )
 }
 
 int
+session_already_exists ( const char * session_name)
+{
+    //A session is defined as a path with the file session.nsm
+    struct stat st_session_exists_check;
+    char * path;
+    asprintf( &path, "%s/%s/session.nsm", session_root, session_name );
+    if ( stat (path, &st_session_exists_check) == 0) {
+        free( path );
+        return 0; // Already exists
+    }
+    else {
+        free( path );
+        return -1; // All good
+    }
+}
+
+int
 mkpath ( const char *path, bool create_final_directory )
 {
     char *p = strdup( path );
@@ -1590,6 +1607,17 @@ OSC_HANDLER( duplicate )
         goto done;
     }
 
+    if ( session_already_exists(&argv[0]->s) == 0) {
+
+        osc_server->send( sender_addr, "/error", path,
+                          ERR_CREATE_FAILED,
+                          "Session name already exists." );
+
+        pending_operation = COMMAND_NONE;
+
+        return 0;
+    }
+
     command_all_clients_to_save();
 
     if ( clients_have_errors() )
@@ -1636,6 +1664,7 @@ OSC_HANDLER( duplicate )
                           ERR_NO_SUCH_FILE,
                           "No such file." );
         free(spath);
+        pending_operation = COMMAND_NONE;
         return -1;
     }
 
@@ -1678,7 +1707,19 @@ OSC_HANDLER( new )
         return 0;
     }
 
-    if ( session_path )
+    if ( session_already_exists(&argv[0]->s) == 0) {
+
+        osc_server->send( sender_addr, "/error", path,
+                          ERR_CREATE_FAILED,
+                          "Session name already exists." );
+
+        pending_operation = COMMAND_NONE;
+
+        return 0;
+    }
+
+
+    if ( session_path ) //Already a session running?
     {
         command_all_clients_to_save();
 

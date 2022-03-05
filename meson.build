@@ -24,7 +24,7 @@
 project(
 'new-session-manager',
 'c', 'cpp',
-version : '1.5.3',
+version : '1.6.0',
 license : 'GPLv3',
 )
 

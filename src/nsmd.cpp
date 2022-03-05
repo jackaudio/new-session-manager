@@ -67,7 +67,7 @@ static char *lockfile_directory;
 
 #define NSM_API_VERSION_MAJOR 1
 #define NSM_API_VERSION_MINOR 1
-#define NSM_API_VERSION_PATCH 1
+#define NSM_API_VERSION_PATCH 2
 #define VERSION_STRING "1.6.0"
 
 #define ERR_OK 0

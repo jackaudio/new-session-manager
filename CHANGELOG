@@ -11,9 +11,9 @@ nsmd now follows the XDG Base Directory Specifications:
  The old path ~/NSM Sessions/ is still supported and has priority, for now. This may be switched off in the future.
  Lockfiles fixed (see issue #gh-31)
  Lockfiles are now in $XDG_RUNTIME_DIR/nsm/
- Lockfiles now each contain the session path, the osc NSM_URL and the nsmd PID.
- New section in the API documentation to explain the above.
-
+ Lockfiles now each contain the session path, the osc NSM_URL and the nsmd PID
+ New section in the API documentation for the above.
+Fixes and guards against trying to load non-existing sessions and creating new sessions under existing names
 
 ## 2022-01-15 1.5.3
 Add [jackpatch] to terminal log output of jackpatch.

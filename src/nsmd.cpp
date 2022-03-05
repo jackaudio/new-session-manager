@@ -1359,6 +1359,14 @@ tell_all_clients_session_is_loaded ( void )
 int
 load_session_file ( const char * path )
 {
+    //parameter "path" is the absolute path to the session including session root, without session.nsm
+
+    //First check if the session file actually exists, before closing the current one
+    if ( session_already_exists( basename( strdup(path )) ) != 0) {
+        WARNING ("Instructed to load %s which does not exist. Doing nothing.", path);
+        return ERR_NO_SUCH_FILE;
+    }
+
 
     if ( session_path && session_name ) {
         //We are already in a session. This is switch, or load during duplicate etc.

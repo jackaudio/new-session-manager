@@ -62,13 +62,13 @@ static lo_address gui_addr;
 static bool gui_is_active = false;
 static int signal_fd;
 
-static int session_lock_fd = 0;
 static char *session_root;
+static char *lockfile_directory;
 
 #define NSM_API_VERSION_MAJOR 1
 #define NSM_API_VERSION_MINOR 1
 #define NSM_API_VERSION_PATCH 1
-#define VERSION_STRING "1.5.3"
+#define VERSION_STRING "1.6.0"
 
 #define ERR_OK 0
 #define ERR_GENERAL_ERROR    -1
@@ -665,6 +665,7 @@ get_client_project_path  ( const char *session_path, Client *c )
     return client_project_path;
 }
 
+
 bool
 launch ( const char *executable, const char *client_id )
 {
@@ -1238,6 +1239,44 @@ command_client_to_quit ( Client *c )
     }
 }
 
+char *
+get_lock_file_name( const char * session_name )
+{
+    char *session_root_hash = simple_hash( session_root ); // To avoid collisions of two nsmd running on different session_root with the same simple-named session.
+
+    char *session_lock;
+    asprintf( &session_lock, "%s/%s%s", lockfile_directory, session_name, session_root_hash ); //lockfile_directory and session_name are variables in the current context.
+
+    free(session_root_hash);
+    return session_lock;
+}
+
+
+void
+write_lock_file(  const char *filename, const char * session_path )
+{
+    //Not a GNU lockfile, which features were never used by nsmd anyway,
+    //but simply a file with information about the NSM Server and the loaded session
+    FILE *fp = fopen( filename, "w" );
+
+    if ( !fp )  {
+        FATAL( "Failed to write lock file to %s with error: %s", filename, strerror( errno ) );
+    }
+
+    fprintf( fp, "%s\n%s\n%d\n", session_path, osc_server->url(), getpid());
+    MESSAGE( "Created lock file %s", filename );
+
+    fclose( fp );
+}
+
+void
+delete_lock_file( const char *filename )
+{
+    unlink( filename );
+    MESSAGE( "Deleted lock file %s", filename );
+}
+
+
 void
 close_session ( )
 {
@@ -1259,13 +1298,11 @@ close_session ( )
 
     if ( session_path )
     {
-        char *session_lock;
-        asprintf( &session_lock, "%s/.lock", session_path );
-
-        release_lock( &session_lock_fd, session_lock );
+        char * session_lock = get_lock_file_name(session_name);
+        delete_lock_file( session_lock );
+        MESSAGE( "Session %s was closed.", session_path  );
 
         free(session_lock);
-
         free(session_path);
         session_path = NULL;
         free(session_name);
@@ -1305,17 +1342,29 @@ tell_all_clients_session_is_loaded ( void )
 int
 load_session_file ( const char * path )
 {
+
+    if ( session_path && session_name ) {
+        //We are already in a session. This is switch, or load during duplicate etc.
+        MESSAGE ( "Instructed to load %s while %s is still open. This is a normal operation. Attempting to switch clients intelligently, if they support it. Otherwise closing and re-opening.", path, session_path );
+        char * session_lock = get_lock_file_name(session_name);
+        delete_lock_file( session_lock );
+    }
+
+    set_name( path ); //Do this first so we have the name for lockfiles and log messages
+
     char *session_file = NULL;
     asprintf( &session_file, "%s/session.nsm", path );
-    char *session_lock = NULL;
-    asprintf( &session_lock, "%s/.lock", path );
 
-    if ( ! acquire_lock( &session_lock_fd, session_lock ) )
+    //Check if the lockfile already exists, which means another nsmd currently has loaded the session we want to load.
+    char * session_lock = get_lock_file_name(session_name);
+    struct stat st_lockfile_exists_check;
+    if ( stat (session_lock, &st_lockfile_exists_check) == 0)
     {
+        WARNING( "Session %s is already loaded from another nsmd and locked by file %s", session_name, session_lock );
+
         free( session_file );
         free( session_lock );
 
-        WARNING( "Session is locked by another process" );
         return ERR_SESSION_LOCKED;
     }
 
@@ -1332,7 +1381,6 @@ load_session_file ( const char * path )
 
     session_path = strdup( path );
 
-    set_name( path );
 
     std::list<Client*> new_clients;
 
@@ -1456,7 +1504,11 @@ load_session_file ( const char * path )
 
     tell_all_clients_session_is_loaded();
 
-    MESSAGE( "Loaded." );
+    //We already checked if the logfile exists above, and it didn't.
+    //We also tested for write permissions to our XDG run-dir, which we confirmed to have.
+    //We can create the lockfile now.
+    write_lock_file( session_lock, session_path );
+    MESSAGE( "Session %s was loaded.", session_path);
 
     new_clients.clear();
 
@@ -1567,7 +1619,9 @@ OSC_HANDLER( duplicate )
 
     osc_server->send( gui_addr,  "/nsm/gui/session/session", &argv[0]->s  );
 
-    MESSAGE( "Attempting to open %s", spath );
+    MESSAGE( "Attempting to open during DUPLICATE: %s", spath );
+
+    //The original session is still open. load_session_file will close it, and possibly ::switch::
 
     if ( !load_session_file( spath ) )
     {
@@ -1652,6 +1706,11 @@ OSC_HANDLER( new )
     session_path = strdup( spath );
 
     set_name( session_path );
+
+    char * session_lock = get_lock_file_name(session_name);
+    write_lock_file( session_lock, session_path );
+    free ( session_lock );
+
 
     osc_server->send( sender_addr, "/reply", path, "Created." );
 
@@ -2474,7 +2533,8 @@ handle_signal_clean_exit ( int signal )
     MESSAGE( "Caught SIGNAL %i. Stopping nsmd.", signal);
     // We want a clean exit even when things go wrong.
     close_session();
-    free(session_root);
+    free( session_root );
+    free( lockfile_directory );
     exit(0);
 }
 
@@ -2572,7 +2632,7 @@ int main(int argc, char *argv[])
                 "  --help                Show this screen\n"
                 "  --version             Show version\n"
                 "  --osc-port portnum    OSC port number [Default: provided by system].\n"
-                "  --session-root path   Base path for sessions [Default: ~/NSM Sessions].\n"
+                "  --session-root path   Base path for sessions [Default: $XDG_DATA_HOME/nsm/].\n"
                 "  --load-session name   Load existing session [Example: \"My Song\"].\n"
                 "  --gui-url url         Connect to running legacy-gui [Example: osc.udp://mycomputer.localdomain:38356/].\n"
                 "  --detach              Detach from console.\n"
@@ -2587,18 +2647,76 @@ int main(int argc, char *argv[])
         }
     }
 
-    if ( !session_root )
+
+    //Get the XDG runtime directory for lockfiles
+    //https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+    //Unlike $XDG_DATA_HOME the runtime env var must be set, usually to /run/user/1000/
+    struct stat rundir_check;
+    lockfile_directory = getenv( "XDG_RUNTIME_DIR" );
+    if ( stat( lockfile_directory, &rundir_check ) != 0 && S_ISDIR(rundir_check.st_mode)) {
+        FATAL( "Failed to access $XDG_RUNTIME_DIR directory %s with error: %s", lockfile_directory, strerror( errno ) );
+    }
+    else {
+        asprintf( &lockfile_directory, "%s/%s", lockfile_directory, "nsm");
+
+        //Create the 'nsm' subdirectory. This may fail on it's own.
+        struct stat st_lockfile_dir_mkdir;
+        if ( stat( lockfile_directory, &st_lockfile_dir_mkdir ) )
+        {
+            if ( mkdir( lockfile_directory, 0771 ) )
+            {
+                FATAL( "Failed to create lock file directory %s with error: %s", lockfile_directory, strerror( errno ) );
+            }
+        }
+        MESSAGE( "Using %s for lock-files.", lockfile_directory );
+    }
+
+
+
+    if ( !session_root ) {
+        /* The user gave no specific session directory. We use the default.
+        * The default dir follows the XDG Basedir Specifications:
+        * It is used by looking up environment variables.
+        * https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+        *    $XDG_DATA_HOME defines the base directory relative to which user-specific data files
+        *    should be stored. If $XDG_DATA_HOME is either not set or empty, a default equal to
+        *    $HOME/.local/share should be used.
+        *
+        * Up to version 1.5.3 the default dir was ~/NSM Sessions .
+        * If this old directory exists we will use it but write mild warning to the log.
+        * Moving old sessions is left to the user, or an external GUI.
+        */
+        struct stat st_session_root;
+
         asprintf( &session_root, "%s/%s", getenv( "HOME" ), "NSM Sessions" );
+        if ( stat( session_root, &st_session_root ) == 0 && S_ISDIR(st_session_root.st_mode)) {
+            WARNING ( "An old session directory was detected in %s. You can continue to use it but it is recommended to move your sessions to $XDG_DATA_HOME/nsm-sessions/. If you don't know where that is simply rename your current session-directory and start nsmd, which will tell you the new directory.", session_root);
+        }
+        else {
+            const char *xdg_data_home = getenv( "XDG_DATA_HOME" );
+            if ( xdg_data_home ) {
+                //If $XDG_DATA_HOME is explicitly set by the user we assume it to exist. We don't want to recursively create system directories.
+                //If the xdg-dir does not exist yet we FATAL out just below.
+                asprintf( &session_root, "%s/%s", xdg_data_home, "nsm" );
+            }
+            else {
+                //If $XDG_DATA_HOME is either not set or empty, a default equal to $HOME/.local/share should be used.
+                asprintf( &session_root, "%s/.local/share/nsm", getenv( "HOME" ));
+            }
+        }
+    }
 
-    struct stat st;
+    struct stat st_session_root_mkdir;
 
-    if ( stat( session_root, &st ) )
+    if ( stat( session_root, &st_session_root_mkdir ) )
     {
         if ( mkdir( session_root, 0771 ) )
         {
-            FATAL( "Failed to create session directory: %s", strerror( errno ) );
+            FATAL( "Failed to create session directory %s with error: %s", session_root, strerror( errno ) );
         }
     }
+
+
 
     MESSAGE( "Session root is: %s", session_root );
 
@@ -2660,7 +2778,7 @@ int main(int argc, char *argv[])
    {
         char *spath;
         asprintf( &spath, "%s/%s", session_root, load_session); // Build the session path. --load-session works with --session-root
-        MESSAGE( "LOAD SESSION %s", spath);
+        MESSAGE( "Loading session given by parameter %s", spath);
         load_session_file( spath );
         free ( spath );
     }
@@ -2697,7 +2815,7 @@ int main(int argc, char *argv[])
     //Without a signal handler clients will remain active ("zombies") without nsmd as parent.
     //MESSAGE ( "End of Program");
 
-    //free(session_root);// This was not executed if nsmd received a stop signal. It is now handled by doExit()
+    //free(session_root);// This was not executed if nsmd received a stop signal. It is now handled by handle_signal_clean_exit()
     //osc_server->run();
 
     return 0;

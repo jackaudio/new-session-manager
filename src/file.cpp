@@ -65,32 +65,18 @@ exists ( const char *name )
     return 0 == stat( name, &st );
 }
 
-bool
-acquire_lock ( int *lockfd, const char *filename )
-{
-    struct flock fl;
 
-    fl.l_type = F_WRLCK;
-    fl.l_whence = SEEK_SET;
-    fl.l_start = 0;
-    fl.l_len = 0;
+char *
+simple_hash( const char *s )
+{   //djb2
+    unsigned long hashAddress = 5381;
+    for ( int counter = 0;  s[counter]!='\0'; counter++ ) {
+        hashAddress = ( (hashAddress << 5) + hashAddress ) + s[counter];
+    }
 
-    *lockfd = ::creat( filename, 0777 );
-
-    if ( fcntl( *lockfd, F_SETLK, &fl ) != 0 )
-        return false;
-
-    return true;
-}
-
-void
-release_lock ( int *lockfd, const char *filename )
-{
-    unlink( filename );
-
-    ::close( *lockfd );
-
-    *lockfd = 0;
+    char *result = NULL;
+    asprintf( &result, "%lu", hashAddress % 65521 );
+    return result;
 }
 
 int

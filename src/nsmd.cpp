@@ -1258,14 +1258,15 @@ command_client_to_quit ( Client *c )
 }
 
 char *
-get_lock_file_name( const char * session_name )
+get_lock_file_name( const char * session_name, const char * full_absolute_session_path )
 {
-    char *session_root_hash = simple_hash( session_root ); // To avoid collisions of two nsmd running on different session_root with the same simple-named session.
+    // To avoid collisions of two simple session names under either different subdirs o even different session roots.
+    char *session_hash = simple_hash( full_absolute_session_path );
 
     char *session_lock;
-    asprintf( &session_lock, "%s/%s%s", lockfile_directory, session_name, session_root_hash ); //lockfile_directory and session_name are variables in the current context.
+    asprintf( &session_lock, "%s/%s%s", lockfile_directory, session_name, session_hash ); //lockfile_directory and session_name are variables in the current context.
 
-    free(session_root_hash);
+    free(session_hash);
     return session_lock;
 }
 
@@ -1276,7 +1277,6 @@ write_lock_file(  const char *filename, const char * session_path )
     //Not a GNU lockfile, which features were never used by nsmd anyway,
     //but simply a file with information about the NSM Server and the loaded session
     FILE *fp = fopen( filename, "w" );
-
     if ( !fp )  {
         FATAL( "Failed to write lock file to %s with error: %s", filename, strerror( errno ) );
     }
@@ -1316,7 +1316,7 @@ close_session ( )
 
     if ( session_path )
     {
-        char * session_lock = get_lock_file_name(session_name);
+        char * session_lock = get_lock_file_name( session_name, session_path);
         delete_lock_file( session_lock );
         MESSAGE( "Session %s was closed.", session_path  );
 
@@ -1373,7 +1373,7 @@ load_session_file ( const char * path )
     if ( session_path && session_name ) {
         //We are already in a session. This is switch, or load during duplicate etc.
         MESSAGE ( "Instructed to load %s while %s is still open. This is a normal operation. Attempting to switch clients intelligently, if they support it. Otherwise closing and re-opening.", path, session_path );
-        char * session_lock = get_lock_file_name(session_name);
+        char * session_lock = get_lock_file_name( session_name, session_path);
         delete_lock_file( session_lock );
     }
 
@@ -1383,7 +1383,7 @@ load_session_file ( const char * path )
     asprintf( &session_file, "%s/session.nsm", path );
 
     //Check if the lockfile already exists, which means another nsmd currently has loaded the session we want to load.
-    char * session_lock = get_lock_file_name(session_name);
+    char * session_lock = get_lock_file_name( session_name, path );
     struct stat st_lockfile_exists_check;
     if ( stat (session_lock, &st_lockfile_exists_check) == 0)
     {
@@ -1756,7 +1756,7 @@ OSC_HANDLER( new )
 
     set_name( session_path );
 
-    char * session_lock = get_lock_file_name(session_name);
+    char * session_lock = get_lock_file_name( session_name, session_path);
     write_lock_file( session_lock, session_path );
     free ( session_lock );
 

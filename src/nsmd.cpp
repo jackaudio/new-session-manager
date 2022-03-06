@@ -434,12 +434,13 @@ path_is_valid ( const char *path )
 }
 
 int
-session_already_exists ( const char * session_name)
+session_already_exists ( const char * relative_session_path)
 {
     //A session is defined as a path with the file session.nsm
+    //We receive the relative path with sub-directories like album/song as relative_session_path, without leading and trailing /
     struct stat st_session_exists_check;
     char * path;
-    asprintf( &path, "%s/%s/session.nsm", session_root, session_name );
+    asprintf( &path, "%s/%s/session.nsm", session_root, relative_session_path );
     if ( stat (path, &st_session_exists_check) == 0) {
         free( path );
         return 0; // Already exists
@@ -609,7 +610,7 @@ number_of_reponsive_clients ( void )
      * that never started. It is used in wait_for_announce only, which added a 5000ms delay to startup
      *
      * We are sadly unable to distinguish between a client that has a slow announce and a client
-     * without NSM-support. However, this is mitgated by nsm-proxy which is a reliable indicator
+     * without NSM-support. However, this is mitigated by nsm-proxy which is a reliable indicator
      * that this program will never announce (or rather nsm-proxy announces normally).
      */
 
@@ -1362,8 +1363,9 @@ load_session_file ( const char * path )
     //parameter "path" is the absolute path to the session including session root, without session.nsm
 
     //First check if the session file actually exists, before closing the current one
-    if ( session_already_exists( basename( strdup(path )) ) != 0) {
-        WARNING ("Instructed to load %s which does not exist. Doing nothing.", path);
+    const char * relative_session_path =  strdup( path ) + strlen( session_root ) + 1; //+1 for trailing /
+    if ( session_already_exists( relative_session_path ) != 0) {
+        WARNING ( "Instructed to load %s which does not exist. Doing nothing.", path );
         return ERR_NO_SUCH_FILE;
     }
 
@@ -1375,7 +1377,7 @@ load_session_file ( const char * path )
         delete_lock_file( session_lock );
     }
 
-    set_name( path ); //Do this first so we have the name for lockfiles and log messages
+    set_name( path ); //Do this first so we have the simple name name for lockfiles and log messages
 
     char *session_file = NULL;
     asprintf( &session_file, "%s/session.nsm", path );
@@ -1616,7 +1618,6 @@ OSC_HANDLER( duplicate )
     }
 
     if ( session_already_exists(&argv[0]->s) == 0) {
-
         osc_server->send( sender_addr, "/error", path,
                           ERR_CREATE_FAILED,
                           "Session name already exists." );
@@ -1716,7 +1717,6 @@ OSC_HANDLER( new )
     }
 
     if ( session_already_exists(&argv[0]->s) == 0) {
-
         osc_server->send( sender_addr, "/error", path,
                           ERR_CREATE_FAILED,
                           "Session name already exists." );

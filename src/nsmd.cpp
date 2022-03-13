@@ -2641,8 +2641,7 @@ int main(int argc, char *argv[])
                 break;
             case 's':
             {
-                session_root = optarg;
-
+                session_root = strdup(optarg);
                 /* get rid of trailing slash */
                 char *s = rindex(session_root,'/');
                 if ( s == &session_root[strlen(session_root) - 1] )

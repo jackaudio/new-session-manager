@@ -467,6 +467,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel4">
 <li><a href="#_subdirectories_hierarchical_structure">1.2.3.1. Subdirectories / Hierarchical Structure</a></li>
 <li><a href="#_lockfiles">1.2.3.2. Lockfiles</a></li>
+<li><a href="#_daemon_discovery">1.2.3.3. Daemon Discovery</a></li>
 </ul>
 </li>
 </ul>
@@ -794,6 +795,19 @@ access in this scenario. The numeric ID is a djb2 hash modulo (%) 65521 of the s
 osc.udp://myuser.localdomain:11287/
 3022</code></pre>
 </div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_daemon_discovery">1.2.3.3. Daemon Discovery</h5>
+<div class="paragraph">
+<p>Each running <code>nsmd</code>, per user, creates a state file under <code>$XDG_RUNTIME_DIR/nsm/d/</code> (usually
+<code>/run/user/XXXX/nsm/d/</code>) that can be used to look up running daemons, even if no session is loaded.
+The files contains the daemons osc.udp URL that is compatible with the --nsm-url parameter of the GUI.</p>
+</div>
+<div class="paragraph">
+<p>This enables you to e.g. start nsmd at boot with a random free port. Server-control programs such
+as GUIs can then use this to look for running servers without requiring the user to look up and
+input an osc URL manually as command line parameter.</p>
 </div>
 </div>
 </div>
@@ -1871,7 +1885,7 @@ behaviour more strictly as well, removing false session entries in 3rd party cli
 <li>
 <p>nsmd now follows the XDG Base Directory Specifications for it&#8217;s session root and lock files. This
 if of no consequence to clients but required documentation nevertheless, which was described as
-"background information" in the new section.</p>
+"background information" in the chapters for lock files and daemon disovery.</p>
 </li>
 </ul>
 </div>
@@ -1882,7 +1896,7 @@ if of no consequence to clients but required documentation nevertheless, which w
 <div id="footer">
 <div id="footer-text">
 Version API 1.1.2<br>
-Last updated 2022-03-05 12:34:04 +0100
+Last updated 2022-03-15 18:44:44 +0100
 </div>
 </div>
 </body>

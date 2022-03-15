@@ -230,6 +230,18 @@ osc.udp://myuser.localdomain:11287/
 3022
 ```
 
+===== Daemon Discovery
+
+Each running `nsmd`, per user, creates a state file under `$XDG_RUNTIME_DIR/nsm/d/` (usually
+`/run/user/XXXX/nsm/d/`) that can be used to look up running daemons, even if no session is loaded.
+The files contains the daemons osc.udp URL that is compatible with the --nsm-url parameter of the GUI.
+
+
+This enables you to e.g. start nsmd at boot with a random free port. Server-control programs such
+as GUIs can then use this to look for running servers without requiring the user to look up and
+input an osc URL manually as command line parameter.
+
+
 == NSM OSC Protocol
 
 All message parameters are REQUIRED. All messages MUST be sent from the same socket as the `announce`
@@ -908,4 +920,4 @@ behaviour more strictly as well, removing false session entries in 3rd party cli
 
 * nsmd now follows the XDG Base Directory Specifications for it's session root and lock files. This
 if of no consequence to clients but required documentation nevertheless, which was described as
-"background information" in the new section.
+"background information" in the chapters for lock files and daemon disovery.

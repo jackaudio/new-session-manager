@@ -12,6 +12,7 @@ nsmd now follows the XDG Base Directory Specifications:
  Lockfiles fixed (see issue #gh-31)
  Lockfiles are now in $XDG_RUNTIME_DIR/nsm/
  Lockfiles now each contain the session path, the osc NSM_URL and the nsmd PID
+ One daemon file for each currently running nsmd is created in $XDG_RUNTIME_DIR/nsm/d/ containing the osc url. This enables discovery of running daemons.
  New section in the API documentation for the above.
 Fixes and guards against trying to load non-existing sessions and creating new sessions under existing names
 

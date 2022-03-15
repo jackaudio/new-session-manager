@@ -64,6 +64,7 @@ static int signal_fd;
 
 static char *session_root;
 static char *lockfile_directory;
+static char *daemon_file;
 
 #define NSM_API_VERSION_MAJOR 1
 #define NSM_API_VERSION_MINOR 1
@@ -2584,6 +2585,10 @@ handle_signal_clean_exit ( int signal )
     close_session();
     free( session_root );
     free( lockfile_directory );
+    unlink( daemon_file );
+    MESSAGE( "Deleted daemon file %s", daemon_file );
+    free( daemon_file );
+
     exit(0);
 }
 
@@ -2717,9 +2722,24 @@ int main(int argc, char *argv[])
             }
         }
         MESSAGE( "Using %s for lock-files.", lockfile_directory );
+
+        //Now create another subdir for daemons .../nsm/d/ where each daemon has a port number file
+        char * daemon_directory;
+        asprintf( &daemon_directory, "%s/d", lockfile_directory);
+        struct stat st_daemonfile_dir_mkdir;
+        if ( stat( daemon_directory, &st_daemonfile_dir_mkdir ) )
+        {
+            if ( mkdir( daemon_directory, 0771 ) )
+            {
+                FATAL( "Failed to create daemon file directory %s with error: %s", daemon_directory, strerror( errno ) );
+            }
+        }
+        //daemon_file is a global var
+        asprintf( &daemon_file, "%s/%d", daemon_directory, getpid());
+        free ( daemon_directory );
+        MESSAGE( "Using %s as daemon file.", daemon_file );
+        //The actual daemon file will be written below after announcing the session url.
     }
-
-
 
     if ( !session_root ) {
         /* The user gave no specific session directory. We use the default.
@@ -2736,6 +2756,7 @@ int main(int argc, char *argv[])
         */
         struct stat st_session_root;
 
+        //TODO: Valgrind shows a memory leak for the next line. Why?
         asprintf( &session_root, "%s/%s", getenv( "HOME" ), "NSM Sessions" );
         if ( stat( session_root, &st_session_root ) == 0 && S_ISDIR(st_session_root.st_mode)) {
             WARNING ( "An old session directory was detected in %s. You can continue to use it but it is recommended to move your sessions to $XDG_DATA_HOME/nsm-sessions/. If you don't know where that is simply rename your current session-directory and start nsmd, which will tell you the new directory.", session_root);
@@ -2775,7 +2796,20 @@ int main(int argc, char *argv[])
         FATAL( "Failed to create OSC server." );
     }
 
-    printf( "NSM_URL=%s\n", osc_server->url() );
+    char * url = osc_server->url();
+
+    printf( "NSM_URL=%s\n", url );
+
+    //Write the URL into the daemon_file that is named after our PID
+    FILE *fpdaemon = fopen( daemon_file, "w" );
+    if ( !fpdaemon )  {
+        FATAL( "Failed to write daemon file to %s with error: %s", daemon_file, strerror( errno ) );
+    }
+    fprintf( fpdaemon, "%s\n", url );
+    MESSAGE( "Created daemon file %s", daemon_file );
+    fclose( fpdaemon );
+
+    free( url );
 
     if ( gui_url )
     {
@@ -2847,24 +2881,20 @@ int main(int argc, char *argv[])
     }
 
     /* listen for sigchld signals and process OSC messages forever */
-    int start_pid = getppid(); //get parent pid
+    int start_ppid = getppid(); //get parent pid
     for ( ;; )
     {
         wait( 1000 ); //1000 ms
         //This still has some corner cases, like a race condition on startup that never gets the real PID, but
         //we cover the majority of cases at least:
-        if ( start_pid != getppid() ) {
-            WARNING ( "Our parent PID changed from %d to %d, which indicates a possible GUI crash. The user has no control over the session anymore. Trying to shut down cleanly.", start_pid, getppid());
+        if ( start_ppid != getppid() ) {
+            WARNING ( "Our parent PID changed from %d to %d, which indicates a possible GUI crash. The user has no control over the session anymore. Trying to shut down cleanly.", start_ppid, getppid());
             handle_signal_clean_exit ( 0 );
         }
     }
 
     //Code after here will not be executed if nsmd is stopped with any abort-signal like SIGINT.
     //Without a signal handler clients will remain active ("zombies") without nsmd as parent.
-    //MESSAGE ( "End of Program");
-
-    //free(session_root);// This was not executed if nsmd received a stop signal. It is now handled by handle_signal_clean_exit()
-    //osc_server->run();
-
+    //Therefore exit is handled by handle_signal_clean_exit()
     return 0;
 }

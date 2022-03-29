@@ -1039,17 +1039,22 @@ OSC_HANDLER( announce )
     return 0;
 }
 
-void
+int
 save_session_file ( )
 {
     char *session_file = NULL;
     asprintf( &session_file, "%s/session.nsm", session_path );
 
-    FILE *fp = fopen( session_file, "w+" );
+    FILE *fp = fopen( session_file, "w" );
+
+    if ( fp == NULL ) {
+        WARNING( "No write access to %s with error: %s.", session_file, strerror( errno ) );
+        free( session_file );
+        //No need to fclose because fp is null and was never opened.
+        return 1; //error
+    }
 
     free( session_file );
-
-    /* FIXME: handle errors. */
 
     for ( std::list<Client*>::iterator i = client.begin();
           i != client.end();
@@ -1059,6 +1064,7 @@ save_session_file ( )
     }
 
     fclose( fp );
+    return 0; //all ok
 }
 
 Client *
@@ -1190,6 +1196,16 @@ command_all_clients_to_save ( )
     {
         GUIMSG( "Commanding attached clients to save." );
 
+        int save_error = save_session_file();
+
+        if ( save_error == 1 ) {
+            GUIMSG( "...but the session file is write protected. Will not forward save command to clients." );
+            WARNING( "Aborting client save commands because the session file is write protected" );
+            return;
+        }
+
+
+
         for ( std::list<Client*>::iterator i = client.begin();
               i != client.end();
               ++i )
@@ -1198,8 +1214,6 @@ command_all_clients_to_save ( )
         }
 
         wait_for_replies();
-
-        save_session_file();
     }
 }
 
@@ -2580,7 +2594,7 @@ wait ( long timeout )
 void
 handle_signal_clean_exit ( int signal )
 {
-    MESSAGE( "Caught SIGNAL %i. Stopping nsmd.", signal);
+    WARNING( "Caught SIGNAL %i. Stopping nsmd.", signal);
     // We want a clean exit even when things go wrong.
     close_session();
     free( session_root );
@@ -2793,7 +2807,8 @@ int main(int argc, char *argv[])
 
     if ( osc_server->init( LO_UDP, osc_port ) )
     {
-        FATAL( "Failed to create OSC server." );
+        WARNING( "Failed to create OSC server. Exiting." );
+        exit( 1 );
     }
 
     char * url = osc_server->url();

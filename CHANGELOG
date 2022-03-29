@@ -14,7 +14,10 @@ nsmd now follows the XDG Base Directory Specifications:
  Lockfiles now each contain the session path, the osc NSM_URL and the nsmd PID
  One daemon file for each currently running nsmd is created in $XDG_RUNTIME_DIR/nsm/d/ containing the osc url. This enables discovery of running daemons.
  New section in the API documentation for the above.
+Handle write-protected session files and related errors on save. They will not crash the daemon anymore.
 Fixes and guards against trying to load non-existing sessions and creating new sessions under existing names
+Handle various crashes-on-exit and replace them with controlled exits.
+
 
 ## 2022-01-15 1.5.3
 Add [jackpatch] to terminal log output of jackpatch.

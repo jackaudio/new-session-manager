@@ -466,8 +466,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_session_root_and_session_directories">1.2.3. Session Root and Session Directories</a>
 <ul class="sectlevel4">
 <li><a href="#_subdirectories_hierarchical_structure">1.2.3.1. Subdirectories / Hierarchical Structure</a></li>
-<li><a href="#_lockfiles">1.2.3.2. Lockfiles</a></li>
-<li><a href="#_daemon_discovery">1.2.3.3. Daemon Discovery</a></li>
+<li><a href="#_write_protection_for_session_templates">1.2.3.2. Write-Protection for Session Templates</a></li>
+<li><a href="#_lockfiles">1.2.3.3. Lockfiles</a></li>
+<li><a href="#_daemon_discovery">1.2.3.4. Daemon Discovery</a></li>
 </ul>
 </li>
 </ul>
@@ -753,7 +754,25 @@ element in the hierarchy.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_lockfiles">1.2.3.2. Lockfiles</h5>
+<h5 id="_write_protection_for_session_templates">1.2.3.2. Write-Protection for Session Templates</h5>
+<div class="paragraph">
+<p>Write protection for a whole session directory can either happen by "accident" (files from
+another user, a network mount etc.) or on purpose, to protect a session template against accidental
+changes. The latter is possible with a recursive <code>chown</code>, <code>chmod</code> or <code>chattr -R +i session-dir</code>.</p>
+</div>
+<div class="paragraph">
+<p>nsmd itself just checks if <code>session.nsm</code> is read-only. In this case it will not send the save
+command to it&#8217;s session clients. This does not prevent hypothetical problems when the user
+triggers a clients internal save command in a write protected directory. Clients SHOULD handle
+their write protected save files themselves.</p>
+</div>
+<div class="paragraph">
+<p>Advanced contraptions, like overlay filesystems or copy-on-write hardlinks to create read-only
+sessions without the clients noticing, are out of scope for nsm.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_lockfiles">1.2.3.3. Lockfiles</h5>
 <div class="paragraph">
 <p>Because multiple <code>nsmd</code> can run at the same time we need to prevent accidental write-access to the
 same session by different nsm-daemons, and subsequently GUIs.</p>
@@ -798,7 +817,7 @@ osc.udp://myuser.localdomain:11287/
 </div>
 </div>
 <div class="sect4">
-<h5 id="_daemon_discovery">1.2.3.3. Daemon Discovery</h5>
+<h5 id="_daemon_discovery">1.2.3.4. Daemon Discovery</h5>
 <div class="paragraph">
 <p>Each running <code>nsmd</code>, per user, creates a state file under <code>$XDG_RUNTIME_DIR/nsm/d/</code> (usually
 <code>/run/user/XXXX/nsm/d/</code>) that can be used to look up running daemons, even if no session is loaded.
@@ -1888,6 +1907,11 @@ behaviour more strictly as well, removing false session entries in 3rd party cli
 if of no consequence to clients but required documentation nevertheless, which was described as
 "background information" in the chapters for lock files and daemon disovery.</p>
 </li>
+<li>
+<p>nsmd now gracefully handles read-only <code>session.nsm</code> files. This theoretically enables read-only
+sessions and session-templates.  It is included in the patch-level because this was marked as a
+long-standing <code>FIXME</code> in the code by the original author. Or in other words: just a bug fix.</p>
+</li>
 </ul>
 </div>
 </div>
@@ -1897,7 +1921,7 @@ if of no consequence to clients but required documentation nevertheless, which w
 <div id="footer">
 <div id="footer-text">
 Version API 1.1.2<br>
-Last updated 2022-03-15 18:46:20 +0100
+Last updated 2022-03-29 13:54:15 +0200
 </div>
 </div>
 </body>

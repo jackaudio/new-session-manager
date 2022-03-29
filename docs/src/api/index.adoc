@@ -201,6 +201,20 @@ Any session itself MUST be a "leaf" in this directory tree. A session MUST NOT c
 session subdirectories: any directory that contains a file `session.nsm` is the final
 element in the hierarchy.
 
+===== Write-Protection for Session Templates
+
+Write protection for a whole session directory can either happen by "accident" (files from
+another user, a network mount etc.) or on purpose, to protect a session template against accidental
+changes. The latter is possible with a recursive `chown`, `chmod` or `chattr -R +i session-dir`.
+
+nsmd itself just checks if `session.nsm` is read-only. In this case it will not send the save
+command to it's session clients. This does not prevent hypothetical problems when the user
+triggers a clients internal save command in a write protected directory. Clients SHOULD handle
+their write protected save files themselves.
+
+Advanced contraptions, like overlay filesystems or copy-on-write hardlinks to create read-only
+sessions without the clients noticing, are out of scope for nsm.
+
 ===== Lockfiles
 
 Because multiple `nsmd` can run at the same time we need to prevent accidental write-access to the
@@ -922,3 +936,7 @@ behaviour more strictly as well, removing false session entries in 3rd party cli
 * nsmd now follows the XDG Base Directory Specifications for it's session root and lock files. This
 if of no consequence to clients but required documentation nevertheless, which was described as
 "background information" in the chapters for lock files and daemon disovery.
+
+* nsmd now gracefully handles read-only `session.nsm` files. This theoretically enables read-only
+sessions and session-templates.  It is included in the patch-level because this was marked as a
+long-standing `FIXME` in the code by the original author. Or in other words: just a bug fix.

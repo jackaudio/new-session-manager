@@ -360,7 +360,7 @@ connect_path ( struct patch_record *pr )
         return;
     }
 
-    printf( "[jackpatch] Connecting %s |> %s\n", srcport, dstport );
+    // printf( "[jackpatch] Connecting %s |> %s\n", srcport, dstport );
 
     r = jack_connect( client, srcport, dstport );
 
@@ -512,7 +512,7 @@ snapshot ( const char *file )
 
     if ( NULL == ( fp = fopen( file, "w" ) ) )
     {
-        fprintf( stderr, "[jackpatch] Error opening snapshot file for writing" );
+        fprintf( stderr, "[jackpatch] Error opening snapshot file for writing\n" );
         return;
     }
 
@@ -552,7 +552,7 @@ snapshot ( const char *file )
         if ( ! jp_t_src ) {
             //The port does not exist anymore. We need to remember it!
             //It doesn't matter if the destination port still exists, the file-writing below will only consider ports that are currently present and connected.
-            //printf("[jackpatch] We remember source %s but it does not exist anymore. Making sure it fill not be forgotten.\n", src_client_port);
+            //printf("[jackpatch] We remember source %s but it does not exist anymore. Making sure it will not be forgotten.\n", src_client_port);
             remember_this_connection = 1;
         }
         else {
@@ -563,7 +563,7 @@ snapshot ( const char *file )
              if ( ! jp_t_dst ) {
                 //The port does not exist anymore. We need to remember it!
                 //It doesn't matter if the destination port still exists, the file-writing below will only consider ports that are currently present and connected.
-                //printf("[jackpatch] We remember destination %s but it does not exist anymore. Making sure it fill not be forgotten.\n", dst_client_port);
+                //printf("[jackpatch] We remember destination %s but it does not exist anymore. Making sure it will not be forgotten.\n", dst_client_port);
                 remember_this_connection = 1;
             }
         }
@@ -580,17 +580,22 @@ snapshot ( const char *file )
                 table = (char**)realloc( table, table_size * sizeof( char *) );
             }
             table[table_index++] = s;
-            // process_patch( s ); infinite loop!
+            // process_patch( s ); infinite loop! But we still need to keep these patch_records! See below
             // Verbose output that an individual connection was saved.
-            printf( "[jackpatch]  ++ %s |> %s\n", src_client_port, dst_client_port );
+            //printf( "[jackpatch] Remember ++ %s |> %s\n", src_client_port, dst_client_port );
         }
         free ( src_client_port );
         free ( dst_client_port );
     }
 
-
     clear_all_patches(); //Tabula Rasa.
 
+    //We just removed the patch_records we wanted to remember.
+    //The last table_index holds the number of remembered records.
+    for ( int record=0; record < table_index; record++ )
+    {
+        process_patch ( table[record] );
+    }
 
     for ( port = ports; *port; port++ )
     {
@@ -620,7 +625,7 @@ snapshot ( const char *file )
             table[table_index++] = s;
             process_patch( s );
             // Verbose output that an individual connection was saved.
-            printf( "[jackpatch]  ++ %s |> %s\n", *port, *connection );
+            //printf( "[jackpatch]  ++ %s |> %s\n", *port, *connection );
         }
 
         free( connections );
@@ -705,7 +710,7 @@ osc_announce_reply ( const char *path, const char *types, lo_arg **argv, int arg
     if ( strcmp( "/nsm/server/announce", &argv[0]->s ) )
          return -1;
 
-    printf( "[jackpatch] Successfully registered. NSM says: %s", &argv[1]->s );
+    printf( "[jackpatch] Successfully registered. NSM says: %s\n", &argv[1]->s );
 
     nsm_is_active = 1;
     nsm_addr = lo_address_new_from_url( lo_address_get_url( lo_message_get_source( msg ) ) );
@@ -866,7 +871,7 @@ port_registration_callback( jack_port_id_t id, int reg, void *arg )
 
     if ( size != jack_ringbuffer_write( port_ringbuffer, (const char *)pr, size ) )
     {
-        fprintf( stderr, "[jackpatch] ERROR: port notification buffer overrun" );
+        fprintf( stderr, "[jackpatch] ERROR: port notification buffer overrun\n" );
     }
 
 //    enqueue_new_port( port, reg );

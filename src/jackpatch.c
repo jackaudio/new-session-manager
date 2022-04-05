@@ -65,7 +65,7 @@ int REAL_JACK_PORT_NAME_SIZE; //defined after jack client activated
 
 #undef VERSION
 #define APP_TITLE "JACKPatch"
-#define VERSION "0.2"
+#define VERSION "0.3"
 
 struct patch_record {
     struct {
@@ -648,7 +648,7 @@ maybe_activate_jack_client ( void )
     {
         jack_activate( client );
         client_active = 1;
-        REAL_JACK_PORT_NAME_SIZE = jack_port_name_size(); //global
+        REAL_JACK_PORT_NAME_SIZE = jack_port_name_size(); //global. This is client+port+1. 64 + 256 + 1 = 321 on Linux.
     }
 }
 
@@ -802,6 +802,7 @@ main ( int argc, char **argv )
     {
         { "help", no_argument, 0, 'h' },
         { "save", no_argument, 0, 's' },
+        { "version", no_argument, 0, 'v' },
         { 0, 0, 0, 0 }
     };
     int option_index = 0;
@@ -813,7 +814,7 @@ main ( int argc, char **argv )
             case 'h':
                 {
                 const char *usage =
-                "jackpatch - Remember the JACK Audio Connection Kit Graph in NSM\n\n"
+                "jackpatch - Remember and restore the JACK Audio Connection Kit Graph in NSM\n\n"
                 "It is a module for the 'New Session Manager' and only communicates\n"
                 "over OSC in an NSM-Session.\n"
                 "It has limited standalone functionality for testing and debugging, such as:.\n"
@@ -823,8 +824,9 @@ main ( int argc, char **argv )
                 "  jackpatch --help\n"
                 "\n"
                 "Options:\n"
-                "  --help                Show this screen\n"
-                "  --save                Save snapshot on start to file and exit\n"
+                "  --help                Show this screen and exit\n"
+                "  --version             Show version and exit\n"
+                "  --save                Save current connection snapshot to file and exit\n"
                 "";
                 puts ( usage );
                 exit(0);
@@ -833,7 +835,15 @@ main ( int argc, char **argv )
 
            case 's':
                 {
-                    //handled below.
+                    //save is handled below.
+                    break;
+                }
+
+           case 'v':
+                {
+                    printf("%s\n", VERSION);
+                    exit(0);
+                    break;
                 }
         }
     }

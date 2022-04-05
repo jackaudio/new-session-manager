@@ -65,7 +65,7 @@ int REAL_JACK_PORT_NAME_SIZE; //defined after jack client activated
 
 #undef VERSION
 #define APP_TITLE "JACKPatch"
-#define VERSION "0.2.0"
+#define VERSION "1.0.0"
 
 struct patch_record {
     struct {

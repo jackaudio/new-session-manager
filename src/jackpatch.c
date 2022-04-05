@@ -528,6 +528,7 @@ static int die_now = 0;
 void
 signal_handler ( int x )
 {
+    printf("[jackpatch] Handle signal %d\n", x);
     die_now = 1;
 }
 
@@ -763,6 +764,7 @@ main ( int argc, char **argv )
     static struct option long_options[] =
     {
         { "help", no_argument, 0, 'h' },
+        { "save", no_argument, 0, 's' },
         { 0, 0, 0, 0 }
     };
     int option_index = 0;
@@ -776,17 +778,24 @@ main ( int argc, char **argv )
                 const char *usage =
                 "jackpatch - Remember the JACK Audio Connection Kit Graph in NSM\n\n"
                 "It is a module for the 'New Session Manager' and only communicates\n"
-                "over OSC in an NSM-Session and has no standalone functionality.\n"
+                "over OSC in an NSM-Session and has only debug standalone functionality.\n"
                 "\n"
                 "Usage:\n"
+                "  jackpatch [filename]  Restore a snapshot from --save and monitor.\n"
                 "  jackpatch --help\n"
                 "\n"
                 "Options:\n"
                 "  --help                Show this screen\n"
+                "  --save                Save snapshot on start to file and exit\n"
                 "";
                 puts ( usage );
                 exit(0);
                 break;
+                }
+
+           case 's':
+                {
+                    //handled below.
                 }
         }
     }
@@ -823,11 +832,16 @@ main ( int argc, char **argv )
         }
         else
         {
+            /**
+             * Enter standalone commandline mode. This is without NSM.
+             */
             read_config( argv[1] );
             printf( "[jackpatch] Monitoring...\n" );
             for ( ;; )
             {
                 usleep( 50000 );
+                if ( die_now )
+                    die();
                 check_for_new_ports();
             }
         }

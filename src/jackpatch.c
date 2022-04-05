@@ -229,7 +229,7 @@ process_patch ( const char *patch )
 
     pr->active = 0;
 
-    print_patch( pr, 1 );
+    //print_patch( pr, 1 ); //very verbose
 
     return 1;
 }
@@ -253,7 +253,7 @@ clear_all_patches ( )
 int
 read_config ( const char *file )
 {
-    printf( "[jackpatch] Restoring connections from file %s \n", file);
+    printf( "[jackpatch] Reading connections from file %s \n", file);
     FILE *fp;
     int i = 0;
 
@@ -337,7 +337,7 @@ connect_path ( struct patch_record *pr )
 
     r = jack_connect( client, srcport, dstport );
 
-    print_patch( pr, r );
+    //print_patch( pr, r ); //very verbose
 
     if ( r == 0 || r == EEXIST )
     {
@@ -838,7 +838,12 @@ main ( int argc, char **argv )
             /**
              * Enter standalone commandline mode. This is without NSM.
              */
-            read_config( argv[1] );
+            if ( read_config( argv[1] ) )
+            {
+                maybe_activate_jack_client();
+                register_prexisting_ports();
+            }
+
             printf( "[jackpatch] Monitoring...\n" );
             for ( ;; )
             {

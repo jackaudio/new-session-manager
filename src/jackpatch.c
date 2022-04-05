@@ -65,7 +65,7 @@ int REAL_JACK_PORT_NAME_SIZE; //defined after jack client activated
 
 #undef VERSION
 #define APP_TITLE "JACKPatch"
-#define VERSION "0.3"
+#define VERSION "0.2.0"
 
 struct patch_record {
     struct {
@@ -815,9 +815,9 @@ main ( int argc, char **argv )
                 {
                 const char *usage =
                 "jackpatch - Remember and restore the JACK Audio Connection Kit Graph in NSM\n\n"
-                "It is a module for the 'New Session Manager' and only communicates\n"
-                "over OSC in an NSM-Session.\n"
-                "It has limited standalone functionality for testing and debugging, such as:.\n"
+                "It is intended as module for the 'New Session Manager' and only communicates\n"
+                "over OSC in an NSM-Session.\n\n"
+                "It has limited standalone functionality for testing and debugging, such as:\n"
                 "\n"
                 "Usage:\n"
                 "  jackpatch [filename]  Restore a snapshot from --save and monitor.\n"

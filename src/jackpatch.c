@@ -327,9 +327,21 @@ connect_path ( struct patch_record *pr )
 
     if ( ! ( find_known_port( srcport ) && find_known_port( dstport )  ) )
     {
-        /* one of the ports doesn't exist yet... don't attempt
-         * connection, jack will just complain. */
-        printf( "[jackpatch] Not attempting connection because one of the ports is missing.\n" );
+
+         /**
+         * Since we only connect KNOWN TO US ports a connection will not be made on startup / file load,
+         * even if both jack ports are actually present in JACK.
+         * This is because we have not parsed both ports yet.
+         * The true connection attempt will be made only when the second port of the pair was parsed.
+         *
+         * The log message below is misleading for users, because nothing is wrong, and should only
+         * be used during development.
+         *
+         * We just skip the first attempt, eventhough JACK will not complain and do nothing wrong.
+         *
+         * That also means that we do not detect actually missing ports.
+         */
+        //printf( "[jackpatch] Not attempting connection because one of the ports is missing: %s %s\n", srcport, dstport );
         return;
     }
 
@@ -417,7 +429,13 @@ void remove_known_port ( const char *port )
     inactivate_patch ( port );
 }
 
-/** called for every new port */
+/**
+ * Called for every new port, which includes restored-from-file ports on startup.
+ * It will try to activate a restored connection for every single port, thus doing an attempt
+ * twice: Once for the source-port and then for the destination-port.
+ * This can lead to false-negative error messages. See connect_path.
+ *
+ * */
 void
 handle_new_port ( const char *portname )
 {
@@ -425,6 +443,7 @@ handle_new_port ( const char *portname )
 
     //Verbose output that a new port was detected during runtime
     //printf( "[jackpatch] New endpoint '%s' registered.\n", portname );
+
     /* this is a new port */
     activate_patch( portname );
 }
@@ -844,7 +863,7 @@ main ( int argc, char **argv )
                 register_prexisting_ports();
             }
 
-            printf( "[jackpatch] Monitoring...\n" );
+            printf( "[jackpatch] Monitoring in standalone mode…\n" );
             for ( ;; )
             {
                 usleep( 50000 );

@@ -253,6 +253,7 @@ clear_all_patches ( )
 int
 read_config ( const char *file )
 {
+    printf( "[jackpatch] Restoring connections from file %s \n", file);
     FILE *fp;
     int i = 0;
 
@@ -293,7 +294,7 @@ read_config ( const char *file )
 
         if ( retval == 0 )
         {
-            printf( "[jackpatch]  bad line %i.\n", i );
+            printf( "[jackpatch] bad line %i.\n", i );
             continue;
         }
     }
@@ -328,11 +329,11 @@ connect_path ( struct patch_record *pr )
     {
         /* one of the ports doesn't exist yet... don't attempt
          * connection, jack will just complain. */
-        printf( "[jackpatch]  Not attempting connection because one of the ports is missing.\n" );
+        printf( "[jackpatch] Not attempting connection because one of the ports is missing.\n" );
         return;
     }
 
-    printf( "[jackpatch]  Connecting %s |> %s\n", srcport, dstport );
+    printf( "[jackpatch] Connecting %s |> %s\n", srcport, dstport );
 
     r = jack_connect( client, srcport, dstport );
 
@@ -346,7 +347,7 @@ connect_path ( struct patch_record *pr )
     else
     {
         pr->active = 0;
-        printf( "[jackpatch]  Error is %i\n", r );
+        printf( "[jackpatch] Error is %i\n", r );
         return;
     }
 }
@@ -422,7 +423,8 @@ handle_new_port ( const char *portname )
 {
     enqueue_known_port( portname );
 
-    printf( "[jackpatch]  New endpoint '%s' registered.\n", portname );
+    //Verbose output that a new port was detected during runtime
+    //printf( "[jackpatch] New endpoint '%s' registered.\n", portname );
     /* this is a new port */
     activate_patch( portname );
 }
@@ -462,7 +464,7 @@ snapshot ( const char *file )
 
     if ( NULL == ( fp = fopen( file, "w" ) ) )
     {
-        fprintf( stderr, "[jackpatch]  Error opening snapshot file for writing" );
+        fprintf( stderr, "[jackpatch] Error opening snapshot file for writing" );
         return;
     }
 
@@ -501,7 +503,8 @@ snapshot ( const char *file )
             table[table_index++] = s;
 
             process_patch( s );
-            printf( "[jackpatch]  ++ %s |> %s\n", *port, *connection );
+            // Verbose output that an individual connection was saved.
+            // printf( "[jackpatch]  ++ %s |> %s\n", *port, *connection );
         }
 
         free( connections );
@@ -628,7 +631,6 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
 
     if ( 0 == stat( new_filename, &st ) )
     {
-        printf( "[jackpatch]  Reading patch definitions from: %s\n", new_filename );
         if ( read_config( new_filename ) )
         {
             /* wipe_ports(); */
@@ -661,7 +663,7 @@ osc_open ( const char *path, const char *types, lo_arg **argv, int argc, lo_mess
 void
 announce ( const char *nsm_url, const char *client_name, const char *process_name )
 {
-    printf( "[jackpatch]  Announcing to NSM\n" );
+    printf( "[jackpatch] Announcing to NSM\n" );
 
     lo_address to = lo_address_new_from_url( nsm_url );
 
@@ -685,7 +687,7 @@ init_osc ( const char *osc_port )
 //error_handler );
 
     char *url = lo_server_get_url(losrv);
-    printf("[jackpatch]  OSC: %s\n",url);
+    printf("[jackpatch] OSC: %s\n",url);
     free(url);
 
     lo_server_add_method( losrv, "/nsm/client/save", "", osc_save, NULL );
@@ -778,7 +780,8 @@ main ( int argc, char **argv )
                 const char *usage =
                 "jackpatch - Remember the JACK Audio Connection Kit Graph in NSM\n\n"
                 "It is a module for the 'New Session Manager' and only communicates\n"
-                "over OSC in an NSM-Session and has only debug standalone functionality.\n"
+                "over OSC in an NSM-Session.\n"
+                "It has limited standalone functionality for testing and debugging, such as:.\n"
                 "\n"
                 "Usage:\n"
                 "  jackpatch [filename]  Restore a snapshot from --save and monitor.\n"

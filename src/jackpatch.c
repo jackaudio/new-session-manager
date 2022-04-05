@@ -139,6 +139,9 @@ void enqueue_known_port ( const char *port )
     enqueue_port( &known_ports, port );
 }
 
+/**
+ * Find a jack port in our own data structure (and not in the jack graph)
+ */
 const char * find_known_port ( const char *port )
 {
     struct port_record *pr;
@@ -150,6 +153,12 @@ const char * find_known_port ( const char *port )
     return NULL;
 }
 
+
+/**
+ * Convert a symbolic string of a jack connection into actual data struct patch_record
+ * Argument example:
+ * "PulseAudio JACK Sink:front-left          |> system:playback_1"
+ */
 int
 process_patch ( const char *patch )
 {
@@ -306,7 +315,11 @@ read_config ( const char *file )
 
 
 
-/* returns 0 if connection failed, true if succeeded. Already connected
+/** A connection attempt will only be made when a JACK port registers itself and we receive
+ * the jack callback, and once on startup.
+ * There is no periodic check if a previously saved connection is still alive (by design!).
+ *
+ * returns 0 if connection failed, true if succeeded. Already connected
  * is not considered failure */
 void
 connect_path ( struct patch_record *pr )
@@ -328,7 +341,7 @@ connect_path ( struct patch_record *pr )
     if ( ! ( find_known_port( srcport ) && find_known_port( dstport )  ) )
     {
 
-         /**
+         /*
          * Since we only connect KNOWN TO US ports a connection will not be made on startup / file load,
          * even if both jack ports are actually present in JACK.
          * This is because we have not parsed both ports yet.

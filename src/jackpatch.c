@@ -72,7 +72,7 @@ struct patch_record {
         char *client;
         char *port;
     } src , dst;
-    int active;                                                 /* true if patch has already been activate (by us) */
+    int active;                                                 /* true if patch has already been activated (by us) */
     struct patch_record *next;
 };
 
@@ -385,7 +385,7 @@ do_for_matching_patches ( const char *portname, void (*func)( struct patch_recor
 {
     struct patch_record *pr;
 
-    char client[REAL_JACK_PORT_NAME_SIZE]; //the length is too much. The value is client+port+1. But is guaranteed to be enouigh.
+    char client[REAL_JACK_PORT_NAME_SIZE]; //the length is technically too much. The value is client+port+1. But is guaranteed to be enough.
     char port[REAL_JACK_PORT_NAME_SIZE];
 
     sscanf( portname, "%[^:]:%[^\n]", client, port );
@@ -485,7 +485,20 @@ static int stringsort ( const void *a, const void *b )
 
 /**
  * Save all current connections to a file.
+ *
+ * Strategy:
+ * If there are no jack ports at all don't do anything. Else:
+ *
+ * Remember all currently known connections where one, or both, ports are missing from the jack graph.
+ * We consider these temporarily gone by accident.
+ *
+ * Clear the current save file.
+ *
+ * For each currently existing jack output port save all of it's connections.
+ * Save all these port-pairs in an empty file. Ports without connections are not saved.
+ **
  */
+
 void
 snapshot ( const char *file )
 {
@@ -503,15 +516,85 @@ snapshot ( const char *file )
         return;
     }
 
-    clear_all_patches();
 
+    //Prepare a temporary table where all connection strings are held until the file is written at the bottom of this function.
+    //We first add all connections that are temporarily out of order (see below) and then all currently existing connections.
     const int table_increment = 16;
     int table_index = 0;
     size_t table_size = table_increment;
     char **table = (char**)malloc( sizeof( char * ) * table_increment );
 
+
+    //Before we forget the current state find all connections that we have in memory but where
+    //one or both ports are currently missing in the jack graph.
+    //We don't want to lose connections that are just temporarily not present.
+    struct patch_record *pr;
+    while ( patch_list )
+    {
+        //A patch is one connection between a source and a destination.
+        //If an actual jack port source is connected to more than one destinations it will appear as it's own "patch" in this list.
+        //We only need to consider 1:1 point connections in this loop.
+
+        //Traverse the linked list
+        pr = patch_list;
+        patch_list = pr->next;
+
+        int remember_this_connection = 0;
+
+        char * src_client_port;
+        char * dst_client_port;
+        asprintf( &src_client_port, "%s:%s", pr->src.client, pr->src.port );
+        asprintf( &dst_client_port, "%s:%s", pr->dst.client, pr->dst.port );
+
+        jack_port_t *jp_t_src;
+        jp_t_src = jack_port_by_name( client, src_client_port ); //client is our own jackpatch-jack-client.
+
+        if ( ! jp_t_src ) {
+            //The port does not exist anymore. We need to remember it!
+            //It doesn't matter if the destination port still exists, the file-writing below will only consider ports that are currently present and connected.
+            //printf("[jackpatch] We remember source %s but it does not exist anymore. Making sure it fill not be forgotten.\n", src_client_port);
+            remember_this_connection = 1;
+        }
+        else {
+            //The source port does still exist, but is it's connection still alive?
+            //Do not use jack_port_get_all_connections, we want to know if a specific destination is still there.
+            jack_port_t *jp_t_dst;
+            jp_t_dst = jack_port_by_name( client, dst_client_port ); //client is our own jackpatch-jack-client.
+             if ( ! jp_t_dst ) {
+                //The port does not exist anymore. We need to remember it!
+                //It doesn't matter if the destination port still exists, the file-writing below will only consider ports that are currently present and connected.
+                //printf("[jackpatch] We remember destination %s but it does not exist anymore. Making sure it fill not be forgotten.\n", dst_client_port);
+                remember_this_connection = 1;
+            }
+        }
+        if ( remember_this_connection ) {
+            //const char * pport = src_client_port;
+            //const char * pclient = dst_client_port;
+
+            //This code is replicated below #TODO: create function.
+            char *s;
+            asprintf( &s, "%-40s |> %s\n", src_client_port, dst_client_port ); //prepare the magic string that is the step before creating a struct from with process_patch //port is source client:port and connection is the destination one.
+            if ( table_index >= table_size )
+            {
+                table_size += table_increment;
+                table = (char**)realloc( table, table_size * sizeof( char *) );
+            }
+            table[table_index++] = s;
+            // process_patch( s ); infinite loop!
+            // Verbose output that an individual connection was saved.
+            printf( "[jackpatch]  ++ %s |> %s\n", src_client_port, dst_client_port );
+        }
+        free ( src_client_port );
+        free ( dst_client_port );
+    }
+
+
+    clear_all_patches(); //Tabula Rasa.
+
+
     for ( port = ports; *port; port++ )
     {
+        //*port is a full client:port jack name, not only the port.
         jack_port_t *p;
 
         p = jack_port_by_name( client, *port );
@@ -526,20 +609,18 @@ snapshot ( const char *file )
 
         for ( connection = connections; *connection; connection++ )
         {
+            //This code is replicated above #TODO: create function.
             char *s;
-            asprintf( &s, "%-40s |> %s\n", *port, *connection );
-
+            asprintf( &s, "%-40s |> %s\n", *port, *connection ); //prepare the magic string that is the step before creating a struct from with process_patch //port is source client:port and connection is the destination one.
             if ( table_index >= table_size )
             {
                 table_size += table_increment;
                 table = (char**)realloc( table, table_size * sizeof( char *) );
             }
-
             table[table_index++] = s;
-
             process_patch( s );
             // Verbose output that an individual connection was saved.
-            // printf( "[jackpatch]  ++ %s |> %s\n", *port, *connection );
+            printf( "[jackpatch]  ++ %s |> %s\n", *port, *connection );
         }
 
         free( connections );
@@ -559,6 +640,7 @@ snapshot ( const char *file )
     free(table);
 
     fclose( fp );
+
 }
 
 static int die_now = 0;
@@ -873,7 +955,14 @@ main ( int argc, char **argv )
         {
             if ( argc > 2 )
             {
-                printf( "[jackpatch] Saving current graph to: %s\n", argv[2] );
+
+                //To not discard temporarily missing clients we need to load the current ones from file first.
+                if ( read_config( argv[2] ) ) // --save parameter
+                {
+                    register_prexisting_ports();
+                }
+
+                printf( "[jackpatch] Standalone: Saving current graph to: %s\n", argv[2] );
                 snapshot( argv[2] );
                 die();
             }

@@ -328,8 +328,8 @@ connect_path ( struct patch_record *pr )
 {
     int r = 0;
 
-    char srcport[REAL_JACK_PORT_NAME_SIZE];
-    char dstport[REAL_JACK_PORT_NAME_SIZE];
+    char srcport[512]; // This should really be REAL_JACK_PORT_NAME_SIZE, but in the real world not every system and compiler does C99.
+    char dstport[512];
 
     snprintf( srcport, REAL_JACK_PORT_NAME_SIZE, "%s:%s", pr->src.client, pr->src.port );
     snprintf( dstport, REAL_JACK_PORT_NAME_SIZE, "%s:%s", pr->dst.client, pr->dst.port );
@@ -385,8 +385,8 @@ do_for_matching_patches ( const char *portname, void (*func)( struct patch_recor
 {
     struct patch_record *pr;
 
-    char client[REAL_JACK_PORT_NAME_SIZE]; //the length is technically too much. The value is client+port+1. But is guaranteed to be enough.
-    char port[REAL_JACK_PORT_NAME_SIZE];
+    char client[512]; //Linux jack limit is 64
+    char port[512];  //linux jack limit is 256
 
     sscanf( portname, "%[^:]:%[^\n]", client, port );
 

@@ -19,7 +19,7 @@ Fixes and guards against trying to load non-existing sessions and creating new s
 Handle various crashes-on-exit and replace them with controlled exits.
 Jackpatch Version 1.0.0 (previously 0.2.0):
   Jackpatch will finally not "forget" connections anymore. See #gh-74
-  Use actual jack reported size limits for client and port names, not just a guess.
+  Use actual jack reported size limits for resulting client and port names
   Reduce verbosity level of log ouput.
   Document 'hidden' standalone (no NSM) command line mode in --help
   Handle SIGNALs even when in standalone mode

@@ -61,6 +61,8 @@ int nsm_is_active;
 
 char *project_file;
 
+int REAL_JACK_PORT_NAME_SIZE; //defined after jack client activated
+
 #undef VERSION
 #define APP_TITLE "JACKPatch"
 #define VERSION "0.2"
@@ -326,11 +328,11 @@ connect_path ( struct patch_record *pr )
 {
     int r = 0;
 
-    char srcport[512];
-    char dstport[512];
+    char srcport[REAL_JACK_PORT_NAME_SIZE];
+    char dstport[REAL_JACK_PORT_NAME_SIZE];
 
-    snprintf( srcport, 512, "%s:%s", pr->src.client, pr->src.port );
-    snprintf( dstport, 512, "%s:%s", pr->dst.client, pr->dst.port );
+    snprintf( srcport, REAL_JACK_PORT_NAME_SIZE, "%s:%s", pr->src.client, pr->src.port );
+    snprintf( dstport, REAL_JACK_PORT_NAME_SIZE, "%s:%s", pr->dst.client, pr->dst.port );
 
     if ( pr->active )
     {
@@ -383,8 +385,8 @@ do_for_matching_patches ( const char *portname, void (*func)( struct patch_recor
 {
     struct patch_record *pr;
 
-    char client[512];
-    char port[512];
+    char client[REAL_JACK_PORT_NAME_SIZE]; //the length is too much. The value is client+port+1. But is guaranteed to be enouigh.
+    char port[REAL_JACK_PORT_NAME_SIZE];
 
     sscanf( portname, "%[^:]:%[^\n]", client, port );
 
@@ -446,9 +448,7 @@ void remove_known_port ( const char *port )
  * Called for every new port, which includes restored-from-file ports on startup.
  * It will try to activate a restored connection for every single port, thus doing an attempt
  * twice: Once for the source-port and then for the destination-port.
- * This can lead to false-negative error messages. See connect_path.
- *
- * */
+ */
 void
 handle_new_port ( const char *portname )
 {
@@ -483,6 +483,9 @@ static int stringsort ( const void *a, const void *b )
     return strcmp(* (char * const *) a, * (char * const *) b);
 }
 
+/**
+ * Save all current connections to a file.
+ */
 void
 snapshot ( const char *file )
 {
@@ -572,7 +575,6 @@ die ( void )
 {
     if ( client_active )
         jack_deactivate( client );
-
     printf( "[jackpatch] Closing jack client\n" );
 
     jack_client_close( client );
@@ -646,6 +648,7 @@ maybe_activate_jack_client ( void )
     {
         jack_activate( client );
         client_active = 1;
+        REAL_JACK_PORT_NAME_SIZE = jack_port_name_size(); //global
     }
 }
 

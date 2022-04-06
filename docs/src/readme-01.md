@@ -34,7 +34,7 @@ not the server and protocol.
 
 ## User Interface
 It is highly recommended to use Agordejo ( https://www.laborejo.org/agordejo/ ) as graphical
-user interface. In fact, if you install Agordejo in you distribution it will install NSM as
+user interface. In fact, if you install Agordejo in your distribution it will install NSM as
 dependency and you don't need to do anything yourself with this software package.
 
 This repository also contains the legacy FLTK interface simply called `nsm-legacy-gui`,

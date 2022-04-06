@@ -248,7 +248,7 @@ osc.udp://myuser.localdomain:11287/
 
 Each running `nsmd`, per user, creates a state file under `$XDG_RUNTIME_DIR/nsm/d/` (usually
 `/run/user/XXXX/nsm/d/`) that can be used to look up running daemons, even if no session is loaded.
-The name of the file is `nsmd`s PID and the files contain their daemons osc.udp URL that is
+The name of the file is `nsmd` PID and the files contain their daemons osc.udp URL that is
 compatible with the --nsm-url parameter of the GUI.
 
 

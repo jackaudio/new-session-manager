@@ -2547,7 +2547,7 @@ announce_gui( const char *url, bool is_reply )
         osc_server->send( gui_addr, "/nsm/gui/session/name", session_name, session_path + strlen( session_root ));
     }
 
-    MESSAGE( "Registration with GUI complete\n" );
+    MESSAGE( "Registration with GUI complete" );
 }
 
 

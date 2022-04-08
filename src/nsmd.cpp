@@ -104,6 +104,8 @@ static int pending_operation = COMMAND_NONE;
 
 static void wait ( long );
 
+void handle_signal_clean_exit ( int );
+
 
 #define GUIMSG( fmt, args... ) \
 { \
@@ -2021,7 +2023,7 @@ OSC_HANDLER( quit )
 {
     close_session();
 
-    exit(0);
+    handle_signal_clean_exit(0);
 
     return 0;
 }

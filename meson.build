@@ -70,6 +70,7 @@ if get_option('jackpatch')
         )
 
     install_data('src/jackpatch.svg', install_dir : get_option('datadir') / 'icons/hicolor/scalable/apps')
+    install_data('src/org.jackaudio.jackpatch.desktop', install_dir : get_option('datadir') / 'applications')
     install_man(['docs/src/jackpatch.1', ])
 endif
 
@@ -104,6 +105,7 @@ if get_option('nsm-proxy')
     )
 
     install_data('src/nsm-proxy.svg', install_dir : get_option('datadir') / 'icons/hicolor/scalable/apps')
+    install_data('src/org.jackaudio.nsm-proxy.desktop', install_dir : get_option('datadir') / 'applications')
     install_man(['docs/src/nsm-proxy.1', 'docs/src/nsm-proxy-gui.1'])
 
 endif

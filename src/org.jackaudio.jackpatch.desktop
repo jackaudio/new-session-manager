@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=JACKpatch
+Comment=Remember the JACK Audio Connection Kit Graph in NSM
+Exec=jackpatch
+Icon=jackpatch
+Terminal=false
+StartupNotify=false
+Version=1.0
+Categories=AudioVideo;Audio;
+X-NSM-Capable=true
+X-NSM-Exec=jackpatch
+NoDisplay=true

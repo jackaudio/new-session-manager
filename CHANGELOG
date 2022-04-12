@@ -26,6 +26,10 @@ Jackpatch Version 1.0.0 (previously 0.2.0):
   Reduce verbosity level of log ouput.
   Document 'hidden' standalone (no NSM) command line mode in --help
   Handle SIGNALs even when in standalone mode
+  Add a jackpatch desktop file with X-NSM-Capable=true and X-NSM-Exec=jackpatch and NoDisplay=true
+
+NSM-Proxy:
+    Add a nsm-proxy desktop file with X-NSM-Capable=true and X-NSM-Exec=nsm-proxy and NoDisplay=true
 
 
 ## 2022-01-15 1.5.3

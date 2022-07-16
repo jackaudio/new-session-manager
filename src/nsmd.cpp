@@ -2775,7 +2775,7 @@ int main(int argc, char *argv[])
         //TODO: Valgrind shows a memory leak for the next line. Why?
         asprintf( &session_root, "%s/%s", getenv( "HOME" ), "NSM Sessions" );
         if ( stat( session_root, &st_session_root ) == 0 && S_ISDIR(st_session_root.st_mode)) {
-            WARNING ( "An old session directory was detected in %s. You can continue to use it but it is recommended to move your sessions to $XDG_DATA_HOME/nsm-sessions/. If you don't know where that is simply rename your current session-directory and start nsmd, which will tell you the new directory.", session_root);
+            WARNING ( "An old session directory was detected in %s. You can continue to use it but it is recommended to move your sessions to $XDG_DATA_HOME/nsm/. If you don't know where that is simply rename your current session-directory and start nsmd, which will tell you the new directory.", session_root);
         }
         else {
             const char *xdg_data_home = getenv( "XDG_DATA_HOME" );

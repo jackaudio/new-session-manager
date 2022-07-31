@@ -1158,12 +1158,14 @@ wait_for_killed_clients_to_die ( )
 {
     struct signalfd_siginfo fdsi;
 
-    MESSAGE( "Waiting for killed clients to die." );
-
-    for ( int i = 0; i < 60; i++ )
+    MESSAGE( "Waiting 30 seconds for killed clients to die." );
+    for ( int i = 0; i < 30; i++ )
     {
         if ( ! killed_clients_are_alive() )
-            goto done;
+        {
+            MESSAGE( "All clients have died." );
+            return;
+        }
 
         ssize_t s = read(signal_fd, &fdsi, sizeof(struct signalfd_siginfo));
 
@@ -1181,13 +1183,26 @@ wait_for_killed_clients_to_die ( )
         sleep(1);
     }
 
+
+    /* The clients that are still alive are dangerous to the user.
+    * Their GUI will be most likely hidden or non-responsive, their jack client still open.
+    * And now the session will close, maybe even nsmd will quit. The hanging process is left
+    * open and invisible to the user. As a last resort it must be killed until we lose control over
+    * the process.
+    */
     WARNING( "Killed clients are still alive" );
-
+    std::list<Client*> *cl = &client;
+    for ( std::list<Client*>::iterator i = cl->begin();
+          i != cl->end();
+          ++i )
+    {
+        if ( (*i)->pid > 0 )
+             {
+                WARNING( "SIGKILL to: %s", (*i)->name_with_id );
+                kill( (*i)->pid, SIGKILL );
+             }
+    }
     return;
-
-done:
-
-    MESSAGE( "All clients have died." );
 }
 
 

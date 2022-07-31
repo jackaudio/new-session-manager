@@ -5,6 +5,12 @@ Two empty lines before the next entry.
 External contributors notice at the end of the line: (LastName, FirstName / nick)
 
 
+## 2022-10-15 1.6.1
+Absolutely make sure that all clients of the session are closed when closing the session.
+ This solves the invisible, hidden clients still running even after nsmd quit itself.
+ Decrease wait time for such clients at session quit from extreme 60s to very long 30s.
+
+
 ## 2022-04-15 1.6.0
 nsmd:
  Now follows the XDG Base Directory Specifications.

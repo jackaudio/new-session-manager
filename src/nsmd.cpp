@@ -2732,14 +2732,36 @@ int main(int argc, char *argv[])
     }
 
 
-    //Get the XDG runtime directory for lockfiles
-    //https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
-    //Unlike $XDG_DATA_HOME the runtime env var must be set, usually to /run/user/1000/
+    /*Get the XDG runtime directory for lockfiles
+    * https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+    * /Unlike $XDG_DATA_HOME the runtime env var must be set, usually to /run/user/<id>/
+    *
+    * If the system is not XDG compliant (var not set) we fall back to /run/user/<id> directly
+    * This is in accordance with https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard 3.0
+    */
     struct stat rundir_check;
     lockfile_directory = getenv( "XDG_RUNTIME_DIR" );
-    if ( stat( lockfile_directory, &rundir_check ) != 0 && S_ISDIR(rundir_check.st_mode)) {
-        FATAL( "Failed to access $XDG_RUNTIME_DIR directory %s with error: %s", lockfile_directory, strerror( errno ) );
+
+    //Env var is not set
+    if ( !lockfile_directory || !lockfile_directory[0] ) {
+
+        //manpage "These functions are always successful and never modify errno."
+        //uid_t id = getuid();
+        uid_t uid_for_rundir = geteuid(); // if the user was changed for this process. Usually just 1000, for the first user
+        asprintf( &lockfile_directory, "/run/user/%d/", uid_for_rundir);
+        WARNING( "$XDG_RUNTIME_DIR not set. You could set that manually. Now trying to fall back to %s", lockfile_directory);
     }
+    //Now we have a directory path and need to test it.
+
+    //Is set but no access
+    if ( stat( lockfile_directory, &rundir_check ) != 0 ) {
+        FATAL( "Failed to access FHS run-dir directory %s with error: %s", lockfile_directory, strerror( errno ) );
+    }
+    //Is set but not a directory
+    else if ( !S_ISDIR(rundir_check.st_mode) ) {
+        FATAL( "FHS run-dir is %s which is not a directory", lockfile_directory );
+    }
+    //A-Ok
     else {
         asprintf( &lockfile_directory, "%s/%s", lockfile_directory, "nsm");
 

@@ -783,6 +783,11 @@ same session by different nsm-daemons, and subsequently GUIs.</p>
 cleaned by the operating system, preventing sessions to stay locked after e.g. a power failure.</p>
 </div>
 <div class="paragraph">
+<p>If the system is not XDG-compliant nsmd will try to fallback to <code>/run/user/XXXX</code>, which must exist
+according to the Linux Filesystem Hierarchy Standard. I this also fails the user has to
+set $XDG_RUNTIME_DIR manually to start nsmd.</p>
+</div>
+<div class="paragraph">
 <p>The lockfile is named after the simple session name combined with a numeric ID for the session
 root. It is possible that two <code>nsmd</code> opened two different session roots, both with the same simple
 session name, e.g. "my song". Lockfiles are able to distinguish between those and will not prevent
@@ -1921,7 +1926,7 @@ long-standing <code>FIXME</code> in the code by the original author. Or in other
 <div id="footer">
 <div id="footer-text">
 Version API 1.1.2<br>
-Last updated 2022-04-15 00:54:20 +0200
+Last updated 2022-10-10 17:28:05 +0200
 </div>
 </div>
 </body>

@@ -224,6 +224,10 @@ Therefore each currently open session creates a lockfile under `$XDG_RUNTIME_DIR
 `/run/user/XXXX/nsm/`) that tells `nsmd` to not open such a locked session. This directory gets
 cleaned by the operating system, preventing sessions to stay locked after e.g. a power failure.
 
+If the system is not XDG-compliant nsmd will try to fallback to `/run/user/XXXX`, which must exist
+according to the Linux Filesystem Hierarchy Standard. I this also fails the user has to
+set $XDG_RUNTIME_DIR manually to start nsmd.
+
 The lockfile is named after the simple session name combined with a numeric ID for the session
 root. It is possible that two `nsmd` opened two different session roots, both with the same simple
 session name, e.g. "my song". Lockfiles are able to distinguish between those and will not prevent

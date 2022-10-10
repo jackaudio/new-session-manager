@@ -834,9 +834,8 @@ PATCH version when you make backwards compatible bug fixes.
 |Non Session Manager at moment of fork          | 1.2 (June 2020)
 |Non Session Manager API    | 1.0 link:https://github.com/original-male/non/blob/master/session-manager/src/nsmd.C[NON nsmd.C]
 |Original API Document      | 1.0 link:http://non.tuxfamily.org/nsm/API.html[non.tuxfamily.org/nsm/API.html]
-|New Session Manager        | 1.6.0
+|New Session Manager        | 1.6.1
 |New Session Manager API    | 1.1.2 link:https://github.com/jackaudio/new-session-manager/blob/master/src/nsmd.cpp[NEW nsmd.cpp]
-|New API Document   | 1.5.0 link:#[Here]
 
 |===
 
